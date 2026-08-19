@@ -11,18 +11,14 @@
      <script src="_leadpopup.js"></script>
 
    ============================================================
-   >>> Mailen via Resend (eigen webhosting) <<<
-   Mails lopen via het PHP-endpoint  send-brochure.php  (zelfde map).
-   1. Zet je Resend API key in send-brochure.php
-   2. Verifieer vibeenergy.nl in Resend (Domains -> DNS-records)
-   3. Upload send-brochure.php naast de pagina's.
-   De popup post naam/e-mail/telefoon naar dat endpoint; dat stuurt
-   de brochure naar de bezoeker en een lead-melding naar Vibe.
+   >>> Mailen via de brochure-API (aparte Railway-service) <<<
+   De popup post naam/e-mail/telefoon + brochure-id naar de API;
+   die valideert server-side en stuurt via Resend de brochure naar
+   de bezoeker en een lead-melding naar sales@vibeenergy.nl.
+   De API-key staat uitsluitend als env-var op de API-service.
    ============================================================ */
 (function(){
-  // Resend-endpoint op je eigen webhosting (PHP). Zelfde map als de pagina's.
-  var SEND_ENDPOINT = (window.VIBE_LEAD&&window.VIBE_LEAD.endpoint) || 'send-brochure.php';
-  var LEAD_INBOX = 'sales@vibeenergy.nl';  // fallback-inbox als endpoint faalt
+  var SEND_ENDPOINT = (window.VIBE_LEAD&&window.VIBE_LEAD.endpoint) || 'https://vibe-website-api-production.up.railway.app/api/brochure';
 
   var cfg = window.VIBE_LEAD || {};
   var slug     = cfg.slug || (location.pathname.replace(/^.*\//,'').replace(/\.html$/,'')||'home');
@@ -115,6 +111,7 @@
         '</div>'+
         '<div class="vlp-right">'+
           '<form class="vlp-f" novalidate>'+
+            '<input name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;height:0;width:0;border:0;padding:0">'+
             '<div class="vlp-field"><label>Naam</label><input name="name" type="text" autocomplete="name" placeholder="Uw naam"></div>'+
             '<div class="vlp-field" data-req><label>E-mail <span class="req">*</span></label><input name="email" type="email" autocomplete="email" placeholder="naam@bedrijf.nl"><p class="vlp-err">Vul een geldig e-mailadres in.</p></div>'+
             '<div class="vlp-field" data-req><label>Telefoon <span class="req">*</span></label><input name="phone" type="tel" autocomplete="tel" placeholder="06 12 34 56 78"><p class="vlp-err">Vul een geldig telefoonnummer in.</p></div>'+
@@ -153,31 +150,37 @@
     if(!validPhone(phone)){ form.phone.classList.add('err'); fp.classList.add('bad'); ok=false; }
     if(!ok){ (form.email.classList.contains('err')?form.email:form.phone).focus(); return; }
 
-    var lead={ name:name, email:email, phone:phone, brochure:brochure, page:slug, url:location.href, ts:new Date().toISOString() };
+    var lead={ name:name, email:email, phone:phone, brochure:brochure, page:slug, ts:new Date().toISOString() };
     try{ var all=JSON.parse(localStorage.getItem('vibe_leads')||'[]'); all.push(lead); localStorage.setItem('vibe_leads',JSON.stringify(all)); }catch(err){}
-    localStorage.setItem(DONE_KEY,'1');
-    if(window.gtag)gtag('event','generate_lead',{brochure:brochure,page:slug});
-    if(window.fbq)fbq('track','Lead',{content_name:brochure});
 
     btn.setAttribute('disabled','');
     btn.querySelector('.lbl').textContent='Versturen';
     btn.querySelector('.arr').outerHTML='<span class="vlp-spin"></span>';
 
-    sendEmails(lead).then(function(){ console.log('[VibeLead] mail verstuurd'); success(); }).catch(function(err){ console.error('[VibeLead] mail MISLUKT:', (err&&(err.text||err.status||err.message))||err, err); success(); });
+    // Succes ALLEEN als de API echt 2xx teruggeeft; anders eerlijke foutmelding.
+    sendEmails(lead).then(function(){
+      localStorage.setItem(DONE_KEY,'1');
+      if(window.gtag)gtag('event','generate_lead',{brochure:brochure,page:slug});
+      if(window.fbq)fbq('track','Lead',{content_name:brochure});
+      success();
+    }).catch(function(err){
+      console.error('[VibeLead] aanvraag MISLUKT:', (err&&err.message)||err);
+      failure();
+    });
   });
 
   function sendEmails(lead){
-    var url = absUrl(file);
-    // Mailen via eigen PHP-endpoint (Resend): brochure naar bezoeker + melding naar Vibe.
+    // Server-side whitelist: alleen het brochure-id (slug) gaat mee; de API
+    // bepaalt zelf titel, brochure-URL en ontvanger.
     return fetch(SEND_ENDPOINT,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         name: lead.name||'', email: lead.email, phone: lead.phone||'',
-        brochure: brochure, page: slug, url: url
+        brochure: slug, website: (form.website&&form.website.value)||''
       })
     }).then(function(r){
-      if(!r.ok){ return r.text().then(function(t){ throw new Error('endpoint '+r.status+': '+t); }); }
+      if(!r.ok){ throw new Error('endpoint '+r.status); }
       return r.json();
     });
   }
@@ -195,6 +198,21 @@
         '</a>'+
       '</div>';
     // open de brochure automatisch in een nieuw tabblad
+    try{ window.open(file,'_blank'); }catch(e){}
+  }
+
+  function failure(){
+    view.style.display='block';
+    view.innerHTML =
+      '<div class="vlp-ok">'+
+        '<div class="ic"><svg viewBox="0 0 24 24"><path d="M12 8v5M12 16.5v.5"/></svg></div>'+
+        '<h3>Versturen niet gelukt</h3>'+
+        '<p>De brochure is geopend, maar het versturen van uw aanvraag is niet gelukt. Probeer het later opnieuw of mail ons op <a href="mailto:sales@vibeenergy.nl">sales@vibeenergy.nl</a>.</p>'+
+        '<a class="vlp-dl" href="'+esc(file)+'" target="_blank" download>Brochure openen'+
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 4 5-4M5 21h14"/></svg>'+
+        '</a>'+
+      '</div>';
+    // de brochure-download blijft de primaire delivery — ook bij mailfalen
     try{ window.open(file,'_blank'); }catch(e){}
   }
 
