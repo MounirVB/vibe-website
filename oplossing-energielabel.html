@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<!-- Cookie consent (moet vóór GTM/Clarity laden) --><script src="_consent.js"></script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KM2V7VQ3');</script>
+<!-- End Google Tag Manager -->
+<!-- Microsoft Clarity --><script src="_clarity.js"></script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Energielabel verhogen & meer vastgoedwaarde | Vibe Energy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  /* Light FrameIQ-systeem · Vibe cyan */
+  --ink-900:#F4F7F9; --ink-800:#ECF1F4; --ink-700:#FFFFFF; --ink-600:#E3EAEF;
+  --signal:#0096CC; --paper:#0E1B24;
+  --muted:#5E6F79; --soft:#33454F;
+  --hairline:rgba(0,150,204,.30); --line:rgba(14,27,36,.12);
+  --error:#D6473A; --warn:#0096CC; --energy:#0096CC;
+}
+.band-dark, nav.topnav, footer.ftr.v1a{
+  --ink-900:#06121C; --ink-800:#0B1A24; --ink-700:#102330; --ink-600:#16303f;
+  --signal:#00ADEF; --paper:#FFFFFF;
+  --muted:rgba(255,255,255,.55); --soft:rgba(255,255,255,.78);
+  --hairline:rgba(0,173,239,.14); --line:rgba(255,255,255,.08);
+  --error:#E55A4B; --warn:#00ADEF; --energy:#00ADEF;
+}
+.band-dark{background:var(--ink-800);color:var(--paper)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--ink-800);color:var(--paper);font-family:'IBM Plex Sans',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:clip;scroll-behavior:smooth}
+a{color:inherit;text-decoration:none}
+button{font:inherit}
+
+/* ============ NAV ============ */
+nav.topnav{position:fixed;top:0;left:0;right:0;height:92px;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 32px;transition:background .3s ease,backdrop-filter .3s ease}
+nav.topnav.scrolled{background:rgba(11,26,36,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,173,239,.08)}
+.wordmark{font-family:'Archivo',sans-serif;font-weight:700;font-size:22px;letter-spacing:.02em;text-transform:lowercase;flex-shrink:0;line-height:1;display:inline-flex;align-items:center}
+.wordmark .dot{color:var(--signal);margin:0 2px}
+.navlinks{display:flex;gap:2px;align-items:center}
+.nav-item{position:relative}
+.nav-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Sans';font-weight:400;font-size:14px;letter-spacing:.005em;line-height:1;color:rgba(232,240,245,.74);padding:26px 12px;cursor:pointer;transition:color .2s;background:none;border:0;white-space:nowrap}
+.nav-link:hover,.nav-item.open .nav-link{color:var(--paper)}
+.nav-caret{display:inline-block;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:4px solid currentColor;opacity:.6;transition:transform .2s}
+.nav-item.open .nav-caret{transform:rotate(180deg)}
+.nav-drop{position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(-4px);min-width:300px;background:rgba(6,18,28,.96);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(0,173,239,.18);padding:10px;opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease;z-index:101}
+.nav-item.open .nav-drop{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+.nav-drop::before{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:rgba(6,18,28,.96);border-left:1px solid rgba(0,173,239,.18);border-top:1px solid rgba(0,173,239,.18)}
+.nav-drop a{display:flex;flex-direction:column;gap:3px;padding:12px 16px;font-family:'IBM Plex Sans';font-weight:400;font-size:14.5px;color:var(--paper);border-left:2px solid transparent;transition:background .15s,border-color .15s}
+.nav-drop a small{font-family:'JetBrains Mono',monospace;font-weight:400;font-size:10.5px;color:var(--muted);letter-spacing:.06em;text-transform:none}
+.nav-drop a:hover{background:rgba(0,173,239,.08);border-left-color:var(--signal)}
+.nav-drop a.current{background:rgba(0,173,239,.06);border-left-color:var(--signal)}
+.nav-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.cta-secondary{font-family:'IBM Plex Sans';font-weight:400;font-size:14.5px;line-height:1;color:rgba(232,240,245,.86);padding:13px 20px;background:transparent;border:1px solid rgba(255,255,255,.18);cursor:pointer;transition:border-color .2s,color .2s,background .2s}
+.cta-secondary:hover{color:var(--paper);border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.04)}
+.cta-pill{display:inline-flex;align-items:center;gap:14px;padding:11px 22px;background:var(--paper);color:var(--ink-900);font-family:'IBM Plex Sans';font-weight:400;font-size:14px;letter-spacing:.005em;cursor:pointer;border:0;transition:background .25s ease,color .25s ease;clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+.cta-pill .arr{display:inline-block;width:14px;height:1px;background:var(--ink-900);position:relative;transition:background .3s ease,transform .3s ease}
+.cta-pill .arr::after{content:'';position:absolute;right:0;top:-2.5px;width:6px;height:6px;border-top:1px solid var(--ink-900);border-right:1px solid var(--ink-900);transform:rotate(45deg) translate(-1px,1px);transition:border-color .3s ease}
+.cta-pill:hover{background:var(--signal);color:var(--paper)}
+.cta-pill:hover .arr{background:var(--paper);transform:translateX(4px)}
+.cta-pill:hover .arr::after{border-color:var(--paper)}
+@media(max-width:1180px){.cta-secondary{display:none}.nav-link{padding:26px 10px;font-size:13.5px}}
+@media(max-width:1024px){.navlinks{display:none}nav.topnav{padding:0 20px}}
+
+/* ============ TYPE TOKENS ============ */
+.eyebrow{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:11px;letter-spacing:.22em;color:var(--signal);text-transform:uppercase;display:inline-flex;align-items:center;gap:14px}
+.eyebrow::before{content:'';display:inline-block;width:24px;height:1px;background:var(--signal);opacity:.7}
+.eyebrow .num{color:var(--muted)}
+.headline{font-family:'Archivo',sans-serif;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--paper)}
+.headline.h1{line-height:.94}
+.headline em{font-style:normal;color:var(--signal);font-weight:700}
+.h1{font-size:clamp(44px,5.6vw,84px)}
+.h2{font-size:clamp(40px,5.4vw,72px)}
+.h3{font-size:clamp(28px,3.4vw,44px)}
+.body{font-family:'IBM Plex Sans';font-weight:300;font-size:17px;line-height:1.55;color:var(--soft);max-width:60ch}
+.body.muted{color:var(--muted)}
+section{position:relative}
+.wrap{max-width:1320px;margin:0 auto;padding:0 clamp(20px,5vw,56px)}
+#hero>.wrap{width:100%;box-sizing:border-box}
+
+/* ============ 1 · HERO ============ */
+#hero{min-height:100vh;min-height:100svh;display:flex;align-items:flex-start;padding:180px 0 56px;background:var(--ink-800);overflow:hidden;box-sizing:border-box}
+@media(max-width:600px){#hero{padding:120px 0 48px}}
+@media(max-height:680px){#hero{min-height:auto;padding-top:104px}}
+#hero .bg-video,#hero .bg-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none}
+#hero .bg-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(6,18,28,.92) 0%,rgba(6,18,28,.78) 38%,rgba(6,18,28,.45) 70%,rgba(6,18,28,.55) 100%),linear-gradient(180deg,rgba(11,26,36,.5) 0%,transparent 30%,transparent 70%,rgba(6,18,28,.65) 100%)}
+#hero .grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:64px 64px;mask-image:linear-gradient(180deg,#000 30%,transparent 100%);pointer-events:none;z-index:2;mix-blend-mode:overlay;opacity:.4}
+#hero .wrap{position:relative;z-index:3}
+#hero .breadcrumb{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-bottom:24px;display:flex;align-items:center;gap:10px}
+#hero .breadcrumb a:hover{color:var(--signal)}
+#hero .breadcrumb .sep{color:var(--hairline)}
+#hero .breadcrumb .here{color:var(--signal)}
+#hero h1{position:relative;z-index:2;max-width:14ch}
+#hero .sub{margin-top:20px;max-width:46ch;font-size:17px;color:var(--soft);position:relative;z-index:2}
+#hero .stat-row{display:flex;gap:36px;margin-top:32px;flex-wrap:wrap;position:relative;z-index:2}
+#hero .stat-row .s{display:flex;flex-direction:column;gap:6px;border-left:1px solid var(--signal);padding-left:18px}
+#hero .stat-row .s .v{font-family:'Archivo';font-weight:700;font-size:36px;color:var(--paper);letter-spacing:-.01em;line-height:1}
+#hero .stat-row .s .v em{color:var(--signal);font-style:normal}
+#hero .stat-row .s .l{font-family:'JetBrains Mono';font-size:10.5px;color:var(--muted);letter-spacing:.18em;text-transform:uppercase}
+#hero .ctas{margin-top:32px;display:flex;gap:12px;flex-wrap:wrap;position:relative;z-index:2}
+
+/* ============ 2 · PROBLEM ============ */
+#problem{padding:120px 0;background:var(--ink-800);border-top:1px solid var(--line)}
+#problem .head{display:grid;grid-template-columns:1fr 1.1fr;gap:80px;align-items:end;margin-bottom:56px}
+#problem .head h2{max-width:none}
+#problem .head .body{padding-bottom:8px}
+.split-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
+.split-grid .col{background:var(--ink-800);padding:40px 36px;display:flex;flex-direction:column;gap:18px;min-height:340px}
+.split-grid .col h3{font-family:'Archivo';font-weight:700;font-size:24px;line-height:1.05;letter-spacing:-.01em;color:var(--paper);display:flex;align-items:center;gap:14px}
+.split-grid .col h3 .ix{font-family:'JetBrains Mono';font-size:11px;color:var(--signal);letter-spacing:.22em;font-weight:500}
+.split-grid .col p{font-size:14.5px;color:var(--muted);line-height:1.55}
+.split-grid .col ul{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.split-grid .col ul li{font-family:'IBM Plex Sans';font-size:15px;color:var(--soft);line-height:1.4;padding-left:18px;position:relative}
+.split-grid .col ul li::before{content:'';position:absolute;left:0;top:.7em;width:8px;height:1px;background:var(--signal)}
+.split-grid .col.demand{border-right:1px solid var(--signal)}
+.split-grid .col.supply ul li::before{background:var(--error)}
+.split-grid .col .meta{font-family:'JetBrains Mono';font-size:10.5px;color:var(--muted);letter-spacing:.18em;text-transform:uppercase;border-top:1px solid var(--line);padding-top:14px;margin-top:auto}
+.split-grid .col .meta em{color:var(--signal);font-style:normal}
+.split-grid .col.supply .meta em{color:var(--error)}
+@media(max-width:980px){.split-grid{grid-template-columns:1fr}#problem .head{grid-template-columns:1fr;gap:32px}}
+
+/* ============ 3 · REALITEIT ============ */
+#reality{padding:140px 0;background:var(--ink-900);border-top:1px solid var(--line)}
+#reality .head{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:end;margin-bottom:56px}
+#reality h2{max-width:none}
+.reality-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.reality-cards .rc{background:var(--ink-900);padding:36px 32px;display:flex;flex-direction:column;gap:20px;min-height:280px}
+.reality-cards .rc .top{display:flex;align-items:center;justify-content:space-between}
+.reality-cards .rc .n{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+.reality-cards .rc .badge{font-family:'JetBrains Mono';font-size:10.5px;color:var(--error);letter-spacing:.16em;text-transform:uppercase;border:1px solid var(--error);padding:5px 9px}
+.reality-cards .rc h3{font-family:'Archivo';font-weight:700;font-size:30px;line-height:1.02;color:var(--paper);letter-spacing:-.02em}
+.reality-cards .rc h3 em{color:var(--error);font-style:normal}
+.reality-cards .rc p{font-size:14.5px;color:var(--muted);line-height:1.55;flex:1}
+.reality-cards .rc .stat{font-family:'Archivo';font-weight:700;font-size:48px;color:var(--paper);line-height:1;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:18px}
+.reality-cards .rc .stat em{color:var(--error);font-style:normal}
+.reality-cards .rc .stat .l{display:block;font-family:'JetBrains Mono';font-size:10px;color:var(--muted);letter-spacing:.18em;text-transform:uppercase;margin-top:8px;font-weight:400}
+@media(max-width:980px){.reality-cards{grid-template-columns:1fr}#reality .head{grid-template-columns:1fr;gap:32px}}
+
+/* ============ 4 · REFRAME ============ */
+#reframe{padding:160px 0;background:var(--ink-700);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);text-align:center;overflow:hidden;position:relative}
+#reframe::before,#reframe::after{content:'';position:absolute;left:0;right:0;height:1px;background:repeating-linear-gradient(90deg,var(--signal) 0 8px,transparent 8px 16px);opacity:.4}
+#reframe::before{top:0}#reframe::after{bottom:0}
+#reframe .eyebrow{justify-content:center}
+#reframe h2{margin:36px auto 0;max-width:18ch;font-size:clamp(48px,7vw,108px)}
+#reframe .sub{margin:32px auto 0;max-width:48ch;font-size:18px;color:var(--soft);line-height:1.5}
+#reframe .att{margin-top:48px;font-family:'JetBrains Mono';font-size:11px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+
+/* ============ 5 · WAT WIJ DOEN ============ */
+#what{padding:140px 0;background:var(--ink-800);border-top:1px solid var(--line)}
+#what .head{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:end;margin-bottom:56px}
+#what h2{max-width:none}
+.what-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.what-grid .w{background:var(--ink-800);padding:36px 28px;display:flex;flex-direction:column;gap:16px;min-height:300px;transition:background .25s}
+.what-grid .w:hover{background:var(--ink-700)}
+.what-grid .w .n{font-family:'JetBrains Mono';font-size:10px;color:var(--signal);letter-spacing:.22em;text-transform:uppercase}
+.what-grid .w .icon{width:56px;height:56px;border:1px solid var(--signal);display:flex;align-items:center;justify-content:center;color:var(--signal)}
+.what-grid .w h3{font-family:'Archivo';font-weight:700;font-size:24px;line-height:1.02;color:var(--paper);letter-spacing:-.02em}
+.what-grid .w p{font-size:14px;color:var(--muted);line-height:1.55;flex:1}
+.what-grid .w .more{font-family:'JetBrains Mono';font-size:10px;color:var(--signal);letter-spacing:.22em;text-transform:uppercase;border-top:1px solid var(--line);padding-top:14px}
+@media(max-width:980px){.what-grid{grid-template-columns:repeat(2,1fr)}#what .head{grid-template-columns:1fr;gap:32px}}
+
+/* ============ 6 · HOE HET WERKT ============ */
+#how{padding:140px 0;background:var(--ink-900);border-top:1px solid var(--line);overflow:hidden}
+#how .head{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:end;margin-bottom:64px}
+#how h2{max-width:none}
+.how-stage{display:grid;grid-template-columns:1.2fr 1fr;gap:0;border:1px solid var(--line);background:var(--ink-800)}
+.how-vis{padding:48px 36px;border-right:1px solid var(--line);min-height:520px;display:flex;align-items:center;justify-content:center;background:#0B1A24;position:relative}
+.how-vis svg{width:100%;height:100%;max-height:480px}
+
+/* mc-console — Mission Control (Concept B) */
+.mc{width:100%;display:flex;flex-direction:column;gap:12px;font-family:'IBM Plex Sans',sans-serif}
+.mc-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+.mc-on{background:#54CFA0;box-shadow:0 0 8px #54CFA0;animation:mcPulse 1.8s ease-in-out infinite}
+.mc-cy{background:#00ADEF;box-shadow:0 0 8px #00ADEF}
+.mc-net-d{background:#E8674F;box-shadow:0 0 8px #E8674F}
+@keyframes mcPulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes mcSpin{to{transform:rotate(360deg)}}
+.mc-core{position:relative;background:linear-gradient(160deg,rgba(0,173,239,.12),transparent 70%),#0E2230;border:1px solid rgba(255,255,255,.10);border-radius:8px;padding:22px 20px;display:flex;flex-direction:column;align-items:center;gap:4px;overflow:hidden}
+.mc-ring{position:absolute;top:50%;left:50%;width:184px;height:184px;margin:-92px 0 0 -92px;border-radius:50%;border:1px solid rgba(0,173,239,.14);border-top-color:#00ADEF;opacity:.55;animation:mcSpin 9s linear infinite;pointer-events:none}
+.mc-ring::after{content:'';position:absolute;inset:20px;border-radius:50%;border:1px solid rgba(84,207,160,.12);border-bottom-color:rgba(84,207,160,.5)}
+.mc-eyb{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:#00ADEF;position:relative}
+.mc-coreh{font-family:'Archivo';font-weight:800;font-size:24px;letter-spacing:-.02em;color:#EAF1F6;position:relative;line-height:1.05}
+.mc-coresub{font-family:'JetBrains Mono';font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(234,241,246,.55);position:relative}
+.mc-status{margin-top:8px;font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.12em;color:#54CFA0;display:flex;align-items:center;gap:8px;position:relative}
+.mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mc-panel{background:#0E2230;border:1px solid rgba(255,255,255,.10);border-radius:6px;padding:12px 13px;display:flex;flex-direction:column;gap:7px}
+.mc-ph{display:flex;align-items:center;justify-content:space-between}
+.mc-pt{font-family:'JetBrains Mono';font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(234,241,246,.82)}
+.mc-pv{font-family:'Archivo';font-weight:700;font-size:22px;letter-spacing:-.02em;color:#EAF1F6;display:flex;align-items:baseline;gap:6px}
+.mc-pu{font-family:'JetBrains Mono';font-size:8px;letter-spacing:.06em;color:rgba(234,241,246,.55);text-transform:uppercase;font-weight:400}
+.how-vis .mc-spark{width:100%;height:22px;max-height:22px;display:block}
+.mc-net{background:#0E2230;border:1px solid rgba(255,255,255,.10);border-radius:6px;padding:13px 15px;display:flex;flex-direction:column;gap:9px}
+.mc-neth{display:flex;align-items:center;justify-content:space-between}
+.mc-bar{height:12px;border-radius:3px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);position:relative;overflow:hidden}
+.mc-fill{position:absolute;top:0;bottom:0;left:0;width:51%;background:linear-gradient(90deg,#0E5E86,#00ADEF)}
+.mc-ceil{position:absolute;top:-3px;bottom:-3px;right:0;width:2px;background:#E8674F}
+.mc-netfoot{display:flex;justify-content:space-between;gap:10px;font-family:'JetBrains Mono';font-size:8.5px;letter-spacing:.06em;color:rgba(234,241,246,.55)}
+.mc-coral{color:#E8674F}
+.mc-tele{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.03em;color:rgba(234,241,246,.6);line-height:1.5}
+.mc-ts{color:#00ADEF}
+@media(prefers-reduced-motion:reduce){.mc-on,.mc-ring{animation:none!important}}
+
+.how-list{display:flex;flex-direction:column}
+.how-list .step{padding:28px 32px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:background .2s}
+.how-list .step:last-child{border-bottom:0}
+.how-list .step:hover,.how-list .step.active{background:var(--ink-700)}
+.how-list .step.active{border-left:2px solid var(--signal);padding-left:30px}
+.how-list .step .h{display:flex;align-items:center;gap:14px}
+.how-list .step .ix{font-family:'JetBrains Mono';font-size:11px;color:var(--signal);letter-spacing:.22em;font-weight:500}
+.how-list .step .pn{font-family:'Archivo';font-weight:700;font-size:22px;letter-spacing:-.01em;color:var(--paper)}
+.how-list .step .pn em{color:var(--signal);font-style:normal}
+.how-list .step p{font-size:14px;color:var(--muted);line-height:1.5}
+.how-foot{padding:24px 32px;background:var(--ink-700);border-top:1px solid var(--signal);display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.how-foot .stmt{font-family:'IBM Plex Sans';font-weight:400;font-size:14.5px;color:var(--paper);display:flex;align-items:center;gap:12px}
+.how-foot .stmt::before{content:'';width:18px;height:18px;border:1px solid var(--signal);background:var(--signal);clip-path:polygon(20% 50%,40% 70%,80% 30%,80% 30%,40% 80%,20% 50%);flex-shrink:0}
+@media(max-width:1080px){.how-stage{grid-template-columns:1fr}.how-vis{border-right:0;border-bottom:1px solid var(--line);min-height:380px}.how-foot{grid-template-columns:1fr;gap:12px}#how .head{grid-template-columns:1fr;gap:24px}}
+
+/* ============ 7 · RESULTAAT ============ */
+#results{padding:120px 0;background:var(--ink-800);border-top:1px solid var(--line)}
+#results .head{margin-bottom:48px;max-width:60ch}
+#results h2{max-width:none;margin-top:24px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line);background:var(--line)}
+.kpi-grid .k{background:var(--ink-800);padding:36px 28px;display:flex;flex-direction:column;gap:14px;min-height:220px}
+.kpi-grid .k .l{font-family:'JetBrains Mono';font-size:10.5px;color:var(--signal);letter-spacing:.22em;text-transform:uppercase}
+.kpi-grid .k .v{font-family:'Archivo';font-weight:700;font-size:60px;line-height:1;letter-spacing:-.015em;color:var(--paper)}
+.kpi-grid .k .v em{color:var(--signal);font-style:normal}
+.kpi-grid .k p{font-size:13.5px;color:var(--muted);line-height:1.55;flex:1;margin-top:6px}
+.kpi-grid .k .src{font-family:'JetBrains Mono';font-size:10px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;border-top:1px solid var(--line);padding-top:12px}
+@media(max-width:1080px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ============ 8 · BUSINESS IMPACT ============ */
+#impact{padding:140px 0;background:var(--ink-900);border-top:1px solid var(--line)}
+#impact .grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);background:var(--ink-800)}
+#impact .left{padding:60px 48px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:24px;justify-content:center}
+#impact .left h2{max-width:none}
+#impact .left .body{font-size:17px;max-width:none}
+#impact .right{padding:48px;display:flex;flex-direction:column;gap:0}
+#impact .right .row{display:flex;align-items:flex-start;gap:18px;padding:22px 0;border-bottom:1px solid var(--line)}
+#impact .right .row:last-child{border-bottom:0}
+#impact .right .row .ix{font-family:'JetBrains Mono';font-size:11px;color:var(--signal);letter-spacing:.22em;font-weight:500;width:32px;flex-shrink:0;padding-top:4px}
+#impact .right .row .copy{display:flex;flex-direction:column;gap:6px;flex:1}
+#impact .right .row .copy strong{font-family:'Archivo';font-weight:700;font-size:22px;letter-spacing:-.01em;color:var(--paper);line-height:1.05}
+#impact .right .row .copy strong em{color:var(--signal);font-style:normal}
+#impact .right .row .copy span{font-size:14px;color:var(--muted);line-height:1.5}
+#impact .right .foot{margin-top:18px;padding-top:18px;border-top:1px solid var(--signal);font-family:'JetBrains Mono';font-size:11px;color:var(--signal);letter-spacing:.22em;text-transform:uppercase}
+@media(max-width:980px){#impact .grid{grid-template-columns:1fr}#impact .left{border-right:0;border-bottom:1px solid var(--line);padding:40px 32px}#impact .right{padding:32px}}
+
+/* ============ 9 · VOOR WIE ============ */
+#audience{padding:120px 0;background:var(--ink-800);border-top:1px solid var(--line)}
+#audience .head{margin-bottom:48px}
+#audience h2{max-width:none;margin-top:24px}
+.aud-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.aud-grid .a{background:var(--ink-800);padding:32px 28px;display:flex;flex-direction:column;gap:18px;min-height:220px;transition:background .2s}
+.aud-grid .a:hover{background:var(--ink-700)}
+.aud-grid .a .icn{width:48px;height:48px;border:1px solid var(--signal);display:flex;align-items:center;justify-content:center;color:var(--signal)}
+.aud-grid .a h3{font-family:'Archivo';font-weight:700;font-size:24px;line-height:1.05;letter-spacing:-.01em;color:var(--paper)}
+.aud-grid .a p{font-size:13.5px;color:var(--muted);line-height:1.5;flex:1}
+.aud-grid .a .tag{font-family:'JetBrains Mono';font-size:10px;color:var(--muted);letter-spacing:.18em;text-transform:uppercase;border-top:1px solid var(--line);padding-top:12px}
+@media(max-width:1080px){.aud-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ============ 10 · CASE ============ */
+#case{padding:140px 0;background:var(--ink-900);border-top:1px solid var(--line)}
+#case .head{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:end;margin-bottom:48px}
+#case h2{max-width:none}
+.case-card{display:grid;grid-template-columns:1.1fr 1fr;gap:0;border:1px solid var(--hairline);background:var(--ink-800)}
+.case-card .left{padding:48px 44px;display:flex;flex-direction:column;gap:24px;border-right:1px solid var(--line)}
+.case-card .left .tag{font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--signal)}
+.case-card .left h3{font-family:'Archivo';font-weight:700;font-size:clamp(34px,4vw,52px);line-height:.96;color:var(--paper);letter-spacing:-.02em}
+.case-card .left h3 em{color:var(--signal);font-style:normal}
+.case-card .left .lead{font-size:15.5px;line-height:1.55;color:var(--soft);max-width:46ch}
+.case-card .left .ingreep{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.case-card .left .ingreep .ih{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+.case-card .left .ingreep ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.case-card .left .ingreep ul li{font-family:'IBM Plex Sans';font-size:15px;color:var(--paper);line-height:1.4;padding-left:24px;position:relative}
+.case-card .left .ingreep ul li::before{content:'';position:absolute;left:0;top:.55em;width:14px;height:1px;background:var(--signal)}
+.case-card .right{padding:48px 44px;display:flex;flex-direction:column;gap:0;background:var(--ink-700)}
+.case-card .right .rh{font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--signal);margin-bottom:24px}
+.case-card .right .res{display:flex;flex-direction:column;gap:0}
+.case-card .right .res .row{display:flex;align-items:baseline;gap:14px;padding:18px 0;border-bottom:1px solid var(--line)}
+.case-card .right .res .row:last-child{border-bottom:0}
+.case-card .right .res .row .v{font-family:'Archivo';font-weight:700;font-size:38px;color:var(--paper);line-height:1;letter-spacing:-.01em;flex-shrink:0;min-width:120px}
+.case-card .right .res .row .v em{color:var(--signal);font-style:normal}
+.case-card .right .res .row .l{font-family:'IBM Plex Sans';font-size:14.5px;color:var(--soft);line-height:1.4}
+.case-card .right .net{margin-top:24px;padding:20px;background:var(--ink-600);border-top:1px solid var(--signal);display:flex;justify-content:space-between;align-items:center}
+.case-card .right .net .nl{font-family:'JetBrains Mono';font-size:11px;color:var(--soft);letter-spacing:.18em;text-transform:uppercase}
+.case-card .right .net .nv{font-family:'Archivo';font-weight:700;font-size:22px;color:var(--signal);letter-spacing:.005em;text-transform:uppercase}
+.case-disclaimer{margin-top:20px;font-family:'JetBrains Mono';font-size:10.5px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+@media(max-width:1080px){.case-card{grid-template-columns:1fr}.case-card .left{border-right:0;border-bottom:1px solid var(--line)}#case .head{grid-template-columns:1fr;gap:24px}}
+
+/* ============ 11 · CTA ============ */
+#cta{padding:160px 0;background:var(--ink-800);border-top:1px solid var(--line);text-align:center;overflow:hidden;position:relative}
+#cta .ring{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px solid var(--hairline);border-radius:50%;pointer-events:none}
+#cta .ring.r1{width:520px;height:520px;opacity:.5}
+#cta .ring.r2{width:300px;height:300px;opacity:.4}
+#cta .ring.r3{width:120px;height:120px;opacity:.7;border-color:var(--signal)}
+#cta .eyebrow{justify-content:center}
+#cta h2{margin:36px auto 0;max-width:14ch;font-size:clamp(48px,7vw,96px)}
+#cta .body{margin:24px auto 0;max-width:46ch;font-size:18px;text-align:center}
+#cta .ctas{margin-top:48px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;z-index:2}
+
+/* ============ FOOTER ============ */
+footer.ftr.v1a{background:var(--ink-900);border-top:1px solid var(--hairline);color:var(--paper);font-family:'IBM Plex Sans',sans-serif;font-weight:300;width:100%;padding:0;margin:0;display:block}
+.ftr.v1a a{color:inherit;text-decoration:none;transition:color .18s}
+.v1a-inner{max-width:1320px;margin:0 auto;padding:0 56px}
+.v1a-sig{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px;padding:18px 0;border-bottom:1px solid var(--line);font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.v1a-sig .sig-mid{justify-self:center;display:inline-flex;align-items:center;gap:10px;color:var(--signal)}
+.v1a-sig .sig-mid .dot{width:7px;height:7px;background:var(--signal);border-radius:50%;box-shadow:0 0 6px rgba(0,173,239,.6);animation:v1aPulse 2s ease-in-out infinite}
+.v1a-sig .sig-r{justify-self:end}
+@keyframes v1aPulse{0%,100%{opacity:1}50%{opacity:.5}}
+.v1a-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr 1fr;gap:48px;padding:72px 0 56px}
+.v1a-brand{padding-right:24px;border-right:1px solid var(--line)}
+.v1a-brand .vibe-wordmark{margin-bottom:24px;display:block;font-family:'Archivo',sans-serif;font-weight:700;font-size:26px;letter-spacing:.02em;text-transform:lowercase;color:var(--paper);line-height:1}
+.v1a-brand .vibe-wordmark .dot{color:var(--signal);margin:0 2px}
+.v1a-tag{font-family:'Archivo';font-weight:700;font-size:24px;line-height:1.15;letter-spacing:-.01em;color:var(--paper);margin-bottom:20px;max-width:18ch}
+.v1a-tag em{color:var(--signal);font-style:normal}
+.v1a-desc{font-size:14px;line-height:1.6;color:var(--muted);max-width:36ch}
+.v1a-col{display:flex;flex-direction:column;gap:18px}
+.v1a-col-h{font-family:'Archivo';font-weight:700;font-size:14px;letter-spacing:.18em;color:var(--paper);text-transform:uppercase;display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line);margin:0}
+.v1a-col-h .ix{font-family:'JetBrains Mono';font-weight:500;font-size:10px;color:var(--signal);letter-spacing:.18em}
+.v1a-col ul{list-style:none;display:flex;flex-direction:column;gap:11px;margin:0;padding:0}
+.v1a-col ul li a{font-size:14px;color:var(--soft);line-height:1.4;display:inline-block}
+.v1a-col ul li a:hover{color:var(--signal)}
+.v1a-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:48px;padding:32px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.v1a-meta .block{display:flex;flex-direction:column;gap:8px}
+.v1a-meta .block .lbl{font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.v1a-meta .block a,.v1a-meta .block .val{font-family:'IBM Plex Sans';font-size:14.5px;color:var(--paper);font-weight:400;letter-spacing:.005em;line-height:1.45}
+.v1a-meta .block a:hover{color:var(--signal)}
+.v1a-meta .block .val{color:var(--soft);font-weight:300}
+.v1a-bottom{display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center;padding:24px 0 28px;font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.v1a-bottom .rule{height:1px;background:var(--line)}
+@media(max-width:1080px){.v1a-grid{grid-template-columns:1fr 1fr 1fr;gap:32px}.v1a-brand{grid-column:span 3;border-right:0;padding-right:0;border-bottom:1px solid var(--line);padding-bottom:36px}.v1a-meta{grid-template-columns:1fr 1fr;gap:32px}.v1a-bottom{grid-template-columns:1fr;text-align:left}.v1a-bottom .rule{display:none}.v1a-sig{grid-template-columns:1fr;gap:8px}.v1a-sig .sig-mid,.v1a-sig .sig-r{justify-self:start}.v1a-inner{padding:0 24px}}
+@media(max-width:640px){.v1a-grid{grid-template-columns:1fr 1fr}.v1a-brand{grid-column:span 2}}
+@media(max-width:430px){.v1a-grid{grid-template-columns:1fr}.v1a-brand{grid-column:span 1}.v1a-meta{grid-template-columns:1fr}}
+
+/* Reveal */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s ease}
+.reveal.in{opacity:1;transform:none}
+/* responsive stabilization (M1/M2/M3/M4) */
+@media(max-width:480px){.what-grid,.aud-grid,.reality-cards,.vgrid,.diff,.usecards,.kpi-grid{grid-template-columns:1fr}}
+@media(max-width:1024px){.cta-pill,.cta-secondary{min-height:44px}}
+@media(max-width:480px){.headline.h1{font-size:clamp(34px,9vw,52px)}#cta h2{font-size:clamp(34px,9.5vw,52px)}.headline{overflow-wrap:break-word}}
+</style>
+
+<!--SEO-FOUNDATION-->
+<meta name="description" content="Een slecht energielabel kost waarde en huur. Vibe verhoogt uw label met slimme energieoplossingen — meer rendement uit uw vastgoed. Vraag een labelanalyse aan.">
+<link rel="canonical" href="https://vibeenergy.nl/oplossing-energielabel">
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/png" href="assets/logo.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Vibe Energy">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="vibe·energy — Energielabel verhogen">
+<meta property="og:description" content="Energielabel verhogen met een lokale energiecentrale: van label C naar A met solar, opslag en EMS — geëxploiteerd en beheerd door Vibe Energy.">
+<meta property="og:url" content="https://vibeenergy.nl/oplossing-energielabel">
+<meta property="og:image" content="https://vibeenergy.nl/assets/energielabel-hero.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="vibe·energy — Energielabel verhogen">
+<meta name="twitter:description" content="Energielabel verhogen met een lokale energiecentrale: van label C naar A met solar, opslag en EMS — geëxploiteerd en beheerd door Vibe Energy.">
+<meta name="twitter:image" content="https://vibeenergy.nl/assets/energielabel-hero.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://vibeenergy.nl/oplossing-energielabel#webpage","url":"https://vibeenergy.nl/oplossing-energielabel","name":"vibe·energy — Energielabel verhogen","description":"Energielabel verhogen met een lokale energiecentrale: van label C naar A met solar, opslag en EMS — geëxploiteerd en beheerd door Vibe Energy.","inLanguage":"nl-NL","isPartOf":{"@id":"https://vibeenergy.nl/#website"},"publisher":{"@id":"https://vibeenergy.nl/#org"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vibeenergy.nl/"},{"@type":"ListItem","position":2,"name":"Energielabel verhogen","item":"https://vibeenergy.nl/oplossing-energielabel"}]}]}</script>
+<!--/SEO-FOUNDATION-->
+<style>/*rm-global*/@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}</style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1164445461468919');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="frameiq-harmonize.css">
+</head>
+<body>
+<!-- Google Tag Manager (noscript) --><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KM2V7VQ3" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+
+<!-- ===== NAV ===== -->
+<script src="_header.js?v=3"></script>
+
+<!-- ===== 1 · HERO ===== -->
+<section id="hero" class="band-dark">
+  <img class="bg-photo" src="assets/energielabel-hero.jpg" alt="" aria-hidden="true">
+  <div class="bg-scrim"></div>
+  <div class="grid-bg"></div>
+
+  <div class="wrap">
+    <span class="eyebrow"><span>Oplossing · Vastgoedrendement</span></span>
+    <h1 class="headline h1" style="margin-top:24px">Meer rendement uit<br><em>uw vastgoed.</em></h1>
+    <p class="sub">Een slecht energielabel raakt direct de waarde van uw vastgoed, de verhuurbaarheid en de energiekosten van uw huurders. Vibe Energy maakt uw gebouwen toekomstbestendig met slimme energieoplossingen die aantoonbaar bijdragen aan een beter label — en daarmee aan uw rendement.</p>
+    <div class="stat-row">
+      <div class="s"><span class="v"><em>+1–3</em></span><span class="l">Labelsprong mogelijk</span></div>
+      <div class="s"><span class="v">+WWS</span><span class="l">Meer huurpunten</span></div>
+      <div class="s"><span class="v">€ 0</span><span class="l">Geen eigen investering</span></div>
+    </div>
+    <div class="ctas">
+      <a href="contact" class="cta-pill"><span>Vraag een labelanalyse aan</span><span class="arr"></span></a>
+      <button class="cta-secondary" type="button">Bekijk labelimpact</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 2 · PROBLEM ===== -->
+<section id="problem">
+  <div class="wrap">
+    <div class="head reveal">
+      <div>
+        <span class="eyebrow"><span>Het probleem</span></span>
+        <h2 class="headline h2" style="margin-top:24px">Uw label bepaalt<br>uw rendement.</h2>
+      </div>
+      <p class="body">Een slecht label tikt direct door in uw huurpunten, taxatiewaarde en verhuurbaarheid. Tegelijk worden investeringen vaak gedaan zonder zicht op het werkelijke effect — geld uitgegeven, weinig resultaat.</p>
+    </div>
+    <div class="split-grid">
+      <div class="col demand reveal">
+        <h3><span class="ix">DRUK</span>Wat regelgeving en markt eisen</h3>
+        <p>Strengere normen en kritischer huurders. Label C en label A worden steeds vaker de norm — niet de uitzondering.</p>
+        <ul>
+          <li>Label C verplicht voor verhuur</li>
+          <li>Label A als doel voor woningcorporaties</li>
+          <li>WWS-puntentelling gekoppeld aan label</li>
+          <li>ESG-rapportage op portefeuilleniveau</li>
+          <li>Huurders kiezen voor lage energiekosten</li>
+        </ul>
+        <span class="meta"><em>Compliance</em> · op portefeuilleniveau</span>
+      </div>
+      <div class="col supply reveal">
+        <h3><span class="ix">REALITEIT</span>Wat er nu gebeurt</h3>
+        <p>Investeringen worden gedaan op aannames, niet op data. Het resultaat: maatregelen zonder labelwinst, en budgetten die opgaan zonder meetbaar effect.</p>
+        <ul>
+          <li>Maatregelen zonder labelpunten</li>
+          <li>Geen inzicht in werkelijk verbruik</li>
+          <li>Versnipperde verduurzaming</li>
+          <li>Geen sturing op eigen opwek</li>
+          <li>Budget op, label gelijk</li>
+        </ul>
+        <span class="meta">Aannames \u2192 <em>geen winst</em></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 3 · REALITEIT ===== -->
+<section id="reality">
+  <div class="wrap">
+    <div class="head reveal">
+      <div>
+        <span class="eyebrow"><span>De realiteit</span></span>
+        <h2 class="headline h2" style="margin-top:24px">Drie redenen<br>waarom labelwinst<br>uitblijft.</h2>
+      </div>
+      <p class="body">Niet elk budget vertaalt zich naar labelpunten. Wat we letterlijk terugzien bij woningcorporaties en vastgoedbeleggers — en wat ervoor zorgt dat investeringen het label niet meebewegen.</p>
+    </div>
+    <div class="reality-cards">
+      <div class="rc reveal">
+        <div class="top"><span class="n">01</span><span class="badge">Investering</span></div>
+        <h3>Verkeerde <em>investeringen</em>.</h3>
+        <p>Niet elke maatregel verhoogt het label. Een ingreep die op papier mooi lijkt, kan in de praktijk nul effect hebben — terwijl het budget wel weg is.</p>
+        <span class="stat">0pt<span class="l">Risico zonder voorafgaande analyse</span></span>
+      </div>
+      <div class="rc reveal">
+        <div class="top"><span class="n">02</span><span class="badge">Data</span></div>
+        <h3>Geen grip <em>op verbruik</em>.</h3>
+        <p>Zonder data blijft optimalisatie gokken. Welke woningen lekken het meest? Waar zit de piek? Zonder meten geen sturen — en dus geen meetbare labelwinst.</p>
+        <span class="stat">?<span class="l">Verbruik per woning · meestal niet bekend</span></span>
+      </div>
+      <div class="rc reveal">
+        <div class="top"><span class="n">03</span><span class="badge">Wet</span></div>
+        <h3>Wetgeving <em>wordt strenger</em>.</h3>
+        <p>Label C/A wordt steeds vaker de norm. Wachten tot een nieuwe deadline raakt, betekent inhalen op een markt waar capaciteit en kennis schaars zijn.</p>
+        <span class="stat">A<span class="l">Norm waar de markt naartoe beweegt</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4 · REFRAME ===== -->
+<section id="reframe" class="band-dark">
+  <div class="wrap">
+    <span class="eyebrow"><span>De oplossing</span></span>
+    <h2 class="headline reveal">Een gebouw dat meer<br><em>waard wordt</em>.</h2>
+    <p class="sub reveal">Een gebouw dat aantrekkelijker is voor huurders, minder energie verbruikt, een beter label heeft en klaar is voor toekomstige regelgeving. Vibe Energy maakt dat waar — met complete energieoplossingen waarbij elke maatregel aantoonbaar bijdraagt aan waarde én label.</p>
+    <p class="att">— Eén partner. Van analyse tot uitvoering.</p>
+  </div>
+</section>
+
+<!-- ===== 5 · WAT WIJ DOEN ===== -->
+<section id="what">
+  <div class="wrap">
+    <div class="head reveal">
+      <div>
+        <span class="eyebrow"><span>Wat wij doen · concreet</span></span>
+        <h2 class="headline h2" style="margin-top:24px">Vier bouwstenen.<br>Eén meetbaar systeem.</h2>
+      </div>
+      <p class="body">Geen losse maatregelen, maar één systeem dat samen bewezen labelpunten oplevert. Opwek, opslag, sturing en analyse — afgestemd op het werkelijke verbruiksprofiel van de portefeuille.</p>
+    </div>
+    <div class="what-grid">
+      <div class="w reveal">
+        <span class="n">01 · Solar</span>
+        <span class="icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3.5" fill="currentColor"></circle><line x1="12" y1="2" x2="12" y2="5"></line><line x1="12" y1="19" x2="12" y2="22"></line><line x1="2" y1="12" x2="5" y2="12"></line><line x1="19" y1="12" x2="22" y2="12"></line><line x1="5" y1="5" x2="7" y2="7"></line><line x1="17" y1="17" x2="19" y2="19"></line><line x1="19" y1="5" x2="17" y2="7"></line><line x1="7" y1="17" x2="5" y2="19"></line></svg></span>
+        <h3>Energieopwek (PV)</h3>
+        <p>Lagere energiekosten en directe labelwinst. Zonnepanelen op daken en gemeenschappelijke ruimtes wekken eigen stroom op die meetelt voor het label.</p>
+        <span class="more">Telt in label</span>
+      </div>
+      <div class="w reveal">
+        <span class="n">02 · Storage</span>
+        <span class="icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="6" width="18" height="14"></rect><rect x="6" y="9" width="3" height="8" fill="currentColor"></rect><rect x="11" y="9" width="3" height="8" fill="currentColor"></rect><rect x="16" y="9" width="3" height="8" fill="currentColor" opacity=".5"></rect><line x1="9" y1="3" x2="9" y2="6"></line><line x1="15" y1="3" x2="15" y2="6"></line></svg></span>
+        <h3>Opslag (batterij)</h3>
+        <p>Meer eigen verbruik, hogere labelwinst. Batterijen vangen pieken op en benutten uw eigen opwek maximaal.</p>
+        <span class="more">Maximaliseert eigen gebruik</span>
+      </div>
+      <div class="w reveal">
+        <span class="n">03 · Brain</span>
+        <span class="icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4" fill="currentColor"></circle><line x1="3" y1="12" x2="7" y2="12"></line><line x1="17" y1="12" x2="21" y2="12"></line><line x1="12" y1="3" x2="12" y2="7"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></span>
+        <h3>Slimme sturing (EMS)</h3>
+        <p>Maximaal rendement uit elke maatregel. Slimme sturing bepaalt 24/7 of opwek direct wordt gebruikt, opgeslagen of teruggeleverd.</p>
+        <span class="more">Stuurt real-time</span>
+      </div>
+      <div class="w reveal">
+        <span class="n">04 · Data</span>
+        <span class="icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="20" x2="21" y2="20"></line><rect x="5" y="14" width="3" height="6" fill="currentColor"></rect><rect x="10" y="10" width="3" height="10" fill="currentColor"></rect><rect x="15" y="6" width="3" height="14" fill="currentColor"></rect></svg></span>
+        <h3>Verbruiksanalyse</h3>
+        <p>Zekerheid vóór u investeert. We meten per woning en per portefeuille precies waar de winst zit — voor én na elke maatregel.</p>
+        <span class="more">Data, geen aannames</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 6 · HOE HET WERKT ===== -->
+<section id="how">
+  <div class="wrap">
+    <div class="head reveal">
+      <div>
+        <span class="eyebrow"><span>Hoe wij werken</span></span>
+        <h2 class="headline h2" style="margin-top:24px">Vier stappen<br>naar <em>aantoonbare<br>labelwinst</em>.</h2>
+      </div>
+      <p class="body">Geen overhaaste investering, maar een gestructureerd traject. Eerst weten waar de winst zit — daarna pas bouwen, en daarna pas optimaliseren. Continu meten en bijsturen.</p>
+    </div>
+    <div class="how-stage reveal">
+      <div class="how-vis">
+        <div class="mc">
+          <div class="mc-core">
+            <div class="mc-ring"></div>
+            <span class="mc-eyb">Capaciteitsregie</span>
+            <span class="mc-coreh">ENERGIECENTRALE</span>
+            <span class="mc-coresub">EMS · control layer</span>
+            <span class="mc-status"><i class="mc-dot mc-on"></i>SYSTEEMBALANS · STABIEL</span>
+          </div>
+          <div class="mc-grid">
+            <div class="mc-panel">
+              <div class="mc-ph"><span class="mc-pt">☀ Zon</span><i class="mc-dot mc-on"></i></div>
+              <div class="mc-pv">412<span class="mc-pu">kW opwek</span></div>
+              <svg class="mc-spark" viewBox="0 0 120 24" preserveAspectRatio="none"><polyline points="0,18 18,16 36,11 54,13 72,6 90,9 108,5 120,7" fill="none" stroke="#00ADEF" stroke-width="1.4"></polyline></svg>
+            </div>
+            <div class="mc-panel">
+              <div class="mc-ph"><span class="mc-pt">🔋 Opslag</span><i class="mc-dot mc-cy mc-on"></i></div>
+              <div class="mc-pv">78<span class="mc-pu">% SoC · 1.200 kWh</span></div>
+              <svg class="mc-spark" viewBox="0 0 120 24" preserveAspectRatio="none"><polyline points="0,15 20,17 40,14 60,9 80,11 100,7 120,10" fill="none" stroke="#54CFA0" stroke-width="1.4"></polyline></svg>
+            </div>
+            <div class="mc-panel">
+              <div class="mc-ph"><span class="mc-pt">⚡ Laadinfra</span><i class="mc-dot mc-on"></i></div>
+              <div class="mc-pv">320<span class="mc-pu">kW · 8×DC/40×AC</span></div>
+              <svg class="mc-spark" viewBox="0 0 120 24" preserveAspectRatio="none"><polyline points="0,13 18,9 36,15 54,8 72,17 90,11 108,14 120,10" fill="none" stroke="#00ADEF" stroke-width="1.4"></polyline></svg>
+            </div>
+            <div class="mc-panel">
+              <div class="mc-ph"><span class="mc-pt">🏢 Gebouw</span><i class="mc-dot mc-on"></i></div>
+              <div class="mc-pv">180<span class="mc-pu">kW · klimaat/proces</span></div>
+              <svg class="mc-spark" viewBox="0 0 120 24" preserveAspectRatio="none"><polyline points="0,14 20,13 40,15 60,14 80,12 100,15 120,13" fill="none" stroke="#54CFA0" stroke-width="1.4"></polyline></svg>
+            </div>
+          </div>
+          <div class="mc-net">
+            <div class="mc-neth"><span class="mc-pt">🌐 Netaansluiting</span><i class="mc-dot mc-net-d"></i></div>
+            <div class="mc-bar"><div class="mc-fill"></div><div class="mc-ceil"></div></div>
+            <div class="mc-netfoot"><span>IMPORT 640 kVA · 51%</span><span class="mc-coral">PLAFOND 1.250 kVA · ONGEWIJZIGD</span></div>
+            <div class="mc-tele"><span class="mc-ts">06:12</span> · accu → ontladen · avondpiek afgevlakt · binnen plafond</div>
+          </div>
+        </div>
+      </div>
+      <div class="how-list">
+        <div class="step active">
+          <div class="h"><span class="ix">01</span><span class="pn">Analyse</span></div>
+          <p>Inzicht in <em>huidig verbruik</em> en labelstatus. Per woning, per blok, per portefeuille — zonder analyse geen sturing.</p>
+        </div>
+        <div class="step">
+          <div class="h"><span class="ix">02</span><span class="pn">Optimalisatieplan</span></div>
+          <p>Welke maatregelen leveren <em>daadwerkelijk labelpunten</em> op? Een onderbouwd voorstel met punten per ingreep en verwacht effect.</p>
+        </div>
+        <div class="step">
+          <div class="h"><span class="ix">03</span><span class="pn">Implementatie</span></div>
+          <p>Installatie van systemen: <em>PV, batterij, EMS</em>. Eén partij, één planning, één verantwoordelijke voor de uitvoering.</p>
+        </div>
+        <div class="step">
+          <div class="h"><span class="ix">04</span><span class="pn">Monitoring</span></div>
+          <p>Continu <em>meten en optimaliseren</em>. Werkelijke prestaties terug te lezen — voor labelopname én voor ESG-rapportage.</p>
+        </div>
+      </div>
+    </div>
+    <div class="how-foot reveal">
+      <span class="stmt">Eerst meten — dan investeren — dan blijven optimaliseren</span>
+      <span class="stmt">Elke maatregel onderbouwd met verwachte labelpunten</span>
+    </div>
+  </div>
+</section>
+    <div class="kpi-grid">
+      <div class="k reveal">
+        <span class="l">Energielabel</span>
+        <span class="v"><em>+1</em></span>
+        <p>Gemiddelde labelsprong na implementatie. Voldoet ruim aan de Label C-verplichting voor kantoren.</p>
+        <span class="src">N=12 panden · 2024</span>
+      </div>
+      <div class="k reveal">
+        <span class="l">Servicekosten</span>
+        <span class="v">−38%</span>
+        <p>Lagere servicekosten voor uw huurders door eigen opwek en slimme sturing.</p>
+        <span class="src">N=12 panden · 2024</span>
+      </div>
+      <div class="k reveal">
+        <span class="l">Doorlooptijd</span>
+        <span class="v">14 wkn</span>
+        <p>Van eerste scan tot live exploitatie. Geen netverzwaring, geen vergunning op de aansluiting nodig.</p>
+        <span class="src">vibe-projecten 2023–2025</span>
+      </div>
+      <div class="k reveal">
+        <span class="l">Capex eigenaar</span>
+        <span class="v"><em>€ 0</em></span>
+        <p>Volledig exploitatiemodel — Vibe investeert, eigenaar profiteert direct van label, servicekosten en ESG.</p>
+        <span class="src">standaard contractvorm</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 8 · BUSINESS IMPACT ===== -->
+<section id="impact">
+  <div class="wrap">
+    <div class="grid reveal">
+      <div class="left">
+        <span class="eyebrow"><span>Business impact</span></span>
+        <h2 class="headline h2">Hoger label<br>= <em>hogere waarde.</em></h2>
+        <p class="body">Een labelsprong vertaalt zich direct in taxatiewaarde, financierbaarheid en huurprijs. ESG is geen kostenpost meer — het is een rendement-driver op portefeuilleniveau.</p>
+      </div>
+      <div class="right">
+        <div class="row">
+          <span class="ix">01</span>
+          <div class="copy">
+            <strong>Hogere <em>taxatiewaarde</em></strong>
+            <span>Een labelsprong tilt direct de markthuur en daarmee de yield. Een groen pand vraagt en krijgt een premium.</span>
+          </div>
+        </div>
+        <div class="row">
+          <span class="ix">02</span>
+          <div class="copy">
+            <strong>Lagere <em>financieringsopslag</em></strong>
+            <span>Banken verwerken ESG-score in hun rentes. Sterke score = lagere opslag bij refinanciering of acquisitie.</span>
+          </div>
+        </div>
+        <div class="row">
+          <span class="ix">03</span>
+          <div class="copy">
+            <strong>Huurders <em>tekenen langer</em></strong>
+            <span>Corporates kiezen panden waar ze hun eigen ESG-doelen halen. Lagere leegstand, langere contracten.</span>
+          </div>
+        </div>
+        <div class="row">
+          <span class="ix">04</span>
+          <div class="copy">
+            <strong>CSRD-bewijslast <em>geleverd</em></strong>
+            <span>Submetering en automatische rapportage per huurder — zonder consultancy, zonder spreadsheet.</span>
+          </div>
+        </div>
+        <span class="foot">→ Compliance als rendement-driver</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 9 · VOOR WIE ===== -->
+<section id="audience">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="eyebrow"><span>Voor wie dit is</span></span>
+      <h2 class="headline h2">Vier typen eigenaren.<br>Hetzelfde systeem.</h2>
+    </div>
+    <div class="aud-grid">
+      <div class="a reveal">
+        <span class="icn"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="3,12 12,4 21,12 21,21 3,21" fill="rgba(0,173,239,.15)"></polygon><rect x="10" y="14" width="4" height="7" fill="currentColor"></rect><rect x="6" y="14" width="2" height="3"></rect><rect x="16" y="14" width="2" height="3"></rect></svg></span>
+        <h3>Single-tenant kantoren</h3>
+        <p>Hoofdkantoren en bedrijfspanden met één gebruiker — 5.000 tot 25.000 m², eigen ESG-strategie.</p>
+        <span class="tag">5.000–25.000 m²</span>
+      </div>
+      <div class="a reveal">
+        <span class="icn"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="6" width="18" height="14"></rect><line x1="3" y1="11" x2="21" y2="11"></line><rect x="6" y="13" width="2" height="2" fill="currentColor"></rect><rect x="10" y="13" width="2" height="2" fill="currentColor"></rect><rect x="14" y="13" width="2" height="2" fill="currentColor"></rect><rect x="18" y="13" width="2" height="2" fill="currentColor"></rect><rect x="6" y="17" width="2" height="2" fill="currentColor"></rect><rect x="10" y="17" width="2" height="2" fill="currentColor"></rect><rect x="14" y="17" width="2" height="2" fill="currentColor"></rect><rect x="18" y="17" width="2" height="2" fill="currentColor"></rect></svg></span>
+        <h3>Multi-tenant kantoren</h3>
+        <p>Kantoorgebouwen met meerdere huurders — submetering en ESG-rapportage per huurder essentieel.</p>
+        <span class="tag">Multi-tenant · submetering</span>
+      </div>
+      <div class="a reveal">
+        <span class="icn"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12,3 4,18 20,18" fill="rgba(0,173,239,.15)"></polygon><polygon points="6,21 18,21 12,15"></polygon><line x1="12" y1="3" x2="12" y2="18"></line></svg></span>
+        <h3>Bedrijfsverzamelgebouwen</h3>
+        <p>Bedrijvenparken en business centres met meerdere units — gedeelde infrastructuur, gedeelde voordelen.</p>
+        <span class="tag">Bedrijvenpark · mixed-use</span>
+      </div>
+      <div class="a reveal">
+        <span class="icn"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="8" width="6" height="13"></rect><rect x="14" y="3" width="6" height="18"></rect><rect x="6" y="11" width="2" height="2" fill="currentColor"></rect><rect x="6" y="15" width="2" height="2" fill="currentColor"></rect><rect x="16" y="6" width="2" height="2" fill="currentColor"></rect><rect x="16" y="10" width="2" height="2" fill="currentColor"></rect><rect x="16" y="14" width="2" height="2" fill="currentColor"></rect></svg></span>
+        <h3>Vastgoedfondsen</h3>
+        <p>Institutionele eigenaren met een kantorenportefeuille — meerdere panden, één ESG-strategie.</p>
+        <span class="tag">Portefeuille · institutioneel</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 10 · CASE ===== -->
+<section id="case">
+  <div class="wrap">
+    <div class="head reveal">
+      <div>
+        <span class="eyebrow"><span>Praktijkcase</span></span>
+        <h2 class="headline h2" style="margin-top:24px">Van beperking<br>naar <em>groeiversnelling</em>.</h2>
+      </div>
+      <p class="body"><strong>Situatie:</strong> een eigenaar van een multi-tenant kantoorpand in de Randstad. <strong>Probleem:</strong> label D, oplopende servicekosten en een hoofdhuurder die met vertrek dreigde omdat zijn ESG-doelen niet gehaald werden.</p>
+    </div>
+    <div class="case-card reveal">
+      <div class="left">
+        <span class="tag">Multi-tenant kantoor · 14.000 m² · 2024</span>
+        <h3>Van label D<br>naar <em>label A</em>.</h3>
+        <p class="lead"><strong>Waarom het knelde:</strong> het lage label drukte de taxatiewaarde en zette de huurinkomsten onder druk. <strong>Aanpak:</strong> Vibe bracht eerst het werkelijke verbruik in kaart en realiseerde binnen 14 weken één compleet systeem. <strong>Resultaat:</strong> label A en fors lagere servicekosten.</p>
+        <div class="ingreep">
+          <span class="ih">De ingreep</span>
+          <ul>
+            <li>Batterijopslag · 400 kWh in technische ruimte</li>
+            <li>EMS · centrale regie + per-huurder submetering</li>
+            <li>Laadpalen · 12× AC in parkeergarage</li>
+            <li>PV-uitbreiding · 240 kWp op het dak</li>
+          </ul>
+        </div>
+      </div>
+      <div class="right">
+        <span class="rh">Het resultaat</span>
+        <div class="res">
+          <div class="row">
+            <span class="v"><em>D→A</em></span>
+            <span class="l">Energielabelsprong — ruim boven Label C-verplichting</span>
+          </div>
+          <div class="row">
+            <span class="v">−41%</span>
+            <span class="l">Daling totale servicekosten in eerste 12 maanden</span>
+          </div>
+          <div class="row">
+            <span class="v">100%</span>
+            <span class="l">CSRD-rapportage per huurder — automatisch geleverd</span>
+          </div>
+          <div class="row">
+            <span class="v">€ 0</span>
+            <span class="l">Eigen capex — exploitatiemodel via Vibe Energy</span>
+          </div>
+        </div>
+        <div class="net">
+          <span class="nl">Doorlooptijd</span>
+          <span class="nv">14 weken · live</span>
+        </div>
+      </div>
+    </div>
+        <p class="case-disclaimer">Cijfers indicatief · daadwerkelijke uitkomst hangt af van pand, huurderssamenstelling en label-doel</p>
+  </div>
+</section>
+
+<!-- ===== 11 · CTA ===== -->
+<section id="cta" class="band-dark">
+  <div class="ring r1"></div>
+  <div class="ring r2"></div>
+  <div class="wrap">
+    <span class="eyebrow"><span>Volgende stap</span></span>
+    <h2 class="headline reveal">Welke labelsprong is mogelijk<br>voor <em>uw vastgoed</em>?</h2>
+    <p class="body">Wij brengen uw gebouw of portefeuille in kaart en laten zien welke maatregelen het meeste effect hebben op waarde, energielabel en exploitatie.</p>
+    <div class="ctas">
+      <a href="contact" class="cta-pill"><span>Vraag een labelanalyse aan</span><span class="arr"></span></a>
+      <button class="cta-secondary" type="button">Bekijk praktijkcases</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<script src="_footer.js"></script>
+
+<script>
+/* ===== Nav ===== */
+(function initNav(){
+  const nav = document.getElementById('topnav');
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 24);
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+  const items = nav.querySelectorAll('.nav-item');
+  items.forEach(item => {
+    const drop = item.querySelector('.nav-drop');
+    if(!drop) return;
+    let t = null;
+    const open = () => { items.forEach(i => i!==item && i.classList.remove('open')); item.classList.add('open'); };
+    const close = () => item.classList.remove('open');
+    item.addEventListener('mouseenter', () => { clearTimeout(t); open(); });
+    item.addEventListener('mouseleave', () => { t = setTimeout(close, 180); });
+    const link = item.querySelector('.nav-link');
+    link.addEventListener('click', e => {
+      if(link.tagName === 'A') return;
+      e.preventDefault();
+      item.classList.contains('open') ? close() : open();
+    });
+  });
+  document.addEventListener('click', e => { if(!nav.contains(e.target)) items.forEach(i => i.classList.remove('open')); });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') items.forEach(i => i.classList.remove('open')); });
+  setTimeout(() => items.forEach(i => i.classList.remove('open')), 1200);
+})();
+
+/* ===== Reveal ===== */
+(function initReveal(){
+  const els = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:.15, rootMargin:'0px 0px -10% 0px'});
+  els.forEach(el => io.observe(el));
+})();
+
+/* ===== How: cycle active step ===== */
+(function initHow(){
+  const steps = document.querySelectorAll('#how .how-list .step');
+  if(!steps.length) return;
+  let i = 0;
+  steps.forEach((s, idx) => s.addEventListener('mouseenter', () => {
+    steps.forEach(x => x.classList.remove('active'));
+    s.classList.add('active');
+    i = idx;
+  }));
+  setInterval(() => {
+    i = (i+1) % steps.length;
+    steps.forEach(x => x.classList.remove('active'));
+    steps[i].classList.add('active');
+  }, 4200);
+})();
+</script>
+
+
+<script>window.VIBE_LEAD={slug:"energielabel",brochure:"Energielabel verhogen",file:"assets/brochures/energielabel-verhogen.html"};</script>
+<script src="_leadpopup.js"></script>
+</body>
+</html>

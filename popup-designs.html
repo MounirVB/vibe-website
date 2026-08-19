@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<!-- Cookie consent (moet vóór GTM/Clarity laden) --><script src="_consent.js"></script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KM2V7VQ3');</script>
+<!-- End Google Tag Manager -->
+<!-- Microsoft Clarity --><script src="_clarity.js"></script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="design_doc_mode" content="canvas">
+<title>Vibe — Popup designs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800;900&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--dark:#06121C;--dark2:#0c2233;--cyan:#00ADEF;--field:#F4F7F9;--bd:#E2E8ED;--ink:#06121C;--mut:#6B7A85}
+*{box-sizing:border-box}
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.frame{position:absolute}
+.cap{position:absolute;top:-46px;left:0;display:flex;align-items:baseline;gap:12px}
+.cap .n{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--cyan);letter-spacing:.1em}
+.cap .t{font-family:'Archivo',sans-serif;font-size:19px;font-weight:800;color:#0c2233;letter-spacing:-.01em}
+.cap .d{font-size:13px;color:#5a6b76}
+/* dim modal backdrop */
+.dim{background:rgba(4,12,20,.82);border-radius:8px;padding:44px;display:flex;align-items:center;justify-content:center}
+/* ---- shared card atoms ---- */
+.ey{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);margin:0}
+.h{font-family:'Archivo',sans-serif;font-weight:800;line-height:1.12;letter-spacing:-.015em;margin:0}
+.h em{color:var(--cyan);font-style:normal}
+label{display:block;font-size:12px;font-weight:500;margin:0 0 6px}
+.req{color:var(--cyan)}
+input{width:100%;font-family:inherit;outline:none}
+.btn{width:100%;border:0;cursor:pointer;font-family:'Archivo',sans-serif;font-weight:700;display:flex;align-items:center;justify-content:center;gap:9px}
+.arr{width:15px;height:15px;border-style:solid;border-width:0 2px 2px 0;display:inline-block;padding:3px;transform:rotate(-45deg)}
+.x{position:absolute;top:14px;right:14px;width:32px;height:32px;border:0;border-radius:50%;cursor:pointer;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center}
+
+/* ========== 1 · CLASSIC (huidig) ========== */
+.d1{width:460px;background:#fff;border-radius:4px;box-shadow:0 40px 100px rgba(4,12,20,.5);overflow:hidden;position:relative}
+.d1 .head{position:relative;background:var(--dark);color:#fff;padding:30px 34px 26px}
+.d1 .head:before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cyan)}
+.d1 .h{font-size:23px}
+.d1 .sub{font-size:13.5px;line-height:1.5;color:rgba(255,255,255,.72);margin:11px 0 0}
+.d1 .x{background:rgba(255,255,255,.08);color:#fff}
+.d1 .body{padding:24px 34px 30px}
+.d1 .f{display:flex;flex-direction:column;gap:13px}
+.d1 label{color:var(--ink)}
+.d1 input{padding:12px 14px;font-size:15px;color:var(--ink);background:var(--field);border:1px solid var(--bd);border-radius:3px}
+.d1 .btn{margin-top:5px;padding:14px;border-radius:3px;background:var(--cyan);color:#041018;font-size:15px}
+.d1 .btn .arr{border-color:#041018}
+.d1 .note{font-size:11px;line-height:1.5;color:var(--mut);margin:13px 0 0;text-align:center}
+
+/* ========== 2 · SPLIT PANEL ========== */
+.d2{width:720px;display:flex;background:#fff;border-radius:5px;box-shadow:0 40px 100px rgba(4,12,20,.5);overflow:hidden;position:relative}
+.d2 .left{width:44%;background:var(--dark);color:#fff;padding:38px 32px;display:flex;flex-direction:column}
+.d2 .left .h{font-size:27px;margin-top:16px}
+.d2 .left .sub{font-size:13.5px;line-height:1.55;color:rgba(255,255,255,.7);margin:14px 0 0}
+.d2 .mono{margin-top:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,.42);letter-spacing:.04em;line-height:1.6;border-top:1px solid rgba(255,255,255,.12);padding-top:16px}
+.d2 .right{flex:1;padding:38px 34px}
+.d2 label{color:var(--ink)}
+.d2 .f{display:flex;flex-direction:column;gap:14px}
+.d2 input{padding:12px 14px;font-size:15px;color:var(--ink);background:var(--field);border:1px solid var(--bd);border-radius:3px}
+.d2 .btn{margin-top:6px;padding:14px;border-radius:3px;background:var(--cyan);color:#041018;font-size:15px}
+.d2 .btn .arr{border-color:#041018}
+.d2 .note{font-size:11px;line-height:1.5;color:var(--mut);margin:14px 0 0}
+.d2 .x{background:rgba(255,255,255,.08);color:#fff}
+
+/* ========== 3 · DARK GLASS ========== */
+.d3{width:440px;background:linear-gradient(180deg,#0a1c28,#06121C);border:1px solid rgba(0,173,239,.28);border-radius:6px;box-shadow:0 40px 100px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.05);padding:36px 36px 32px;position:relative;color:#fff}
+.d3 .h{font-size:24px;margin:14px 0 0}
+.d3 .sub{font-size:13.5px;line-height:1.55;color:rgba(255,255,255,.62);margin:12px 0 0}
+.d3 .f{display:flex;flex-direction:column;gap:18px;margin-top:26px}
+.d3 label{color:rgba(255,255,255,.55);font-size:11px;letter-spacing:.03em;text-transform:uppercase}
+.d3 input{padding:9px 2px;font-size:15px;color:#fff;background:transparent;border:0;border-bottom:1.5px solid rgba(255,255,255,.22)}
+.d3 input::placeholder{color:rgba(255,255,255,.3)}
+.d3 input:focus{border-bottom-color:var(--cyan)}
+.d3 .btn{margin-top:8px;padding:14px;border-radius:3px;background:var(--cyan);color:#041018;font-size:15px}
+.d3 .btn .arr{border-color:#041018}
+.d3 .note{font-size:11px;line-height:1.5;color:rgba(255,255,255,.4);margin:16px 0 0;text-align:center}
+.d3 .note a{color:var(--cyan)}
+.d3 .x{background:rgba(255,255,255,.08);color:#fff}
+
+/* ========== 4 · EDITORIAL MONO ========== */
+.d4{width:480px;background:#fff;border:1px solid #12242f;border-radius:2px;box-shadow:0 40px 100px rgba(4,12,20,.5);position:relative}
+.d4 .top{padding:30px 36px 22px;border-bottom:1px solid #E2E8ED}
+.d4 .idx{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;color:var(--cyan);letter-spacing:.14em;display:flex;justify-content:space-between;margin:0 0 20px}
+.d4 .idx span:last-child{color:#9aa8b1}
+.d4 .h{font-size:26px;color:var(--ink)}
+.d4 .sub{font-size:13.5px;line-height:1.55;color:#4A5A65;margin:12px 0 0}
+.d4 .body{padding:24px 36px 32px}
+.d4 .f{display:flex;flex-direction:column;gap:0}
+.d4 .field{border-bottom:1px solid #E2E8ED;padding:12px 0}
+.d4 label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#9aa8b1;margin:0 0 2px}
+.d4 input{padding:4px 0;font-size:16px;color:var(--ink);background:transparent;border:0}
+.d4 .btn{margin-top:22px;padding:15px;border-radius:2px;background:var(--dark);color:#fff;font-size:14px;letter-spacing:.02em}
+.d4 .btn .arr{border-color:var(--cyan)}
+.d4 .note{font-size:10.5px;line-height:1.5;color:var(--mut);margin:14px 0 0}
+.d4 .x{background:transparent;color:#9aa8b1;border:1px solid #E2E8ED}
+
+/* ========== 5 · COMPACT ========== */
+.d5{width:370px;background:#fff;border-radius:5px;box-shadow:0 40px 100px rgba(4,12,20,.5);padding:30px 28px 26px;position:relative;text-align:center}
+.d5 .ic{width:50px;height:50px;margin:0 auto 16px;border-radius:12px;background:var(--dark);display:flex;align-items:center;justify-content:center}
+.d5 .ic svg{width:24px;height:24px;stroke:var(--cyan);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.d5 .h{font-size:20px;color:var(--ink)}
+.d5 .sub{font-size:13px;line-height:1.5;color:#4A5A65;margin:9px 0 0}
+.d5 .f{display:flex;flex-direction:column;gap:9px;margin-top:20px;text-align:left}
+.d5 input{padding:11px 13px;font-size:14px;color:var(--ink);background:var(--field);border:1px solid var(--bd);border-radius:3px}
+.d5 .btn{margin-top:3px;padding:13px;border-radius:3px;background:var(--cyan);color:#041018;font-size:14px}
+.d5 .btn .arr{border-color:#041018}
+.d5 .note{font-size:10.5px;line-height:1.45;color:var(--mut);margin:12px 0 0}
+.d5 .x{background:var(--field);color:#6B7A85}
+</style>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) --><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KM2V7VQ3" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+<!-- 1 -->
+<section class="frame" style="left:80px;top:120px">
+  <div class="cap"><span class="n">01</span><span class="t">Classic</span><span class="d">huidige stijl — donkere kop, formulier eronder</span></div>
+  <div class="dim">
+    <div class="d1">
+      <button class="x" aria-label="Sluiten">✕</button>
+      <div class="head">
+        <p class="ey">Gratis brochure</p>
+        <h2 class="h">Exploitatie zonder investering — <em>het volledige verhaal.</em></h2>
+        <p class="sub">Laat uw gegevens achter en u ontvangt de brochure direct in uw mailbox.</p>
+      </div>
+      <div class="body">
+        <form class="f" onsubmit="return false">
+          <div><label>Naam</label><input type="text" placeholder="Uw naam"></div>
+          <div><label>E-mail <span class="req">*</span></label><input type="email" placeholder="naam@bedrijf.nl"></div>
+          <div><label>Telefoon <span class="req">*</span></label><input type="tel" placeholder="06 12 34 56 78"></div>
+          <button class="btn">Stuur mij de brochure <span class="arr"></span></button>
+          <p class="note">Wij gebruiken uw gegevens alleen om de brochure te sturen. Zie ons privacybeleid.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="frame" style="left:700px;top:120px">
+  <div class="cap"><span class="n">02</span><span class="t">Split panel</span><span class="d">merk links, formulier rechts — breed &amp; premium</span></div>
+  <div class="dim">
+    <div class="d2">
+      <button class="x" aria-label="Sluiten">✕</button>
+      <div class="left">
+        <p class="ey">Gratis brochure</p>
+        <h2 class="h">Exploitatie zonder investering.</h2>
+        <p class="sub">Het volledige verhaal: businesscase, exploitatiemodel en praktijkcases — in één document.</p>
+        <p class="mono">VIBE ENERGY<br>7 waardestromen · 0 jr wachttijd<br>—22% netinkoop</p>
+      </div>
+      <div class="right">
+        <form class="f" onsubmit="return false">
+          <div><label>Naam</label><input type="text" placeholder="Uw naam"></div>
+          <div><label>E-mail <span class="req">*</span></label><input type="email" placeholder="naam@bedrijf.nl"></div>
+          <div><label>Telefoon <span class="req">*</span></label><input type="tel" placeholder="06 12 34 56 78"></div>
+          <button class="btn">Stuur mij de brochure <span class="arr"></span></button>
+          <p class="note">Wij gebruiken uw gegevens alleen om de brochure te sturen. Zie ons privacybeleid.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="frame" style="left:80px;top:760px">
+  <div class="cap"><span class="n">03</span><span class="t">Dark glass</span><span class="d">volledig donker, lijn-inputs, cyaan accent</span></div>
+  <div class="dim">
+    <div class="d3">
+      <button class="x" aria-label="Sluiten">✕</button>
+      <p class="ey">Gratis brochure</p>
+      <h2 class="h">Exploitatie zonder investering — <em>het volledige verhaal.</em></h2>
+      <p class="sub">Laat uw gegevens achter en u ontvangt de brochure direct in uw mailbox.</p>
+      <form class="f" onsubmit="return false">
+        <div><label>Naam</label><input type="text" placeholder="Uw naam"></div>
+        <div><label>E-mail *</label><input type="email" placeholder="naam@bedrijf.nl"></div>
+        <div><label>Telefoon *</label><input type="tel" placeholder="06 12 34 56 78"></div>
+        <button class="btn">Stuur mij de brochure <span class="arr"></span></button>
+        <p class="note">Alleen gebruikt om de brochure te sturen. Zie ons <a href="#">privacybeleid</a>.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="frame" style="left:620px;top:760px">
+  <div class="cap"><span class="n">04</span><span class="t">Editorial</span><span class="d">typografisch, mono-labels, onderlijn-velden</span></div>
+  <div class="dim">
+    <div class="d4">
+      <button class="x" aria-label="Sluiten">✕</button>
+      <div class="top">
+        <p class="idx"><span>GRATIS BROCHURE</span><span>04 / 07</span></p>
+        <h2 class="h">Exploitatie zonder investering.</h2>
+        <p class="sub">Laat uw gegevens achter en u ontvangt de brochure direct in uw mailbox.</p>
+      </div>
+      <div class="body">
+        <form class="f" onsubmit="return false">
+          <div class="field"><label>Naam</label><input type="text" placeholder="Uw naam"></div>
+          <div class="field"><label>E-mail *</label><input type="email" placeholder="naam@bedrijf.nl"></div>
+          <div class="field"><label>Telefoon *</label><input type="tel" placeholder="06 12 34 56 78"></div>
+          <button class="btn">Stuur mij de brochure <span class="arr"></span></button>
+          <p class="note">Wij gebruiken uw gegevens alleen om de brochure te sturen. Zie ons privacybeleid.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="frame" style="left:1180px;top:760px">
+  <div class="cap"><span class="n">05</span><span class="t">Compact</span><span class="d">klein &amp; snel — icoon, korte capture</span></div>
+  <div class="dim">
+    <div class="d5">
+      <button class="x" aria-label="Sluiten">✕</button>
+      <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="m4 6 8 6 8-6"/></svg></div>
+      <p class="ey">Gratis brochure</p>
+      <h2 class="h">Exploitatie zonder investering.</h2>
+      <p class="sub">Direct in uw mailbox — laat uw gegevens achter.</p>
+      <form class="f" onsubmit="return false">
+        <input type="email" placeholder="naam@bedrijf.nl">
+        <input type="tel" placeholder="06 12 34 56 78">
+        <button class="btn">Stuur mij de brochure <span class="arr"></span></button>
+        <p class="note">Alleen gebruikt om de brochure te sturen.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,127 @@
+/* ec.css — Vibe Energy · strategische energiecentrale-visual
+   Institutionele taal: Bloomberg/Palantir/BlackRock register.
+   Diepe navy, hairlines, spaarzame cyaan, capaciteit-groen, net-coral. */
+
+:root{
+  --bg:#06121A; --bg2:#0A1A24; --panel:#0D2130; --panel2:#102A3A;
+  --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.13);
+  --ink:#EAF1F6; --soft:rgba(234,241,246,.60); --mute:rgba(234,241,246,.38);
+  --cyan:#19A7E6; --cyan-deep:#0E5E86; --cyan-ghost:rgba(25,167,230,.12);
+  --green:#54CFA0; --green-ghost:rgba(84,207,160,.14);
+  --coral:#E8674F; --coral-ghost:rgba(232,103,79,.14);
+  --gold:#E5B567;
+  --arch:'Archivo',sans-serif; --plex:'IBM Plex Sans',sans-serif; --mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--plex); font-weight:300;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; line-height:1.55;
+  background-image:radial-gradient(1200px 700px at 78% -8%, rgba(25,167,230,.10), transparent 60%),
+                   radial-gradient(900px 600px at 8% 108%, rgba(84,207,160,.06), transparent 60%);
+  background-attachment:fixed;
+}
+.wrap{max-width:1380px;margin:0 auto;padding:0 clamp(20px,3.5vw,44px)}
+
+/* ---------- dossier shell ---------- */
+.dossier-top{border-bottom:1px solid var(--line);padding:40px 0 30px}
+.brandline{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute)}
+.brandline .b-l{display:flex;align-items:center;gap:14px;color:var(--soft)}
+.brandline .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px var(--green-ghost)}
+.eyb{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--cyan);display:inline-flex;align-items:center;gap:14px}
+.eyb::before{content:'';width:30px;height:1px;background:var(--cyan);opacity:.7}
+h1.title{font-family:var(--arch);font-weight:800;font-size:clamp(36px,5.4vw,62px);letter-spacing:-.035em;
+  line-height:1.0;margin:22px 0 14px}
+.title em{font-style:normal;color:var(--cyan)}
+.lede{font-size:clamp(15px,1.5vw,18px);color:var(--soft);max-width:70ch}
+.lede b{color:var(--ink);font-weight:500}
+
+/* ---------- section heading ---------- */
+.sec{padding:64px 0 12px}
+.sec-tag{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute)}
+.sec-h{font-family:var(--arch);font-weight:800;font-size:clamp(24px,3vw,36px);letter-spacing:-.02em;margin:8px 0 4px}
+.sec-h .num{color:var(--cyan-deep);margin-right:14px}
+.sec-sub{color:var(--soft);font-size:15px;max-width:74ch}
+
+/* ---------- visual frame ---------- */
+.frame{position:relative;margin:26px 0 0;border:1px solid var(--line2);border-radius:8px;overflow:hidden;
+  background:linear-gradient(180deg,#0A1A24,#081520);box-shadow:0 30px 80px -40px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.04)}
+.frame::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);
+  background-size:40px 40px;z-index:0}
+.frame-chrome{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;
+  padding:13px 20px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--mute)}
+.frame-chrome .c-l{display:flex;align-items:center;gap:12px}
+.frame-chrome .c-r{display:flex;align-items:center;gap:18px}
+.chip-live{display:inline-flex;align-items:center;gap:7px;color:var(--green)}
+.chip-live .d{width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+/* ---------- shared data atoms ---------- */
+.k-label{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
+.k-val{font-family:var(--arch);font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.k-unit{font-family:var(--mono);font-size:.5em;color:var(--soft);letter-spacing:.06em}
+.hair{height:1px;background:var(--line)}
+.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.sd-on{background:var(--green);box-shadow:0 0 8px var(--green)}
+.sd-cy{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.sd-net{background:var(--coral);box-shadow:0 0 8px var(--coral)}
+
+/* domain token (used in several concepts) */
+.domain{display:flex;flex-direction:column;gap:6px}
+.domain .dt{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--soft)}
+.domain .dv{font-family:var(--arch);font-weight:700;font-size:20px;color:var(--ink)}
+.domain .ds{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--mute);text-transform:uppercase}
+
+/* ---------- KPI tiles ---------- */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line)}
+.kpi{background:var(--panel);padding:20px 22px;display:flex;flex-direction:column;gap:8px;position:relative}
+.kpi .kpi-v{font-family:var(--arch);font-weight:800;font-size:34px;letter-spacing:-.03em;line-height:1}
+.kpi .kpi-v.green{color:var(--green)} .kpi .kpi-v.cyan{color:var(--cyan)}
+.kpi .kpi-l{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--soft)}
+
+/* ---------- hero conclusion banner ---------- */
+.verdict-bar{position:relative;z-index:2;margin-top:0;display:grid;grid-template-columns:1.5fr 1fr;
+  border-top:1px solid var(--line2)}
+.verdict-bar .vb-msg{padding:28px 30px}
+.verdict-bar .vb-msg h3{font-family:var(--arch);font-weight:800;font-size:clamp(22px,2.4vw,32px);letter-spacing:-.025em;line-height:1.05}
+.verdict-bar .vb-msg h3 .hl{color:var(--green)}
+.verdict-bar .vb-data{padding:28px 30px;border-left:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;gap:8px;
+  background:linear-gradient(180deg,rgba(232,103,79,.05),transparent)}
+.verdict-bar .vb-data .vd-row{display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+.verdict-bar .vb-data .vd-k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
+.verdict-bar .vb-data .vd-v{font-family:var(--mono);font-size:13px;color:var(--ink);letter-spacing:.04em}
+.verdict-bar .vb-data .vd-v.coral{color:var(--coral)}
+
+/* ---------- rationale grid ---------- */
+.rationale{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);margin-top:1px;border:1px solid var(--line);border-top:0}
+.rationale .r-cell{background:var(--bg2);padding:18px 18px 20px}
+.rationale .r-cell h4{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);margin-bottom:9px}
+.rationale .r-cell p{font-size:12.5px;color:var(--soft);line-height:1.55}
+@media(max-width:920px){.rationale{grid-template-columns:1fr 1fr}.kpis{grid-template-columns:1fr}}
+
+/* ---------- winner section ---------- */
+.winner-flag{display:inline-flex;align-items:center;gap:12px;font-family:var(--mono);font-size:11px;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--green);border:1px solid var(--green);
+  padding:8px 14px;border-radius:4px}
+
+/* animations */
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes sweepX{0%{transform:translateX(-100%)}100%{transform:translateX(2200%)}}
+@keyframes breathe{0%,100%{opacity:.9}50%{opacity:.5}}
+@keyframes ringspin{to{transform:rotate(360deg)}}
+@keyframes dashflow{to{stroke-dashoffset:-1000}}
+@keyframes riseUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.anim-pulse{animation:pulseDot 1.8s ease-in-out infinite}
+.anim-breathe{animation:breathe 4s ease-in-out infinite}
+.flow-line{stroke-dasharray:5 9;animation:dashflow 22s linear infinite}
+.flow-line.slow{animation-duration:34s}
+
+@media(prefers-reduced-motion:reduce){
+  .anim-pulse,.anim-breathe,.flow-line,[class*="anim-"]{animation:none!important}
+}
+
+footer.doss-foot{padding:46px 0 70px;color:var(--mute);font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.16em;text-transform:uppercase;border-top:1px solid var(--line);margin-top:60px}

@@ -1,0 +1,102 @@
+/* ============================================================
+   Vibe Energy — FrameIQ → Premium harmonization
+   Loaded AFTER the inline <style> on: over-ons, oplossing-energielabel,
+   oplossing-paris-proof, oplossing-subsidies.
+   Brings their hairline-grid cards onto the exact subpage.css premium
+   card system (floating white cards, identical elevation/hover/gap).
+   Visual execution only — no structure, copy, tokens or colours changed.
+   ============================================================ */
+
+/* ---- grid shells → float (transparent, no border, 16px gap) ---- */
+.principles,
+.versus,
+.diff,
+.stats-row,
+.team-grid,
+.split-grid,
+.reality-cards,
+.what-grid,
+.kpi-grid,
+.aud-grid{
+  gap:16px !important;
+  background:transparent !important;
+  border:0 !important;
+}
+
+/* ---- cards → premium white surface + elevation ---- */
+.principle,
+.versus > .col,
+.diff .d,
+.stats-row .s,
+.team-card,
+.split-grid .col,
+.reality-cards .rc,
+.what-grid .w,
+.kpi-grid .k,
+.aud-grid .a,
+.case-card{
+  position:relative;
+  background:#FFFFFF !important;
+  border:1px solid rgba(11,26,36,.06) !important;
+  box-shadow:0 1px 2px rgba(11,26,36,.04),0 18px 38px -22px rgba(8,40,66,.30) !important;
+  transition:transform .4s cubic-bezier(.2,.7,.2,1),box-shadow .4s ease,background-color .3s ease !important;
+}
+
+/* keep the deliberate signal accent on the "us" / highlighted column */
+.versus > .col.us{border-left:2px solid var(--signal) !important;}
+
+/* ---- hover lift (matches subpage.css) ---- */
+.principle:hover,
+.versus > .col:hover,
+.diff .d:hover,
+.stats-row .s:hover,
+.team-card:hover,
+.split-grid .col:hover,
+.reality-cards .rc:hover,
+.what-grid .w:hover,
+.kpi-grid .k:hover,
+.aud-grid .a:hover{
+  transform:translateY(-4px);
+  box-shadow:0 2px 4px rgba(11,26,36,.05),0 32px 58px -24px rgba(8,40,66,.42) !important;
+}
+
+/* ---- accent line wipes in on hover (matches subpage.css) ---- */
+.principle::after,
+.versus > .col::after,
+.diff .d::after,
+.stats-row .s::after,
+.split-grid .col::after,
+.reality-cards .rc::after,
+.what-grid .w::after,
+.kpi-grid .k::after,
+.aud-grid .a::after{
+  content:'';
+  position:absolute;left:0;right:0;top:0;height:2px;
+  background:linear-gradient(90deg,var(--signal),rgba(0,137,196,.3));
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .5s cubic-bezier(.2,.7,.2,1);
+  z-index:4;pointer-events:none;
+}
+.principle:hover::after,
+.versus > .col:hover::after,
+.diff .d:hover::after,
+.stats-row .s:hover::after,
+.split-grid .col:hover::after,
+.reality-cards .rc:hover::after,
+.what-grid .w:hover::after,
+.kpi-grid .k:hover::after,
+.aud-grid .a:hover::after{transform:scaleX(1);}
+
+/* ---- premium icon tiles (gradient + inset ring, like .pcard .pic) ---- */
+.what-grid .w .icon,
+.aud-grid .a .icn{
+  border:0 !important;
+  background:linear-gradient(150deg,rgba(0,137,196,.16),rgba(0,137,196,.04)) !important;
+  box-shadow:inset 0 0 0 1px rgba(0,137,196,.16);
+  transition:transform .4s cubic-bezier(.2,.7,.2,1),box-shadow .4s ease,background .4s ease !important;
+}
+.what-grid .w:hover .icon,
+.aud-grid .a:hover .icn{
+  transform:translateY(-2px) scale(1.05);
+  box-shadow:inset 0 0 0 1px rgba(0,137,196,.4),0 12px 24px -12px rgba(0,137,196,.55) !important;
+}

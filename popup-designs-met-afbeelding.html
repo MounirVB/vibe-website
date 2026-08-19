@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<!-- Cookie consent (moet vóór GTM/Clarity laden) --><script src="_consent.js"></script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KM2V7VQ3');</script>
+<!-- End Google Tag Manager -->
+<!-- Microsoft Clarity --><script src="_clarity.js"></script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="design_doc_mode" content="canvas">
+<title>Vibe — Popup designs met afbeelding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800;900&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--dark:#06121C;--cyan:#00ADEF;--field:#F4F7F9;--bd:#E2E8ED;--ink:#06121C;--mut:#6B7A85}
+*{box-sizing:border-box}
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.frame{position:absolute}
+.cap{position:absolute;top:-46px;left:0;display:flex;align-items:baseline;gap:12px}
+.cap .n{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--cyan);letter-spacing:.1em}
+.cap .t{font-family:'Archivo',sans-serif;font-size:19px;font-weight:800;color:#0c2233;letter-spacing:-.01em}
+.cap .d{font-size:13px;color:#5a6b76}
+.dim{background:rgba(4,12,20,.82);border-radius:8px;padding:44px;display:flex;align-items:center;justify-content:center}
+.ey{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);margin:0}
+.h{font-family:'Archivo',sans-serif;font-weight:800;line-height:1.12;letter-spacing:-.015em;margin:0}
+.h em{color:var(--cyan);font-style:normal}
+label{display:block;font-size:12px;font-weight:500;margin:0 0 6px}
+.req{color:var(--cyan)}
+input{width:100%;font-family:inherit;outline:none}
+.btn{width:100%;border:0;cursor:pointer;font-family:'Archivo',sans-serif;font-weight:700;display:flex;align-items:center;justify-content:center;gap:9px}
+.arr{width:15px;height:15px;border-style:solid;border-width:0 2px 2px 0;display:inline-block;padding:3px;transform:rotate(-45deg)}
+.x{position:absolute;top:14px;right:14px;width:32px;height:32px;border:0;border-radius:50%;cursor:pointer;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center}
+.field-std input{padding:12px 14px;font-size:15px;color:var(--ink);background:var(--field);border:1px solid var(--bd);border-radius:3px}
+.f{display:flex;flex-direction:column;gap:13px}
+.btn-cyan{padding:14px;border-radius:3px;background:var(--cyan);color:#041018;font-size:15px}
+.btn-cyan .arr{border-color:#041018}
+.note{font-size:11px;line-height:1.5;color:var(--mut);margin:13px 0 0;text-align:center}
+
+/* ===== 6 · PHOTO TOP BANNER ===== */
+.d6{width:460px;background:#fff;border-radius:4px;box-shadow:0 40px 100px rgba(4,12,20,.5);overflow:hidden;position:relative}
+.d6 .banner{position:relative;height:190px;background:url(assets/energy-hubs-hero.jpg) center/cover;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;padding:26px 30px 22px}
+.d6 .banner:before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,12,20,.15) 0%,rgba(4,12,20,.55) 45%,rgba(4,12,20,.92) 100%)}
+.d6 .banner>*{position:relative}
+.d6 .h{font-size:23px;margin-top:9px}
+.d6 .body{padding:24px 30px 28px}
+.d6 label{color:var(--ink)}
+.d6 .x{background:rgba(4,12,20,.4);color:#fff}
+
+/* ===== 7 · PHOTO SPLIT ===== */
+.d7{width:720px;display:flex;background:#fff;border-radius:5px;box-shadow:0 40px 100px rgba(4,12,20,.5);overflow:hidden;position:relative;min-height:420px}
+.d7 .pic{width:42%;position:relative;background:url(assets/exploitatie-hero.jpg) center/cover}
+.d7 .pic:before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,12,20,.1),rgba(4,12,20,.7))}
+.d7 .pic .lbl{position:absolute;left:26px;bottom:26px;right:26px;color:#fff}
+.d7 .pic .h{font-size:24px;margin-top:8px}
+.d7 .right{flex:1;padding:38px 34px}
+.d7 label{color:var(--ink)}
+.d7 .sub{font-size:13.5px;line-height:1.5;color:var(--mut);margin:0 0 20px}
+.d7 .x{background:rgba(4,12,20,.4);color:#fff}
+
+/* ===== 8 · FULL-BLEED PHOTO ===== */
+.d8{width:440px;position:relative;border-radius:6px;box-shadow:0 40px 100px rgba(0,0,0,.6);overflow:hidden;color:#fff;background:url(assets/energy-hubs-hero.jpg) center/cover}
+.d8 .scrim{background:linear-gradient(180deg,rgba(4,12,20,.72),rgba(4,12,20,.9));backdrop-filter:blur(2px);padding:34px 34px 30px}
+.d8 .h{font-size:23px;margin-top:12px}
+.d8 .sub{font-size:13.5px;line-height:1.5;color:rgba(255,255,255,.72);margin:11px 0 22px}
+.d8 .f{gap:11px}
+.d8 input{padding:12px 14px;font-size:15px;color:#fff;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:3px}
+.d8 input::placeholder{color:rgba(255,255,255,.5)}
+.d8 input:focus{border-color:var(--cyan);background:rgba(255,255,255,.16)}
+.d8 .note{color:rgba(255,255,255,.5)}
+.d8 .x{background:rgba(255,255,255,.14);color:#fff}
+
+/* ===== 9 · PHOTO RIGHT COLUMN ===== */
+.d9{width:700px;display:flex;background:var(--dark);border-radius:5px;box-shadow:0 40px 100px rgba(4,12,20,.5);overflow:hidden;position:relative;min-height:430px}
+.d9 .left{flex:1;padding:38px 36px;color:#fff}
+.d9 .left .h{font-size:26px;margin-top:14px}
+.d9 .left .sub{font-size:13.5px;line-height:1.55;color:rgba(255,255,255,.66);margin:12px 0 24px}
+.d9 .f{gap:12px}
+.d9 label{color:rgba(255,255,255,.62)}
+.d9 input{padding:12px 14px;font-size:15px;color:#fff;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:3px}
+.d9 input::placeholder{color:rgba(255,255,255,.42)}
+.d9 input:focus{border-color:var(--cyan)}
+.d9 .note{color:rgba(255,255,255,.4)}
+.d9 .pic{width:38%;background:url(assets/exploitatie-hero.jpg) center/cover}
+.d9 .x{background:rgba(255,255,255,.14);color:#fff}
+
+/* ===== 10 · COVER THUMBNAIL ===== */
+.d10{width:420px;background:#fff;border-radius:6px;box-shadow:0 40px 100px rgba(4,12,20,.5);padding:30px 34px 30px;position:relative;text-align:center}
+.d10 .thumb{width:150px;height:104px;margin:0 auto 20px;border-radius:4px;overflow:hidden;box-shadow:0 14px 34px rgba(4,12,20,.32);position:relative;background:url(assets/energy-hubs-hero.jpg) center/cover}
+.d10 .thumb:before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(0,173,239,.15),rgba(4,12,20,.45))}
+.d10 .thumb .tag{position:absolute;left:0;bottom:0;right:0;padding:8px 10px;text-align:left;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.12em;color:#fff;text-transform:uppercase}
+.d10 .h{font-size:21px;color:var(--ink)}
+.d10 .sub{font-size:13px;line-height:1.5;color:var(--mut);margin:9px 0 22px}
+.d10 .f{gap:10px;text-align:left}
+.d10 label{color:var(--ink)}
+.d10 .x{background:var(--field);color:#6B7A85}
+</style>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) --><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KM2V7VQ3" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+<!-- 6 -->
+<section class="frame" style="left:80px;top:120px">
+  <div class="cap"><span class="n">06</span><span class="t">Photo banner</span><span class="d">beeld boven met titel-overlay, formulier eronder</span></div>
+  <div class="dim">
+    <div class="d6">
+      <button class="x" aria-label="Sluiten">✕</button>
+      <div class="banner">
+        <p class="ey">Gratis brochure</p>
+        <h2 class="h">Exploitatie zonder investering.</h2>
+      </div>
+      <div class="body">
+        <form class="f field-std" onsubmit="return false">
+          <div><label>Naam</label><input type="text" placeholder="Uw naam"></div>
+          <div><label>E-mail <span class="req">*</span></label><input type="email" placeholder="naam@bedrijf.nl"></div>
+          <div><label>Telefoon <span class="req">*</span></label><input type="tel" placeholder="06 12 34 56 78"></div>
+          <button class="btn btn-cyan">Stuur mij de brochure <span class="arr"></span></button>
+          <p class="note">Wij gebruiken uw gegevens alleen om de brochure te sturen.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="frame" style="left:700px;top:120px">
+  <div class="cap"><span class="n">07</span><span class="t">Photo split</span><span class="d">foto links, formulier rechts</span></div>
+  <div class="dim">
+    <div class="d7">
+      <button class="x" aria-label="Sluiten">✕</button>
+      <div class="pic"><div class="lbl"><p class="ey">Gratis brochure</p><h2 class="h">Exploitatie zonder investering.</h2></div></div>
+      <div class="right">
+        <p class="sub">Het volledige verhaal — businesscase, exploitatiemodel en praktijkcases. Direct in uw mailbox.</p>
+        <form class="f field-std" onsubmit="return false">
+          <div><label>Naam</label><input type="text" placeholder="Uw naam"></div>
+          <div><label>E-mail <span class="req">*</span></label><input type="email" placeholder="naam@bedrijf.nl"></div>
+          <div><label>Telefoon <span class="req">*</span></label><input type="tel" placeholder="06 12 34 56 78"></div>
+          <button class="btn btn-cyan">Stuur mij de brochure <span class="arr"></span></button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="frame" style="left:80px;top:720px">
+  <div class="cap"><span class="n">08</span><span class="t">Full-bleed</span><span class="d">foto als achtergrond, glas-formulier erover</span></div>
+  <div class="dim">
+    <div class="d8">
+      <button class="x" aria-label="Sluiten">✕</button>
+      <div class="scrim">
+        <p class="ey">Gratis brochure</p>
+        <h2 class="h">Exploitatie zonder investering — <em>het volledige verhaal.</em></h2>
+        <p class="sub">Laat uw gegevens achter en u ontvangt de brochure direct in uw mailbox.</p>
+        <form class="f" onsubmit="return false">
+          <input type="text" placeholder="Uw naam">
+          <input type="email" placeholder="naam@bedrijf.nl *">
+          <input type="tel" placeholder="06 12 34 56 78 *">
+          <button class="btn btn-cyan" style="margin-top:4px">Stuur mij de brochure <span class="arr"></span></button>
+          <p class="note">Alleen gebruikt om de brochure te sturen.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="frame" style="left:620px;top:720px">
+  <div class="cap"><span class="n">09</span><span class="t">Dark + foto</span><span class="d">donker formulier, foto als rechterkolom</span></div>
+  <div class="dim">
+    <div class="d9">
+      <button class="x" aria-label="Sluiten">✕</button>
+      <div class="left">
+        <p class="ey">Gratis brochure</p>
+        <h2 class="h">Exploitatie zonder investering.</h2>
+        <p class="sub">Laat uw gegevens achter en u ontvangt de brochure direct in uw mailbox.</p>
+        <form class="f" onsubmit="return false">
+          <div><label>Naam</label><input type="text" placeholder="Uw naam"></div>
+          <div><label>E-mail <span class="req">*</span></label><input type="email" placeholder="naam@bedrijf.nl"></div>
+          <div><label>Telefoon <span class="req">*</span></label><input type="tel" placeholder="06 12 34 56 78"></div>
+          <button class="btn btn-cyan" style="margin-top:4px">Stuur mij de brochure <span class="arr"></span></button>
+        </form>
+      </div>
+      <div class="pic"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="frame" style="left:1160px;top:720px">
+  <div class="cap"><span class="n">10</span><span class="t">Cover thumb</span><span class="d">brochure-cover als thumbnail, formulier eronder</span></div>
+  <div class="dim">
+    <div class="d10">
+      <button class="x" aria-label="Sluiten">✕</button>
+      <div class="thumb"><span class="tag">Vibe · brochure</span></div>
+      <p class="ey">Gratis brochure</p>
+      <h2 class="h">Exploitatie zonder investering.</h2>
+      <p class="sub">Direct in uw mailbox — laat uw gegevens achter.</p>
+      <form class="f field-std" onsubmit="return false">
+        <div><label>E-mail <span class="req">*</span></label><input type="email" placeholder="naam@bedrijf.nl"></div>
+        <div><label>Telefoon <span class="req">*</span></label><input type="tel" placeholder="06 12 34 56 78"></div>
+        <button class="btn btn-cyan" style="margin-top:4px">Stuur mij de brochure <span class="arr"></span></button>
+        <p class="note">Alleen gebruikt om de brochure te sturen.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

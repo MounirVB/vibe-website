@@ -1,0 +1,105 @@
+/* ============================================================
+   VIBE ENERGY — DESIGN TOKENS  (single source of truth)
+   Loaded LAST in <head> on every public page. Contains:
+   1) canonical token scale (--t-*) — the documented system
+   2) a UNIFY LAYER (!important) that normalises the few
+      cross-system component divergences the audit proved
+      (eyebrows, radii vormtaal, card elevation, focus ring)
+   No layouts, content or functionality are changed.
+   ============================================================ */
+:root{
+  /* — BRAND COLOUR — one signal, two contexts —————————— */
+  --t-signal:#00ADEF;        /* brand cyan · fills + accents on DARK */
+  --t-signal-ink:#0096CC;    /* accessible accent on LIGHT surfaces  */
+  --t-signal-deep:#0078AD;   /* pressed / hover-dark                 */
+
+  /* — SURFACES (light) ——————————————————————————————— */
+  --t-canvas:#ECF1F4;        /* page background        */
+  --t-surface:#FFFFFF;       /* cards / panels         */
+  --t-surface-2:#F4F7F9;     /* alt / deep light bands */
+
+  /* — SURFACES (dark) ———————————————————————————————— */
+  --t-ink-900:#06121C;
+  --t-ink-800:#0B1A24;
+  --t-ink-700:#102330;
+
+  /* — INK / TEXT ————————————————————————————————————— */
+  --t-text:#0E1B24;
+  --t-text-soft:#33454F;
+  --t-text-muted:#5E6F79;
+  --t-on-dark:#FFFFFF;
+  --t-on-dark-soft:rgba(232,240,245,.78);
+  --t-on-dark-muted:rgba(232,240,245,.55);
+
+  /* — LINES — */
+  --t-line:rgba(14,27,36,.12);
+  --t-line-dark:rgba(255,255,255,.08);
+  --t-hair:rgba(0,150,204,.30);
+
+  /* — TYPE SCALE — */
+  --t-font-sans:'IBM Plex Sans',sans-serif;
+  --t-font-display:'Archivo',sans-serif;
+  --t-font-mono:'JetBrains Mono',monospace;
+  --t-eyebrow-size:11.5px;
+  --t-eyebrow-track:.24em;
+
+  /* — SPACING SCALE (8-pt) — */
+  --t-space-1:8px;  --t-space-2:16px; --t-space-3:24px; --t-space-4:32px;
+  --t-space-6:48px; --t-space-8:64px; --t-space-12:96px; --t-space-16:128px;
+
+  /* — RADII — brand vormtaal is SHARP — */
+  --t-radius:0px;
+  --t-radius-pill:999px;     /* only for dots / status pills / avatars */
+
+  /* — ELEVATION — */
+  --t-elev-1:0 1px 2px rgba(11,26,36,.04),0 18px 38px -22px rgba(8,40,66,.30);
+  --t-elev-2:0 2px 4px rgba(11,26,36,.05),0 32px 58px -24px rgba(8,40,66,.42);
+
+  /* — MOTION — */
+  --t-ease:cubic-bezier(.2,.7,.2,1);
+  --t-dur-fast:.25s; --t-dur:.4s; --t-dur-slow:.75s;
+
+  /* — Z-INDEX — */
+  --t-z-nav:100; --t-z-overlay:200; --t-z-toast:300;
+
+  /* — ICON SIZING — */
+  --t-icon-sm:18px; --t-icon:22px; --t-icon-lg:30px;
+}
+
+/* ============================================================
+   UNIFY LAYER  — normalises proven cross-system divergences.
+   Uses !important because it loads after each system's own CSS.
+   ============================================================ */
+
+/* 1 · EYEBROW — one spec everywhere (was .eyebrow 11.5/.24,
+        .eyebrow 11/.22, .eyb 12/.26, .nc-eyb 12/.26, .lg-eyb …) */
+.eyebrow,.eyb,.nc-eyb,.lg-eyb,.mc-eyb{
+  font-family:var(--t-font-mono)!important;
+  font-weight:500!important;
+  font-size:var(--t-eyebrow-size)!important;
+  letter-spacing:var(--t-eyebrow-track)!important;
+  text-transform:uppercase!important;
+}
+.eyebrow::before,.eyb::before,.nc-eyb::before,.lg-eyb::before{
+  width:26px!important;height:1px!important;opacity:.7!important;
+}
+
+/* 2 · RADII — sharpen the rounded outliers (project-case, projecten,
+        netcongestie-check). Dots, avatars, rings & checkmark circles
+        keep border-radius:50% (not listed here). */
+.btn-p,.btn-s,.btn-go,.btn-cta,
+.pc-herofig,.pc-gal .g,.pc-links a,.mc-core,.mc-panel,
+.card,.res-cta,.done-state,.inp,.opt,.nc-wizard{
+  border-radius:0!important;
+}
+
+/* 3 · CARD ELEVATION — one elevation for light content cards */
+.card,.pc-specs .s{
+  box-shadow:var(--t-elev-1)!important;
+}
+
+/* 4 · FOCUS RING — one accessible focus state site-wide */
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{
+  outline:2px solid var(--t-signal-ink)!important;
+  outline-offset:3px!important;
+}

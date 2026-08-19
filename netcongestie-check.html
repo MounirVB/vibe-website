@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<!-- Cookie consent (moet vóór GTM/Clarity laden) --><script src="_consent.js"></script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KM2V7VQ3');</script>
+<!-- End Google Tag Manager -->
+<!-- Microsoft Clarity --><script src="_clarity.js"></script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gratis Netcongestie Check voor uw locatie | Vibe Energy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --canvas:#ECF1F4; --surface:#FFFFFF; --surf2:#F4F7F9;
+  --ink:#0B1A24; --deep:#06121C; --ink2:#102330;
+  --text:#0E1B24; --tsoft:#33454F; --tmuted:#5E6F79;
+  --signal:#00ADEF; --signal-d:#0096CC; --paper:#FFFFFF;
+  --line:rgba(14,27,36,.12); --line-d:rgba(255,255,255,.10);
+  --hair:rgba(0,150,204,.30);
+  --green:#2E9E4F; --amber:#D88A12; --red:#E55A4B;
+  --soft:rgba(232,240,245,.80); --muted:rgba(232,240,245,.55);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'IBM Plex Sans',sans-serif;font-weight:400;background:var(--canvas);color:var(--text);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+
+/* ===== shared header tokens (dark nav) ===== */
+nav.topnav{--paper:#fff;--signal:#00ADEF;--ink-900:#06121C;--muted:rgba(255,255,255,.55)}
+nav.topnav{position:fixed;top:0;left:0;right:0;height:92px;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 32px;transition:background .3s,backdrop-filter .3s}
+nav.topnav.scrolled{background:rgba(11,26,36,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,173,239,.08)}
+.wordmark{flex-shrink:0;display:inline-flex;align-items:center}
+.navlinks{display:flex;gap:2px;align-items:center}
+.nav-item{position:relative}
+.nav-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Sans';font-weight:400;font-size:14px;color:rgba(232,240,245,.74);padding:26px 12px;background:none;border:0;white-space:nowrap;transition:color .2s}
+.nav-link:hover,.nav-item.open .nav-link{color:#fff}
+.nav-caret{display:inline-block;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:4px solid currentColor;opacity:.6;transition:transform .2s}
+.nav-item.open .nav-caret{transform:rotate(180deg)}
+.nav-drop{position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(-4px);min-width:300px;background:rgba(6,18,28,.96);backdrop-filter:blur(24px);border:1px solid rgba(0,173,239,.18);padding:10px;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:101}
+.nav-item.open .nav-drop{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+.nav-drop a{display:flex;flex-direction:column;gap:3px;padding:12px 16px;font-size:14.5px;color:#fff;border-left:2px solid transparent;transition:background .15s,border-color .15s}
+.nav-drop a small{font-family:'JetBrains Mono';font-size:10.5px;color:rgba(255,255,255,.55);letter-spacing:.06em}
+.nav-drop a:hover{background:rgba(0,173,239,.08);border-left-color:var(--signal)}
+.nav-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.cta-secondary{font-size:14.5px;color:rgba(232,240,245,.86);padding:13px 20px;background:transparent;border:1px solid rgba(255,255,255,.18);transition:.2s}
+.cta-secondary:hover{color:#fff;border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.04)}
+.cta-pill{display:inline-flex;align-items:center;gap:14px;padding:11px 22px;background:#fff;color:var(--ink-900);font-size:14px;clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,0 100%);transition:.25s}
+.cta-pill .arr{display:inline-block;width:14px;height:1px;background:var(--ink-900);position:relative}
+.cta-pill .arr::after{content:'';position:absolute;right:0;top:-2.5px;width:6px;height:6px;border-top:1px solid var(--ink-900);border-right:1px solid var(--ink-900);transform:rotate(45deg) translate(-1px,1px)}
+.cta-pill:hover{background:var(--signal);color:#fff}
+@media(max-width:1180px){.cta-secondary{display:none}}
+@media(max-width:1024px){.navlinks{display:none}nav.topnav{padding:0 20px}}
+
+/* ===== HERO BAND (dark) ===== */
+.nc-hero{background:var(--ink);color:#fff;padding:152px 0 64px;position:relative;overflow:hidden;border-bottom:1px solid rgba(0,173,239,.14)}
+.nc-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 78% 0%,rgba(0,173,239,.10),transparent 60%);pointer-events:none}
+.wrap{max-width:880px;margin:0 auto;padding:0 clamp(24px,5vw,40px)}
+.nc-eyb{font-family:'JetBrains Mono';font-weight:500;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--signal);display:inline-flex;align-items:center;gap:14px}
+.nc-eyb::before{content:'';width:26px;height:1px;background:var(--signal);opacity:.7}
+.nc-hero h1{font-family:'Archivo';font-weight:800;font-size:clamp(40px,6vw,68px);letter-spacing:-.035em;line-height:.98;margin:22px 0 18px}
+.nc-hero h1 em{font-style:normal;color:var(--signal)}
+.nc-hero p{font-family:'IBM Plex Sans';font-weight:300;font-size:18px;line-height:1.6;color:var(--soft);max-width:54ch}
+.nc-meta{display:flex;gap:26px;margin-top:30px;flex-wrap:wrap;font-family:'JetBrains Mono';font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.nc-meta span{display:inline-flex;align-items:center;gap:9px}
+.nc-meta span::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--signal)}
+
+/* ===== WIZARD ===== */
+.nc-main{padding:52px 0 100px}
+.nc-card{max-width:880px;margin:0 auto;background:var(--surface);border:1px solid var(--line);box-shadow:0 24px 60px rgba(20,40,55,.10)}
+.nc-prog{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--line)}
+.nc-prog .seg{flex:1;height:4px;background:var(--line)}
+.nc-prog .seg.done{background:var(--signal-d)}
+.nc-prog .seg.cur{background:var(--signal)}
+.nc-phead{display:flex;align-items:baseline;justify-content:space-between;padding:26px 38px 0;gap:20px}
+.nc-step-n{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--signal-d)}
+.nc-step-c{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.14em;color:var(--tmuted)}
+.nc-body{padding:18px 38px 8px}
+.nc-body h2{font-family:'Archivo';font-weight:800;font-size:30px;letter-spacing:-.025em;line-height:1.04;margin-bottom:6px}
+.nc-body .sub{font-size:15px;color:var(--tmuted);line-height:1.55;margin-bottom:26px;max-width:60ch}
+
+/* fields */
+.fld{margin-bottom:24px}
+.fld.hidden{display:none}
+.fld > label{display:block;font-family:'IBM Plex Sans';font-weight:600;font-size:14.5px;color:var(--text);margin-bottom:12px}
+.fld .hint{font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--tmuted);font-weight:400;margin-left:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.inp{width:100%;background:var(--surf2);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Sans';font-size:15px;padding:13px 15px}
+.inp:focus{outline:none;border-color:var(--signal);box-shadow:0 0 0 3px rgba(0,173,239,.16);background:#fff}
+.inp::placeholder{color:rgba(14,27,36,.35)}
+select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--tmuted) 50%),linear-gradient(135deg,var(--tmuted) 50%,transparent 50%);background-position:calc(100% - 18px) 19px,calc(100% - 12px) 19px;background-size:6px 6px,6px 6px;background-repeat:no-repeat}
+.opts{display:flex;flex-wrap:wrap;gap:10px}
+.opts.cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{display:flex;align-items:center;gap:11px;text-align:left;background:var(--surf2);border:1px solid var(--line);padding:13px 16px;font-size:14.5px;color:var(--tsoft);transition:.15s;line-height:1.3}
+.opt:hover{border-color:var(--hair);background:#fff}
+.opt .bx{width:18px;height:18px;border:1.5px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:3px;transition:.15s}
+.opt.radio .bx{border-radius:50%}
+.opt .bx svg{width:11px;height:11px;opacity:0;transition:opacity .12s}
+.opt.sel{border-color:var(--signal-d);background:rgba(0,150,204,.07);color:var(--text);font-weight:500}
+.opt.sel .bx{background:var(--signal-d);border-color:var(--signal-d)}
+.opt.sel .bx svg{opacity:1;stroke:#fff}
+
+/* footer nav */
+.nc-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 38px 30px;border-top:1px solid var(--line);margin-top:14px}
+.btn{display:inline-flex;align-items:center;gap:12px;font-family:'IBM Plex Sans';font-weight:500;font-size:15px;padding:13px 24px;transition:.2s}
+.btn-ghost{color:var(--tmuted);border:1px solid var(--line)}
+.btn-ghost:hover{color:var(--text);border-color:var(--hair)}
+.btn-ghost[disabled]{opacity:.4;pointer-events:none}
+.btn-go{background:var(--signal);color:var(--deep);font-weight:600}
+.btn-go:hover{background:var(--signal-d);color:#fff}
+.btn-go .ar{width:16px;height:1px;background:currentColor;position:relative}
+.btn-go .ar::after{content:'';position:absolute;right:0;top:-2.5px;width:6px;height:6px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:rotate(45deg)}
+.err-msg{font-family:'JetBrains Mono';font-size:11px;color:var(--red);letter-spacing:.04em}
+
+/* ===== RESULT ===== */
+.nc-result{max-width:880px;margin:0 auto}
+.res-score{background:var(--ink);color:#fff;padding:48px 44px;position:relative;overflow:hidden}
+.res-score .tier-tag{font-family:'JetBrains Mono';font-size:12px;letter-spacing:.2em;text-transform:uppercase;display:inline-flex;align-items:center;gap:10px}
+.res-score .tier-tag .d{width:9px;height:9px;border-radius:50%}
+.res-num{display:flex;align-items:baseline;gap:14px;margin:18px 0 6px}
+.res-num b{font-family:'Archivo';font-weight:800;font-size:96px;letter-spacing:-.04em;line-height:.85}
+.res-num span{font-family:'Archivo';font-weight:600;font-size:30px;color:var(--muted)}
+.res-score h2{font-family:'Archivo';font-weight:800;font-size:34px;letter-spacing:-.025em;margin:10px 0 12px;max-width:18ch}
+.res-score p{font-size:16px;line-height:1.6;color:var(--soft);max-width:54ch}
+.res-bar{height:8px;background:rgba(255,255,255,.1);margin-top:30px;position:relative}
+.res-bar i{position:absolute;top:50%;transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;border:3px solid var(--ink)}
+.res-bar-labels{display:flex;justify-content:space-between;margin-top:12px;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.t-green{color:var(--green)} .t-amber{color:var(--amber)} .t-red{color:var(--red)}
+.bg-green{background:var(--green)} .bg-amber{background:var(--amber)} .bg-red{background:var(--red)}
+
+.res-cta{background:var(--surface);border:1px solid var(--line);border-top:0;padding:44px 44px 48px}
+.res-cta .eyb{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--signal-d)}
+.res-cta h3{font-family:'Archivo';font-weight:800;font-size:28px;letter-spacing:-.02em;margin:12px 0 8px}
+.res-cta .lead{font-size:15.5px;color:var(--tmuted);line-height:1.6;max-width:56ch;margin-bottom:26px}
+.res-list{display:grid;grid-template-columns:1fr 1fr;gap:12px 30px;margin-bottom:30px}
+.res-list .li{display:flex;align-items:flex-start;gap:12px;font-size:14.5px;color:var(--tsoft);line-height:1.4}
+.res-list .li .ck{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:rgba(0,150,204,.12);display:flex;align-items:center;justify-content:center;margin-top:1px}
+.res-list .li .ck svg{width:11px;height:11px;stroke:var(--signal-d)}
+.res-actions{display:flex;align-items:center;gap:18px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:26px}
+.res-note{font-size:13.5px;color:var(--tmuted);max-width:34ch;line-height:1.5}
+.btn-cta{background:var(--signal);color:var(--deep);font-weight:600;font-size:16px;padding:16px 30px}
+.btn-cta:hover{background:var(--signal-d);color:#fff}
+.btn-restart{font-family:'JetBrains Mono';font-size:12px;letter-spacing:.06em;color:var(--tmuted);text-transform:uppercase;border-bottom:1px solid var(--line);padding-bottom:3px}
+
+.done-state{text-align:center;padding:70px 44px;background:var(--surface);border:1px solid var(--line)}
+.done-state .ic{width:64px;height:64px;border-radius:50%;background:rgba(0,150,204,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 24px}
+.done-state .ic svg{width:30px;height:30px;stroke:var(--signal-d)}
+.done-state h2{font-family:'Archivo';font-weight:800;font-size:34px;letter-spacing:-.025em;margin-bottom:12px}
+.done-state p{font-size:16px;color:var(--tmuted);line-height:1.6;max-width:48ch;margin:0 auto}
+
+/* slim footer */
+.nc-pagefoot{background:var(--deep);color:rgba(255,255,255,.55);padding:30px 0;font-family:'JetBrains Mono';font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.nc-pagefoot .wrap{max-width:1320px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.nc-pagefoot a:hover{color:var(--signal)}
+
+@media(max-width:680px){
+  .grid2,.opts.cols,.res-list{grid-template-columns:1fr}
+  .nc-body,.nc-phead,.nc-foot,.res-cta,.res-score{padding-left:22px;padding-right:22px}
+}
+</style>
+
+<!--SEO-FOUNDATION-->
+<meta name="description" content="Twijfelt u of uw aansluiting genoeg capaciteit heeft? Doe de gratis Netcongestie Check en ontdek binnen 2 minuten uw risico's en mogelijke oplossingen.">
+<link rel="canonical" href="https://vibeenergy.nl/netcongestie-check">
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/png" href="assets/logo.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Vibe Energy">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="vibe·energy — Netcongestie Check">
+<meta property="og:description" content="Doe de gratis Netcongestie Check van Vibe Energy en ontdek binnen twee minuten wat er haalbaar is op uw aansluiting — geheel zonder netverzwaring.">
+<meta property="og:url" content="https://vibeenergy.nl/netcongestie-check">
+<meta property="og:image" content="https://vibeenergy.nl/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="vibe·energy — Netcongestie Check">
+<meta name="twitter:description" content="Doe de gratis Netcongestie Check van Vibe Energy en ontdek binnen twee minuten wat er haalbaar is op uw aansluiting — geheel zonder netverzwaring.">
+<meta name="twitter:image" content="https://vibeenergy.nl/assets/logo.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://vibeenergy.nl/netcongestie-check#webpage","url":"https://vibeenergy.nl/netcongestie-check","name":"vibe·energy — Netcongestie Check","description":"Doe de gratis Netcongestie Check van Vibe Energy en ontdek binnen twee minuten wat er haalbaar is op uw aansluiting — geheel zonder netverzwaring.","inLanguage":"nl-NL","isPartOf":{"@id":"https://vibeenergy.nl/#website"},"publisher":{"@id":"https://vibeenergy.nl/#org"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vibeenergy.nl/"},{"@type":"ListItem","position":2,"name":"Netcongestie Check","item":"https://vibeenergy.nl/netcongestie-check"}]}]}</script>
+<!--/SEO-FOUNDATION-->
+<style>/*rm-global*/@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}</style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1164445461468919');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<link rel="stylesheet" href="tokens.css">
+</head>
+<body>
+<!-- Google Tag Manager (noscript) --><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KM2V7VQ3" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script src="_header.js?v=3"></script>
+
+<!-- HERO -->
+<header class="nc-hero">
+  <div class="wrap">
+    <span class="nc-eyb">Gratis tool · ± 2 minuten</span>
+    <h1>Loopt uw aansluiting<br>tegen <em>het net</em> aan?</h1>
+    <p>Beantwoord een paar vragen over uw locatie, verbruik en groeiplannen. U krijgt direct een indicatieve netcongestie-risicoscore — en wat u eraan kunt doen.</p>
+    <div class="nc-meta"><span>6 stappen</span><span>Direct resultaat</span><span>Gratis rapport binnen 24 u</span></div>
+  </div>
+</header>
+
+<!-- WIZARD -->
+<main class="nc-main">
+  <div id="ncApp"></div>
+</main>
+
+<!-- FOOTER -->
+<script src="_footer.js"></script>
+
+<script>
+/* ---------- nav dropdowns (matches site) ---------- */
+(function(){
+  const nav=document.getElementById('topnav'); if(!nav) return;
+  const onScroll=()=>nav.classList.toggle('scrolled',window.scrollY>24);
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+  const items=nav.querySelectorAll('.nav-item');
+  items.forEach(item=>{
+    const drop=item.querySelector('.nav-drop'); if(!drop)return; let t=null;
+    item.addEventListener('mouseenter',()=>{clearTimeout(t);items.forEach(i=>i!==item&&i.classList.remove('open'));item.classList.add('open');});
+    item.addEventListener('mouseleave',()=>{t=setTimeout(()=>item.classList.remove('open'),180);});
+  });
+})();
+
+/* ---------- check ---------- */
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>';
+const state = {};
+
+const STEPS = [
+  { title:'Bedrijfsgegevens', sub:'Zodat we het rapport aan uw locatie kunnen koppelen.', fields:[
+    {t:'text', k:'bedrijf', l:'Bedrijfsnaam', req:true, half:true},
+    {t:'text', k:'naam', l:'Naam contactpersoon', req:true, half:true},
+    {t:'email', k:'email', l:'E-mailadres', req:true, half:true},
+    {t:'tel', k:'tel', l:'Telefoonnummer', half:true},
+    {t:'text', k:'postcode', l:'Postcode', half:true},
+    {t:'text', k:'huisnr', l:'Huisnummer', half:true},
+    {t:'select', k:'functie', l:'Functie', options:['Directeur / Eigenaar','Facility Manager','Technisch Manager','Vastgoedbeheerder','Financieel Manager','Overig']},
+  ]},
+  { title:'Aansluiting & verbruik', sub:'Hoe groot is uw huidige aansluiting en wat verbruikt u?', fields:[
+    {t:'radio', k:'aansluiting', l:'Wat is uw huidige netaansluiting?', options:['3×80A','3×160A','3×250A','3×400A','630A','1000A','Onbekend']},
+    {t:'radio', k:'verbruik', l:'Hoeveel elektriciteit verbruikt u jaarlijks?', cols:true, options:['< 50.000 kWh','50.000 – 100.000 kWh','100.000 – 250.000 kWh','250.000 – 500.000 kWh','500.000 – 1.000.000 kWh','> 1.000.000 kWh','Onbekend']},
+    {t:'radio', k:'rekening', l:'Hoeveel bedraagt uw jaarlijkse elektriciteitsrekening?', cols:true, options:['< €25.000','€25.000 – €50.000','€50.000 – €100.000','€100.000 – €250.000','> €250.000']},
+  ]},
+  { title:'Netcongestie-problemen', sub:'Ervaart u nu één of meerdere van deze problemen? Meerdere antwoorden mogelijk.', fields:[
+    {t:'check', k:'problemen', l:'Selecteer wat van toepassing is', cols:true, options:['Geen ruimte voor uitbreiding','Verzwaring aangevraagd maar afgewezen','Lange wachttijd netbeheerder','Vermogenstekort tijdens piekuren','Problemen met laadpalen','Problemen met zonnepanelen','Productieprocessen kunnen niet uitbreiden','Nieuwe machines kunnen niet worden aangesloten','Nieuwe vestiging of uitbreiding gepland','Geen problemen, maar wel benieuwd']},
+  ]},
+  { title:'Verduurzaming', sub:'Wat heeft u al staan aan opwek, laden en opslag?', fields:[
+    {t:'radio', k:'zon', l:'Heeft u zonnepanelen?', options:['Ja','Nee','In ontwikkeling']},
+    {t:'radio', k:'zonGrootte', l:'Hoe groot is de installatie?', showIf:s=>s.zon==='Ja'||s.zon==='In ontwikkeling', cols:true, options:['< 50 kWp','50 – 250 kWp','250 – 500 kWp','500 – 1000 kWp','> 1000 kWp']},
+    {t:'radio', k:'laadpalen', l:'Heeft u laadpalen?', options:['Ja','Nee']},
+    {t:'radio', k:'laadpunten', l:'Aantal laadpunten', showIf:s=>s.laadpalen==='Ja', options:['1–5','6–20','21–50','50+']},
+    {t:'radio', k:'batterij', l:'Heeft u al een batterij?', options:['Ja','Nee']},
+  ]},
+  { title:'Groei & toekomst', sub:'Welke uitbreidingen staan gepland binnen 24 maanden? Meerdere mogelijk.', fields:[
+    {t:'check', k:'groei', l:'Geplande uitbreidingen', cols:true, options:['Extra laadpalen','Zonnepanelen','Batterijopslag','Productielijn','Warmtepompen','Koelinstallaties','Nieuwe machines','Extra panden','Geen plannen']},
+  ]},
+  { title:'Directe besparingsscan', sub:'Tot slot: uw doel en gewenste startmoment.', fields:[
+    {t:'radio', k:'doel', l:'Wat is voor u het belangrijkste doel?', cols:true, options:['Uitbreiden ondanks netcongestie','Energiekosten verlagen','Meer laadpalen plaatsen','Meer zonnepanelen installeren','Energiehandel','CO₂-reductie','Verduurzaming vastgoed','Subsidies benutten']},
+    {t:'radio', k:'start', l:'Wanneer wilt u starten?', options:['Direct','Binnen 3 maanden','Binnen 6 maanden','Binnen 12 maanden','Oriënterend']},
+  ]},
+];
+
+let cur = 0;
+const app = document.getElementById('ncApp');
+
+function fieldHTML(f){
+  const visible = f.showIf ? f.showIf(state) : true;
+  let inner = '';
+  if(f.t==='select'){
+    inner = `<select class="inp" data-k="${f.k}"><option value="">Maak een keuze…</option>`+
+      f.options.map(o=>`<option ${state[f.k]===o?'selected':''}>${o}</option>`).join('')+`</select>`;
+  } else if(f.t==='radio' || f.t==='check'){
+    const sel = state[f.k] || (f.t==='check'?[]:'');
+    inner = `<div class="opts ${f.cols?'cols':''}">`+ f.options.map(o=>{
+      const on = f.t==='check' ? sel.includes(o) : sel===o;
+      return `<button type="button" class="opt ${f.t==='check'?'':'radio'} ${on?'sel':''}" data-k="${f.k}" data-v="${o}" data-multi="${f.t==='check'}"><span class="bx">${CHECK}</span><span>${o}</span></button>`;
+    }).join('')+`</div>`;
+  } else {
+    inner = `<input class="inp" type="${f.t}" data-k="${f.k}" value="${(state[f.k]||'').replace(/"/g,'&quot;')}" placeholder="${f.ph||''}">`;
+  }
+  return `<div class="fld ${visible?'':'hidden'} ${f.half?'half':''}" data-fld="${f.k}">
+    <label>${f.l}${f.req?' <span class="hint">verplicht</span>':''}</label>${inner}</div>`;
+}
+
+function renderStep(){
+  const s = STEPS[cur];
+  const segs = STEPS.map((_,i)=>`<div class="seg ${i<cur?'done':''} ${i===cur?'cur':''}"></div>`).join('');
+  // group half fields into grid2 pairs for step 1
+  let fieldsHTML;
+  if(cur===0){
+    fieldsHTML = `<div class="grid2">`+s.fields.filter(f=>f.half).map(fieldHTML).join('')+`</div>`+
+                 s.fields.filter(f=>!f.half).map(fieldHTML).join('');
+  } else {
+    fieldsHTML = s.fields.map(fieldHTML).join('');
+  }
+  app.innerHTML = `
+  <div class="nc-card">
+    <div class="nc-prog">${segs}</div>
+    <div class="nc-phead"><span class="nc-step-n">Stap ${cur+1} — ${s.title}</span><span class="nc-step-c">${cur+1} / ${STEPS.length}</span></div>
+    <div class="nc-body">
+      <h2>${s.title}</h2>
+      <p class="sub">${s.sub}</p>
+      ${fieldsHTML}
+    </div>
+    <div class="nc-foot">
+      <button class="btn btn-ghost" id="back" ${cur===0?'disabled':''}>← Vorige</button>
+      <span class="err-msg" id="err"></span>
+      <button class="btn btn-go" id="next">${cur===STEPS.length-1?'Bekijk mijn score':'Volgende'} <span class="ar"></span></button>
+    </div>
+  </div>`;
+  app.querySelector('.nc-card').scrollIntoView({block:'start'});
+  bind();
+}
+
+function bind(){
+  app.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{
+    const k=b.dataset.k, v=b.dataset.v, multi=b.dataset.multi==='true';
+    if(multi){
+      const arr = state[k] ? [...state[k]] : [];
+      const i = arr.indexOf(v);
+      if(i>=0) arr.splice(i,1); else arr.push(v);
+      state[k]=arr; b.classList.toggle('sel');
+    } else {
+      state[k]=v;
+      b.parentElement.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));
+      b.classList.add('sel');
+      refreshConditionals();
+    }
+    document.getElementById('err').textContent='';
+  }));
+  app.querySelectorAll('.inp').forEach(el=>el.addEventListener('input',()=>{ state[el.dataset.k]=el.value; document.getElementById('err').textContent=''; }));
+  app.querySelectorAll('select.inp').forEach(el=>el.addEventListener('change',()=>{ state[el.dataset.k]=el.value; }));
+  document.getElementById('next').addEventListener('click',next);
+  const back=document.getElementById('back'); if(back) back.addEventListener('click',()=>{ if(cur>0){cur--;renderStep();} });
+}
+
+function refreshConditionals(){
+  STEPS[cur].fields.forEach(f=>{
+    if(!f.showIf) return;
+    const el = app.querySelector(`[data-fld="${f.k}"]`);
+    if(el) el.classList.toggle('hidden', !f.showIf(state));
+  });
+}
+
+function next(){
+  // validate required on step 1
+  if(cur===0){
+    const miss = STEPS[0].fields.filter(f=>f.req && !(state[f.k]||'').trim());
+    if(miss.length){ document.getElementById('err').textContent='Vul de verplichte velden in'; return; }
+    if(state.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(state.email)){ document.getElementById('err').textContent='Vul een geldig e-mailadres in'; return; }
+  }
+  if(cur < STEPS.length-1){ cur++; renderStep(); }
+  else showResult();
+}
+
+/* ---------- scoring ---------- */
+function computeScore(){
+  let s = 0;
+  const heavy = ['Geen ruimte voor uitbreiding','Verzwaring aangevraagd maar afgewezen','Lange wachttijd netbeheerder','Vermogenstekort tijdens piekuren'];
+  (state.problemen||[]).forEach(p=>{ if(p==='Geen problemen, maar wel benieuwd') return; s += heavy.includes(p)?14:8; });
+  s += {'< 50.000 kWh':0,'50.000 – 100.000 kWh':4,'100.000 – 250.000 kWh':8,'250.000 – 500.000 kWh':12,'500.000 – 1.000.000 kWh':16,'> 1.000.000 kWh':20,'Onbekend':6}[state.verbruik]||0;
+  s += {'3×80A':2,'3×160A':4,'3×250A':6,'3×400A':6,'630A':4,'1000A':2,'Onbekend':5}[state.aansluiting]||0;
+  (state.groei||[]).forEach(g=>{ if(g==='Geen plannen') return; s += 5; });
+  if(state.batterij==='Nee' && (state.zon==='Ja' || state.laadpalen==='Ja')) s += 8;
+  if(state.start==='Direct') s += 8; else if(state.start==='Binnen 3 maanden') s += 5;
+  return Math.max(0, Math.min(100, Math.round(s)));
+}
+
+const TIERS = [
+  {max:30, key:'green', label:'Laag risico', cls:'t-green', bg:'bg-green', head:'Beperkt risico op netcongestie', body:'Uw locatie lijkt momenteel beperkt risico te lopen op netcongestie. Met de juiste voorbereiding blijft u ook bij groei wendbaar.'},
+  {max:70, key:'amber', label:'Verhoogd risico', cls:'t-amber', bg:'bg-amber', head:'Risico bij toekomstige uitbreiding', body:'Uw locatie loopt risico op beperkingen bij toekomstige uitbreidingen. Met opslag en slimme sturing voorkomt u dat groei vastloopt op de aansluiting.'},
+  {max:100, key:'red', label:'Hoog risico', cls:'t-red', bg:'bg-red', head:'Direct last van netcongestie', body:'Uw locatie heeft waarschijnlijk nu al last van netcongestie, of zal dit binnenkort ervaren. Een batterij plus EMS-sturing geeft u capaciteit zonder te wachten op netverzwaring.'},
+];
+
+const RAPPORT = ['Beschikbare netcapaciteit','Congestiegebied netbeheerder','Mogelijkheden voor batterijopslag','Mogelijkheden voor EMS-sturing','Mogelijkheden voor extra laadinfra','Subsidies (Flex-E, EIA, SPRILA)','Verwachte terugverdientijd'];
+
+function showResult(){
+  const score = computeScore();
+  const tier = TIERS.find(t=>score<=t.max);
+  app.innerHTML = `
+  <div class="nc-result">
+    <div class="res-score">
+      <span class="tier-tag ${tier.cls}"><span class="d ${tier.bg}"></span>${tier.label} · score ${score}/100</span>
+      <div class="res-num"><b class="${tier.cls}">${score}</b><span>/ 100</span></div>
+      <h2>${tier.head}</h2>
+      <p>${tier.body}</p>
+      <div class="res-bar">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:30%;background:rgba(46,158,79,.5)"></div>
+        <div style="position:absolute;left:30%;top:0;bottom:0;width:40%;background:rgba(216,138,18,.5)"></div>
+        <div style="position:absolute;left:70%;top:0;bottom:0;width:30%;background:rgba(229,90,75,.5)"></div>
+        <i class="${tier.bg}" style="left:${score}%"></i>
+      </div>
+      <div class="res-bar-labels"><span>0 · laag</span><span>50</span><span>100 · hoog</span></div>
+    </div>
+    <div class="res-cta">
+      <span class="eyb">Volgende stap · gratis</span>
+      <h3>Uw persoonlijke netcongestierapport</h3>
+      <p class="lead">Op basis van uw antwoorden stellen onze energiespecialisten een rapport op. Wij analyseren voor uw locatie:</p>
+      <div class="res-list">${RAPPORT.map(r=>`<div class="li"><span class="ck">${CHECK}</span><span>${r}</span></div>`).join('')}</div>
+      <div class="res-actions">
+        <button class="btn btn-cta" id="send">Vraag gratis analyse aan</button>
+        <span class="res-note">Ontvang binnen 24 uur een persoonlijk rapport en adviesgesprek met een energiespecialist.</span>
+        <button class="btn-restart" id="restart">Opnieuw invullen</button>
+      </div>
+    </div>
+  </div>`;
+  app.querySelector('.nc-result').scrollIntoView({block:'start'});
+  document.getElementById('restart').addEventListener('click',()=>{ for(const k in state) delete state[k]; cur=0; renderStep(); });
+  document.getElementById('send').addEventListener('click',()=>{
+    const btn=document.getElementById('send');
+    const acts=btn.parentElement;
+    let errEl=acts.querySelector('.send-err');
+    if(errEl) errEl.remove();
+    btn.disabled=true; const orig=btn.textContent; btn.textContent='Versturen…';
+    const payload=Object.assign({_subject:'Nieuwe Netcongestie Check aanvraag', _template:'table'}, state);
+    fetch('https://formsubmit.co/ajax/sales@vibeenergy.nl',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify(payload)
+    }).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(()=>{
+      app.innerHTML = `<div class="done-state">
+        <div class="ic">${CHECK}</div>
+        <h2>Aanvraag ontvangen</h2>
+        <p>Bedankt${state.naam?', '+state.naam.split(' ')[0]:''}. Een specialist neemt binnen één werkdag contact op via ${state.email||'uw e-mailadres'} met uw netcongestierapport.</p>
+      </div>`;
+      app.querySelector('.done-state').scrollIntoView({block:'start'});
+    })
+    .catch(()=>{
+      btn.disabled=false; btn.textContent=orig;
+      const e=document.createElement('span');
+      e.className='send-err'; e.style.cssText='display:block;margin-top:12px;color:var(--error);font-size:14px';
+      e.textContent='Verzenden is niet gelukt. Probeer het opnieuw of mail rechtstreeks naar sales@vibeenergy.nl.';
+      acts.appendChild(e);
+    });
+  });
+}
+
+renderStep();
+</script>
+</body>
+</html>

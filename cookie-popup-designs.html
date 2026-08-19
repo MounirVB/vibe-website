@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cookiemelding — 5 designs · Vibe Energy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--sig:#00ADEF;--sig-ink:#0096CC;--sig-deep:#0078AD;--ink:#0E1B24;--ink9:#06121C;--ink8:#0B1A24;--soft:#33454F;--muted:#5E6F79;--line:rgba(14,27,36,.12);--canvas:#ECF1F4;--surf:#fff;--surf2:#F4F7F9;--dline:rgba(255,255,255,.10)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--canvas);font-family:'IBM Plex Sans',system-ui,sans-serif;color:var(--ink)}
+.pg{max-width:1180px;margin:0 auto;padding:56px 32px 90px}
+.ph{border-bottom:1px solid var(--line);padding-bottom:26px;margin-bottom:44px}
+.eb{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--sig-ink)}
+h1{font-family:'Archivo',sans-serif;font-weight:800;font-size:38px;letter-spacing:-.02em;line-height:1.1;margin:12px 0 10px}
+.ph p{font-size:15px;line-height:1.65;color:var(--soft);max-width:640px;margin:0}
+.opt{margin-bottom:56px}
+.oh{display:flex;align-items:baseline;gap:14px;margin-bottom:6px}
+.on{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--sig-ink)}
+.ot{font-family:'Archivo',sans-serif;font-weight:700;font-size:21px;letter-spacing:-.01em;margin:0}
+.od{font-size:13.5px;line-height:1.6;color:var(--muted);margin:0 0 18px;max-width:660px}
+.stage{position:relative;height:380px;border:1px solid var(--line);border-radius:5px;overflow:hidden;background:#fff}
+.stage.dark{background:var(--ink9)}
+.bg{position:absolute;inset:0;background:linear-gradient(180deg,#0B1A24 0%,#102330 62%,#16303f 100%)}
+.bg:after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 55% 60% at 78% 8%,rgba(0,173,239,.16),transparent 60%)}
+.fake{position:absolute;inset:0;padding:26px 30px;color:rgba(232,240,245,.42);font-size:11px;letter-spacing:.06em}
+.fake .lg{font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:#fff;letter-spacing:-.01em}
+.fake .lg i{color:var(--sig);font-style:normal}
+.fake .hl{margin-top:58px;font-family:'Archivo',sans-serif;font-weight:800;font-size:34px;line-height:1.12;letter-spacing:-.02em;color:rgba(255,255,255,.9);max-width:440px}
+.fake .hs{margin-top:14px;font-size:13px;line-height:1.6;color:rgba(232,240,245,.5);max-width:400px}
+/* shared popup atoms */
+.eb2{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--sig-ink)}
+.tt{font-family:'Archivo',sans-serif;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin:0}
+.tx{font-size:13px;line-height:1.6;color:var(--soft);margin:0}
+.tx a{color:var(--sig-ink)}
+.b{font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;font-weight:600;line-height:1;padding:12px 18px;border-radius:3px;border:1px solid transparent;cursor:pointer;white-space:nowrap}
+.b1{background:var(--sig);color:var(--ink9)}
+.b2{background:#fff;color:var(--ink);border-color:rgba(14,27,36,.22)}
+.b3{background:transparent;color:var(--muted);padding-left:10px;padding-right:10px}
+.bd1{background:var(--sig);color:var(--ink9)}
+.bd2{background:transparent;color:#fff;border-color:rgba(255,255,255,.28)}
+.bd3{background:transparent;color:rgba(232,240,245,.6);padding-left:10px;padding-right:10px}
+.sw{position:relative;width:38px;height:22px;border-radius:11px;background:rgba(14,27,36,.16);flex:0 0 auto}
+.sw:after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(4,12,20,.3)}
+.sw.on{background:var(--sig)}.sw.on:after{transform:translateX(16px)}
+.sw.lock{background:rgba(0,173,239,.4)}.sw.lock:after{transform:translateX(16px)}
+.sw.dk{background:rgba(255,255,255,.18)}.sw.dk.on{background:var(--sig)}
+
+/* A — bar onderaan (huidig) */
+.a{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);width:min(620px,calc(100% - 32px));background:#fff;border:1px solid var(--line);border-top:3px solid var(--sig);border-radius:4px;box-shadow:0 24px 60px rgba(4,12,20,.3);padding:20px 22px}
+.a .tt{font-size:17px;margin-bottom:7px}
+.a .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.a .b1{flex:1 1 auto;min-width:160px}
+
+/* B — compacte kaart linksonder */
+.bcard{position:absolute;left:22px;bottom:22px;width:326px;background:#fff;border:1px solid var(--line);border-radius:4px;box-shadow:0 20px 52px rgba(4,12,20,.28);overflow:hidden}
+.bcard .strip{height:3px;background:linear-gradient(90deg,var(--sig),var(--sig-deep))}
+.bcard .in{padding:18px 19px 17px}
+.bcard .tt{font-size:15px;margin:7px 0 6px}
+.bcard .tx{font-size:12.5px}
+.bcard .row{display:grid;gap:7px;margin-top:15px}
+.bcard .lnk{display:block;text-align:center;font-size:11.5px;color:var(--muted);text-decoration:underline;text-underline-offset:2px;margin-top:9px}
+
+/* C — donkere modal, gecentreerd */
+.cov{position:absolute;inset:0;background:rgba(4,12,20,.66);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center}
+.cm{width:min(520px,calc(100% - 44px));background:var(--ink8);border:1px solid var(--dline);border-radius:5px;box-shadow:0 32px 80px rgba(0,0,0,.5);padding:28px 30px 26px;position:relative;overflow:hidden}
+.cm:before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 80% at 100% 0,rgba(0,173,239,.16),transparent 60%);pointer-events:none}
+.cm .eb2{color:var(--sig)}
+.cm .tt{color:#fff;font-size:20px;margin:10px 0 9px}
+.cm .tx{color:rgba(232,240,245,.72);font-size:13px}
+.cm .tx a{color:var(--sig)}
+.cm .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px;position:relative}
+.cm .bd1{flex:1 1 auto;min-width:150px}
+
+/* D — slanke volle-breedte balk */
+.d{position:absolute;left:0;right:0;bottom:0;background:var(--ink9);border-top:2px solid var(--sig);padding:15px 26px;display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.d .txt{flex:1 1 320px;min-width:260px}
+.d .tt{color:#fff;font-size:14px;margin-bottom:3px}
+.d .tx{color:rgba(232,240,245,.6);font-size:12px}
+.d .tx a{color:var(--sig)}
+.d .row{display:flex;gap:7px;flex-wrap:wrap}
+
+/* E — zijpaneel met toggles */
+.e{position:absolute;right:0;top:0;bottom:0;width:352px;background:#fff;border-left:1px solid var(--line);box-shadow:-24px 0 60px rgba(4,12,20,.24);display:flex;flex-direction:column}
+.e .top{padding:22px 22px 15px;border-bottom:1px solid var(--line)}
+.e .tt{font-size:17px;margin:8px 0 7px}
+.e .tx{font-size:12.5px}
+.e .body{flex:1;padding:4px 22px;overflow:hidden}
+.e .r{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}
+.e .rn{font-family:'Archivo',sans-serif;font-weight:600;font-size:13px;margin-bottom:2px}
+.e .rd{font-size:11.5px;line-height:1.5;color:var(--muted)}
+.e .btm{padding:16px 22px 20px;border-top:1px solid var(--line);background:var(--surf2);display:grid;gap:7px}
+.e .dim{position:absolute;inset:0;background:rgba(4,12,20,.4)}
+a{color:var(--sig-ink)}a:hover{color:var(--sig-deep)}
+</style>
+</head>
+<body>
+<div class="pg">
+<div class="ph">
+  <div class="eb">Vibe Energy · Website</div>
+  <h1>Cookiemelding — vijf richtingen</h1>
+  <p>Dezelfde inhoud en dezelfde keuzes, vijf manieren om ze te tonen. Alle varianten gebruiken de Vibe-tokens: cyaan #00ADEF als signaal, Archivo voor koppen, IBM Plex Sans voor tekst. Optie A is wat er nu live staat.</p>
+</div>
+
+<section class="opt">
+  <div class="oh"><span class="on">A</span><h2 class="ot">Kaart onderaan — huidige variant</h2></div>
+  <p class="od">Zwevende kaart met cyaan bovenrand, gecentreerd onderaan. Duidelijk aanwezig zonder de pagina te blokkeren. Drie knoppen naast elkaar, waarvan accepteren de nadruk krijgt.</p>
+  <div class="stage">
+    <div class="bg"></div>
+    <div class="fake"><div class="lg">vibe<i>·</i>energy</div><div class="hl">Groei zonder te wachten op het net.</div><div class="hs">Energy Hubs voor bedrijven die meer vermogen nodig hebben dan hun aansluiting toelaat.</div></div>
+    <div class="a">
+      <div class="eb2">Cookies</div>
+      <h3 class="tt">Deze site gebruikt cookies</h3>
+      <p class="tx">Wij gebruiken noodzakelijke cookies om de website te laten werken, en analytische cookies om te zien hoe de site wordt gebruikt. Meer hierover in ons <a href="#">privacybeleid</a>.</p>
+      <div class="row"><button class="b b1">Alles accepteren</button><button class="b b2">Alleen noodzakelijk</button><button class="b b3">Instellingen</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="opt">
+  <div class="oh"><span class="on">B</span><h2 class="ot">Compacte kaart linksonder</h2></div>
+  <p class="od">Discreet en klein, uit de leesrichting. Knoppen onder elkaar zodat de kaart smal blijft. Geschikt wanneer de melding zo min mogelijk aandacht mag opeisen.</p>
+  <div class="stage">
+    <div class="bg"></div>
+    <div class="fake"><div class="lg">vibe<i>·</i>energy</div><div class="hl">Groei zonder te wachten op het net.</div><div class="hs">Energy Hubs voor bedrijven die meer vermogen nodig hebben dan hun aansluiting toelaat.</div></div>
+    <div class="bcard">
+      <div class="strip"></div>
+      <div class="in">
+        <div class="eb2">Cookies</div>
+        <h3 class="tt">Cookies op vibeenergy.nl</h3>
+        <p class="tx">Noodzakelijke cookies laten de site werken. Analytische cookies helpen ons de site te verbeteren.</p>
+        <div class="row"><button class="b b1">Alles accepteren</button><button class="b b2">Alleen noodzakelijk</button></div>
+        <a class="lnk" href="#">Instellingen en privacybeleid</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="opt">
+  <div class="oh"><span class="on">C</span><h2 class="ot">Donkere modal, gecentreerd</h2></div>
+  <p class="od">Onmiskenbaar: de pagina gaat achter een waas en de bezoeker maakt eerst een keuze. Donker paneel in de merkkleuren, sluit aan bij de donkere hero's. Hoogste consent-ratio, maar ook de meest dwingende.</p>
+  <div class="stage">
+    <div class="bg"></div>
+    <div class="fake"><div class="lg">vibe<i>·</i>energy</div><div class="hl">Groei zonder te wachten op het net.</div></div>
+    <div class="cov">
+      <div class="cm">
+        <div class="eb2">Cookies</div>
+        <h3 class="tt">Uw voorkeuren, voordat we verder gaan</h3>
+        <p class="tx">Wij plaatsen noodzakelijke cookies om de website te laten werken, en met uw toestemming analytische cookies om te meten hoe de site wordt gebruikt. Zie het <a href="#">privacybeleid</a>.</p>
+        <div class="row"><button class="b bd1">Alles accepteren</button><button class="b bd2">Alleen noodzakelijk</button><button class="b bd3">Instellingen</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="opt">
+  <div class="oh"><span class="on">D</span><h2 class="ot">Slanke balk over de volle breedte</h2></div>
+  <p class="od">Eén regel donker onderaan het scherm, tekst links en knoppen rechts. Neemt de minste ruimte in en oogt het meest zakelijk. Past goed bij een site waar de hero het beeld moet dragen.</p>
+  <div class="stage">
+    <div class="bg"></div>
+    <div class="fake"><div class="lg">vibe<i>·</i>energy</div><div class="hl">Groei zonder te wachten op het net.</div><div class="hs">Energy Hubs voor bedrijven die meer vermogen nodig hebben dan hun aansluiting toelaat.</div></div>
+    <div class="d">
+      <div class="txt">
+        <h3 class="tt">Deze site gebruikt cookies</h3>
+        <p class="tx">Noodzakelijk voor de werking, analytisch om de site te verbeteren. Zie ons <a href="#">privacybeleid</a>.</p>
+      </div>
+      <div class="row"><button class="b bd1">Alles accepteren</button><button class="b bd2">Alleen noodzakelijk</button><button class="b bd3">Instellingen</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="opt">
+  <div class="oh"><span class="on">E</span><h2 class="ot">Zijpaneel met keuzes direct zichtbaar</h2></div>
+  <p class="od">Geen tussenstap: de drie categorieën staan meteen open met schakelaars. Transparant en het meest AVG-vriendelijk, omdat weigeren net zo eenvoudig is als accepteren. Vraagt wel meer schermruimte.</p>
+  <div class="stage">
+    <div class="bg"></div>
+    <div class="fake"><div class="lg">vibe<i>·</i>energy</div><div class="hl">Groei zonder te wachten op het net.</div></div>
+    <div class="dim"></div>
+    <div class="e">
+      <div class="top">
+        <div class="eb2">Cookies</div>
+        <h3 class="tt">Cookievoorkeuren</h3>
+        <p class="tx">Bepaal zelf welke cookies wij plaatsen. Uw keuze wordt bewaard en kan altijd worden gewijzigd.</p>
+      </div>
+      <div class="body">
+        <div class="r"><div><div class="rn">Noodzakelijk</div><div class="rd">Nodig voor formulieren, beveiliging en het onthouden van deze keuze.</div></div><div class="sw lock"></div></div>
+        <div class="r"><div><div class="rn">Analytisch</div><div class="rd">Google Analytics en Microsoft Clarity, om pagina's te verbeteren.</div></div><div class="sw on"></div></div>
+        <div class="r" style="border-bottom:0"><div><div class="rn">Marketing</div><div class="rd">Advertentie- en remarketingcookies voor onze campagnes.</div></div><div class="sw"></div></div>
+      </div>
+      <div class="btm"><button class="b b1">Keuze opslaan</button><button class="b b2">Alles accepteren</button></div>
+    </div>
+  </div>
+</section>
+
+</div>
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#06121C"/><g fill="#00ADEF"><rect x="22" y="30" width="56" height="16" rx="2"/><rect x="22" y="54" width="36" height="16" rx="2"/><circle cx="70" cy="62" r="8"/></g></svg>
+</template>
+</body>
+</html>

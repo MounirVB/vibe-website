@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="nl"><head>
+<!-- Cookie consent (moet vóór GTM/Clarity laden) --><script src="_consent.js"></script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KM2V7VQ3');</script>
+<!-- End Google Tag Manager -->
+<!-- Microsoft Clarity --><script src="_clarity.js"></script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Over Vibe Energy — één partner voor uw energie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  /* Light FrameIQ-systeem · Vibe cyan */
+  --ink-900:#F4F7F9; --ink-800:#ECF1F4; --ink-700:#FFFFFF; --ink-600:#E3EAEF;
+  --signal:#0096CC; --paper:#0E1B24;
+  --muted:#5E6F79; --soft:#33454F;
+  --hairline:rgba(0,150,204,.30); --line:rgba(14,27,36,.12);
+  --error:#D6473A;
+}
+.band-dark, nav.topnav, footer.ftr.v1a{
+  --ink-900:#06121C; --ink-800:#0B1A24; --ink-700:#102330; --ink-600:#16303f;
+  --signal:#00ADEF; --paper:#FFFFFF;
+  --muted:rgba(255,255,255,.55); --soft:rgba(255,255,255,.78);
+  --hairline:rgba(0,173,239,.14); --line:rgba(255,255,255,.08);
+  --error:#E55A4B;
+}
+.band-dark{background:var(--ink-800);color:var(--paper)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--ink-800);color:var(--paper);font-family:'IBM Plex Sans',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:clip;scroll-behavior:smooth}
+a{color:inherit;text-decoration:none}
+button{font:inherit}
+
+/* ========== NAV ========== */
+nav.topnav{position:fixed;top:0;left:0;right:0;height:92px;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:transparent;transition:background .3s ease,backdrop-filter .3s ease}
+nav.topnav.scrolled{background:rgba(11,26,36,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,173,239,.08)}
+.wordmark{font-family:'Archivo',sans-serif;font-weight:700;font-size:22px;letter-spacing:.02em;text-transform:lowercase;flex-shrink:0;line-height:1;display:inline-flex;align-items:center}
+.wordmark .dot{color:var(--signal);margin:0 2px}
+.navlinks{display:flex;gap:2px;align-items:center}
+.nav-item{position:relative}
+.nav-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Sans';font-weight:400;font-size:14px;letter-spacing:.005em;line-height:1;color:rgba(232,240,245,.74);padding:26px 12px;cursor:pointer;transition:color .2s;background:none;border:0;white-space:nowrap}
+.nav-link:hover,.nav-item.open .nav-link,.nav-link.current{color:var(--paper)}
+.nav-caret{display:inline-block;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:4px solid currentColor;opacity:.6;transition:transform .2s}
+.nav-item.open .nav-caret{transform:rotate(180deg)}
+.nav-drop{position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(-4px);min-width:300px;background:rgba(6,18,28,.96);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(0,173,239,.18);padding:10px;opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease;z-index:101}
+.nav-item.open .nav-drop{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+.nav-drop::before{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:rgba(6,18,28,.96);border-left:1px solid rgba(0,173,239,.18);border-top:1px solid rgba(0,173,239,.18)}
+.nav-drop a{display:flex;flex-direction:column;gap:3px;padding:12px 16px;font-family:'IBM Plex Sans';font-weight:400;font-size:14.5px;color:var(--paper);border-left:2px solid transparent;transition:background .15s,border-color .15s}
+.nav-drop a small{font-family:'JetBrains Mono',monospace;font-weight:400;font-size:10.5px;color:var(--muted);letter-spacing:.06em;text-transform:none}
+.nav-drop a:hover{background:rgba(0,173,239,.08);border-left-color:var(--signal)}
+.nav-drop a.current{background:rgba(0,173,239,.06);border-left-color:var(--signal)}
+.nav-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.cta-secondary{font-family:'IBM Plex Sans';font-weight:400;font-size:14.5px;line-height:1;color:rgba(232,240,245,.86);padding:13px 20px;background:transparent;border:1px solid rgba(255,255,255,.18);cursor:pointer;transition:border-color .2s,color .2s,background .2s}
+.cta-secondary:hover{color:var(--paper);border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.04)}
+.cta-pill{display:inline-flex;align-items:center;gap:14px;padding:11px 22px;background:var(--paper);color:var(--ink-900);font-family:'IBM Plex Sans';font-weight:400;font-size:14px;letter-spacing:.005em;cursor:pointer;border:0;transition:background .25s ease,color .25s ease;clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+.cta-pill .arr{display:inline-block;width:14px;height:1px;background:var(--ink-900);position:relative;transition:background .3s ease,transform .3s ease}
+.cta-pill .arr::after{content:'';position:absolute;right:0;top:-2.5px;width:6px;height:6px;border-top:1px solid var(--ink-900);border-right:1px solid var(--ink-900);transform:rotate(45deg) translate(-1px,1px);transition:border-color .3s ease}
+.cta-pill:hover{background:var(--signal);color:var(--paper)}
+.cta-pill:hover .arr{background:var(--paper);transform:translateX(4px)}
+.cta-pill:hover .arr::after{border-color:var(--paper)}
+.nav-actions .cta-pill{padding:8px 22px}
+section .cta-pill{padding:12.65px 25.3px;font-size:16.1px;gap:16.1px}
+section .cta-pill .arr{width:16.1px}
+@media(max-width:1180px){.cta-secondary{display:none}.nav-link{padding:26px 10px;font-size:13.5px}}
+@media(max-width:1024px){.navlinks{display:none}nav.topnav{padding:0 20px}}
+
+/* ========== TYPE ========== */
+.eyebrow{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:11px;letter-spacing:.22em;color:var(--signal);text-transform:uppercase;display:inline-flex;align-items:center;gap:14px}
+.eyebrow::before{content:'';display:inline-block;width:24px;height:1px;background:var(--signal);opacity:.7}
+.eyebrow .num{color:var(--muted)}
+.headline{font-family:'Archivo',sans-serif;font-weight:800;letter-spacing:-.03em;line-height:.94;color:var(--paper)}
+.headline em{font-style:normal;color:var(--signal);font-weight:700}
+.h1{font-size:clamp(56px,8vw,124px)}
+.h2{font-size:clamp(40px,5.4vw,76px)}
+.h3{font-size:clamp(28px,3.4vw,44px)}
+.body{font-family:'IBM Plex Sans';font-weight:300;font-size:17px;line-height:1.55;color:var(--soft);max-width:60ch}
+.body.muted{color:var(--muted)}
+
+section{position:relative}
+.wrap{max-width:1320px;margin:0 auto;padding:0 clamp(20px,5vw,56px)}
+.section-num{position:absolute;top:48px;right:clamp(24px,4vw,56px);font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s ease}
+.reveal.in{opacity:1;transform:none}
+/* responsive stabilization (M1/M2/M3/M4) */
+@media(max-width:480px){.what-grid,.aud-grid,.reality-cards,.vgrid,.diff,.usecards,.kpi-grid{grid-template-columns:1fr}}
+@media(max-width:1024px){.cta-pill,.cta-secondary{min-height:44px}}
+@media(max-width:480px){.headline.h1{font-size:clamp(34px,9vw,52px)}#cta h2{font-size:clamp(34px,9.5vw,52px)}.headline{overflow-wrap:break-word}}
+
+/* ========== 1 · HERO / VISIE ========== */
+#hero{min-height:100vh;min-height:100svh;display:flex;align-items:center;padding:160px 0 100px;background:var(--ink-800);overflow:hidden}
+@media(max-height:720px){#hero{min-height:auto;padding:128px 0 72px}}
+#hero .bg-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 35%;z-index:0;pointer-events:none}
+#hero .bg-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(6,18,28,.94) 0%,rgba(6,18,28,.82) 36%,rgba(6,18,28,.5) 70%,rgba(6,18,28,.62) 100%),linear-gradient(180deg,rgba(11,26,36,.55) 0%,transparent 30%,transparent 65%,rgba(6,18,28,.7) 100%)}
+#hero .grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:80px 80px;mask-image:radial-gradient(ellipse at 60% 50%,#000 25%,transparent 75%);pointer-events:none}
+#hero .wrap{position:relative;z-index:2}
+#hero .breadcrumb{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-bottom:36px;display:flex;align-items:center;gap:10px}
+#hero .breadcrumb a:hover{color:var(--signal)}
+#hero .breadcrumb .sep{color:var(--hairline)}
+#hero .breadcrumb .here{color:var(--signal)}
+#hero h1{margin-top:36px;max-width:none;white-space:normal}
+#hero .lede{margin-top:48px;display:grid;grid-template-columns:1fr 1.3fr;gap:80px;align-items:start}
+#hero .lede .left .stmt{font-family:'Archivo';font-weight:700;font-size:clamp(24px,2.4vw,32px);line-height:1.05;letter-spacing:.005em;color:var(--paper);max-width:14ch;border-left:2px solid var(--signal);padding:6px 0 6px 22px}
+#hero .lede .left .stmt em{color:var(--signal);font-style:normal}
+#hero .lede .right{padding-top:6px}
+#hero .lede .right p{font-size:18px;color:var(--soft);line-height:1.6;max-width:50ch}
+#hero .lede .right p + p{margin-top:18px}
+#hero .meta-row{margin-top:64px;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+#hero .meta-row .m{padding:22px 24px 22px 0;border-right:1px solid var(--line)}
+#hero .meta-row .m:last-child{border-right:0}
+#hero .meta-row .m .l{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:8px}
+#hero .meta-row .m .v{font-family:'Archivo';font-weight:700;font-size:22px;letter-spacing:-.01em;color:var(--paper)}
+#hero .meta-row .m .v em{color:var(--signal);font-style:normal}
+@media(max-width:980px){#hero .lede{grid-template-columns:1fr;gap:32px}#hero .meta-row{grid-template-columns:1fr 1fr}#hero .meta-row .m:nth-child(2){border-right:0}#hero .meta-row .m{border-bottom:1px solid var(--line)}#hero .meta-row .m:nth-last-child(-n+2){border-bottom:0}}
+
+/* ========== 2 · VERHAAL ========== */
+#verhaal{padding:140px 0;background:var(--ink-900);border-top:1px solid var(--line)}
+#verhaal .wrap{display:grid;grid-template-columns:0.9fr 1.4fr;gap:96px;align-items:start}
+#verhaal h2{margin-top:24px;max-width:14ch}
+#verhaal .narrative{display:flex;flex-direction:column;gap:28px;font-size:18px;color:var(--soft);line-height:1.65;max-width:60ch}
+#verhaal .narrative .lead{font-family:'Archivo';font-weight:600;font-size:clamp(26px,2.6vw,34px);line-height:1.15;letter-spacing:.005em;color:var(--paper);text-transform:none;max-width:22ch}
+#verhaal .narrative p strong{color:var(--paper);font-weight:500}
+#verhaal .pull{margin-top:16px;padding:24px 28px;border-left:2px solid var(--signal);background:var(--ink-800);font-family:'Archivo';font-weight:700;font-size:24px;line-height:1.15;letter-spacing:.005em;text-transform:uppercase;color:var(--paper);max-width:32ch}
+#verhaal .pull em{color:var(--signal);font-style:normal}
+@media(max-width:980px){#verhaal .wrap{grid-template-columns:1fr;gap:32px}}
+
+/* ========== 3 · MANIFEST ========== */
+#manifest{padding:140px 0;background:var(--ink-800);border-top:1px solid var(--line);overflow:hidden;position:relative}
+#manifest .wrap{position:relative;z-index:2}
+#manifest .head{margin-bottom:64px;display:grid;grid-template-columns:1fr 1.1fr;gap:80px;align-items:end}
+#manifest h2{max-width:14ch}
+#manifest .head .body{padding-bottom:6px}
+.principles{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
+.principle{background:var(--ink-800);padding:48px 44px;display:flex;flex-direction:column;gap:24px;min-height:340px;position:relative;transition:background .25s}
+.principle:hover{background:var(--ink-700)}
+.principle .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+.principle .n{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.22em;color:var(--signal);text-transform:uppercase;display:inline-flex;align-items:center;gap:10px}
+.principle .n::before{content:'';width:8px;height:8px;background:var(--signal);border-radius:50%;box-shadow:0 0 8px rgba(0,173,239,.6)}
+.principle .ix{font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+.principle h3{font-family:'Archivo';font-weight:700;font-size:clamp(28px,3vw,40px);line-height:1.02;letter-spacing:-.01em;color:var(--paper);max-width:18ch}
+.principle h3 em{color:var(--signal);font-style:normal}
+.principle p{font-size:15.5px;color:var(--soft);line-height:1.6;max-width:50ch;margin-top:auto}
+.principle .tag{font-family:'JetBrains Mono';font-size:10.5px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;border-top:1px solid var(--line);padding-top:14px;margin-top:18px}
+.principle .tag em{color:var(--signal);font-style:normal}
+@media(max-width:980px){.principles{grid-template-columns:1fr}#manifest .head{grid-template-columns:1fr;gap:24px}}
+
+/* ========== 4 · WAT WE DOEN — SYSTEEMDENKEN ========== */
+#systeem{padding:140px 0;background:var(--ink-900);border-top:1px solid var(--line)}
+#systeem .head{display:grid;grid-template-columns:1fr 1.1fr;gap:80px;align-items:end;margin-bottom:64px}
+#systeem h2{max-width:16ch}
+#systeem .head .body{padding-bottom:8px}
+.versus{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
+.versus > .col{background:var(--ink-900);padding:44px 40px 48px;position:relative;min-height:520px;display:flex;flex-direction:column;gap:24px}
+.versus .col.them{}
+.versus .col.us{background:var(--ink-800);border-left:2px solid var(--signal)}
+.versus .col .label{font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:12px}
+.versus .col.us .label{color:var(--signal)}
+.versus .col h3{font-family:'Archivo';font-weight:700;font-size:32px;line-height:1.05;letter-spacing:-.01em;color:var(--paper)}
+.versus .diagram{position:relative;flex:1;min-height:200px;margin:8px 0}
+/* THEM diagram — scattered components */
+.scattered{position:absolute;inset:0}
+.scattered .item{position:absolute;width:64px;height:64px;border:1px solid rgba(229,90,75,.45);background:rgba(229,90,75,.05);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono';font-size:11px;color:var(--soft);letter-spacing:.08em}
+.scattered .item.i1{top:10%;left:8%;transform:rotate(-4deg)}
+.scattered .item.i2{top:18%;right:12%;transform:rotate(6deg)}
+.scattered .item.i3{bottom:18%;left:20%;transform:rotate(2deg)}
+.scattered .item.i4{bottom:8%;right:18%;transform:rotate(-3deg)}
+.scattered .item.i5{top:46%;left:42%;transform:rotate(8deg)}
+.scattered .x-marks{position:absolute;inset:0;pointer-events:none}
+.scattered .x-marks line{stroke:rgba(229,90,75,.25);stroke-width:1;stroke-dasharray:4 6}
+/* US diagram — integrated system */
+.integrated{position:absolute;inset:0}
+.integrated .core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:96px;height:96px;background:var(--ink-900);border:1px solid var(--signal);display:flex;align-items:center;justify-content:center;box-shadow:0 0 60px rgba(0,173,239,.25),inset 0 0 24px rgba(0,173,239,.08)}
+.integrated .core::before{content:'EMS';font-family:'Archivo';font-weight:700;font-size:24px;color:var(--signal);letter-spacing:.04em}
+.integrated .core::after{content:'';position:absolute;inset:6px;border:1px solid rgba(0,173,239,.4)}
+.integrated .node{position:absolute;width:62px;height:62px;background:var(--ink-900);border:1px solid var(--hairline);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono';font-size:11px;color:var(--signal);letter-spacing:.08em}
+.integrated .n1{top:8%;left:50%;transform:translateX(-50%)}
+.integrated .n2{top:50%;right:6%;transform:translateY(-50%)}
+.integrated .n3{bottom:8%;left:50%;transform:translateX(-50%)}
+.integrated .n4{top:50%;left:6%;transform:translateY(-50%)}
+.integrated svg.lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.integrated svg.lines line{stroke:var(--signal);stroke-width:1;opacity:.4}
+.integrated svg.lines .pulse{stroke:var(--signal);stroke-width:1.5;stroke-dasharray:3 7;animation:dash 2s linear infinite;opacity:.85;filter:drop-shadow(0 0 4px rgba(0,173,239,.5))}
+@keyframes dash{to{stroke-dashoffset:-40}}
+.versus .col .summary{font-family:'Archivo';font-weight:700;font-size:22px;line-height:1.1;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:22px}
+.versus .col.them .summary{color:var(--soft)}
+.versus .col.us .summary{color:var(--paper)}
+.versus .col.us .summary em{color:var(--signal);font-style:normal}
+@media(max-width:880px){.versus{grid-template-columns:1fr}#systeem .head{grid-template-columns:1fr;gap:24px}}
+
+/* ========== 5 · WAAROM VIBE ========== */
+#why{padding:140px 0;background:var(--ink-800);border-top:1px solid var(--line)}
+#why .head{display:grid;grid-template-columns:1fr 1.2fr;gap:80px;align-items:end;margin-bottom:64px}
+#why h2{max-width:14ch}
+.diff{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.diff .d{background:var(--ink-800);padding:40px 36px;display:flex;flex-direction:column;gap:18px;min-height:300px;transition:background .25s;position:relative}
+.diff .d:hover{background:var(--ink-700)}
+.diff .d .n{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+.diff .d h3{font-family:'Archivo';font-weight:700;font-size:28px;line-height:1.02;letter-spacing:-.01em;color:var(--paper);max-width:14ch}
+.diff .d h3 em{color:var(--signal);font-style:normal}
+.diff .d p{font-size:14.5px;color:var(--soft);line-height:1.6}
+.diff .d .stamp{font-family:'JetBrains Mono';font-size:10.5px;color:var(--signal);letter-spacing:.16em;text-transform:uppercase;border-top:1px solid var(--line);padding-top:14px;margin-top:auto}
+@media(max-width:980px){.diff{grid-template-columns:1fr}#why .head{grid-template-columns:1fr;gap:24px}}
+
+/* ========== 6 · TRACK RECORD + TEAM ========== */
+#track{padding:140px 0;background:var(--ink-900);border-top:1px solid var(--line)}
+#track .head{margin-bottom:56px;display:grid;grid-template-columns:1fr 1.1fr;gap:80px;align-items:end}
+#track h2{max-width:16ch}
+#track .head .body{padding-bottom:6px}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:64px}
+.stats-row .s{background:var(--ink-900);padding:36px 32px;min-height:200px;display:flex;flex-direction:column;justify-content:space-between;gap:16px;position:relative}
+.stats-row .s .l{font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.stats-row .s .v{font-family:'Archivo';font-weight:700;font-size:64px;letter-spacing:-.02em;line-height:.95;color:var(--paper);display:flex;align-items:baseline;gap:10px}
+.stats-row .s .v .placeholder{font-family:'JetBrains Mono';font-size:14px;color:var(--muted);letter-spacing:.12em;align-self:center}
+.stats-row .s .v.empty{color:rgba(0,173,239,.35);font-family:'Archivo';font-weight:700}
+.stats-row .s .u{font-family:'Archivo';font-weight:600;font-size:18px;color:var(--soft);text-transform:uppercase;letter-spacing:.02em}
+.stats-row .s .pending{position:absolute;top:14px;right:14px;font-family:'JetBrains Mono';font-size:9.5px;color:var(--signal);letter-spacing:.18em;text-transform:uppercase;border:1px solid var(--hairline);padding:3px 8px;background:var(--ink-800)}
+@media(max-width:1080px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.stats-row{grid-template-columns:1fr}}
+
+.team-block{display:grid;grid-template-columns:1fr 2.4fr;gap:64px;align-items:start}
+.team-block .intro h3{font-family:'Archivo';font-weight:700;font-size:clamp(28px,3vw,40px);line-height:1.05;letter-spacing:-.01em;color:var(--paper);margin-bottom:18px;max-width:14ch}
+.team-block .intro h3 em{color:var(--signal);font-style:normal}
+.team-block .intro p{font-size:15.5px;color:var(--soft);line-height:1.6;max-width:38ch}
+.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.team-card{background:var(--ink-900);padding:0;display:flex;flex-direction:column;min-height:0}
+.team-card .photo{aspect-ratio:1.05;background:var(--ink-800);position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.team-card .photo::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:24px 24px}
+.team-card .photo .silhouette{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:60%;height:80%;background:linear-gradient(180deg,rgba(0,173,239,.07) 0%,rgba(0,173,239,.02) 100%);border:1px solid var(--hairline);border-bottom:0;clip-path:polygon(35% 0,65% 0,72% 18%,80% 36%,90% 100%,10% 100%,20% 36%,28% 18%)}
+.team-card .photo .ph-tag{position:absolute;top:14px;left:14px;font-family:'JetBrains Mono';font-size:9.5px;color:var(--signal);letter-spacing:.18em;text-transform:uppercase;border:1px solid var(--hairline);padding:3px 8px;background:var(--ink-900)}
+.team-card .meta{padding:24px 24px 28px;display:flex;flex-direction:column;gap:8px;flex:1}
+.team-card .meta .role{font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.18em;color:var(--signal);text-transform:uppercase}
+.team-card .meta .name{font-family:'Archivo';font-weight:700;font-size:24px;letter-spacing:-.01em;color:var(--paper)}
+.team-card .meta .scope{font-size:13.5px;color:var(--muted);line-height:1.55;margin-top:6px}
+.team-card .meta .pending{margin-top:auto;font-family:'JetBrains Mono';font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;border-top:1px solid var(--line);padding-top:12px}
+@media(max-width:1080px){.team-block{grid-template-columns:1fr;gap:32px}.team-grid{grid-template-columns:1fr}}
+
+/* ========== 7 · CTA ========== */
+#cta{padding:160px 0;background:var(--ink-800);border-top:1px solid var(--line);text-align:center;overflow:hidden;position:relative}
+#cta .ring{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px solid var(--hairline);border-radius:50%;pointer-events:none}
+#cta .ring.r1{width:680px;height:680px;opacity:.35}
+#cta .ring.r2{width:420px;height:420px;opacity:.45}
+#cta .ring.r3{width:180px;height:180px;opacity:.7;border-color:var(--signal)}
+#cta .ring.r3::before{content:'VIBE';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Archivo';font-weight:700;font-size:26px;color:var(--signal);letter-spacing:.06em}
+#cta .eyebrow{justify-content:center}
+#cta h2{margin:36px auto 0;max-width:18ch;font-size:clamp(48px,7vw,96px)}
+#cta .body{margin:24px auto 0;max-width:48ch;font-size:18px;color:var(--soft)}
+#cta .ctas{margin-top:48px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;z-index:2}
+
+/* FOOTER · V1·A Index */
+footer.ftr.v1a{background:var(--ink-900);border-top:1px solid var(--hairline);color:var(--paper);font-family:'IBM Plex Sans',sans-serif;font-weight:300;width:100%;padding:0;margin:0;display:block}
+.ftr.v1a a{color:inherit;text-decoration:none;transition:color .18s}
+.v1a-inner{max-width:1320px;margin:0 auto;padding:0 56px}
+.v1a-sig{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px;padding:18px 0;border-bottom:1px solid var(--line);font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.v1a-sig .sig-mid{justify-self:center;display:inline-flex;align-items:center;gap:10px;color:var(--signal)}
+.v1a-sig .sig-mid .dot{width:7px;height:7px;background:var(--signal);border-radius:50%;box-shadow:0 0 6px rgba(0,173,239,.6);animation:v1aPulse 2s ease-in-out infinite}
+.v1a-sig .sig-r{justify-self:end}
+@keyframes v1aPulse{0%,100%{opacity:1}50%{opacity:.5}}
+.v1a-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr 1fr;gap:48px;padding:72px 0 56px}
+.v1a-brand{padding-right:24px;border-right:1px solid var(--line)}
+.v1a-brand .vibe-wordmark{margin-bottom:24px;display:block;font-family:'Archivo',sans-serif;font-weight:700;font-size:26px;letter-spacing:.02em;text-transform:lowercase;color:var(--paper);line-height:1}
+.v1a-brand .vibe-wordmark .dot{color:var(--signal);margin:0 2px}
+.v1a-tag{font-family:'Archivo';font-weight:700;font-size:24px;line-height:1.15;letter-spacing:.005em;color:var(--paper);margin-bottom:20px;max-width:18ch}
+.v1a-tag em{color:var(--signal);font-style:normal}
+.v1a-desc{font-size:14px;line-height:1.6;color:var(--muted);max-width:36ch}
+.v1a-col{display:flex;flex-direction:column;gap:18px}
+.v1a-col-h{font-family:'Archivo';font-weight:700;font-size:14px;letter-spacing:.18em;color:var(--paper);text-transform:uppercase;display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line);margin:0}
+.v1a-col-h .ix{font-family:'JetBrains Mono';font-weight:500;font-size:10px;color:var(--signal);letter-spacing:.18em}
+.v1a-col ul{list-style:none;display:flex;flex-direction:column;gap:11px;margin:0;padding:0}
+.v1a-col ul li a{font-size:14px;color:var(--soft);line-height:1.4;display:inline-block}
+.v1a-col ul li a:hover{color:var(--signal)}
+.v1a-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:48px;padding:32px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.v1a-meta .block{display:flex;flex-direction:column;gap:8px}
+.v1a-meta .block .lbl{font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.v1a-meta .block a,.v1a-meta .block .val{font-family:'IBM Plex Sans';font-size:14.5px;color:var(--paper);font-weight:400;letter-spacing:.005em;line-height:1.45}
+.v1a-meta .block a:hover{color:var(--signal)}
+.v1a-meta .block .val{color:var(--soft);font-weight:300}
+.v1a-bottom{display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center;padding:24px 0 28px;font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.v1a-bottom .rule{height:1px;background:var(--line)}
+@media(max-width:1080px){.v1a-grid{grid-template-columns:1fr 1fr 1fr;gap:32px}.v1a-brand{grid-column:span 3;border-right:0;padding-right:0;border-bottom:1px solid var(--line);padding-bottom:36px}.v1a-meta{grid-template-columns:1fr 1fr;gap:32px}.v1a-bottom{grid-template-columns:1fr;text-align:left}.v1a-bottom .rule{display:none}.v1a-sig{grid-template-columns:1fr;gap:8px}.v1a-sig .sig-mid,.v1a-sig .sig-r{justify-self:start}.v1a-inner{padding:0 24px}}
+@media(max-width:640px){.v1a-grid{grid-template-columns:1fr 1fr}.v1a-brand{grid-column:span 2}}
+@media(max-width:430px){.v1a-grid{grid-template-columns:1fr}.v1a-brand{grid-column:span 1}.v1a-meta{grid-template-columns:1fr}}
+</style>
+
+<!--SEO-FOUNDATION-->
+<meta name="description" content="Eén partner voor uw complete energiesysteem. Vibe Energy helpt bedrijven en vastgoed met netcongestie, opslag, zonnepanelen, laadpleinen en energiemanagement.">
+<link rel="canonical" href="https://vibeenergy.nl/over-ons">
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/png" href="assets/logo.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Vibe Energy">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Over Vibe Energy — energie-exploitant">
+<meta property="og:description" content="Vibe Energy is geen installateur maar energie-exploitant — één partij die lokale energiecentrales ontwerpt, bouwt, financiert én exploiteert.">
+<meta property="og:url" content="https://vibeenergy.nl/over-ons">
+<meta property="og:image" content="https://vibeenergy.nl/assets/over-ons-hero.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Over Vibe Energy — energie-exploitant">
+<meta name="twitter:description" content="Vibe Energy is geen installateur maar energie-exploitant — één partij die lokale energiecentrales ontwerpt, bouwt, financiert én exploiteert.">
+<meta name="twitter:image" content="https://vibeenergy.nl/assets/over-ons-hero.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://vibeenergy.nl/over-ons#webpage","url":"https://vibeenergy.nl/over-ons","name":"Over Vibe Energy — energie-exploitant","description":"Vibe Energy is geen installateur maar energie-exploitant — één partij die lokale energiecentrales ontwerpt, bouwt, financiert én exploiteert.","inLanguage":"nl-NL","isPartOf":{"@id":"https://vibeenergy.nl/#website"},"publisher":{"@id":"https://vibeenergy.nl/#org"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vibeenergy.nl/"},{"@type":"ListItem","position":2,"name":"Over ons","item":"https://vibeenergy.nl/over-ons"}]}]}</script>
+<!--/SEO-FOUNDATION-->
+<style>/*rm-global*/@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}</style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1164445461468919');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="frameiq-harmonize.css">
+</head>
+<body>
+<!-- Google Tag Manager (noscript) --><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KM2V7VQ3" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+
+
+<!-- ===== NAV ===== -->
+<script src="_header.js?v=3"></script>
+
+<!-- ===== 1 · HERO / VISIE ===== -->
+<section id="hero" data-screen-label="01 Hero" class="band-dark">
+  <img class="bg-photo" src="assets/over-ons-hero.jpg" alt="">
+  <div class="bg-scrim"></div>
+  <div class="grid-bg"></div>
+  <div class="wrap">
+    <span class="eyebrow"><span>Over Vibe Energy</span></span>
+    <h1 class="headline h1">Eén partner voor uw<br>complete <em>energiesysteem.</em></h1>
+
+    <div class="lede">
+      <div class="left">
+        <div class="stmt">Van advies tot beheer. <em>Eén aanspreekpunt</em> voor alles.</div>
+      </div>
+      <div class="right">
+        <p>Vibe Energy helpt bedrijven en vastgoedeigenaren met netcongestie, batterijopslag, zonnepanelen, laadinfrastructuur en energiemanagement.</p>
+        <p>Wij ontwerpen, realiseren en beheren complete energiesystemen waarmee organisaties kunnen <strong>groeien, besparen en verduurzamen</strong>.</p>
+      </div>
+    </div>
+
+    <div class="meta-row">
+      <div class="m"><span class="l">Aanspreekpunt</span><span class="v"><em>Eén</em> partij</span></div>
+      <div class="m"><span class="l">Begeleiding</span><span class="v">Ontwerp tot <em>beheer</em></span></div>
+      <div class="m"><span class="l">Levering</span><span class="v">Complete <em>systemen</em></span></div>
+      <div class="m"><span class="l">Ervaring</span><span class="v">Bewezen in de <em>praktijk</em></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 2 · VERHAAL ===== -->
+<section id="verhaal" data-screen-label="02 Waarom kiezen">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="eyebrow"><span>Waarom organisaties voor Vibe kiezen</span></span>
+      <h2 class="headline h2">U wilt geen vijf<br>leveranciers <em>aansturen.</em></h2>
+    </div>
+
+    <div class="narrative reveal">
+      <p class="lead">U wilt één partij die het volledige energiesysteem ontwerpt, realiseert én beheert.</p>
+      <p>Uw aansluiting zit vol, uw energiekosten lopen op en u wilt blijven groeien. Tegelijk groeit de energievraag door elektrificatie van transport, processen en gebouwen.</p>
+      <p>De markt biedt vooral <strong>losse onderdelen</strong>: een installateur voor zonnepanelen, een handelaar voor batterijen, een fabrikant voor laadpalen. Iedereen levert zijn deel. Niemand is verantwoordelijk voor het geheel.</p>
+      <p>Vibe neemt dat hele traject uit handen. Wij ontwerpen, bouwen en beheren uw energiesysteem als <strong>één samenhangend geheel</strong> — met rendement als uitgangspunt, niet als bijzaak.</p>
+      <div class="pull">Eén partij. Eén contract. <em>Eén aanspreekpunt.</em></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4 · WAT WE DOEN — SYSTEEMDENKEN ===== -->
+<section id="systeem" data-screen-label="03 Wat wij doen">
+  <div class="wrap">
+    <div class="head">
+      <div class="reveal">
+        <span class="eyebrow"><span>Wat wij doen</span></span>
+        <h2 class="headline h2">Eén compleet systeem.<br>Acht <em>oplossingen.</em></h2>
+      </div>
+      <p class="body reveal">Wij helpen organisaties met netcongestie, batterijopslag, zonnepanelen, laadinfrastructuur, EMS, Energy Hubs, exploitatie en energiehandel. Los inzetbaar, maar het sterkst als één systeem.</p>
+    </div>
+
+    <div class="versus">
+      <div class="col them reveal">
+        <span class="label">Losse aanpak</span>
+        <h3>Losse producten,<br>losse leveranciers</h3>
+        <div class="diagram">
+          <div class="scattered">
+            <svg class="x-marks" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <line x1="15" y1="20" x2="85" y2="80"></line>
+              <line x1="85" y1="20" x2="15" y2="80"></line>
+              <line x1="50" y1="10" x2="50" y2="90"></line>
+            </svg>
+            <div class="item i1">PV</div>
+            <div class="item i2">BAT</div>
+            <div class="item i3">EV</div>
+            <div class="item i4">HVAC</div>
+            <div class="item i5">?</div>
+          </div>
+        </div>
+        <div class="summary">Meerdere offertes.<br>Meerdere contracten.<br>Geen eigenaar.</div>
+      </div>
+
+      <div class="col us reveal">
+        <span class="label">Vibe-aanpak</span>
+        <h3>Eén systeem,<br>één verantwoordelijke</h3>
+        <div class="diagram">
+          <div class="integrated">
+            <svg class="lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <line x1="50" y1="14" x2="50" y2="42"></line>
+              <line x1="86" y1="50" x2="58" y2="50"></line>
+              <line x1="50" y1="86" x2="50" y2="58"></line>
+              <line x1="14" y1="50" x2="42" y2="50"></line>
+              <line class="pulse" x1="50" y1="14" x2="50" y2="42"></line>
+              <line class="pulse" x1="86" y1="50" x2="58" y2="50"></line>
+              <line class="pulse" x1="50" y1="86" x2="50" y2="58"></line>
+              <line class="pulse" x1="14" y1="50" x2="42" y2="50"></line>
+            </svg>
+            <div class="core"></div>
+            <div class="node n1">PV</div>
+            <div class="node n2">EV</div>
+            <div class="node n3">BAT</div>
+            <div class="node n4">HVAC</div>
+          </div>
+        </div>
+        <div class="summary">Eén ontwerp.<br>Eén partij.<br><em>Eén business case.</em></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 5 · WAAROM VIBE ===== -->
+<section id="why" data-screen-label="04 Wat ons anders maakt">
+  <div class="wrap">
+    <div class="head">
+      <div class="reveal">
+        <span class="eyebrow"><span>Wat ons anders maakt</span></span>
+        <h2 class="headline h2">Waarom Vibe het<br><em>verschil</em> maakt.</h2>
+      </div>
+      <p class="body reveal">Drie redenen waarom bedrijven en vastgoedeigenaren voor Vibe kiezen in plaats van losse leveranciers.</p>
+    </div>
+
+    <div class="diff">
+      <div class="d reveal">
+        <span class="n">01 · Eén partner</span>
+        <h3>Eén partner, geen <em>losse leveranciers.</em></h3>
+        <p>U heeft één aanspreekpunt voor uw hele energiesysteem. Geen losse offertes, geen afstemming tussen partijen en geen vingerwijzen bij storingen.</p>
+        <span class="stamp">Eén contract · één aanspreekpunt</span>
+      </div>
+      <div class="d reveal">
+        <span class="n">02 · Complete begeleiding</span>
+        <h3>Van eerste analyse tot <em>jarenlang beheer.</em></h3>
+        <p>Wij begeleiden u van analyse en businesscase tot ontwerp, realisatie en beheer. Slimme software verbindt alle onderdelen van uw energiesysteem en stuurt ze automatisch aan.</p>
+        <span class="stamp">Van advies tot beheer</span>
+      </div>
+      <div class="d reveal">
+        <span class="n">03 · Focus op rendement</span>
+        <h3>Ontworpen op <em>rendement.</em></h3>
+        <p>Elke oplossing ontwerpen we met een businesscase als uitgangspunt. Wij blijven uw systeem maandelijks optimaliseren, zodat het rendement op niveau blijft.</p>
+        <span class="stamp">Businesscase als uitgangspunt</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 3 · MANIFEST ===== -->
+<section id="manifest" data-screen-label="05 Onze visie">
+  <div class="wrap">
+    <div class="head">
+      <div class="reveal">
+        <span class="eyebrow"><span>Onze visie op energie</span></span>
+        <h2 class="headline h2">Vier principes.<br>Nul <em>uitzonderingen.</em></h2>
+      </div>
+      <p class="body reveal">De principes waar elk Vibe-project op rust. Geen marketing-claims, maar de criteria waar we ontwerp, contract en exploitatie aan toetsen.</p>
+    </div>
+
+    <div class="principles">
+      <div class="principle reveal">
+        <div class="top">
+          <span class="n">Principe 01</span>
+          <span class="ix">∞</span>
+        </div>
+        <h3>Energie is een <em>asset,</em> geen kostenpost.</h3>
+        <p>Een aansluiting is geen rekening — het is een asset. Wie er een lokale energiecentrale achter de meter bouwt, exploiteert energie in plaats van haar te ondergaan. Wie energie als asset behandelt, krijgt rendement en groei zonder netverzwaring. Wie het als post behandelt, krijgt rekeningen.</p>
+        <span class="tag">Implicatie · <em>energie staat als renderende asset op de balans, niet als kostenpost in de operatie</em></span>
+      </div>
+      <div class="principle reveal">
+        <div class="top">
+          <span class="n">Principe 02</span>
+          <span class="ix">∞</span>
+        </div>
+        <h3>Controle over energie is controle over <em>groei.</em></h3>
+        <p>Wie zelf bepaalt wanneer er capaciteit is, bepaalt of er een nieuwe productielijn, een nieuw laadplein, een nieuwe vestiging komt. Het net dicteert dan niet langer de roadmap.</p>
+        <span class="tag">Implicatie · <em>capaciteit is een strategische asset, niet een aanvraag</em></span>
+      </div>
+      <div class="principle reveal">
+        <div class="top">
+          <span class="n">Principe 03</span>
+          <span class="ix">∞</span>
+        </div>
+        <h3>Systemen winnen van <em>losse producten.</em></h3>
+        <p>Drie offertes, drie leveranciers, drie SLA's — dat is geen oplossing, dat is een integratierisico. Wij ontwerpen één systeem met één verantwoordelijke. Het rendement zit in de samenhang.</p>
+        <span class="tag">Implicatie · <em>één partij · één contract · één aansprakelijkheid</em></span>
+      </div>
+      <div class="principle reveal">
+        <div class="top">
+          <span class="n">Principe 04</span>
+          <span class="ix">∞</span>
+        </div>
+        <h3>Rendement begint bij <em>aansturing.</em></h3>
+        <p>Hardware is een gegeven. Het verschil tussen een dure investering en een renderend systeem zit in de software die elk kwartier beslist wat er gebeurt. Daarom is het EMS bij ons geen extra — het is het uitgangspunt.</p>
+        <span class="tag">Implicatie · <em>EMS is geen optie, het is het ontwerpcentrum</em></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 6 · TRACK RECORD + TEAM ===== -->
+<section id="track" data-screen-label="06 Track record" hidden>
+  <div class="wrap">
+    <div class="head">
+      <div class="reveal">
+        <span class="eyebrow"><span>Bewijs</span></span>
+        <h2 class="headline h2">In aanbouw.<br><em>Nu al</em> meetbaar.</h2>
+      </div>
+      <p class="body reveal">Cijfers worden niet ingevuld zolang ze niet kloppen. Hieronder de structuur waarin we onze track record publiceren — gevuld zodra de actuele meting beschikbaar is.</p>
+    </div>
+
+    <div class="stats-row reveal">
+      <div class="s">
+        <span class="l">Actieve projecten</span>
+        <span class="u">Locaties in NL</span>
+      </div>
+      <div class="s">
+        <span class="l">Geïnstalleerd vermogen</span>
+        <span class="u">MW · piekvermogen</span>
+      </div>
+      <div class="s">
+        <span class="l">Aangestuurde capaciteit</span>
+        <span class="u">MWh · onder EMS</span>
+      </div>
+      <div class="s">
+        <span class="l">Vermeden netverzwaring</span>
+        <span class="u">Aansluitingen ontzien</span>
+      </div>
+    </div>
+
+    <div class="team-block">
+      <div class="intro reveal">
+        <h3>Het team achter <em>het systeem.</em></h3>
+        <p>Vibe Energy combineert energietechniek, software-engineering en operationele exploitatie in één team. Geen consultancy, geen tussenlaag — de mensen die het ontwerpen, draaien het ook.</p>
+      </div>
+      <div class="team-grid reveal">
+        <div class="team-card">
+          <div class="meta">
+            <span class="role">Managing Director</span>
+            <span class="scope">Strategie, partnerships, business case-architectuur. Eindverantwoordelijk voor klantcommitments.</span>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="meta">
+            <span class="role">Head of Engineering</span>
+            <span class="scope">Systeemontwerp, EMS-architectuur, integratie van zon, opslag en laadinfrastructuur tot één werkend geheel.</span>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="meta">
+            <span class="role">Head of Operations</span>
+            <span class="scope">Realisatie, exploitatie en doorlopende optimalisatie. Houdt het rendement op niveau na de oplevering.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 7 · CTA ===== -->
+<section id="cta" data-screen-label="07 CTA" class="band-dark">
+  <div class="ring r1"></div>
+  <div class="ring r2"></div>
+  <div class="wrap">
+    <span class="eyebrow"><span>Volgende stap</span></span>
+    <h2 class="headline reveal">Benieuwd wat Vibe voor<br><em>uw organisatie</em> kan doen?</h2>
+    <p class="body reveal">Wij brengen uw energieverbruik, netcapaciteit en groeimogelijkheden in kaart. Zo weet u welke oplossingen het meeste rendement opleveren — binnen 48 uur, gratis en zonder verplichting.</p>
+    <div class="ctas">
+      <a href="contact" class="cta-pill"><span>Plan gesprek</span><span class="arr"></span></a>
+      <button class="cta-secondary">Plan een gesprek</button>
+    </div>
+  </div>
+</section>
+
+<script src="_footer.js"></script>
+
+<script>
+/* ========== Nav ========== */
+(function initNav(){
+  const nav = document.getElementById('topnav');
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 24);
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+  const items = nav.querySelectorAll('.nav-item');
+  items.forEach(item => {
+    const drop = item.querySelector('.nav-drop');
+    if(!drop) return;
+    let t = null;
+    const open = () => { items.forEach(i => i!==item && i.classList.remove('open')); item.classList.add('open'); };
+    const close = () => item.classList.remove('open');
+    item.addEventListener('mouseenter', () => { clearTimeout(t); open(); });
+    item.addEventListener('mouseleave', () => { t = setTimeout(close, 180); });
+    const link = item.querySelector('.nav-link');
+    link.addEventListener('click', e => {
+      if(link.tagName === 'A') return;
+      e.preventDefault();
+      item.classList.contains('open') ? close() : open();
+    });
+  });
+  document.addEventListener('click', e => {
+    if(!nav.contains(e.target)) items.forEach(i => i.classList.remove('open'));
+  });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') items.forEach(i => i.classList.remove('open')); });
+})();
+
+/* ========== Reveal ========== */
+(function initReveal(){
+  const els = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:.15, rootMargin:'0px 0px -10% 0px'});
+  els.forEach(el => io.observe(el));
+})();
+</script>
+
+
+</body></html>

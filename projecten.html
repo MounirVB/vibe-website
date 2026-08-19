@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<!-- Cookie consent (moet vóór GTM/Clarity laden) --><script src="_consent.js"></script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KM2V7VQ3');</script>
+<!-- End Google Tag Manager -->
+<!-- Microsoft Clarity --><script src="_clarity.js"></script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>vibe·energy — Projecten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --canvas:#ECF1F4; --surface:#FFFFFF; --surf2:#F4F7F9;
+  --ink:#0B1A24; --deep:#06121C; --ink2:#102330;
+  --text:#0E1B24; --tsoft:#33454F; --tmuted:#5E6F79;
+  --signal:#00ADEF; --signal-d:#0096CC; --paper:#FFFFFF;
+  --line:rgba(14,27,36,.12); --hair:rgba(0,150,204,.30);
+  --soft:rgba(232,240,245,.80); --muted:rgba(232,240,245,.55);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--canvas);color:var(--text);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+
+/* ===== shared header (dark nav) ===== */
+nav.topnav{--paper:#fff;--signal:#00ADEF;--ink-900:#06121C;--muted:rgba(255,255,255,.55)}
+nav.topnav{position:fixed;top:0;left:0;right:0;height:92px;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 32px;transition:background .3s,backdrop-filter .3s}
+nav.topnav.scrolled{background:rgba(11,26,36,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,173,239,.08)}
+.wordmark{flex-shrink:0;display:inline-flex;align-items:center}
+.navlinks{display:flex;gap:2px;align-items:center}
+.nav-item{position:relative}
+.nav-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Sans';font-weight:400;font-size:14px;letter-spacing:.005em;line-height:1;color:rgba(232,240,245,.74);padding:26px 12px;background:none;border:0;white-space:nowrap;transition:color .2s}
+.nav-link:hover,.nav-item.open .nav-link{color:#fff}
+.nav-caret{display:inline-block;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:4px solid currentColor;opacity:.6;transition:transform .2s}
+.nav-item.open .nav-caret{transform:rotate(180deg)}
+.nav-drop{position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(-4px);min-width:300px;background:rgba(6,18,28,.96);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(0,173,239,.18);padding:10px;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:101}
+.nav-item.open .nav-drop{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+.nav-drop::before{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:rgba(6,18,28,.96);border-left:1px solid rgba(0,173,239,.18);border-top:1px solid rgba(0,173,239,.18)}
+.nav-drop a{display:flex;flex-direction:column;gap:3px;padding:12px 16px;font-family:'IBM Plex Sans';font-weight:400;font-size:14.5px;color:#fff;border-left:2px solid transparent;transition:background .15s,border-color .15s}
+.nav-drop a small{font-family:'JetBrains Mono';font-size:10.5px;color:rgba(255,255,255,.55);letter-spacing:.06em}
+.nav-drop a:hover{background:rgba(0,173,239,.08);border-left-color:var(--signal)}
+.nav-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.cta-secondary{font-size:14.5px;color:rgba(232,240,245,.86);padding:13px 20px;background:transparent;border:1px solid rgba(255,255,255,.18);transition:.2s}
+.cta-secondary:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+.cta-pill{display:inline-flex;align-items:center;gap:14px;padding:11px 22px;background:#fff;color:var(--ink-900);font-size:14px;clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,0 100%);transition:.25s}
+.cta-pill .arr{display:inline-block;width:14px;height:1px;background:var(--ink-900);position:relative}
+.cta-pill .arr::after{content:'';position:absolute;right:0;top:-2.5px;width:6px;height:6px;border-top:1px solid var(--ink-900);border-right:1px solid var(--ink-900);transform:rotate(45deg) translate(-1px,1px)}
+.cta-pill:hover{background:var(--signal);color:#fff}
+@media(max-width:1180px){.cta-secondary{display:none}.nav-link{padding:26px 10px;font-size:13.5px}}
+@media(max-width:1024px){.navlinks{display:none}nav.topnav{padding:0 20px}}
+
+.wrap{max-width:1320px;margin:0 auto;padding:0 clamp(24px,5vw,56px)}
+
+/* ===== HERO (dark) ===== */
+.pj-hero{background:var(--ink);color:#fff;padding:150px 0 70px;position:relative;overflow:hidden;border-bottom:1px solid rgba(0,173,239,.14)}
+.pj-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 80% 0%,rgba(0,173,239,.10),transparent 60%);pointer-events:none}
+.eyb{font-family:'JetBrains Mono';font-weight:500;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--signal);display:inline-flex;align-items:center;gap:14px}
+.eyb::before{content:'';width:26px;height:1px;background:var(--signal);opacity:.7}
+.pj-hero h1{font-family:'Archivo';font-weight:800;font-size:clamp(46px,7vw,84px);letter-spacing:-.04em;line-height:.94;margin:22px 0 18px}
+.pj-hero h1 em{font-style:normal;color:var(--signal)}
+.pj-hero p{font-family:'IBM Plex Sans';font-weight:300;font-size:18px;line-height:1.6;color:var(--soft);max-width:52ch}
+.pj-stats{display:flex;gap:54px;margin-top:44px;flex-wrap:wrap}
+.pj-stats .st .v{font-family:'Archivo';font-weight:800;font-size:42px;letter-spacing:-.03em;color:#fff;line-height:1}
+.pj-stats .st .v em{font-style:normal;color:var(--signal)}
+.pj-stats .st .l{font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+
+/* ===== GRID ===== */
+.pj-main{padding:54px 0 90px}
+.pj-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:34px;flex-wrap:wrap}
+.pj-filters{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--tmuted);border:1px solid var(--line);padding:9px 15px;transition:.15s}
+.chip:hover{border-color:var(--hair);color:var(--text)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pj-count{font-family:'JetBrains Mono';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--tmuted)}
+
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.card{background:var(--surface);border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column;transition:transform .3s cubic-bezier(.22,.61,.36,1),box-shadow .3s}
+.card:hover{transform:translateY(-4px);box-shadow:0 24px 50px rgba(20,40,55,.16)}
+.card .img{position:relative;aspect-ratio:16/10;overflow:hidden;background:#0b1d2a}
+.card .img .fill{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .6s cubic-bezier(.22,.61,.36,1)}
+.card:hover .img .fill{transform:scale(1.05)}
+.card .img .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,18,28,0) 38%,rgba(6,18,28,.82) 100%)}
+.card .tag{position:absolute;top:13px;left:13px;font-family:'JetBrains Mono';font-size:9.5px;letter-spacing:.2em;color:#fff;background:rgba(6,18,28,.66);border:1px solid rgba(255,255,255,.18);padding:6px 10px}
+.card .ov{position:absolute;left:16px;right:16px;bottom:13px;display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.card .ov .stat{font-family:'Archivo';font-weight:800;font-size:34px;letter-spacing:-.02em;color:#fff;line-height:1}
+.card .ov .stat .u{font-size:.42em;color:rgba(255,255,255,.7);font-weight:600;letter-spacing:.04em;margin-left:3px;vertical-align:.45em}
+.card .ov .no{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.16em;color:rgba(255,255,255,.5)}
+.card .body{padding:20px 22px 24px;display:flex;flex-direction:column;gap:10px;flex:1}
+.card .nm{font-family:'Archivo';font-weight:700;font-size:23px;letter-spacing:-.02em;color:var(--text);line-height:1.05}
+.card .meta{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--tmuted)}
+.card .res{font-family:'IBM Plex Sans';font-size:14.5px;color:var(--tsoft);line-height:1.5;margin-top:auto;padding-top:14px;border-top:1px solid var(--line);display:flex;align-items:flex-start;gap:10px}
+.card .res::before{content:'';width:14px;height:1px;background:var(--signal-d);margin-top:.7em;flex-shrink:0}
+.card.hidden{display:none}
+
+/* ===== CTA band (dark) ===== */
+.pj-cta{background:var(--ink);color:#fff;padding:clamp(70px,9vh,110px) 0;text-align:center;position:relative;overflow:hidden}
+.pj-cta::before{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:70vw;height:70vh;background:radial-gradient(circle,rgba(0,173,239,.06),transparent 60%);pointer-events:none}
+.pj-cta .eyb{justify-content:center}
+.pj-cta h2{font-family:'Archivo';font-weight:800;font-size:clamp(36px,4.4vw,60px);letter-spacing:-.03em;line-height:1;margin:20px auto 18px;max-width:16ch}
+.pj-cta p{font-family:'IBM Plex Sans';font-weight:300;font-size:18px;color:var(--soft);max-width:46ch;margin:0 auto 32px;line-height:1.55}
+.btn-go{display:inline-flex;align-items:center;gap:14px;background:var(--signal);color:var(--deep);font-weight:600;font-size:16px;padding:16px 30px;transition:.2s}
+.btn-go:hover{background:#fff}
+.btn-go .ar{width:16px;height:1px;background:currentColor;position:relative}
+.btn-go .ar::after{content:'';position:absolute;right:0;top:-2.5px;width:6px;height:6px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:rotate(45deg)}
+
+/* slim footer */
+.pagefoot{background:var(--deep);color:rgba(255,255,255,.55);padding:30px 0;font-family:'JetBrains Mono';font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.pagefoot .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.pagefoot a:hover{color:var(--signal)}
+
+@media(max-width:980px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.grid{grid-template-columns:1fr}.pj-stats{gap:32px}}
+</style>
+
+<!--SEO-FOUNDATION-->
+<meta name="description" content="Projecten van Vibe Energy: gerealiseerde lokale energiecentrales met solar, opslag, EMS en laadinfra bij Nederlandse bedrijven, terreinen en locaties.">
+<link rel="canonical" href="https://vibeenergy.nl/projecten">
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/png" href="assets/logo.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Vibe Energy">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="vibe·energy — Projecten">
+<meta property="og:description" content="Projecten van Vibe Energy: gerealiseerde lokale energiecentrales met solar, opslag, EMS en laadinfra bij Nederlandse bedrijven, terreinen en locaties.">
+<meta property="og:url" content="https://vibeenergy.nl/projecten">
+<meta property="og:image" content="https://vibeenergy.nl/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="vibe·energy — Projecten">
+<meta name="twitter:description" content="Projecten van Vibe Energy: gerealiseerde lokale energiecentrales met solar, opslag, EMS en laadinfra bij Nederlandse bedrijven, terreinen en locaties.">
+<meta name="twitter:image" content="https://vibeenergy.nl/assets/logo.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://vibeenergy.nl/projecten#webpage","url":"https://vibeenergy.nl/projecten","name":"vibe·energy — Projecten","description":"Projecten van Vibe Energy: gerealiseerde lokale energiecentrales met solar, opslag, EMS en laadinfra bij Nederlandse bedrijven, terreinen en locaties.","inLanguage":"nl-NL","isPartOf":{"@id":"https://vibeenergy.nl/#website"},"publisher":{"@id":"https://vibeenergy.nl/#org"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vibeenergy.nl/"},{"@type":"ListItem","position":2,"name":"Projecten","item":"https://vibeenergy.nl/projecten"}]}]}</script>
+<!--/SEO-FOUNDATION-->
+<style>/*rm-global*/@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}</style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1164445461468919');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<link rel="stylesheet" href="tokens.css">
+</head>
+<body>
+<!-- Google Tag Manager (noscript) --><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KM2V7VQ3" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script src="_header.js?v=3"></script>
+
+<header class="pj-hero">
+  <div class="wrap">
+    <span class="eyb">Bewezen werk · gerealiseerde projecten</span>
+    <h1>Geen theorie.<br><em>Gerealiseerd.</em></h1>
+    <p>Een selectie van wat we het afgelopen jaar opleverden — van laadpleinen tot batterijopslag. De cijfers zijn gerealiseerd, niet beloofd.</p>
+    <div class="pj-stats">
+      <div class="st"><div class="v">47</div><div class="l">Opgeleverde projecten</div></div>
+      <div class="st"><div class="v">12 <em>MWp</em></div><div class="l">Zon geïnstalleerd</div></div>
+      <div class="st"><div class="v">98<em>%</em></div><div class="l">Gemiddelde uptime</div></div>
+    </div>
+  </div>
+</header>
+
+<main class="pj-main">
+  <div class="wrap">
+    <div class="pj-bar">
+      <div class="pj-filters" id="filters">
+        <button class="chip on" data-f="all">Alle</button>
+        <button class="chip" data-f="Netcongestie">Netcongestie &amp; Energy Hubs</button>
+        <button class="chip" data-f="Automotive">Automotive</button>
+        <button class="chip" data-f="Recreatie">Recreatie</button>
+        <button class="chip" data-f="Woningen">Woningportefeuilles</button>
+        <button class="chip" data-f="Bedrijfspanden">Bedrijfspanden</button>
+      </div>
+      <span class="pj-count" id="count">Alle 11 gerealiseerde projecten</span>
+    </div>
+
+    <div class="grid" id="grid">
+      <a class="card" data-sector="Netcongestie" href="project-ratio-16">
+        <div class="img"><div class="fill" style="background-image:url('assets/projects/ratio-16.jpg')"></div><div class="scrim"></div>
+          <span class="tag">NETCONGESTIE</span>
+          <div class="ov"><div class="stat">645<span class="u">kWh</span></div><div class="no">2024 · Duiven</div></div>
+        </div>
+        <div class="body">
+          <div class="nm">Ratio 16</div>
+          <div class="meta">Netcongestie · Duiven</div>
+          <div class="res">78% besparing · binnen 51 kW aansluiting</div>
+        </div>
+      </a>
+      <a class="card" data-sector="Automotive" href="project-hedin-amsterdam">
+        <div class="img"><div class="fill" style="background-image:url('assets/projects/hedin-amsterdam.jpg')"></div><div class="scrim"></div>
+          <span class="tag">AUTOMOTIVE</span>
+          <div class="ov"><div class="stat">460<span class="u">kWh</span></div><div class="no">2026 · Amsterdam</div></div>
+        </div>
+        <div class="body">
+          <div class="nm">Hedin Amsterdam</div>
+          <div class="meta">Automotive · Amsterdam</div>
+          <div class="res">Grootschalig laden binnen 215 kW · 4 weken</div>
+        </div>
+      </a>
+      <a class="card" data-sector="Automotive" href="project-hedin-alkmaar">
+        <div class="img"><div class="fill" style="background-image:url('assets/projects/hedin-alkmaar.jpg')"></div><div class="scrim"></div>
+          <span class="tag">AUTOMOTIVE</span>
+          <div class="ov"><div class="stat">645<span class="u">kWh</span></div><div class="no">2025 · Alkmaar</div></div>
+        </div>
+        <div class="body">
+          <div class="nm">Hedin Alkmaar</div>
+          <div class="meta">Automotive · Alkmaar</div>
+          <div class="res">+70% netvermogen · 4 dagen installatie</div>
+        </div>
+      </a>
+      <a class="card" data-sector="Recreatie" href="project-dormio-medemblik">
+        <div class="img"><div class="fill" style="background-image:url('assets/projects/dormio.jpg')"></div><div class="scrim"></div>
+          <span class="tag">RECREATIE</span>
+          <div class="ov"><div class="stat">215<span class="u">kWh</span></div><div class="no">2024 · Medemblik</div></div>
+        </div>
+        <div class="body">
+          <div class="nm">Dormio Medemblik</div>
+          <div class="meta">Recreatie · Medemblik</div>
+          <div class="res">73% besparing · +4 energielabels</div>
+        </div>
+      </a>
+      <a class="card" data-sector="Woningen" href="project-van-beethovenstraat">
+        <div class="img"><div class="fill" style="background-image:url('assets/projects/beethovenstraat.jpg')"></div><div class="scrim"></div>
+          <span class="tag">WONINGEN</span>
+          <div class="ov"><div class="stat">302<span class="u">panelen</span></div><div class="no">2024 · Nijmegen</div></div>
+        </div>
+        <div class="body"><div class="nm">Van Beethovenstraat</div><div class="meta">Woningportefeuille · Nijmegen</div><div class="res">62 woningen · energielabel +4</div></div>
+      </a>
+      <a class="card" data-sector="Woningen" href="project-burchtstraat">
+        <div class="img"><div class="fill" style="background-image:url('assets/projects/burchtstraat.jpg')"></div><div class="scrim"></div>
+          <span class="tag">WONINGEN</span>
+          <div class="ov"><div class="stat">254<span class="u">panelen</span></div><div class="no">2024 · Nijmegen</div></div>
+        </div>
+        <div class="body"><div class="nm">Burchtstraat</div><div class="meta">Woningportefeuille · Nijmegen</div><div class="res">52 woningen · energielabel +4</div></div>
+      </a>
+      <a class="card" data-sector="Woningen" href="project-arnhem-60">
+        <div class="img"><div class="fill" style="background-image:url('assets/projects/arnhem-60.jpg')"></div><div class="scrim"></div>
+          <span class="tag">WONINGEN</span>
+          <div class="ov"><div class="stat">254<span class="u">panelen</span></div><div class="no">2024 · Arnhem</div></div>
+        </div>
+        <div class="body"><div class="nm">Arnhem — 60 woningen</div><div class="meta">Woningportefeuille · belegger</div><div class="res">60 woningen · energielabel +3</div></div>
+      </a>
+      <a class="card" data-sector="Woningen" href="project-ketsheuvel">
+        <div class="img"><div class="fill" style="background-image:url('assets/projects/ketsheuvel.jpg')"></div><div class="scrim"></div>
+          <span class="tag">WONINGEN</span>
+          <div class="ov"><div class="stat">162<span class="u">panelen</span></div><div class="no">2024 · Renkum</div></div>
+        </div>
+        <div class="body"><div class="nm">Ketsheuvel</div><div class="meta">Woningportefeuille · Renkum</div><div class="res">32 woningen · energielabel +5</div></div>
+      </a>
+      <a class="card" data-sector="Woningen" href="project-nieuw-schoonoord">
+        <div class="img"><div class="fill" style="background-image:url('assets/projects/nieuw-schoonoord.jpg')"></div><div class="scrim"></div>
+          <span class="tag">WONINGEN</span>
+          <div class="ov"><div class="stat">300<span class="u">panelen</span></div><div class="no">2024 · Velp</div></div>
+        </div>
+        <div class="body"><div class="nm">Nieuw-Schoonoord</div><div class="meta">Woningportefeuille · Velp</div><div class="res">180 woningen verduurzaamd</div></div>
+      </a>
+      <a class="card" data-sector="Woningen" href="project-schouwburgring">
+        <div class="img"><div class="fill" style="background-image:url('assets/projects/schouwburgring.jpg')"></div><div class="scrim"></div>
+          <span class="tag">WONINGEN</span>
+          <div class="ov"><div class="stat">534<span class="u">panelen</span></div><div class="no">2023 · Tilburg</div></div>
+        </div>
+        <div class="body"><div class="nm">Schouwburgring</div><div class="meta">Woningportefeuille · Tilburg</div><div class="res">160 woningen verduurzaamd</div></div>
+      </a>
+      <a class="card" data-sector="Bedrijfspanden" href="project-purmerend">
+        <div class="img"><div class="fill" style="background-image:url('assets/projects/purmerend.jpg')"></div><div class="scrim"></div>
+          <span class="tag">BEDRIJFSPAND</span>
+          <div class="ov"><div class="stat">216<span class="u">panelen</span></div><div class="no">2023 · Purmerend</div></div>
+        </div>
+        <div class="body"><div class="nm">Purmerend — Edisonweg 16</div><div class="meta">Bedrijfspand · Purmerend</div><div class="res">97,7 kW · energielabel +3</div></div>
+      </a>
+    </div>
+  </div>
+</main>
+
+<section class="pj-cta">
+  <div class="wrap">
+    <span class="eyb">Volgende stap</span>
+    <h2>Uw locatie als volgende?</h2>
+    <p>Vertel ons over uw aansluiting en ambitie — we rekenen de businesscase door en laten zien wat haalbaar is.</p>
+    <a href="contact" class="btn-go">Plan een gesprek <span class="ar"></span></a>
+  </div>
+</section>
+
+<script src="_footer.js"></script>
+
+<script>
+(function(){
+  const nav=document.getElementById('topnav');
+  if(nav){
+    const onScroll=()=>nav.classList.toggle('scrolled',window.scrollY>24);
+    window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+    const items=nav.querySelectorAll('.nav-item');
+    items.forEach(item=>{const drop=item.querySelector('.nav-drop'); if(!drop)return; let t=null;
+      item.addEventListener('mouseenter',()=>{clearTimeout(t);items.forEach(i=>i!==item&&i.classList.remove('open'));item.classList.add('open');});
+      item.addEventListener('mouseleave',()=>{t=setTimeout(()=>item.classList.remove('open'),180);});});
+  }
+  // filter
+  const chips=document.querySelectorAll('#filters .chip');
+  const cards=document.querySelectorAll('#grid .card');
+  const count=document.getElementById('count');
+  chips.forEach(c=>c.addEventListener('click',()=>{
+    chips.forEach(x=>x.classList.remove('on')); c.classList.add('on');
+    const f=c.dataset.f; let n=0;
+    cards.forEach(card=>{const show=(f==='all'||card.dataset.sector===f); card.classList.toggle('hidden',!show); if(show)n++;});
+    count.textContent=(f==='all'?'Uitgelicht · ':f+' · ')+n+' project'+(n===1?'':'en');
+  }));
+})();
+</script>
+<!-- Sticky mobile CTA (site-consistent) -->
+<style>
+.mcta{position:fixed;left:0;right:0;bottom:0;z-index:90;display:none;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(6,18,28,.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(0,173,239,.14);font-family:'IBM Plex Sans',sans-serif}
+.mcta a{flex:1;text-align:center;font-weight:600;font-size:15px;padding:15px 12px;display:flex;align-items:center;justify-content:center;text-decoration:none}
+.mcta .p{background:#00ADEF;color:#06121C}
+.mcta .g{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.22);font-weight:500;flex:0 0 auto;padding:15px 18px}
+@media(max-width:760px){.mcta{display:flex}body{padding-bottom:74px}}
+</style>
+<div class="mcta"><a class="p" href="netcongestie-check">Netcongestie Check</a><a class="g" href="contact">Bel</a></div>
+</body>
+</html>
