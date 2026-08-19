@@ -1,0 +1,9 @@
+{
+  "name": "vibe-website",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Vibe Energy website — statische site",
+  "scripts": {
+    "qa:assets": "node scripts/qa-assets.mjs"
+  }
+}
