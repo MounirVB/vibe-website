@@ -430,30 +430,75 @@ function showResult(){
     const acts=btn.parentElement;
     let errEl=acts.querySelector('.send-err');
     if(errEl) errEl.remove();
+
+    // Dubbel verzenden: de knop gaat op slot en blijft dat tot er antwoord is.
+    // Bij een fout gaat hij weer open, met alle antwoorden nog op het scherm —
+    // `state` wordt hier niet aangeraakt.
+    if(btn.dataset.bezig==='1') return;
+    btn.dataset.bezig='1';
     btn.disabled=true; const orig=btn.textContent; btn.textContent='Versturen…';
-    const payload=Object.assign({_subject:'Nieuwe Netcongestie Check aanvraag', _template:'table'}, state);
-    fetch('https://formsubmit.co/ajax/sales@vibeenergy.nl',{
+
+    const payload=Object.assign({
+      lead_type:'netcongestie',
+      site:'vibe',
+      page_url:location.href,
+      referrer:document.referrer||'',
+      metadata:{form_id:'netcongestie-check',elapsed_ms:Date.now()-NC_START,company:''}
+    }, state);
+
+    fetch(LEAD_ENDPOINT,{
       method:'POST',
       headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify(payload)
-    }).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-    .then(()=>{
-      app.innerHTML = `<div class="done-state">
-        <div class="ic">${CHECK}</div>
-        <h2>Aanvraag ontvangen</h2>
-        <p>Bedankt${state.naam?', '+state.naam.split(' ')[0]:''}. Een specialist neemt binnen één werkdag contact op via ${state.email||'uw e-mailadres'} met uw netcongestierapport.</p>
-      </div>`;
+    })
+    .then(function(r){ return r.json().catch(function(){return null;}).then(function(j){return {r:r,j:j};}); })
+    .then(function(res){
+      // ══ SUCCES IS NIET "HTTP 200" ═══════════════════════════════════════
+      //
+      // Hier stond `if(!r.ok) throw` en verder niets: de statuscode was het
+      // enige bewijs, en de inhoud van het antwoord werd nooit gelezen. Dat is
+      // precies het gat waardoor een aanvraag kon verdwijnen terwijl de
+      // bezoeker "Aanvraag ontvangen" las.
+      //
+      // Nu geldt: alleen als het platform bevestigt dat de aanvraag DUURZAAM is
+      // opgeslagen (ok===true én een leadId) is dit een succes. Al het andere
+      // is een mislukking, hoe vriendelijk de statuscode ook is.
+      if(!res.r.ok || !res.j || res.j.ok!==true || !res.j.leadId){
+        throw new Error('niet bevestigd');
+      }
+      // Pas NU is het een lead. De conversie gaat hierna af en niet eerder: een
+      // klik op verzenden is geen aanvraag.
+      if(window.gtag)gtag('event','generate_lead',{form:'netcongestie_check'});
+      if(window.dataLayer)dataLayer.push({event:'lead_submitted',form:'netcongestie_check'});
+
+      app.innerHTML = '<div class="done-state">'+
+        '<div class="ic">'+CHECK+'</div>'+
+        '<h2>Aanvraag ontvangen</h2>'+
+        '<p>Bedankt'+(state.naam?', '+state.naam.split(' ')[0]:'')+'. Een specialist neemt binnen één werkdag contact op via '+(state.email||'uw e-mailadres')+' met uw netcongestierapport.</p>'+
+        '<p style="margin-top:10px;font-size:13px;opacity:.65">Referentie: '+String(res.j.requestId||'').slice(0,8)+'</p>'+
+      '</div>';
       app.querySelector('.done-state').scrollIntoView({block:'start'});
     })
-    .catch(()=>{
+    .catch(function(){
+      // Antwoorden blijven staan, knop weer bruikbaar, één duidelijke
+      // vervolgstap. Geen statuscode en geen technische term op het scherm.
+      btn.dataset.bezig='';
       btn.disabled=false; btn.textContent=orig;
       const e=document.createElement('span');
       e.className='send-err'; e.style.cssText='display:block;margin-top:12px;color:var(--error);font-size:14px';
-      e.textContent='Verzenden is niet gelukt. Probeer het opnieuw of mail rechtstreeks naar sales@vibeenergy.nl.';
+      e.textContent='Je aanvraag is nog niet verzonden. Probeer het opnieuw — je antwoorden blijven staan. Lukt het niet, mail dan naar sales@vibeenergy.nl.';
       acts.appendChild(e);
     });
   });
 }
+
+/* De canonieke leadingang van het Vibe-platform. Eén adres voor alle
+   formulieren van deze site; de server bepaalt aan de Origin onder welk bedrijf
+   de aanvraag landt. Overschrijfbaar voor een testomgeving. */
+const LEAD_ENDPOINT=(window.VIBE_LEAD&&window.VIBE_LEAD.endpoint)||'https://dashboard.vibeenergy.nl/api/public/site/lead';
+/* Wanneer de bezoeker begon. Gaat mee als elapsed_ms zodat de server een bot
+   kan herkennen die het formulier in een halve seconde invult. */
+const NC_START=Date.now();
 
 renderStep();
 </script>

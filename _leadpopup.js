@@ -18,7 +18,13 @@
    De API-key staat uitsluitend als env-var op de API-service.
    ============================================================ */
 (function(){
-  var SEND_ENDPOINT = (window.VIBE_LEAD&&window.VIBE_LEAD.endpoint) || 'https://vibe-website-api-production.up.railway.app/api/brochure';
+  // De brochureDIENST: verstuurt de mail met de brochure. Legacy — zodra de
+  // brochurelevering ook uit het platform komt, kan deze dienst uit.
+  var SEND_ENDPOINT = (window.VIBE_LEAD&&window.VIBE_LEAD.brochureEndpoint) || 'https://vibe-website-api-production.up.railway.app/api/brochure';
+  // De canonieke leadingang van het Vibe-platform: hier wordt de aanvraag
+  // DUURZAAM vastgelegd, onder het juiste bedrijf, met een trace-id.
+  var LEAD_ENDPOINT = (window.VIBE_LEAD&&window.VIBE_LEAD.endpoint) || 'https://dashboard.vibeenergy.nl/api/public/site/lead';
+  var POPUP_START = Date.now();
 
   var cfg = window.VIBE_LEAD || {};
   var slug     = cfg.slug || (location.pathname.replace(/^.*\//,'').replace(/\.html$/,'')||'home');
@@ -170,18 +176,51 @@
   });
 
   function sendEmails(lead){
-    // Server-side whitelist: alleen het brochure-id (slug) gaat mee; de API
-    // bepaalt zelf titel, brochure-URL en ontvanger.
-    return fetch(SEND_ENDPOINT,{
+    // ══ DE LEAD EERST, DE MAIL DAARNA ═══════════════════════════════════════
+    //
+    // Hier ging alleen een verzoek naar `vibe-website-api`, een losse dienst die
+    // de brochuremail verstuurt. Of die aanvraag ergens duurzaam belandde, was
+    // van buitenaf niet vast te stellen — en dat is precies de situatie waarin
+    // een aanvraag stil verdwijnt.
+    //
+    // De volgorde is nu omgedraaid en dat is de hele wijziging: eerst de lead
+    // DUURZAAM in het Vibe-platform, met bedrijfsroutering, trace-id en
+    // idempotentie. Pas als dat is bevestigd gaat de brochuremail eruit, en die
+    // mag falen zonder dat de aanvraag verloren gaat.
+    return fetch(LEAD_ENDPOINT,{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify({
-        name: lead.name||'', email: lead.email, phone: lead.phone||'',
-        brochure: slug, website: (form.website&&form.website.value)||''
+        lead_type:'brochure',
+        site:'vibe',
+        naam: lead.name||'', email: lead.email, tel: lead.phone||'',
+        product: slug,
+        page_url: location.href,
+        referrer: document.referrer||'',
+        metadata:{ form_id:'brochure-popup', elapsed_ms: Date.now()-POPUP_START,
+                   company: (form.website&&form.website.value)||'' }
       })
-    }).then(function(r){
-      if(!r.ok){ throw new Error('endpoint '+r.status); }
-      return r.json();
+    })
+    .then(function(r){ return r.json().catch(function(){return null;}).then(function(j){return {r:r,j:j};}); })
+    .then(function(res){
+      // Succes is niet 'HTTP 200': alleen een door het platform opgeslagen lead
+      // telt. Zonder leadId is er niets vastgelegd en is dit geen aanvraag.
+      if(!res.r.ok || !res.j || res.j.ok!==true || !res.j.leadId){
+        throw new Error('niet bevestigd');
+      }
+      // De brochuremail is DOWNSTREAM. Hij mag mislukken: de lead staat er al,
+      // en de brochure zelf opent hieronder sowieso uit de site. Daarom geen
+      // `throw` in deze tak — alleen een logregel.
+      return fetch(SEND_ENDPOINT,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          name: lead.name||'', email: lead.email, phone: lead.phone||'',
+          brochure: slug, website: (form.website&&form.website.value)||''
+        })
+      }).catch(function(e){
+        console.warn('[VibeLead] brochuremail niet verstuurd; de aanvraag staat wel vast:', e);
+      }).then(function(){ return res.j; });
     });
   }
 
