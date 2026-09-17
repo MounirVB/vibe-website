@@ -1,0 +1,282 @@
+/* ============================================================
+   Vibe Energy — Homepage SECTIE 3: project in de kijker
+   Reconstructie van de goedgekeurde desktopreferentie
+   (referentiebeeld 2070 x 760 px, paneel 2056 x 682 px).
+
+   SCHAAL — de referentie is op een ander canvas gerenderd dan
+   sectie 1 en 2. De schaalfactor is afgeleid uit het paneel:
+   het paneel begint links op de containermarge van de site
+   (70px bij 1774 viewport) en loopt door tot de rechterrand,
+   dus 1704 site-px voor 2056 referentie-px  ->  x0,8288.
+   Die factor is gecontroleerd tegen de reeds vastgelegde
+   typografie: knophoogte 79ref x0,8288 = 65,5px (sectie 1/2: 63)
+   en regelafstand body 34ref x0,8288 = 28,2px (sectie 2: 28,2).
+   1 referentie-px = 0,046719cqw.
+
+   Eigen namespace .vh-pr-* — raakt sectie 1 en 2 niet aan.
+   ============================================================ */
+
+.vh-pr{
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  padding: 5.6369cqw 0 5.6369cqw;     /* 100px boven en onder */
+  background: #FCFDFE;
+  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+
+  --pr-navy:   #001632;
+  --pr-blauw:  #0073FE;
+  --pr-eyebrow:#0490FF;
+  --pr-body:   #93A5BC;
+  --pr-lijn:   rgba(255,255,255,.22);
+}
+/* zachte blauwe gloed boven het paneel, als in de referentie */
+.vh-pr::before{
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 11cqw;
+  background: radial-gradient(120% 100% at 58% 0%, #DFEDFD 0%, rgba(223,237,253,0) 72%);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------
+   PANEEL — begint op de containermarge en loopt rechts af beeld
+   ------------------------------------------------------------ */
+.vh-pr-panel{
+  position: relative;
+  margin-left: 3.9459cqw;             /* 70px */
+  aspect-ratio: 1704 / 565;
+  overflow: hidden;
+  border-radius: 3.5507cqw 0 0 3.5507cqw;   /* 63px links, rechts vlak */
+  background: var(--pr-navy);
+  isolation: isolate;
+}
+
+/* 1. projectfoto */
+.vh-pr-foto,
+.vh-pr-geenbeeld{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+.vh-pr-geenbeeld{
+  background: repeating-linear-gradient(45deg, #17293F 0 18px, #10202F 18px 36px);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding-left: 38%;   /* label buiten de tekstkolom, midden in het fotovlak */
+}
+.vh-pr-geenbeeld em{
+  font-style: normal;
+  display: block;
+  font-size: .78cqw;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #7C93AE;
+  line-height: 2.4;
+}
+.vh-pr-geenbeeld em b{ display:block; color:#C6D6E8; font-size:1.18cqw; letter-spacing:.12em }
+
+/* 2. navy-verloop vanaf links, zodat de kolom leesbaar blijft */
+.vh-pr-scrim{
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg,
+      #001632 0%,
+      #001632 20%,
+      rgba(0,22,50,.74) 32%,
+      rgba(0,22,50,.30) 46%,
+      rgba(0,22,50,.06) 60%,
+      rgba(0,22,50,0) 70%),
+    linear-gradient(180deg, rgba(0,18,42,.30) 0%, rgba(0,18,42,0) 26%);
+}
+
+/* 3. VIBE-PROJECTGEOMETRIE — herbruikbaar merkonderdeel.
+      Coordinaten staan in referentiepixels van het paneel
+      (2056 x 682); preserveAspectRatio="none" houdt ze exact
+      op hun plaats bij elke schaal. */
+.vh-pr-geo{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------
+   LINKERKOLOM
+   ------------------------------------------------------------ */
+.vh-pr-copy{
+  position: absolute;
+  z-index: 3;
+  left: 4.5318cqw;                    /* 97 ref */
+  top: 3.1173cqw;
+  color: #fff;
+}
+.vh-pr-eyebrow{
+  margin: 0;
+  font-size: .9344cqw;                /* 20 ref */
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+  color: var(--pr-eyebrow);
+}
+.vh-pr-titel{
+  margin: .9470cqw 0 0;
+  font-family: inherit;
+  font-size: 3.2875cqw;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -.008em;
+  color: #fff;
+}
+.vh-pr-statement{
+  margin: .0620cqw 0 0;
+  font-size: 2.2612cqw;               /* 48,4 ref */
+  line-height: 2.6163cqw;             /* 56 ref */
+  font-weight: 400;
+  letter-spacing: -.004em;
+  color: rgba(255,255,255,.94);
+}
+.vh-pr-body{
+  margin: 1.0090cqw 0 0;
+  font-size: 1.1265cqw;
+  line-height: 1.5885cqw;             /* 34 ref */
+  font-weight: 400;
+  color: var(--pr-body);
+}
+
+/* metrieken */
+.vh-pr-metrics{
+  display: flex;
+  align-items: flex-start;
+  margin-top: 1.7136cqw;
+}
+.vh-pr-metric + .vh-pr-metric{
+  margin-left: 1.9856cqw;             /* 42,5 ref */
+  padding-left: 1.9856cqw;
+  border-left: 1px solid var(--pr-lijn);
+}
+.vh-pr-metric b{
+  display: block;
+  font-size: 1.6024cqw;               /* 34,3 ref */
+  line-height: 1.2149cqw;             /* 26 ref */
+  font-weight: 700;
+  letter-spacing: -.012em;
+  color: #fff;
+}
+.vh-pr-metric span{
+  display: block;
+  margin-top: .5918cqw;
+  font-size: .9811cqw;                /* 21 ref */
+  line-height: 1;
+  font-weight: 400;
+  color: var(--pr-body);
+}
+
+/* CTA's — de knop blijft in de projectkolom staan, de tekstlink ernaast */
+.vh-pr-cta{
+  display: flex;
+  align-items: center;
+  margin-top: 1.8659cqw;
+}
+.vh-pr-knop{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1274cqw;
+  width: 13.2215cqw;                  /* 283 ref */
+  height: 3.6908cqw;                  /* 79 ref */
+  border-radius: .5139cqw;            /* 11 ref */
+  background: var(--pr-blauw);
+  color: #fff;
+  font-size: 1.0138cqw;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .2s ease;
+}
+.vh-pr-knop:hover{ background:#005FE0 }
+.vh-pr-knop svg{ width:1.2965cqw; height:1.2965cqw; flex:none; display:block }
+
+.vh-pr-link{
+  display: inline-flex;
+  align-items: center;
+  gap: 1.0000cqw;
+  margin-left: 2.1000cqw;             /* 45 ref */
+  color: #fff;
+  font-size: 1.0138cqw;
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: gap .2s ease, color .2s ease;
+}
+.vh-pr-link svg{ width:1.1838cqw; height:1.1838cqw; flex:none; display:block }
+.vh-pr-link:hover{ gap:1.28cqw; color: var(--pr-eyebrow) }
+
+/* "Alle projecten" rechtsboven — uitgelijnd op de containermarge rechts */
+.vh-pr-alle{
+  position: absolute;
+  z-index: 3;
+  top: 2.3898cqw;
+  right: 3.9204cqw;                   /* 66px site-marge, min paneelverschuiving */
+  display: inline-flex;
+  align-items: center;
+  gap: 1.1000cqw;
+  color: #fff;
+  font-size: 1.0242cqw;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: gap .2s ease;
+}
+.vh-pr-alle svg{ width:1.2400cqw; height:1.2400cqw; flex:none; display:block }
+.vh-pr-alle:hover{ gap:1.4cqw }
+
+/* ============================================================
+   TIJDELIJKE MOBIELE VANGRAIL — geen mobiel ontwerp, alleen
+   voorkomen dat kleine schermen overlopen.
+   ============================================================ */
+@media (max-width: 900px){
+  .vh-pr{ padding: 40px 0 }
+  .vh-pr::before{ display:none }
+  .vh-pr-panel{ margin-left: 0; aspect-ratio: auto; min-height: 0; border-radius: 0 }
+  .vh-pr-geo{ display:none }
+  .vh-pr-scrim{ background: linear-gradient(180deg, rgba(0,22,50,.86) 0%, rgba(0,22,50,.94) 100%) }
+  .vh-pr-copy{ position: static; padding: 28px 20px 30px }
+  .vh-pr-eyebrow{ font-size: 13px; letter-spacing: .12em }
+  .vh-pr-titel{ font-size: 34px; margin-top: 14px }
+  .vh-pr-statement{ font-size: 22px; line-height: 28px; margin-top: 10px }
+  .vh-pr-statement br{ display:none }
+  .vh-pr-body{ font-size: 16px; line-height: 24px; margin-top: 16px }
+  .vh-pr-body br{ display:none }
+  .vh-pr-metrics{ margin-top: 22px; flex-wrap: wrap; gap: 16px 0 }
+  .vh-pr-metric + .vh-pr-metric{ margin-left: 16px; padding-left: 16px }
+  .vh-pr-metric b{ font-size: 22px; line-height: 24px }
+  .vh-pr-metric span{ font-size: 14px; margin-top: 6px }
+  .vh-pr-cta{ margin-top: 24px; flex-wrap: wrap; gap: 14px 20px }
+  .vh-pr-knop{ width: auto; height: 52px; padding: 0 22px; font-size: 15px; gap: 12px; border-radius: 10px }
+  .vh-pr-knop svg{ width: 18px; height: 18px }
+  .vh-pr-link{ margin-left: 0; font-size: 15px; gap: 10px }
+  .vh-pr-link svg{ width: 17px; height: 17px }
+  .vh-pr-alle{ position: static; display: flex; justify-content: flex-start;
+               padding: 0 20px 22px; font-size: 15px; gap: 10px }
+  .vh-pr-alle svg{ width: 17px; height: 17px }
+  .vh-pr-geenbeeld{ position: absolute }
+  .vh-pr-geenbeeld em{ font-size: 10px; line-height: 2 }
+  .vh-pr-geenbeeld em b{ font-size: 14px }
+}
