@@ -1,0 +1,347 @@
+/* ============================================================
+   Vibe Energy — Homepage SECTIE 2: Oplossingen
+   Reconstructie van de goedgekeurde desktopreferentie
+   (1774 x 887 px). Zelfde omrekening als sectie 1:
+   1cqw = 17,74 referentiepixels.
+   Eigen namespace .vh-sol-* — raakt sectie 1 niet aan.
+   ============================================================ */
+
+.vh-sol{
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  background: #FCFDFE;
+  color: #08203C;
+  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+
+  --sol-blauw:  #0073FE;
+  --sol-navy:   #08203C;
+  --sol-grijs:  #56627D;
+  --sol-grijs2: #6F7A95;
+  --sol-lijn:   #E5EFFA;
+  --sol-radius: .5637cqw;          /* 10px */
+}
+
+.vh-sol-inner{
+  display: grid;
+  grid-template-columns: 28.5231cqw 63.8670cqw;   /* 506px | 1133px */
+  padding: 4.1714cqw 3.7204cqw 3.3258cqw 3.9459cqw; /* 74 / 66 / 59 / 70 */
+}
+
+/* ------------------------------------------------------------
+   LINKERKOLOM
+   ------------------------------------------------------------ */
+.vh-sol-copy{ padding-top: .9019cqw }             /* 16px, kaptop eyebrow op y=91 */
+
+.vh-sol-eyebrow{
+  margin: 0;
+  font-size: 1.0259cqw;            /* 18,2px */
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: .175em;
+  text-transform: uppercase;
+  color: var(--sol-blauw);
+}
+.vh-sol-kop{
+  margin: .9583cqw 0 0;            /* 17px */
+  font-family: inherit;
+  font-size: 3.4667cqw;            /* 61,5px */
+  line-height: 3.4104cqw;          /* 60,5px */
+  font-weight: 700;
+  letter-spacing: -.012em;
+  color: var(--sol-navy);
+}
+.vh-sol-kop .vh-sol-accent{ color: var(--sol-blauw) }
+
+.vh-sol-lead{
+  margin: 1.2965cqw 0 0;           /* 23px */
+  max-width: 22.5479cqw;           /* 400px */
+  font-size: 1.2458cqw;            /* 22,1px */
+  line-height: 1.5896cqw;          /* 28,2px */
+  font-weight: 400;
+  color: var(--sol-grijs);
+}
+
+.vh-sol-cta{
+  margin-top: 1.6910cqw;           /* 30px */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1274cqw;                  /* 20px */
+  width: 16.0090cqw;               /* 284px */
+  height: 3.5513cqw;               /* 63px */
+  border-radius: var(--sol-radius);
+  background: var(--sol-blauw);
+  color: #fff;
+  font-size: 1.0147cqw;            /* 18px */
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .2s ease;
+}
+.vh-sol-cta:hover{ background: #005FE0 }
+.vh-sol-cta svg{ width: 1.2965cqw; height: 1.2965cqw; flex: none; display: block }
+
+.vh-sol-scheiding{
+  margin: 1.7474cqw 0 0;           /* 31px — lijn op y=595 */
+  width: 22.4352cqw;               /* 398px */
+  height: 1px;
+  border: 0;
+  background: var(--sol-lijn);
+}
+
+.vh-sol-punten{ list-style: none; margin: 0; padding: 0 }
+.vh-sol-punt{
+  display: grid;
+  grid-template-columns: 2.2547cqw 1fr;    /* 40px icoon */
+  column-gap: 2.5366cqw;                   /* 45px */
+  align-items: start;
+  margin-top: 1.7024cqw;                   /* 30,2px — eerste icoon op y=626 */
+}
+.vh-sol-punt + .vh-sol-punt{ margin-top: 1.9448cqw }   /* 34,5px -> rijafstand 79,5px */
+.vh-sol-punt svg{ width: 100%; height: 2.2547cqw; display: block; color: var(--sol-blauw) }
+.vh-sol-punt b{
+  display: block;
+  font-size: 1.0259cqw;            /* 18,2px */
+  line-height: 1.1274cqw;          /* 20px */
+  font-weight: 700;
+  color: var(--sol-navy);
+}
+.vh-sol-punt b + span{
+  display: block;
+  margin-top: .2819cqw;            /* 5px */
+  font-size: .9414cqw;             /* 16,7px */
+  line-height: 1.1274cqw;          /* 20px */
+  font-weight: 400;
+  color: var(--sol-grijs2);
+}
+.vh-sol-punt sub{ font-size:.72em; vertical-align:baseline; position:relative; top:.22em; line-height:0 }
+.vh-sol-punt > span{ display:block }
+
+/* ------------------------------------------------------------
+   RECHTER MODULERASTER
+   ------------------------------------------------------------ */
+.vh-sol-grid{
+  display: grid;
+  grid-template-columns: 27.4521cqw 17.0237cqw 16.4600cqw;   /* 487 | 302 | 292 */
+  grid-template-rows: 28.0722cqw 12.9651cqw;                 /* 498 | 230 */
+  column-gap: 1.4656cqw;                                     /* 26px */
+  row-gap: 1.2965cqw;                                        /* 23px */
+}
+/* onderste rij heeft een andere kolomverdeling dan de bovenste */
+.vh-sol-grid{ grid-template-areas: 'a b c' 'd e f' }
+.vh-sol-mod--zon{ grid-area: a }
+.vh-sol-mod--bat{ grid-area: b }
+.vh-sol-mod--laad{ grid-area: c }
+.vh-sol-onder{
+  grid-area: d / d / f / f;
+  display: grid;
+  grid-template-columns: 20.9132cqw 19.8985cqw 20.0113cqw;   /* 371 | 353 | 355 */
+  column-gap: 1.4656cqw;
+}
+
+.vh-sol-mod{
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--sol-radius);
+  text-decoration: none;
+  color: #fff;
+  box-shadow: 0 .56cqw 1.46cqw rgba(23,84,150,.10);
+  isolation: isolate;
+}
+.vh-sol-mod img,
+.vh-sol-mod .vh-sol-geenbeeld{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+.vh-sol-mod::after{           /* leesbaarheidsverloop over de foto */
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.vh-sol-mod--boven::after{
+  background: linear-gradient(158deg,
+    rgba(4,42,96,.74) 0%,
+    rgba(4,42,96,.48) 28%,
+    rgba(4,38,88,.16) 52%,
+    rgba(4,34,80,.02) 70%);
+}
+.vh-sol-mod--onder::after{
+  background: linear-gradient(96deg,
+    rgba(3,20,44,.86) 0%,
+    rgba(3,20,44,.62) 34%,
+    rgba(3,20,44,.24) 68%,
+    rgba(3,20,44,.10) 100%);
+}
+
+.vh-sol-mod-inhoud{
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 1.7476cqw 1.8602cqw;     /* 31px boven, 33px links */
+}
+.vh-sol-mod-ic{ width: 2.2547cqw; height: 2.2547cqw; display: block; flex: none }  /* 40px */
+.vh-sol-mod h3{
+  margin: 0;
+  font-size: 1.0372cqw;             /* 18,4px */
+  line-height: 1.30;
+  font-weight: 700;
+  letter-spacing: -.004em;
+  color: #fff;
+}
+.vh-sol-mod p{
+  margin: .6202cqw 0 0;             /* 11px */
+  font-size: .9301cqw;              /* 16,5px */
+  line-height: 1.3529cqw;           /* 24px */
+  font-weight: 400;
+  color: rgba(255,255,255,.90);
+}
+
+/* ronde pijlknop */
+.vh-sol-pijl{
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 2.1420cqw; height: 2.1420cqw;   /* 38px */
+  border-radius: 50%;
+  background: #fff;
+  color: var(--sol-blauw);
+  transition: transform .2s ease;
+}
+.vh-sol-pijl svg{ width: 1.0147cqw; height: 1.0147cqw; display: block }
+.vh-sol-mod:hover .vh-sol-pijl{ transform: translateX(.22cqw) }
+
+/* --- grote module: Zonnepanelen --- */
+.vh-sol-mod--zon .vh-sol-mod-ic{ width: 2.4803cqw; height: 2.4803cqw }   /* 44px */
+.vh-sol-mod--zon h3{ font-size: 1.4995cqw }                              /* 26,6px */
+.vh-sol-mod--zon p{ margin-top: .2255cqw; font-size: 1.0710cqw; line-height: 1.5220cqw }  /* 4 / 19 / 27px */
+.vh-sol-mod--zon .vh-sol-pijl{
+  width: 2.5930cqw; height: 2.5930cqw;    /* 46px */
+  top: 4.4532cqw;                          /* 79px */
+  right: 2.0857cqw;                        /* 37px */
+}
+.vh-sol-mod--zon .vh-sol-pijl svg{ width:1.1838cqw; height:1.1838cqw }
+.vh-sol-mod--zon .vh-sol-mod-inhoud{ padding-bottom: 0 }
+
+/* statistiekbalk onderin Zonnepanelen */
+.vh-sol-stats{
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 4.0023cqw 0 1.1274cqw;         /* 71px boven, 20px onder */
+  background: linear-gradient(180deg, rgba(6,26,48,0) 0%, rgba(6,26,48,.78) 46%, rgba(6,26,48,.90) 100%);
+}
+.vh-sol-stats div{ padding-left: 1.9166cqw; position: relative }
+.vh-sol-stats div + div::before{
+  content: '';
+  position: absolute;
+  left: 0; top: -.28cqw; bottom: -.28cqw;
+  width: 1px;
+  background: rgba(255,255,255,.28);
+}
+.vh-sol-stats b{
+  display: block;
+  font-size: 1.0147cqw;            /* 18px */
+  line-height: 1.0147cqw;          /* 18px */
+  font-weight: 700;
+  letter-spacing: -.012em;
+  color: #fff;
+}
+.vh-sol-stats span{
+  display: block;
+  margin-top: .6765cqw;            /* 12px */
+  font-size: .6201cqw;             /* 11px */
+  line-height: 1;
+  font-weight: 400;
+  color: rgba(255,255,255,.80);
+}
+.vh-sol-stats sub{ font-size:.74em; vertical-align:baseline; position:relative; top:.2em; line-height:0 }
+
+/* --- kleine bovenmodules: titel op ~1/4 hoogte --- */
+.vh-sol-mod--boven .vh-sol-mod-kop{ margin-top: 1.0993cqw }   /* 19,5px onder het icoon */
+.vh-sol-mod--zon  .vh-sol-mod-kop{ margin-top: .6286cqw }      /* 11px */
+.vh-sol-mod--onder .vh-sol-mod-kop{ margin-top: 1.3811cqw }   /* 24,5px */
+.vh-sol-mod--onder p{ margin-top: 1.0147cqw }                 /* 18px */
+.vh-sol-mod--bat .vh-sol-pijl,
+.vh-sol-mod--laad .vh-sol-pijl{ top: 4.8478cqw; right: 1.3529cqw }   /* 86px / 24px */
+
+/* --- ondermodules: tekst onderaan, pijl rechtsonder --- */
+.vh-sol-mod--onder .vh-sol-pijl{
+  width: 2.1984cqw; height: 2.1984cqw;    /* 39px */
+  right: 1.1274cqw; bottom: 1.1274cqw;    /* 20px */
+}
+.vh-sol-mod--onder .vh-sol-mod-kop{ padding-right: 3.2cqw }
+
+/* --- ontbrekend beeld: duidelijk gemarkeerde plaatshouder --- */
+.vh-sol-geenbeeld{
+  background:
+    repeating-linear-gradient(45deg, #223042 0 14px, #1A2635 14px 28px);
+  display: grid;
+  place-items: start end;
+  padding: .85cqw 1.1cqw 0 0;
+}
+.vh-sol-geenbeeld em{
+  font-style: normal;
+  font-size: .62cqw;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #8FA3BC;
+}
+
+/* ============================================================
+   TIJDELIJKE MOBIELE VANGRAIL — geen mobiel ontwerp, alleen
+   voorkomen dat kleine schermen overlopen.
+   ============================================================ */
+@media (max-width: 900px){
+  .vh-sol-inner{ grid-template-columns: 1fr; padding: 40px 20px }
+  .vh-sol-copy{ padding-top: 0 }
+  .vh-sol-eyebrow{ font-size: 13px; letter-spacing: .12em }
+  .vh-sol-kop{ font-size: 36px; line-height: 40px; margin-top: 16px }
+  .vh-sol-kop br{ display: none }
+  .vh-sol-lead{ font-size: 17px; line-height: 26px; max-width: 46ch; margin-top: 18px }
+  .vh-sol-cta{ width: auto; height: 52px; padding: 0 22px; font-size: 15px; gap: 12px; margin-top: 22px; border-radius: 10px }
+  .vh-sol-cta svg{ width: 18px; height: 18px }
+  .vh-sol-scheiding{ width: 100%; margin-top: 26px }
+  .vh-sol-punt{ grid-template-columns: 34px 1fr; column-gap: 16px; margin-top: 20px }
+  .vh-sol-punt + .vh-sol-punt{ margin-top: 20px }
+  .vh-sol-punt svg{ height: 34px }
+  .vh-sol-punt b{ font-size: 16px; line-height: 20px }
+  .vh-sol-punt b + span{ font-size: 15px; line-height: 20px; margin-top: 4px }
+  .vh-sol-grid{ grid-template-columns: 1fr; grid-template-areas: 'a' 'b' 'c' 'd'; grid-template-rows: none; row-gap: 14px; margin-top: 32px }
+  .vh-sol-onder{ grid-area: d; grid-template-columns: 1fr; row-gap: 14px }
+  .vh-sol-mod{ min-height: 240px; border-radius: 12px }
+  .vh-sol-mod--zon{ min-height: 340px }
+  .vh-sol-mod-inhoud{ padding: 20px }
+  .vh-sol-mod-ic,.vh-sol-mod--zon .vh-sol-mod-ic{ width: 34px; height: 34px }
+  .vh-sol-mod h3,.vh-sol-mod--zon h3{ font-size: 20px }
+  .vh-sol-mod p{ font-size: 15px; line-height: 21px }
+  .vh-sol-mod--boven .vh-sol-mod-kop{ margin-top: 18px }
+  .vh-sol-pijl,.vh-sol-mod--onder .vh-sol-pijl{
+    width: 34px; height: 34px; top: auto; bottom: 18px; right: 18px }
+  .vh-sol-mod--zon .vh-sol-pijl{ width: 34px; height: 34px; top: 18px; right: 18px; bottom: auto }
+  .vh-sol-pijl svg,.vh-sol-mod--zon .vh-sol-pijl svg{ width: 15px; height: 15px }
+  .vh-sol-stats{ padding: 26px 0 16px }
+  .vh-sol-stats div{ padding-left: 20px }
+  .vh-sol-stats b{ font-size: 16px }
+  .vh-sol-stats span{ font-size: 11px }
+}
+
+/* bijsnijding van de foto's zodat het onderwerp in beeld blijft */
+.vh-sol-mod--zon  img{ object-position: 56% 46% }
+.vh-sol-mod--bat  img{ object-position: 68% 52% }
+.vh-sol-mod--laad img{ object-position: 6% 34% }
