@@ -1,0 +1,231 @@
+/* ============================================================
+   Vibe Energy — Homepage SECTIE 4: Van plan naar prestatie
+   Reconstructie van de goedgekeurde desktopreferentie.
+   De referentie is gerenderd op 1536 px breed; sectie 4 beslaat
+   daarin y 0..511 (daaronder begint VIBE.CONTROL, buiten scope).
+
+   SCHAAL — horizontaal verankerd op de containermarges van de
+   site (links 70px, rechts 66px bij 1774 viewport), net als
+   sectie 1 t/m 3. De referentie heeft dezelfde marges op haar
+   eigen canvas (links 69, rechts 66), dus de inhoudsbreedte
+   1401 ref-px komt overeen met 1638 site-px -> x1,16917.
+   1 referentie-px = 0,0659058cqw.
+   Controle tegen de vastgelegde typografie: body-kaphoogte
+   14ref x1,16917 = 16,4px (sectie 2 lead: 15,7px).
+
+   Eigen namespace .vh-proc-* — raakt sectie 1 t/m 3 niet aan.
+   ============================================================ */
+
+.vh-proc{
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #FCFDFE;
+  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+
+  --pc-blauw: #0073FE;
+  --pc-navy:  #08203C;
+  --pc-body:  #56627D;
+  --pc-sub:   #6F7A95;
+  --pc-badge: #D8ECFE;
+  --pc-chev:  #B9C7D8;
+}
+
+/* zacht lichtblauw vlak achter de foto, met de Vibe-diagonaal links */
+.vh-proc-backdrop{
+  position: absolute;
+  z-index: 0;
+  top: 1.3866cqw;                       /* ref 21 */
+  height: 20.034cqw;                    /* ref 21..325 */
+  left: 0; right: 0;
+  clip-path: polygon(42.30% 0, 100% 0, 100% 100%, 28.92% 100%);
+  background: linear-gradient(180deg, #E1F1FE 0%, #E9F5FE 52%, #EFF8FE 100%);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------
+   BOVENBLOK — kopkolom links, foto met zwevende kaart rechts
+   ------------------------------------------------------------ */
+.vh-proc-top{
+  position: relative;
+  z-index: 1;
+  height: 22.340cqw;                    /* ref 0..339, tot onderkant kaart */
+}
+
+.vh-proc-copy{
+  position: absolute;
+  left: 3.9459cqw;                      /* 70px, gelijk aan sectie 1-3 */
+  top: 4.7756cqw;
+  max-width: 34.5cqw;
+}
+.vh-proc-eyebrow{
+  margin: 0;
+  font-size: .9526cqw;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: .050em;
+  text-transform: uppercase;
+  color: var(--pc-blauw);
+}
+.vh-proc-kop{
+  margin: 1.1209cqw 0 0;
+  font-family: inherit;
+  font-size: 4.1837cqw;
+  line-height: 4.0857cqw;
+  font-weight: 700;
+  letter-spacing: -.012em;
+  color: var(--pc-navy);
+}
+.vh-proc-kop .vh-proc-accent{ color: var(--pc-blauw) }
+.vh-proc-lead{
+  margin: .8899cqw 0 0;
+  font-size: 1.3316cqw;
+  line-height: 1.7793cqw;
+  font-weight: 400;
+  color: var(--pc-body);
+}
+
+/* foto */
+.vh-proc-beeld{
+  position: absolute;
+  left: 42.367cqw;                      /* ref 652 */
+  top: 4.1544cqw;                       /* ref 63 */
+  width: 53.912cqw;                     /* ref 819 */
+  height: 16.545cqw;                    /* ref 251 */
+  border-radius: .7893cqw;
+  overflow: hidden;
+  background: #16283C;
+}
+.vh-proc-beeld img{
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: 50% 52%;
+  display: block;
+}
+
+/* zwevende informatiekaart over de foto */
+.vh-proc-kaart{
+  position: absolute;
+  left: 80.395cqw;                      /* ref 1229 */
+  top: 6.8546cqw;                       /* ref 104 */
+  width: 15.884cqw;                     /* ref 241, rechterrand gelijk aan de foto */
+  padding: 1.2000cqw 1.3000cqw 1.7217cqw 1.8453cqw;
+  border-radius: .6595cqw;
+  background: #FFFFFF;
+  box-shadow: 0 .18cqw .45cqw rgba(12,38,72,.06), 0 1.5cqw 3.2cqw -1.1cqw rgba(12,38,72,.22);
+}
+.vh-proc-kaart-ic{
+  width: 1.9772cqw; height: 1.9772cqw;  /* ref 30 */
+  border-radius: .4cqw;
+  display: grid;
+  place-items: center;
+  background: #DFEEFE;
+  color: var(--pc-blauw);
+}
+.vh-proc-kaart-ic svg{ width: 1.1cqw; height: 1.1cqw; display: block }
+.vh-proc-kaart h3{
+  margin: 1.0300cqw 0 0;
+  font-size: 1.1218cqw;
+  line-height: 1.4487cqw;
+  font-weight: 700;
+  letter-spacing: -.004em;
+  color: var(--pc-navy);
+}
+.vh-proc-kaart p{
+  margin: .7400cqw 0 0;
+  font-size: .8620cqw;
+  line-height: 1.1838cqw;
+  font-weight: 400;
+  color: var(--pc-sub);
+}
+
+/* ------------------------------------------------------------
+   PROCES — één horizontale voortgang, geen losse kaarten
+   ------------------------------------------------------------ */
+.vh-proc-stappen{
+  position: relative;
+  z-index: 1;
+  margin: .9414cqw 5.4115cqw 0 5.2987cqw;   /* stappenrij 94 .. 1678 site-px */
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.vh-proc-stap{
+  display: flex;
+  align-items: flex-start;
+  gap: 1.9166cqw;                       /* 34 site-px */
+  width: 16.4644cqw;                    /* 292 site-px */
+  flex: none;
+}
+.vh-proc-stap-ic{ width: 2.7060cqw; height: 2.7060cqw; flex: none; display: block; color: var(--pc-blauw) }
+.vh-proc-badge{
+  display: inline-grid;
+  place-items: center;
+  width: 2.0410cqw; height: 1.9790cqw;  /* ref 31 x 30 */
+  border-radius: .35cqw;
+  background: var(--pc-badge);
+  color: var(--pc-blauw);
+  font-size: .8000cqw;
+  font-weight: 700;
+  letter-spacing: .02em;
+  line-height: 1;
+}
+.vh-proc-stap h3{
+  margin: .7800cqw 0 0;
+  font-size: 1.0541cqw;
+  line-height: 1.1838cqw;
+  font-weight: 700;
+  letter-spacing: -.004em;
+  color: var(--pc-navy);
+}
+.vh-proc-stap p{
+  margin: .4158cqw 0 0;
+  font-size: .8640cqw;
+  line-height: 1.4487cqw;
+  font-weight: 400;
+  color: var(--pc-sub);
+}
+/* verbindende chevrons tussen de stappen */
+.vh-proc-chev{
+  flex: none;
+  width: .5300cqw; height: 1.0000cqw;
+  margin-top: 3.0300cqw;                /* op de titelregel */
+  color: var(--pc-chev);
+}
+.vh-proc-chev svg{ width: 100%; height: 100%; display: block }
+
+.vh-proc-onder{ height: 3.2074cqw }     /* witruimte tot sectie 5 */
+
+/* ============================================================
+   TIJDELIJKE MOBIELE VANGRAIL — geen mobiel ontwerp, alleen
+   voorkomen dat kleine schermen overlopen.
+   ============================================================ */
+@media (max-width: 900px){
+  .vh-proc{ padding: 36px 0 34px }
+  .vh-proc-backdrop{ display: none }
+  .vh-proc-top{ height: auto }
+  .vh-proc-copy{ position: static; max-width: none; padding: 0 20px }
+  .vh-proc-eyebrow{ font-size: 13px; letter-spacing: .12em }
+  .vh-proc-kop{ font-size: 36px; line-height: 40px; margin-top: 14px }
+  .vh-proc-kop br{ display: none }
+  .vh-proc-lead{ font-size: 17px; line-height: 26px; margin-top: 16px }
+  .vh-proc-lead br{ display: none }
+  .vh-proc-beeld{ position: static; width: auto; height: 210px; margin: 24px 20px 0; border-radius: 12px }
+  .vh-proc-kaart{ position: static; width: auto; margin: -34px 32px 0; padding: 18px 20px 20px; border-radius: 12px }
+  .vh-proc-kaart-ic{ width: 34px; height: 34px; border-radius: 8px }
+  .vh-proc-kaart-ic svg{ width: 18px; height: 18px }
+  .vh-proc-kaart h3{ font-size: 18px; line-height: 24px; margin-top: 14px }
+  .vh-proc-kaart p{ font-size: 15px; line-height: 21px; margin-top: 10px }
+  .vh-proc-kaart p br{ display: none }
+  .vh-proc-stappen{ margin: 28px 20px 0; flex-direction: column; gap: 22px }
+  .vh-proc-stap{ width: auto; gap: 16px }
+  .vh-proc-stap-ic{ width: 34px; height: 34px }
+  .vh-proc-badge{ width: 30px; height: 28px; font-size: 12px; border-radius: 6px }
+  .vh-proc-stap h3{ font-size: 18px; line-height: 22px; margin-top: 10px }
+  .vh-proc-stap p{ font-size: 15px; line-height: 21px; margin-top: 8px }
+  .vh-proc-stap p br{ display: none }
+  .vh-proc-chev{ display: none }
+  .vh-proc-onder{ display: none }
+}
