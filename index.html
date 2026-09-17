@@ -34,7 +34,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
 <!-- End Meta Pixel Code -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Urbanist:wght@400;500;600;700;800&display=swap">
 <!--SEO-FOUNDATION-->
 <link rel="canonical" href="https://vibeenergy.nl/">
 <meta name="robots" content="index, follow">
@@ -54,30 +54,169 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
 <!--/SEO-FOUNDATION-->
 <link rel="stylesheet" href="home.css">
 <link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="home-hero.css">
 </head>
 <body>
 <!-- Google Tag Manager (noscript) --><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KM2V7VQ3" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
-<!-- ===================== NAV ===================== -->
-<script src="_header.js?v=3"></script>
+<!-- ===================== SECTIE 1 — HEADER + HERO + KPI ===================== -->
+<div class="vh" data-screen-label="01 Hero">
 
-<!-- ===================== HERO ===================== -->
-<section id="hero" data-screen-label="01 Hero">
-  <div class="hero-media">
-    <video autoplay muted loop playsinline preload="auto" poster="assets/projects/ratio-16.jpg">
-      <source src="0205-2026_Vibe-drone_small.mp4" type="video/mp4">
-    </video>
-  </div>
-  <div class="hero-inner">
-    <div class="hero-eyebrow"><span class="eyebrow">Energieoplossingen voor bedrijven &amp; vastgoed</span></div>
-    <h1 class="h-hero">Slimme energieoplossingen voor <span class="accent">bedrijven en vastgoed</span>.</h1>
-    <p class="hero-sub lead">Vibe Energy lost netcongestie op en verlaagt uw energiekosten — met zonnepanelen, batterijopslag, laadpleinen en slim energiemanagement. <strong>Van advies en ontwerp tot realisatie en beheer. Eén partij, één aanspreekpunt.</strong></p>
-    <div class="hero-cta">
-      <a href="netcongestie-check" class="btn btn-primary btn-lg">Doe de Netcongestie Check<span class="arr"></span></a>
-      <a href="#oplossingen" class="btn btn-ghost btn-lg">Plan gesprek<span class="arr"></span></a>
+  <div class="vh-stage">
+
+    <!-- 1. fotolaag, bijgesneden op de Vibe-diagonaal -->
+    <div class="vh-foto">
+      <!-- PLAATSHOUDER: de goedgekeurde hero-foto staat niet in deze repository.
+           Vervang dit blok door een img-element met src = assets/hero-gebouw.jpg
+           (object-fit: cover) zodra het beeld is toegevoegd; de bijsnijding op de
+           Vibe-diagonaal zit al op .vh-foto. -->
+      <div class="vh-foto-placeholder" role="img" aria-label="Plaatshouder voor de hero-foto: modern bedrijfspand met donkere verticale gevelbekleding in avondzon. Het goedgekeurde beeld ontbreekt nog in de repository.">
+        <span><b>Hero-foto ontbreekt</b>goedgekeurd beeld nog niet in de repository &middot; verwacht pad assets/hero-gebouw.jpg</span>
+      </div>
+    </div>
+
+    <!-- 2. lichte diagonale band langs de hoofddiagonaal -->
+    <div class="vh-band"></div>
+
+    <!-- 3. Vibe-geometrie: blauwe accentwig + donkerblauwe vorm -->
+    <svg class="vh-geo" viewBox="0 0 1774 748" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="vhAccent" x1="0" y1="50" x2="0" y2="748" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#2E93FD"/>
+          <stop offset=".23" stop-color="#0053B9"/>
+          <stop offset=".50" stop-color="#003576"/>
+          <stop offset=".73" stop-color="#00224C"/>
+          <stop offset="1" stop-color="#001836"/>
+        </linearGradient>
+        <linearGradient id="vhNavy" x1="1186" y1="748" x2="1774" y2="441" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#004FAE"/>
+          <stop offset=".07" stop-color="#0047A0"/>
+          <stop offset=".21" stop-color="#01326F"/>
+          <stop offset=".31" stop-color="#002655"/>
+          <stop offset=".42" stop-color="#001D40"/>
+          <stop offset=".53" stop-color="#001938"/>
+          <stop offset=".64" stop-color="#001836"/>
+          <stop offset="1" stop-color="#001836"/>
+        </linearGradient>
+        <linearGradient id="vhNavyTop" x1="0" y1="441" x2="0" y2="660" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#0A5FC8" stop-opacity=".34"/>
+          <stop offset="1" stop-color="#0A5FC8" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <polygon points="1774,50 1270,748 1774,748" fill="url(#vhAccent)" opacity=".92"/>
+      <path d="M1774 441H1454.4a90 90 0 0 0-72.8 37.2L1186 748H1774Z" fill="url(#vhNavy)"/>
+      <path d="M1774 441H1454.4a90 90 0 0 0-72.8 37.2L1186 748H1774Z" fill="url(#vhNavyTop)"/>
+    </svg>
+
+    <!-- 4. zachte wig onder de knik -->
+    <div class="vh-wig"></div>
+
+    <!-- HEADER -->
+    <header class="vh-header">
+      <a class="vh-logo" href="/" aria-label="Vibe Energy — naar de homepage">
+        <svg class="vh-logo-badge" viewBox="0 0 44 44" fill="none" aria-hidden="true" focusable="false">
+          <rect x="1.6" y="1.6" width="40.8" height="40.8" rx="5.2" stroke="#0071FE" stroke-width="3.2"/>
+          <path d="M10.6 12.6 17 30.4l6.3-17.8" stroke="#0071FE" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M22.6 13.4h11.2M24 21.2h7.8M24 29.2h9.8" stroke="#0071FE" stroke-width="3.2"/>
+        </svg>
+        <span class="vh-logo-tekst">
+          <span class="vh-logo-vibe">VIBE</span>
+          <span class="vh-logo-energy">ENERGY</span>
+        </span>
+      </a>
+
+      <nav class="vh-nav" aria-label="Hoofdnavigatie">
+        <a href="#oplossingen">Oplossingen</a>
+        <a href="#voorwie">Sectoren</a>
+        <a href="projecten">Projecten</a>
+        <a href="#ems">Hoe het werkt</a>
+        <a href="waarom-vibe">Waarom Vibe</a>
+        <a href="over-ons">Over ons</a>
+      </nav>
+
+      <div class="vh-acties">
+        <button class="vh-zoek" type="button" aria-label="Zoeken">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true" focusable="false">
+            <circle cx="9.7" cy="9.7" r="8.1"/><path d="m15.5 15.5 7 7"/>
+          </svg>
+        </button>
+        <a class="vh-btn vh-btn-primair" href="contact" data-calendly>Plan een gesprek
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+        </a>
+      </div>
+    </header>
+
+    <!-- LINKERKOLOM -->
+    <div class="vh-copy">
+      <p class="vh-eyebrow">De energie-infrastructuur<br>van morgen, vandaag</p>
+      <h1 class="vh-h1">Ruimte voor <br>groei. <span class="vh-accent">Zonder <br>netcongestie.</span></h1>
+      <p class="vh-lead">Volledig geïntegreerde lokale energiesystemen die bedrijven vooruit helpen. Van ontwerp tot beheer, met meetbaar resultaat.</p>
+      <div class="vh-cta">
+        <a class="vh-btn vh-btn-primair" href="contact" data-calendly>Plan een gesprek
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+        </a>
+        <a class="vh-btn vh-btn-secundair" href="waarom-vibe">Bekijk onze aanpak
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- TEKST IN DE DONKERBLAUWE VORM -->
+    <div class="vh-navy-copy">
+      <p class="vh-navy-kop">Energy<br>people<br>progress</p>
+      <span class="vh-navy-lijn" aria-hidden="true"></span>
+      <ul class="vh-navy-lijst">
+        <li>Lokaal</li><li>Slim</li><li>Duurzaam</li><li>Rendement</li>
+      </ul>
     </div>
   </div>
-</section>
+
+  <!-- KPI-STRIP -->
+  <div class="vh-kpi">
+    <div class="vh-kpi-grid">
+      <div class="vh-kpi-item">
+        <svg class="vh-kpi-icoon" viewBox="0 0 46 46" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <rect x="2.4" y="30" width="8.8" height="13.6" rx="1.2"/>
+          <rect x="13.2" y="23.5" width="8.8" height="20.1" rx="1.2"/>
+          <rect x="24" y="18.5" width="8.8" height="25.1" rx="1.2"/>
+          <rect x="34.8" y="11.8" width="8.8" height="31.8" rx="1.2"/>
+          <path d="M2.4 27.5 14.5 15.4l7 7L40.6 3.3"/>
+          <path d="M32.8 2.4h10.8v10.8"/>
+        </svg>
+        <span class="vh-kpi-tekst"><span class="vh-kpi-getal">3000+</span><span class="vh-kpi-label">Installaties</span></span>
+      </div>
+      <div class="vh-kpi-item">
+        <svg class="vh-kpi-icoon" viewBox="0 0 46 46" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <circle cx="23" cy="9.6" r="7.2"/>
+          <path d="M11.8 43.6v-4.2a11.2 11.2 0 0 1 22.4 0v4.2"/>
+          <circle cx="8.6" cy="18.4" r="5.2"/>
+          <path d="M2.4 36.4v-2.8a7.2 7.2 0 0 1 6.2-7.1"/>
+          <circle cx="37.4" cy="18.4" r="5.2"/>
+          <path d="M43.6 36.4v-2.8a7.2 7.2 0 0 0-6.2-7.1"/>
+        </svg>
+        <span class="vh-kpi-tekst"><span class="vh-kpi-getal">98%</span><span class="vh-kpi-label">Tevreden klanten</span></span>
+      </div>
+      <div class="vh-kpi-item">
+        <svg class="vh-kpi-icoon" viewBox="0 0 46 46" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <ellipse cx="30.4" cy="8.4" rx="13.2" ry="6"/>
+          <path d="M17.2 8.4v21.4c0 3.3 5.9 6 13.2 6s13.2-2.7 13.2-6V8.4"/>
+          <path d="M17.2 16.6c0 3.3 5.9 6 13.2 6M17.2 24.8c0 3.3 5.9 6 13.2 6"/>
+          <ellipse cx="15.6" cy="24.6" rx="13.2" ry="6"/>
+          <path d="M2.4 24.6v11.8c0 3.3 5.9 6 13.2 6s13.2-2.7 13.2-6"/>
+          <path d="M2.4 32.8c0 3.3 5.9 6 13.2 6s13.2-2.7 13.2-6"/>
+        </svg>
+        <span class="vh-kpi-tekst"><span class="vh-kpi-getal">&euro;12M+</span><span class="vh-kpi-label">Jaarlijkse besparing</span></span>
+      </div>
+      <div class="vh-kpi-item">
+        <svg class="vh-kpi-icoon" viewBox="0 0 46 46" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M43.8 2.6c1.1 19.8-8.9 32.3-22 32.3-7.8 0-13.1-5.2-13.1-12.9C8.7 10.9 20.4 3.1 43.8 2.6Z"/>
+          <path d="M2.2 44c3-11.1 10.8-21.7 22.2-28.7"/>
+        </svg>
+        <span class="vh-kpi-tekst"><span class="vh-kpi-getal">892 ton</span><span class="vh-kpi-label">CO<sub>2</sub> bespaard</span></span>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- trust bar -->
 <div class="trustbar">

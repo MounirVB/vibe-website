@@ -1,0 +1,417 @@
+/* ============================================================
+   Vibe Energy — Homepage SECTIE 1: header + hero + KPI-strip
+   Reconstructie van de goedgekeurde desktop-referentie.
+   Alle maten komen uit de referentie (1774 x 887 px) en zijn
+   omgerekend naar cqw: 1cqw = 17,74 referentiepixels.
+   Daardoor klopt de compositie op elke desktopbreedte en is hij
+   op 1774px viewport pixel-voor-pixel gelijk aan de referentie.
+   ============================================================ */
+
+.vh{
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  background: #fff;
+
+  /* ---- kleuren, gemeten uit de referentie ---- */
+  --vh-blauw:        #0073FE;   /* knoppen, accent, iconen */
+  --vh-blauw-diep:   #005FE0;   /* hover */
+  --vh-navy:         #071D3A;   /* koppen, navigatie, cijfers */
+  --vh-grijs:        #475771;   /* body, labels */
+  --vh-grijs-licht:  #4E5C78;   /* ENERGY in het logo */
+  --vh-paars-lijn:   #DCE7F3;   /* KPI-scheidingslijn */
+  --vh-rand:         #46587A;   /* rand secundaire knop */
+
+  /* ---- verticale fijnafstelling van de linkerkolom ---- */
+  --vh-copy-top:     9.2364cqw;
+  --vh-gap-h1:       1.8936cqw;
+  --vh-gap-p:        1.5545cqw;
+  --vh-gap-btn:      1.9082cqw;
+}
+
+/* ------------------------------------------------------------
+   PODIUM — header + hero in één vlak (1774 x 748)
+   ------------------------------------------------------------ */
+.vh-stage{
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1774 / 748;
+  overflow: hidden;
+  /* wit headervlak (84px) + bleekblauw herovlak eronder */
+  background:
+    linear-gradient(180deg,
+      #FFFFFF 0,
+      #FFFFFF 11.2299%,
+      #EAF4FE 11.2299%,
+      #E7F4FC 100%);
+  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- 1. FOTOLAAG (rechts van de Vibe-diagonaal) ----------
+   Polygoon: langs de diagonaal omlaag tot de knik op (621,545),
+   daarna terug naar rechtsonder — de "<"-inkeping uit de referentie. */
+.vh-foto{
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(
+    56.223% 0,      /* (997,0)   top van de diagonaal   */
+    100%    0,
+    100%    100%,
+    42.537% 100%,   /* (755,748) onderkant inkeping     */
+    35.169% 72.861% /* (624,545) knikpunt               */
+  );
+  z-index: 1;
+}
+
+/* Placeholder zolang de goedgekeurde heroFOTO niet in de repo staat.
+   Verwijder .vh-foto-placeholder en zet het beeld als <img>/background
+   zodra assets/hero-gebouw.jpg is toegevoegd. */
+.vh-foto-placeholder{
+  width: 100%;
+  height: 100%;
+  background:
+    repeating-linear-gradient(45deg,
+      #223042 0 16px, #1A2635 16px 32px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #93A7BF;
+  font-size: .72cqw;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  line-height: 2.2;
+  padding-left: 28.6cqw;          /* centreert het label in het zichtbare fotovlak */
+}
+.vh-foto-placeholder span{ max-width: 34cqw; display:block }
+.vh-foto-placeholder b{ color:#E4ECF5; display:block; font-size:1.02cqw; letter-spacing:.16em }
+
+/* ---------- 2. LICHTE DIAGONALE BAND over de foto ----------
+   Strook van 105px breed, direct rechts van de hoofddiagonaal. */
+.vh-band{
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  clip-path: polygon(
+    56.223% 0,      /* (997,0)  */
+    62.141% 0,      /* (1102,0) */
+    33.246% 100%,   /* (590,748)*/
+    27.328% 100%    /* (485,748)*/
+  );
+  background: linear-gradient(180deg,
+    rgba(255,255,255,.50) 0%,
+    rgba(255,255,255,.22) 29%,
+    rgba(255,255,255,0)   62%);
+}
+
+/* ---------- 3. VIBE-GEOMETRIE (SVG: accentwig + navyvorm) ---------- */
+.vh-geo{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* ---------- 4. ZACHTE WIG onder de knik (links) ---------- */
+.vh-wig{
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  clip-path: polygon(
+    35.169% 72.861%, /* (624,545) */
+    42.537% 100%,    /* (755,748) */
+    27.328% 100%     /* (485,748) */
+  );
+  /* stops zijn percentages van de volledige podiumhoogte; de wig begint op 72,86% */
+  background: linear-gradient(180deg,
+    rgba(182,215,252,0) 72.86%,
+    #B6D7FC 72.86%,
+    #D8EBFC 80.2%,
+    #E4F2FC 85.6%,
+    rgba(232,244,253,0) 91%);
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.vh-header{
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+  height: 4.7351cqw;              /* 84px */
+  display: flex;
+  align-items: center;
+  padding-left: 4.6787cqw;        /* 83px */
+  padding-right: 4.0586cqw;       /* 72px */
+}
+
+/* --- logo --- */
+.vh-logo{ display:flex; align-items:center; gap:.5637cqw /*10px*/; text-decoration:none }
+.vh-logo-badge{ width:2.4802cqw; height:2.4802cqw; display:block; flex:none }  /* 44px */
+.vh-logo-tekst{ display:flex; flex-direction:column; line-height:1 }
+.vh-logo-vibe{
+  font-size: 1.1273cqw;           /* 20px */
+  font-weight: 800;
+  letter-spacing: .003em;
+  color: var(--vh-navy);
+  line-height: 1.0711cqw;         /* 19px */
+}
+.vh-logo-energy{
+  font-size: .9639cqw;            /* 17,1px */
+  font-weight: 400;
+  letter-spacing: .040em;
+  color: var(--vh-grijs-licht);
+  line-height: 1.0147cqw;
+  margin-top: .1691cqw;           /* 3px */
+}
+
+/* --- navigatie --- */
+.vh-nav{
+  display: flex;
+  align-items: center;
+  gap: 1.8320cqw;                 /* 32,5px */
+  margin-left: 3.7204cqw;         /* 66px */
+}
+.vh-nav a{
+  font-size: .8737cqw;            /* 15,5px */
+  font-weight: 600;
+  color: #17264A;
+  text-decoration: none;
+  line-height: 1;
+  white-space: nowrap;
+  transition: color .18s ease;
+}
+.vh-nav a:hover{ color: var(--vh-blauw) }
+
+/* --- acties rechts --- */
+.vh-acties{
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1.7954cqw;                 /* 31,9px */
+}
+.vh-zoek{
+  width: 1.5389cqw; height: 1.5389cqw;   /* 27,3px kader, 25px inkt */
+  display: grid; place-items: center;
+  color: #16233F;
+  background: none; border: 0; padding: 0;
+  cursor: pointer;
+  flex: none;
+}
+.vh-zoek svg{ width:100%; height:100% ; display:block }
+.vh-zoek:hover{ color: var(--vh-blauw) }
+
+/* ============================================================
+   KNOPPEN
+   ============================================================ */
+.vh-btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1274cqw;                 /* 20px (visueel 24px met de pijl-marge) */
+  height: 3.5513cqw;              /* 63px */
+  border-radius: .5637cqw;        /* 10px */
+  font-size: 1.0147cqw;           /* 18px */
+  font-weight: 600;
+  letter-spacing: -.002em;
+  text-decoration: none;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+.vh-btn svg{ width: 1.2965cqw; height: 1.2965cqw; flex:none; display:block }
+.vh-btn-primair{
+  background: var(--vh-blauw);
+  color: #fff;
+  border: 0;
+}
+.vh-btn-primair:hover{ background: var(--vh-blauw-diep) }
+.vh-btn-secundair{
+  background: #fff;
+  color: var(--vh-navy);
+  border: 1.5px solid var(--vh-rand);
+}
+.vh-btn-secundair:hover{ border-color: var(--vh-blauw); color: var(--vh-blauw) }
+
+/* header-CTA: vaste maat uit de referentie (227 x 63) */
+.vh-header .vh-btn{ width: 12.7959cqw }
+
+/* ============================================================
+   LINKERKOLOM — eyebrow, kop, lead, CTA's
+   ============================================================ */
+.vh-copy{
+  position: absolute;
+  z-index: 11;
+  left: 4.6787cqw;                /* 83px */
+  top: var(--vh-copy-top);
+}
+.vh-eyebrow{
+  font-size: .9244cqw;            /* 16,4px */
+  line-height: 1.2965cqw;         /* 23px */
+  font-weight: 600;
+  letter-spacing: .092em;
+  text-transform: uppercase;
+  color: var(--vh-blauw);
+  margin: 0;
+}
+.vh-h1{
+  margin: var(--vh-gap-h1) 0 0;
+  font-family: inherit;
+  font-size: 4.3100cqw;           /* 76,5px  (kaphoogte 53) */
+  line-height: 4.1150cqw;         /* 73px */
+  font-weight: 700;
+  letter-spacing: -.004em;
+  color: var(--vh-navy);
+}
+.vh-h1 .vh-accent{ color: var(--vh-blauw) }
+.vh-lead{
+  margin: var(--vh-gap-p) 0 0;
+  max-width: 25.93cqw;            /* 460px */
+  font-size: 1.2176cqw;           /* 21,6px */
+  line-height: 1.7052cqw;         /* 30,25px */
+  font-weight: 400;
+  color: var(--vh-grijs);
+}
+.vh-cta{
+  margin-top: var(--vh-gap-btn);
+  display: flex;
+  gap: 1.4093cqw;                 /* 25px */
+}
+.vh-cta .vh-btn-primair{  width: 12.8523cqw; height: 3.4949cqw }  /* 228 x 62 */
+.vh-cta .vh-btn-secundair{ width: 14.0361cqw; height: 3.4949cqw } /* 249 x 62 */
+
+/* ============================================================
+   NAVY PANEEL — "Energy people progress" + kernwoorden
+   ============================================================ */
+.vh-navy-copy{
+  position: absolute;
+  z-index: 11;
+  left: 77.114cqw;                /* 1368px */
+  top: 32.5812cqw;                /* 578px  (regelbox boven kaptop 584) */
+  display: flex;
+  align-items: flex-start;
+  color: #fff;
+}
+.vh-navy-kop{
+  margin: 0;
+  width: 9.4701cqw;               /* 168px — zet de scheidingslijn op x=1536 */
+  font-size: 1.7475cqw;           /* 31px */
+  line-height: 1.9842cqw;         /* 35,2px */
+  font-weight: 400;
+  letter-spacing: .015em;
+  color: #fff;
+}
+.vh-navy-lijn{
+  width: 1px;
+  align-self: flex-start;
+  height: 5.6933cqw;              /* 101px */
+  margin: .6202cqw 0 0 0;         /* 11px boven */
+  background: rgba(110,205,255,.40);
+  flex: none;
+}
+.vh-navy-lijst{
+  list-style: none;
+  margin: 0 0 0 2.5930cqw;        /* 46px */
+  padding: 0;
+  font-size: .8625cqw;            /* 15,3px */
+  line-height: 1.6347cqw;         /* 29px */
+  font-weight: 600;
+  letter-spacing: .068em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+/* ============================================================
+   KPI-STRIP
+   ============================================================ */
+.vh-kpi{
+  position: relative;
+  height: 7.8917cqw;              /* 140px */
+  background: linear-gradient(90deg, #F7FCFF 0%, #FCFDFE 55%, #FDFDFE 100%);
+  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.vh-kpi-grid{
+  height: 100%;
+  width: 98.084cqw;               /* 1740px */
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: center;
+}
+.vh-kpi-item{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.8602cqw;                 /* 33px */
+  position: relative;
+  height: 100%;
+  padding-bottom: .5073cqw;       /* inhoud iets boven het midden, als in de referentie */
+  padding-right: 1.1274cqw;       /* inhoud 10px links van het celmidden, als in de referentie */
+}
+.vh-kpi-item + .vh-kpi-item::before{
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 3.8895cqw;              /* 69px */
+  background: var(--vh-paars-lijn);
+}
+.vh-kpi-icoon{ width:2.7745cqw; height:2.7745cqw; flex:none; display:block; color: #0062FE }
+.vh-kpi-tekst{ display:flex; flex-direction:column }
+.vh-kpi-getal{
+  font-size: 1.7079cqw;           /* 30,3px */
+  line-height: 1.2cqw;
+  font-weight: 700;
+  letter-spacing: .018em;
+  color: #061B36;
+}
+.vh-kpi-label{
+  margin-top: .7892cqw;           /* 14px */
+  font-size: 1.0259cqw;           /* 18,2px */
+  line-height: 1;
+  font-weight: 400;
+  color: var(--vh-grijs);
+}
+.vh-kpi-label sub{ font-size:.72em; vertical-align:baseline; position:relative; top:.22em }
+
+/* ============================================================
+   TIJDELIJKE MOBIELE VANGRAIL
+   Sectie 1 is in deze fase alleen voor desktop uitgewerkt.
+   Hieronder staat géén mobiel ontwerp, alleen een neutrale
+   terugvaloptie zodat kleine schermen niet stukgaan.
+   ============================================================ */
+@media (max-width: 900px){
+  .vh-stage{ aspect-ratio: auto; min-height: 0; padding-bottom: 40px }
+  .vh-foto, .vh-band, .vh-geo, .vh-wig{ display: none }
+  .vh-header{ position: static; height: auto; padding: 18px 20px 0; flex-wrap: wrap }
+  .vh-nav{ order: 3; width: 100%; margin: 16px 0 0; gap: 12px 20px; flex-wrap: wrap }
+  .vh-nav a{ font-size: 15px }
+  .vh-copy{ position: static; padding: 24px 20px 0 }
+  .vh-navy-copy{ display: none }
+  .vh-logo-badge{ width:44px; height:44px }
+  .vh-logo-vibe{ font-size:19px; line-height:18px }
+  .vh-logo-energy{ font-size:16.5px; line-height:18px }
+  .vh-eyebrow{ font-size:13px; line-height:19px }
+  .vh-h1{ font-size:40px; line-height:42px }
+  .vh-h1 br{ display:none }
+  .vh-lead{ font-size:17px; line-height:26px; max-width:46ch }
+  .vh-cta{ flex-wrap:wrap }
+  .vh-cta .vh-btn-primair,.vh-cta .vh-btn-secundair,.vh-header .vh-btn{ width:auto; height:52px; padding:0 22px; font-size:15px; border-radius:10px }
+  .vh-btn svg{ width:18px; height:18px }
+  .vh-kpi{ height:auto; padding:22px 0 }
+  .vh-kpi-grid{ width:auto; grid-template-columns:repeat(2,1fr); gap:20px; padding:0 20px }
+  .vh-kpi-item{ justify-content:flex-start; gap:14px }
+  .vh-kpi-item + .vh-kpi-item::before{ display:none }
+  .vh-kpi-icoon{ width:34px; height:34px }
+  .vh-kpi-getal{ font-size:24px; line-height:1.1 }
+  .vh-kpi-label{ font-size:14px; margin-top:6px }
+}
