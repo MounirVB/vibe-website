@@ -1,0 +1,434 @@
+/* ============================================================
+   Vibe Energy — Homepage SECTIE 6: SOCIAL PROOF + KLANTVERHAAL
+   Reconstructie van de goedgekeurde desktopreferentie.
+
+   SCHAAL — de referentie is 1774 x 887 px, exact het canvas van
+   sectie 1 en 2. Dus 1:1 met de site op 1774 px breed:
+   1 referentie-px = 100/1774 = 0,0563698cqw.
+   Controle: kop deel A meet 38 px kaphoogte in de referentie en
+   staat hier op 2,9875cqw = 53 px -> kaphoogte 38 px.
+
+   Eigen namespace .vh-proof-* — raakt sectie 1 t/m 5 niet aan.
+   ============================================================ */
+
+.vh-proof{
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  height: 50cqw;                        /* 887 ref-px */
+  overflow: hidden;
+  background: #FAFCFE;
+  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+
+  --pf-blauw: #0073FE;
+  --pf-navy:  #08203C;
+  --pf-body:  #54607A;
+  --pf-sub:   #7C88A2;
+  --pf-slate: #5F769E;
+  --pf-strip: #01234C;
+}
+/* home.css:252 zet via #verdien (id-specificiteit) nog een eigen
+   achtergrond op deze sectie. Onderstaande regel wint daarvan zonder
+   home.css aan te raken, en werkt uitsluitend binnen sectie 6. */
+#verdien.vh-proof{ background: #FAFCFE !important }
+
+/* ------------------------------------------------------------
+   DEEL A — logostrook   |   DEEL B — klantverhaal
+   ------------------------------------------------------------ */
+.vh-proof-a{
+  position: absolute; left: 0; right: 0; top: 0;
+  height: 17.7001cqw;                   /* ref 314 */
+  background: #FAFCFE;
+}
+.vh-proof-b{
+  position: absolute; left: 0; right: 0; top: 17.7001cqw; bottom: 0;
+  background: linear-gradient(112deg,
+    #EDF7FE 0%, #F2F9FE 26%, #ECF6FE 60%, #E3F1FE 100%);
+}
+/* zachte diagonale accentvorm rechts, achter de citaatkaart */
+.vh-proof-wig{
+  position: absolute;
+  right: 0;
+  top: 6.4825cqw;                       /* ref y 429 */
+  width: 4.7914cqw;                     /* ref 85 */
+  height: 7.4972cqw;                    /* ref 133 */
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  background: #B8DCFB;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------
+   DEEL A — kop, link en logostrook
+   ------------------------------------------------------------ */
+.vh-proof-head{
+  position: absolute;
+  left: 4.3968cqw;                      /* ref 78 */
+  top: 2.0321cqw;
+  z-index: 2;
+}
+.vh-proof-eyebrow{
+  margin: 0;
+  font-size: .8681cqw;                  /* 15,4 px -> kaphoogte 11 */
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: .133em;
+  color: var(--pf-blauw);
+}
+.vh-proof-kop{
+  margin: 1.0710cqw 0 0;
+  font-family: inherit;
+  font-size: 2.9875cqw;                 /* 53 px -> kaphoogte 38 */
+  line-height: 2.9312cqw;               /* regelafstand 52 ref-px */
+  font-weight: 700;
+  letter-spacing: -.012em;
+  color: var(--pf-navy);
+}
+.vh-proof-kop .vh-proof-accent{ color: var(--pf-blauw) }
+
+.vh-proof-alle{
+  position: absolute;
+  right: 3.9459cqw;                     /* ref 1698 + pijlmarge */
+  top: 2.4977cqw;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 1.5220cqw;                       /* ref 27 */
+  font-size: 1.0429cqw;                 /* 18,5 px */
+  font-weight: 500;
+  line-height: 1;
+  color: var(--pf-slate);
+  text-decoration: none;
+  transition: color .2s ease;
+}
+.vh-proof-alle:hover{ color: var(--pf-blauw) }
+.vh-proof-alle svg{ width: 1.5784cqw; height: 1.5784cqw; flex: none; display: block }
+
+.vh-proof-logos{
+  position: absolute;
+  left: 4.3968cqw;
+  right: 4.2841cqw;
+  top: 11.6684cqw;                      /* ref 207 */
+  height: 3.7204cqw;                    /* ref 66 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 2;
+}
+.vh-proof-logo{
+  flex: none;
+  width: var(--vh-slot);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* geverifieerde klantorganisatie — naam in onze eigen letter,
+   nadrukkelijk GEEN nagebouwd logo van de organisatie zelf */
+.vh-proof-naam{
+  font-size: 1.0147cqw;                 /* 18 px */
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: .01em;
+  white-space: nowrap;
+  color: #44546F;
+  text-align: center;
+}
+/* lege slot: logo bestaat niet in deze repository */
+.vh-proof-wacht{
+  width: 100%;
+  height: 2.2548cqw;                    /* 40 ref-px */
+  border: 1px dashed #C7D6E8;
+  border-radius: .2255cqw;
+  display: grid;
+  place-items: center;
+  font-size: .5637cqw;                  /* 10 px */
+  font-weight: 600;
+  letter-spacing: .14em;
+  color: #9AAAC2;
+}
+
+/* ------------------------------------------------------------
+   DEEL B — verhaalkolom links
+   ------------------------------------------------------------ */
+.vh-proof-story{
+  position: absolute;
+  left: 4.3968cqw;                      /* ref 78 */
+  top: 2.6493cqw;                       /* binnen deel B; ref y 363 */
+  width: 30.0000cqw;
+  z-index: 3;
+}
+.vh-proof-eyb2{
+  margin: 0;
+  font-size: 1.0147cqw;                 /* 18 px -> kaphoogte 13 */
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: .101em;
+  color: var(--pf-blauw);
+}
+.vh-proof-kop2{
+  margin: 1.1274cqw 0 0;
+  font-family: inherit;
+  font-size: 2.9312cqw;                 /* 52 px -> kaphoogte 37 */
+  line-height: 2.7058cqw;               /* regelafstand 48 ref-px */
+  font-weight: 700;
+  letter-spacing: -.014em;
+  color: var(--pf-navy);
+}
+.vh-proof-kop2 .vh-proof-accent{ color: var(--pf-blauw) }
+.vh-proof-lead{
+  margin: 1.2966cqw 0 0;
+  font-size: 1.1274cqw;                 /* 20 px */
+  line-height: 1.6347cqw;               /* regelafstand 29 ref-px */
+  font-weight: 400;
+  color: var(--pf-body);
+}
+.vh-proof-cta{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  margin: 1.2401cqw 0 0 .1127cqw;
+  width: 17.4746cqw;                    /* ref 310 */
+  height: 3.7768cqw;                    /* ref 67 */
+  padding: 0 1.1274cqw 0 .8455cqw;
+  border-radius: .5637cqw;
+  background: var(--pf-blauw);
+  color: #fff;
+  font-size: .9583cqw;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .2s ease;
+}
+.vh-proof-cta:hover{ background: #005FE0 }
+.vh-proof-cta svg{ width: 1.1838cqw; height: 1.1838cqw; flex: none; display: block }
+
+/* ------------------------------------------------------------
+   DEEL B — projectfoto met Vibe-diagonaal
+   ------------------------------------------------------------ */
+.vh-proof-foto{
+  position: absolute;
+  left: 30.8681cqw;                     /* ref 547,6 */
+  top: 1.3529cqw;                       /* ref y 338, binnen deel B */
+  width: 41.3980cqw;                    /* ref 734,4 */
+  height: 28.6922cqw;                   /* ref 509 */
+  clip-path: polygon(17.55% 0, 100% 0, 100% 100%, 0 100%);
+  overflow: hidden;
+  z-index: 1;
+}
+.vh-proof-foto img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 52% 46%;
+  display: block;
+}
+
+/* ------------------------------------------------------------
+   DEEL B — citaatkaart
+   ------------------------------------------------------------ */
+.vh-proof-kaart{
+  position: absolute;
+  left: 69.8985cqw;                     /* ref 1240 */
+  top: 3.3258cqw;                       /* ref y 373, binnen deel B */
+  width: 25.2537cqw;                    /* ref 448 */
+  height: 21.0823cqw;                   /* ref 374 */
+  box-sizing: border-box;
+  padding: 2.1430cqw 1.8047cqw 1.9739cqw 2.3685cqw;
+  border-radius: .9019cqw;
+  background: #FCFDFE;
+  box-shadow: 0 1.35cqw 2.70cqw -1.10cqw rgba(26,86,156,.22),
+              0 .28cqw .68cqw -0.34cqw rgba(26,86,156,.14);
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
+}
+.vh-proof-quote{
+  display: block;
+  width: 2.1420cqw;                     /* ref 38 */
+  height: 1.5784cqw;                    /* ref 28 */
+  color: var(--pf-blauw);
+  flex: none;
+}
+.vh-proof-citaat{
+  margin: 1.0148cqw 0 0;
+  font-size: 1.1274cqw;                 /* 20 px */
+  line-height: 1.4938cqw;               /* regelafstand 26,5 ref-px */
+  font-weight: 400;
+  color: #16243F;
+}
+.vh-proof-bron{
+  margin-top: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.1274cqw;
+}
+.vh-proof-bron b{
+  display: block;
+  font-size: 1.0147cqw;                 /* 18 px */
+  font-weight: 700;
+  line-height: 1.2;
+  color: #101C3A;
+}
+.vh-proof-bron b + span{
+  display: block;
+  margin-top: .2818cqw;
+  font-size: .9019cqw;                  /* 16 px */
+  line-height: .9583cqw;
+  font-weight: 400;
+  color: var(--pf-sub);
+}
+
+/* ------------------------------------------------------------
+   DEEL B — uitgelicht project (donkere strook)
+   ------------------------------------------------------------ */
+.vh-proof-strip{
+  position: absolute;
+  left: 35.6257cqw;                     /* ref 632 */
+  top: 22.7736cqw;                      /* ref y 718, binnen deel B */
+  width: 35.4566cqw;                    /* ref 629 */
+  height: 6.9899cqw;                    /* ref 124 */
+  box-sizing: border-box;
+  padding: .9583cqw 1.2402cqw .9583cqw 1.0147cqw;
+  border-radius: 1.1274cqw;
+  background: var(--pf-strip);
+  display: flex;
+  align-items: center;
+  gap: 1.1274cqw;
+  text-decoration: none;
+  z-index: 3;
+  transition: background .2s ease;
+}
+.vh-proof-strip:hover{ background: #042B5C }
+.vh-proof-strip-fig{
+  flex: none;
+  width: 5.5242cqw;                     /* ref 98 */
+  height: 5.1297cqw;                    /* ref 91 */
+  border-radius: .5637cqw;
+  overflow: hidden;
+}
+.vh-proof-strip-fig img{ width: 100%; height: 100%; object-fit: cover; object-position: 50% 38%; display: block }
+.vh-proof-strip-tx{ flex: 1; min-width: 0 }
+.vh-proof-strip-eyb{
+  display: block;
+  font-size: .6313cqw;                  /* 11,2 px */
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .22em;
+  color: #0097FE;
+}
+.vh-proof-strip-tx b{
+  display: block;
+  margin-top: .6765cqw;
+  font-size: 1.2402cqw;                 /* 22 px */
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+}
+.vh-proof-strip-tx span.spec{
+  display: block;
+  margin-top: .5637cqw;
+  font-size: .8455cqw;                  /* 15 px */
+  line-height: 1;
+  font-weight: 400;
+  color: #C3D2E6;
+}
+.vh-proof-strip-cta{
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 1.1838cqw;
+  font-size: .9019cqw;
+  font-weight: 500;
+  line-height: 1;
+  color: #fff;
+}
+.vh-proof-strip-cta span{ text-decoration: underline; text-underline-offset: .2255cqw }
+.vh-proof-strip-cta svg{ width: 1.1838cqw; height: 1.1838cqw; display: block }
+
+/* ------------------------------------------------------------
+   DEEL B — bladerknoppen
+   ------------------------------------------------------------ */
+.vh-proof-nav{
+  position: absolute;
+  left: 87.0631cqw;                     /* ref 1545 */
+  top: 25.7598cqw;                      /* ref y 771, binnen deel B */
+  display: flex;
+  gap: 1.0147cqw;                       /* ref 18 */
+  z-index: 3;
+}
+.vh-proof-nav button{
+  width: 3.6077cqw;                     /* ref 64 */
+  height: 3.6077cqw;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #D3EAFE;
+  color: var(--pf-blauw);
+  display: grid;
+  place-items: center;
+}
+.vh-proof-nav button[disabled]{ cursor: default; opacity: .75 }
+.vh-proof-nav svg{ width: 1.3529cqw; height: 1.3529cqw; display: block }
+
+/* ============================================================
+   TIJDELIJKE MOBIELE VANGRAIL — geen mobiel ontwerp, alleen
+   voorkomen dat kleine schermen overlopen.
+   ============================================================ */
+@media (max-width: 900px){
+  .vh-proof{ height: auto }
+  .vh-proof-a{ position: static; height: auto; padding: 34px 20px 30px }
+  .vh-proof-b{ position: static; padding: 30px 20px 36px }
+  .vh-proof-wig{ display: none }
+  .vh-proof-head{ position: static }
+  .vh-proof-eyebrow{ font-size: 12px; letter-spacing: .12em }
+  .vh-proof-kop{ font-size: 30px; line-height: 34px; margin-top: 12px }
+  .vh-proof-kop br{ display: none }
+  .vh-proof-alle{ position: static; margin-top: 16px; font-size: 15px; gap: 10px }
+  .vh-proof-alle svg{ width: 16px; height: 16px }
+  .vh-proof-logos{
+    position: static; height: auto; margin-top: 26px;
+    flex-wrap: wrap; gap: 16px 22px; justify-content: flex-start;
+  }
+  .vh-proof-logo{ height: auto; width: calc(50% - 11px); justify-content: flex-start }
+  .vh-proof-naam{ font-size: 15px; text-align: left; white-space: normal }
+  .vh-proof-wacht{ height: 34px; font-size: 9px }
+  .vh-proof-story{ position: static; width: auto }
+  .vh-proof-eyb2{ font-size: 13px }
+  .vh-proof-kop2{ font-size: 30px; line-height: 34px; margin-top: 12px }
+  .vh-proof-kop2 br{ display: none }
+  .vh-proof-lead{ font-size: 16px; line-height: 24px; margin-top: 14px }
+  .vh-proof-lead br{ display: none }
+  .vh-proof-cta{ width: auto; height: 50px; padding: 0 18px; gap: 14px; font-size: 15px; margin-top: 20px; border-radius: 10px; justify-content: center }
+  .vh-proof-cta svg{ width: 18px; height: 18px }
+  .vh-proof-foto{
+    position: static; width: auto; height: 220px; margin-top: 26px;
+    clip-path: none; border-radius: 10px;
+  }
+  .vh-proof-kaart{
+    position: static; width: auto; height: auto; margin-top: 22px;
+    padding: 22px 20px; border-radius: 12px;
+  }
+  .vh-proof-quote{ width: 30px; height: 22px }
+  .vh-proof-citaat{ font-size: 15px; line-height: 22px; margin-top: 14px }
+  .vh-proof-citaat br{ display: none }
+  .vh-proof-bron{ margin-top: 20px; display: block }
+  .vh-proof-bron b{ font-size: 16px }
+  .vh-proof-bron b + span{ font-size: 14px; line-height: 19px; margin-top: 6px }
+  .vh-proof-strip{
+    position: static; width: auto; height: auto; margin-top: 22px;
+    padding: 14px; gap: 14px; border-radius: 12px; flex-wrap: wrap;
+  }
+  .vh-proof-strip-fig{ width: 78px; height: 72px; border-radius: 8px }
+  .vh-proof-strip-eyb{ font-size: 10px }
+  .vh-proof-strip-tx b{ font-size: 19px; margin-top: 8px }
+  .vh-proof-strip-tx span.spec{ font-size: 14px; margin-top: 8px }
+  .vh-proof-strip-cta{ font-size: 14px; gap: 10px; width: 100%; justify-content: flex-end }
+  .vh-proof-strip-cta svg{ width: 16px; height: 16px }
+  .vh-proof-nav{ position: static; margin-top: 18px; justify-content: flex-end; gap: 12px }
+  .vh-proof-nav button{ width: 44px; height: 44px }
+  .vh-proof-nav svg{ width: 18px; height: 18px }
+}
