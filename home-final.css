@@ -1,0 +1,368 @@
+/* ============================================================
+   Vibe Energy — Homepage SECTIE 8: FINAL CTA
+   Reconstructie van de goedgekeurde desktopreferentie.
+
+   SCHAAL — de referentie is 2103 x 748 px. Twee onafhankelijke
+   typografische ankers wijzen dezelfde schaal aan:
+     eyebrow-kaphoogte 14 ref  -> 11,8 site (sectie 7: 12)
+     lead-inkthoogte   24 ref  -> 20,2 site (sectie 7: 20)
+   Dus 1 referentie-px = 1774/2103 = 0,84356 site-px
+   -> 1 referentie-px = 0,047551cqw. Sectiehoogte 748 ref = 631 site.
+
+   Eigen namespace .vh-final-* — raakt sectie 1 t/m 7 niet aan.
+   ============================================================ */
+
+.vh-final{
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  height: 35.5681cqw;                   /* 748 ref-px */
+  overflow: hidden;
+  background: #FAFCFD;
+  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+
+  --fi-blauw: #0073FE;
+  --fi-navy:  #08203C;
+  --fi-body:  #4C5771;
+  --fi-tint:  #E8F3FE;
+}
+/* home.css:319 zet via #bigcta een donkere achtergrond en een rand op deze
+   sectie; home.css:369 maakt elke h2 binnen #bigcta wit. Beide worden hier
+   binnen sectie 8 gecorrigeerd zonder home.css aan te raken. */
+#bigcta.vh-final{
+  background: #FAFCFD !important;
+  border-top: 0 !important;
+}
+#bigcta.vh-final h2{ color: var(--fi-navy) }
+
+/* ------------------------------------------------------------
+   VIBE-GEOMETRIE — chevron-wig links van de foto
+   Buitenrand: (1027,0) helling -0,6375 tot de punt (760,417),
+   daarna helling +0,709 tot (995,748).
+   Binnenrand valt samen met de linkerrand van de foto.
+   ------------------------------------------------------------ */
+.vh-final-wig{
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(
+    48.83% 0,      /* 1027,0   */
+    60.06% 0,      /* 1263,0   */
+    47.31% 55.75%, /*  995,417 */
+    58.49% 100%,   /* 1230,748 */
+    47.31% 100%,   /*  995,748 */
+    36.14% 55.75%  /*  760,417 */
+  );
+  background: linear-gradient(180deg,
+    #BEDCF9 0%, #D8EAFB 17%, #EAF3FD 38%, #F2F9FE 56%, #F1F9FE 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ------------------------------------------------------------
+   FOTO — chevron met de punt naar links
+   ------------------------------------------------------------ */
+.vh-final-foto{
+  position: absolute;
+  left: 47.31%;                         /* punt op ref x 995 */
+  top: 0;
+  right: 0;
+  bottom: 0;
+  clip-path: polygon(
+    24.19% 0,      /* 1263,0   */
+    100% 0,
+    100% 100%,
+    21.21% 100%,   /* 1230,748 */
+    0 55.75%       /*  995,417 */
+  );
+  background: #E3ECF4;
+  z-index: 2;
+}
+.vh-final-foto img{
+  /* uitsnede op het pand: bronvenster x 1450..4150, y 900..2724 van 5120x2880 */
+  position: absolute;
+  left: -53.7%;
+  top: -49.4%;
+  width: 189.6%;
+  max-width: none;
+  height: auto;
+  display: block;
+}
+
+/* blauw merkvlak rechtsonder, over de foto heen */
+.vh-final-blauw{
+  position: absolute;
+  right: 0;
+  top: 36.50%;                          /* ref y 273 */
+  width: 16.55%;                        /* ref 2103-1755 */
+  height: 63.50%;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  background: linear-gradient(205deg,
+    rgba(11,113,226,.88) 0%, rgba(1,92,208,.92) 48%, rgba(1,68,141,.94) 100%);
+  z-index: 3;
+  pointer-events: none;
+}
+/* handgeschreven notitie uit de referentie — zie index.html */
+.vh-final-note{
+  position: absolute;
+  left: 90.49%;                         /* ref x 1903 */
+  top: 70.05%;                          /* ref y 524 */
+  width: 9.0cqw;
+  font-size: 1.1274cqw;
+  line-height: 1.3529cqw;
+  font-weight: 500;
+  color: rgba(255,255,255,.95);
+  text-shadow: 0 .05cqw .24cqw rgba(2,40,88,.30);
+  z-index: 4;
+  pointer-events: none;
+}
+.vh-final-note svg{
+  display: block;
+  width: 2.6cqw;
+  height: 1.7cqw;
+  margin: .45cqw 0 0 1.5cqw;
+  color: rgba(255,255,255,.92);
+}
+
+/* ------------------------------------------------------------
+   LINKERKOLOM
+   ------------------------------------------------------------ */
+.vh-final-copy{
+  position: absolute;
+  left: 4.9929cqw;                      /* ref 105 */
+  top: 3.8047cqw;
+  width: 38.0000cqw;
+  z-index: 5;
+}
+.vh-final-eyebrow{
+  margin: 0;
+  font-size: .9244cqw;                  /* 16,4 px -> kaphoogte 11,8 */
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: .134em;
+  color: var(--fi-blauw);
+}
+.vh-final-kop{
+  margin: .8513cqw 0 0;
+  font-family: inherit;
+  font-size: 3.2400cqw;                 /* 56,2 px -> kaphoogte 40,5 */
+  line-height: 3.1394cqw;               /* regelafstand 66 ref-px */
+  font-weight: 800;
+  letter-spacing: -.016em;
+  color: var(--fi-navy);
+}
+.vh-final-kop .vh-final-accent{ color: var(--fi-blauw) }
+.vh-final-lead{
+  margin: .8454cqw 0 0;
+  font-size: 1.1613cqw;                 /* 20,6 px */
+  line-height: 1.6178cqw;               /* regelafstand 28,7 site-px */
+  font-weight: 400;
+  color: var(--fi-body);
+}
+
+/* --- twee acties --- */
+.vh-final-acties{
+  display: flex;
+  align-items: center;
+  gap: .9986cqw;                        /* ref 21 */
+  margin-top: 1.4772cqw;
+}
+.vh-final-cta{
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: 17.7366cqw;                    /* ref 373 */
+  height: 3.5663cqw;                    /* ref 75 */
+  padding: 0 1.4655cqw 0 1.6911cqw;
+  border-radius: .6657cqw;
+  background: var(--fi-blauw);
+  color: #fff;
+  font-size: .9583cqw;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .2s ease;
+}
+.vh-final-cta:hover{ background: #005FE0 }
+.vh-final-cta2{
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: 15.0737cqw;                    /* ref 317 */
+  height: 3.5663cqw;
+  padding: 0 1.4655cqw 0 1.6911cqw;
+  border-radius: .6657cqw;
+  border: 1px solid #C9DEF6;
+  background: #FFFFFF;
+  color: var(--fi-blauw);
+  font-size: .9583cqw;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color .2s ease, background .2s ease;
+}
+.vh-final-cta2:hover{ border-color: var(--fi-blauw); background: #F6FAFF }
+.vh-final-cta svg, .vh-final-cta2 svg{ width: 1.1274cqw; height: 1.1274cqw; flex: none; display: block }
+
+/* --- drie bewijsitems --- */
+.vh-final-vdl{
+  position: absolute;
+  left: 4.9453cqw;                      /* ref 104 */
+  top: 27.4369cqw;                      /* ref 577 */
+  width: 46.3622cqw;                    /* ref 975 */
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: 326fr 355fr 294fr; /* tegels op ref 104 / 430 / 785 */
+  z-index: 5;
+}
+.vh-final-vd{
+  display: flex;
+  align-items: flex-start;
+  gap: .9986cqw;                        /* ref 21 */
+  min-width: 0;
+}
+.vh-final-vd-ic{
+  flex: none;
+  width: 3.3761cqw;                     /* ref 71 */
+  height: 3.2810cqw;                    /* ref 69 */
+  border-radius: .6657cqw;
+  display: grid;
+  place-items: center;
+  background: var(--fi-tint);
+  color: var(--fi-blauw);
+}
+.vh-final-vd-ic svg{ width: 1.5220cqw; height: 1.5220cqw; display: block }
+.vh-final-vd-tx{ min-width: 0; padding-top: .5637cqw }
+.vh-final-vd-tx b{
+  display: block;
+  font-size: .8568cqw;                  /* 15,2 px */
+  line-height: 1;
+  font-weight: 700;
+  color: #0C1424;
+}
+.vh-final-vd-tx b + span{
+  display: block;
+  margin-top: .5637cqw;
+  font-size: .8060cqw;                  /* 14,3 px */
+  line-height: 1;
+  font-weight: 400;
+  color: var(--fi-body);
+}
+
+/* ------------------------------------------------------------
+   AFSPRAAKKAART — zwevend over de foto
+   ------------------------------------------------------------ */
+.vh-final-kaart{
+  position: absolute;
+  left: 59.3912cqw;                     /* ref 1249 */
+  top: 16.3575cqw;                      /* ref 344 */
+  width: 17.1659cqw;                    /* ref 361 */
+  height: 15.3590cqw;                   /* ref 323 */
+  box-sizing: border-box;
+  padding: 1.4265cqw 1.4655cqw 1.7876cqw 1.8069cqw;
+  border-radius: .7608cqw;
+  background: #fff;
+  box-shadow: 0 1.20cqw 2.60cqw -1.00cqw rgba(9,38,78,.30),
+              0 .24cqw .62cqw -.30cqw rgba(9,38,78,.18);
+  display: flex;
+  flex-direction: column;
+  z-index: 4;
+}
+.vh-final-kaart-ic{
+  flex: none;
+  width: 3.2335cqw;                     /* ref 68 */
+  height: 3.2335cqw;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--fi-blauw);
+  color: #fff;
+}
+.vh-final-kaart-ic svg{ width: 1.5220cqw; height: 1.5220cqw; display: block }
+.vh-final-kaart b{
+  display: block;
+  margin-top: .5918cqw;
+  font-size: 1.1838cqw;                 /* 21 px */
+  line-height: 1.3529cqw;
+  font-weight: 700;
+  color: #0C1424;
+}
+.vh-final-kaart p{
+  margin: .6425cqw 0 0;
+  font-size: .9244cqw;                  /* 16,4 px */
+  line-height: 1.2402cqw;
+  font-weight: 400;
+  color: #4A5578;
+}
+.vh-final-kaart-link{
+  display: inline-flex;
+  align-items: center;
+  gap: .8455cqw;
+  margin-top: auto;
+  font-size: .9188cqw;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--fi-blauw);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity .2s ease;
+}
+.vh-final-kaart-link:hover{ opacity: .78 }
+.vh-final-kaart-link svg{ width: 1.0147cqw; height: 1.0147cqw; flex: none; display: block }
+
+/* ============================================================
+   TIJDELIJKE MOBIELE VANGRAIL — geen mobiel ontwerp, alleen
+   voorkomen dat kleine schermen overlopen.
+   ============================================================ */
+@media (max-width: 900px){
+  .vh-final{ height: auto; padding: 34px 0 38px }
+  .vh-final-wig, .vh-final-note{ display: none }
+  .vh-final-copy{ position: static; width: auto; padding: 0 20px }
+  .vh-final-eyebrow{ font-size: 12px; letter-spacing: .12em }
+  .vh-final-kop{ font-size: 32px; line-height: 36px; margin-top: 12px }
+  .vh-final-kop br{ display: none }
+  .vh-final-lead{ font-size: 16px; line-height: 24px; margin-top: 14px }
+  .vh-final-lead br{ display: none }
+  .vh-final-acties{ margin-top: 20px; gap: 12px; flex-wrap: wrap }
+  .vh-final-cta, .vh-final-cta2{
+    width: auto; height: 50px; padding: 0 18px; gap: 14px;
+    font-size: 15px; border-radius: 10px; justify-content: center;
+  }
+  .vh-final-cta svg, .vh-final-cta2 svg{ width: 18px; height: 18px }
+  .vh-final-vdl{
+    position: static; margin-top: 24px; padding: 0 20px;
+    grid-template-columns: 1fr; gap: 16px;
+  }
+  .vh-final-vd-ic{ width: 44px; height: 44px; border-radius: 10px }
+  .vh-final-vd-ic svg{ width: 22px; height: 22px }
+  .vh-final-vd-tx{ padding-top: 2px }
+  .vh-final-vd-tx b{ font-size: 16px; line-height: 21px }
+  .vh-final-vd-tx b + span{ font-size: 15px; line-height: 20px; margin-top: 5px }
+  .vh-final-foto{
+    position: static; clip-path: none; height: 220px;
+    margin: 24px 20px 0; border-radius: 12px; overflow: hidden;
+  }
+  .vh-final-foto img{
+    position: static; width: 100%; height: 100%;
+    object-fit: cover; object-position: 52% 56%;
+  }
+  .vh-final-blauw{ display: none }
+  .vh-final-kaart{
+    position: static; width: auto; height: auto;
+    margin: 16px 20px 0; padding: 20px; border-radius: 12px;
+  }
+  .vh-final-kaart-ic{ width: 46px; height: 46px }
+  .vh-final-kaart-ic svg{ width: 22px; height: 22px }
+  .vh-final-kaart b{ font-size: 19px; line-height: 24px; margin-top: 14px }
+  .vh-final-kaart b br{ display: none }
+  .vh-final-kaart p{ font-size: 15px; line-height: 21px; margin-top: 10px }
+  .vh-final-kaart p br{ display: none }
+  .vh-final-kaart-link{ font-size: 15px; margin-top: 16px }
+  .vh-final-kaart-link svg{ width: 16px; height: 16px }
+}
