@@ -59,6 +59,15 @@
 
 /* 1. projectfoto */
 .vh-pr-foto,
+.vh-pr-foto{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 54% 62%;
+  z-index: 0;
+}
 .vh-pr-geenbeeld{
   position: absolute;
   inset: 0;

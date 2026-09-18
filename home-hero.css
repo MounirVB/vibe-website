@@ -64,6 +64,27 @@
   z-index: 1;
 }
 
+.vh-foto img{
+  /* strakke architectuuruitsnede op de glasgevel en de zonnedakrand,
+     zodat de hero niet leest als dezelfde wijde dronefoto als sectie 3:
+     bronvenster x 1800..4400, y 900..2000 van 5120x2880 */
+  position: absolute;
+  left: -69.2%;
+  top: -82.1%;
+  width: 197%;
+  max-width: none;
+  height: auto;
+  display: block;
+}
+/* leesbaarheidsverloop: de blauwe geometrie en de KPI-strook liggen erover */
+.vh-foto::after{
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(255deg, rgba(4,20,44,.30) 0%, rgba(4,20,44,.12) 46%, rgba(4,20,44,.34) 100%);
+  pointer-events: none;
+}
+
 /* Placeholder zolang de goedgekeurde heroFOTO niet in de repo staat.
    Verwijder .vh-foto-placeholder en zet het beeld als <img>/background
    zodra assets/hero-gebouw.jpg is toegevoegd. */

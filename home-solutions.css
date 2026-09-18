@@ -153,6 +153,7 @@
   isolation: isolate;
 }
 .vh-sol-mod img,
+.vh-sol-mod .vh-sol-grafisch,
 .vh-sol-mod .vh-sol-geenbeeld{
   position: absolute;
   inset: 0;
@@ -287,6 +288,21 @@
 .vh-sol-mod--onder .vh-sol-mod-kop{ padding-right: 3.2cqw }
 
 /* --- ontbrekend beeld: duidelijk gemarkeerde plaatshouder --- */
+.vh-sol-grafisch{
+  background:
+    linear-gradient(135deg, rgba(0,115,254,.34) 0%, rgba(0,115,254,0) 58%),
+    linear-gradient(200deg, #1B3350 0%, #12233A 52%, #0C1A2C 100%);
+}
+.vh-sol-grafisch::before{
+  content: '';
+  position: absolute;
+  right: -18%;
+  top: -12%;
+  width: 78%;
+  height: 124%;
+  clip-path: polygon(46% 0, 100% 0, 100% 100%, 0 100%);
+  background: linear-gradient(200deg, rgba(0,115,254,.30) 0%, rgba(0,83,185,.16) 62%, rgba(0,53,118,0) 100%);
+}
 .vh-sol-geenbeeld{
   background:
     repeating-linear-gradient(45deg, #223042 0 14px, #1A2635 14px 28px);

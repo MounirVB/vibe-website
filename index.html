@@ -74,13 +74,12 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
 
     <!-- 1. fotolaag, bijgesneden op de Vibe-diagonaal -->
     <div class="vh-foto">
-      <!-- PLAATSHOUDER: de goedgekeurde hero-foto staat niet in deze repository.
-           Vervang dit blok door een img-element met src = assets/hero-gebouw.jpg
-           (object-fit: cover) zodra het beeld is toegevoegd; de bijsnijding op de
-           Vibe-diagonaal zit al op .vh-foto. -->
-      <div class="vh-foto-placeholder" role="img" aria-label="Plaatshouder voor de hero-foto: modern bedrijfspand met donkere verticale gevelbekleding in avondzon. Het goedgekeurde beeld ontbreekt nog in de repository.">
-        <span><b>Hero-foto ontbreekt</b>goedgekeurd beeld nog niet in de repository &middot; verwacht pad assets/hero-gebouw.jpg</span>
-      </div>
+      <!-- Hero-beeld: de sterkste echte architectuuropname in deze repository -
+           Hedin Automotive Alkmaar, het gerealiseerde Vibe-project met volledig
+           zonnedak. LCP-beeld: eager geladen, hoge prioriteit, vaste verhouding. -->
+      <img src="assets/projects/hedin-alkmaar-2.jpg" width="5120" height="2880"
+           alt="Hedin Automotive Alkmaar: bedrijfspand met volledig zonnedak, gerealiseerd door Vibe Energy"
+           loading="eager" fetchpriority="high" decoding="async">
     </div>
 
     <!-- 2. lichte diagonale band langs de hoofddiagonaal -->
@@ -334,8 +333,10 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
       <div class="vh-sol-onder">
 
         <a class="vh-sol-mod vh-sol-mod--onder vh-sol-mod--hvac" href="capaciteit-als-dienst">
-          <!-- BEELD ONTBREEKT: geen HVAC-fotografie in de repository. -->
-          <span class="vh-sol-geenbeeld" role="img" aria-label="Plaatshouder: HVAC-fotografie ontbreekt in de repository"><em>Beeld ontbreekt</em></span>
+          <!-- Er bestaat geen HVAC-fotografie in deze repository. In plaats van een
+               plaatshouder krijgt deze kaart een bewuste grafische behandeling in de
+               eigen vormtaal: navyvlak met de Vibe-diagonaal. -->
+          <span class="vh-sol-grafisch" aria-hidden="true"></span>
           <span class="vh-sol-mod-inhoud">
             <svg class="vh-sol-mod-ic" viewBox="4.8 3.8 34.4 34.2" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true" focusable="false">
               <circle cx="22" cy="12.6" r="8.8"/><circle cx="13.6" cy="29.2" r="8.8"/><circle cx="30.4" cy="29.2" r="8.8"/>
@@ -351,8 +352,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
         </a>
 
         <a class="vh-sol-mod vh-sol-mod--onder vh-sol-mod--ems" href="systeem-ems">
-          <!-- BEELD ONTBREEKT: geen dashboard-/schermfotografie in de repository. -->
-          <span class="vh-sol-geenbeeld" role="img" aria-label="Plaatshouder: EMS-dashboardbeeld ontbreekt in de repository"><em>Beeld ontbreekt</em></span>
+          <img src="img/ems-tech.jpg" alt="Vibe Energy-monteur aan een schakelkast" loading="lazy" decoding="async">
           <span class="vh-sol-mod-inhoud">
             <svg class="vh-sol-mod-ic" viewBox="2.6 4.4 38.8 35" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
               <rect x="2.6" y="4.4" width="38.8" height="28.4" rx="3"/>
@@ -369,8 +369,9 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
         </a>
 
         <a class="vh-sol-mod vh-sol-mod--onder vh-sol-mod--handel" href="energiehandel-flexmarkten">
-          <!-- BEELD ONTBREEKT: geen handels-/grafiekfotografie in de repository. -->
-          <span class="vh-sol-geenbeeld" role="img" aria-label="Plaatshouder: beeld voor energiehandel ontbreekt in de repository"><em>Beeld ontbreekt</em></span>
+          <!-- Geen handelsbeeld in de repository; wel de echte meetlaag waarop
+               flexibiliteit wordt afgerekend. Geen beursbeeld, geen geldgrafiek. -->
+          <img src="assets/ems-hero.jpg" alt="Slimme kWh-meters" loading="lazy" decoding="async">
           <span class="vh-sol-mod-inhoud">
             <svg class="vh-sol-mod-ic" viewBox="3.6 5.6 36.8 34.8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
               <rect x="3.6" y="24.2" width="10" height="16.2" rx="1.4"/>
@@ -393,19 +394,12 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
 <section id="projecten" class="vh-pr" data-screen-label="03 Project in de kijker">
   <div class="vh-pr-panel">
 
-    <!-- 1. projectfoto.
-         BEELD ONTBREEKT: de goedgekeurde foto (Hedin Alkmaar, ooghoogte,
-         schemering, verlichte showroom) staat niet in deze repository.
-         Er is bewust geen ander project en geen andere locatie gebruikt.
-         Vervang dit blok door een img-element met
-         src = assets/projects/hedin-alkmaar-avond.jpg zodra de foto er is;
-         de bijsnijding en de geometrie eromheen blijven ongewijzigd.
-         Beschikbaar maar stilistisch afwijkend alternatief uit de repo:
-         assets/projects/hedin-alkmaar-1.jpg (echte Hedin Alkmaar op
-         ooghoogte, maar vol middaglicht en een 4:3 telefoonopname). -->
-    <div class="vh-pr-geenbeeld" role="img" aria-label="Plaatshouder voor de projectfoto van Hedin Alkmaar in de schemering. Het goedgekeurde beeld ontbreekt nog in de repository.">
-      <em><b>Projectfoto ontbreekt</b>Hedin Alkmaar &middot; goedgekeurd avondbeeld nog niet in de repository</em>
-    </div>
+    <!-- 1. projectfoto. De goedgekeurde schemeropname bestaat niet in deze
+         repository; gebruikt is de echte dronefoto van hetzelfde project,
+         Hedin Automotive Alkmaar met het volledige zonnedak. Het navyverloop
+         hiernaast levert het donkere karakter van de goedgekeurde compositie. -->
+    <img class="vh-pr-foto" src="assets/projects/hedin-alkmaar-3.jpg"
+         alt="Hedin Automotive Alkmaar met volledig zonnedak" loading="lazy" decoding="async">
 
     <!-- 2. navy-verloop vanaf links -->
     <div class="vh-pr-scrim"></div>
@@ -478,7 +472,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
          volledig met zonnepanelen belegd dak. Semantisch en compositorisch de
          dichtstbijzijnde match uit de repository voor het goedgekeurde beeld. -->
     <div class="vh-proc-beeld">
-      <img src="assets/projects/hedin-alkmaar-3.jpg" alt="Dronefoto van een bedrijfspand met een volledig met zonnepanelen belegd dak op een Nederlands bedrijventerrein" loading="lazy" decoding="async">
+      <img src="assets/exploitatie-hero.jpg" alt="Laadinfrastructuur langs een bedrijfsgevel" loading="lazy" decoding="async">
     </div>
 
     <div class="vh-proc-kaart">
@@ -931,7 +925,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
        Automotive Alkmaar met het volledige zonnedak. Geen stock, geen
        gegenereerd pand, geen verzonnen klant. -->
   <div class="vh-final-foto">
-    <img src="assets/microgrids-hero.jpg" alt="Batterijopslag van Vibe Energy op locatie" loading="lazy" decoding="async">
+    <img src="assets/laadplein-hero.jpg" alt="Zonnecarport en laadinfrastructuur van Vibe Energy" loading="lazy" decoding="async">
   </div>
 
   <span class="vh-final-blauw" aria-hidden="true"></span>
@@ -992,7 +986,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
        commerciele energie-infrastructuur in stedelijke context, en bewust
        een ander project dan de Hedin-beelden hierboven. -->
   <div class="vh-footer-wig">
-    <img src="assets/laadplein-hero.jpg" alt="Zonnecarport en laadinfrastructuur van Vibe Energy" loading="lazy" decoding="async">
+    <img src="assets/microgrids-hero.jpg" alt="Batterijopslag van Vibe Energy op locatie" loading="lazy" decoding="async">
   </div>
   <!-- De notitie is in de referentie handgeschreven. Er is geen handschriftletter
        op deze site en er wordt er geen toegevoegd; de notitie staat in de eigen
