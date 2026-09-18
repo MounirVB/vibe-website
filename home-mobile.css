@@ -41,6 +41,21 @@
   }
 }
 
+/* skiplink — onzichtbaar tot hij focus krijgt */
+.vh-skip{
+  position: absolute;
+  left: 12px; top: -60px;
+  z-index: 60;
+  padding: 12px 18px;
+  border-radius: 0 0 10px 10px;
+  background: #0073FE; color: #fff;
+  font-family: 'Urbanist', system-ui, sans-serif;
+  font-size: 15px; font-weight: 600;
+  text-decoration: none;
+  transition: top .18s ease;
+}
+.vh-skip:focus{ top: 0 }
+
 /* ------------------------------------------------------------
    MOBIELE HEADER
    ------------------------------------------------------------ */
@@ -138,6 +153,11 @@
     overflow-y: auto;
   }
   .vh-mobielmenu.aan{ opacity: 1; transform: none }
+  /* display:flex hierboven overschrijft het [hidden]-gedrag van de browser;
+     zonder deze regel blijft het gesloten menu als onzichtbare, klikbare
+     laag over de hele pagina liggen. Het script zet [hidden] pas na de
+     uitfade (260 ms), dus de animatie blijft intact. */
+  .vh-mobielmenu[hidden]{ display: none }
   .vh-mobielmenu nav{ display: flex; flex-direction: column }
   .vh-mobielmenu nav a{
     display: block;

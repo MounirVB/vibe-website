@@ -72,7 +72,7 @@
   .vlp-h em{color:#00ADEF;font-style:normal}\
   .vlp-sub{font-size:13.5px;line-height:1.55;color:rgba(255,255,255,.7);margin:14px 0 0}\
   .vlp-mono{margin-top:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,.42);letter-spacing:.04em;line-height:1.7;border-top:1px solid rgba(255,255,255,.12);padding-top:16px}\
-  .vlp-x{position:absolute;top:12px;right:12px;z-index:5;width:38px;height:38px;border:1px solid #D5DEE5;background:#fff;color:#06121C;border-radius:50%;cursor:pointer;font-size:18px;font-weight:600;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(4,12,20,.18);transition:background .18s,color .18s,border-color .18s}\
+  .vlp-x{position:absolute;top:9px;right:9px;z-index:5;width:44px;height:44px;border:1px solid #D5DEE5;background:#fff;color:#06121C;border-radius:50%;cursor:pointer;font-size:17px;font-weight:600;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(4,12,20,.18);transition:background .18s,color .18s,border-color .18s}\
   .vlp-x:hover{background:#06121C;color:#fff;border-color:#06121C}\
   .vlp-f{display:flex;flex-direction:column;gap:14px}\
   .vlp-field label{display:block;font-size:12px;font-weight:500;color:#06121C;margin:0 0 6px;letter-spacing:.01em}\

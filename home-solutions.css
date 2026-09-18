@@ -365,7 +365,8 @@
   .vh-sol-mod{ min-height: 208px; border-radius: var(--m-radius) }
   .vh-sol-mod--zon{ min-height: 300px }          /* dragend openingsbeeld */
   .vh-sol-mod--bat, .vh-sol-mod--laad{ min-height: 232px }
-  .vh-sol-mod-inhoud{ padding: 20px 20px 22px }
+  /* bij 200% tekstzoom mag de kaart meegroeien in plaats van af te kappen */
+  .vh-sol-mod-inhoud{ padding: 20px 20px 22px; height: auto; min-height: 100% }
   .vh-sol-mod-ic, .vh-sol-mod--zon .vh-sol-mod-ic{ width: 32px; height: 32px }
   .vh-sol-mod h3, .vh-sol-mod--zon h3{ font-size: var(--m-h3) }
   .vh-sol-mod p{ font-size: var(--m-body); line-height: 21px }
@@ -373,10 +374,14 @@
   .vh-sol-mod--boven .vh-sol-mod-kop{ margin-top: 16px }
   /* pijl als comfortabel raakdoel, altijd rechtsonder */
   .vh-sol-pijl,
-  .vh-sol-mod--onder .vh-sol-pijl,
-  .vh-sol-mod--zon .vh-sol-pijl{
+  .vh-sol-mod--onder .vh-sol-pijl{
     width: 44px; height: 44px;
     top: auto; bottom: 14px; right: 14px;
+  }
+  /* de zonkaart heeft onderin de statregel staan: pijl naar boven */
+  .vh-sol-mod--zon .vh-sol-pijl{
+    width: 44px; height: 44px;
+    top: 14px; right: 14px; bottom: auto;
   }
   .vh-sol-pijl svg, .vh-sol-mod--zon .vh-sol-pijl svg{ width: 17px; height: 17px }
   .vh-sol-stats{ padding: 22px 0 14px; gap: 0 }
