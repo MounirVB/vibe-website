@@ -1,0 +1,370 @@
+/* ============================================================
+   Vibe Energy — Homepage SECTIE 7: ENERGIE-INFRASTRUCTUUR
+   Reconstructie van de goedgekeurde desktopreferentie.
+
+   SCHAAL — de referentie is 1774 x 887 px, exact het sitecanvas.
+   1:1 dus: 1 referentie-px = 100/1774 = 0,0563698cqw.
+   Controle: de kop meet 44,6 px kaphoogte in de referentie en
+   staat hier op 3,4386cqw = 61 px.
+
+   Eigen namespace .vh-infra-* — raakt sectie 1 t/m 6 niet aan.
+   ============================================================ */
+
+.vh-infra{
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  height: 50cqw;                        /* 887 ref-px */
+  overflow: hidden;
+  background: linear-gradient(100deg,
+    #FEFEFE 0%, #FDFDFE 38%, #F6FAFE 72%, #EAF5FE 100%);
+  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+
+  --if-blauw: #0073FE;
+  --if-navy:  #08203C;
+  --if-body:  #4C5771;
+  --if-sub:   #4E5876;
+  --if-tint:  #DEEFFD;
+}
+/* home.css:291 zet via #voorwie (id-specificiteit) nog een eigen
+   achtergrond op deze sectie. Onderstaande regel wint daarvan zonder
+   home.css aan te raken, en werkt uitsluitend binnen sectie 7. */
+#voorwie.vh-infra{
+  background: linear-gradient(100deg,
+    #FEFEFE 0%, #FDFDFE 38%, #F6FAFE 72%, #EAF5FE 100%) !important;
+}
+
+/* ------------------------------------------------------------
+   LINKERKOLOM — propositie
+   ------------------------------------------------------------ */
+.vh-infra-copy{
+  position: absolute;
+  left: 4.1150cqw;                      /* ref 73 */
+  top: 6.3472cqw;
+  width: 32.0000cqw;
+  z-index: 3;
+}
+.vh-infra-eyebrow{
+  margin: 0;
+  font-size: .9470cqw;                  /* 16,8 px -> kaphoogte 12 */
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: .137em;
+  color: var(--if-blauw);
+}
+.vh-infra-kop{
+  margin: 1.0147cqw 0 0;
+  font-family: inherit;
+  font-size: 3.4386cqw;                 /* 61 px -> kaphoogte 44,6 */
+  line-height: 3.2694cqw;               /* regelafstand 58 ref-px */
+  font-weight: 800;
+  letter-spacing: -.015em;
+  color: var(--if-navy);
+}
+.vh-infra-kop .vh-infra-accent{ color: var(--if-blauw) }
+.vh-infra-lead{
+  margin: 1.1275cqw 0 0;
+  font-size: 1.2120cqw;                 /* 21,5 px */
+  line-height: 1.6178cqw;               /* regelafstand 28,7 ref-px */
+  font-weight: 400;
+  color: var(--if-body);
+}
+
+/* --- drie voordeelrijen --- */
+.vh-infra-vdl{ margin: 1.5129cqw 0 0; padding: 0; list-style: none }
+.vh-infra-vd{
+  display: flex;
+  align-items: flex-start;
+  gap: 1.9166cqw;                       /* ref 34 */
+  height: 4.6223cqw;                    /* steek 82 ref-px */
+}
+.vh-infra-vd-ic{
+  flex: none;
+  width: 3.5513cqw;                     /* ref 63 */
+  height: 3.5513cqw;
+  border-radius: .7328cqw;
+  display: grid;
+  place-items: center;
+  background: var(--if-tint);
+  color: var(--if-blauw);
+}
+.vh-infra-vd-ic svg{ width: 1.6911cqw; height: 1.6911cqw; display: block }
+.vh-infra-vd-tx{ min-width: 0; padding-top: .5748cqw }
+.vh-infra-vd-tx b{
+  display: block;
+  font-size: 1.0654cqw;                 /* 18,9 px */
+  line-height: 1;
+  font-weight: 700;
+  color: #0C1424;
+}
+.vh-infra-vd-tx b + span{
+  display: block;
+  margin-top: .5187cqw;
+  font-size: .9583cqw;                  /* 17 px */
+  line-height: 1;
+  font-weight: 400;
+  color: var(--if-body);
+}
+
+/* --- twee acties --- */
+.vh-infra-acties{
+  display: flex;
+  align-items: center;
+  gap: 2.0293cqw;                       /* ref 36 */
+  margin-top: .9019cqw;
+}
+.vh-infra-cta{
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: 12.4013cqw;                    /* ref 220 */
+  height: 3.7768cqw;                    /* ref 67 */
+  padding: 0 1.4655cqw 0 1.7475cqw;
+  border-radius: .5637cqw;
+  background: var(--if-blauw);
+  color: #fff;
+  font-size: 1.0147cqw;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .2s ease;
+}
+.vh-infra-cta:hover{ background: #005FE0 }
+.vh-infra-cta svg{ width: 1.1838cqw; height: 1.1838cqw; flex: none; display: block }
+.vh-infra-cta2{
+  display: inline-flex;
+  align-items: center;
+  gap: 1.6347cqw;                       /* ref 29 */
+  font-size: 1.0147cqw;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--if-blauw);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity .2s ease;
+}
+.vh-infra-cta2:hover{ opacity: .78 }
+.vh-infra-cta2 svg{ width: 1.1838cqw; height: 1.1838cqw; flex: none; display: block }
+
+/* ------------------------------------------------------------
+   RECHTERKOLOM — hoofdbeeld
+   ------------------------------------------------------------ */
+.vh-infra-foto{
+  position: absolute;
+  left: 36.2258cqw;                     /* ref 643 */
+  top: 2.8749cqw;                       /* ref 51 */
+  width: 62.0068cqw;                    /* ref 1100 */
+  height: 35.1114cqw;                   /* ref 623 */
+  border-radius: 1.0147cqw;
+  overflow: hidden;
+  background: #DCE8F4;
+  z-index: 1;
+}
+.vh-infra-foto img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 54%;
+  display: block;
+}
+/* handgeschreven notitie uit de referentie — zie index.html */
+.vh-infra-note{
+  position: absolute;
+  left: 2.1420cqw;
+  top: 4.2278cqw;
+  width: 12.0000cqw;
+  font-size: 1.4655cqw;
+  line-height: 1.6911cqw;
+  font-weight: 500;
+  letter-spacing: .005em;
+  color: rgba(255,255,255,.94);
+  text-shadow: 0 .06cqw .28cqw rgba(9,40,80,.34);
+  pointer-events: none;
+}
+.vh-infra-note svg{
+  display: block;
+  width: 3.7204cqw;
+  height: 2.3111cqw;
+  margin: .5637cqw 0 0 3.6640cqw;
+  color: rgba(255,255,255,.92);
+}
+
+/* ------------------------------------------------------------
+   OPLOSSINGKAARTEN — gestapeld over het beeld
+   ------------------------------------------------------------ */
+.vh-infra-kaart{
+  position: absolute;
+  left: 72.9989cqw;                     /* ref 1295 */
+  width: 23.7881cqw;                    /* ref 422 */
+  height: 7.1026cqw;                    /* ref 126 */
+  box-sizing: border-box;
+  border-radius: .7892cqw;
+  background: #fff;
+  box-shadow: 0 .90cqw 1.80cqw -.80cqw rgba(16,58,110,.22),
+              0 .18cqw .45cqw -.24cqw rgba(16,58,110,.14);
+  text-decoration: none;
+  z-index: 2;
+  transition: transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s ease;
+}
+.vh-infra-kaart:hover{
+  transform: translateY(-.16cqw);
+  box-shadow: 0 1.20cqw 2.30cqw -.80cqw rgba(16,58,110,.28),
+              0 .18cqw .45cqw -.24cqw rgba(16,58,110,.14);
+}
+.vh-infra-kaart--1{ top: 5.0169cqw }    /* ref 89 */
+.vh-infra-kaart--2{ top: 12.9835cqw }   /* ref 230,3 */
+.vh-infra-kaart--3{ top: 20.9501cqw }   /* ref 371,7 */
+.vh-infra-kaart--4{ top: 28.9167cqw }   /* ref 513 */
+
+.vh-infra-kaart-ic{
+  position: absolute;
+  left: 1.2965cqw;                      /* ref 23 */
+  top: 1.7475cqw;                       /* ref 31 */
+  width: 4.6223cqw;                     /* ref 82 */
+  height: 3.9459cqw;                    /* ref 70 */
+  display: grid;
+  place-items: center;
+  color: #16325A;
+}
+.vh-infra-kaart-ic svg{ width: 3.2694cqw; height: 3.2694cqw; display: block }
+.vh-infra-kaart-tx{
+  position: absolute;
+  left: 7.6663cqw;                      /* ref 136 */
+  top: 1.6347cqw;
+  right: 2.8749cqw;
+}
+.vh-infra-kaart-tx b{
+  display: block;
+  font-size: 1.0485cqw;                 /* 18,6 px */
+  line-height: 1;
+  font-weight: 700;
+  color: #0C1424;
+}
+.vh-infra-kaart-tx b + span{
+  display: block;
+  margin-top: .3946cqw;
+  font-size: .9019cqw;                  /* 16 px */
+  line-height: 1.3529cqw;               /* regelafstand 24 ref-px */
+  font-weight: 400;
+  color: #45527A;
+}
+.vh-infra-kaart-pijl{
+  position: absolute;
+  left: 20.6877cqw;                     /* ref 367 */
+  top: 2.5930cqw;                       /* ref 46 */
+  width: 2.0857cqw;                     /* ref 37 */
+  height: 2.0857cqw;
+  border-radius: 50%;
+  background: #E7F2FE;
+  color: var(--if-blauw);
+  display: grid;
+  place-items: center;
+}
+.vh-infra-kaart-pijl svg{ width: 1.0147cqw; height: 1.0147cqw; display: block }
+
+/* ------------------------------------------------------------
+   KPI-BALK
+   ------------------------------------------------------------ */
+.vh-infra-kpi{
+  position: absolute;
+  left: 36.2258cqw;                     /* ref 643 */
+  top: 39.1226cqw;                      /* ref 694 */
+  width: 62.0068cqw;                    /* ref 1100 */
+  height: 7.4972cqw;                    /* ref 133 */
+  box-sizing: border-box;
+  border-radius: 1.0711cqw;
+  background: #FCFDFF;
+  box-shadow: 0 .85cqw 1.90cqw -.95cqw rgba(16,58,110,.16),
+              0 .16cqw .40cqw -.22cqw rgba(16,58,110,.10);
+  display: grid;
+  grid-template-columns: 297fr 278fr 288fr 237fr;
+  align-items: center;
+  z-index: 3;
+}
+.vh-infra-kpi-item{
+  display: flex;
+  align-items: center;
+  gap: 1.6911cqw;                       /* ref 30 */
+  height: 4.7351cqw;                    /* scheidingslijn 84 ref-px */
+  padding-left: 2.0293cqw;              /* ref 36 */
+  min-width: 0;
+}
+.vh-infra-kpi-item + .vh-infra-kpi-item{ border-left: 1px solid #E4F0FC }
+.vh-infra-kpi-ic{ flex: none; width: 2.2548cqw; height: 2.2548cqw; color: var(--if-blauw) }
+.vh-infra-kpi-ic svg{ width: 100%; height: 100%; display: block }
+.vh-infra-kpi-tx{ min-width: 0 }
+.vh-infra-kpi-tx b{
+  display: block;
+  font-size: 1.4092cqw;                 /* 25 px */
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -.005em;
+  color: var(--if-navy);
+  white-space: nowrap;
+}
+.vh-infra-kpi-tx b + span{
+  display: block;
+  margin-top: .2818cqw;
+  font-size: .8906cqw;                  /* 15,8 px */
+  line-height: 1;
+  font-weight: 400;
+  color: var(--if-sub);
+  white-space: nowrap;
+}
+.vh-infra-kpi-tx sub{ font-size: .72em; line-height: 0 }
+
+/* ============================================================
+   TIJDELIJKE MOBIELE VANGRAIL — geen mobiel ontwerp, alleen
+   voorkomen dat kleine schermen overlopen.
+   ============================================================ */
+@media (max-width: 900px){
+  .vh-infra{ height: auto; padding: 34px 0 38px }
+  .vh-infra-copy{ position: static; width: auto; padding: 0 20px }
+  .vh-infra-eyebrow{ font-size: 12px; letter-spacing: .12em }
+  .vh-infra-kop{ font-size: 32px; line-height: 36px; margin-top: 12px }
+  .vh-infra-kop br{ display: none }
+  .vh-infra-lead{ font-size: 16px; line-height: 24px; margin-top: 14px }
+  .vh-infra-lead br{ display: none }
+  .vh-infra-vdl{ margin-top: 22px }
+  .vh-infra-vd{ height: auto; gap: 14px; margin-bottom: 18px }
+  .vh-infra-vd-ic{ width: 44px; height: 44px; border-radius: 10px }
+  .vh-infra-vd-ic svg{ width: 22px; height: 22px }
+  .vh-infra-vd-tx{ padding-top: 2px }
+  .vh-infra-vd-tx b{ font-size: 17px; line-height: 22px }
+  .vh-infra-vd-tx b + span{ font-size: 15px; line-height: 21px; margin-top: 5px }
+  .vh-infra-acties{ margin-top: 20px; gap: 18px; flex-wrap: wrap }
+  .vh-infra-cta{ width: auto; height: 50px; padding: 0 18px; gap: 12px; font-size: 15px; border-radius: 10px }
+  .vh-infra-cta svg, .vh-infra-cta2 svg{ width: 18px; height: 18px }
+  .vh-infra-cta2{ font-size: 15px; gap: 10px }
+  .vh-infra-foto{
+    position: static; width: auto; height: 240px; margin: 24px 20px 0;
+    border-radius: 12px;
+  }
+  .vh-infra-note{ display: none }
+  .vh-infra-kaart{
+    position: static; width: auto; height: auto; margin: 12px 20px 0;
+    padding: 16px 16px 16px 14px; border-radius: 12px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .vh-infra-kaart-ic{ position: static; width: 52px; height: 52px; flex: none }
+  .vh-infra-kaart-ic svg{ width: 34px; height: 34px }
+  .vh-infra-kaart-tx{ position: static; flex: 1; min-width: 0 }
+  .vh-infra-kaart-tx b{ font-size: 17px }
+  .vh-infra-kaart-tx b + span{ font-size: 15px; line-height: 21px; margin-top: 6px }
+  .vh-infra-kaart-tx br{ display: none }
+  .vh-infra-kaart-pijl{ position: static; flex: none; width: 34px; height: 34px }
+  .vh-infra-kaart-pijl svg{ width: 16px; height: 16px }
+  .vh-infra-kpi{
+    position: static; width: auto; height: auto; margin: 20px 20px 0;
+    padding: 6px 0; border-radius: 12px;
+    grid-template-columns: 1fr 1fr;
+  }
+  .vh-infra-kpi-item{ height: auto; padding: 14px 12px; gap: 12px }
+  .vh-infra-kpi-item + .vh-infra-kpi-item{ border-left: 0 }
+  .vh-infra-kpi-ic{ width: 26px; height: 26px }
+  .vh-infra-kpi-tx b{ font-size: 19px }
+  .vh-infra-kpi-tx b + span{ font-size: 13px; margin-top: 6px; white-space: normal }
+}
