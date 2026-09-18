@@ -78,14 +78,19 @@
   background: #E3ECF4;
   z-index: 2;
 }
-.vh-final-foto img{
-  /* uitsnede op het pand: bronvenster x 1450..4150, y 900..2724 van 5120x2880 */
+.vh-final-foto::after{
+  content: '';
   position: absolute;
-  left: -53.7%;
-  top: -49.4%;
-  width: 189.6%;
-  max-width: none;
-  height: auto;
+  inset: 0;
+  background: linear-gradient(200deg, rgba(8,32,60,.62) 0%, rgba(8,32,60,.38) 44%, rgba(8,32,60,.58) 100%);
+  pointer-events: none;
+}
+.vh-final-foto img{
+  /* uitsnede op de batterijkasten (bron 2000x1501) */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 46%;
   display: block;
 }
 
@@ -145,9 +150,9 @@
 .vh-final-kop{
   margin: .8513cqw 0 0;
   font-family: inherit;
-  font-size: 3.2400cqw;                 /* 56,2 px -> kaphoogte 40,5 */
-  line-height: 3.1394cqw;               /* regelafstand 66 ref-px */
-  font-weight: 800;
+  font-size: 3.7205cqw;                 /* 56,2 -> 66 px: grootste H2 van de pagina */
+  line-height: 3.6000cqw;
+  font-weight: 700;                     /* gelijk aan de rest */
   letter-spacing: -.016em;
   color: var(--fi-navy);
 }
@@ -345,7 +350,7 @@
   .vh-final-vd-tx b{ font-size: 16px; line-height: 21px }
   .vh-final-vd-tx b + span{ font-size: 15px; line-height: 20px; margin-top: 5px }
   .vh-final-foto{
-    position: static; clip-path: none; height: 220px;
+    position: relative; clip-path: none; height: 220px;
     margin: 24px 20px 0; border-radius: 12px; overflow: hidden;
   }
   .vh-final-foto img{

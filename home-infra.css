@@ -58,7 +58,7 @@
   font-family: inherit;
   font-size: 3.4386cqw;                 /* 61 px -> kaphoogte 44,6 */
   line-height: 3.2694cqw;               /* regelafstand 58 ref-px */
-  font-weight: 800;
+  font-weight: 700;                     /* gelijk aan sectie 1 t/m 6 */
   letter-spacing: -.015em;
   color: var(--if-navy);
 }

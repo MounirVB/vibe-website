@@ -72,7 +72,7 @@
 .vh-proc-kop{
   margin: 1.1209cqw 0 0;
   font-family: inherit;
-  font-size: 4.1837cqw;
+  font-size: 3.6100cqw;   /* 74,2 -> 64 px: concurreert niet meer met de hero-H1 */
   line-height: 4.0857cqw;
   font-weight: 700;
   letter-spacing: -.012em;

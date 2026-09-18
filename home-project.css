@@ -16,6 +16,9 @@
    Eigen namespace .vh-pr-* — raakt sectie 1 en 2 niet aan.
    ============================================================ */
 
+/* home.css:267 schildert via #projecten (id-specificiteit) nog var(--ink-900) = #F4F7F9
+   over deze sectie heen. Sectie 3 houdt hiermee zijn eigen, gemeten achtergrond. */
+#projecten.vh-pr{ background: #FCFDFE }
 .vh-pr{
   container-type: inline-size;
   position: relative;

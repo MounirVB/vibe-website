@@ -17,7 +17,7 @@
   container-type: inline-size;
   position: relative;
   width: 100%;
-  height: 31.371cqw;                  /* 476 ref = 556,5 site-px */
+  height: 33.171cqw;                  /* 476 ref + 32px lucht naar sectie 6 */
   overflow: hidden;
   background: #EFF7FE;
   font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
@@ -235,7 +235,7 @@
 
 .vh-ctrl-feats{
   display: grid;
-  grid-template-columns: repeat(4, 11.3866cqw);   /* 202 site-px steek */
+  grid-template-columns: repeat(4, minmax(0, 1fr)); /* was 4x202px = 16px buiten de sectie */
   margin-top: .9075cqw;
 }
 .vh-ctrl-feat{ min-width: 0 }
