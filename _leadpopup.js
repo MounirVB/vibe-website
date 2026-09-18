@@ -41,7 +41,7 @@
     energielabel:'assets/energielabel-hero.jpg',
     vastgoedopbrengst:'assets/vastgoed-hero.jpg',
     laadplein:'assets/laadplein-hero.jpg',
-    home:'assets/energy-hubs-hero.jpg'
+    home:'assets/home/popup-960.webp'
   };
   var photo = cfg.photo || PHOTO_MAP[slug] || 'assets/energy-hubs-hero.jpg';
 

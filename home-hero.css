@@ -65,15 +65,12 @@
 }
 
 .vh-foto img{
-  /* strakke architectuuruitsnede op de glasgevel en de zonnedakrand,
-     zodat de hero niet leest als dezelfde wijde dronefoto als sectie 3:
-     bronvenster x 1800..4400, y 900..2000 van 5120x2880 */
-  position: absolute;
-  left: -69.2%;
-  top: -82.1%;
-  width: 197%;
-  max-width: none;
-  height: auto;
+  /* de uitsnede (bron x 1800..4400, y 900..2000) zit nu in het derivaat zelf,
+     zodat er geen 5120px-bron meer over de lijn hoeft */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
   display: block;
 }
 /* leesbaarheidsverloop: de blauwe geometrie en de KPI-strook liggen erover */

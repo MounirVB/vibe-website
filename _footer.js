@@ -43,7 +43,7 @@
     '<div class="v1a-inner">'+
       '<div class="v1a-grid">'+
         '<div class="v1a-brand">'+
-          '<a href="/" class="v1a-logo"><img src="assets/logo.png" alt="Vibe Energy"></a>'+
+          '<a href="/" class="v1a-logo"><img src="assets/logo.png" alt="Vibe Energy" loading="lazy" decoding="async" width="1375" height="1375"></a>'+
           '<p class="v1a-tag">Energie is de <em>nieuwe exploitatie.</em></p>'+
           '<p class="v1a-desc">E&eacute;n partij die lokale energiecentrales ontwerpt, bouwt &eacute;n exploiteert &mdash; als systeem, niet als product.</p>'+
         '</div>'+
