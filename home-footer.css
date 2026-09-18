@@ -291,36 +291,90 @@
    TIJDELIJKE MOBIELE VANGRAIL — geen mobiel ontwerp, alleen
    voorkomen dat kleine schermen overlopen.
    ============================================================ */
-@media (max-width: 900px){
-  .vh-footer{ height: auto; padding: 34px 0 26px }
-  .vh-footer-wig, .vh-footer-note{ display: none }
-  .vh-footer-merk{ position: static; width: auto; padding: 0 20px }
-  .vh-footer-logo-badge{ width: 44px; height: 44px }
-  .vh-footer-logo-vibe{ font-size: 22px; line-height: 21px }
-  .vh-footer-logo-energy{ font-size: 18px; line-height: 21px }
-  .vh-footer-tag{ font-size: 15px; line-height: 23px; margin-top: 16px }
-  .vh-footer-contact{ margin-top: 20px; gap: 14px }
-  .vh-footer-contact svg{ width: 15px; height: 18px; margin-top: 2px }
-  .vh-footer-contact li{ gap: 12px }
+/* ============================================================
+   MOBIEL / TABLET — sectie 9 (fase 14)
+   Merk -> propositie -> contact -> drie navigatiegroepen ->
+   contactblok -> smalle beeldband -> juridische regel.
+   Niets verstopt: adres, telefoon, e-mail en KvK/BTW blijven zichtbaar.
+   ============================================================ */
+@media (max-width: 1199px){
+  .vh-footer{ height: auto; padding: var(--m-sec-y) 0 26px; display: flex; flex-direction: column }
+  .vh-footer-merk{ position: static; width: auto; padding: 0 var(--m-gutter); order: 1 }
+  .vh-footer-nav{ position: static; order: 2 }
+  .vh-footer-nb{ order: 3 }
+  .vh-footer-wig{ order: 4 }
+  .vh-footer-lijn{ order: 5 }
+  .vh-footer-legal{ order: 6 }
+
+  .vh-footer-logo-badge{ width: 42px; height: 42px }
+  .vh-footer-logo-vibe{ font-size: 21px; line-height: 20px }
+  .vh-footer-logo-energy{ font-size: 17.5px; line-height: 20px }
+  .vh-footer-tag{ font-size: var(--m-body); line-height: 23px; margin-top: 16px; max-width: 34ch }
+  .vh-footer-tag br{ display: none }
+  .vh-footer-contact{ margin-top: 22px; gap: 14px }
+  .vh-footer-contact li{ gap: 12px; align-items: flex-start }
+  .vh-footer-contact svg{ width: 16px; height: 19px; margin-top: 2px }
   .vh-footer-contact span, .vh-footer-contact a{ font-size: 15px; line-height: 21px }
-  .vh-footer-nav{ position: static; padding: 26px 20px 0 }
-  .vh-footer-nav b{ font-size: 17px }
-  .vh-footer-nav ul{ margin-top: 14px; gap: 10px }
-  .vh-footer-nav ul a{ font-size: 15px; white-space: normal }
-  .vh-footer-nb{ position: static; width: auto; padding: 26px 20px 0 }
-  .vh-footer-nb b{ font-size: 18px }
-  .vh-footer-nb p{ font-size: 15px; line-height: 23px; margin-top: 12px }
+  .vh-footer-contact a{ min-height: 30px; display: inline-flex; align-items: center }
+
+  .vh-footer-nav{ padding: 26px var(--m-gutter) 0 }
+  .vh-footer-nav b{ font-size: 16.5px }
+  .vh-footer-nav ul{ margin-top: 12px; gap: 2px }
+  .vh-footer-nav ul a{
+    display: block; padding: 10px 0;
+    font-size: 15px; white-space: normal;
+  }
+
+  .vh-footer-nb{
+    position: static; width: auto;
+    margin: 28px var(--m-gutter) 0;
+    padding: 22px 20px 24px;
+    border-radius: var(--m-radius);
+    background: #F3F8FE;
+    border: 1px solid #E1ECF8;
+  }
+  .vh-footer-nb b{ font-size: 18.5px }
+  .vh-footer-nb p{ font-size: var(--m-body); line-height: 22px; margin-top: 12px }
   .vh-footer-nb p br{ display: none }
-  .vh-footer-nb-cta{ width: 100%; height: 50px; font-size: 15px; border-radius: 10px; padding: 0 18px }
-  .vh-footer-nb-cta svg{ width: 18px; height: 18px }
-  .vh-footer-nb ul{ margin-top: 18px; gap: 12px }
-  .vh-footer-nb ul li{ font-size: 15px; gap: 10px }
-  .vh-footer-nb ul svg{ width: 16px; height: 16px }
-  .vh-footer-lijn{ position: static; margin: 26px 20px 0 }
+  .vh-footer-nb-cta{
+    width: 100%; height: var(--m-btn-h); margin-top: 18px;
+    font-size: 16px; border-radius: 10px; padding: 0 20px;
+    justify-content: space-between;
+  }
+  .vh-footer-nb-cta svg{ width: 19px; height: 19px }
+  .vh-footer-nb ul{ margin-top: 18px; gap: 11px }
+  .vh-footer-nb ul li{ font-size: 14.5px; gap: 10px; align-items: flex-start; line-height: 20px }
+  .vh-footer-nb ul svg{ width: 16px; height: 16px; margin-top: 2px; flex: none }
+
+  /* smalle beeldband houdt het merkbeeld vast zonder de pagina te rekken */
+  .vh-footer-wig{
+    position: static; width: auto; height: 132px;
+    margin: 28px var(--m-gutter) 0;
+    clip-path: none; border-radius: var(--m-radius-img);
+  }
+  .vh-footer-wig img{
+    position: static; width: 100%; height: 100%;
+    object-fit: cover; object-position: 46% 56%;
+  }
+  .vh-footer-wig::after{ inset: 0 }
+  /* de notitie hoort op de wig; die is mobiel te smal, dus weg */
+  .vh-footer-note{ display: none }
+
+  .vh-footer-lijn{ position: static; margin: 26px var(--m-gutter) 0 }
   .vh-footer-legal{
-    position: static; padding: 18px 20px 0;
-    flex-direction: column; align-items: flex-start; gap: 12px;
+    position: static; padding: 18px var(--m-gutter) 0;
+    flex-direction: column; align-items: flex-start; gap: 14px;
     font-size: 13px; line-height: 20px;
   }
-  .vh-footer-legal-rechts{ flex-wrap: wrap; gap: 8px 18px }
+  .vh-footer-legal-rechts{ flex-wrap: wrap; gap: 4px 18px }
+  .vh-footer-legal-rechts a{ min-height: 42px; display: inline-flex; align-items: center }
+}
+
+@media (min-width: 768px) and (max-width: 1199px){
+  .vh-footer-merk{ max-width: 420px }
+  .vh-footer-nav{ display: inline-block; width: 33%; vertical-align: top; padding-right: 20px }
+  .vh-footer-nav--1{ padding-left: var(--m-gutter) }
+  .vh-footer-nb{ max-width: 460px }
+  .vh-footer-wig{ height: 180px }
+  .vh-footer-legal{ flex-direction: row; align-items: center; justify-content: space-between }
 }

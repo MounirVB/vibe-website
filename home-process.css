@@ -202,30 +202,88 @@
    TIJDELIJKE MOBIELE VANGRAIL — geen mobiel ontwerp, alleen
    voorkomen dat kleine schermen overlopen.
    ============================================================ */
-@media (max-width: 900px){
-  .vh-proc{ padding: 36px 0 34px }
+/* ============================================================
+   MOBIEL / TABLET — sectie 4 (fase 14)
+   Procesverhaal: kop -> intro -> beeld -> inzichtkaart ->
+   verticale tijdlijn met vier stappen en een doorlopende lijn.
+   ============================================================ */
+@media (max-width: 1199px){
+  .vh-proc{ height: auto; padding: var(--m-sec-y) 0 }
   .vh-proc-backdrop{ display: none }
   .vh-proc-top{ height: auto }
-  .vh-proc-copy{ position: static; max-width: none; padding: 0 20px }
-  .vh-proc-eyebrow{ font-size: 13px; letter-spacing: .12em }
-  .vh-proc-kop{ font-size: 36px; line-height: 40px; margin-top: 14px }
+  .vh-proc-copy{ position: static; max-width: none; padding: 0 var(--m-gutter) }
+  .vh-proc-eyebrow{ font-size: var(--m-eyebrow); letter-spacing: .14em }
+  .vh-proc-kop{ font-size: var(--m-h2); line-height: 1.08; margin-top: 14px; letter-spacing: -.018em }
   .vh-proc-kop br{ display: none }
-  .vh-proc-lead{ font-size: 17px; line-height: 26px; margin-top: 16px }
+  .vh-proc-lead{ font-size: var(--m-lead); line-height: 1.55; margin-top: 16px; max-width: 36ch }
   .vh-proc-lead br{ display: none }
-  .vh-proc-beeld{ position: static; width: auto; height: 210px; margin: 24px 20px 0; border-radius: 12px }
-  .vh-proc-kaart{ position: static; width: auto; margin: -34px 32px 0; padding: 18px 20px 20px; border-radius: 12px }
+  .vh-proc-beeld{
+    position: static; width: auto; height: 212px;
+    margin: 26px var(--m-gutter) 0; border-radius: var(--m-radius-img);
+  }
+  .vh-proc-kaart{
+    position: static; width: auto;
+    margin: -30px var(--m-gutter) 0;
+    margin-left: calc(var(--m-gutter) + 18px);
+    padding: 18px 20px 20px;
+    border-radius: var(--m-radius);
+  }
   .vh-proc-kaart-ic{ width: 34px; height: 34px; border-radius: 8px }
   .vh-proc-kaart-ic svg{ width: 18px; height: 18px }
-  .vh-proc-kaart h3{ font-size: 18px; line-height: 24px; margin-top: 14px }
-  .vh-proc-kaart p{ font-size: 15px; line-height: 21px; margin-top: 10px }
+  .vh-proc-kaart h3{ font-size: 17px; line-height: 23px; margin-top: 14px }
+  .vh-proc-kaart p{ font-size: var(--m-body); line-height: 21px; margin-top: 9px }
   .vh-proc-kaart p br{ display: none }
-  .vh-proc-stappen{ margin: 28px 20px 0; flex-direction: column; gap: 22px }
-  .vh-proc-stap{ width: auto; gap: 16px }
-  .vh-proc-stap-ic{ width: 34px; height: 34px }
-  .vh-proc-badge{ width: 30px; height: 28px; font-size: 12px; border-radius: 6px }
-  .vh-proc-stap h3{ font-size: 18px; line-height: 22px; margin-top: 10px }
-  .vh-proc-stap p{ font-size: 15px; line-height: 21px; margin-top: 8px }
+
+  /* verticale tijdlijn */
+  .vh-proc-stappen{
+    position: relative;
+    margin: 34px var(--m-gutter) 0;
+    flex-direction: column;
+    gap: 0;
+  }
+  .vh-proc-stappen::before{
+    content: '';
+    position: absolute;
+    left: 17px; top: 12px; bottom: 26px;
+    width: 2px;
+    background: linear-gradient(180deg, #0073FE 0%, rgba(0,115,254,.18) 100%);
+  }
+  .vh-proc-stap{
+    width: auto;
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    column-gap: 16px;
+    padding-bottom: 24px;
+  }
+  .vh-proc-stap:last-child{ padding-bottom: 0 }
+  .vh-proc-stap-ic{
+    width: 36px; height: 36px;
+    grid-row: 1 / span 3;
+    background: #fff;
+    border: 1px solid rgba(0,115,254,.22);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    position: relative; z-index: 1;
+  }
+  .vh-proc-stap-ic svg{ width: 17px; height: 17px }
+  .vh-proc-badge{
+    width: auto; height: auto;
+    background: none; color: #0073FE;
+    font-size: 11px; font-weight: 700; letter-spacing: .18em;
+    padding: 0; border-radius: 0;
+    align-self: center;
+  }
+  .vh-proc-stap h3{ font-size: 17.5px; line-height: 22px; margin-top: 4px }
+  .vh-proc-stap p{ font-size: var(--m-body); line-height: 21px; margin-top: 6px }
   .vh-proc-stap p br{ display: none }
   .vh-proc-chev{ display: none }
   .vh-proc-onder{ display: none }
+}
+
+@media (min-width: 768px) and (max-width: 1199px){
+  .vh-proc-beeld{ height: 320px }
+  .vh-proc-kaart{ max-width: 420px }
+  .vh-proc-stappen{ display: grid; grid-template-columns: 1fr 1fr; column-gap: 34px }
+  .vh-proc-stappen::before{ display: none }
+  .vh-proc-stap{ padding-bottom: 28px }
 }

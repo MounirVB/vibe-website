@@ -153,8 +153,7 @@
   isolation: isolate;
 }
 .vh-sol-mod img,
-.vh-sol-mod .vh-sol-grafisch,
-.vh-sol-mod .vh-sol-geenbeeld{
+.vh-sol-mod .vh-sol-grafisch{
   position: absolute;
   inset: 0;
   width: 100%;
@@ -287,7 +286,9 @@
 }
 .vh-sol-mod--onder .vh-sol-mod-kop{ padding-right: 3.2cqw }
 
-/* --- ontbrekend beeld: duidelijk gemarkeerde plaatshouder --- */
+/* --- HVAC: bewuste grafische behandeling, geen foto en geen plaatshouder ---
+   Er bestaat geen HVAC-fotografie in deze repository. Deze kaart krijgt daarom
+   de eigen vormtaal: navyvlak met de Vibe-diagonaal. --- */
 .vh-sol-grafisch{
   background:
     linear-gradient(135deg, rgba(0,115,254,.34) 0%, rgba(0,115,254,0) 58%),
@@ -303,58 +304,95 @@
   clip-path: polygon(46% 0, 100% 0, 100% 100%, 0 100%);
   background: linear-gradient(200deg, rgba(0,115,254,.30) 0%, rgba(0,83,185,.16) 62%, rgba(0,53,118,0) 100%);
 }
-.vh-sol-geenbeeld{
-  background:
-    repeating-linear-gradient(45deg, #223042 0 14px, #1A2635 14px 28px);
-  display: grid;
-  place-items: start end;
-  padding: .85cqw 1.1cqw 0 0;
-}
-.vh-sol-geenbeeld em{
-  font-style: normal;
-  font-size: .62cqw;
-  font-weight: 600;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: #8FA3BC;
-}
 
 /* ============================================================
    TIJDELIJKE MOBIELE VANGRAIL — geen mobiel ontwerp, alleen
    voorkomen dat kleine schermen overlopen.
    ============================================================ */
-@media (max-width: 900px){
-  .vh-sol-inner{ grid-template-columns: 1fr; padding: 40px 20px }
+/* ============================================================
+   MOBIEL / TABLET — sectie 2 (fase 14)
+   Intro -> voordelen -> zes grote, leesbare beeldkaarten.
+   Ritme: het eerste blok (zon) blijft groot, de overige vijf
+   staan in een vast, rustig formaat. Geen zes identieke dozen.
+   ============================================================ */
+@media (max-width: 1199px){
+  .vh-sol{ height: auto }
+  .vh-sol-inner{
+    grid-template-columns: 1fr;
+    padding: var(--m-sec-y) var(--m-gutter);
+    gap: 0;
+  }
   .vh-sol-copy{ padding-top: 0 }
-  .vh-sol-eyebrow{ font-size: 13px; letter-spacing: .12em }
-  .vh-sol-kop{ font-size: 36px; line-height: 40px; margin-top: 16px }
+  .vh-sol-eyebrow{ font-size: var(--m-eyebrow); letter-spacing: .14em }
+  .vh-sol-kop{
+    margin-top: 14px;
+    font-size: var(--m-h2);
+    line-height: 1.08;
+    letter-spacing: -.018em;
+  }
   .vh-sol-kop br{ display: none }
-  .vh-sol-lead{ font-size: 17px; line-height: 26px; max-width: 46ch; margin-top: 18px }
-  .vh-sol-cta{ width: auto; height: 52px; padding: 0 22px; font-size: 15px; gap: 12px; margin-top: 22px; border-radius: 10px }
-  .vh-sol-cta svg{ width: 18px; height: 18px }
-  .vh-sol-scheiding{ width: 100%; margin-top: 26px }
-  .vh-sol-punt{ grid-template-columns: 34px 1fr; column-gap: 16px; margin-top: 20px }
-  .vh-sol-punt + .vh-sol-punt{ margin-top: 20px }
-  .vh-sol-punt svg{ height: 34px }
+  .vh-sol-lead{
+    margin-top: 16px;
+    font-size: var(--m-lead);
+    line-height: 1.55;
+    max-width: 36ch;
+  }
+  .vh-sol-cta{
+    width: 100%;
+    height: var(--m-btn-h);
+    margin-top: 24px;
+    padding: 0 20px;
+    font-size: 16px;
+    border-radius: 10px;
+    justify-content: space-between;
+  }
+  .vh-sol-cta svg{ width: 19px; height: 19px }
+  .vh-sol-scheiding{ width: 100%; margin-top: 28px }
+  .vh-sol-punt{ grid-template-columns: 30px 1fr; column-gap: 14px; margin-top: 18px }
+  .vh-sol-punt + .vh-sol-punt{ margin-top: 18px }
+  .vh-sol-punt svg{ height: 30px }
   .vh-sol-punt b{ font-size: 16px; line-height: 20px }
-  .vh-sol-punt b + span{ font-size: 15px; line-height: 20px; margin-top: 4px }
-  .vh-sol-grid{ grid-template-columns: 1fr; grid-template-areas: 'a' 'b' 'c' 'd'; grid-template-rows: none; row-gap: 14px; margin-top: 32px }
-  .vh-sol-onder{ grid-area: d; grid-template-columns: 1fr; row-gap: 14px }
-  .vh-sol-mod{ min-height: 240px; border-radius: 12px }
-  .vh-sol-mod--zon{ min-height: 340px }
-  .vh-sol-mod-inhoud{ padding: 20px }
-  .vh-sol-mod-ic,.vh-sol-mod--zon .vh-sol-mod-ic{ width: 34px; height: 34px }
-  .vh-sol-mod h3,.vh-sol-mod--zon h3{ font-size: 20px }
-  .vh-sol-mod p{ font-size: 15px; line-height: 21px }
-  .vh-sol-mod--boven .vh-sol-mod-kop{ margin-top: 18px }
-  .vh-sol-pijl,.vh-sol-mod--onder .vh-sol-pijl{
-    width: 34px; height: 34px; top: auto; bottom: 18px; right: 18px }
-  .vh-sol-mod--zon .vh-sol-pijl{ width: 34px; height: 34px; top: 18px; right: 18px; bottom: auto }
-  .vh-sol-pijl svg,.vh-sol-mod--zon .vh-sol-pijl svg{ width: 15px; height: 15px }
-  .vh-sol-stats{ padding: 26px 0 16px }
-  .vh-sol-stats div{ padding-left: 20px }
-  .vh-sol-stats b{ font-size: 16px }
-  .vh-sol-stats span{ font-size: 11px }
+  .vh-sol-punt b + span{ font-size: var(--m-body); line-height: 21px; margin-top: 3px }
+
+  .vh-sol-grid{
+    grid-template-columns: 1fr;
+    grid-template-areas: 'a' 'b' 'c' 'd';
+    grid-template-rows: none;
+    row-gap: 12px;
+    margin-top: 34px;
+  }
+  .vh-sol-onder{ grid-area: d; grid-template-columns: 1fr; row-gap: 12px }
+  .vh-sol-mod{ min-height: 208px; border-radius: var(--m-radius) }
+  .vh-sol-mod--zon{ min-height: 300px }          /* dragend openingsbeeld */
+  .vh-sol-mod--bat, .vh-sol-mod--laad{ min-height: 232px }
+  .vh-sol-mod-inhoud{ padding: 20px 20px 22px }
+  .vh-sol-mod-ic, .vh-sol-mod--zon .vh-sol-mod-ic{ width: 32px; height: 32px }
+  .vh-sol-mod h3, .vh-sol-mod--zon h3{ font-size: var(--m-h3) }
+  .vh-sol-mod p{ font-size: var(--m-body); line-height: 21px }
+  .vh-sol-mod p br{ display: none }
+  .vh-sol-mod--boven .vh-sol-mod-kop{ margin-top: 16px }
+  /* pijl als comfortabel raakdoel, altijd rechtsonder */
+  .vh-sol-pijl,
+  .vh-sol-mod--onder .vh-sol-pijl,
+  .vh-sol-mod--zon .vh-sol-pijl{
+    width: 44px; height: 44px;
+    top: auto; bottom: 14px; right: 14px;
+  }
+  .vh-sol-pijl svg, .vh-sol-mod--zon .vh-sol-pijl svg{ width: 17px; height: 17px }
+  .vh-sol-stats{ padding: 22px 0 14px; gap: 0 }
+  .vh-sol-stats div{ padding-left: 14px }
+  .vh-sol-stats div:first-child{ padding-left: 20px }
+  .vh-sol-stats b{ font-size: 14px }
+  .vh-sol-stats span{ font-size: 10px; letter-spacing: .02em }
+}
+
+@media (min-width: 768px) and (max-width: 1199px){
+  .vh-sol-cta{ width: auto; min-width: 280px }
+  .vh-sol-lead{ max-width: 52ch }
+  .vh-sol-grid{ grid-template-columns: 1fr 1fr; grid-template-areas: 'a a' 'b c' 'd d'; gap: 16px }
+  .vh-sol-onder{ grid-template-columns: repeat(3, 1fr); column-gap: 16px }
+  .vh-sol-mod--zon{ min-height: 380px }
+  .vh-sol-mod{ min-height: 260px }
 }
 
 /* bijsnijding van de foto's zodat het onderwerp in beeld blijft */

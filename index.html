@@ -63,6 +63,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
 <link rel="stylesheet" href="home-infra.css">
 <link rel="stylesheet" href="home-final.css">
 <link rel="stylesheet" href="home-footer.css">
+<link rel="stylesheet" href="home-mobile.css">
 </head>
 <body>
 <!-- Google Tag Manager (noscript) --><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KM2V7VQ3" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -78,8 +79,8 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
            Hedin Automotive Alkmaar, het gerealiseerde Vibe-project met volledig
            zonnedak. LCP-beeld: eager geladen, hoge prioriteit, vaste verhouding. -->
       <img src="assets/home/hero-1920.webp"
-           srcset="assets/home/hero-960.webp 960w, assets/home/hero-1920.webp 1920w, assets/home/hero-2560.webp 2560w"
-           sizes="100vw" width="2600" height="1100"
+           srcset="assets/home/hero-480.webp 480w, assets/home/hero-960.webp 960w, assets/home/hero-1920.webp 1920w, assets/home/hero-2560.webp 2560w"
+           sizes="(max-width: 1199px) 92vw, 100vw" width="2600" height="1100"
            alt="Hedin Automotive Alkmaar: bedrijfspand met volledig zonnedak, gerealiseerd door Vibe Energy"
            loading="eager" fetchpriority="high" decoding="async">
     </div>
@@ -143,6 +144,12 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
         <a href="over-ons">Over ons</a>
       </nav>
 
+      <button class="vh-menuknop" type="button" aria-label="Menu openen" aria-expanded="false" aria-controls="vh-mobielmenu">
+        <span class="vh-menuknop-lijn" aria-hidden="true"></span>
+        <span class="vh-menuknop-lijn" aria-hidden="true"></span>
+        <span class="vh-menuknop-lbl">Menu</span>
+      </button>
+
       <div class="vh-acties">
         <button class="vh-zoek" type="button" aria-label="Zoeken">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true" focusable="false">
@@ -154,6 +161,26 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
         </a>
       </div>
     </header>
+
+    <!-- MOBIEL MENU. Alleen zichtbaar onder 1200px; dezelfde zes bestemmingen
+         als de desktopnavigatie plus de bestaande Calendly-CTA. -->
+    <div class="vh-mobielmenu" id="vh-mobielmenu" hidden>
+      <nav aria-label="Mobiele navigatie">
+        <a href="#oplossingen">Oplossingen</a>
+        <a href="projecten">Projecten</a>
+        <a href="#aanpak">Aanpak</a>
+        <a href="#vibe-control">VIBE.CONTROL</a>
+        <a href="waarom-vibe">Waarom Vibe</a>
+        <a href="over-ons">Over ons</a>
+      </nav>
+      <a class="vh-mobielmenu-cta" href="contact" data-calendly>Plan een gesprek
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+      </a>
+      <div class="vh-mobielmenu-contact">
+        <a href="tel:+31850600489">+31 85 060 0489</a>
+        <a href="mailto:info@vibeenergy.nl">info@vibeenergy.nl</a>
+      </div>
+    </div>
 
     <!-- LINKERKOLOM -->
     <div class="vh-copy">
@@ -275,7 +302,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
     <div class="vh-sol-grid">
 
       <a class="vh-sol-mod vh-sol-mod--boven vh-sol-mod--zon" href="systeem-zonnepanelen">
-        <img src="assets/home/s2-zon-680.webp" srcset="assets/home/s2-zon-680.webp 680w, assets/home/s2-zon-1360.webp 1360w" sizes="27.5vw" width="4032" height="3024" alt="Zonnepanelen op een bedrijfsdak" loading="lazy" decoding="async">
+        <img src="assets/home/s2-zon-680.webp" srcset="assets/home/s2-zon-680.webp 680w, assets/home/s2-zon-1360.webp 1360w" sizes="(max-width: 1199px) 92vw, 27.5vw" width="4032" height="3024" alt="Zonnepanelen op een bedrijfsdak" loading="lazy" decoding="async">
         <span class="vh-sol-mod-inhoud">
           <svg class="vh-sol-mod-ic" viewBox="1.8 1.8 40.4 40.4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" focusable="false">
             <circle cx="22" cy="22" r="9.4"/>
@@ -297,7 +324,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
       </a>
 
       <a class="vh-sol-mod vh-sol-mod--boven vh-sol-mod--bat" href="systeem-energieopslag">
-        <img src="assets/home/s2-accu-680.webp" srcset="assets/home/s2-accu-680.webp 680w, assets/home/s2-accu-1360.webp 1360w" sizes="17vw" width="2560" height="1921" alt="Batterijopslag op locatie" loading="lazy" decoding="async">
+        <img src="assets/home/s2-accu-680.webp" srcset="assets/home/s2-accu-680.webp 680w, assets/home/s2-accu-1360.webp 1360w" sizes="(max-width: 1199px) 92vw, 17vw" width="2560" height="1921" alt="Batterijopslag op locatie" loading="lazy" decoding="async">
         <span class="vh-sol-mod-inhoud">
           <svg class="vh-sol-mod-ic" viewBox="9.6 2.6 24.8 39.4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             <rect x="9.6" y="8" width="24.8" height="34" rx="4"/>
@@ -315,7 +342,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
       </a>
 
       <a class="vh-sol-mod vh-sol-mod--boven vh-sol-mod--laad" href="systeem-laadpalen">
-        <img src="assets/home/s2-laad-680.webp" srcset="assets/home/s2-laad-680.webp 680w, assets/home/s2-laad-1360.webp 1360w" sizes="16.5vw" width="2560" height="1921" alt="Laadinfrastructuur" loading="lazy" decoding="async">
+        <img src="assets/home/s2-laad-680.webp" srcset="assets/home/s2-laad-680.webp 680w, assets/home/s2-laad-1360.webp 1360w" sizes="(max-width: 1199px) 92vw, 16.5vw" width="2560" height="1921" alt="Laadinfrastructuur" loading="lazy" decoding="async">
         <span class="vh-sol-mod-inhoud">
           <svg class="vh-sol-mod-ic" viewBox="8.8 2.4 26.4 39.2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             <path d="M14.4 2.4v9.2M29.6 2.4v9.2"/>
@@ -354,7 +381,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
         </a>
 
         <a class="vh-sol-mod vh-sol-mod--onder vh-sol-mod--ems" href="systeem-ems">
-          <img src="assets/home/s2-ems-390.webp" srcset="assets/home/s2-ems-390.webp 390w, assets/home/s2-ems-780.webp 780w" sizes="20vw" width="1400" height="1051" alt="Vibe Energy-monteur aan een schakelkast" loading="lazy" decoding="async">
+          <img src="assets/home/s2-ems-390.webp" srcset="assets/home/s2-ems-390.webp 390w, assets/home/s2-ems-780.webp 780w" sizes="(max-width: 1199px) 92vw, 20vw" width="1400" height="1051" alt="Vibe Energy-monteur aan een schakelkast" loading="lazy" decoding="async">
           <span class="vh-sol-mod-inhoud">
             <svg class="vh-sol-mod-ic" viewBox="2.6 4.4 38.8 35" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
               <rect x="2.6" y="4.4" width="38.8" height="28.4" rx="3"/>
@@ -373,7 +400,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
         <a class="vh-sol-mod vh-sol-mod--onder vh-sol-mod--handel" href="energiehandel-flexmarkten">
           <!-- Geen handelsbeeld in de repository; wel de echte meetlaag waarop
                flexibiliteit wordt afgerekend. Geen beursbeeld, geen geldgrafiek. -->
-          <img src="assets/home/s2-handel-390.webp" srcset="assets/home/s2-handel-390.webp 390w, assets/home/s2-handel-780.webp 780w" sizes="20vw" width="2000" height="1333" alt="Slimme kWh-meters" loading="lazy" decoding="async">
+          <img src="assets/home/s2-handel-390.webp" srcset="assets/home/s2-handel-390.webp 390w, assets/home/s2-handel-780.webp 780w" sizes="(max-width: 1199px) 92vw, 20vw" width="2000" height="1333" alt="Slimme kWh-meters" loading="lazy" decoding="async">
           <span class="vh-sol-mod-inhoud">
             <svg class="vh-sol-mod-ic" viewBox="3.6 5.6 36.8 34.8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
               <rect x="3.6" y="24.2" width="10" height="16.2" rx="1.4"/>
@@ -402,7 +429,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
          hiernaast levert het donkere karakter van de goedgekeurde compositie. -->
     <img class="vh-pr-foto" src="assets/home/s3-project-1850.webp"
          srcset="assets/home/s3-project-960.webp 960w, assets/home/s3-project-1850.webp 1850w, assets/home/s3-project-2560.webp 2560w"
-         sizes="96vw" width="5120" height="2880"
+         sizes="(max-width: 1199px) 100vw, 96vw" width="5120" height="2880"
          alt="Hedin Automotive Alkmaar met volledig zonnedak" loading="lazy" decoding="async">
 
     <!-- 2. navy-verloop vanaf links -->
@@ -472,11 +499,11 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
       <p class="vh-proc-lead">Een helder proces, één geïntegreerde partner. <br>Van analyse tot langdurige exploitatie.</p>
     </div>
 
-    <!-- Echte Vibe-projectfotografie: Hedin Alkmaar, dronezicht schuin van boven,
-         volledig met zonnepanelen belegd dak. Semantisch en compositorisch de
-         dichtstbijzijnde match uit de repository voor het goedgekeurde beeld. -->
+    <!-- Echte Vibe-fotografie: wandladers langs een bedrijfsgevel met aangesloten
+         auto's - de exploitatiefase die deze sectie beschrijft, niet het ontwerp.
+         Bron assets/exploitatie-hero.jpg, geleverd als assets/home/s4-proces-*.webp. -->
     <div class="vh-proc-beeld">
-      <img src="assets/home/s4-proces-1040.webp" srcset="assets/home/s4-proces-560.webp 560w, assets/home/s4-proces-1040.webp 1040w, assets/home/s4-proces-2080.webp 2080w" sizes="54vw" width="2560" height="1921" alt="Laadinfrastructuur langs een bedrijfsgevel" loading="lazy" decoding="async">
+      <img src="assets/home/s4-proces-1040.webp" srcset="assets/home/s4-proces-560.webp 560w, assets/home/s4-proces-1040.webp 1040w, assets/home/s4-proces-2080.webp 2080w" sizes="(max-width: 1199px) 92vw, 54vw" width="2560" height="1921" alt="Laadinfrastructuur langs een bedrijfsgevel" loading="lazy" decoding="async">
     </div>
 
     <div class="vh-proc-kaart">
@@ -779,7 +806,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
          gegenereerd. Wel echt en semantisch juist: de eigen projectfoto van
          Hedin Automotive Alkmaar op ooghoogte, met de Vibe Energy-bus. -->
     <div class="vh-proof-foto">
-      <img src="assets/home/s6-verhaal-800.webp" srcset="assets/home/s6-verhaal-420.webp 420w, assets/home/s6-verhaal-800.webp 800w, assets/home/s6-verhaal-1600.webp 1600w" sizes="41.4vw" width="2048" height="1536" alt="Hedin Automotive Alkmaar &mdash; projectlocatie van Vibe Energy" loading="lazy" decoding="async">
+      <img src="assets/home/s6-verhaal-800.webp" srcset="assets/home/s6-verhaal-420.webp 420w, assets/home/s6-verhaal-800.webp 800w, assets/home/s6-verhaal-1600.webp 1600w" sizes="(max-width: 1199px) 92vw, 41.4vw" width="2048" height="1536" alt="Hedin Automotive Alkmaar &mdash; projectlocatie van Vibe Energy" loading="lazy" decoding="async">
     </div>
 
     <!-- CITAATKAART. Vorm, maat en positie volgen de goedgekeurde referentie;
@@ -795,7 +822,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
     <!-- UITGELICHT PROJECT. Alle waarden komen uit project-hedin-alkmaar.html:
          645 kWh batterijopslag, 300 kW vermogen. -->
     <a class="vh-proof-strip" href="project-hedin-alkmaar">
-      <span class="vh-proof-strip-fig"><img src="assets/home/s6-thumb-180.webp" srcset="assets/home/s6-thumb-180.webp 180w, assets/home/s6-thumb-360.webp 360w" sizes="5.5vw" width="2400" height="1350" alt="" loading="lazy" decoding="async"></span>
+      <span class="vh-proof-strip-fig"><img src="assets/home/s6-thumb-180.webp" srcset="assets/home/s6-thumb-180.webp 180w, assets/home/s6-thumb-360.webp 360w" sizes="(max-width: 1199px) 20vw, 5.5vw" width="2400" height="1350" alt="" loading="lazy" decoding="async"></span>
       <span class="vh-proof-strip-tx">
         <span class="vh-proof-strip-eyb">UITGELICHT PROJECT</span>
         <b>Hedin Alkmaar</b>
@@ -861,7 +888,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
        batterijkasten in een gebouwde omgeving. Geen stockbeeld, geen
        gegenereerde infrastructuur. -->
   <div class="vh-infra-foto">
-    <img src="assets/home/s7-opslag-1200.webp" srcset="assets/home/s7-opslag-640.webp 640w, assets/home/s7-opslag-1200.webp 1200w, assets/home/s7-opslag-2400.webp 2400w" sizes="62vw" width="2400" height="1802" alt="Batterijopslag van Vibe Energy op locatie" loading="lazy" decoding="async">
+    <img src="assets/home/s7-opslag-1200.webp" srcset="assets/home/s7-opslag-640.webp 640w, assets/home/s7-opslag-1200.webp 1200w, assets/home/s7-opslag-2400.webp 2400w" sizes="(max-width: 1199px) 92vw, 62vw" width="2400" height="1802" alt="Batterijopslag van Vibe Energy op locatie" loading="lazy" decoding="async">
   </div>
 
   <!-- OPLOSSINGKAARTEN. Labels, volgorde en routes volgen de al gepubliceerde
@@ -925,11 +952,13 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
   <span class="vh-final-wig" aria-hidden="true"></span>
 
   <!-- HOOFDBEELD. De referentie toont een gegenereerd pand met een Vibe-gevel.
-       Echt, premium en van een gerealiseerd Vibe-project: de gevel van Hedin
-       Automotive Alkmaar met het volledige zonnedak. Geen stock, geen
-       gegenereerd pand, geen verzonnen klant. -->
+       Echt en van een gerealiseerd Vibe-project: de zonnecarport en laadinfra
+       bij Hedin Automotive Amsterdam - dezelfde opname als
+       assets/projects/hedin-amsterdam.jpg - met de stadsskyline erachter.
+       Geen stock, geen gegenereerd pand, geen verzonnen klant.
+       Bron assets/laadplein-hero.jpg, geleverd als assets/home/s8-cta-*.webp. -->
   <div class="vh-final-foto">
-    <img src="assets/home/s8-cta-1020.webp" srcset="assets/home/s8-cta-540.webp 540w, assets/home/s8-cta-1020.webp 1020w, assets/home/s8-cta-2040.webp 2040w" sizes="52.7vw" width="2560" height="1922" alt="Zonnecarport en laadinfrastructuur van Vibe Energy" loading="lazy" decoding="async">
+    <img src="assets/home/s8-cta-1020.webp" srcset="assets/home/s8-cta-540.webp 540w, assets/home/s8-cta-1020.webp 1020w, assets/home/s8-cta-2040.webp 2040w" sizes="(max-width: 1199px) 92vw, 52.7vw" width="2560" height="1922" alt="Zonnecarport en laadinfrastructuur van Vibe Energy" loading="lazy" decoding="async">
   </div>
 
   <span class="vh-final-blauw" aria-hidden="true"></span>
@@ -986,11 +1015,11 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
 <footer class="vh-footer" data-screen-label="09 Footer">
 
   <!-- BEELDWIG. De referentie toont een gegenereerd pand met Vibe-gevel.
-       Gebruikt is het echte zonnecarport-project van Vibe (laadplein-hero):
-       commerciele energie-infrastructuur in stedelijke context, en bewust
-       een ander project dan de Hedin-beelden hierboven. -->
+       Gebruikt is echte Vibe-hardware: drie batterijkasten op locatie. Geen
+       gegenereerd pand, en geen klantnaam geclaimd die hier niet onderbouwd is.
+       Bron assets/microgrids-hero.jpg, geleverd als assets/home/s9-footer-*.webp. -->
   <div class="vh-footer-wig">
-    <img src="assets/home/s9-footer-720.webp" srcset="assets/home/s9-footer-720.webp 720w, assets/home/s9-footer-1440.webp 1440w" sizes="19.7vw" width="2000" height="1501" alt="Batterijopslag van Vibe Energy op locatie" loading="lazy" decoding="async">
+    <img src="assets/home/s9-footer-720.webp" srcset="assets/home/s9-footer-720.webp 720w, assets/home/s9-footer-1440.webp 1440w" sizes="(max-width: 1199px) 92vw, 19.7vw" width="2000" height="1501" alt="Batterijopslag van Vibe Energy op locatie" loading="lazy" decoding="async">
   </div>
   <!-- De notitie is in de referentie handgeschreven. Er is geen handschriftletter
        op deze site en er wordt er geen toegevoegd; de notitie staat in de eigen
@@ -1101,6 +1130,46 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
   </div>
 </footer>
 
+<script>
+/* Mobiel menu — toegankelijk, sluit op ESC, op linkklik en op de knop zelf.
+   Raakt de Calendly-afhandeling uit _footer.js niet aan. */
+(function(){
+  var knop=document.querySelector('.vh-menuknop'), menu=document.getElementById('vh-mobielmenu');
+  if(!knop||!menu) return;
+  var open=false, scrollY=0;
+  function zet(aan){
+    open=aan;
+    knop.setAttribute('aria-expanded', aan?'true':'false');
+    knop.setAttribute('aria-label', aan?'Menu sluiten':'Menu openen');
+    knop.classList.toggle('aan', aan);
+    if(aan){ scrollY=window.scrollY; menu.hidden=false; requestAnimationFrame(function(){ menu.classList.add('aan'); });
+             document.documentElement.classList.add('vh-menu-open');
+             document.body.style.top=(-scrollY)+'px';
+             var eerste=menu.querySelector('a'); if(eerste) eerste.focus({preventScroll:true}); }
+    else   { menu.classList.remove('aan');
+             document.documentElement.classList.remove('vh-menu-open');
+             document.body.style.top='';
+             window.scrollTo(0,scrollY);
+             setTimeout(function(){ if(!open) menu.hidden=true; },260);
+             knop.focus({preventScroll:true}); }
+  }
+  knop.addEventListener('click',function(){ zet(!open); });
+  /* capture-fase: _footer.js stopt de propagatie voor Calendly-links,
+     dus het menu sluit anders niet bij een klik op de CTA. */
+  menu.addEventListener('click',function(e){ if(e.target.closest('a')) zet(false); }, true);
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&open) zet(false); });
+  /* eenvoudige focus-trap zolang het menu open is */
+  menu.addEventListener('keydown',function(e){
+    if(e.key!=='Tab') return;
+    var f=menu.querySelectorAll('a,button'); if(!f.length) return;
+    var eerste=f[0], laatste=f[f.length-1];
+    if(e.shiftKey && document.activeElement===eerste){ e.preventDefault(); laatste.focus(); }
+    else if(!e.shiftKey && document.activeElement===laatste){ e.preventDefault(); knop.focus(); }
+  });
+  /* bij terugschalen naar desktop altijd sluiten */
+  window.matchMedia('(min-width:1200px)').addEventListener('change',function(m){ if(m.matches&&open) zet(false); });
+})();
+</script>
 <script src="_footer.js"></script>
 
 <!-- ===================== SCRIPTS ===================== -->

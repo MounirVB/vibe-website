@@ -82,30 +82,6 @@
   pointer-events: none;
 }
 
-/* Placeholder zolang de goedgekeurde heroFOTO niet in de repo staat.
-   Verwijder .vh-foto-placeholder en zet het beeld als <img>/background
-   zodra assets/hero-gebouw.jpg is toegevoegd. */
-.vh-foto-placeholder{
-  width: 100%;
-  height: 100%;
-  background:
-    repeating-linear-gradient(45deg,
-      #223042 0 16px, #1A2635 16px 32px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: #93A7BF;
-  font-size: .72cqw;
-  font-weight: 600;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  line-height: 2.2;
-  padding-left: 28.6cqw;          /* centreert het label in het zichtbare fotovlak */
-}
-.vh-foto-placeholder span{ max-width: 34cqw; display:block }
-.vh-foto-placeholder b{ color:#E4ECF5; display:block; font-size:1.02cqw; letter-spacing:.16em }
-
 /* ---------- 2. LICHTE DIAGONALE BAND over de foto ----------
    Strook van 105px breed, direct rechts van de hoofddiagonaal. */
 .vh-band{
@@ -407,29 +383,108 @@
    Hieronder staat géén mobiel ontwerp, alleen een neutrale
    terugvaloptie zodat kleine schermen niet stukgaan.
    ============================================================ */
-@media (max-width: 900px){
-  .vh-stage{ aspect-ratio: auto; min-height: 0; padding-bottom: 40px }
-  .vh-foto, .vh-band, .vh-geo, .vh-wig{ display: none }
-  .vh-header{ position: static; height: auto; padding: 18px 20px 0; flex-wrap: wrap }
-  .vh-nav{ order: 3; width: 100%; margin: 16px 0 0; gap: 12px 20px; flex-wrap: wrap }
-  .vh-nav a{ font-size: 15px }
-  .vh-copy{ position: static; padding: 24px 20px 0 }
-  .vh-navy-copy{ display: none }
-  .vh-logo-badge{ width:44px; height:44px }
-  .vh-logo-vibe{ font-size:19px; line-height:18px }
-  .vh-logo-energy{ font-size:16.5px; line-height:18px }
-  .vh-eyebrow{ font-size:13px; line-height:19px }
-  .vh-h1{ font-size:40px; line-height:42px }
-  .vh-h1 br{ display:none }
-  .vh-lead{ font-size:17px; line-height:26px; max-width:46ch }
-  .vh-cta{ flex-wrap:wrap }
-  .vh-cta .vh-btn-primair,.vh-cta .vh-btn-secundair,.vh-header .vh-btn{ width:auto; height:52px; padding:0 22px; font-size:15px; border-radius:10px }
-  .vh-btn svg{ width:18px; height:18px }
-  .vh-kpi{ height:auto; padding:22px 0 }
-  .vh-kpi-grid{ width:auto; grid-template-columns:repeat(2,1fr); gap:20px; padding:0 20px }
-  .vh-kpi-item{ justify-content:flex-start; gap:14px }
-  .vh-kpi-item + .vh-kpi-item::before{ display:none }
-  .vh-kpi-icoon{ width:34px; height:34px }
-  .vh-kpi-getal{ font-size:24px; line-height:1.1 }
-  .vh-kpi-label{ font-size:14px; margin-top:6px }
+/* ============================================================
+   MOBIEL / TABLET — sectie 1 opnieuw gecomponeerd (fase 14)
+   Volgorde: header · eyebrow · H1 · lead · CTA's · beeld met
+   Vibe-diagonaal · KPI-bewijs. Geen verkleinde desktopcompositie.
+   ============================================================ */
+@media (max-width: 1199px){
+  .vh{ height: auto }
+  .vh-stage{
+    aspect-ratio: auto;
+    min-height: 0;
+    padding: calc(64px + 34px) 0 0;
+    background: linear-gradient(178deg, #F4F9FE 0%, #FFFFFF 46%);
+    overflow: visible;
+    display: flex;
+    flex-direction: column;      /* mobiele leesvolgorde i.p.v. de desktoplagen */
+  }
+  .vh-copy{ order: 1 }
+  .vh-foto{ order: 2 }
+  .vh-band, .vh-geo, .vh-wig, .vh-navy-copy{ display: none }
+
+  .vh-copy{ position: static; padding: 0 var(--m-gutter) }
+  .vh-eyebrow{ font-size: var(--m-eyebrow); line-height: 1.45; letter-spacing: .14em }
+  .vh-eyebrow br{ display: none }
+  .vh-h1{
+    margin-top: 14px;
+    font-size: var(--m-h1);
+    line-height: 1.04;
+    letter-spacing: -.02em;
+  }
+  .vh-h1 br{ display: none }
+  .vh-lead{
+    margin-top: 16px;
+    font-size: var(--m-lead);
+    line-height: 1.55;
+    max-width: 34ch;
+  }
+  .vh-lead br{ display: none }
+  .vh-cta{ display: flex; flex-direction: column; gap: 10px; margin-top: 26px }
+  .vh-cta .vh-btn-primair,
+  .vh-cta .vh-btn-secundair{
+    width: 100%;
+    height: var(--m-btn-h);
+    padding: 0 20px;
+    font-size: 16px;
+    border-radius: 10px;
+    justify-content: space-between;
+  }
+  .vh-btn svg{ width: 19px; height: 19px }
+
+  /* beeld: eigen mobiele compositie met een vereenvoudigde diagonaal */
+  .vh-foto{
+    position: relative;
+    inset: auto;
+    margin: 30px var(--m-gutter) 0;
+    height: 232px;
+    border-radius: var(--m-radius-img);
+    overflow: hidden;
+    clip-path: none;
+    z-index: 1;
+  }
+  .vh-foto img{ object-position: 56% 54% }
+  .vh-foto::after{
+    background: linear-gradient(196deg, rgba(4,20,44,.06) 0%, rgba(4,20,44,.34) 100%);
+  }
+  /* de Vibe-diagonaal keert terug als accentwig onder het beeld */
+  .vh-foto::before{
+    content: '';
+    position: absolute;
+    right: 0; bottom: 0;
+    width: 46%; height: 62%;
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    background: linear-gradient(200deg, rgba(0,115,254,.90) 0%, rgba(0,60,150,.92) 100%);
+    z-index: 2;
+  }
+
+  .vh-kpi{
+    position: static;
+    height: auto;
+    margin-top: 30px;
+    padding: 24px 0 var(--m-sec-y);
+    background: #F4F9FE;
+    border-top: 1px solid rgba(12,27,51,.07);
+  }
+  .vh-kpi-grid{
+    width: auto;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px 16px;
+    padding: 0 var(--m-gutter);
+  }
+  .vh-kpi-item{ justify-content: flex-start; gap: 12px }
+  .vh-kpi-item + .vh-kpi-item::before{ display: none }
+  .vh-kpi-icoon{ width: 30px; height: 30px; flex: none }
+  .vh-kpi-getal{ font-size: 23px; line-height: 1.05 }
+  .vh-kpi-label{ font-size: 13px; line-height: 1.3; margin-top: 5px }
+}
+
+@media (min-width: 768px) and (max-width: 1199px){
+  .vh-stage{ padding-top: calc(76px + 48px) }
+  .vh-copy{ max-width: 620px }
+  .vh-cta{ flex-direction: row }
+  .vh-cta .vh-btn-primair, .vh-cta .vh-btn-secundair{ width: auto; min-width: 232px }
+  .vh-foto{ height: 360px }
+  .vh-kpi-grid{ grid-template-columns: repeat(4, 1fr); gap: 24px }
+  .vh-kpi-getal{ font-size: 26px }
 }

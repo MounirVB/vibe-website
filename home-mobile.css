@@ -1,0 +1,221 @@
+/* ============================================================
+   Vibe Energy — Homepage RESPONSIVE SYSTEEM (fase 14)
+   Laadt ALS LAATSTE. Bevat:
+     1) het globale mobiele systeem (maten, ritme, typografie)
+     2) de mobiele header en het mobiele menu
+   De sectiespecifieke mobiele opbouw staat in het eigen
+   stylesheet van elke sectie.
+
+   BREEKPUNTEN
+     <= 767px    mobiel masterontwerp (390 / 430 primair)
+     768-1199px  tablet
+     >= 1200px   desktopmaster (cqw-layout, ongewijzigd)
+   ============================================================ */
+
+:root{
+  --m-gutter: clamp(20px, 5.4vw, 24px);
+  --m-sec-y: 56px;                    /* verticale sectieruimte mobiel */
+  --m-h1: clamp(34px, 9.1vw, 44px);
+  --m-h2: clamp(27px, 7.3vw, 34px);
+  --m-h3: 19px;
+  --m-lead: 16.5px;
+  --m-body: 15.5px;
+  --m-eyebrow: 11.5px;
+  --m-btn-h: 52px;
+  --m-radius: 14px;
+  --m-radius-img: 12px;
+  --m-blauw: #0073FE;
+  --m-navy: #08203C;
+  --m-body-kleur: #4C5771;
+}
+@media (min-width: 768px) and (max-width: 1199px){
+  :root{
+    --m-gutter: clamp(32px, 5vw, 48px);
+    --m-sec-y: 76px;
+    --m-h1: clamp(46px, 6.4vw, 58px);
+    --m-h2: clamp(34px, 4.6vw, 42px);
+    --m-h3: 21px;
+    --m-lead: 18px;
+    --m-body: 16.5px;
+    --m-btn-h: 56px;
+  }
+}
+
+/* ------------------------------------------------------------
+   MOBIELE HEADER
+   ------------------------------------------------------------ */
+.vh-menuknop{ display: none }
+
+@media (max-width: 1199px){
+  html.vh-menu-open, html.vh-menu-open body{ overflow: hidden }
+  html.vh-menu-open body{ position: fixed; left: 0; right: 0; width: 100% }
+
+  .vh-header{
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 var(--m-gutter);
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(12,27,51,.08);
+    z-index: 40;
+  }
+  .vh-nav{ display: none }
+  .vh-acties{ display: none }
+
+  /* met het menu open wordt de balk onderdeel van het donkere vlak */
+  html.vh-menu-open .vh-header{
+    background: transparent;
+    border-bottom-color: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    z-index: 41;
+  }
+  html.vh-menu-open .vh-logo-vibe,
+  html.vh-menu-open .vh-logo-energy{ color: #fff }
+  html.vh-menu-open .vh-logo-badge rect,
+  html.vh-menu-open .vh-logo-badge path{ stroke: #4DA3FF }
+
+  .vh-logo{ gap: 9px; min-height: 44px; align-items: center }
+  .vh-logo-badge{ width: 34px; height: 34px }
+  .vh-logo-vibe{ font-size: 16px; line-height: 15px }
+  .vh-logo-energy{ font-size: 13.5px; line-height: 15px; letter-spacing: .09em }
+
+  .vh-menuknop{
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 5px;
+    width: 52px; height: 44px;
+    margin-right: -6px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--m-navy);
+    cursor: pointer;
+  }
+  .vh-menuknop-lijn{
+    display: block;
+    width: 24px; height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform .26s ease, opacity .2s ease, width .26s ease;
+  }
+  .vh-menuknop-lijn:last-of-type{ width: 16px }
+  .vh-menuknop-lbl{
+    font-size: 9.5px; font-weight: 700; letter-spacing: .16em;
+    text-transform: uppercase; color: #6B7891; margin-top: 1px;
+  }
+  .vh-menuknop.aan{ color: #fff }
+  .vh-menuknop.aan .vh-menuknop-lijn{ width: 24px }
+  .vh-menuknop.aan .vh-menuknop-lijn:first-of-type{ transform: translateY(3.5px) rotate(45deg) }
+  .vh-menuknop.aan .vh-menuknop-lijn:last-of-type{ transform: translateY(-3.5px) rotate(-45deg) }
+  .vh-menuknop.aan .vh-menuknop-lbl{ color: rgba(255,255,255,.62) }
+  .vh-menuknop:focus-visible{ outline: 2px solid var(--m-blauw); outline-offset: 3px; border-radius: 6px }
+
+  /* ---------- menu-overlay ---------- */
+  .vh-mobielmenu{
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 26px;
+    padding: 96px var(--m-gutter) calc(34px + env(safe-area-inset-bottom));
+    background:
+      radial-gradient(120% 80% at 88% 6%, rgba(0,115,254,.34) 0%, rgba(0,115,254,0) 58%),
+      linear-gradient(205deg, #0A2340 0%, #071A31 34%, #061426 68%, #040E1C 100%);
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity .24s ease, transform .24s ease;
+    overflow-y: auto;
+  }
+  .vh-mobielmenu.aan{ opacity: 1; transform: none }
+  .vh-mobielmenu nav{ display: flex; flex-direction: column }
+  .vh-mobielmenu nav a{
+    display: block;
+    padding: 13px 0;
+    font-size: clamp(25px, 6.8vw, 32px);
+    font-weight: 700;
+    letter-spacing: -.015em;
+    line-height: 1.12;
+    color: #fff;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,255,255,.10);
+  }
+  .vh-mobielmenu nav a:first-child{ border-top: 1px solid rgba(255,255,255,.10) }
+  .vh-mobielmenu nav a:focus-visible{ outline: 2px solid #4DA3FF; outline-offset: 4px }
+  .vh-mobielmenu-cta{
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--m-btn-h);
+    padding: 0 20px;
+    border-radius: 10px;
+    background: var(--m-blauw);
+    color: #fff;
+    font-size: 16px; font-weight: 600;
+    text-decoration: none;
+  }
+  .vh-mobielmenu-cta svg{ width: 19px; height: 19px; flex: none }
+  .vh-mobielmenu-contact{ display: flex; flex-direction: column; gap: 8px }
+  .vh-mobielmenu-contact a{
+    font-size: 15px; color: rgba(255,255,255,.70); text-decoration: none;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px){
+  .vh-header{ height: 76px }
+  .vh-logo-badge{ width: 40px; height: 40px }
+  .vh-logo-vibe{ font-size: 19px; line-height: 18px }
+  .vh-logo-energy{ font-size: 16px; line-height: 18px }
+  .vh-mobielmenu{ padding-top: 116px }
+  .vh-mobielmenu nav a{ font-size: 34px }
+  .vh-mobielmenu-cta{ align-self: flex-start; min-width: 280px }
+}
+
+/* ------------------------------------------------------------
+   CQW-VANGNET
+   De secties rekenen in cqw. Onder 1200px zijn die eenheden
+   betekenisloos klein; hieronder staan de laatste eigenschappen
+   die de sectieblokken niet zelf al overschrijven.
+   ------------------------------------------------------------ */
+@media (max-width: 1199px){
+  .vh-logo-vibe{ line-height: 1.05 }
+  .vh-logo-energy{ line-height: 1.12 }
+  .vh-sol-mod--zon p{ line-height: 1.4 }
+  .vh-sol-stats b{ line-height: 1.2 }
+  .vh-footer-nav ul a{ line-height: 1.35 }
+  .vh-infra-note, .vh-final-note{ display: none }
+  .vh-footer-note{ line-height: 1.32 }
+}
+
+/* ------------------------------------------------------------
+   GEDEELDE MOBIELE BOUWSTENEN — gebruikt door de secties
+   ------------------------------------------------------------ */
+@media (max-width: 1199px){
+  .vh-m-eyebrow{
+    margin: 0;
+    font-size: var(--m-eyebrow);
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--m-blauw);
+  }
+  /* hover-effecten uitzetten op aanraakschermen */
+  @media (hover: none){
+    .vh-sol-mod:hover, .vh-infra-kaart:hover, .vh-proof-strip:hover{ transform: none }
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .vh-mobielmenu{ transition: none }
+  .vh-menuknop-lijn{ transition: none }
+}

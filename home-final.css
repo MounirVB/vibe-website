@@ -325,49 +325,97 @@
    TIJDELIJKE MOBIELE VANGRAIL — geen mobiel ontwerp, alleen
    voorkomen dat kleine schermen overlopen.
    ============================================================ */
-@media (max-width: 900px){
-  .vh-final{ height: auto; padding: 34px 0 38px }
+/* ============================================================
+   MOBIEL / TABLET — sectie 8 (fase 14)
+   Conversieclimax: grote slotkop -> korte tekst -> Plan een
+   gesprek -> projecten -> bewijs -> beeld met de afspraakkaart
+   die er half overheen valt. Blauwe Vibe-wig blijft het slotaccent.
+   ============================================================ */
+@media (max-width: 1199px){
+  .vh-final{ height: auto; padding: var(--m-sec-y) 0 calc(var(--m-sec-y) + 6px); display: flex; flex-direction: column }
   .vh-final-wig, .vh-final-note{ display: none }
-  .vh-final-copy{ position: static; width: auto; padding: 0 20px }
-  .vh-final-eyebrow{ font-size: 12px; letter-spacing: .12em }
-  .vh-final-kop{ font-size: 32px; line-height: 36px; margin-top: 12px }
+  .vh-final-copy{ position: static; width: auto; padding: 0 var(--m-gutter); order: 1 }
+  .vh-final-vdl{ order: 2 }
+  .vh-final-foto{ order: 3 }
+  .vh-final-kaart{ order: 4 }
+  .vh-final-blauw{ order: 5 }
+
+  .vh-final-eyebrow{ font-size: var(--m-eyebrow); letter-spacing: .14em }
+  .vh-final-kop{
+    margin-top: 14px;
+    font-size: clamp(32px, 8.6vw, 41px);      /* slotkop, net onder de hero */
+    line-height: 1.05;
+    letter-spacing: -.02em;
+  }
   .vh-final-kop br{ display: none }
-  .vh-final-lead{ font-size: 16px; line-height: 24px; margin-top: 14px }
+  .vh-final-lead{ font-size: var(--m-lead); line-height: 1.55; margin-top: 15px; max-width: 34ch }
   .vh-final-lead br{ display: none }
-  .vh-final-acties{ margin-top: 20px; gap: 12px; flex-wrap: wrap }
+  .vh-final-acties{ margin-top: 24px; gap: 10px; flex-direction: column; align-items: stretch }
   .vh-final-cta, .vh-final-cta2{
-    width: auto; height: 50px; padding: 0 18px; gap: 14px;
-    font-size: 15px; border-radius: 10px; justify-content: center;
+    width: 100%; height: var(--m-btn-h); padding: 0 20px;
+    font-size: 16px; border-radius: 10px; justify-content: space-between;
   }
-  .vh-final-cta svg, .vh-final-cta2 svg{ width: 18px; height: 18px }
+  .vh-final-cta svg, .vh-final-cta2 svg{ width: 19px; height: 19px }
+
   .vh-final-vdl{
-    position: static; margin-top: 24px; padding: 0 20px;
-    grid-template-columns: 1fr; gap: 16px;
+    position: static; width: auto;
+    margin: 26px var(--m-gutter) 0;
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
-  .vh-final-vd-ic{ width: 44px; height: 44px; border-radius: 10px }
-  .vh-final-vd-ic svg{ width: 22px; height: 22px }
-  .vh-final-vd-tx{ padding-top: 2px }
-  .vh-final-vd-tx b{ font-size: 16px; line-height: 21px }
-  .vh-final-vd-tx b + span{ font-size: 15px; line-height: 20px; margin-top: 5px }
+  .vh-final-vd{ gap: 13px }
+  .vh-final-vd-ic{ width: 40px; height: 40px; border-radius: 10px }
+  .vh-final-vd-ic svg{ width: 20px; height: 20px }
+  .vh-final-vd-tx{ padding-top: 1px }
+  .vh-final-vd-tx b{ font-size: 15.5px; line-height: 20px }
+  .vh-final-vd-tx b + span{ font-size: 14px; line-height: 19px; margin-top: 3px }
+
   .vh-final-foto{
-    position: relative; clip-path: none; height: 220px;
-    margin: 24px 20px 0; border-radius: 12px; overflow: hidden;
+    position: relative; left: auto; top: auto; right: auto; bottom: auto;
+    width: auto; height: 236px;
+    margin: 28px var(--m-gutter) 0;
+    clip-path: none; border-radius: var(--m-radius-img); overflow: hidden;
   }
   .vh-final-foto img{
     position: static; width: 100%; height: 100%;
-    object-fit: cover; object-position: 52% 56%;
+    object-fit: cover; object-position: 52% 52%;
   }
+  .vh-final-foto::after{
+    background: linear-gradient(196deg, rgba(8,32,60,.46) 0%, rgba(8,32,60,.24) 52%, rgba(8,32,60,.52) 100%);
+  }
+  /* blauwe slotwig hoort bij het beeld zelf, niet als los vlak */
   .vh-final-blauw{ display: none }
+  .vh-final-foto::before{
+    content: '';
+    position: absolute;
+    right: 0; bottom: 0;
+    width: 44%; height: 58%;
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    background: linear-gradient(200deg, rgba(0,115,254,.92) 0%, rgba(0,60,150,.94) 100%);
+    z-index: 2;
+  }
   .vh-final-kaart{
     position: static; width: auto; height: auto;
-    margin: 16px 20px 0; padding: 20px; border-radius: 12px;
+    margin: -34px var(--m-gutter) 0;
+    margin-left: calc(var(--m-gutter) + 14px);
+    padding: 20px; border-radius: var(--m-radius);
+    z-index: 3;
   }
-  .vh-final-kaart-ic{ width: 46px; height: 46px }
-  .vh-final-kaart-ic svg{ width: 22px; height: 22px }
-  .vh-final-kaart b{ font-size: 19px; line-height: 24px; margin-top: 14px }
+  .vh-final-kaart-ic{ width: 44px; height: 44px }
+  .vh-final-kaart-ic svg{ width: 21px; height: 21px }
+  .vh-final-kaart b{ font-size: 18.5px; line-height: 24px; margin-top: 14px }
   .vh-final-kaart b br{ display: none }
-  .vh-final-kaart p{ font-size: 15px; line-height: 21px; margin-top: 10px }
+  .vh-final-kaart p{ font-size: var(--m-body); line-height: 21px; margin-top: 10px }
   .vh-final-kaart p br{ display: none }
-  .vh-final-kaart-link{ font-size: 15px; margin-top: 16px }
-  .vh-final-kaart-link svg{ width: 16px; height: 16px }
+  .vh-final-kaart-link{ font-size: 15.5px; margin-top: 16px; min-height: 44px; align-items: center }
+  .vh-final-kaart-link svg{ width: 17px; height: 17px }
+}
+
+@media (min-width: 768px) and (max-width: 1199px){
+  .vh-final-kop{ font-size: clamp(42px, 5.6vw, 52px) }
+  .vh-final-acties{ flex-direction: row; align-items: center }
+  .vh-final-cta, .vh-final-cta2{ width: auto; min-width: 250px }
+  .vh-final-vdl{ grid-template-columns: repeat(3, 1fr); gap: 20px }
+  .vh-final-foto{ height: 340px }
+  .vh-final-kaart{ max-width: 430px }
 }

@@ -135,19 +135,6 @@
   color: #44546F;
   text-align: center;
 }
-/* lege slot: logo bestaat niet in deze repository */
-.vh-proof-wacht{
-  width: 100%;
-  height: 2.2548cqw;                    /* 40 ref-px */
-  border: 1px dashed #C7D6E8;
-  border-radius: .2255cqw;
-  display: grid;
-  place-items: center;
-  font-size: .5637cqw;                  /* 10 px */
-  font-weight: 600;
-  letter-spacing: .14em;
-  color: #9AAAC2;
-}
 
 /* ------------------------------------------------------------
    DEEL B — verhaalkolom links
@@ -387,57 +374,83 @@
    TIJDELIJKE MOBIELE VANGRAIL — geen mobiel ontwerp, alleen
    voorkomen dat kleine schermen overlopen.
    ============================================================ */
-@media (max-width: 900px){
-  .vh-proof{ height: auto }
-  .vh-proof-a{ position: static; height: auto; padding: 34px 20px 30px }
-  .vh-proof-b{ position: static; padding: 30px 20px 36px }
-  .vh-proof-wig{ display: none }
+/* ============================================================
+   MOBIEL / TABLET — sectie 6 (fase 14)
+   Klantnamen -> kop -> projectbeeld -> resultaatkaart -> strook.
+   Geen carrousel (er is één onderbouwd verhaal), geen lege slots.
+   ============================================================ */
+@media (max-width: 1199px){
+  .vh-proof{ height: auto; display: flex; flex-direction: column }
+  .vh-proof-a{ position: static; height: auto; padding: var(--m-sec-y) var(--m-gutter) 0 }
+  .vh-proof-b{ position: static; padding: 30px var(--m-gutter) var(--m-sec-y) }
+  .vh-proof-wig, .vh-proof-nav{ display: none }
+
   .vh-proof-head{ position: static }
-  .vh-proof-eyebrow{ font-size: 12px; letter-spacing: .12em }
-  .vh-proof-kop{ font-size: 30px; line-height: 34px; margin-top: 12px }
+  .vh-proof-eyebrow{ font-size: var(--m-eyebrow); letter-spacing: .14em }
+  .vh-proof-kop{ font-size: var(--m-h2); line-height: 1.08; margin-top: 14px; letter-spacing: -.018em }
   .vh-proof-kop br{ display: none }
-  .vh-proof-alle{ position: static; margin-top: 16px; font-size: 15px; gap: 10px }
-  .vh-proof-alle svg{ width: 16px; height: 16px }
-  .vh-proof-logos{
-    position: static; height: auto; margin-top: 26px;
-    flex-wrap: wrap; gap: 16px 22px; justify-content: flex-start;
+  .vh-proof-alle{
+    position: static; margin-top: 18px; font-size: 15.5px; gap: 10px;
+    min-height: 44px; align-items: center;
   }
-  .vh-proof-logo{ height: auto; width: calc(50% - 11px); justify-content: flex-start }
-  .vh-proof-naam{ font-size: 15px; text-align: left; white-space: normal }
-  .vh-proof-wacht{ height: 34px; font-size: 9px }
+  .vh-proof-alle svg{ width: 17px; height: 17px }
+  /* twee geverifieerde klantnamen als compacte rij, geen lege logostrook */
+  .vh-proof-logos{
+    position: static; height: auto; margin-top: 22px;
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start;
+  }
+  .vh-proof-logo{
+    width: auto !important; height: auto;
+    padding: 9px 14px;
+    border: 1px solid #DCE7F2; border-radius: 999px; background: #fff;
+  }
+  .vh-proof-naam{ font-size: 14px; text-align: left; white-space: nowrap }
+
   .vh-proof-story{ position: static; width: auto }
-  .vh-proof-eyb2{ font-size: 13px }
-  .vh-proof-kop2{ font-size: 30px; line-height: 34px; margin-top: 12px }
+  .vh-proof-eyb2{ font-size: var(--m-eyebrow); letter-spacing: .14em }
+  .vh-proof-kop2{ font-size: 25px; line-height: 1.14; margin-top: 12px }
   .vh-proof-kop2 br{ display: none }
-  .vh-proof-lead{ font-size: 16px; line-height: 24px; margin-top: 14px }
+  .vh-proof-lead{ font-size: var(--m-body); line-height: 23px; margin-top: 14px; max-width: 38ch }
   .vh-proof-lead br{ display: none }
-  .vh-proof-cta{ width: auto; height: 50px; padding: 0 18px; gap: 14px; font-size: 15px; margin-top: 20px; border-radius: 10px; justify-content: center }
-  .vh-proof-cta svg{ width: 18px; height: 18px }
+  .vh-proof-cta{
+    width: 100%; height: var(--m-btn-h); margin: 22px 0 0; padding: 0 20px;
+    font-size: 16px; border-radius: 10px; justify-content: space-between;
+  }
+  .vh-proof-cta svg{ width: 19px; height: 19px }
+
   .vh-proof-foto{
     position: static; width: auto; height: 220px; margin-top: 26px;
-    clip-path: none; border-radius: 10px;
+    clip-path: none; border-radius: var(--m-radius-img); overflow: hidden;
   }
   .vh-proof-kaart{
-    position: static; width: auto; height: auto; margin-top: 22px;
-    padding: 22px 20px; border-radius: 12px;
+    position: static; width: auto; height: auto;
+    margin-top: -28px; margin-left: 16px;
+    padding: 20px; border-radius: var(--m-radius);
   }
-  .vh-proof-quote{ width: 30px; height: 22px }
-  .vh-proof-citaat{ font-size: 15px; line-height: 22px; margin-top: 14px }
+  .vh-proof-quote{ display: none }
+  .vh-proof-badge{ font-size: 10.5px; letter-spacing: .16em }
+  .vh-proof-citaat{ font-size: var(--m-body); line-height: 23px; margin-top: 12px }
   .vh-proof-citaat br{ display: none }
-  .vh-proof-bron{ margin-top: 20px; display: block }
-  .vh-proof-bron b{ font-size: 16px }
-  .vh-proof-bron b + span{ font-size: 14px; line-height: 19px; margin-top: 6px }
+  .vh-proof-bron{ margin-top: 18px; display: block }
+  .vh-proof-bron b{ font-size: 15.5px }
+  .vh-proof-bron b + span{ font-size: 13.5px; line-height: 19px; margin-top: 5px }
+  .vh-proof-bron span br{ display: none }
+
   .vh-proof-strip{
-    position: static; width: auto; height: auto; margin-top: 22px;
-    padding: 14px; gap: 14px; border-radius: 12px; flex-wrap: wrap;
+    position: static; width: auto; height: auto; margin-top: 18px;
+    padding: 14px; gap: 14px; border-radius: var(--m-radius); flex-wrap: wrap;
   }
-  .vh-proof-strip-fig{ width: 78px; height: 72px; border-radius: 8px }
+  .vh-proof-strip-fig{ width: 74px; height: 68px; border-radius: 10px }
   .vh-proof-strip-eyb{ font-size: 10px }
-  .vh-proof-strip-tx b{ font-size: 19px; margin-top: 8px }
-  .vh-proof-strip-tx span.spec{ font-size: 14px; margin-top: 8px }
-  .vh-proof-strip-cta{ font-size: 14px; gap: 10px; width: 100%; justify-content: flex-end }
+  .vh-proof-strip-tx b{ font-size: 18px; margin-top: 8px }
+  .vh-proof-strip-tx span.spec{ font-size: 13.5px; margin-top: 8px }
+  .vh-proof-strip-cta{ font-size: 14.5px; gap: 10px; width: 100%; justify-content: flex-end; min-height: 32px }
   .vh-proof-strip-cta svg{ width: 16px; height: 16px }
-  .vh-proof-nav{ position: static; margin-top: 18px; justify-content: flex-end; gap: 12px }
-  .vh-proof-nav button{ width: 44px; height: 44px }
-  .vh-proof-nav svg{ width: 18px; height: 18px }
+}
+
+@media (min-width: 768px) and (max-width: 1199px){
+  .vh-proof-foto{ height: 320px }
+  .vh-proof-kaart{ max-width: 460px; margin-left: 24px }
+  .vh-proof-cta{ width: auto; min-width: 280px }
+  .vh-proof-lead{ max-width: 52ch }
 }
