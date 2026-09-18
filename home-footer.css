@@ -1,0 +1,326 @@
+/* ============================================================
+   Vibe Energy — Homepage SECTIE 9: FOOTER
+   Reconstructie van de goedgekeurde desktopreferentie.
+
+   SCHAAL — de referentie is 2103 x 748 px, hetzelfde canvas als
+   sectie 8: 1 referentie-px = 1774/2103 = 0,84356 site-px
+   -> 1 referentie-px = 0,047551cqw. Footerhoogte 748 ref = 631 site.
+
+   Eigen namespace .vh-footer-* — uitsluitend voor de homepage.
+   De gedeelde footer uit _footer.js (35 pagina's) blijft ongewijzigd;
+   op de homepage wordt hij verborgen, zodat geen andere pagina verandert.
+   ============================================================ */
+
+.vh-footer{
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  height: 35.5681cqw;                   /* 748 ref-px */
+  overflow: hidden;
+  background: linear-gradient(115deg,
+    #EDF6FD 0%, #F7FBFE 26%, #FDFEFF 46%, #F6FAFE 74%, #EFF7FD 100%);
+  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #1B2740;
+
+  --ft-blauw: #0073FE;
+  --ft-navy:  #0C1B33;
+  --ft-body:  #4C5771;
+  --ft-lijn:  #DCE7F2;
+}
+.vh-footer a{ color: inherit; text-decoration: none }
+/* De gedeelde footer uit _footer.js wordt na deze footer in de body gezet.
+   Deze zusterselector bestaat alleen waar .vh-footer staat: uitsluitend de
+   homepage. Geen enkele andere pagina verandert hierdoor. */
+.vh-footer ~ footer.ftr.v1a{ display: none !important }
+
+/* ------------------------------------------------------------
+   BEELDWIG rechts — chevron met de punt naar links
+   Bovenrand (1846,0) helling -0,5486 tot de punt (1688,296),
+   onderrand helling +0,6493 tot (1889,623).
+   ------------------------------------------------------------ */
+.vh-footer-wig{
+  position: absolute;
+  left: 80.2663cqw;                     /* ref 1688 */
+  top: 0;
+  width: 19.7337cqw;                    /* ref 415 */
+  height: 29.6244cqw;                   /* ref 623 */
+  clip-path: polygon(
+    38.07% 0,      /* 1846,0   */
+    100% 0,
+    100% 100%,
+    48.43% 100%,   /* 1889,623 */
+    0 47.51%       /* 1688,296 */
+  );
+  overflow: hidden;
+  background: #DCE8F4;
+  z-index: 1;
+}
+.vh-footer-wig img{
+  /* uitsnede op het zonnecarport en de skyline aan de rechterkant */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 76% 44%;
+  display: block;
+}
+/* leesbaarheidsscrim voor de notitie; de referentie heeft daar een donkere
+   schemerlucht, deze echte opname is op dat punt licht */
+.vh-footer-wig::after{
+  content: '';
+  position: absolute;
+  inset: 0 0 42% 0;
+  background: linear-gradient(180deg, rgba(10,38,74,.46) 0%, rgba(10,38,74,.16) 58%, rgba(10,38,74,0) 100%);
+  pointer-events: none;
+}
+/* handgeschreven notitie uit de referentie — zie index.html */
+.vh-footer-note{
+  position: absolute;
+  left: 87.1cqw;
+  top: 4.7cqw;
+  width: 8.4cqw;
+  font-size: 1.0147cqw;
+  line-height: 1.2402cqw;
+  font-weight: 500;
+  color: rgba(255,255,255,.95);
+  text-shadow: 0 .05cqw .24cqw rgba(2,40,88,.34);
+  z-index: 2;
+  pointer-events: none;
+}
+.vh-footer-note svg{
+  display: block;
+  width: 2.3cqw;
+  height: 1.5cqw;
+  margin: .40cqw 0 0 .6cqw;
+  color: rgba(255,255,255,.92);
+}
+
+/* ------------------------------------------------------------
+   MERKKOLOM
+   ------------------------------------------------------------ */
+.vh-footer-merk{
+  position: absolute;
+  left: 4.7551cqw;                      /* ref 100 */
+  top: 5.9439cqw;                       /* ref 125 */
+  width: 21.0cqw;
+  z-index: 3;
+}
+.vh-footer-logo{ display: flex; align-items: center; gap: .6657cqw }
+.vh-footer-logo-badge{ width: 3.5188cqw; height: 3.5188cqw; display: block; flex: none }
+.vh-footer-logo-tekst{ display: flex; flex-direction: column; line-height: 1 }
+.vh-footer-logo-vibe{
+  font-size: 1.8069cqw;
+  line-height: 1.7113cqw;
+  font-weight: 700;
+  letter-spacing: .012em;
+  color: var(--ft-navy);
+}
+.vh-footer-logo-energy{
+  font-size: 1.5220cqw;
+  line-height: 1.7113cqw;
+  font-weight: 400;
+  letter-spacing: .075em;
+  color: var(--ft-navy);
+}
+.vh-footer-tag{
+  margin: 1.3072cqw 0 0;
+  font-size: 1.0260cqw;                 /* 18,2 px */
+  line-height: 1.4265cqw;               /* regelafstand 30 ref-px */
+  font-weight: 400;
+  color: var(--ft-body);
+}
+.vh-footer-contact{
+  margin: 1.9285cqw 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .6765cqw;
+}
+.vh-footer-contact li{ display: flex; align-items: flex-start; gap: 1.3767cqw }
+.vh-footer-contact svg{
+  width: .9500cqw; height: 1.1400cqw; flex: none;
+  margin-top: .18cqw; color: var(--ft-blauw); display: block;
+}
+.vh-footer-contact span, .vh-footer-contact a{
+  font-size: .9019cqw;                  /* 16 px */
+  line-height: 1.1274cqw;
+  font-weight: 400;
+  color: var(--ft-body);
+  transition: color .18s ease;
+}
+.vh-footer-contact a:hover{ color: var(--ft-blauw) }
+
+/* ------------------------------------------------------------
+   NAVIGATIEKOLOMMEN
+   ------------------------------------------------------------ */
+.vh-footer-nav{
+  position: absolute;
+  top: 7.7500cqw;                       /* koppen op ref y 163 */
+  z-index: 3;
+}
+.vh-footer-nav--1{ left: 25.6775cqw }   /* ref 540 */
+.vh-footer-nav--2{ left: 38.4636cqw }   /* ref 809 */
+.vh-footer-nav--3{ left: 50.4041cqw }   /* ref 1060 */
+.vh-footer-nav b{
+  display: block;
+  font-size: 1.1274cqw;                 /* 20 px */
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -.004em;
+  color: var(--ft-navy);
+}
+.vh-footer-nav ul{
+  margin: 1.0710cqw 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .6963cqw;                        /* steek 32,35 site-px */
+}
+.vh-footer-nav ul a{
+  font-size: .9696cqw;                  /* 17,2 px */
+  line-height: 1.1274cqw;
+  font-weight: 400;
+  color: var(--ft-body);
+  white-space: nowrap;
+  transition: color .18s ease;
+}
+.vh-footer-nav ul a:hover{ color: var(--ft-blauw) }
+
+/* ------------------------------------------------------------
+   "BLIJF OP DE HOOGTE"-BLOK
+   ------------------------------------------------------------ */
+.vh-footer-nb{
+  position: absolute;
+  left: 61.3583cqw;                     /* ref 1290 */
+  top: 7.7500cqw;
+  width: 18.0cqw;
+  z-index: 3;
+}
+.vh-footer-nb b{
+  display: block;
+  font-size: 1.2740cqw;                 /* 22,6 px */
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -.004em;
+  color: var(--ft-navy);
+}
+.vh-footer-nb p{
+  margin: .6483cqw 0 0;
+  font-size: .8568cqw;                  /* 15,2 px */
+  line-height: 1.4265cqw;
+  font-weight: 400;
+  color: var(--ft-body);
+}
+.vh-footer-nb-cta{
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  margin-top: .8173cqw;
+  width: 17.0011cqw;                    /* ref 1290..1647 */
+  height: 3.3289cqw;                    /* ref 70 */
+  padding: 0 1.1274cqw 0 1.2402cqw;
+  border-radius: .5637cqw;
+  background: var(--ft-blauw);
+  color: #fff;
+  font-size: .9019cqw;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background .2s ease;
+}
+.vh-footer-nb-cta:hover{ background: #005FE0 }
+.vh-footer-nb-cta svg{ width: 1.0147cqw; height: 1.0147cqw; flex: none; display: block }
+.vh-footer-nb ul{
+  margin: 1.2854cqw 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .9583cqw;                        /* steek 39,5 ref-px */
+}
+.vh-footer-nb ul li{
+  display: flex;
+  align-items: center;
+  gap: 1.1274cqw;
+  font-size: .8681cqw;
+  line-height: 1;
+  color: var(--ft-body);
+}
+.vh-footer-nb ul svg{ width: .9019cqw; height: .9019cqw; flex: none; color: var(--ft-blauw); display: block }
+
+/* ------------------------------------------------------------
+   LEGAL BAR
+   ------------------------------------------------------------ */
+.vh-footer-lijn{
+  position: absolute;
+  left: 4.7551cqw;
+  right: 4.7551cqw;
+  top: 29.4816cqw;                      /* ref 620 */
+  height: 1px;
+  background: var(--ft-lijn);
+  z-index: 3;
+}
+.vh-footer-legal{
+  position: absolute;
+  left: 4.7551cqw;                      /* ref 100 */
+  right: 4.7551cqw;
+  top: 30.9556cqw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2.0cqw;
+  font-size: .8455cqw;                  /* 15 px */
+  line-height: 1.2402cqw;
+  font-weight: 400;
+  color: #6A768F;
+  z-index: 3;
+}
+.vh-footer-legal-rechts{
+  display: flex;
+  align-items: center;
+  gap: 2.6cqw;
+}
+.vh-footer-legal a{ transition: color .18s ease }
+.vh-footer-legal a:hover{ color: var(--ft-blauw) }
+.vh-footer-legal .reg{ color: #8A93A8 }
+
+/* ============================================================
+   TIJDELIJKE MOBIELE VANGRAIL — geen mobiel ontwerp, alleen
+   voorkomen dat kleine schermen overlopen.
+   ============================================================ */
+@media (max-width: 900px){
+  .vh-footer{ height: auto; padding: 34px 0 26px }
+  .vh-footer-wig, .vh-footer-note{ display: none }
+  .vh-footer-merk{ position: static; width: auto; padding: 0 20px }
+  .vh-footer-logo-badge{ width: 44px; height: 44px }
+  .vh-footer-logo-vibe{ font-size: 22px; line-height: 21px }
+  .vh-footer-logo-energy{ font-size: 18px; line-height: 21px }
+  .vh-footer-tag{ font-size: 15px; line-height: 23px; margin-top: 16px }
+  .vh-footer-contact{ margin-top: 20px; gap: 14px }
+  .vh-footer-contact svg{ width: 15px; height: 18px; margin-top: 2px }
+  .vh-footer-contact li{ gap: 12px }
+  .vh-footer-contact span, .vh-footer-contact a{ font-size: 15px; line-height: 21px }
+  .vh-footer-nav{ position: static; padding: 26px 20px 0 }
+  .vh-footer-nav b{ font-size: 17px }
+  .vh-footer-nav ul{ margin-top: 14px; gap: 10px }
+  .vh-footer-nav ul a{ font-size: 15px; white-space: normal }
+  .vh-footer-nb{ position: static; width: auto; padding: 26px 20px 0 }
+  .vh-footer-nb b{ font-size: 18px }
+  .vh-footer-nb p{ font-size: 15px; line-height: 23px; margin-top: 12px }
+  .vh-footer-nb p br{ display: none }
+  .vh-footer-nb-cta{ width: 100%; height: 50px; font-size: 15px; border-radius: 10px; padding: 0 18px }
+  .vh-footer-nb-cta svg{ width: 18px; height: 18px }
+  .vh-footer-nb ul{ margin-top: 18px; gap: 12px }
+  .vh-footer-nb ul li{ font-size: 15px; gap: 10px }
+  .vh-footer-nb ul svg{ width: 16px; height: 16px }
+  .vh-footer-lijn{ position: static; margin: 26px 20px 0 }
+  .vh-footer-legal{
+    position: static; padding: 18px 20px 0;
+    flex-direction: column; align-items: flex-start; gap: 12px;
+    font-size: 13px; line-height: 20px;
+  }
+  .vh-footer-legal-rechts{ flex-wrap: wrap; gap: 8px 18px }
+}

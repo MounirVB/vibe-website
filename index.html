@@ -62,6 +62,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
 <link rel="stylesheet" href="home-proof.css">
 <link rel="stylesheet" href="home-infra.css">
 <link rel="stylesheet" href="home-final.css">
+<link rel="stylesheet" href="home-footer.css">
 </head>
 <body>
 <!-- Google Tag Manager (noscript) --><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KM2V7VQ3" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -1049,7 +1050,131 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
   </div>
 </section>
 
-<!-- ===================== FOOTER ===================== -->
+<!-- ===================== SECTIE 9 — FOOTER ===================== -->
+<!-- De gedeelde footer uit _footer.js wordt door 35 pagina's gebruikt en blijft
+     ongewijzigd; het script blijft geladen omdat het ook de Calendly-popup en de
+     preview-linkfix bevat. Alleen op de homepage wordt de ingespoten
+     footer.ftr.v1a verborgen via de zusterselector in home-footer.css. -->
+<footer class="vh-footer" data-screen-label="09 Footer">
+
+  <!-- BEELDWIG. De referentie toont een gegenereerd pand met Vibe-gevel.
+       Gebruikt is het echte zonnecarport-project van Vibe (laadplein-hero):
+       commerciele energie-infrastructuur in stedelijke context, en bewust
+       een ander project dan de Hedin-beelden hierboven. -->
+  <div class="vh-footer-wig">
+    <img src="assets/laadplein-hero.jpg" alt="Zonnecarport en laadinfrastructuur van Vibe Energy" loading="lazy" decoding="async">
+  </div>
+  <!-- De notitie is in de referentie handgeschreven. Er is geen handschriftletter
+       op deze site en er wordt er geen toegevoegd; de notitie staat in de eigen
+       huisletter. -->
+  <span class="vh-footer-note" aria-hidden="true">Energie is<br>de nieuwe<br>exploitatie.
+    <svg viewBox="0 0 66 41" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M2 2c6.5 17.5 22 29.5 58 32.5"/><path d="M50 26.5 61.5 35 52 41"/></svg>
+  </span>
+
+  <!-- MERKKOLOM. Het logo is dezelfde badge-plus-woordmerkopbouw als de
+       gelockte header van sectie 1; assets/logo.png toont "VIBE" in wit en is
+       op deze lichte achtergrond onbruikbaar.
+       Adres, telefoon en e-mail komen letterlijk uit _footer.js (regels 92-93):
+       de referentie noemt Velperweg 37 en +31 88 303 7300 - die staan nergens
+       in deze repository en zijn niet gepubliceerd. -->
+  <div class="vh-footer-merk">
+    <a class="vh-footer-logo" href="/" aria-label="Vibe Energy &mdash; naar de homepage">
+      <svg class="vh-footer-logo-badge" viewBox="0 0 44 44" fill="none" aria-hidden="true" focusable="false">
+        <rect x="1.6" y="1.6" width="40.8" height="40.8" rx="5.2" stroke="#0071FE" stroke-width="3.2"/>
+        <path d="M10.6 12.6 17 30.4l6.3-17.8" stroke="#0071FE" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M22.6 13.4h11.2M24 21.2h7.8M24 29.2h9.8" stroke="#0071FE" stroke-width="3.2"/>
+      </svg>
+      <span class="vh-footer-logo-tekst">
+        <span class="vh-footer-logo-vibe">VIBE</span>
+        <span class="vh-footer-logo-energy">ENERGY</span>
+      </span>
+    </a>
+    <p class="vh-footer-tag">We bouwen aan een toekomst waarin <br>energie geen kostenpost is, maar <br>een verdienmodel.</p>
+    <ul class="vh-footer-contact">
+      <li>
+        <svg viewBox="0 0 20 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 22s7.4-7.2 7.4-13A7.4 7.4 0 0 0 2.6 9c0 5.8 7.4 13 7.4 13Z"/><circle cx="10" cy="8.8" r="2.9"/></svg>
+        <span>Utrechtseweg 310<br>6812 AR Arnhem, Nederland</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 20 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5.6 3.4h3l1.6 4-2 1.5a11.6 11.6 0 0 0 5 5l1.5-2 4 1.6v3a1.6 1.6 0 0 1-1.7 1.6A15.6 15.6 0 0 1 4 5.1a1.6 1.6 0 0 1 1.6-1.7Z"/></svg>
+        <a href="tel:+31850600489">+31 85 060 0489</a>
+      </li>
+      <li>
+        <svg viewBox="0 0 20 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="1.6" y="5.2" width="16.8" height="13.6" rx="2"/><path d="m1.6 7.4 8.4 5.6 8.4-5.6"/></svg>
+        <a href="mailto:info@vibeenergy.nl">info@vibeenergy.nl</a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- NAVIGATIE. Alleen bestaande routes. Uit de referentie weggelaten omdat de
+       pagina niet bestaat: Advies & engineering, Werken bij Vibe, Nieuws,
+       Kennisbank, Downloads, Klantverhalen. -->
+  <nav class="vh-footer-nav vh-footer-nav--1" aria-label="Oplossingen">
+    <b>Oplossingen</b>
+    <ul>
+      <li><a href="systeem-energieopslag">Batterijopslag</a></li>
+      <li><a href="systeem-laadpalen">EV-laadinfrastructuur</a></li>
+      <li><a href="systeem-zonnepanelen">Zonnepanelen</a></li>
+      <li><a href="systeem-ems">Energiebeheer (EMS)</a></li>
+      <li><a href="oplossing-netcongestie">Netcongestie</a></li>
+      <li><a href="capaciteit-als-dienst">Capaciteit als dienst</a></li>
+      <li><a href="energiehandel-flexmarkten">Energiehandel</a></li>
+    </ul>
+  </nav>
+  <nav class="vh-footer-nav vh-footer-nav--2" aria-label="Over ons">
+    <b>Over ons</b>
+    <ul>
+      <li><a href="waarom-vibe">Onze aanpak</a></li>
+      <li><a href="over-ons">Over Vibe Energy</a></li>
+      <li><a href="projecten">Projecten</a></li>
+      <li><a href="systeem-ems">VIBE.CONTROL</a></li>
+      <li><a href="contact">Contact</a></li>
+    </ul>
+  </nav>
+  <nav class="vh-footer-nav vh-footer-nav--3" aria-label="Resources">
+    <b>Resources</b>
+    <ul>
+      <li><a href="netcongestie-check">Netcongestie Check</a></li>
+      <li><a href="oplossing-subsidies">Subsidies</a></li>
+      <li><a href="oplossing-energielabel">Energielabel</a></li>
+      <li><a href="oplossing-paris-proof">Paris Proof</a></li>
+      <li><a href="#faq">Veelgestelde vragen</a></li>
+    </ul>
+  </nav>
+
+  <!-- BLIJF OP DE HOOGTE. Er bestaat geen nieuwsbriefinfrastructuur in deze
+       repository (0 treffers op nieuwsbrief/newsletter/subscribe/mailchimp).
+       Daarom geen invoerveld dat nergens heen post en geen beloofde mailing,
+       maar dezelfde blokopbouw met de bestaande, werkende contactroute.
+       NEWSLETTER FUNCTIONALITY = PENDING. -->
+  <div class="vh-footer-nb">
+    <b>Blijf op de hoogte.</b>
+    <p>De nieuwsbrief is in voorbereiding. Wil je nu <br>al meer weten over projecten, subsidies <br>of wat er op jouw locatie kan?</p>
+    <a class="vh-footer-nb-cta" href="contact">Neem contact op <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a>
+    <ul>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4.5 12.8 9.4 17.7 19.5 6.6"/></svg>Persoonlijk antwoord op je vraag</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4.5 12.8 9.4 17.7 19.5 6.6"/></svg>Binnen 48 uur contact</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4.5 12.8 9.4 17.7 19.5 6.6"/></svg>Geen verplichtingen</li>
+    </ul>
+  </div>
+
+  <span class="vh-footer-lijn" aria-hidden="true"></span>
+
+  <!-- LEGAL. KvK en BTW staan al in de gedeelde footer (_footer.js:94) en
+       blijven staan; de referentie laat ze weg. "Cookiebeleid" bestaat niet als
+       pagina - de bestaande cookievoorkeuren-dialoog uit _consent.js is de echte
+       bestemming. De NL-taalschakelaar is weggelaten: de site is eentalig. -->
+  <div class="vh-footer-legal">
+    <span>&copy; 2026 Vibe Energy B.V. Alle rechten voorbehouden. <span class="reg">&middot; KvK 92191487 &middot; BTW NL865924910B01</span></span>
+    <span class="vh-footer-legal-rechts">
+      <a href="algemene-voorwaarden">Algemene voorwaarden</a>
+      <a href="privacy">Privacybeleid</a>
+      <a href="#cookies" data-cookie-prefs>Cookievoorkeuren</a>
+      <a href="sitemap.xml">Sitemap</a>
+    </span>
+  </div>
+</footer>
+
 <script src="_footer.js"></script>
 
 <!-- ===================== SCRIPTS ===================== -->
