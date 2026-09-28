@@ -12,13 +12,13 @@
   width: 100%;
   background: #FCFDFE;
   color: #08203C;
-  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  font-family: 'Urbanist', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 
-  --sol-blauw:  #0073FE;
-  --sol-navy:   #08203C;
-  --sol-grijs:  #56627D;
-  --sol-grijs2: #6F7A95;
+  --sol-blauw:var(--vibe-blauw);
+  --sol-navy:var(--vibe-navy);
+  --sol-grijs:var(--vibe-body-zacht);
+  --sol-grijs2:var(--vibe-sub);
   --sol-lijn:   #E5EFFA;
   --sol-radius: .5637cqw;          /* 10px */
 }
@@ -168,19 +168,33 @@
   z-index: 1;
   pointer-events: none;
 }
+/* Gemeten: met het oude, diagonale verloop stond de witte kaarttekst op
+   sommige foto's op bijna zuiver wit (slechtste contrast 1,00:1 op de
+   batterij- en laadkaart). Een diagonaal verloop volgt de tekst niet.
+   Nu een band die dicht is waar de tekst staat en daarna snel opklaart,
+   zodat de onderste helft van de foto vrij blijft. */
 .vh-sol-mod--boven::after{
-  background: linear-gradient(158deg,
-    rgba(4,42,96,.74) 0%,
-    rgba(4,42,96,.48) 28%,
-    rgba(4,38,88,.16) 52%,
-    rgba(4,34,80,.02) 70%);
+  background:
+    linear-gradient(180deg,
+      rgba(3,20,44,.92) 0%,
+      rgba(3,20,44,.90) 38%,
+      rgba(3,20,44,.56) 50%,
+      rgba(3,20,44,.12) 62%,
+      rgba(3,20,44,0)   72%),
+    linear-gradient(158deg,
+      rgba(4,42,96,.30) 0%,
+      rgba(4,34,80,0)   62%);
 }
 .vh-sol-mod--onder::after{
-  background: linear-gradient(96deg,
-    rgba(3,20,44,.86) 0%,
-    rgba(3,20,44,.62) 34%,
-    rgba(3,20,44,.24) 68%,
-    rgba(3,20,44,.10) 100%);
+  background:
+    linear-gradient(180deg,
+      rgba(3,20,44,.62) 0%,
+      rgba(3,20,44,.80) 26%,
+      rgba(3,20,44,.90) 46%,
+      rgba(3,20,44,.90) 100%),
+    linear-gradient(96deg,
+      rgba(3,20,44,.40) 0%,
+      rgba(3,20,44,0)   72%);
 }
 
 .vh-sol-mod-inhoud{
@@ -338,6 +352,7 @@
     max-width: 36ch;
   }
   .vh-sol-cta{
+    box-sizing: border-box;   /* anders telt de padding bij de 100% op */
     width: 100%;
     height: var(--m-btn-h);
     margin-top: 24px;
@@ -354,50 +369,134 @@
   .vh-sol-punt b{ font-size: 16px; line-height: 20px }
   .vh-sol-punt b + span{ font-size: var(--m-body); line-height: 21px; margin-top: 3px }
 
+  /* Zes grote kaarten onder elkaar maakten deze sectie de langste van de
+     mobiele pagina. Nu een uitgelichte openingskaart plus een compact
+     tweekoloms raster: dezelfde zes bestemmingen, ruim 500 px korter en
+     in een oogopslag te overzien. */
   .vh-sol-grid{
-    grid-template-columns: 1fr;
-    grid-template-areas: 'a' 'b' 'c' 'd';
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: 'a a' 'b c' 'd d';
     grid-template-rows: none;
-    row-gap: 12px;
-    margin-top: 34px;
+    gap: 10px;
+    margin-top: 30px;
   }
-  .vh-sol-onder{ grid-area: d; grid-template-columns: 1fr; row-gap: 12px }
-  .vh-sol-mod{ min-height: 208px; border-radius: var(--m-radius) }
-  .vh-sol-mod--zon{ min-height: 300px }          /* dragend openingsbeeld */
-  .vh-sol-mod--bat, .vh-sol-mod--laad{ min-height: 232px }
+  .vh-sol-onder{
+    grid-area: d;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .vh-sol-mod{ min-height: 150px; border-radius: var(--m-radius) }
+  .vh-sol-mod--zon{ min-height: 286px }
+  /* de zesde kaart vult de laatste rij */
+  .vh-sol-mod--handel{ grid-column: 1 / -1; min-height: 124px }
+  /* de onderregel blijft op de uitgelichte kaart; op de compacte kaarten
+     draagt de titel de boodschap en houdt hij de kaart scanbaar */
+  .vh-sol-mod--bat p,
+  .vh-sol-mod--laad p,
+  .vh-sol-mod--onder p{ display: none }
+
   /* bij 200% tekstzoom mag de kaart meegroeien in plaats van af te kappen */
-  .vh-sol-mod-inhoud{ padding: 20px 20px 22px; height: auto; min-height: 100% }
-  .vh-sol-mod-ic, .vh-sol-mod--zon .vh-sol-mod-ic{ width: 32px; height: 32px }
+  .vh-sol-mod-inhoud{ padding: 16px 16px 18px; height: auto; min-height: 100% }
+  .vh-sol-mod--zon .vh-sol-mod-inhoud{ padding: 20px 20px 22px }
+  .vh-sol-mod-ic, .vh-sol-mod--zon .vh-sol-mod-ic{ width: 28px; height: 28px }
+  .vh-sol-mod--zon .vh-sol-mod-ic{ width: 32px; height: 32px }
   .vh-sol-mod h3, .vh-sol-mod--zon h3{ font-size: var(--m-h3) }
   .vh-sol-mod p{ font-size: var(--m-body); line-height: 21px }
   .vh-sol-mod p br{ display: none }
-  .vh-sol-mod--boven .vh-sol-mod-kop{ margin-top: 16px }
-  /* pijl als comfortabel raakdoel, altijd rechtsonder */
+  .vh-sol-mod--boven .vh-sol-mod-kop{ margin-top: 12px }
+  .vh-sol-mod--zon .vh-sol-mod-kop{ margin-top: 16px }
+  /* pijl als comfortabel raakdoel, op elke kaart op dezelfde plek */
   .vh-sol-pijl,
-  .vh-sol-mod--onder .vh-sol-pijl{
-    width: 44px; height: 44px;
-    top: auto; bottom: 14px; right: 14px;
-  }
-  /* de zonkaart heeft onderin de statregel staan: pijl naar boven */
+  .vh-sol-mod--onder .vh-sol-pijl,
+  .vh-sol-mod--bat .vh-sol-pijl,
+  .vh-sol-mod--laad .vh-sol-pijl,
   .vh-sol-mod--zon .vh-sol-pijl{
-    width: 44px; height: 44px;
-    top: 14px; right: 14px; bottom: auto;
+    width: 40px; height: 40px;
+    top: 10px; right: 10px; bottom: auto; left: auto;
   }
-  .vh-sol-pijl svg, .vh-sol-mod--zon .vh-sol-pijl svg{ width: 17px; height: 17px }
-  .vh-sol-stats{ padding: 22px 0 14px; gap: 0 }
-  .vh-sol-stats div{ padding-left: 14px }
-  .vh-sol-stats div:first-child{ padding-left: 20px }
-  .vh-sol-stats b{ font-size: 14px }
-  .vh-sol-stats span{ font-size: 10px; letter-spacing: .02em }
+  .vh-sol-mod--zon .vh-sol-pijl,
+  .vh-sol-mod--handel .vh-sol-pijl{ width: 44px; height: 44px; top: 14px; right: 14px }
+  .vh-sol-pijl svg, .vh-sol-mod--zon .vh-sol-pijl svg{ width: 16px; height: 16px }
+  /* compacte kaarten: iets kleinere kop dan de uitgelichte kaart */
+  .vh-sol-mod--bat h3,
+  .vh-sol-mod--laad h3,
+  .vh-sol-mod--onder h3{ font-size: 16px; line-height: 20px }
+  .vh-sol-mod--handel h3{ font-size: 17px }
+  /* op mobiel staan kop en onderregel dieper in de kaart dan op desktop */
+  .vh-sol-mod--boven::after{
+    background:
+      linear-gradient(180deg,
+        rgba(3,20,44,.90) 0%,
+        rgba(3,20,44,.88) 52%,
+        rgba(3,20,44,.56) 66%,
+        rgba(3,20,44,.14) 80%,
+        rgba(3,20,44,0)   92%),
+      linear-gradient(158deg,
+        rgba(4,42,96,.28) 0%,
+        rgba(4,34,80,0)   66%);
+  }
+  .vh-sol-mod--zon::after{
+    background:
+      linear-gradient(180deg,
+        rgba(3,20,44,.92) 0%,
+        rgba(3,20,44,.90) 40%,
+        rgba(3,20,44,.52) 56%,
+        rgba(3,20,44,.12) 72%,
+        rgba(3,20,44,0)   86%),
+      linear-gradient(158deg,
+        rgba(4,42,96,.28) 0%,
+        rgba(4,34,80,0)   66%);
+  }
 }
 
+/* ------------------------------------------------------------
+   TABLET 768-1199 — een eigen compositie, geen brede telefoon.
+   768-1023 : twee kolommen, uitgelichte kaart over de volle breedte.
+   1024-1199: hetzelfde 3 x 2 raster als desktop, op kleinere schaal.
+   In beide gevallen komt de onderregel terug: daar is hier ruimte voor.
+   ------------------------------------------------------------ */
 @media (min-width: 768px) and (max-width: 1199px){
-  .vh-sol-cta{ width: auto; min-width: 280px }
+  .vh-sol-cta{ box-sizing: border-box; width: auto; min-width: 280px }
   .vh-sol-lead{ max-width: 52ch }
+  .vh-sol-punten{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
+  .vh-sol-punt{ margin-bottom: 0 }
+
   .vh-sol-grid{ grid-template-columns: 1fr 1fr; grid-template-areas: 'a a' 'b c' 'd d'; gap: 16px }
-  .vh-sol-onder{ grid-template-columns: repeat(3, 1fr); column-gap: 16px }
-  .vh-sol-mod--zon{ min-height: 380px }
-  .vh-sol-mod{ min-height: 260px }
+  .vh-sol-onder{ grid-template-columns: repeat(3, 1fr); gap: 16px }
+  .vh-sol-mod--handel{ grid-column: auto }
+  .vh-sol-mod--zon{ min-height: 300px }
+  .vh-sol-mod{ min-height: 210px }
+  .vh-sol-mod--handel{ min-height: 210px }
+
+  .vh-sol-mod-inhoud{ padding: 20px 20px 22px }
+  .vh-sol-mod--zon .vh-sol-mod-inhoud{ padding: 24px 24px 26px }
+  .vh-sol-mod-ic, .vh-sol-mod--zon .vh-sol-mod-ic{ width: 30px; height: 30px }
+  .vh-sol-mod--zon .vh-sol-mod-ic{ width: 34px; height: 34px }
+  .vh-sol-mod h3, .vh-sol-mod--zon h3,
+  .vh-sol-mod--bat h3, .vh-sol-mod--laad h3, .vh-sol-mod--onder h3,
+  .vh-sol-mod--handel h3{ font-size: 17px; line-height: 22px }
+  .vh-sol-mod--zon h3{ font-size: 21px; line-height: 26px }
+  /* onderregel is op tablet wél leesbaar en wel zo informatief */
+  .vh-sol-mod--bat p, .vh-sol-mod--laad p, .vh-sol-mod--onder p{ display: block }
+  .vh-sol-mod p{ font-size: 14.5px; line-height: 20px }
+  .vh-sol-pijl,
+  .vh-sol-mod--onder .vh-sol-pijl,
+  .vh-sol-mod--bat .vh-sol-pijl,
+  .vh-sol-mod--laad .vh-sol-pijl,
+  .vh-sol-mod--zon .vh-sol-pijl,
+  .vh-sol-mod--handel .vh-sol-pijl{ width: 42px; height: 42px; top: 14px; right: 14px; bottom: auto }
+}
+
+@media (min-width: 1024px) and (max-width: 1199px){
+  .vh-sol-grid{
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-areas: 'a b c' 'd d d';
+    gap: 18px;
+  }
+  .vh-sol-mod--zon{ min-height: 330px }
+  .vh-sol-mod{ min-height: 330px }
+  .vh-sol-onder{ grid-template-columns: repeat(3, 1fr); gap: 18px }
+  .vh-sol-mod--onder, .vh-sol-mod--handel{ min-height: 190px }
 }
 
 /* bijsnijding van de foto's zodat het onderwerp in beeld blijft */

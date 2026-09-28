@@ -16,20 +16,17 @@
    Eigen namespace .vh-pr-* — raakt sectie 1 en 2 niet aan.
    ============================================================ */
 
-/* home.css:267 schildert via #projecten (id-specificiteit) nog var(--ink-900) = #F4F7F9
-   over deze sectie heen. Sectie 3 houdt hiermee zijn eigen, gemeten achtergrond. */
-#projecten.vh-pr{ background: #FCFDFE }
 .vh-pr{
   container-type: inline-size;
   position: relative;
   width: 100%;
   padding: 5.6369cqw 0 5.6369cqw;     /* 100px boven en onder */
-  background: #FCFDFE;
-  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  background: var(--vibe-paper);
+  font-family: 'Urbanist', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 
-  --pr-navy:   #001632;
-  --pr-blauw:  #0073FE;
+  --pr-navy:var(--vibe-navy-diep);
+  --pr-blauw:var(--vibe-blauw);
   --pr-eyebrow:#0490FF;
   --pr-body:   #93A5BC;
   --pr-lijn:   rgba(255,255,255,.22);
@@ -213,24 +210,6 @@
 .vh-pr-link:hover{ gap:1.28cqw; color: var(--pr-eyebrow) }
 
 /* "Alle projecten" rechtsboven — uitgelijnd op de containermarge rechts */
-.vh-pr-alle{
-  position: absolute;
-  z-index: 3;
-  top: 2.3898cqw;
-  right: 3.9204cqw;                   /* 66px site-marge, min paneelverschuiving */
-  display: inline-flex;
-  align-items: center;
-  gap: 1.1000cqw;
-  color: #fff;
-  font-size: 1.0242cqw;
-  font-weight: 600;
-  line-height: 1;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: gap .2s ease;
-}
-.vh-pr-alle svg{ width:1.2400cqw; height:1.2400cqw; flex:none; display:block }
-.vh-pr-alle:hover{ gap:1.4cqw }
 
 /* ============================================================
    TIJDELIJKE MOBIELE VANGRAIL — geen mobiel ontwerp, alleen
@@ -269,10 +248,15 @@
     z-index: 1;
   }
   .vh-pr-copy{
-    position: static;
+    position: relative;
+    left: auto; top: auto; right: auto; bottom: auto;
+    width: auto;
     order: 2;
     z-index: 2;
-    padding: 0 var(--m-gutter) var(--m-sec-y);
+    /* De bovenste 26 px van dit blok zijn bewust doorzichtig: het navy loopt
+       daar uit de foto. De eyebrow stond daar middenin en werd daardoor op de
+       foto getekend. De padding-top zet de tekst onder die overgang. */
+    padding: 34px var(--m-gutter) var(--m-sec-y);
     margin-top: -26px;
     background: linear-gradient(180deg, rgba(0,22,50,0) 0%, #001632 26px);
   }
@@ -304,20 +288,13 @@
 
   .vh-pr-cta{ display: flex; flex-direction: column; align-items: stretch; margin-top: 24px; gap: 12px }
   .vh-pr-knop{
+    box-sizing: border-box;   /* anders telt de padding bij de 100% op */
     width: 100%; height: var(--m-btn-h); padding: 0 20px;
     font-size: 16px; border-radius: 10px; justify-content: space-between;
   }
   .vh-pr-knop svg{ width: 19px; height: 19px }
   .vh-pr-link{ margin-left: 0; font-size: 15.5px; gap: 10px; justify-content: flex-start; min-height: 44px; align-items: center }
   .vh-pr-link svg{ width: 17px; height: 17px }
-  .vh-pr-alle{
-    position: static; order: 3;
-    display: flex; justify-content: flex-start; align-items: center;
-    min-height: 48px;
-    padding: 0 var(--m-gutter) 26px;
-    font-size: 15.5px; gap: 10px;
-  }
-  .vh-pr-alle svg{ width: 17px; height: 17px }
 }
 
 @media (min-width: 768px) and (max-width: 1199px){

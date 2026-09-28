@@ -18,21 +18,14 @@
   overflow: hidden;
   background: linear-gradient(100deg,
     #FEFEFE 0%, #FDFDFE 38%, #F6FAFE 72%, #EAF5FE 100%);
-  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  font-family: 'Urbanist', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 
-  --if-blauw: #0073FE;
-  --if-navy:  #08203C;
-  --if-body:  #4C5771;
+  --if-blauw:var(--vibe-blauw);
+  --if-navy:var(--vibe-navy);
+  --if-body:var(--vibe-body);
   --if-sub:   #4E5876;
   --if-tint:  #DEEFFD;
-}
-/* home.css:291 zet via #voorwie (id-specificiteit) nog een eigen
-   achtergrond op deze sectie. Onderstaande regel wint daarvan zonder
-   home.css aan te raken, en werkt uitsluitend binnen sectie 7. */
-#voorwie.vh-infra{
-  background: linear-gradient(100deg,
-    #FEFEFE 0%, #FDFDFE 38%, #F6FAFE 72%, #EAF5FE 100%) !important;
 }
 
 /* ------------------------------------------------------------
@@ -157,18 +150,36 @@
   left: 36.2258cqw;                     /* ref 643 */
   top: 2.8749cqw;                       /* ref 51 */
   width: 62.0068cqw;                    /* ref 1100 */
-  height: 35.1114cqw;                   /* ref 623 */
+  height: 41.5000cqw;                   /* verruimd nadat de KPI-strook verviel */
   border-radius: 1.0147cqw;
   overflow: hidden;
   background: #DCE8F4;
   z-index: 1;
+  /* Vibe-diagonaal linksboven, dezelfde vormtaal als sectie 1, 3 en 6.
+     Zonder deze snede is dit vlak een kale rechthoek met zwevende kaarten. */
+  clip-path: polygon(11.5% 0, 100% 0, 100% 100%, 0 100%);
 }
 .vh-infra-foto img{
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 54%;
+  /* de batterijkasten stonden midden in beeld en vielen daardoor achter de
+     sectorkaarten; nu staan ze links, naast de kaartkolom */
+  object-position: 26% 52%;
   display: block;
+}
+/* zachte verdonkering onder de kaartkolom: de kaarten liggen daardoor op een
+   veld in plaats van los op de foto te zweven */
+.vh-infra-foto::after{
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(268deg,
+    rgba(3,20,44,.52) 0%,
+    rgba(3,20,44,.30) 26%,
+    rgba(3,20,44,.06) 46%,
+    rgba(3,20,44,0)   62%);
+  pointer-events: none;
 }
 /* handgeschreven notitie uit de referentie — zie index.html */
 .vh-infra-note{
@@ -214,10 +225,10 @@
   box-shadow: 0 1.20cqw 2.30cqw -.80cqw rgba(16,58,110,.28),
               0 .18cqw .45cqw -.24cqw rgba(16,58,110,.14);
 }
-.vh-infra-kaart--1{ top: 5.0169cqw }    /* ref 89 */
-.vh-infra-kaart--2{ top: 12.9835cqw }   /* ref 230,3 */
-.vh-infra-kaart--3{ top: 20.9501cqw }   /* ref 371,7 */
-.vh-infra-kaart--4{ top: 28.9167cqw }   /* ref 513 */
+.vh-infra-kaart--1{ top: 8.1000cqw }    /* ref 89 */
+.vh-infra-kaart--2{ top: 16.0677cqw }   /* ref 230,3 */
+.vh-infra-kaart--3{ top: 24.0343cqw }   /* ref 371,7 */
+.vh-infra-kaart--4{ top: 31.9998cqw }   /* ref 513 */
 
 .vh-infra-kaart-ic{
   position: absolute;
@@ -326,25 +337,36 @@
    het beeld (niet eroverheen) -> KPI-bewijs -> acties.
    ============================================================ */
 @media (max-width: 1199px){
+  /* De Vibe-diagonaal en het verloop rechts horen bij de desktopcompositie,
+     waar de sectorkaarten over de rechterhelft van de foto liggen. Op een
+     volle-breedte beeldband zonder kaarten erover knipt de diagonaal een
+     witte driehoek uit de linkerbovenhoek en verduistert het verloop de
+     rechterkant zonder reden. Beide dus alleen op desktop. */
+  .vh-infra-foto{ clip-path: none }
+  .vh-infra-foto::after{ display: none }
+  .vh-infra-foto img{ object-position: 46% 52% }
   .vh-infra{ height: auto; padding: var(--m-sec-y) 0; display: flex; flex-direction: column }
   .vh-infra-copy{ position: static; width: auto; padding: 0 var(--m-gutter); order: 1 }
   .vh-infra-foto{ order: 2 }
-  .vh-infra-kaart{ order: 3 }
-  .vh-infra-kpi{ order: 4 }
+  .vh-infra-kaarten{ order: 3 }
 
   .vh-infra-eyebrow{ font-size: var(--m-eyebrow); letter-spacing: .14em }
   .vh-infra-kop{ font-size: var(--m-h2); line-height: 1.08; margin-top: 14px; letter-spacing: -.018em }
   .vh-infra-kop br{ display: none }
   .vh-infra-lead{ font-size: var(--m-lead); line-height: 1.55; margin-top: 16px; max-width: 36ch }
   .vh-infra-lead br{ display: none }
-  .vh-infra-vdl{ position: static; width: auto; margin-top: 24px }
-  .vh-infra-vd{ height: auto; gap: 14px; margin-bottom: 18px }
-  .vh-infra-vd-ic{ width: 42px; height: 42px; border-radius: 10px }
-  .vh-infra-vd-ic svg{ width: 21px; height: 21px }
-  .vh-infra-vd-tx{ padding-top: 2px }
-  .vh-infra-vd-tx b{ font-size: 16.5px; line-height: 21px }
-  .vh-infra-vd-tx b + span{ font-size: var(--m-body); line-height: 21px; margin-top: 4px }
-  .vh-infra-acties{ margin-top: 22px; gap: 12px; flex-direction: column; align-items: stretch }
+  /* Sectie 2 toont hetzelfde patroon (icoon + kop + uitleg) bovenaan de
+     pagina. Op mobiel staan die twee blokken kort na elkaar en leest de
+     herhaling als vulling. Hier daarom alleen de drie kernwoorden op één
+     regel per stuk: zelfde inhoud, ruim 140 px korter. */
+  .vh-infra-vdl{ position: static; width: auto; margin-top: 20px }
+  .vh-infra-vd{ height: auto; gap: 12px; margin-bottom: 10px; align-items: center }
+  .vh-infra-vd-ic{ width: 34px; height: 34px; border-radius: 9px }
+  .vh-infra-vd-ic svg{ width: 18px; height: 18px }
+  .vh-infra-vd-tx{ padding-top: 0 }
+  .vh-infra-vd-tx b{ font-size: 15.5px; line-height: 20px }
+  .vh-infra-vd-tx b + span{ font-size: 13.5px; line-height: 19px; margin-top: 1px }
+  .vh-infra-acties{ margin-top: 20px; gap: 10px; flex-direction: column; align-items: stretch }
   .vh-infra-cta{
     width: 100%; height: var(--m-btn-h); padding: 0 20px;
     font-size: 16px; border-radius: 10px; justify-content: space-between;
@@ -353,27 +375,40 @@
   .vh-infra-cta2{ font-size: 15.5px; gap: 10px; min-height: 44px; justify-content: flex-start }
 
   .vh-infra-foto{
-    position: static; width: auto; height: 214px;
-    margin: 28px var(--m-gutter) 0;
+    position: static; width: auto; height: 190px;
+    margin: 22px var(--m-gutter) 0;
     border-radius: var(--m-radius-img);
   }
-  .vh-infra-kaart{
-    position: static; width: auto; height: auto;
-    margin: 12px var(--m-gutter) 0;
-    padding: 14px 14px 14px 12px;
-    border-radius: var(--m-radius);
-    display: flex; align-items: center; gap: 13px;
-    box-shadow: 0 10px 22px -16px rgba(16,58,110,.32);
+  /* Vier volle-breedte kaarten onder elkaar rekten deze sectie onnodig.
+     Twee kolommen met de tekst onder het icoon houden dezelfde vier
+     bestemmingen binnen een half scherm. */
+  .vh-infra-kaarten{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 18px var(--m-gutter) 0;
   }
-  .vh-infra-kaart--1{ margin-top: 18px }
-  .vh-infra-kaart-ic{ position: static; width: 46px; height: 46px; flex: none }
-  .vh-infra-kaart-ic svg{ width: 30px; height: 30px }
+  .vh-infra-kaart{
+    position: static;
+    width: auto;
+    height: auto;
+    min-height: 132px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 14px 12px;
+    border-radius: var(--m-radius);
+    box-shadow: var(--vibe-elev-mob);
+  }
+  .vh-infra-kaart-ic{ position: static; width: 38px; height: 38px; flex: none }
+  .vh-infra-kaart-ic svg{ width: 24px; height: 24px }
   .vh-infra-kaart-tx{ position: static; flex: 1; min-width: 0 }
-  .vh-infra-kaart-tx b{ font-size: 16px }
-  .vh-infra-kaart-tx b + span{ font-size: 14px; line-height: 20px; margin-top: 5px }
+  .vh-infra-kaart-tx b{ font-size: 15.5px; line-height: 19px }
+  .vh-infra-kaart-tx b + span{ font-size: 13px; line-height: 18px; margin-top: 4px }
   .vh-infra-kaart-tx br{ display: none }
-  .vh-infra-kaart-pijl{ position: static; flex: none; width: 34px; height: 34px }
-  .vh-infra-kaart-pijl svg{ width: 16px; height: 16px }
+  .vh-infra-kaart-tx br{ display: none }
+  .vh-infra-kaart-pijl{ display: none }
 
   .vh-infra-kpi{
     position: static; width: auto; height: auto;
@@ -398,4 +433,14 @@
   .vh-infra-kpi{ grid-template-columns: repeat(4, 1fr) }
   .vh-infra-kpi-item:nth-child(n+3){ border-top: 0 }
   .vh-infra-kpi-item + .vh-infra-kpi-item{ border-left: 1px solid #E4F0FC }
+  /* tablet: de vier sectoren passen op één rij en de drie kernwoorden ernaast */
+  .vh-infra-kaarten{ grid-template-columns: repeat(4, 1fr); gap: 14px }
+  .vh-infra-kaart{ min-height: 152px; padding: 16px 16px 14px }
+  .vh-infra-kaart-tx b{ font-size: 15.5px }
+  .vh-infra-kaart-tx b + span{ font-size: 13px; line-height: 18px }
+  .vh-infra-vdl{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 24px }
+  .vh-infra-vd{ margin-bottom: 0; align-items: flex-start }
+  .vh-infra-foto{ height: 260px }
+  .vh-infra-acties{ flex-direction: row; align-items: center; gap: 16px }
+  .vh-infra-cta{ box-sizing: border-box; width: auto; min-width: 240px }
 }

@@ -22,13 +22,13 @@
   width: 100%;
   overflow: hidden;
   background: #FCFDFE;
-  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  font-family: 'Urbanist', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 
-  --pc-blauw: #0073FE;
-  --pc-navy:  #08203C;
-  --pc-body:  #56627D;
-  --pc-sub:   #6F7A95;
+  --pc-blauw:var(--vibe-blauw);
+  --pc-navy:var(--vibe-navy);
+  --pc-body:var(--vibe-body-zacht);
+  --pc-sub:var(--vibe-sub);
   --pc-badge: #D8ECFE;
   --pc-chev:  #B9C7D8;
 }
@@ -96,7 +96,12 @@
   height: 16.545cqw;                    /* ref 251 */
   border-radius: .7893cqw;
   overflow: hidden;
-  background: #16283C;
+  /* Het beeld bedekt dit vak altijd volledig (object-fit: cover, 100%/100%),
+     dus deze kleur is uitsluitend zichtbaar zolang het lazy beeld nog laadt.
+     Met het oude #16283C leverde dat een groot donker vlak op in elke render
+     waarin het beeld nog niet geladen was. Nu de eigen sectietint: de
+     laadtoestand oogt als lege ruimte in plaats van als een fout. */
+  background: #E8F1FB;
 }
 .vh-proc-beeld img{
   width: 100%; height: 100%;
@@ -218,26 +223,30 @@
   .vh-proc-lead{ font-size: var(--m-lead); line-height: 1.55; margin-top: 16px; max-width: 36ch }
   .vh-proc-lead br{ display: none }
   .vh-proc-beeld{
-    position: static; width: auto; height: 212px;
-    margin: 26px var(--m-gutter) 0; border-radius: var(--m-radius-img);
+    position: static; width: auto; height: 184px;
+    margin: 22px var(--m-gutter) 0; border-radius: var(--m-radius-img);
   }
   .vh-proc-kaart{
-    position: static; width: auto;
-    margin: -30px var(--m-gutter) 0;
-    margin-left: calc(var(--m-gutter) + 18px);
-    padding: 18px 20px 20px;
+    /* relatief, anders tekent de foto (vervangen inhoud) zich over de
+       kaartachtergrond heen en wordt het icoon half afgesneden */
+    position: relative; z-index: 2;
+    left: auto; top: auto;
+    width: auto;
+    margin: -26px var(--m-gutter) 0;
+    margin-left: calc(var(--m-gutter) + 16px);
+    padding: 16px 18px 18px;
     border-radius: var(--m-radius);
   }
   .vh-proc-kaart-ic{ width: 34px; height: 34px; border-radius: 8px }
   .vh-proc-kaart-ic svg{ width: 18px; height: 18px }
-  .vh-proc-kaart h3{ font-size: 17px; line-height: 23px; margin-top: 14px }
-  .vh-proc-kaart p{ font-size: var(--m-body); line-height: 21px; margin-top: 9px }
+  .vh-proc-kaart h3{ font-size: 16.5px; line-height: 22px; margin-top: 11px }
+  .vh-proc-kaart p{ font-size: var(--m-body); line-height: 20px; margin-top: 7px }
   .vh-proc-kaart p br{ display: none }
 
   /* verticale tijdlijn */
   .vh-proc-stappen{
     position: relative;
-    margin: 34px var(--m-gutter) 0;
+    margin: 24px var(--m-gutter) 0;
     flex-direction: column;
     gap: 0;
   }
@@ -252,8 +261,8 @@
     width: auto;
     display: grid;
     grid-template-columns: 36px 1fr;
-    column-gap: 16px;
-    padding-bottom: 24px;
+    column-gap: 14px;
+    padding-bottom: 14px;
   }
   .vh-proc-stap:last-child{ padding-bottom: 0 }
   .vh-proc-stap-ic{

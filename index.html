@@ -53,8 +53,8 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://vibeenergy.nl/#org","name":"Vibe Energy","url":"https://vibeenergy.nl/","logo":"https://vibeenergy.nl/assets/logo.png","email":"info@vibeenergy.nl","telephone":"+31850600489","address":{"@type":"PostalAddress","streetAddress":"Utrechtseweg 310","postalCode":"6812AR","addressLocality":"Arnhem","addressCountry":"NL"}},{"@type":"WebSite","@id":"https://vibeenergy.nl/#website","url":"https://vibeenergy.nl/","name":"Vibe Energy","publisher":{"@id":"https://vibeenergy.nl/#org"},"inLanguage":"nl-NL"},{"@type":"WebPage","@id":"https://vibeenergy.nl/#webpage","url":"https://vibeenergy.nl/","name":"Vibe Energy — lokale energiecentrales voor bedrijven en vastgoed","description":"Vibe Energy ontwikkelt, bouwt en exploiteert lokale energiecentrales. Batterijopslag, EMS, laadinfra en zonnepanelen als één gestuurd systeem — meer capaciteit, lagere energiekosten, nieuwe opbrengsten.","isPartOf":{"@id":"https://vibeenergy.nl/#website"},"inLanguage":"nl-NL"}]}</script>
 <!--/SEO-FOUNDATION-->
 <meta name="theme-color" content="#0073FE">
-<link rel="stylesheet" href="home.css">
 <link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="home.css">
 <link rel="stylesheet" href="home-hero.css">
 <link rel="stylesheet" href="home-solutions.css">
 <link rel="stylesheet" href="home-project.css">
@@ -154,11 +154,6 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
       </button>
 
       <div class="vh-acties">
-        <button class="vh-zoek" type="button" aria-label="Zoeken">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true" focusable="false">
-            <circle cx="9.7" cy="9.7" r="8.1"/><path d="m15.5 15.5 7 7"/>
-          </svg>
-        </button>
         <a class="vh-btn vh-btn-primair" href="contact" data-calendly>Plan een gesprek
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
         </a>
@@ -210,48 +205,89 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
     </div>
   </div>
 
-  <!-- KPI-STRIP -->
+  <!-- BEWIJSSTROOK.
+       Was: vier statistieken (47 opgeleverde projecten, 12 MWp zon, 892 ton CO2,
+       98% uptime). Geen van de vier had een primaire bron. 47, 12 MWp en 98%
+       kwamen met de bulkupload c5476f0 (19-08-2026) mee zonder onderbouwing;
+       892 ton is op 17-09-2026 toegevoegd in 1ede4b3 en volgt alleen uit een
+       ontwerpreferentie, niet uit data. Geen enkele projectpagina noemt
+       zonnecapaciteit in kWp, dus 12 MWp is nergens uit op te tellen, en het
+       enige onderbouwde beschikbaarheidscijfer op de site is de contractuele
+       99,5% SLA voor laadpalen - een andere grootheid dan een gemeten 98%.
+
+       Vervangen door drie regels die wel gedekt zijn, met een categorielabel
+       erboven. Dat label is niet decoratief: het houdt gerealiseerd bewijs,
+       klantrelaties en een commerciele propositie uit elkaar, zodat de strook
+       niet als een staat-van-dienst in cijfers kan worden gelezen. -->
   <div class="vh-kpi">
+    <!-- BEWIJS- EN PROPOSITIESTROOK.
+         Bewust geen rij van drie cijfers: er staat geen bedrijfsbreed cijfer
+         in deze codebase met primaire onderbouwing. Per item de bron:
+
+         1 · BEWIJS - "11 projecten uitgelicht / Van vastgoed tot automotive"
+             Elf bestanden project-*.html, elk met Locatie, Sector en
+             "Opgeleverd · <maand jaar>". De formulering zegt UITGELICHT, niet
+             opgeleverd-in-totaal: het aantal slaat op de cases die deze site
+             toont, niet op het totale aantal projecten van Vibe. De sectoren
+             op die elf pagina's zijn Commercieel vastgoed, Residentieel
+             vastgoed, Bedrijfspand, Automotive en Recreatie - vandaar het
+             bereik "van vastgoed tot automotive".
+
+         2 · PRODUCTSPECIFICATIE - "Zon, opslag, laden en sturing /
+             Van ontwerp tot beheer"
+             De vijf systeempagina's: systeem-zonnepanelen, -energieopslag,
+             -laadpalen, -ems en energiehandel-flexmarkten. "Van ontwerp tot
+             beheer" staat letterlijk op systeem-zonnepanelen, -energieopslag,
+             -laadpalen, oplossing-laadplein en in de hero-lead hierboven.
+
+         3 · PROPOSITIE - "Start zonder eigen investering /
+             Exploitatie mogelijk per situatie"
+             systeem-energieopslag.html: "Via een exploitatiemodel is een start
+             zonder eigen capex mogelijk; Vibe investeert en u betaalt voor de
+             capaciteit." Model uitgewerkt op oplossing-exploitatie.html.
+             "Mogelijk" en "per situatie" blijven staan; zonder die twee wordt
+             het een garantie.
+
+         NIET GEBRUIKT: 47 opgeleverde projecten / 12 MWp zon / 98% uptime -
+         die staan alleen op projecten.html zelf, zonder primaire onderbouwing
+         in deze codebase; een pagina die een cijfer herhaalt is geen bron.
+         Ook niet gebruikt: "11 opgeleverde projecten" - het tellen van elf
+         openbare cases bewijst geen totaal aantal opgeleverde projecten. -->
     <div class="vh-kpi-grid">
       <div class="vh-kpi-item">
         <svg class="vh-kpi-icoon" viewBox="0 0 46 46" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-          <rect x="2.4" y="30" width="8.8" height="13.6" rx="1.2"/>
-          <rect x="13.2" y="23.5" width="8.8" height="20.1" rx="1.2"/>
-          <rect x="24" y="18.5" width="8.8" height="25.1" rx="1.2"/>
-          <rect x="34.8" y="11.8" width="8.8" height="31.8" rx="1.2"/>
-          <path d="M2.4 27.5 14.5 15.4l7 7L40.6 3.3"/>
-          <path d="M32.8 2.4h10.8v10.8"/>
+          <path d="M6.2 43.6V13.4l16.8-9 16.8 9v30.2"/>
+          <path d="M2.4 43.6h41.2"/>
+          <path d="M14.6 21.6h5M26.4 21.6h5M14.6 29.4h5M26.4 29.4h5"/>
+          <path d="M18.2 43.6v-7.8h9.6v7.8"/>
         </svg>
-        <span class="vh-kpi-tekst"><span class="vh-kpi-getal">3000+</span><span class="vh-kpi-label">Installaties</span></span>
+        <span class="vh-kpi-tekst">
+          <span class="vh-kpi-getal">11 projecten uitgelicht</span>
+          <span class="vh-kpi-label">Van vastgoed tot automotive</span>
+        </span>
       </div>
       <div class="vh-kpi-item">
         <svg class="vh-kpi-icoon" viewBox="0 0 46 46" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-          <circle cx="23" cy="9.6" r="7.2"/>
-          <path d="M11.8 43.6v-4.2a11.2 11.2 0 0 1 22.4 0v4.2"/>
-          <circle cx="8.6" cy="18.4" r="5.2"/>
-          <path d="M2.4 36.4v-2.8a7.2 7.2 0 0 1 6.2-7.1"/>
-          <circle cx="37.4" cy="18.4" r="5.2"/>
-          <path d="M43.6 36.4v-2.8a7.2 7.2 0 0 0-6.2-7.1"/>
+          <circle cx="23" cy="23" r="5.4"/>
+          <path d="M23 2.6v11M23 32.4v11M2.6 23h11M32.4 23h11"/>
+          <circle cx="23" cy="4.4" r="2.6"/><circle cx="23" cy="41.6" r="2.6"/>
+          <circle cx="4.4" cy="23" r="2.6"/><circle cx="41.6" cy="23" r="2.6"/>
         </svg>
-        <span class="vh-kpi-tekst"><span class="vh-kpi-getal">98%</span><span class="vh-kpi-label">Tevreden klanten</span></span>
+        <span class="vh-kpi-tekst">
+          <span class="vh-kpi-getal">Zon, opslag, laden en sturing</span>
+          <span class="vh-kpi-label">Van ontwerp tot beheer</span>
+        </span>
       </div>
       <div class="vh-kpi-item">
         <svg class="vh-kpi-icoon" viewBox="0 0 46 46" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-          <ellipse cx="30.4" cy="8.4" rx="13.2" ry="6"/>
-          <path d="M17.2 8.4v21.4c0 3.3 5.9 6 13.2 6s13.2-2.7 13.2-6V8.4"/>
-          <path d="M17.2 16.6c0 3.3 5.9 6 13.2 6M17.2 24.8c0 3.3 5.9 6 13.2 6"/>
-          <ellipse cx="15.6" cy="24.6" rx="13.2" ry="6"/>
-          <path d="M2.4 24.6v11.8c0 3.3 5.9 6 13.2 6s13.2-2.7 13.2-6"/>
-          <path d="M2.4 32.8c0 3.3 5.9 6 13.2 6s13.2-2.7 13.2-6"/>
+          <circle cx="23" cy="23" r="20.6"/>
+          <path d="M30.2 15.4a9.6 9.6 0 0 0-13.8 3.2c-2.4 4.4-1.2 10 2.8 12.8a9.6 9.6 0 0 0 11-.2"/>
+          <path d="M12.8 21.2h11.4M12.8 26.4h11.4"/>
         </svg>
-        <span class="vh-kpi-tekst"><span class="vh-kpi-getal">&euro;12M+</span><span class="vh-kpi-label">Jaarlijkse besparing</span></span>
-      </div>
-      <div class="vh-kpi-item">
-        <svg class="vh-kpi-icoon" viewBox="0 0 46 46" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-          <path d="M43.8 2.6c1.1 19.8-8.9 32.3-22 32.3-7.8 0-13.1-5.2-13.1-12.9C8.7 10.9 20.4 3.1 43.8 2.6Z"/>
-          <path d="M2.2 44c3-11.1 10.8-21.7 22.2-28.7"/>
-        </svg>
-        <span class="vh-kpi-tekst"><span class="vh-kpi-getal">892 ton</span><span class="vh-kpi-label">CO<sub>2</sub> bespaard</span></span>
+        <span class="vh-kpi-tekst">
+          <span class="vh-kpi-getal">Start zonder eigen investering</span>
+          <span class="vh-kpi-label">Exploitatie mogelijk per situatie</span>
+        </span>
       </div>
     </div>
   </div>
@@ -316,11 +352,6 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
             <p>Maximaal rendement <br>op eigen terrein.</p>
           </span>
         </span>
-        <span class="vh-sol-stats">
-          <div><b>+25%</b><span>Energieonafhankelijkheid</span></div>
-          <div><b>&ndash;CO<sub>2</sub></b><span>Duurzame bedrijfsvoering</span></div>
-          <div><b>+Rendement</b><span>Vanaf dag &eacute;&eacute;n</span></div>
-        </span>
         <span class="vh-sol-pijl">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
         </span>
@@ -364,7 +395,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
 
       <div class="vh-sol-onder">
 
-        <a class="vh-sol-mod vh-sol-mod--onder vh-sol-mod--hvac" href="capaciteit-als-dienst">
+        <a class="vh-sol-mod vh-sol-mod--onder vh-sol-mod--hvac" href="systeem-ems">
           <!-- Er bestaat geen HVAC-fotografie in deze repository. In plaats van een
                plaatshouder krijgt deze kaart een bewuste grafische behandeling in de
                eigen vormtaal: navyvlak met de Vibe-diagonaal. -->
@@ -415,6 +446,9 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
               <p>Waarde uit <br>flexibiliteit.</p>
             </span>
           </span>
+                  <span class="vh-sol-pijl" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+          </span>
         </a>
 
       </div>
@@ -458,10 +492,6 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
       <path d="M2056 296 1776 682" stroke="#BFD9FF" stroke-opacity=".55" stroke-width="2.6" fill="none"/>
     </svg>
 
-    <!-- secundaire navigatie-actie van de sectie -->
-    <a class="vh-pr-alle" href="projecten">Alle projecten
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
-    </a>
 
     <div class="vh-pr-copy">
       <p class="vh-pr-eyebrow">Project in de kijker</p>
@@ -513,8 +543,8 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
       <span class="vh-proc-kaart-ic" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="currentColor" focusable="false"><path d="M13.4 2 5 13.4h5.4L9.8 22l8.8-11.8h-5.6z"/></svg>
       </span>
-      <h3>Slimme energie, <br>altijd in balans.</h3>
-      <p>Minder pieken, meer rendement. <br>Met onze EMS-sturing haal je <br>het maximale uit je energie-<br>infrastructuur.</p>
+      <h3>&Eacute;&eacute;n partij, <br>van plan tot prestatie.</h3>
+      <p>Ontwerp, realisatie en dagelijks <br>beheer bij dezelfde partner. <br>Geen versnipperde <br>verantwoordelijkheid.</p>
     </div>
   </div>
 
@@ -617,6 +647,9 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
           </nav>
 
           <div class="vh-ctrl-main">
+            <!-- De waarden in dit dashboard zijn een voorbeeldweergave van de
+                 interface, geen gemeten of geclaimde prestatie. Daarom staat
+                 "Voorbeeldweergave" in de voettekst van het paneel. -->
             <h3 class="vh-ctrl-kop">Live sturing</h3>
             <span>Alle assets onder regie van het EMS</span>
 
@@ -652,7 +685,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
           </div>
         </div>
 
-        <div class="vh-ctrl-foot"><span class="tk" id="vhCtrlTicker">09:00:14 &rsaquo; peak forecast +340 kVA &middot; dispatch activated</span><span>AUTO &middot; LIVE</span></div>
+        <div class="vh-ctrl-foot"><span class="tk" id="vhCtrlTicker">09:00:14 &rsaquo; peak forecast +340 kVA &middot; dispatch activated</span><span>Voorbeeldweergave</span></div>
       </div>
     </div>
 
@@ -750,103 +783,91 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
   </script>
 </section>
 
-<!-- ===================== SECTIE 6 — SOCIAL PROOF + KLANTVERHAAL ===================== -->
-<section id="klantverhaal" class="vh-proof" data-screen-label="06 Klantverhaal">
+<!-- ===================== SECTIE 6 — VERTROUWEN + PROJECTRESULTAAT ===================== -->
+<section id="klantverhaal" class="vh-proof" data-screen-label="06 Projectresultaat">
 
-  <!-- DEEL A — LOGOSTROOK.
-       De referentie toont acht merken (Hedin Automotive, Shell, VELUX, DHL,
-       Jumbo, BREEAM, CBRE, Renewi). Er staat in deze repository GEEN enkel
-       logobestand van een derde partij; alleen de eigen Vibe-merken.
-       Tekstueel onderbouwd als klantorganisatie zijn er twee:
-       Hedin Automotive (project-hedin-alkmaar, project-hedin-amsterdam) en
-       Dormio (project-dormio-medemblik). Shell, VELUX, DHL, Jumbo, BREEAM,
-       CBRE en Renewi komen in de hele codebase niet voor. Die zes slots
-       blijven daarom leeg en gemarkeerd - er is geen logo nagemaakt en geen
-       klantrelatie geclaimd die niet onderbouwd is. -->
+  <!-- DEEL A — VERTROUWENSBLOK.
+       De referentie toont acht merklogo's. Er staat in deze repository geen enkel
+       logobestand van een derde partij, en slechts twee organisaties zijn als
+       klant onderbouwd met een eigen casepagina: Hedin Automotive en Dormio.
+       Liever twee echte organisaties met hun sector, locatie en project erbij
+       dan zes lege slots die als niet-geladen logo's ogen. -->
   <div class="vh-proof-a">
     <div class="vh-proof-head">
-      <p class="vh-proof-eyebrow">VERTROUWD DOOR TOONAANGEVENDE ORGANISATIES</p>
+      <p class="vh-proof-eyebrow">Vertrouwd door organisaties die vooruit willen</p>
       <h2 class="vh-proof-kop">Samen bouwen aan <br><span class="vh-proof-accent">een duurzamere toekomst.</span></h2>
     </div>
 
-    <!-- referentie: "Alle klanten". Een klantenoverzicht bestaat niet op deze
-         site; projecten.html is de bestaande, semantisch juiste bestemming. -->
     <a class="vh-proof-alle" href="projecten">Alle projecten
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
     </a>
 
-    <!-- Alleen organisaties die de site zelf onderbouwt met een eigen casepagina.
-         De zes overige slots uit de referentie blijven leeg tot er geverifieerde
-         logo's zijn: liever een korte rij dan een geclaimde relatie. -->
     <div class="vh-proof-logos">
-      <div class="vh-proof-logo" style="--vh-slot:7.4408cqw"><span class="vh-proof-naam">Hedin Automotive</span></div>
-      <div class="vh-proof-logo" style="--vh-slot:3.8895cqw"><span class="vh-proof-naam">Dormio</span></div>
+      <a class="vh-proof-org" href="project-hedin-alkmaar">
+        <b>Hedin Automotive</b>
+        <span>Automotive &middot; Alkmaar en Amsterdam</span>
+      </a>
+      <a class="vh-proof-org" href="project-dormio-medemblik">
+        <b>Dormio</b>
+        <span>Recreatie &middot; Medemblik</span>
+      </a>
     </div>
   </div>
 
-  <!-- DEEL B — KLANTVERHAAL.
-       De referentiekop en -tekst zijn in de eerste persoon geschreven ("wij",
-       tussen aanhalingstekens) en vormen samen met naam, functie en logo een
-       klantverklaring. Die verklaring bestaat niet: nergens in deze repository
-       staat een citaat met naam, functie en organisatie. Kop en lead zijn
-       daarom vervangen door geverifieerde projecttekst uit
-       project-hedin-alkmaar.html - in de derde persoon, zonder aanhalingstekens
-       en zonder toegeschreven uitspraak. -->
+  <!-- DEEL B — PROJECTRESULTAAT.
+       Dit is uitdrukkelijk GEEN testimonial: er bestaat nergens in deze
+       repository een citaat met naam, functie en organisatie. Alle tekst is
+       derde persoon en komt uit project-ratio-16.html:
+         51 kW aansluiting - "een transportvermogen van slechts 51 kW"
+         240 zonnepanelen  - "240 zonnepanelen voor duurzame opwek"
+         12 laadplekken    - specificatieblok
+         78% besparing     - specificatieblok
+       Sectie 3 licht Hedin Alkmaar uit; hier staat bewust een ander
+       gerealiseerd project, zodat de homepage niet op een enkele klant leunt. -->
   <div class="vh-proof-b">
     <span class="vh-proof-wig" aria-hidden="true"></span>
 
     <div class="vh-proof-story">
-      <p class="vh-proof-eyb2">KLANTVERHAAL</p>
-      <h3 class="vh-proof-kop2">Hedin Alkmaar: <br>drie keer zoveel <br>energiecapaciteit <br><span class="vh-proof-accent">in vier dagen.</span></h3>
-      <p class="vh-proof-lead">Vibe Energy installeerde een opslagsysteem van <br>645 kWh en 300 kW dat de energiecapaciteit van <br>het pand verdrievoudigt. Het resultaat: een stabiele <br>stroomvoorziening, ook tijdens piekbelasting.</p>
-      <a class="vh-proof-cta" href="projecten">Bekijk alle projecten
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
-      </a>
+      <p class="vh-proof-eyb2">Gerealiseerd project</p>
+      <h3 class="vh-proof-kop2">Ratio 16, Duiven: <br>zonnedak en laadplein <br><span class="vh-proof-accent">binnen 51 kW.</span></h3>
+      <p class="vh-proof-lead">Het pand kampte met ernstige netcongestie. Vibe Energy combineerde zonnepanelen, batterijopslag en een laadplein &mdash; zonder de bestaande netaansluiting te overschrijden.</p>
     </div>
 
-    <!-- FOTO. De referentie toont een persoon in Hedin-bedrijfskleding voor het
-         pand; zo'n portret bestaat niet in deze repository en wordt niet
-         gegenereerd. Wel echt en semantisch juist: de eigen projectfoto van
-         Hedin Automotive Alkmaar op ooghoogte, met de Vibe Energy-bus. -->
+    <!-- Eigen dronefoto van het project: zonnedak, laadplein en het pand in
+         een opname. Geen portret, geen gegenereerd beeld. -->
     <div class="vh-proof-foto">
-      <img src="assets/home/s6-verhaal-800.webp" srcset="assets/home/s6-verhaal-420.webp 420w, assets/home/s6-verhaal-800.webp 800w, assets/home/s6-verhaal-1600.webp 1600w" sizes="(max-width: 1199px) 92vw, 41.4vw" width="2048" height="1536" alt="Hedin Automotive Alkmaar &mdash; projectlocatie van Vibe Energy" loading="lazy" decoding="async">
+      <img src="assets/home/s6-verhaal-800.webp" srcset="assets/home/s6-verhaal-420.webp 420w, assets/home/s6-verhaal-800.webp 800w, assets/home/s6-verhaal-1600.webp 1600w" sizes="(max-width: 1199px) 92vw, 41.4vw" width="1948" height="1350" alt="Ratio 16 in Duiven &mdash; zonnedak en laadplein, gerealiseerd door Vibe Energy" loading="lazy" decoding="async">
     </div>
 
-    <!-- CITAATKAART. Vorm, maat en positie volgen de goedgekeurde referentie;
-         de inhoud is een expliciete plaatshouder. TESTIMONIAL CONTENT = PENDING. -->
-    <figure class="vh-proof-kaart">
-      <span class="vh-proof-badge">PROJECTRESULTAAT</span>
-      <blockquote class="vh-proof-citaat">De installatie zorgt voor een stabiele stroomvoorziening, ook tijdens piekbelasting. Hedin Automotive is minder netafhankelijk, heeft lagere energiekosten en een hogere operationele betrouwbaarheid.</blockquote>
-      <figcaption class="vh-proof-bron">
-        <span><b>Hedin Automotive Alkmaar</b><span>uit de projectrapportage <br>van Vibe Energy</span></span>
-      </figcaption>
-    </figure>
+    <!-- RESULTAATKAART. Vorm en positie volgen de goedgekeurde referentie; de
+         inhoud is een resultaatbeschrijving met cijfers, geen toegeschreven
+         uitspraak. Daarom ook geen naamblok in citaatvorm. -->
+    <div class="vh-proof-kaart">
+      <span class="vh-proof-badge">Projectresultaat</span>
+      <p class="vh-proof-citaat">Meer opwek, meer laadcapaciteit en lagere kosten &mdash; binnen dezelfde netaansluiting. Lokaal opgewekte zonne-energie wordt benut waar ze ontstaat; het EMS stuurt verbruik, laden en opslag binnen de grenzen van de aansluiting.</p>
+      <dl class="vh-proof-cijfers">
+        <div><dt>78%</dt><dd>besparing</dd></div>
+        <div><dt>240</dt><dd>zonnepanelen</dd></div>
+        <div><dt>12</dt><dd>laadplekken</dd></div>
+        <div><dt>51 kW</dt><dd>aansluiting</dd></div>
+      </dl>
+    </div>
 
-    <!-- UITGELICHT PROJECT. Alle waarden komen uit project-hedin-alkmaar.html:
-         645 kWh batterijopslag, 300 kW vermogen. -->
-    <a class="vh-proof-strip" href="project-hedin-alkmaar">
-      <span class="vh-proof-strip-fig"><img src="assets/home/s6-thumb-180.webp" srcset="assets/home/s6-thumb-180.webp 180w, assets/home/s6-thumb-360.webp 360w" sizes="(max-width: 1199px) 20vw, 5.5vw" width="2400" height="1350" alt="" loading="lazy" decoding="async"></span>
+    <a class="vh-proof-strip" href="project-ratio-16">
+      <span class="vh-proof-strip-fig"><img src="assets/home/s6-thumb-180.webp" srcset="assets/home/s6-thumb-180.webp 180w, assets/home/s6-thumb-360.webp 360w" sizes="(max-width: 1199px) 20vw, 5.5vw" width="1800" height="1013" alt="" loading="lazy" decoding="async"></span>
       <span class="vh-proof-strip-tx">
-        <span class="vh-proof-strip-eyb">UITGELICHT PROJECT</span>
-        <b>Hedin Alkmaar</b>
-        <span class="spec">645 kWh batterijopslag &middot; 300 kW vermogen</span>
+        <span class="vh-proof-strip-eyb">Volledige case</span>
+        <b>Ratio 16, Duiven</b>
+        <span class="spec">Commercieel vastgoed &middot; opgeleverd juli 2024</span>
       </span>
       <span class="vh-proof-strip-cta"><span>Bekijk project</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
       </span>
     </a>
 
-    <!-- Bladerknoppen uit de referentie. Er is één onderbouwd klantverhaal, dus
-         er valt niets te bladeren; de knoppen staan uit in plaats van dat ze
-         een carrousel suggereren die er niet is. CAROUSEL = PENDING. -->
-    <div class="vh-proof-nav" aria-hidden="true">
-      <button type="button" disabled tabindex="-1" aria-label="Vorig klantverhaal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M20 12H5m6-6-6 6 6 6"/></svg>
-      </button>
-      <button type="button" disabled tabindex="-1" aria-label="Volgend klantverhaal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
-      </button>
-    </div>
+    <a class="vh-proof-cta" href="projecten">Bekijk alle projecten
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+    </a>
   </div>
 </section>
 
@@ -894,58 +915,30 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
     <img src="assets/home/s7-opslag-1200.webp" srcset="assets/home/s7-opslag-640.webp 640w, assets/home/s7-opslag-1200.webp 1200w, assets/home/s7-opslag-2400.webp 2400w" sizes="(max-width: 1199px) 92vw, 62vw" width="2400" height="1802" alt="Batterijopslag van Vibe Energy op locatie" loading="lazy" decoding="async">
   </div>
 
-  <!-- OPLOSSINGKAARTEN. Labels, volgorde en routes volgen de al gepubliceerde
-       propositie van sectie 2 (Zonnepanelen, Batterijopslag, Laadinfrastructuur,
-       HVAC). Er bestaat geen productfotografie als uitsnede in deze repository,
-       dus de kaartbeelden zijn SVG-iconen in de bestaande icoontaal. -->
-  <a class="vh-infra-kaart vh-infra-kaart--1" href="systeem-zonnepanelen">
-    <span class="vh-infra-kaart-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6.2 4.2h13.4l2.2 10.4H3.4L6.2 4.2Z"/><path d="M4.6 8.1h16.2M9.9 4.2 8.1 14.6M14.3 4.2l1.3 10.4"/><path d="M12.6 14.6v5.2M9.4 19.8h6.4"/></svg></span>
-    <span class="vh-infra-kaart-tx"><b>Zonnepanelen</b><span>Eigen opwek als basis <br>van het systeem.</span></span>
-    <span class="vh-infra-kaart-pijl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
-  </a>
-  <a class="vh-infra-kaart vh-infra-kaart--2" href="systeem-energieopslag">
-    <span class="vh-infra-kaart-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2.4" y="6.4" width="16.6" height="11.2" rx="1.6"/><path d="M21.6 10.4v3.2"/><path d="M6.2 9.6v4.8M9.8 9.6v4.8M13.4 9.6v4.8"/></svg></span>
-    <span class="vh-infra-kaart-tx"><b>Batterijopslag</b><span>Vangt pieken op en houdt <br>waarde vast op locatie.</span></span>
-    <span class="vh-infra-kaart-pijl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
-  </a>
-  <a class="vh-infra-kaart vh-infra-kaart--3" href="systeem-laadpalen">
-    <span class="vh-infra-kaart-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4.4" y="2.6" width="9.4" height="18.8" rx="1.6"/><path d="M9.6 6.6 7.6 10.6h2.9l-1.9 4"/><path d="M13.8 9h2.6a2 2 0 0 1 2 2v4.1a1.6 1.6 0 0 0 3.2 0V9.3"/><path d="M19.9 6.4v2.6"/></svg></span>
-    <span class="vh-infra-kaart-tx"><b>Laadinfrastructuur</b><span>Groeiende laadvraag binnen <br>dezelfde aansluiting.</span></span>
-    <span class="vh-infra-kaart-pijl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
-  </a>
-  <!-- HVAC heeft geen eigen productpagina. systeem-ems is de bestaande,
-       semantisch juiste bestemming: daar staat het HVAC-domein
-       ("Het EMS stuurt klimaat op aanwezigheid"). -->
-  <a class="vh-infra-kaart vh-infra-kaart--4" href="systeem-ems">
-    <span class="vh-infra-kaart-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2.6" y="4.4" width="18.8" height="13.4" rx="2"/><circle cx="12" cy="11.1" r="4.2"/><path d="M12 11.1 9.2 8.3M12 11.1l3.6-1.1M12 11.1l-1.2 3.8"/><path d="M6.4 20.6h11.2"/></svg></span>
-    <span class="vh-infra-kaart-tx"><b>HVAC &amp; klimaat</b><span>Klimaat dat meebeweegt <br>met de sturing.</span></span>
-    <span class="vh-infra-kaart-pijl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
-  </a>
-
-  <!-- KPI-BALK. Geen van de vier cijfers uit de referentie (50+ installaties,
-       250+ MW, 120.000 ton CO2, 300+ klanten) komt in deze repository voor.
-       Hier staan uitsluitend geverifieerde waarden:
-       11 projecten     - projecten.html:191 "Alle 11 gerealiseerde projecten"
-       tot 5 MWh        - systeem-energieopslag.html:77 "Schaalbaar tot 5 MWh"
-       892 ton CO2      - de KPI-strook van sectie 1 op deze pagina
-       98% tevreden     - de KPI-strook van sectie 1 op deze pagina -->
-  <div class="vh-infra-kpi">
-    <div class="vh-infra-kpi-item">
-      <span class="vh-infra-kpi-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3.4 21.4V5.2l7-2.6 7 2.6v16.2"/><path d="M2 21.4h20"/><path d="M7.2 8.6h2.2M11.6 8.6h2.2M7.2 12.6h2.2M11.6 12.6h2.2"/><path d="M8.2 21.4v-4.6h4.4v4.6"/></svg></span>
-      <span class="vh-infra-kpi-tx"><b>11</b><span>gerealiseerde projecten</span></span>
-    </div>
-    <div class="vh-infra-kpi-item">
-      <span class="vh-infra-kpi-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2.4" y="6.6" width="16.4" height="10.8" rx="1.6"/><path d="M21.4 10.4v3.2"/><path d="M6.2 9.6v4.8M9.8 9.6v4.8M13.4 9.6v4.8"/></svg></span>
-      <span class="vh-infra-kpi-tx"><b>tot 5 MWh</b><span>modulaire batterijopslag</span></span>
-    </div>
-    <div class="vh-infra-kpi-item">
-      <span class="vh-infra-kpi-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2.8 21.6 7.4 12 12 2.4 7.4Z"/><path d="M2.4 12 12 16.6 21.6 12"/><path d="M2.4 16.6 12 21.2 21.6 16.6"/></svg></span>
-      <span class="vh-infra-kpi-tx"><b>E&eacute;n partij</b><span>ontwerp, bouw en exploitatie</span></span>
-    </div>
-    <div class="vh-infra-kpi-item">
-      <span class="vh-infra-kpi-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17.4 5.4a7.6 7.6 0 1 0 0 13.2"/><path d="M4.4 10.2h9M4.4 14h9"/></svg></span>
-      <span class="vh-infra-kpi-tx"><b>&euro; 0</b><span>investering mogelijk</span></span>
-    </div>
+  <!-- SECTORKAARTEN. Sectie 2 toont de systeemcomponenten; deze kolom toont
+       voor wie we bouwen. Titels en beloften komen uit de industriepagina's
+       zelf. Er bestaat geen sectorfotografie als uitsnede, dus SVG-iconen. -->
+  <div class="vh-infra-kaarten">
+    <a class="vh-infra-kaart vh-infra-kaart--1" href="industrie-vastgoed">
+      <span class="vh-infra-kaart-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3.4 20.6h17.2"/><path d="M5.6 20.6V5.2h8.2v15.4"/><path d="M13.8 20.6V9.8h4.6v10.8"/><path d="M8 8.4h3.4M8 11.8h3.4M8 15.2h3.4M15.8 12.8h.9M15.8 16.2h.9"/></svg></span>
+      <span class="vh-infra-kaart-tx"><b>Vastgoed</b><span>Lagere servicekosten en <br>een beter energielabel.</span></span>
+      <span class="vh-infra-kaart-pijl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
+    </a>
+    <a class="vh-infra-kaart vh-infra-kaart--2" href="industrie-logistiek">
+      <span class="vh-infra-kaart-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2.6 6.4h10.8v9.8H2.6z"/><path d="M13.4 9.8h4.2l3.2 3.4v3h-7.4z"/><circle cx="7" cy="18.4" r="1.9"/><circle cx="17.4" cy="18.4" r="1.9"/></svg></span>
+      <span class="vh-infra-kaart-tx"><b>Logistiek</b><span>Elektrisch laden binnen <br>de bestaande aansluiting.</span></span>
+      <span class="vh-infra-kaart-pijl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
+    </a>
+    <a class="vh-infra-kaart vh-infra-kaart--3" href="industrie-recreatie">
+      <span class="vh-infra-kaart-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.6 3.2 20.4h17.6z"/><path d="M12 10.2 7.4 20.4h9.2z"/><path d="M2.4 20.4h19.2"/></svg></span>
+      <span class="vh-infra-kaart-tx"><b>Recreatie</b><span>Uitbreiden en laden <br>zonder netverzwaring.</span></span>
+      <span class="vh-infra-kaart-pijl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
+    </a>
+    <a class="vh-infra-kaart vh-infra-kaart--4" href="industrie-residentieel">
+      <span class="vh-infra-kaart-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2.8 11.2 8.6 6l5.8 5.2"/><path d="M4.6 10.2v9.4h8v-9.4"/><path d="M13.6 12.4 17.8 8.8l3.6 3.2"/><path d="M15 11.6v8h5.4v-8"/><path d="M7.4 19.6v-4h2.4v4"/></svg></span>
+      <span class="vh-infra-kaart-tx"><b>Woningportefeuilles</b><span>Lagere woonlasten, <br>toekomstbestendig bezit.</span></span>
+      <span class="vh-infra-kaart-pijl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
+    </a>
   </div>
 </section>
 
@@ -1004,7 +997,7 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
     <span class="vh-final-kaart-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3.2" y="4.8" width="17.6" height="16" rx="2.2"/><path d="M3.2 9.6h17.6M8 2.8v4M16 2.8v4"/><path d="M7.4 13.4h3v3h-3zM13.6 13.4h3v3h-3z"/></svg></span>
     <b>Plan direct <br>een kennismaking.</b>
     <p>In een kort gesprek bespreken we <br>jouw situatie en kansen.</p>
-    <a class="vh-final-kaart-link" href="contact" data-calendly>Plan een gesprek <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a>
+    <a class="vh-final-kaart-link" href="contact" data-calendly>Kies een moment <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a>
   </div>
 </section>
 
@@ -1070,45 +1063,46 @@ src="https://www.facebook.com/tr?id=1164445461468919&ev=PageView&noscript=1"
   <!-- NAVIGATIE. Alleen bestaande routes. Uit de referentie weggelaten omdat de
        pagina niet bestaat: Advies & engineering, Werken bij Vibe, Nieuws,
        Kennisbank, Downloads, Klantverhalen. -->
-  <nav class="vh-footer-nav vh-footer-nav--1" aria-label="Oplossingen">
-    <b>Oplossingen</b>
-    <ul>
-      <li><a href="systeem-energieopslag">Batterijopslag</a></li>
-      <li><a href="systeem-laadpalen">EV-laadinfrastructuur</a></li>
-      <li><a href="systeem-zonnepanelen">Zonnepanelen</a></li>
-      <li><a href="systeem-ems">VIBE.CONTROL (EMS)</a></li>
-      <li><a href="oplossing-netcongestie">Netcongestie</a></li>
-      <li><a href="capaciteit-als-dienst">Capaciteit als dienst</a></li>
-      <li><a href="energiehandel-flexmarkten">Energiehandel</a></li>
-    </ul>
-  </nav>
-  <nav class="vh-footer-nav vh-footer-nav--2" aria-label="Over ons">
-    <b>Over ons</b>
-    <ul>
-      <li><a href="waarom-vibe">Onze aanpak</a></li>
-      <li><a href="over-ons">Over Vibe Energy</a></li>
-      <li><a href="projecten">Projecten</a></li>
-      <li><a href="contact">Contact</a></li>
-    </ul>
-  </nav>
-  <nav class="vh-footer-nav vh-footer-nav--3" aria-label="Resources">
-    <b>Resources</b>
-    <ul>
-      <li><a href="netcongestie-check">Netcongestie Check</a></li>
-      <li><a href="oplossing-subsidies">Subsidies</a></li>
-      <li><a href="oplossing-energielabel">Energielabel</a></li>
-      <li><a href="oplossing-paris-proof">Paris Proof</a></li>
-    </ul>
-  </nav>
+  <div class="vh-footer-navs">
+    <nav class="vh-footer-nav vh-footer-nav--1" aria-label="Oplossingen">
+      <b>Oplossingen</b>
+      <ul>
+        <li><a href="systeem-energieopslag">Batterijopslag</a></li>
+        <li><a href="systeem-laadpalen">EV-laadinfrastructuur</a></li>
+        <li><a href="systeem-zonnepanelen">Zonnepanelen</a></li>
+        <li><a href="systeem-ems">VIBE.CONTROL (EMS)</a></li>
+        <li><a href="oplossing-netcongestie">Netcongestie</a></li>
+        <li><a href="capaciteit-als-dienst">Capaciteit als dienst</a></li>
+        <li><a href="energiehandel-flexmarkten">Energiehandel</a></li>
+      </ul>
+    </nav>
+    <nav class="vh-footer-nav vh-footer-nav--2" aria-label="Over ons">
+      <b>Over ons</b>
+      <ul>
+        <li><a href="waarom-vibe">Onze aanpak</a></li>
+        <li><a href="over-ons">Over Vibe Energy</a></li>
+        <li><a href="projecten">Projecten</a></li>
+        <li><a href="contact">Contact</a></li>
+      </ul>
+    </nav>
+    <nav class="vh-footer-nav vh-footer-nav--3" aria-label="Resources">
+      <b>Resources</b>
+      <ul>
+        <li><a href="netcongestie-check">Netcongestie Check</a></li>
+        <li><a href="oplossing-subsidies">Subsidies</a></li>
+        <li><a href="oplossing-energielabel">Energielabel</a></li>
+        <li><a href="oplossing-paris-proof">Paris Proof</a></li>
+      </ul>
+    </nav>
+  </div>
 
-  <!-- BLIJF OP DE HOOGTE. Er bestaat geen nieuwsbriefinfrastructuur in deze
-       repository (0 treffers op nieuwsbrief/newsletter/subscribe/mailchimp).
-       Daarom geen invoerveld dat nergens heen post en geen beloofde mailing,
-       maar dezelfde blokopbouw met de bestaande, werkende contactroute.
-       NEWSLETTER FUNCTIONALITY = PENDING. -->
+  <!-- CONTACTBLOK. Er bestaat geen nieuwsbriefinfrastructuur in deze repository
+       (0 treffers op nieuwsbrief/newsletter/subscribe/mailchimp). Er stond hier
+       eerder "de nieuwsbrief is in voorbereiding" - dat kondigt een functie aan
+       die er niet is. Nu dezelfde blokopbouw met de bestaande contactroute. -->
   <div class="vh-footer-nb">
-    <b>Blijf op de hoogte.</b>
-    <p>De nieuwsbrief is in voorbereiding. Wil je nu <br>al meer weten over projecten, subsidies <br>of wat er op jouw locatie kan?</p>
+    <b>Benieuwd wat er op <br>jouw locatie kan?</b>
+    <p>Vertel ons over je pand of portefeuille. <br>Wij rekenen door wat er binnen jouw <br>aansluiting mogelijk is.</p>
     <a class="vh-footer-nb-cta" href="contact">Neem contact op <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a>
     <ul>
       <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4.5 12.8 9.4 17.7 19.5 6.6"/></svg>Persoonlijk antwoord op je vraag</li>

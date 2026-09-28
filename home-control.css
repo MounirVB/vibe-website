@@ -20,23 +20,15 @@
   height: 33.171cqw;                  /* 476 ref + 32px lucht naar sectie 6 */
   overflow: hidden;
   background: #EFF7FE;
-  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  font-family: 'Urbanist', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 
-  --ct-blauw: #0073FE;
-  --ct-navy:  #08203C;
-  --ct-body:  #56627D;
-  --ct-sub:   #6F7A95;
+  --ct-blauw:var(--vibe-blauw);
+  --ct-navy:var(--vibe-navy);
+  --ct-body:var(--vibe-body-zacht);
+  --ct-sub:var(--vibe-sub);
   --ct-badge: #D8ECFE;
   --ct-scr:   #011731;
-}
-/* home.css:189 zet via #ems (id-specificiteit) nog een eigen achtergrond en
-   randen op deze sectie. Onderstaande regel wint daarvan zonder home.css aan
-   te raken, en werkt uitsluitend binnen sectie 5. */
-#ems.vh-ctrl{
-  background: #EFF7FE !important;
-  border-top: 0 !important;
-  border-bottom: 0 !important;
 }
 
 /* zachte blauwe nadruk links, achter de apparaten */
@@ -338,6 +330,11 @@
   .vh-ctrl-tile b{ font-size: 15px; margin-top: 6px }
   .vh-ctrl-flow{ grid-template-columns: 1fr; gap: 10px; margin-top: 16px }
   .vh-ctrl-mid{ display: none }               /* stroomlijnen hebben geen ruimte */
+  /* De linkerkolom herhaalt Zon, Net en Accu die als tegel al boven de
+     stroomlijst staan. Op desktop staan ze links en rechts van de EMS-hub,
+     op mobiel vielen ze recht onder hun eigen tegels. Nu tonen de tegels de
+     bronnen en de lijst de verbruikers; dat scheelt ruim 190 px. */
+  .vh-ctrl-col.l{ display: none }
   .vh-ctrl-col{ gap: 8px }
   .vh-ctrl-col.r .vh-ctrl-node{ flex-direction: row; text-align: left }
   .vh-ctrl-node{ padding: 10px 11px; gap: 10px; border-radius: 8px }

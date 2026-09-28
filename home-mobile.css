@@ -14,7 +14,10 @@
 
 :root{
   --m-gutter: clamp(20px, 5.4vw, 24px);
-  --m-sec-y: 56px;                    /* verticale sectieruimte mobiel */
+  /* 56 px boven én onder betekende 112 px tussen twee secties op een scherm
+     van 390 px breed. 44 px houdt de secties duidelijk gescheiden en haalt
+     ruim 150 px uit de pagina. */
+  --m-sec-y: 44px;
   --m-h1: clamp(34px, 9.1vw, 44px);
   --m-h2: clamp(27px, 7.3vw, 34px);
   --m-h3: 19px;
@@ -24,14 +27,14 @@
   --m-btn-h: 52px;
   --m-radius: 14px;
   --m-radius-img: 12px;
-  --m-blauw: #0073FE;
-  --m-navy: #08203C;
-  --m-body-kleur: #4C5771;
+  --m-blauw:var(--vibe-blauw);
+  --m-navy:var(--vibe-navy);
+  --m-body-kleur:var(--vibe-body);
 }
 @media (min-width: 768px) and (max-width: 1199px){
   :root{
     --m-gutter: clamp(32px, 5vw, 48px);
-    --m-sec-y: 76px;
+    --m-sec-y: 64px;
     --m-h1: clamp(46px, 6.4vw, 58px);
     --m-h2: clamp(34px, 4.6vw, 42px);
     --m-h3: 21px;

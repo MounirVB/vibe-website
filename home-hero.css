@@ -14,8 +14,8 @@
   background: #fff;
 
   /* ---- kleuren, gemeten uit de referentie ---- */
-  --vh-blauw:        #0073FE;   /* knoppen, accent, iconen */
-  --vh-blauw-diep:   #005FE0;   /* hover */
+  --vh-blauw:var(--vibe-blauw);   /* knoppen, accent, iconen */
+  --vh-blauw-diep:var(--vibe-blauw-diep);   /* hover */
   --vh-navy:         #071D3A;   /* koppen, navigatie, cijfers */
   --vh-grijs:        #475771;   /* body, labels */
   --vh-grijs-licht:  #4E5C78;   /* ENERGY in het logo */
@@ -44,7 +44,7 @@
       #FFFFFF 11.2299%,
       #EAF4FE 11.2299%,
       #E7F4FC 100%);
-  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  font-family: 'Urbanist', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -327,9 +327,9 @@
    ============================================================ */
 .vh-kpi{
   position: relative;
-  height: 7.8917cqw;              /* 140px */
+  height: 9.0191cqw;              /* 160px - drie tekstregels i.p.v. twee */
   background: linear-gradient(90deg, #F7FCFF 0%, #FCFDFE 55%, #FDFDFE 100%);
-  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  font-family: 'Urbanist', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 .vh-kpi-grid{
@@ -337,7 +337,7 @@
   width: 98.084cqw;               /* 1740px */
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   align-items: center;
 }
 .vh-kpi-item{
@@ -361,21 +361,27 @@
 }
 .vh-kpi-icoon{ width:2.7745cqw; height:2.7745cqw; flex:none; display:block; color: #0062FE }
 .vh-kpi-tekst{ display:flex; flex-direction:column }
+/* Eén graad voor alle drie de waarden houdt de strook een familie. De graad
+   is terug op het niveau van de eerdere cijferstrook (28px op 1774): de copy
+   is kort genoeg om die kracht te dragen zonder af te breken. Gecontroleerd
+   op de langste regel, "Start zonder eigen investering". */
 .vh-kpi-getal{
-  font-size: 1.7079cqw;           /* 30,3px */
-  line-height: 1.2cqw;
+  font-size: max(19px, 1.5784cqw); /* 28px op 1774 */
+  line-height: 1.18;
   font-weight: 700;
-  letter-spacing: .018em;
+  letter-spacing: -.004em;
   color: #061B36;
+  text-wrap: balance;
 }
 .vh-kpi-label{
-  margin-top: .7892cqw;           /* 14px */
-  font-size: 1.0259cqw;           /* 18,2px */
-  line-height: 1;
+  margin-top: .3946cqw;            /* 7px */
+  font-size: max(13.5px, .9019cqw); /* 16px op 1774 */
+  line-height: 1.3;
   font-weight: 400;
   color: var(--vh-grijs);
 }
 .vh-kpi-label sub{ font-size:.72em; vertical-align:baseline; position:relative; top:.22em }
+
 
 /* ============================================================
    TIJDELIJKE MOBIELE VANGRAIL
@@ -423,6 +429,7 @@
   .vh-cta{ display: flex; flex-direction: column; gap: 10px; margin-top: 26px }
   .vh-cta .vh-btn-primair,
   .vh-cta .vh-btn-secundair{
+    box-sizing: border-box;   /* anders tellen padding en rand bij de 100% op */
     width: 100%;
     height: var(--m-btn-h);
     padding: 0 20px;
@@ -468,11 +475,17 @@
   }
   .vh-kpi-grid{
     width: auto;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 22px 16px;
+    /* Drie kolommen geven op telefoonbreedte 100-121 px per kolom; gemeten op
+       360 px breekt "Opgeleverde projecten" dan middenin het woord af. Onder
+       600 px staat elk cijfer daarom op een eigen regel, met het label ernaast.
+       Vanaf 600 px passen de drie naast elkaar. */
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
     padding: 0 var(--m-gutter);
   }
-  .vh-kpi-item{ justify-content: flex-start; gap: 12px }
+  .vh-kpi-item{ justify-content: flex-start; gap: 12px; min-width: 0 }
+  .vh-kpi-tekst{ min-width: 0 }
+  .vh-kpi-label{ overflow-wrap: break-word }
   .vh-kpi-item + .vh-kpi-item::before{ display: none }
   .vh-kpi-icoon{ width: 30px; height: 30px; flex: none }
   .vh-kpi-getal{ font-size: 23px; line-height: 1.05 }
@@ -485,6 +498,37 @@
   .vh-cta{ flex-direction: row }
   .vh-cta .vh-btn-primair, .vh-cta .vh-btn-secundair{ width: auto; min-width: 232px }
   .vh-foto{ height: 360px }
-  .vh-kpi-grid{ grid-template-columns: repeat(4, 1fr); gap: 24px }
-  .vh-kpi-getal{ font-size: 26px }
+  /* TABLETVARIANT — drie kolommen, eigen compositie.
+     Naast elkaar past de regel niet op één lijn zolang het icoon ernaast
+     staat: dat kost per kolom zo'n 50 px. Het icoon gaat hier daarom boven
+     de tekst, zodat de volle kolombreedte voor de regel beschikbaar is.
+     Typografie en witruimte zijn compacter dan op desktop; de kwalificatie
+     eronder is bewust kleiner. Copy en onderbouwing blijven ongewijzigd. */
+  .vh-kpi-grid{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    align-items: start;
+  }
+  .vh-kpi-item{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 0;
+  }
+  .vh-kpi-item + .vh-kpi-item::before{ display: none }
+  .vh-kpi-icoon{ width: 26px; height: 26px; flex: none }
+  .vh-kpi-getal{ font-size: 17px; line-height: 1.24; letter-spacing: -.002em }
+  .vh-kpi-label{ font-size: 13px; line-height: 1.32; margin-top: 4px }
 }
+
+/* Onderaan het tabletbereik is een kolom ~217 px. "Start zonder eigen
+   investering" past daar op geen enkele leesbare graad op één regel, terwijl
+   "11 projecten uitgelicht" dat wel doet - dat gaf 1/2/2 regels en dus drie
+   ongelijk zware kolommen. Met een maatgrens op de regel breken alle drie de
+   waarden op twee regels; de kolommen wegen daardoor weer even zwaar. */
+@media (min-width: 768px) and (max-width: 859px){
+  .vh-kpi-getal{ font-size: 16.5px; max-width: 15ch }
+  .vh-kpi-label{ font-size: 12.5px }
+  .vh-kpi-grid{ gap: 16px }
+}
+

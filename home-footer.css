@@ -19,13 +19,13 @@
   overflow: hidden;
   background: linear-gradient(115deg,
     #EDF6FD 0%, #F7FBFE 26%, #FDFEFF 46%, #F6FAFE 74%, #EFF7FD 100%);
-  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  font-family: 'Urbanist', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   color: #1B2740;
 
-  --ft-blauw: #0073FE;
+  --ft-blauw:var(--vibe-blauw);
   --ft-navy:  #0C1B33;
-  --ft-body:  #4C5771;
+  --ft-body:var(--vibe-body);
   --ft-lijn:  #DCE7F2;
 }
 .vh-footer a{ color: inherit; text-decoration: none }
@@ -82,8 +82,10 @@
   font-size: 1.0147cqw;
   line-height: 1.2402cqw;
   font-weight: 500;
-  color: rgba(255,255,255,.95);
-  text-shadow: 0 .05cqw .24cqw rgba(2,40,88,.34);
+  color: #FFFFFF;
+  font-family: 'Urbanist', system-ui, sans-serif;
+  /* de notitie ligt op een lichte lucht; zonder stevige schaduw is hij onleesbaar */
+  text-shadow: 0 .06cqw .34cqw rgba(2,26,58,.62), 0 .02cqw .10cqw rgba(2,26,58,.48);
   z-index: 2;
   pointer-events: none;
 }
@@ -309,26 +311,44 @@
   .vh-footer-logo-badge{ width: 42px; height: 42px }
   .vh-footer-logo-vibe{ font-size: 21px; line-height: 20px }
   .vh-footer-logo-energy{ font-size: 17.5px; line-height: 20px }
-  .vh-footer-tag{ font-size: var(--m-body); line-height: 23px; margin-top: 16px; max-width: 34ch }
+  .vh-footer-tag{ font-size: var(--m-body); line-height: 22px; margin-top: 13px; max-width: 34ch }
   .vh-footer-tag br{ display: none }
-  .vh-footer-contact{ margin-top: 22px; gap: 14px }
+  .vh-footer-contact{ margin-top: 18px; gap: 11px }
   .vh-footer-contact li{ gap: 12px; align-items: flex-start }
   .vh-footer-contact svg{ width: 16px; height: 19px; margin-top: 2px }
   .vh-footer-contact span, .vh-footer-contact a{ font-size: 15px; line-height: 21px }
   .vh-footer-contact a{ min-height: 30px; display: inline-flex; align-items: center }
 
-  .vh-footer-nav{ padding: 26px var(--m-gutter) 0 }
-  .vh-footer-nav b{ font-size: 16.5px }
-  .vh-footer-nav ul{ margin-top: 12px; gap: 2px }
+  /* Drie volledig uitgeklapte linklijsten onder elkaar maakten de footer de
+     op een na langste sectie van de mobiele pagina. Twee kolommen met
+     compactere regels halveren die hoogte; elke link blijft een raakdoel
+     van 44 px hoog omdat de regelhoogte en padding samen daarop uitkomen. */
+  .vh-footer-navs{
+    order: 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px 18px;
+    padding: 26px var(--m-gutter) 0;
+  }
+  .vh-footer-nav{ padding: 0 }
+  .vh-footer-nav--3{ grid-column: 1 / -1 }
+  .vh-footer-nav b{ font-size: 15.5px }
+  .vh-footer-nav ul{ margin-top: 8px; gap: 0 }
+  .vh-footer-nav--3 ul{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 18px;
+  }
   .vh-footer-nav ul a{
-    display: block; padding: 10px 0;
-    font-size: 15px; white-space: normal;
+    display: flex; align-items: center;
+    min-height: 40px; padding: 2px 0;
+    font-size: 14.5px; line-height: 19px; white-space: normal;
   }
 
   .vh-footer-nb{
     position: static; width: auto;
-    margin: 28px var(--m-gutter) 0;
-    padding: 22px 20px 24px;
+    margin: 24px var(--m-gutter) 0;
+    padding: 20px 20px 22px;
     border-radius: var(--m-radius);
     background: #F3F8FE;
     border: 1px solid #E1ECF8;
@@ -342,12 +362,15 @@
     justify-content: space-between;
   }
   .vh-footer-nb-cta svg{ width: 19px; height: 19px }
-  .vh-footer-nb ul{ margin-top: 18px; gap: 11px }
-  .vh-footer-nb ul li{ font-size: 14.5px; gap: 10px; align-items: flex-start; line-height: 20px }
-  .vh-footer-nb ul svg{ width: 16px; height: 16px; margin-top: 2px; flex: none }
+  /* Sectie 8 toont vlak hierboven al "Vrijblijvend advies / Binnen 48 uur
+     contact / Maatwerkoplossingen". Deze tweede checklist herhaalt dat op
+     nog geen scherm afstand; op mobiel vervalt hij. */
+  .vh-footer-nb ul{ display: none }
 
-  /* smalle beeldband houdt het merkbeeld vast zonder de pagina te rekken */
-  .vh-footer-wig{
+  /* De beeldband toont dezelfde batterijkasten als sectie 2 en 7 en draagt
+     op mobiel geen informatie; hij rekte de footer met ruim 160 px. */
+  .vh-footer-wig{ display: none }
+  .vh-footer-wig-ongebruikt{
     position: static; width: auto; height: 132px;
     margin: 28px var(--m-gutter) 0;
     clip-path: none; border-radius: var(--m-radius-img);
@@ -360,7 +383,7 @@
   /* de notitie hoort op de wig; die is mobiel te smal, dus weg */
   .vh-footer-note{ display: none }
 
-  .vh-footer-lijn{ position: static; margin: 26px var(--m-gutter) 0 }
+  .vh-footer-lijn{ position: static; margin: 24px var(--m-gutter) 0 }
   .vh-footer-legal{
     position: static; padding: 18px var(--m-gutter) 0;
     flex-direction: column; align-items: flex-start; gap: 14px;
@@ -377,4 +400,30 @@
   .vh-footer-nb{ max-width: 460px }
   .vh-footer-wig{ height: 180px }
   .vh-footer-legal{ flex-direction: row; align-items: center; justify-content: space-between }
+  /* tablet: merkblok en navigatie naast elkaar, contactblok over de breedte */
+  /* 768-999: merkblok boven, navigatie eronder over de volle breedte -
+     de kolommen zijn anders te smal en elke link breekt af.
+     Vanaf 1000 px staan merk en navigatie wél naast elkaar. */
+  .vh-footer{ box-sizing: border-box;
+              display: grid; grid-template-columns: minmax(0, 1fr);
+              padding: var(--m-sec-y) var(--m-gutter) 26px; align-items: start }
+  /* rasteritems krimpen standaard niet onder hun inhoud; zonder deze regel
+     duwen de lange navigatielabels de footer buiten het scherm */
+  .vh-footer > *{ min-width: 0 }
+  .vh-footer-navs > *{ min-width: 0 }
+  .vh-footer-merk{ padding: 0 }
+  .vh-footer-navs{ padding: 26px 0 0; grid-template-columns: repeat(3, 1fr); gap: 24px 22px }
+  .vh-footer-nav--3{ grid-column: auto }
+  .vh-footer-nav--3 ul{ grid-template-columns: 1fr }
+  .vh-footer-nb{ grid-column: 1 / -1; margin: 28px 0 0 }
+  .vh-footer-nb-cta{ box-sizing: border-box; width: auto; min-width: 260px }
+  .vh-footer-lijn{ grid-column: 1 / -1; margin: 26px 0 0 }
+  .vh-footer-legal{ grid-column: 1 / -1; padding: 18px 0 0; flex-direction: row;
+                    align-items: center; justify-content: space-between }
+}
+
+@media (min-width: 1000px) and (max-width: 1199px){
+  .vh-footer{ grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); column-gap: 36px }
+  .vh-footer-navs{ padding: 0 }
+  .vh-footer-nb{ grid-column: 1 / -1 }
 }

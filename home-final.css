@@ -19,22 +19,14 @@
   height: 35.5681cqw;                   /* 748 ref-px */
   overflow: hidden;
   background: #FAFCFD;
-  font-family: 'Urbanist', 'Archivo', system-ui, sans-serif;
+  font-family: 'Urbanist', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 
-  --fi-blauw: #0073FE;
-  --fi-navy:  #08203C;
-  --fi-body:  #4C5771;
+  --fi-blauw:var(--vibe-blauw);
+  --fi-navy:var(--vibe-navy);
+  --fi-body:var(--vibe-body);
   --fi-tint:  #E8F3FE;
 }
-/* home.css:319 zet via #bigcta een donkere achtergrond en een rand op deze
-   sectie; home.css:369 maakt elke h2 binnen #bigcta wit. Beide worden hier
-   binnen sectie 8 gecorrigeerd zonder home.css aan te raken. */
-#bigcta.vh-final{
-  background: #FAFCFD !important;
-  border-top: 0 !important;
-}
-#bigcta.vh-final h2{ color: var(--fi-navy) }
 
 /* ------------------------------------------------------------
    VIBE-GEOMETRIE — chevron-wig links van de foto
@@ -90,7 +82,10 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 46%;
+  /* Bij 50%/46% vulde de parkeerplaats het beeld en was de zonnecarport
+     nauwelijks zichtbaar. Deze uitsnede zet de carportrijen en de skyline
+     in beeld, wat de sectie inhoudelijk laat kloppen. */
+  object-position: 78% 56%;
   display: block;
 }
 
@@ -338,6 +333,10 @@
   .vh-final-vdl{ order: 2 }
   .vh-final-foto{ order: 3 }
   .vh-final-kaart{ order: 4 }
+  /* De knop "Plan een gesprek" staat 400 px hoger in dezelfde sectie en opent
+     dezelfde Calendly. De kaart houdt zijn geruststellende tekst, maar niet
+     nog een tweede knop naar dezelfde actie. */
+  .vh-final-kaart-link{ display: none }
   .vh-final-blauw{ order: 5 }
 
   .vh-final-eyebrow{ font-size: var(--m-eyebrow); letter-spacing: .14em }
@@ -350,7 +349,7 @@
   .vh-final-kop br{ display: none }
   .vh-final-lead{ font-size: var(--m-lead); line-height: 1.55; margin-top: 15px; max-width: 34ch }
   .vh-final-lead br{ display: none }
-  .vh-final-acties{ margin-top: 24px; gap: 10px; flex-direction: column; align-items: stretch }
+  .vh-final-acties{ margin-top: 20px; gap: 10px; flex-direction: column; align-items: stretch }
   .vh-final-cta, .vh-final-cta2{
     width: 100%; height: var(--m-btn-h); padding: 0 20px;
     font-size: 16px; border-radius: 10px; justify-content: space-between;
@@ -372,13 +371,15 @@
 
   .vh-final-foto{
     position: relative; left: auto; top: auto; right: auto; bottom: auto;
-    width: auto; height: 236px;
-    margin: 28px var(--m-gutter) 0;
+    width: auto; height: 204px;
+    margin: 24px var(--m-gutter) 0;
     clip-path: none; border-radius: var(--m-radius-img); overflow: hidden;
   }
   .vh-final-foto img{
     position: static; width: 100%; height: 100%;
-    object-fit: cover; object-position: 52% 52%;
+    /* horizon iets hoger: skyline en carportrijen komen beide in de zichtbare
+       band boven de afspraakkaart, minder leeg asfalt achter de kaart */
+    object-fit: cover; object-position: 76% 44%;
   }
   .vh-final-foto::after{
     background: linear-gradient(196deg, rgba(8,32,60,.46) 0%, rgba(8,32,60,.24) 52%, rgba(8,32,60,.52) 100%);
@@ -395,10 +396,13 @@
     z-index: 2;
   }
   .vh-final-kaart{
-    position: static; width: auto; height: auto;
+    /* relatief i.p.v. statisch: de foto is vervangen inhoud en tekent zich
+       anders over de kaartachtergrond heen */
+    position: relative; left: auto; top: auto;
+    width: auto; height: auto;
     margin: -34px var(--m-gutter) 0;
     margin-left: calc(var(--m-gutter) + 14px);
-    padding: 20px; border-radius: var(--m-radius);
+    padding: 18px 18px 20px; border-radius: var(--m-radius);
     z-index: 3;
   }
   .vh-final-kaart-ic{ width: 44px; height: 44px }
