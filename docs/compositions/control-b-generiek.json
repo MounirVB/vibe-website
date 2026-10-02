@@ -1,0 +1,152 @@
+{
+  "card_version": "1.0",
+  "page": "control:B-generiek-b2",
+  "status": "CONTROL",
+  "archetype": "B2",
+  "variant": "generiek-compliant",
+  "visual_protagonist": "propositie-tekst",
+  "canvas_strategy": {
+    "modes": {
+      "CANVAS": 0,
+      "DOCUMENT": 6,
+      "HYBRID": 0
+    },
+    "desktop_note": "Alle zes secties blijven in DOCUMENT: een enkele inhoudsbreedte met een paginabrede bovengrens, nul modusovergangen. Geen enkel beeld raakt een schermrand en geen sectiehoogte volgt uit een beeld. Het enige wat van rand tot rand loopt is het egale kleurveld onder de slotsectie; de inhoud daarin blijft binnen dezelfde inhoudsbreedte als de rest van de pagina."
+  },
+  "photo_budget": {
+    "slots": 1,
+    "declared_files": [
+      "assets/projects/ketsheuvel.jpg"
+    ]
+  },
+  "sections": [
+    {
+      "id": "hero",
+      "purpose": "Opent de pagina met eyebrow, kop, lead en twee buttons, gecentreerd binnen de inhoudsbreedte. De drager is typografie op de paginagrond (familie NF-4, typografisch propositiepodium): geen foto, geen getekend vlak, geen kaart. Er is geen dominant vlak; de kop is wel de grootste letter van de pagina.",
+      "impact": "HIGH",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-01",
+      "protagonist": "typografie",
+      "visual_role": "VR-D",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-0O-0A-0M",
+        "bindings": []
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "PRIMAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT",
+      "asset_class": "NVT"
+    },
+    {
+      "id": "kaartrij-1",
+      "purpose": "Drie gelijke kaarten in een rij: per kaart een icoon, een kop van een regel en een regel toelichting. De kaarten zijn onderling gelijk in breedte, hoogte, hoekwaarde en typografische graad; geen van de drie is uitgelicht en er is dus geen dominant item. Ze staan naast elkaar op de paginagrond, niet op een drager, en er ligt niets op iets anders.",
+      "impact": "MEDIUM",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-02",
+      "protagonist": "typografie",
+      "visual_role": "VR-C",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-3O-0A-0M",
+        "bindings": [],
+        "equal_row": {
+          "count": 3
+        }
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "GEEN",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT",
+      "asset_class": "NVT"
+    },
+    {
+      "id": "beeld-naast-tekst",
+      "purpose": "Tweedeling binnen de inhoudsbreedte: tekstkolom links met eyebrow, kop, lead en een tekstlink, beeld rechts. Het beeld is een ingekaderde rechthoek met merkradius: geen masker, geen scrim, geen vlak erop, geen randcontact en geen doorloop buiten de marge. Het is daarmee de behandeling M3 zonder het vlak dat M3 tot behandeling maakt, oftewel een rechthoek naast tekst. De opname is een echte projectfoto, maar draagt hier geen projectclaim: de tekst eromheen is generiek.",
+      "impact": "MEDIUM",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-03",
+      "protagonist": "foto",
+      "visual_role": "VR-A",
+      "media_treatment": "M3",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-0A-0M",
+        "bindings": []
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "TEKSTLINK",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/projects/ketsheuvel.jpg",
+      "asset_class": "B"
+    },
+    {
+      "id": "kaartrij-2",
+      "purpose": "Tweede rij van drie gelijke kaarten, in opbouw gelijk aan de eerste rij: zelfde aantal, zelfde onderlinge gelijkheid, zelfde drager, zelfde vlakpatroon, zelfde kolomverdeling. Alleen de tekst in de kaarten verschilt.",
+      "impact": "MEDIUM",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-02",
+      "protagonist": "typografie",
+      "visual_role": "VR-C",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-3O-0A-0M",
+        "bindings": [],
+        "equal_row": {
+          "count": 3
+        }
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "GEEN",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT",
+      "asset_class": "NVT"
+    },
+    {
+      "id": "faq",
+      "purpose": "Vragenregister (REG-1): zes vraag-antwoordparen onder elkaar in een leeskolom, gescheiden door haarlijnen, zonder kaartvlakken. Er is een gewichtssprong tussen de vraagregel en het antwoord. Alle rijen staan bij laden dicht, zodat er geen antwoordvlak zichtbaar is en de sectie dus geen enkel vlak draagt. Het register is de laatste inhoudelijke sectie voor het slot.",
+      "impact": "QUIET",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-12",
+      "protagonist": "typografie",
+      "visual_role": "VR-D",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-0O-0A-6M",
+        "bindings": []
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "GEEN",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT",
+      "asset_class": "NVT"
+    },
+    {
+      "id": "slot-cta",
+      "purpose": "Slotsectie: kop, lead en een primaire button, gecentreerd op een egaal kleurveld dat van schermrand tot schermrand loopt terwijl de inhoud binnen de inhoudsbreedte blijft. Het veld is louter grond en draagt zelf geen inhoudsrol: geen snede, geen wig, geen lagen, geen beeld, geen tweede vlak. De sectie escaleert niet boven de opening: de kop is kleiner dan de herokop en er is geen extra laag of mediaschaal.",
+      "impact": "HIGH",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-10",
+      "protagonist": "typografie",
+      "visual_role": "VR-D",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-0O-0A-0M",
+        "bindings": []
+      },
+      "geometry_role": "ACHTERGRONDVELD",
+      "transition": "HARDE-FLIP",
+      "cta_role": "PRIMAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT",
+      "asset_class": "NVT"
+    }
+  ],
+  "notes": "CONTROLEKAART, metadata-only. Er is geen HTML geschreven en er bestaat geen implementatie van deze pagina; alle velden beschrijven de bedoelde opbouw, niet een gemeten bouw. Er is geen poging gedaan de kaart aan enige regel te laten voldoen. (1) VR-LEGENDA ONTBREEKT IN DE REPO. Het schema verwijst voor VR-A..VR-H naar hoofdstuk 3, maar 04-visual-language-v1.3.md hoofdstuk 3 definieert NF-1..NF-6 en REG-1..REG-5, en hoofdstuk 5 definieert de dragersoorten D-F, D-O, D-V en D-0. Een tabel VR-A..VR-H staat nergens in deze repo; buiten het schema komt alleen VR-F een keer voor, in de poort. Ik heb daarom een eigen afbeelding op de dragersoorten gebruikt die wel gedefinieerd zijn: VR-A = fotografische drager (D-F), VR-C = getekend vlak (D-V), VR-D = geen drager, typografie op de sectiegrond (D-0). Die afbeelding is mijn aanname en geen gemeten legenda. (2) GEEN RECHTVAARDIGING VOOR DE GELIJKE RIJEN. Op beide kaartrijen is equal_register_justification bewust weggelaten: er is geen gelijk register. De drie kaarten dragen drie verschillende proposities en zijn alleen gelijk omdat het raster ze gelijk maakt. Een negatieve rechtvaardiging invullen zou een presentietoets halen zonder dat de inhoud die gelijkheid draagt. (3) GEEN HECHTINGEN. Alle zes secties hebben bindings: []. Er ligt op deze pagina niets op iets anders: geen vlak op een beeld, geen kaart over een rand, geen tekst in een scrim. De secties staan als losse banden onder elkaar met lucht ertussen. (4) VIER VAN ZES SECTIES HEBBEN GEEN ENKEL VLAK en dus ook geen dominant vlak: hero, beide kaartrijen in de zin van een dominant item, faq en slot. Alleen de beeldsectie heeft een dominant vlak. Het kleurveld onder het slot is louter grond en is daarom niet als dominant vlak geteld. (5) DE KAARTRIJ HEEFT GEEN DRAGER IN DE WOORDENLIJST. Voor drie gelijke kaarten bestaat geen NF- of REG-drager: NF-4 eist nul kaarten in de sectie en NF-5 eist dat het vlak de dominantievloer haalt; beide noemen drie witte kaarten expliciet als falend. Ik heb daarom geen NF-code voor die rijen gedeclareerd in plaats van er een te kiezen die niet past. (6) BLAUWDRUKKEN ZIJN DE NAASTE FAMILIE, NIET EEN TREFFER. BR-01 is de openingsrelatie, maar de hero heeft geen drager die het openingsvlak vult en geen randovergang. BR-02 is de verzamelingsrelatie, maar beide kaartrijen zijn precies de terugvalvorm die BR-02 verbiedt: een rij gelijke tegels met een vlak, een rij in plaats van twee met verschillende kolomverdeling, en geen item met een eigen graad. BR-03 is de naaste familie voor beeld met tekst, maar de drager loopt naar geen enkele schermrand door, de tekst staat ernaast in plaats van erin en er is geen aangehecht bewijsvlak. BR-10 is de slotrelatie, maar het slot escaleert niet. Alleen BR-12 past op de faq naar vorm; die staat wel op de plek die BR-12 afwijst, direct voor het slot. (7) BEELDVOORRAAD. Een bestand gedeclareerd, assets/projects/ketsheuvel.jpg, klasse B, aanwezig in de repo en gebruikt in een MEDIUM-sectie met M3. Geen productscreenshot, geen nepdashboard, geen verzonnen project, geen plaatshouder. (8) transition is gelezen als de overgang naar de sectie toe. De vijf RUST-waarden zijn letterlijk lucht tussen twee banden; de HARDE-FLIP op het slot is de toonomslag naar het kleurveld. (9) De pagina is op primitief niveau merkconform bedoeld: geldige kleuren, typografie, spatiering en buttons. Wat zij niet heeft is compositie: nul randcontact, nul geometrie buiten een egaal veld, nul hechtingen, twee identieke kaartrijen en een slot dat de opening herhaalt op lagere sterkte."
+}

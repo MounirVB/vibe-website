@@ -1,0 +1,323 @@
+{
+  "card_version": "1.0",
+  "page": "systeem-energieopslag.html",
+  "status": "MIGRATED",
+  "archetype": "B2",
+  "variant": "productsysteem-batterijopslag",
+  "visual_protagonist": "fysieke-infrastructuur",
+  "canvas_strategy": {
+    "modes": {
+      "CANVAS": 5,
+      "DOCUMENT": 1,
+      "HYBRID": 5
+    },
+    "desktop_note": "DE VISUELE IDEE: opslag als ACTIEVE ENERGIE-INFRASTRUCTUUR, niet als productdoos. De pagina draagt een terugkerende CAPACITEITSAS — een horizontale, gemeten band die de grens van de aansluiting voorstelt. Zij opent in de hero als bewijsband die de naad kruist, ligt in sectie 3 als de lijn waarop de batterij staat, wordt in sectie 8 de volle breedte van de procesas, en lost in het slot op. Dat is de signatuur van DEZE pagina. De master draagt een DIAGONALE wig als signatuur; deze pagina draagt een HORIZONTALE as. Daarom is het silhouet per sectie anders, ook waar het mechanisme (proportioneel canvas) hetzelfde is. De vijf CANVAS-secties rekenen in een eigen inline-size-context met een vaste beeldverhouding, zodat de compositie meeschaalt in plaats van tegen een plafond te lopen; dat is de uitzondering die brandbook 1A.6 punt 2 zelf benoemt voor bewust canvas-proportionele composities. De DOCUMENT-sectie is het PROJECTREGISTER (sectie 06): bewust kort, licht van gewicht en met een VASTE leesbreedte die niet meeschaalt — gemeten 1180px bij 1440, 1774 en 1920. Zij is met opzet niet de FAQ: de FAQ is hoog, en een BEVROREN ZWARE sectie is onder DG-01 altijd een FAIL. De FAQ is daarom HYBRID, met een leeskolom die in ch vastligt (gemeten 69,1ch bij alle drie de breedtes) binnen een canvas dat meegroeit, en met een aangekondigde modusovergang."
+  },
+  "photo_budget": {
+    "slots": 2,
+    "declared_files": [
+      "assets/energieopslag-hero.jpg",
+      "assets/projects/ratio16.jpg"
+    ]
+  },
+  "sections": [
+    {
+      "id": "01-hero-capaciteit",
+      "purpose": "De propositie op de knellende aansluiting zetten en het gebouwde systeem laten zien. De capaciteitsas opent hier als bewijsband die de naad tussen het navyveld en de fotodrager kruist.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-01",
+      "protagonist": "gebouwd-object",
+      "visual_role": "VR-E",
+      "media_treatment": "M3",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-0A-4M",
+        "bindings": [
+          {
+            "from": "merkchip-in-bedrijf",
+            "to": "fotodrager",
+            "kind": "OP-BEELD"
+          },
+          {
+            "from": "capaciteitsas-bewijsband",
+            "to": "naad-navyveld-fotodrager",
+            "kind": "KRUIST-NAAD"
+          }
+        ]
+      },
+      "geometry_role": "RANDSNEDE",
+      "transition": "GEDRAGEN",
+      "cta_role": "PRIMAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/energieopslag-hero.jpg",
+      "asset_class": "C"
+    },
+    {
+      "id": "02-mismatch-moment",
+      "purpose": "Het werkelijke probleem: energie is beschikbaar, maar niet op het moment dat zij nodig is. Een dominant typografisch statement met ONGELIJK onderschikt bewijs — nadrukkelijk geen drie gelijke probleemkaarten. Het zwaarste vlak kruist de kolomgrens met 119px bij 1774 en houdt 49px vrij van de lead (gemeten).",
+      "impact": "MEDIUM",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-07",
+      "protagonist": "typografie",
+      "visual_role": "VR-F",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-2O-0A-3M",
+        "bindings": [
+          {
+            "from": "zwaarste-probleemvlak",
+            "to": "statementblok",
+            "kind": "OVER-RAND"
+          }
+        ]
+      },
+      "geometry_role": "GEEN",
+      "transition": "GEDEELDE-RAND",
+      "cta_role": "GEEN",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "03-systeem-als-infrastructuur",
+      "purpose": "Het hart van de pagina en haar tweede climax. Niet een accu maar een gestuurde infrastructuur: net en zon links, de batterij als gebouwd object op de capaciteitsas, de belastingen rechts, en VIBE.CONTROL als besturingslaag EROVER in plaats van als hub-cirkel ernaast.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-06",
+      "protagonist": "topologie",
+      "visual_role": "VR-G",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-2A-6M",
+        "bindings": [
+          {
+            "from": "besturingslaag",
+            "to": "batterij-als-object",
+            "kind": "OVER-RAND"
+          },
+          {
+            "from": "knooplabels",
+            "to": "achtergrondveld",
+            "kind": "IN-SCRIM"
+          }
+        ]
+      },
+      "geometry_role": "ACHTERGRONDVELD",
+      "transition": "HARDE-FLIP",
+      "cta_role": "SECUNDAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "04-vibe-control-object",
+      "purpose": "De intelligentielaag als SYSTEEM VAN RELATIES met een zwaartepunt: een gelaagd donker besturingsobject in het midden, invoerrails die erin lopen, uitvoerrails die eruit lopen, en een resultaatvlak dat de onderrand van de kern kruist. HERBOUWD na de onafhankelijke visuele review: de vorige compositie was een vijfkolommentijdlijn met dezelfde as-en-knopen-taal als sectie 09, en zonder gebouwd object. Sectie 09 is sequentieel (een proces door de tijd), deze is operationeel (relaties rond een kern) — zij delen daarom geen silhouet. GEEN dashboardschermafbeelding, GEEN verzonnen meetwaarden: er bestaat nul productscreenshot in de repo en dat is gemeten.",
+      "impact": "MEDIUM",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-04",
+      "protagonist": "technische-compositie",
+      "visual_role": "VR-F",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-1A-6M",
+        "bindings": [
+          {
+            "from": "resultaatvlak",
+            "to": "onderrand-besturingskern",
+            "kind": "KRUIST-NAAD"
+          },
+          {
+            "from": "gelaagde-vlakken",
+            "to": "besturingskern",
+            "kind": "OVER-RAND"
+          }
+        ]
+      },
+      "geometry_role": "GEEN",
+      "transition": "GEDEELDE-RAND",
+      "cta_role": "TEKSTLINK",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "05-projectbewijs-band",
+      "purpose": "Een gerealiseerd systeem als volbrede beeldband, met de bewijskaart OP het beeld en de drie gemeten waarden over de onderrand. De twee steuncases zijn naar een eigen DOCUMENT-register verplaatst (sectie 06), zodat deze sectie een zuivere canvascompositie blijft.",
+      "impact": "MEDIUM",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-03",
+      "protagonist": "foto",
+      "visual_role": "VR-C",
+      "media_treatment": "M4",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-3A-3M",
+        "bindings": [
+          {
+            "from": "bewijskaart-ratio16",
+            "to": "beeldband",
+            "kind": "OP-BEELD"
+          },
+          {
+            "from": "waardenrij",
+            "to": "onderrand-beeldband",
+            "kind": "OVER-RAND"
+          }
+        ],
+        "equal_row": {
+          "count": 3,
+          "equal_register_justification": "Drie GEMETEN waarden van EEN project (240 zonnepanelen, 51 kW aansluiting, 78% besparing), alle drie uit project-ratio-16.html. Zij hebben werkelijk gelijke rang: het zijn drie metingen van dezelfde installatie, geen drie voordelen met verschillend gewicht. De rij draagt daarom geen eigen vlakken maar ligt als waardenrij over de beeldrand (dragersoort D-0)."
+        }
+      },
+      "geometry_role": "BEELDSNEDE",
+      "transition": "GEDRAGEN",
+      "cta_role": "TEKSTLINK",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/projects/ratio16.jpg",
+      "asset_class": "A"
+    },
+    {
+      "id": "06-projectregister",
+      "purpose": "De ENIGE DOCUMENT-sectie. Twee verdere projecten als geregeld register met een VASTE leesbreedte die niet meeschaalt: bij 1920 leest zij even breed als bij 1440, en dat is de bedoeling. Bewust kort en licht van gewicht, want een BEVROREN ZWARE sectie is onder DG-01 altijd een FAIL — een document-register mag vastliggen, een zwaar landingsvlak niet. Geen duimnagels: het fotobudget is twee bestanden.",
+      "impact": "QUIET",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-08",
+      "protagonist": "typografie",
+      "visual_role": "VR-F",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-0O-0A-4M",
+        "bindings": []
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "TEKSTLINK",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "07-techniek-register",
+      "purpose": "Het specificatieregister, bewust rustig maar niet zwak. De sizing-uitspraak is dominant; de specificaties staan als geregeld register; een getekende moduulopbouw laat de modulariteit zien in plaats van haar te beweren. Geen foto: het fotobudget is op, en een foto van een kast naast een tabel zou hier niets toevoegen. De moduulkaart loopt door tot de ondergrens van de compositie en de moduulstapel verdeelt haar hoogte, zodat het kwadrant rechtsonder een eigenaar heeft.",
+      "impact": "QUIET",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-12",
+      "protagonist": "specificatie",
+      "visual_role": "VR-F",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-1A-6M",
+        "bindings": [
+          {
+            "from": "moduulopbouw-tekening",
+            "to": "registerveld",
+            "kind": "OVER-RAND"
+          }
+        ]
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "PRIMAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "08-exploitatie-routes",
+      "purpose": "Hoe de installatie waarde maakt. Drie routes met HIERARCHIE in plaats van drie gelijke prijskaarten: exploitatie is de propositie en is dominant, koop en beheer zijn onderschikt. De dominante plaat kruist de kolomgrens met 119px bij 1774 en houdt 87px vrij van de lead, zodat de hechting zichtbaar is zonder tekst te bedekken (gemeten).",
+      "impact": "MEDIUM",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-02",
+      "protagonist": "typografie",
+      "visual_role": "VR-D",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-2O-0A-2M",
+        "bindings": [
+          {
+            "from": "route-exploitatie",
+            "to": "routeveld",
+            "kind": "OVER-RAND"
+          }
+        ]
+      },
+      "geometry_role": "MERKWIG",
+      "transition": "GEDEELDE-RAND",
+      "cta_role": "SECUNDAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "09-implementatie-as",
+      "purpose": "Vier stappen op de capaciteitsas, over de VOLLE canvasbreedte. Deze sectie was in de vorige kandidaat een van de drie bevroren desktopfouten: een kleine gecentreerde inhoud in een brede lege sectie. QUIET betekent hier rustig, niet visueel zwak — de as loopt van rand tot rand.",
+      "impact": "QUIET",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-05",
+      "protagonist": "proces",
+      "visual_role": "VR-H",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-4A-4M",
+        "bindings": [
+          {
+            "from": "stapmarkeringen",
+            "to": "procesas",
+            "kind": "KRUIST-NAAD"
+          }
+        ]
+      },
+      "geometry_role": "RANDSNEDE",
+      "transition": "GEDRAGEN",
+      "cta_role": "GEEN",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "10-faq-register",
+      "purpose": "Vragenregister links op leesmaat, met rechts een BRUGVLAK dat een echte taak heeft: het markeert het register (telling en label) en draagt de uitgang naar de conversie. Het vlak KRUIST de kolomgrens en geeft de rechterhelft een eigenaar. HERBOUWD na de onafhankelijke visuele review: de vorige compositie was een leeskolom van 43% met 57% ongecomponeerd wit, een lege rij onder de laatste vraag en een eenzame tekstlink als uitgang. De leeskolom is NIET opgerekt — zij blijft op leesmaat; het is de SECTIE die een eigenaar kreeg. Het donkere vlak geeft de lange lichte middenreeks bovendien een tonaal anker.",
+      "impact": "QUIET",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-12",
+      "protagonist": "typografie",
+      "visual_role": "VR-F",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-1O-1A-5M",
+        "bindings": [
+          {
+            "from": "brugvlak",
+            "to": "vragenregister-kolomgrens",
+            "kind": "OVER-RAND"
+          }
+        ]
+      },
+      "geometry_role": "GEEN",
+      "transition": "HARDE-FLIP",
+      "cta_role": "SECUNDAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "11-slot-regelbare-capaciteit",
+      "purpose": "Het slot van het verhaal: van knellende aansluiting naar regelbare capaciteit. De capaciteitsas lost hier op in het merkvlak. Typografisch podium met een duidelijke CTA-rangorde en zo weinig tekst als het verhaal toelaat.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-10",
+      "protagonist": "typografie",
+      "visual_role": "VR-G",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-0A-3M",
+        "bindings": [
+          {
+            "from": "slotvlak",
+            "to": "capaciteitsas",
+            "kind": "OVER-RAND"
+          }
+        ]
+      },
+      "geometry_role": "MERKWIG",
+      "transition": "GEDRAGEN",
+      "cta_role": "PRIMAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    }
+  ],
+  "notes": "FOTOBUDGET, en waarom het twee bestanden is. Gemeten in deze ronde: er bestaat GEEN klasse-A batterijbeeld in de repo. De batterijopnamen zijn alle klasse C, en klasse C mag onder de frozen regel nooit M1, M2 of M4 dragen. De hero wordt daarom NIET fotografisch door de batterij gedragen: het beeld is een BEGRENSDE DRAGER (M3 DRAAGVLAK), wat voor klasse C is toegestaan, en het dominante element is de propositie met de capaciteitsas. Dat is geen opmaakkeuze maar de voorraad. ||| De vorige kandidaat gebruikte ZES fotobestanden (s1-hero, s4-systeem, s6-ratio16, s6-alkmaar, s6-amsterdam, s7-plaatsing). Het B2-budget is 1 tot 2 unieke bestanden. Vier beelden zijn daarom vervangen door niet-fotografische middelen, en dat is in elk geval een VERBETERING van de compositie: het systeem wordt nu getekend als topologie in plaats van met een kastfoto geillustreerd, de techniek krijgt een moduulopbouw in plaats van een foto naast een tabel, en de twee steuncases staan als register zonder duimnagel. ||| ASSET PENDING: nul. ASSET NVT: acht secties. ||| CONTENT CLOSE-OUT: CONTENT PENDING = 0. De twee eerder gemelde posten (een capaciteitsbereik en een celchemie) hadden in deze codebase geen primaire bron — gemeten over alle .html, .md, .json, .js, .css, .txt en .xml kwamen zij uitsluitend op deze pagina voor, er is geen specificatie- of datasheetbestand, en het bevroren claimregister kent de waarden niet. Beide zijn daarom VERWIJDERD uit de zichtbare tekst, uit og en twitter, uit WebPage, uit Service en uit FAQPage. De propositie eronder blijft staan en is wel onderbouwd: modulair opgebouwd (sectie 07), gedimensioneerd op het kwartiersprofiel (sectie 07) en gestuurd door het EMS (secties 03 en 04). Zet geen vervangend getal terug zonder primaire bron. ||| TWEE GEMETEN CORRECTIES OP DE ASSETTABEL VAN V1.3, gerapporteerd en NIET in het frozen document gewijzigd: (1) regel 988 kent 2560x1922 toe aan projects/hedin-amsterdam, maar gemeten is dat 2400x1802; het bestand dat 2560x1922 meet is assets/laadplein-hero.jpg. Gevolg: M1 PODIUM op volle breedte heeft bij een 1774-kader EEN drager, niet drie. (2) regel 1002 noemt microgrids-hero canoniek en netcongestie-hero een tweede naam, maar netcongestie-hero is 2560x1921 tegen 2000x1501. ||| DE RELATIE MET DE MASTER. Dezelfde mechanismen (proportioneel canvas, vlakken op beelden, randrelaties, handgezette regelval), een ANDERE compositie: de master opent met een volvlaks fotopodium en een diagonale wig, deze pagina opent met een begrensde fotodrager en een horizontale capaciteitsas. De HIGH-hoofdrolverzameling is hier gebouwd-object + topologie + typografie tegen foto + typografie op de master."
+}

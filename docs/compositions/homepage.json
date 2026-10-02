@@ -1,0 +1,251 @@
+{
+  "card_version": "1.0",
+  "page": "index.html",
+  "status": "MASTER",
+  "archetype": "B1",
+  "variant": "startpagina",
+  "visual_protagonist": "fysieke-infrastructuur",
+  "canvas_strategy": {
+    "modes": { "CANVAS": 6, "DOCUMENT": 0, "HYBRID": 3 },
+    "desktop_note": "Deze pagina is geen stapel componenten maar EEN GETEKEND PROPORTIONEEL CANVAS. Alle negen secties rekenen in een eenheid die met de schermbreedte meeschaalt: gemeten zijn negen eigen rekencontexten, ruim zevenhonderd proportionele maatwaarden in de negen sectiestijlbladen en drieenzeventig absoluut geplaatste lagen. Die lagen zijn het MIDDEL waarmee de pagina vlakken op beelden legt en een sectie als een getekend vlak behandelt in plaats van als een rij dozen; het aantal is uitdrukkelijk GEEN kwaliteitsmaat en mag nergens als vloer of als plafond worden overgenomen. Wat wel overdraagbaar is, is de eigenschap die eruit volgt: de hele pagina schaalt als een compositie mee met het scherm in plaats van een vaste inhoudsdoos te centreren, en geen enkele sectie heeft een breedteplafond op haar inhoud. DOCUMENT MODE komt nul keer voor: deze pagina kent geen register en geen leeskolom, en daarom is zij GEEN model voor juridische, FAQ- of specificatiepagina's; die hebben een eigen modusverdeling nodig. De negen naden zijn stuk voor stuk gedragen, gedeeld of rustig; er staat geen enkele harde flip op de pagina."
+  },
+  "photo_budget": {
+    "slots": 13,
+    "declared_files": [
+      "assets/projects/hedin-alkmaar-2.jpg",
+      "assets/zonnepanelen-hero.jpg",
+      "assets/projects/hedin-alkmaar-3.jpg",
+      "assets/exploitatie-hero.jpg",
+      "assets/projects/ratio-16.jpg",
+      "assets/energieopslag-hero.jpg",
+      "assets/projects/hedin-amsterdam.jpg",
+      "assets/microgrids-hero.jpg"
+    ]
+  },
+  "sections": [
+    {
+      "id": "01-opening",
+      "purpose": "Opent de pagina met een volvlaks fotodrager die van schermrand tot schermrand loopt en de propositie als smalle laag IN die drager legt, niet ernaast. Een vrije snede deelt het openingsvlak diagonaal; links van de snede ligt het bleke tekstveld, rechts het beeld, en de merkregel staat in een vorm die uit het beeld gesneden is. Onder het podium loopt een bewijsstrook zonder kaartvlak, met precies zoveel cellen als er onderbouwde uitspraken bestaan: elke cel noemt een herkomst en geen enkele cel is een bedrijfsbreed cijfer zonder bron.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-01",
+      "protagonist": "foto",
+      "visual_role": "VR-A",
+      "media_treatment": "M1",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-0A-5M",
+        "bindings": [
+          { "from": "merkvlak met de witte tekstkolom", "to": "fotopodium", "kind": "OP-BEELD" },
+          { "from": "lichtband langs de diagonaal", "to": "snede tussen podium en tekstveld", "kind": "OVER-RAND" },
+          { "from": "headerregel", "to": "snede tussen podium en tekstveld", "kind": "KRUIST-NAAD" }
+        ],
+        "equal_row": {
+          "count": 0,
+          "equal_register_justification": "De drie bewijscellen zijn onderling exact gelijk verdeeld, maar zij hebben GEEN kaartvlak: alleen een haarlijn tussen de cellen. Daarom telt deze rij niet als gelijke kaartrij. De gelijkheid is hier toegestaan omdat de drie uitspraken van hetzelfde soort en van gelijk gewicht zijn, en de afwezigheid van een vlak houdt ze buiten de kaarthierarchie van de pagina."
+        }
+      },
+      "geometry_role": "RANDSNEDE",
+      "transition": "GEDRAGEN",
+      "cta_role": "PRIMAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/projects/hedin-alkmaar-2.jpg",
+      "asset_class": "A"
+    },
+    {
+      "id": "02-systemen",
+      "purpose": "Toont het complete systeemaanbod als een BEWUST ONGELIJKE verzameling: twee rijen met verschillende kolomverdelingen, waarvan de naden tussen de rijen zichtbaar verspringen, en een item dat duidelijk breder is dan zijn buren en als enige een statistiekregel draagt. In elk item loopt de foto tot alle vier de itemranden; er is geen witte kaart met een beeld erin. Het item waarvoor geen eigen fotografie bestaat krijgt een getekend merkvlak in plaats van een plaatshouder of een geleend beeld. Niets ligt hier op iets anders: alle tekst zit IN zijn eigen item, en dat is de meetbare grens tussen deze sectie en een tegelraster.",
+      "impact": "MEDIUM",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-02",
+      "protagonist": "foto",
+      "visual_role": "VR-D",
+      "media_treatment": "M5",
+      "surface_hierarchy": {
+        "pattern": "1D-5O-0A-4M",
+        "bindings": []
+      },
+      "geometry_role": "MERKWIG",
+      "transition": "RUST",
+      "cta_role": "SECUNDAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/zonnepanelen-hero.jpg",
+      "asset_class": "C"
+    },
+    {
+      "id": "03-projectpaneel",
+      "purpose": "Licht EEN gerealiseerd project uit op een doorlopende drager: het paneel staat links op de containermarge en loopt rechts de schermrand uit, met een eenzijdige afronding aan de kant waar het binnen het raster blijft. Het is de enige donkere passage van de pagina. De tekst ligt in het donkerste deel van de scrim op het beeld zelf, en het projectbewijs staat als lijnenband IN dat beeld in plaats van in losse tegels ernaast; de drie waarden zijn contentgedreven ongelijk breed en elke waarde is op de projectpagina van hetzelfde project terug te vinden. Een merkwig sluit de hoek van het paneel en herhaalt de hoekfamilie van de opening.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-03",
+      "protagonist": "foto",
+      "visual_role": "VR-B",
+      "media_treatment": "M2",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-0A-5M",
+        "bindings": [
+          { "from": "tekstkolom met de bewijsband", "to": "projectbeeld", "kind": "IN-SCRIM" },
+          { "from": "primaire knop", "to": "projectbeeld", "kind": "OP-BEELD" }
+        ]
+      },
+      "geometry_role": "RANDSNEDE",
+      "transition": "RUST",
+      "cta_role": "SECUNDAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/projects/hedin-alkmaar-3.jpg",
+      "asset_class": "A"
+    },
+    {
+      "id": "04-aanpak",
+      "purpose": "Legt de werkwijze uit met een liggende beeldband die op een GETEKENDE ONDERGROND rust: de diagonaal zit hier in de ondergrond en niet in het beeld, zodat het beeld een rechthoek met een rustige afronding kan blijven. Een zwevend infovlak kruist bewust de rand van die band in plaats van erbinnen te blijven. Daaronder loopt de richtingsreeks: vier stappen zonder kaartvlak, alleen icoon, volgnummer en twee regels, op een gelijke steek over een breedte die ver voorbij de begeleidende tekstkolom reikt, zodat de rij als beweging leest en niet als raster. De sectie draagt geen enkele uitgang; dat is hier geen omissie maar het kenmerk van de relatie.",
+      "impact": "QUIET",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-04",
+      "protagonist": "proces",
+      "visual_role": "VR-H",
+      "media_treatment": "M4",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-1A-4M",
+        "bindings": [
+          { "from": "zwevend infovlak", "to": "beeldband", "kind": "KRUIST-NAAD" }
+        ],
+        "equal_row": {
+          "count": 0,
+          "equal_register_justification": "De vier processtappen zijn exact even breed en staan op een gelijke steek, maar zij hebben GEEN vlak: geen grond, geen rand, geen schaduw. Daarom telt deze rij niet als gelijke kaartrij. Gelijkheid is hier juist de drager van de betekenis, want de stappen zijn volgtijdelijk en van gelijk gewicht; zodra er een kaartvlak onder zou komen, wordt het een tegelraster."
+        }
+      },
+      "geometry_role": "ACHTERGRONDVELD",
+      "transition": "GEDEELDE-RAND",
+      "cta_role": "GEEN",
+      "content_status": "DEKKEND",
+      "asset_status": "PENDING",
+      "asset_ref": "assets/exploitatie-hero.jpg",
+      "asset_class": "C"
+    },
+    {
+      "id": "05-sturing",
+      "purpose": "Toont het sturingsproduct als GEBOUWD ONDERWERP in plaats van als productfotografie: er bestaat geen enkele echte opname van de console in deze codebase, dus de sectie bouwt twee apparaatvlakken met leesbare inhoud, waarvan het kleinste de rand van het grootste overlapt en er verticaal binnen blijft. Elke getoonde waarde is elders op deze site gepubliceerd en het paneel draagt zichtbaar het label dat het een voorbeeldweergave is. Dit is bovendien de enige gespiegelde compositie van de pagina: het onderwerp links, de leeskolom rechts. Een getekend vijfhoekig veld geeft de zwevende apparaten een ondergrond.",
+      "impact": "MEDIUM",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-06",
+      "protagonist": "gebouwd-object",
+      "visual_role": "VR-E",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-0A-5M",
+        "bindings": [
+          { "from": "kleiner apparaatvlak", "to": "hoofdapparaatvlak", "kind": "KRUIST-NAAD" }
+        ]
+      },
+      "geometry_role": "ACHTERGRONDVELD",
+      "transition": "GEDEELDE-RAND",
+      "cta_role": "SECUNDAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT",
+      "asset_class": "NVT"
+    },
+    {
+      "id": "06-projectresultaat",
+      "purpose": "Draagt het resultaat van een TWEEDE gerealiseerd project, zodat de pagina niet op een enkele klant leunt, en snijdt zichzelf daarvoor in twee horizontale banden: boven de vertrouwensband met precies zoveel organisaties als er onderbouwd zijn, onder het projectresultaat. De drie zones van de onderste band overlappen elkaar alle drie; geen enkele kolomnaad is schoon. Het beeld krijgt een FLAUWE snede in plaats van de scherpe merkhoek, juist zodat de verhaalkolom in de vrijgekomen hoek kan doorlopen. Een donkere strook ligt volledig op het beeld en een resultaatkaart steekt er net overheen; de cijfers in die kaart komen letterlijk van de projectpagina van dit project en zijn een resultaatbeschrijving, geen toegeschreven citaat.",
+      "impact": "MEDIUM",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-08",
+      "protagonist": "metriek-bewijs",
+      "visual_role": "VR-C",
+      "media_treatment": "M3",
+      "surface_hierarchy": {
+        "pattern": "1D-3O-1A-2M",
+        "bindings": [
+          { "from": "donkere projectstrook", "to": "projectbeeld", "kind": "OP-BEELD" },
+          { "from": "resultaatkaart", "to": "projectbeeld", "kind": "OVER-RAND" },
+          { "from": "verhaalkolom", "to": "projectbeeld", "kind": "OVER-RAND" }
+        ]
+      },
+      "geometry_role": "BEELDSNEDE",
+      "transition": "GEDEELDE-RAND",
+      "cta_role": "TEKSTLINK",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/projects/ratio-16.jpg",
+      "asset_class": "A"
+    },
+    {
+      "id": "07-bestemmingen",
+      "purpose": "Zet de vier sectorbestemmingen niet als rij tegels onder de tekst, maar als verticale kolom GESTAPELD OP het infrastructuurbeeld; alle vier liggen volledig binnen de beeldrand en de verdonkering is speciaal onder die kolom aangebracht zodat de kaarten op een veld staan in plaats van los te zweven. Het beeld draagt de flauwste snede van de pagina, net genoeg om de rechterzone vorm te geven zonder de rechthoek te laten zien. De linkerkolom is de enige plek op de pagina waar kop, lead en voordeelregels exact even breed zijn, waardoor een rechte kolomrand ontstaat die tot vlak voor de beeldrand doorloopt.",
+      "impact": "MEDIUM",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-09",
+      "protagonist": "foto",
+      "visual_role": "VR-C",
+      "media_treatment": "M3",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-4A-5M",
+        "bindings": [
+          { "from": "kolom van vier gelijke registerkaarten", "to": "infrastructuurbeeld", "kind": "OP-BEELD" },
+          { "from": "kolom van vier gelijke registerkaarten", "to": "verdonkering onder de kolom", "kind": "IN-SCRIM" }
+        ],
+        "equal_row": {
+          "count": 4,
+          "equal_register_justification": "Dit is de ENIGE gelijke kaartfamilie van de pagina en zij is gerechtvaardigd omdat de inhoud zelf een register is: vier bestemmingen van hetzelfde soort, elk met dezelfde informatiediepte van een naam en een belofte van een regel, zonder rangorde tussen de sectoren. Gelijkheid drukt hier gelijkwaardigheid uit. De rij is bovendien verticaal gestapeld op een drager en niet horizontaal naast de tekst gelegd, waardoor zij niet als tegelraster leest."
+        }
+      },
+      "geometry_role": "BEELDSNEDE",
+      "transition": "GEDRAGEN",
+      "cta_role": "SECUNDAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/energieopslag-hero.jpg",
+      "asset_class": "C"
+    },
+    {
+      "id": "08-slot",
+      "purpose": "Escaleert het slot aantoonbaar boven de rest van de pagina: de grootste kop, de strakste tracking en het enige beeld dat de volle sectiehoogte vult. De scheiding tussen tekst en beeld is hier GEEN verticale lijn maar een punt: drie geometrische lagen, de getekende chevron die de hele linkerhelft draagt, de chevronsnede van het beeld zelf en het blauwe merkvlak dat de hoek precies op de schermranden sluit, delen een hoekfamilie en een rand, zodat ze als diepte lezen en niet als drie vormen. Het beeld ligt onder de zwaarste verdonkering van de pagina en is daarmee grond, geen onderwerp; de afspraakkaart ligt er volledig op.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-10",
+      "protagonist": "typografie",
+      "visual_role": "VR-G",
+      "media_treatment": "M6",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-1A-5M",
+        "bindings": [
+          { "from": "afspraakkaart", "to": "slotbeeld", "kind": "OP-BEELD" },
+          { "from": "blauw merkvlak", "to": "slotbeeld", "kind": "OVER-RAND" }
+        ]
+      },
+      "geometry_role": "MERKWIG",
+      "transition": "GEDRAGEN",
+      "cta_role": "PRIMAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/projects/hedin-amsterdam.jpg",
+      "asset_class": "B"
+    },
+    {
+      "id": "09-voet",
+      "purpose": "Sluit de pagina niet met een egale band maar met de merkvorm: een staand beeldvlak in de hoek, als chevron gesneden in dezelfde familie als het slot maar op een fractie van de schaal, zodat de twee laatste secties op elkaar rijmen. Het is het enige staande beeld van de pagina en de verhouding beeld tot tekst is hier omgekeerd ten opzichte van elke andere sectie. De navigatie staat op bewust ongelijke steken in plaats van in vier gelijke kolommen, er staat geen kop in de voet, en op het beeld ligt precies een element: een handgeschreven regel zonder vlak.",
+      "impact": "QUIET",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-11",
+      "protagonist": "typografie",
+      "visual_role": "VR-G",
+      "media_treatment": "M6",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-0A-5M",
+        "bindings": [
+          { "from": "handgeschreven notitieregel zonder vlak", "to": "voetbeeld", "kind": "OP-BEELD" }
+        ]
+      },
+      "geometry_role": "MERKWIG",
+      "transition": "RUST",
+      "cta_role": "SECUNDAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/microgrids-hero.jpg",
+      "asset_class": "C"
+    }
+  ],
+  "notes": "LEESWIJZER BIJ DE DRAGERCODES. Het schema verwijst voor VR-A..VR-H naar hoofdstuk 3, maar die codes staan nergens in docs/ gedefinieerd; hoofdstuk 3 benoemt vier dragersoorten. Deze kaart legt de acht codes daarom vast en gebruikt ze zo: VR-A volvlaks fotopodium van rand tot rand · VR-B doorlopend fotopaneel dat naar een schermrand uitloopt · VR-C begrensd fotodraagvlak met vlakken erop · VR-D verzameling waarin elk item zijn eigen drager is · VR-E gebouwd object als drager · VR-F vlakloze bewijsband of register op de sectiegrond (komt op deze pagina niet voor) · VR-G getekend merkvlak dat het beeld draagt · VR-H beeldband op een getekende ondergrond. ||| VLAKROLLEN, hoe hier geteld. DOMINANT is het vlak dat de sectie draagt; ONDERSTEUNEND is een zelfstandig vlak met een eigen claim; AANGEHECHT is een vlak dat vrijwel geheel op het dominante vlak ligt en er zijn betekenis aan ontleent; MICRO zijn de elementen zonder vlak, dus bewijscellen, icoonregels, processtappen, knoppen en tekstlinks. ||| TWEE RELATIES ZITTEN IN EEN GASTSECTIE. Het gemeten ritme van deze pagina noemt sectie 04 als C4 plus C5 en sectie 06 als C7 plus C8. De kaart declareert per sectie een blauwdruk: in 04 de gedragen band, met de richtingsreeks als tweede relatie eronder, en in 06 de registers op de drager, met de bewijsband naar maat als tweede relatie in de bovenste band. ||| EEN BEWUSTE AFWIJKING VAN DE BLAUWDRUKMODUS. Sectie 06 is hier CANVAS gedeclareerd terwijl de blauwdruk HYBRID als standaard noemt: de sectie is volvlaks, haar drie zones overlappen elkaar en er is geen begrensde leeskolom naast een podium. ||| ASSETSTAND, gemeten en niet opgelost. (1) Sectie 04 draagt een bandbehandeling op een klasse-C-bron; een band van deze verhouding vraagt klasse A of B, daarom staat dat slot als PENDING en niet als gedekt. (2) De verzameling van sectie 02 bevat naast de gedeclareerde drager nog vier bronnen; een daarvan is gemeten synthetisch en moet worden vervangen, en een andere ligt buiten de assetmap. Deze kaart declareert per sectie de drager en niet elk item. (3) De bron van sectie 09 staat niet in het klasseregister, maar is gemeten dezelfde opname als een klasse-C-bestand en is hier zo geclassificeerd. (4) De voet toont hetzelfde onderwerp als sectie 07; dat is op deze pagina een rijm, maar het is geen precedent voor andere pagina's. (5) Er bestaat NUL productfotografie van de console; sectie 05 lost dat op met een gebouwd onderwerp en een zichtbaar voorbeeldlabel, nooit met een nagebouwd scherm. ||| NIET GEMETEN IN DEZE SESSIE: of de servicebelofte over de reactietermijn in de secties 08 en 09 een primaire bron heeft; het gedrag onder de mobiele grens, want deze kaart beschrijft uitsluitend de desktopcompositie; contrastwaarden van witte tekst op beeld. ||| BASIS. Sectie-indeling en identificatie uit index.html en de negen sectiestijlbladen in de repo-wortel, geverifieerd op de paginaopname review/homepage-master-v1/full-1774.png; de bron per beeldslot en de duplicaten uit de gemeten tabellen in docs/04-visual-language-v1.3.md; het impactritme uit het gemeten ritme van B1 in docs/vibe-page-archetypes-v1.md; de compositiebeschrijving per sectie uit de forensische meting van deze pagina."
+}

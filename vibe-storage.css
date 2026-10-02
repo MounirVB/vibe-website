@@ -1,0 +1,1273 @@
+/* ============================================================================
+   VIBE B2 MASTER — SYSTEEM / ENERGIEOPSLAG
+   Paginaspecifieke compositie tegen frozen Design System V1.3
+   ----------------------------------------------------------------------------
+   KAART: docs/compositions/systeem-energieopslag.json
+   POORT: node docs/qa/composition-gate.mjs systeem-energieopslag
+
+   DE VISUELE IDEE — opslag als ACTIEVE ENERGIE-INFRASTRUCTUUR.
+   De pagina draagt een terugkerende CAPACITEITSAS: een horizontale, gemeten
+   band die de grens van de aansluiting voorstelt. Zij opent in de hero als
+   bewijsband die de naad kruist, is in sectie 03 de lijn waarop de batterij
+   staat, wordt in sectie 08 de volle breedte van de procesas, en lost in het
+   slot op in het merkvlak.
+   De master draagt een DIAGONALE wig als signatuur. Deze pagina draagt een
+   HORIZONTALE as. Zelfde mechanismen, ander silhouet.
+
+   REKENEENHEID — zoals home-hero.css:5
+     Alle CANVAS-secties krijgen `container-type: inline-size` en een podium met
+     een vaste `aspect-ratio`. De maten komen uit een referentie van 1774px
+     breed en zijn omgerekend naar cqw: 1cqw = 17,74 referentiepixels.
+     Daardoor klopt de compositie op elke desktopbreedte en loopt niets tegen
+     een plafond aan. Dit is de uitzondering die brandbook 1A.6 punt 2 zelf
+     benoemt voor bewust canvas-proportionele composities; de TYPOGRAFIE blijft
+     in clamp() en volgt dus niet de cqw-route (DR-C-20 / UD-2 is niet geraakt).
+
+   HOEKFAMILIES (GEO-03, frozen): scherp 27-37 graden, flauw 9-14 graden.
+     Deze pagina gebruikt de FLAUWE familie als hoofdgebaar (heronaad 11,0 en
+     slotwig 12,4 graden) en de SCHERPE familie eenmaal (procesas-aanzet 31,0).
+     De master gebruikt de scherpe familie als hoofdgebaar. Dat is bedoeld.
+   ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+   DE WERKBREEDTE — proportioneel, NOOIT een px-plafond
+   ----------------------------------------------------------------------------
+   Gemeten op Master v1: de mediane werkbreedte is 90,5% bij 1774 EN 90,6% bij
+   1440 — de pagina houdt haar bezetting dus vast terwijl de viewport groeit.
+   De vorige B2-kandidaat gebruikte een container met max-width 1440px; daardoor
+   zakte de bezetting van 86,1% bij 1440 naar 64,6% bij 1920 en meldde DG-01
+   drie BEVROREN ZWARE SECTIES. Een percentage kan niet bevriezen.
+   ---------------------------------------------------------------------------- */
+.st-wrap{
+  width:90.5%;
+  margin-inline:auto;
+}
+@media (max-width:1199px){
+  .st-wrap{ width:auto; padding-inline:clamp(20px,5vw,40px) }
+}
+
+.st{
+  --st-navy:var(--vibe-navy-900);
+  --st-navy-zacht:var(--vibe-navy-800);
+  --st-lijn-op-donker:rgba(255,255,255,.16);
+  --st-as:#0073FE;
+  --st-as-zacht:rgba(0,115,254,.22);
+}
+
+/* ============================================================================
+   01 · HERO — HIGH · CANVAS · BR-01 · gebouwd-object · VR-E · M3 DRAAGVLAK
+   ----------------------------------------------------------------------------
+   Podium 1774 x 760 (ratio 2,3342).
+   Navyveld links met een FLAUWE snede: bovenrand op x=922, onderrand op
+   x=1070. dx=148 over h=760 -> 11,0 graden uit het verticaal. In procenten,
+   dus hoekdrift 0 (GEO-02).
+   Fotodrager rechts, BEGRENSD (M3: doelratio 1,49) — hij raakt de rechter- en
+   de bovenrand maar eindigt op 72% hoogte. Klasse C mag M3 dragen, nooit
+   M1/M2/M4; er bestaat geen klasse-A batterijbeeld (zie kaart, notes).
+   De CAPACITEITSAS ligt op 72-85,3% en KRUIST de naad tussen beide velden.
+   ============================================================================ */
+.st-hero{
+  container-type:inline-size;
+  position:relative;
+  width:100%;
+  background:var(--vibe-white);
+}
+.st-hero-podium{
+  position:relative;
+  width:100%;
+  aspect-ratio:1774 / 1040;
+  overflow:hidden;
+  background:linear-gradient(180deg,#F7FBFF 0%,#EFF6FE 76%,#FFFFFF 76%);
+}
+
+/* --- navyveld, flauwe snede 11,0 graden --- */
+.st-hero-veld{
+  position:absolute; inset:0; z-index:2;
+  clip-path:polygon(0 0, 51.972% 0, 60.316% 100%, 0 100%);
+  background:
+    radial-gradient(118% 92% at 6% 8%, #0A2546 0%, rgba(10,37,70,0) 62%),
+    linear-gradient(168deg,var(--vibe-navy-800) 0%,var(--vibe-navy-900) 100%);
+}
+/* dunne accentlijn ín de snede — hij markeert de naad die de as straks kruist */
+.st-hero-veld::after{
+  content:''; position:absolute; inset:0;
+  clip-path:polygon(51.972% 0, 52.479% 0, 60.823% 100%, 60.316% 100%);
+  background:linear-gradient(180deg,rgba(62,155,255,.85) 0%,rgba(62,155,255,.10) 78%);
+}
+
+/* --- fotodrager: begrensd, raakt boven- en rechterrand --- */
+.st-hero-drager{
+  position:absolute;
+  top:0; right:0; bottom:24%; left:33.7%;
+  z-index:1;
+  overflow:hidden;
+}
+.st-hero-drager img{
+  width:100%; height:100%; object-fit:cover; object-position:58% 46%;
+  display:block;
+}
+/* leesbaarheidsverloop onder het merkvlak en links tegen de naad */
+.st-hero-drager::after{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:
+    linear-gradient(258deg, rgba(0,22,50,.06) 0%, rgba(0,22,50,.22) 64%, rgba(0,22,50,.46) 100%),
+    linear-gradient(180deg, rgba(0,22,50,.18) 0%, rgba(0,22,50,0) 38%);
+}
+
+/* --- copyblok in het navyveld --- */
+.st-hero-copy{
+  position:absolute; z-index:4;
+  left:5.412cqw;                 /* 96px  */
+  top:9.02cqw;                   /* 160px */
+  width:38.5cqw;                 /* 683px */
+}
+.st-hero-copy .vibe-eyebrow{ color:var(--vibe-blue-300) }
+.st-hero-copy h1{
+  color:var(--vibe-white);
+  font-size:clamp(34px,3.72cqw,66px);
+  line-height:1.035;
+  letter-spacing:-.022em;
+  margin:.42em 0 0;
+}
+.st-hero-copy h1 em{ color:var(--vibe-blue-300); font-style:normal }
+.st-hero-copy .vibe-lead{
+  color:rgba(226,238,252,.86);
+  margin-top:1.02em;
+  max-width:31.5cqw;
+}
+.st-hero-copy .vibe-actions{ margin-top:1.55cqw }
+
+/* --- merkchip OP het beeld (binding OP-BEELD) --- */
+.st-hero-chip{
+  position:absolute; z-index:5;
+  right:5.412cqw;                /* 96px */
+  top:6.77cqw;                   /* 120px */
+  display:inline-flex; align-items:center; gap:.58em;
+  padding:.62em 1.05em;
+  background:rgba(0,22,50,.56);
+  border:1px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(7px);
+  color:var(--vibe-white);
+  font-size:clamp(12px,.79cqw,14px);
+  letter-spacing:.012em;
+}
+.st-hero-chip b{ font-weight:650 }
+.st-hero-chip i{
+  width:.54em; height:.54em; border-radius:50%;
+  background:var(--vibe-blue-300);
+  box-shadow:0 0 0 .28em rgba(62,155,255,.22);
+  font-style:normal;
+}
+
+/* ============================================================================
+   DE CAPACITEITSAS — het terugkerende motief
+   In de hero: y = 72% tot 85,3% van het podium, volle breedte, KRUIST de naad.
+   ============================================================================ */
+.st-as{
+  position:absolute; z-index:6;
+  left:0; right:0;
+  top:76%;
+  height:14.3%;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  align-items:center;
+  background:var(--vibe-navy-900);
+  border-top:1px solid rgba(62,155,255,.42);
+}
+/* de as zelf: een gemeten lijn over de volle breedte, met maatstreepjes */
+.st-as::before{
+  content:''; position:absolute; left:0; right:0; top:0; height:1px;
+  background:repeating-linear-gradient(90deg,
+    rgba(62,155,255,.9) 0 2px, rgba(62,155,255,0) 2px 24px);
+}
+.st-as-item{
+  position:relative;
+  padding:0 clamp(18px,2.03cqw,36px);
+  min-width:0;
+}
+.st-as-item + .st-as-item::before{
+  content:''; position:absolute; left:0; top:22%; bottom:22%;
+  width:1px; background:var(--st-lijn-op-donker);
+}
+.st-as-item b{
+  display:block;
+  color:var(--vibe-white);
+  font-size:clamp(19px,1.63cqw,29px);
+  font-weight:680;
+  letter-spacing:-.012em;
+  line-height:1.1;
+}
+.st-as-item span{
+  display:block; margin-top:.22em;
+  color:rgba(226,238,252,.72);
+  font-size:clamp(12px,.84cqw,15px);
+  line-height:1.32;
+}
+/* eerlijke herkomst: deze twee waarden hebben GEEN primaire bron in de repo */
+.st-as-item small{
+  display:block; margin-top:.5em;
+  color:rgba(226,238,252,.46);
+  font-size:clamp(10px,.68cqw,12px);
+  letter-spacing:.055em; text-transform:uppercase;
+}
+
+/* ============================================================================
+   02 · MISMATCH — MEDIUM · HYBRID · BR-07 · typografie · VR-F · M0
+   ----------------------------------------------------------------------------
+   Een DOMINANT typografisch statement met ONGELIJK onderschikt bewijs.
+   Het zwaarste probleemvlak ligt OVER de rechterrand van het statementblok
+   (binding OVER-RAND). De twee lichtere motieven staan als geregelde rijen
+   ZONDER eigen vlak — dragersoort D-0 — zodat er geen drie gelijke kaarten
+   ontstaan. Dat is precies wat KP-07 en KP-05 afdwingen.
+   ============================================================================ */
+.st-mis{
+  container-type:inline-size;
+  position:relative;
+  padding:clamp(56px,6.2cqw,110px) 0 clamp(40px,4.4cqw,78px);
+  background:var(--vibe-white);
+}
+.st-mis-in{
+  position:relative;
+  display:grid;
+  grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);
+  align-items:start;
+  column-gap:0;                  /* de overlap doet het werk, niet een goot */
+}
+.st-mis-statement{
+  position:relative; z-index:2;
+  padding-right:clamp(24px,3.4cqw,60px);
+}
+.st-mis-statement h2{
+  font-size:clamp(30px,3.44cqw,61px);
+  line-height:1.055;
+  letter-spacing:-.021em;
+  margin:.34em 0 0;
+}
+.st-mis-statement h2 em{ color:var(--color-action); font-style:normal }
+.st-mis-statement .vibe-lead{ margin-top:1.1em; max-width:56ch }
+
+/* de twee lichtere motieven: geregelde rijen, geen vlakken */
+.st-mis-rijen{ margin-top:clamp(26px,2.9cqw,50px); border-top:1px solid var(--vibe-line-ink); max-width:62ch }
+.st-mis-rijen li{
+  display:grid; grid-template-columns:auto 1fr; gap:clamp(14px,1.3cqw,24px);
+  padding:clamp(16px,1.6cqw,28px) 0;
+  border-bottom:1px solid var(--vibe-line-ink);
+}
+.st-mis-rijen i{ color:var(--color-action-text);
+  font-style:normal; font-weight:680;
+  
+  font-size:clamp(13px,.9cqw,16px);
+  letter-spacing:.06em;
+  padding-top:.18em;
+}
+.st-mis-rijen b{ display:block; font-weight:660; color:var(--color-ink); font-size:clamp(16px,1.07cqw,19px) }
+.st-mis-rijen span{ max-width:52ch; display:block; margin-top:.3em; color:var(--color-body); font-size:clamp(14px,.96cqw,17px); line-height:1.5 }
+
+/* HET ZWAARSTE PROBLEEM — dominant vlak, ligt OVER de rand van het statement */
+.st-mis-zwaar{
+  position:relative; z-index:3;
+  margin-left:clamp(-119px,-6.7cqw,-40px);  /* de overlap: binding OVER-RAND */
+  margin-top:clamp(56px,6.6cqw,117px);
+  padding:clamp(30px,3.1cqw,55px) clamp(26px,2.8cqw,50px) clamp(32px,3.3cqw,58px);
+  background:
+    radial-gradient(130% 100% at 88% 4%, #0D2A4E 0%, rgba(13,42,78,0) 58%),
+    linear-gradient(162deg,var(--vibe-navy-800) 0%,var(--vibe-navy-900) 100%);
+  color:var(--vibe-white);
+  /* flauwe snede linksonder, uit dezelfde familie als de heronaad */
+  clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0);
+  box-shadow:0 30px 70px -38px rgba(0,22,50,.52);
+}
+.st-mis-zwaar .st-nr{
+  display:block; font-weight:700; letter-spacing:.07em;
+  color:var(--vibe-blue-300);
+  font-size:clamp(12px,.84cqw,15px);
+}
+.st-mis-zwaar h3{
+  color:var(--vibe-white); margin:.5em 0 0;
+  font-size:clamp(21px,1.74cqw,31px); line-height:1.14; letter-spacing:-.014em;
+}
+.st-mis-zwaar p{
+  max-width:46ch;
+  color:rgba(226,238,252,.84); margin-top:.85em;
+  font-size:clamp(15px,1.02cqw,18px); line-height:1.56;
+}
+.st-mis-zwaar .st-tag{
+  display:inline-block; margin-top:1.35em;
+  padding:.46em .9em;
+  border:1px solid rgba(62,155,255,.46);
+  color:var(--vibe-blue-300);
+  font-size:clamp(12px,.79cqw,14px); letter-spacing:.03em;
+}
+
+/* ============================================================================
+   03 · SYSTEEM ALS INFRASTRUCTUUR — HIGH · CANVAS · BR-06 · topologie · VR-G
+   ----------------------------------------------------------------------------
+   Podium 1774 x 840. Dit is de tweede climax en het inhoudelijke hart.
+   De batterij staat als GEBOUWD OBJECT op de capaciteitsas; net en zon voeden
+   haar van links, de belastingen hangen rechts, en VIBE.CONTROL ligt als
+   BESTURINGSLAAG OVER de batterij (binding OVER-RAND) in plaats van als
+   hub-cirkel ernaast. De knooplabels liggen IN-SCRIM op het achtergrondveld.
+   Geen foto, geen nepdashboard: dit is NF-2 SYSTEEMTOPOLOGIE.
+   ============================================================================ */
+.st-sys{
+  container-type:inline-size;
+  position:relative;
+  width:100%;
+  background:var(--vibe-navy-900);
+  color:var(--vibe-white);
+  overflow:hidden;
+}
+.st-sys-podium{
+  position:relative;
+  width:100%;
+  aspect-ratio:1774 / 1100;
+  min-height:640px;
+}
+/* ACHTERGRONDVELD (geometry_role) */
+.st-sys-podium::before{
+  content:''; position:absolute; inset:0; z-index:0;
+  background:
+    radial-gradient(74% 58% at 50% 56%, rgba(0,115,254,.17) 0%, rgba(0,115,254,0) 68%),
+    radial-gradient(110% 80% at 4% 0%, rgba(62,155,255,.10) 0%, rgba(62,155,255,0) 60%);
+}
+.st-sys-kop{
+  position:absolute; z-index:4;
+  left:5.412cqw; top:5.07cqw; width:44cqw;
+}
+.st-sys-kop .vibe-eyebrow{ color:var(--vibe-blue-300) }
+.st-sys-kop h2{
+  color:var(--vibe-white); margin:.4em 0 0;
+  font-size:clamp(28px,3.16cqw,56px); line-height:1.07; letter-spacing:-.02em;
+}
+.st-sys-kop h2 em{ color:var(--vibe-blue-300); font-style:normal }
+.st-sys-kop .vibe-lead{ color:rgba(226,238,252,.80); margin-top:.95em; max-width:30cqw }
+
+/* --- de as waarop de batterij staat: volle breedte, y = 62% --- */
+.st-sys-as{
+  position:absolute; z-index:1;
+  left:0; right:0; top:75.5%;
+  height:1px;
+  background:linear-gradient(90deg,
+    rgba(62,155,255,0) 0%, rgba(62,155,255,.55) 11%,
+    rgba(62,155,255,.55) 89%, rgba(62,155,255,0) 100%);
+}
+.st-sys-as::after{
+  content:'grens van de aansluiting';
+  position:absolute; right:5.412cqw; top:.8cqw;
+  color:rgba(226,238,252,.46);
+  font-size:clamp(10px,.68cqw,12px); letter-spacing:.09em; text-transform:uppercase;
+}
+
+/* --- de batterij als gebouwd object: drie modules, op de as --- */
+.st-sys-batterij{
+  position:absolute; z-index:3;
+  left:50%; transform:translateX(-50%);
+  top:53%;                        /* onderkant valt op 75,5% = de as */
+  width:21.1cqw;                  /* 374px */
+  height:22.5%;
+  display:grid; grid-template-columns:repeat(3,1fr); gap:.45cqw;
+  align-items:end;
+}
+.st-sys-mod{
+  position:relative;
+  height:100%;
+  background:linear-gradient(176deg,#123255 0%,#0A2340 62%,#071B33 100%);
+  border:1px solid rgba(132,180,240,.30);
+  border-bottom-color:rgba(62,155,255,.62);
+}
+.st-sys-mod::before{            /* koelribben — maakt het een object, geen doos */
+  content:''; position:absolute; left:14%; right:14%; top:16%; height:34%;
+  background:repeating-linear-gradient(180deg,
+    rgba(166,203,246,.26) 0 1px, rgba(166,203,246,0) 1px 5px);
+}
+.st-sys-mod::after{             /* statuslampje */
+  content:''; position:absolute; left:50%; bottom:13%; transform:translateX(-50%);
+  width:.3cqw; height:.3cqw; border-radius:50%;
+  background:var(--vibe-blue-300); box-shadow:0 0 0 .22cqw rgba(62,155,255,.20);
+}
+.st-sys-batterij figcaption{
+  position:absolute; left:0; right:0; top:calc(100% + .85cqw);
+  text-align:center;
+  color:var(--vibe-white);
+  font-size:clamp(13px,.96cqw,17px); font-weight:650; letter-spacing:-.008em;
+}
+.st-sys-batterij figcaption span{
+  display:block; margin-top:.25em; font-weight:400;
+  color:rgba(226,238,252,.62); font-size:clamp(11px,.73cqw,13px);
+}
+
+/* --- BESTURINGSLAAG: ligt OVER de batterij (binding OVER-RAND) --- */
+.st-sys-besturing{
+  position:absolute; z-index:5;
+  left:50%; transform:translateX(-50%);
+  top:46.8%;
+  width:31.4cqw;                 /* 557px — breder dan de batterij, dus hij ligt eroverheen */
+  padding:.92cqw 1.52cqw;
+  background:rgba(0,115,254,.17);
+  border:1px solid rgba(62,155,255,.52);
+  backdrop-filter:blur(9px);
+  text-align:center;
+}
+.st-sys-besturing b{
+  display:block; color:var(--vibe-white);
+  font-size:clamp(14px,1.02cqw,18px); font-weight:680; letter-spacing:.012em;
+}
+.st-sys-besturing span{
+  display:block; margin-top:.2em; color:rgba(226,238,252,.74);
+  font-size:clamp(11px,.73cqw,13px); letter-spacing:.05em; text-transform:uppercase;
+}
+/* de twee stuurpijlen naar beneden, in de batterij */
+.st-sys-besturing::after{
+  content:''; position:absolute; left:50%; transform:translateX(-50%);
+  top:100%; width:1px; height:1.9cqw;
+  background:linear-gradient(180deg,rgba(62,155,255,.8),rgba(62,155,255,0));
+}
+
+/* --- knoopkolommen: bronnen links, belastingen rechts (IN-SCRIM) --- */
+.st-sys-kolom{
+  position:absolute; z-index:2; top:50.2%;
+  display:grid; gap:1.18cqw;
+  width:16.3cqw;                 /* 289px */
+}
+.st-sys-kolom--in{ left:5.412cqw }
+.st-sys-kolom--uit{ right:5.412cqw }
+.st-sys-knoop{
+  position:relative;
+  display:grid; grid-template-columns:auto 1fr; align-items:center;
+  gap:.85cqw;
+  padding:.88cqw 1.07cqw;
+  background:rgba(8,32,60,.58);              /* de scrim */
+  border:1px solid rgba(132,180,240,.20);
+  border-left:2px solid rgba(62,155,255,.40);
+}
+.st-sys-kolom--uit .st-sys-knoop{
+  border-left:1px solid rgba(132,180,240,.20);
+  border-right:2px solid rgba(62,155,255,.40);
+}
+.st-sys-knoop svg{ width:1.35cqw; min-width:17px; height:auto; color:var(--vibe-blue-300) }
+.st-sys-knoop b{ display:block; font-size:clamp(13px,.93cqw,16px); font-weight:620; color:var(--vibe-white) }
+.st-sys-knoop span{ display:block; color:rgba(226,238,252,.62); font-size:clamp(11px,.73cqw,13px); margin-top:.1em }
+/* verbindingslijn naar de batterij */
+.st-sys-knoop::after{
+  content:''; position:absolute; top:50%;
+  height:1px; background:rgba(62,155,255,.26);
+}
+.st-sys-kolom--in .st-sys-knoop::after{ left:100%; width:5.6cqw }
+.st-sys-kolom--uit .st-sys-knoop::after{ right:100%; width:5.6cqw }
+
+.st-sys-kop::after{
+  content:''; position:absolute; left:0; top:calc(100% + 1.1cqw);
+  width:1px; height:5.4cqw;
+  background:linear-gradient(180deg,rgba(62,155,255,.55),rgba(62,155,255,0));
+}
+.st-sys-noot{
+  position:absolute; z-index:4; left:5.412cqw; bottom:3.2cqw;
+  color:rgba(226,238,252,.50);
+  font-size:clamp(11px,.73cqw,13px); max-width:30cqw; line-height:1.45;
+}
+.st-sys-acties{ position:absolute; z-index:5; right:5.412cqw; bottom:3.2cqw }
+
+/* ============================================================================
+   04 · VIBE.CONTROL — MEDIUM · HYBRID · BR-04 · technische-compositie · VR-F · M0
+   ----------------------------------------------------------------------------
+   HERBOUWD NA DE ONAFHANKELIJKE VISUELE REVIEW (P0-2 en P0-3).
+   De vorige compositie was een vijfkolommentijdlijn met een dunne as, vijf
+   ronde knopen en labels boven/tekst onder — hetzelfde mechanisme als sectie 09
+   en zonder gebouwd object. Die constructie is VERWIJDERD, niet opgepoetst.
+
+   WAT ER NU STAAT: een SYSTEEM VAN RELATIES met een zwaartepunt.
+   Implementatie is een PROCES DOOR DE TIJD (lineair, gelijke stappen).
+   VIBE.CONTROL is OPERATIONEEL (een kern waar relaties in en uit lopen).
+   Daarom delen zij geen silhouet: hier geen as, geen knopen, geen gelijke
+   kolommen — maar een dicht donker besturingsobject met gelaagde vlakken,
+   invoerrails die erin lopen, uitvoerrails die eruit lopen, en een
+   resultaatvlak dat de onderrand van de kern KRUIST.
+   Geen dashboard, geen verzonnen meetwaarden: er bestaat nul productscreenshot.
+   ============================================================================ */
+.st-ctrl{
+  container-type:inline-size;
+  position:relative;
+  padding:clamp(56px,6.2cqw,112px) 0 clamp(40px,4.4cqw,78px);
+  background:linear-gradient(180deg,var(--vibe-canvas) 0%,#FFFFFF 62%,#FFFFFF 100%);
+}
+.st-ctrl-kop{ max-width:none }
+.st-ctrl-kop h2{
+  font-size:clamp(27px,2.82cqw,50px); line-height:1.08; letter-spacing:-.018em; margin:.38em 0 0;
+}
+.st-ctrl-kop h2 em{ color:var(--color-action); font-style:normal }
+.st-ctrl-kop .vibe-lead{ margin-top:1em; max-width:58ch }
+
+/* --- het relatieveld: rails links, kern midden, rails rechts --- */
+.st-ctrl-veld{
+  position:relative;
+  margin-top:clamp(26px,2.7cqw,48px);
+  display:grid;
+  grid-template-columns:minmax(0,.78fr) minmax(0,1.62fr) minmax(0,.78fr);
+  align-items:center;
+  column-gap:clamp(20px,2.4cqw,43px);
+}
+
+/* --- de rails: korte etiketten die MET EEN LIJN aan de kern vastzitten --- */
+.st-ctrl-rails{ display:grid; gap:clamp(18px,2cqw,36px); list-style:none }
+.st-ctrl-rails li{ position:relative }
+.st-ctrl-rails i{
+  display:block; font-style:normal;
+  color:var(--vibe-slate-500);
+  font-size:clamp(10px,.68cqw,12px); letter-spacing:.09em; text-transform:uppercase;
+}
+.st-ctrl-rails b{
+  display:block; margin-top:.22em;
+  color:var(--color-ink); font-weight:620;
+  font-size:clamp(14px,1.02cqw,18px); letter-spacing:-.008em;
+}
+/* de verbindingslijn naar de kern — GEEN knoop, alleen een rail */
+.st-ctrl-rails li::after{
+  content:''; position:absolute; top:50%;
+  height:1px; background:linear-gradient(90deg,rgba(0,115,254,.10),rgba(0,115,254,.55));
+}
+.st-ctrl-rails--in li::after{ left:100%; width:clamp(18px,2.4cqw,43px) }
+.st-ctrl-rails--uit li::after{
+  right:100%; width:clamp(18px,2.4cqw,43px);
+  background:linear-gradient(270deg,rgba(0,115,254,.10),rgba(0,115,254,.55));
+}
+.st-ctrl-rails--in{ text-align:right }
+.st-ctrl-rails--uit{ text-align:left }
+
+/* --- DE KERN: een gelaagd, dicht besturingsobject --- */
+.st-ctrl-kern{
+  position:relative;
+  min-height:clamp(230px,16.4cqw,291px);
+  margin:0;
+}
+/* twee verschoven lagen erachter: diepte zonder decoratie */
+.st-ctrl-laag{
+  position:absolute; inset:0;
+  border:1px solid rgba(0,115,254,.22);
+  background:linear-gradient(170deg,rgba(255,255,255,.9),rgba(238,246,255,.9));
+}
+.st-ctrl-laag--3{ transform:translate(clamp(14px,1.58cqw,28px),clamp(14px,1.58cqw,28px)) }
+.st-ctrl-laag--2{ transform:translate(clamp(7px,.79cqw,14px),clamp(7px,.79cqw,14px)) }
+.st-ctrl-kernvlak{
+  position:relative; z-index:2;
+  height:100%;
+  padding:clamp(26px,2.9cqw,52px) clamp(26px,3cqw,54px) clamp(30px,3.3cqw,59px);
+  background:
+    radial-gradient(128% 96% at 84% 6%, #0E2E54 0%, rgba(14,46,84,0) 60%),
+    linear-gradient(162deg,var(--vibe-navy-800) 0%,var(--vibe-navy-900) 100%);
+  color:var(--vibe-white);
+  box-shadow:0 34px 78px -44px rgba(0,22,50,.62);
+}
+.st-ctrl-kernvlak > i{
+  display:block; font-style:normal; color:var(--vibe-blue-300);
+  font-size:clamp(11px,.73cqw,13px); letter-spacing:.1em; text-transform:uppercase;
+}
+.st-ctrl-kernvlak > b{
+  display:block; margin:.55em 0 0;
+  font-size:clamp(23px,2.09cqw,37px); font-weight:680; letter-spacing:-.016em; line-height:1.08;
+}
+.st-ctrl-kernvlak > p{
+  margin-top:.8em; color:rgba(226,238,252,.84);
+  font-size:clamp(14px,1.02cqw,18px); line-height:1.54; max-width:46ch;
+}
+/* de vier rollen die de kern tegen elkaar afweegt — binnen het object zelf */
+.st-ctrl-rollen{
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:.5em clamp(16px,1.8cqw,32px);
+  margin-top:clamp(18px,1.9cqw,34px);
+  padding-top:clamp(16px,1.7cqw,30px);
+  border-top:1px solid rgba(255,255,255,.16);
+}
+.st-ctrl-rollen li{
+  display:grid; grid-template-columns:auto 1fr; gap:.6em; align-items:baseline;
+  color:rgba(226,238,252,.88);
+  font-size:clamp(12px,.88cqw,16px); line-height:1.4;
+}
+.st-ctrl-rollen li::before{
+  content:''; width:.42em; height:.42em; transform:translateY(-.15em);
+  background:var(--vibe-blue-300);
+}
+
+/* --- RESULTAATVLAK: kruist de onderrand van de kern (binding KRUIST-NAAD) --- */
+.st-ctrl-resultaat{
+  position:relative; z-index:3;
+  grid-column:2 / -1;
+  justify-self:end;
+  width:min(100%,52cqw);
+  margin-top:clamp(-38px,-2.1cqw,-16px);
+  padding:clamp(22px,2.4cqw,43px) clamp(24px,2.6cqw,47px);
+  background:var(--vibe-white);
+  border:1px solid rgba(0,115,254,.20);
+  box-shadow:0 26px 62px -40px rgba(0,40,100,.30);
+  display:grid; grid-template-columns:minmax(0,1fr) auto;
+  gap:clamp(16px,1.8cqw,32px); align-items:center;
+}
+.st-ctrl-resultaat b{
+  display:block; color:var(--color-ink);
+  font-size:clamp(16px,1.24cqw,22px); font-weight:650; letter-spacing:-.012em; line-height:1.24;
+}
+.st-ctrl-resultaat span{
+  display:block; margin-top:.4em; color:var(--color-body);
+  font-size:clamp(14px,.96cqw,17px); line-height:1.5; max-width:54ch;
+}
+
+/* ============================================================================
+   05 · PROJECTBEWIJS — MEDIUM · CANVAS · BR-03 · foto · VR-C · M4 BAND
+   ----------------------------------------------------------------------------
+   Volbrede beeldband 1774 x 544 (ratio 3,2610 = M4). De bewijskaart ligt OP het
+   beeld (OP-BEELD), de drie gemeten waarden liggen OVER de onderrand van de
+   band (OVER-RAND). De twee steuncases staan als REGISTER zonder eigen foto:
+   het fotobudget van B2 is twee bestanden, en een duimnagel voegt hier geen
+   compositie toe.
+   ============================================================================ */
+.st-bew{
+  container-type:inline-size;
+  position:relative;
+  padding-top:clamp(66px,7.3cqw,130px);
+  background:var(--vibe-white);
+}
+.st-bew-kop{ display:flex; align-items:flex-end; justify-content:space-between; gap:2cqw; flex-wrap:wrap }
+.st-bew-kop h2{ font-size:clamp(27px,2.82cqw,50px); line-height:1.08; letter-spacing:-.018em; margin:.38em 0 0 }
+.st-bew-kop h2 em{ color:var(--color-action); font-style:normal }
+
+.st-bew-band{
+  position:relative;
+  margin-top:clamp(28px,3.2cqw,58px);
+  width:100%;
+  aspect-ratio:1774 / 544;
+  min-height:300px;
+  overflow:visible;               /* de waardenrij mag eruit */
+}
+.st-bew-beeld{
+  position:absolute; inset:0; overflow:hidden;
+}
+.st-bew-beeld img{ width:100%; height:100%; object-fit:cover; object-position:50% 42%; display:block }
+/* BEELDSNEDE: de onderrand van de band is een flauwe snede, 9,8 graden */
+.st-bew-beeld{
+  clip-path:polygon(0 0, 100% 0, 100% 93.2%, 0 100%);
+}
+.st-bew-beeld::after{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(94deg, rgba(0,22,50,.70) 0%, rgba(0,22,50,.34) 36%, rgba(0,22,50,.06) 62%);
+}
+/* bewijskaart OP het beeld */
+.st-bew-kaart{
+  position:absolute; z-index:3;
+  left:5.412cqw; top:18%;
+  width:27.4cqw;
+  padding:clamp(20px,2.2cqw,39px) clamp(20px,2.3cqw,41px);
+  background:rgba(0,22,50,.60);
+  border:1px solid rgba(255,255,255,.20);
+  backdrop-filter:blur(10px);
+  color:var(--vibe-white);
+}
+.st-bew-kaart .st-bew-tag{
+  display:inline-block; padding:.4em .78em; margin-bottom:1em;
+  background:rgba(62,155,255,.26); border:1px solid rgba(62,155,255,.58);
+  color:var(--vibe-white);
+  font-size:clamp(11px,.73cqw,13px); letter-spacing:.04em; font-weight:600;
+}
+.st-bew-kaart b{ display:block; font-size:clamp(19px,1.63cqw,29px); font-weight:660; letter-spacing:-.014em }
+.st-bew-kaart p{ margin-top:.6em; color:rgba(226,238,252,.86); font-size:clamp(14px,.96cqw,17px); line-height:1.52 }
+.st-bew-kaart .vibe-btn{ margin-top:1.3em }
+
+/* WAARDENRIJ — ligt OVER de onderrand van de band (OVER-RAND).
+   Drie GEMETEN waarden van EEN project: werkelijk gelijke rang, dus
+   gerechtvaardigd als gelijke rij (KP-07), en zonder eigen vlakken (D-0). */
+.st-bew-waarden{
+  position:absolute; z-index:4;
+  right:5.412cqw; bottom:-2.9cqw;
+  display:grid; grid-auto-flow:column; gap:0;
+  background:var(--vibe-navy-900);
+  border-top:2px solid var(--color-action);
+}
+.st-bew-waarden div{
+  padding:clamp(16px,1.75cqw,31px) clamp(20px,2.25cqw,40px);
+  min-width:0;
+}
+.st-bew-waarden div + div{ border-left:1px solid var(--st-lijn-op-donker) }
+.st-bew-waarden b{
+  display:block; color:var(--vibe-white);
+  font-size:clamp(22px,1.97cqw,35px); font-weight:690; letter-spacing:-.018em; line-height:1;
+}
+.st-bew-waarden span{ display:block; margin-top:.35em; color:rgba(226,238,252,.74); font-size:clamp(12px,.84cqw,15px) }
+.st-bew-waarden cite{
+  display:block; margin-top:.5em; font-style:normal;
+  color:rgba(226,238,252,.44); font-size:clamp(10px,.68cqw,12px);
+}
+
+/* steuncases als register, GEEN foto */
+.st-bew-steun{ border-top:0 }
+.st-bew-steun a{
+  display:grid; grid-template-columns:minmax(0,13cqw) minmax(0,1fr) auto;
+  align-items:center; gap:clamp(16px,2cqw,36px);
+  padding:clamp(18px,1.9cqw,34px) 0;
+  border-bottom:1px solid var(--vibe-line-ink);
+  text-decoration:none;
+}
+.st-bew-steun a:hover b{ color:var(--color-action) }
+.st-bew-steun b{ font-weight:660; color:var(--color-ink); font-size:clamp(16px,1.18cqw,21px); transition:color .16s }
+.st-bew-steun em{ font-style:normal; color:var(--vibe-slate-500); font-size:clamp(13px,.9cqw,16px) }
+.st-bew-steun span{ max-width:62ch; color:var(--color-body); font-size:clamp(14px,.96cqw,17px); line-height:1.5 }
+.st-bew-steun .vibe-arrow{ color:var(--color-action-text) }
+
+/* ============================================================================
+   06 · PROJECTREGISTER — QUIET · DOCUMENT · BR-08 · typografie · VR-F · M0
+   ----------------------------------------------------------------------------
+   DE ENIGE DOCUMENT-SECTIE van de pagina, en bewust KORT.
+   Hier is smal het ontwerp: twee verdere projecten als geregeld register, met
+   een VASTE leesbreedte die NIET meeschaalt. Daarom leest de sectie bij 1920
+   even breed als bij 1440 — dat is de bedoeling van DOCUMENT MODE.
+   De sectie is bewust LICHT van gewicht (geen beeld, geen randrakend element,
+   hoogte onder de 400px-grens van DG-01), want een BEVROREN ZWARE sectie is
+   onder de frozen regel altijd een FAIL. Een DOCUMENT-register mag vastliggen;
+   een zwaar landingsvlak niet. Dat verschil is hier in de maatvoering gelegd.
+   ============================================================================ */
+.st-reg{
+  position:relative;
+  padding:clamp(40px,4.4cqw,78px) 0;
+  background:var(--vibe-white);
+}
+.st-reg-in{
+  width:min(100% - 2 * clamp(20px,5vw,40px), 1180px);   /* VAST — niet proportioneel */
+  margin-inline:auto;
+}
+.st-reg-kop{
+  display:flex; align-items:baseline; justify-content:space-between;
+  gap:1.5em; flex-wrap:wrap;
+  padding-bottom:clamp(12px,1.2cqw,20px);
+  border-bottom:2px solid var(--color-ink);
+}
+.st-reg-kop h3{ font-size:clamp(17px,1.24cqw,22px); letter-spacing:-.012em; margin:0 }
+.st-reg-kop span{ color:var(--vibe-slate-500); font-size:clamp(12px,.84cqw,15px); letter-spacing:.05em; text-transform:uppercase }
+
+/* ============================================================================
+   06 · TECHNIEK — QUIET · HYBRID · BR-12 · specificatie · VR-F · M0
+   ----------------------------------------------------------------------------
+   Een specificatieREGISTER met rangorde: de sizing-uitspraak is dominant, de
+   specificaties staan als geregelde rijen, en een GETEKENDE moduulopbouw laat
+   de modulariteit zien in plaats van haar te beweren. De tekening ligt OVER de
+   rand van het registerveld (OVER-RAND). Geen foto: het budget is op, en een
+   kastfoto naast een tabel voegt hier niets toe.
+   ============================================================================ */
+.st-tech{
+  container-type:inline-size;
+  position:relative;
+  padding:clamp(64px,7cqw,126px) 0;
+  background:var(--vibe-canvas);
+}
+.st-tech-in{
+  display:grid;
+  grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);
+  gap:0;
+  align-items:stretch;
+}
+.st-tech-copy{ display:flex; flex-direction:column }
+.st-tech-copy{ padding-right:clamp(28px,3.4cqw,60px) }
+.st-tech-copy h2{ font-size:clamp(26px,2.65cqw,47px); line-height:1.09; letter-spacing:-.017em; margin:.38em 0 0 }
+.st-tech-copy h2 em{ color:var(--color-action); font-style:normal }
+.st-tech-copy .vibe-lead{ max-width:56ch; margin-top:1em }
+.st-tech-copy .vibe-actions{ margin-top:clamp(24px,2.5cqw,44px) }
+
+.st-spec{ margin-top:clamp(26px,2.9cqw,50px); border-top:2px solid var(--color-ink) }
+.st-spec > div{
+  display:grid; grid-template-columns:minmax(0,10.5cqw) minmax(0,1fr);
+  gap:clamp(14px,1.7cqw,30px);
+  padding:clamp(13px,1.35cqw,24px) 0;
+  border-bottom:1px solid var(--vibe-line-ink);
+}
+.st-spec dt{ color:var(--vibe-slate-500); font-size:clamp(12px,.84cqw,15px); letter-spacing:.055em; text-transform:uppercase; padding-top:.18em }
+.st-spec dd{ max-width:52ch; color:var(--color-ink); font-size:clamp(14px,1.02cqw,18px); line-height:1.48 }
+
+/* GETEKENDE MOUULOPBOUW — ligt over de rand van het registerveld */
+.st-tech-bouw{
+  position:relative; z-index:2;
+  display:flex; flex-direction:column;
+  margin-left:clamp(-64px,-3.6cqw,-20px);
+  padding:clamp(28px,3cqw,54px) clamp(26px,2.9cqw,52px) clamp(30px,3.2cqw,56px);
+  background:var(--vibe-white);
+  border:1px solid var(--vibe-line-ink);
+  box-shadow:0 26px 60px -40px rgba(0,40,100,.22);
+}
+.st-tech-bouw > i{ color:var(--color-action-text);
+  display:block; font-style:normal;
+  color:var(--vibe-slate-500); font-size:clamp(11px,.73cqw,13px);
+  letter-spacing:.09em; text-transform:uppercase;
+}
+.st-tech-bouw h3{ margin:.55em 0 0; font-size:clamp(17px,1.3cqw,23px); letter-spacing:-.012em }
+/* de stapel: drie modules die zichtbaar dezelfde eenheid zijn */
+.st-tech-stapel{
+  /* De drie moduulrijen zijn EEN AANEENSLUITENDE STAPEL: zij staan voor dezelfde
+     fysieke eenheid, herhaald. Hun onderlinge afstand is daarom de gap, niets meer.
+     De vrije hoogte van de kaart gaat NIET tussen de rijen zitten maar BOVEN en
+     ONDER de stapel, in gelijke delen: zo is de stapel het gecentreerde onderwerp
+     van de kaart en scheiden de twee intervallen de drie inhoudsblokken
+     (titel | stapel | slotnoot). De ondergrens van de kaart wordt bepaald door de
+     slotnoot, los van de stapel. */
+  margin-block:auto;
+  padding-top:clamp(22px,2.4cqw,42px);
+  display:grid; gap:clamp(7px,.72cqw,13px);
+}
+.st-tech-mod{
+  position:relative;
+  display:grid; grid-template-columns:auto 1fr auto; align-items:center;
+  gap:clamp(12px,1.3cqw,23px);
+  padding:clamp(13px,1.3cqw,23px) clamp(14px,1.5cqw,27px);
+  background:linear-gradient(170deg,#F7FBFF 0%,#EDF4FD 100%);
+  border:1px solid rgba(0,115,254,.17);
+  border-left:3px solid var(--color-action);
+}
+.st-tech-mod span:first-child{ color:var(--color-action-text);
+   font-weight:700;
+  font-size:clamp(12px,.84cqw,15px); letter-spacing:.055em;
+}
+.st-tech-mod b{ font-weight:620; color:var(--color-ink); font-size:clamp(14px,.98cqw,17px) }
+.st-tech-mod em{ font-style:normal; color:var(--vibe-slate-500); font-size:clamp(12px,.84cqw,15px) }
+.st-tech-bouw > p{
+  max-width:48ch;
+  padding-top:clamp(18px,1.9cqw,34px);
+  color:var(--color-body); font-size:clamp(13px,.9cqw,16px); line-height:1.52;
+}
+
+/* ============================================================================
+   07 · EXPLOITATIE — MEDIUM · HYBRID · BR-02 · typografie · VR-D · M0
+   ----------------------------------------------------------------------------
+   Drie routes met HIERARCHIE in plaats van drie gelijke prijskaarten:
+   exploitatie IS de propositie en is dominant, koop en beheer zijn onderschikt.
+   Het dominante routevlak ligt over de rand van het routeveld (OVER-RAND).
+   MERKWIG rechtsboven, flauwe familie.
+   ============================================================================ */
+.st-expl{
+  container-type:inline-size;
+  position:relative;
+  padding:clamp(64px,7cqw,126px) 0 clamp(46px,5cqw,90px);
+  background:
+    radial-gradient(84% 70% at 86% 6%, rgba(0,115,254,.15) 0%, rgba(0,115,254,0) 62%),
+    linear-gradient(166deg,var(--vibe-navy-800) 0%,var(--vibe-navy-900) 100%);
+  color:var(--vibe-white);
+  overflow:hidden;
+}
+/* MERKWIG — 12,4 graden uit het verticaal, flauwe familie */
+.st-expl::before{
+  content:''; position:absolute; z-index:0; top:0; right:0;
+  width:34cqw; height:100%;
+  clip-path:polygon(22% 0, 100% 0, 100% 100%, 0 100%);
+  background:linear-gradient(200deg, rgba(0,115,254,.17) 0%, rgba(0,115,254,0) 72%);
+}
+.st-expl-in{ position:relative; z-index:2; display:grid; grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr); gap:0; align-items:stretch }
+.st-expl-copy{ display:flex; flex-direction:column }
+.st-expl-copy .vibe-actions{ margin-top:auto !important; padding-top:clamp(24px,2.5cqw,44px) }
+.st-expl-copy{ padding-right:clamp(28px,3.4cqw,60px) }
+.st-expl-copy .vibe-eyebrow{ color:var(--vibe-blue-300) }
+.st-expl-copy h2{ color:var(--vibe-white); font-size:clamp(26px,2.72cqw,48px); line-height:1.08; letter-spacing:-.018em; margin:.38em 0 0 }
+.st-expl-copy h2 em{ color:var(--vibe-blue-300); font-style:normal }
+.st-expl-copy .vibe-lead{ max-width:48ch; color:rgba(226,238,252,.82); margin-top:1em }
+.st-expl-copy .vibe-actions{ margin-top:clamp(24px,2.5cqw,44px) }
+
+.st-routes{ position:relative; z-index:3 }
+/* DE DOMINANTE ROUTE */
+.st-route--hoofd{
+  position:relative;
+  margin-left:clamp(-80px,-4.5cqw,-26px);
+  margin-bottom:clamp(-34px,-1.9cqw,-14px);   /* kruist de eerste routeregel */
+  padding:clamp(28px,3cqw,54px) clamp(26px,2.9cqw,52px);
+  background:var(--vibe-white);
+  color:var(--color-ink);
+  box-shadow:0 34px 76px -40px rgba(0,16,40,.60);
+}
+.st-route--hoofd > i{ color:var(--color-action-text);
+  display:block; font-style:normal; 
+  font-size:clamp(11px,.73cqw,13px); letter-spacing:.09em; text-transform:uppercase;
+}
+.st-route--hoofd b{ display:block; margin:.5em 0 0; font-size:clamp(21px,1.74cqw,31px); font-weight:670; letter-spacing:-.015em }
+.st-route--hoofd p{ max-width:48ch; margin-top:.7em; color:var(--color-body); font-size:clamp(14px,1.02cqw,18px); line-height:1.54 }
+/* DE TWEE ONDERSCHIKTE ROUTES — geregeld, geen vlak */
+.st-route--sub{
+  display:grid; grid-template-columns:auto 1fr; gap:clamp(14px,1.5cqw,27px);
+  padding:clamp(18px,1.9cqw,34px) 0;
+  border-bottom:1px solid var(--st-lijn-op-donker);
+}
+.st-routes > ul{ margin-top:clamp(10px,1.1cqw,20px); border-top:1px solid var(--st-lijn-op-donker); max-width:60ch }
+.st-route--sub i{
+  font-style:normal; color:var(--vibe-blue-300);
+  font-size:clamp(11px,.73cqw,13px); letter-spacing:.07em; padding-top:.3em;
+}
+.st-route--sub b{ display:block; font-weight:630; color:var(--vibe-white); font-size:clamp(15px,1.07cqw,19px) }
+.st-route--sub span{ max-width:52ch; display:block; margin-top:.25em; color:rgba(226,238,252,.72); font-size:clamp(13px,.9cqw,16px); line-height:1.48 }
+
+/* ============================================================================
+   08 · IMPLEMENTATIE — QUIET · CANVAS · BR-05 · proces · VR-H · M0
+   ----------------------------------------------------------------------------
+   Podium 1774 x 430. Deze sectie WAS een van de drie bevroren desktopfouten:
+   kleine gecentreerde inhoud in een brede lege sectie. Nu loopt de procesas van
+   rand tot rand en hangen de vier stappen eraan (KRUIST-NAAD).
+   QUIET betekent rustig, niet visueel zwak.
+   RANDSNEDE: de aanzet van de as links is de enige SCHERPE hoek van de pagina
+   (31,0 graden) en is daarmee de ene benoemde uitzondering die GEO-03 toestaat.
+   ============================================================================ */
+.st-impl{
+  container-type:inline-size;
+  position:relative;
+  width:100%;
+  background:var(--vibe-white);
+  overflow:hidden;
+}
+.st-impl-podium{
+  position:relative; width:100%;
+  aspect-ratio:1774 / 520;
+  min-height:420px;
+}
+.st-impl-kop{ position:absolute; z-index:3; left:5.412cqw; top:3.4cqw; width:44cqw }
+.st-impl-kop h2{ font-size:clamp(24px,2.37cqw,42px); line-height:1.1; letter-spacing:-.016em; margin:.36em 0 0 }
+.st-impl-kop h2 em{ color:var(--color-action); font-style:normal }
+
+/* DE PROCESAS — van rand tot rand, op 66,7% hoogte (347px van 520) */
+.st-impl-as{
+  position:absolute; z-index:1; left:0; right:0; top:66.7%; height:2px;
+  background:linear-gradient(90deg,
+    rgba(0,115,254,0) 0%, rgba(0,115,254,.85) 3.2%,
+    rgba(0,115,254,.85) 96.8%, rgba(0,115,254,.14) 100%);
+}
+/* RANDSNEDE: de scherpe aanzet links, 31,0 graden uit het verticaal — de ENE
+   benoemde uitzondering op de flauwe familie die GEO-03 per pagina toestaat */
+.st-impl-as::before{
+  content:''; position:absolute; left:0; bottom:0;
+  width:6.2cqw; height:10.4cqw;
+  clip-path:polygon(0 100%, 100% 100%, 100% 0);
+  background:linear-gradient(28deg, rgba(0,115,254,.16) 0%, rgba(0,115,254,0) 78%);
+}
+
+/* DE VIER STAPPEN — de as DEELT elke stap: cijfer en titel erboven, de knoop
+   OP de as, de toelichting eronder. Daardoor hangt de stap aan de as in plaats
+   van ernaast te staan (binding KRUIST-NAAD). */
+.st-stappen{
+  position:absolute; z-index:2; left:5.412cqw; right:5.412cqw; top:0;
+  display:grid; grid-template-columns:repeat(4,1fr);
+  padding-top:12.51cqw;            /* 222px — GEMETEN: knoop landt daarmee op 347px = de as */
+  list-style:none;
+}
+.st-stappen li{
+  position:relative;
+  padding-right:clamp(18px,2.1cqw,38px);
+  display:grid;
+  grid-template-rows:auto auto auto 1fr;
+  align-content:start;
+}
+.st-stap-n{
+  font-size:clamp(28px,3.1cqw,55px); font-weight:300; line-height:1;
+  color:rgba(0,115,254,.20); letter-spacing:-.02em;
+}
+.st-stappen h3{
+  margin:.3em 0 0; font-size:clamp(16px,1.24cqw,22px); letter-spacing:-.012em;
+  line-height:1.25;
+}
+/* de knoop zelf: een rasterrij, zodat zij meeschaalt met de typografie */
+.st-stap-knoop{
+  width:.9cqw; min-width:11px; aspect-ratio:1; margin:.62cqw 0 .9cqw;
+  background:var(--vibe-white); border:2px solid var(--color-action);
+  border-radius:50%;
+}
+.st-stappen li:first-child .st-stap-knoop{ background:var(--color-action) }
+.st-stappen p{
+  color:var(--color-body); font-size:clamp(13px,.9cqw,16px); line-height:1.5;
+  max-width:34ch;
+}
+
+/* ============================================================================
+   10 · FAQ-REGISTER — QUIET · HYBRID · BR-12 · typografie · VR-F · M0
+   ----------------------------------------------------------------------------
+   HERBOUWD NA DE ONAFHANKELIJKE VISUELE REVIEW (P0-1).
+   De vorige compositie was een leeskolom van 43% met 57% ONGECOMPONEERD wit
+   ernaast, een zichtbare lege rij onder de laatste vraag, en een eenzame
+   tekstlink linksonder als uitgang.
+
+   WAT ER NU STAAT: het register links op leesmaat, en rechts een BRUGVLAK dat
+   een echte taak heeft — het markeert het register (telling + label) en draagt
+   de uitgang naar de conversie. Het vlak HECHT aan het register: het kruist de
+   kolomgrens en deelt de onderrand. Het is donker, zodat de lange lichte
+   middenreeks hier een tonaal anker krijgt (P1-4).
+   De leesmaat blijft begrensd; de kolom wordt NIET opgerekt.
+   ============================================================================ */
+.st-faq{
+  position:relative;
+  padding:0 0 clamp(52px,5.8cqw,104px);
+  background:var(--vibe-white);
+}
+/* REGISTEROPENING — volbreed, en daarom zichtbaar bedoeld */
+.st-faq-opening{
+  display:grid; grid-template-columns:auto 1fr;
+  align-items:center; gap:clamp(16px,2cqw,36px);
+  padding:clamp(22px,2.4cqw,42px) 0 clamp(20px,2.2cqw,38px);
+  border-top:2px solid var(--color-ink);
+}
+.st-faq-opening > span{
+  color:var(--color-ink); font-weight:680;
+  font-size:clamp(13px,.93cqw,16px); letter-spacing:.1em; text-transform:uppercase;
+}
+.st-faq-opening hr{ border:0; border-top:1px dashed var(--vibe-line-ink); width:100% }
+
+.st-faq-in{
+  display:grid;
+  grid-template-columns:minmax(0,1.22fr) minmax(0,.78fr);
+  align-items:stretch;
+  column-gap:0;
+}
+
+/* --- links: het vragenregister op leesmaat --- */
+.st-faq-register{ padding-right:clamp(28px,3.4cqw,60px) }
+.st-faq-register h2{ font-size:clamp(23px,2.1cqw,37px); line-height:1.1; letter-spacing:-.015em; margin:0 }
+.st-faq-register > p{ margin-top:.85em; color:var(--color-body); max-width:58ch }
+.st-faq-lijst{ margin-top:clamp(22px,2.4cqw,42px); border-top:1px solid var(--vibe-line-ink) }
+.st-faq-lijst details{ border-bottom:1px solid var(--vibe-line-ink) }
+.st-faq-lijst summary{
+  max-width:58ch;
+  display:flex; align-items:flex-start; justify-content:space-between; gap:1.5em;
+  padding:clamp(15px,1.5cqw,27px) 0;
+  cursor:pointer; list-style:none;
+  color:var(--color-ink); font-weight:620;
+  font-size:clamp(15px,1.07cqw,19px); line-height:1.4;
+}
+.st-faq-lijst summary::-webkit-details-marker{ display:none }
+.st-faq-lijst summary::after{
+  content:''; flex:0 0 auto; margin-top:.42em;
+  width:.68em; height:.68em;
+  border-right:2px solid var(--color-action); border-bottom:2px solid var(--color-action);
+  transform:rotate(45deg); transition:transform .18s;
+}
+.st-faq-lijst details[open] summary::after{ transform:rotate(225deg) }
+.st-faq-lijst details > div{ padding:0 0 clamp(17px,1.8cqw,32px); color:var(--color-body); line-height:1.6; max-width:62ch }
+.st-faq-lijst summary:focus-visible{ outline:3px solid var(--color-action); outline-offset:3px }
+
+/* --- rechts: HET BRUGVLAK. Markeert het register en draagt de uitgang. --- */
+.st-faq-brug{
+  position:relative; z-index:2;
+  margin-left:clamp(-96px,-5.4cqw,-32px);   /* kruist de kolomgrens: de hechting */
+  margin-top:clamp(40px,4.4cqw,78px);
+  padding:clamp(28px,3cqw,54px) clamp(26px,2.9cqw,52px) clamp(30px,3.2cqw,57px);
+  background:
+    radial-gradient(124% 92% at 88% 6%, #0D2A4E 0%, rgba(13,42,78,0) 58%),
+    linear-gradient(166deg,var(--vibe-navy-800) 0%,var(--vibe-navy-900) 100%);
+  color:var(--vibe-white);
+  display:flex; flex-direction:column;
+  box-shadow:0 34px 76px -44px rgba(0,22,50,.52);
+}
+.st-faq-brug > i{
+  display:block; font-style:normal; color:var(--vibe-blue-300);
+  font-size:clamp(11px,.73cqw,13px); letter-spacing:.1em; text-transform:uppercase;
+}
+.st-faq-telling{
+  display:flex; align-items:baseline; gap:.42em;
+  margin-top:clamp(14px,1.5cqw,27px);
+}
+.st-faq-telling b{
+  font-size:clamp(44px,4.4cqw,78px); font-weight:300; line-height:.9;
+  color:var(--vibe-white); letter-spacing:-.03em;
+}
+.st-faq-telling span{ color:rgba(226,238,252,.64); font-size:clamp(14px,1.02cqw,18px) }
+.st-faq-brug hr{
+  border:0; border-top:1px solid rgba(255,255,255,.16);
+  width:100%; margin:clamp(26px,2.8cqw,50px) 0 clamp(22px,2.4cqw,43px);
+}
+.st-faq-uitgang{ margin-top:auto }
+.st-faq-uitgang b{
+  display:block; color:var(--vibe-white);
+  font-size:clamp(17px,1.35cqw,24px); font-weight:650; letter-spacing:-.012em; line-height:1.2;
+}
+.st-faq-uitgang p{
+  margin-top:.65em; color:rgba(226,238,252,.80);
+  font-size:clamp(14px,.96cqw,17px); line-height:1.52; max-width:34ch;
+}
+.st-faq-uitgang .vibe-btn{ margin-top:clamp(20px,2.1cqw,38px) }
+
+/* ============================================================================
+   10 · SLOT — HIGH · CANVAS · BR-10 · typografie · VR-G · M0
+   ----------------------------------------------------------------------------
+   Podium 1774 x 560. De capaciteitsas LOST hier OP in het merkvlak: de wig
+   komt van rechtsonder omhoog en de as eindigt erin (binding OVER-RAND).
+   MERKWIG, flauwe familie 12,4 graden.
+   ============================================================================ */
+.st-slot{
+  container-type:inline-size;
+  position:relative; width:100%;
+  background:var(--vibe-navy-900);
+  color:var(--vibe-white);
+  overflow:hidden;
+}
+.st-slot-podium{
+  position:relative; width:100%;
+  aspect-ratio:1774 / 760;
+  min-height:470px;
+}
+/* MERKWIG — rechtsonder omhoog */
+.st-slot-podium::before{
+  content:''; position:absolute; z-index:0; inset:0;
+  clip-path:polygon(53.4% 100%, 100% 0, 100% 100%);
+  background:linear-gradient(212deg, rgba(0,115,254,.34) 0%, rgba(0,115,254,.06) 68%);
+}
+.st-slot-podium::after{          /* zachte gloed waar de as oplost */
+  content:''; position:absolute; z-index:0; inset:0;
+  background:radial-gradient(52% 64% at 72% 84%, rgba(62,155,255,.20) 0%, rgba(62,155,255,0) 70%);
+}
+/* de as komt van links en eindigt in de wig */
+.st-slot-as{
+  position:absolute; z-index:1; left:0; top:82%;
+  width:58%; height:1px;
+  background:linear-gradient(90deg, rgba(62,155,255,.55) 0%, rgba(62,155,255,.55) 86%, rgba(62,155,255,0) 100%);
+}
+.st-slot-copy{
+  position:absolute; z-index:3;
+  left:5.412cqw; top:9.02cqw; width:46cqw;
+}
+.st-slot-copy .vibe-eyebrow{ color:var(--vibe-blue-300) }
+.st-slot-copy h2{
+  color:var(--vibe-white); margin:.4em 0 0;
+  font-size:clamp(30px,3.44cqw,61px); line-height:1.045; letter-spacing:-.021em;
+}
+.st-slot-copy h2 em{ color:var(--vibe-blue-300); font-style:normal }
+.st-slot-copy .vibe-lead{ color:rgba(226,238,252,.84); margin-top:1em; max-width:33cqw }
+.st-slot-copy .vibe-actions{ margin-top:clamp(26px,2.7cqw,48px) }
+
+/* SLOTVLAK — ligt OVER de as (binding OVER-RAND) */
+.st-slot-vlak{
+  position:absolute; z-index:4;
+  right:5.412cqw; top:58%;
+  width:26.2cqw;
+  padding:clamp(22px,2.4cqw,43px) clamp(22px,2.5cqw,44px);
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.20);
+  backdrop-filter:blur(8px);
+}
+.st-slot-vlak li{
+  display:grid; grid-template-columns:auto 1fr; gap:.85em;
+  color:rgba(226,238,252,.88);
+  font-size:clamp(13px,.96cqw,17px); line-height:1.45;
+}
+.st-slot-vlak li + li{ margin-top:.95em; padding-top:.95em; border-top:1px solid rgba(255,255,255,.12) }
+.st-slot-vlak li svg{ width:1.1em; height:1.1em; color:var(--vibe-blue-300); margin-top:.18em }
+
+/* ============================================================================
+   RESPONSIEF — de compositie VEREENVOUDIGT, zij wordt niet mechanisch nagebouwd
+   ============================================================================ */
+@media (max-width:1199px){
+  /* de proportionele podia worden stapelingen: op tablet is een getekend canvas
+     van 1774 breed geen compositie meer maar een verkleining */
+  /* HET NAVYVELD is op desktop een clip-path op een absoluut vlak. Bij
+     position:relative klapt dat lege vlak samen en verdween de donkere grond,
+     terwijl de copy wit BLEEF: witte tekst op wit. De grond verhuist daarom
+     naar het podium zelf. */
+  .st-hero-podium{ aspect-ratio:auto;
+    background:linear-gradient(168deg,var(--vibe-navy-800) 0%,var(--vibe-navy-900) 100%) }
+  .st-hero-veld{ display:none }
+  /* cqw-plafonds lekken door naar mobiel: 31,5cqw is daar 123px en maakt de
+     leesregel 15 tekens breed. Op mobiel hoort de leesmaat in ch. */
+  .st-hero-copy .vibe-lead{ max-width:58ch }
+  .st-ctrl-kop{ max-width:none }
+  .st-hero-drager{ position:relative; inset:auto; aspect-ratio:16/10; left:auto; right:auto; bottom:auto }
+  .st-hero-copy{ position:relative; left:auto; top:auto; width:auto; max-width:none;
+    padding:clamp(40px,6vw,64px) clamp(20px,5vw,40px) clamp(34px,5vw,54px) }
+  .st-hero-chip{ right:clamp(16px,4vw,28px); top:auto; bottom:clamp(16px,4vw,28px) }
+  .st-as{ position:relative; top:auto; height:auto; left:auto; right:auto;
+    grid-template-columns:repeat(3,minmax(0,1fr)) }
+  .st-as-item{ padding:clamp(16px,3vw,24px) clamp(14px,2.4vw,24px) }
+
+  .st-mis-in{ grid-template-columns:1fr }
+  .st-mis-statement{ padding-right:0 }
+  .st-mis-statement .vibe-lead{ max-width:60ch }
+  .st-mis-zwaar{ margin-left:0; margin-top:clamp(28px,5vw,44px) }
+
+  .st-sys-podium{ aspect-ratio:auto; min-height:0; padding:clamp(44px,6vw,68px) 0 }
+  .st-sys-kop{ position:relative; left:auto; top:auto; width:auto; max-width:none;
+    padding:0 clamp(20px,5vw,40px) }
+  .st-sys-kop .vibe-lead{ max-width:58ch }
+  .st-sys-as,.st-sys-as::after{ display:none }
+  .st-sys-kolom{ position:relative; top:auto; left:auto; right:auto; transform:none; width:auto;
+    padding:0 clamp(20px,5vw,40px); margin-top:clamp(28px,5vw,44px) }
+  .st-sys-knoop::after{ display:none }
+  .st-sys-batterij{ position:relative; left:auto; top:auto; transform:none; width:min(300px,62vw);
+    height:118px; margin:clamp(40px,6vw,60px) auto clamp(52px,7vw,72px) }
+  .st-sys-besturing{ position:relative; left:auto; top:auto; transform:none; width:auto;
+    margin:clamp(28px,5vw,44px) clamp(20px,5vw,40px) 0 }
+  .st-sys-besturing::after{ display:none }
+  .st-sys-noot,.st-sys-acties{ position:relative; left:auto; right:auto; bottom:auto; max-width:none;
+    padding:0 clamp(20px,5vw,40px); margin-top:clamp(22px,4vw,34px) }
+
+  /* de kern blijft het zwaartepunt; de rails worden rijen eronder */
+  .st-ctrl-veld{ grid-template-columns:1fr; row-gap:clamp(22px,4vw,34px) }
+  .st-ctrl-kern{ order:1; min-height:0 }
+  .st-ctrl-laag{ display:none }
+  .st-ctrl-rails{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:clamp(14px,2.6vw,22px) }
+  .st-ctrl-rails--in{ order:0; text-align:left }
+  .st-ctrl-rails--uit{ order:2; text-align:left }
+  .st-ctrl-rails li::after{ display:none }
+  .st-ctrl-rails li{ padding-top:clamp(10px,2vw,14px); border-top:1px solid var(--vibe-line-ink) }
+  .st-ctrl-rollen{ grid-template-columns:1fr }
+  .st-ctrl-resultaat{ order:3; grid-column:1; justify-self:stretch; width:auto;
+    margin-top:0; grid-template-columns:1fr; gap:clamp(14px,2.6vw,22px) }
+
+  .st-bew-band{ aspect-ratio:16/10; min-height:0 }
+  .st-bew-beeld{ clip-path:none }
+  .st-bew-kaart{ position:relative; left:auto; top:auto; width:auto; max-width:none;
+    margin:calc(-6vw) clamp(20px,5vw,40px) 0; backdrop-filter:none; background:var(--vibe-navy-900) }
+  .st-bew-waarden{ position:relative; right:auto; bottom:auto; grid-auto-flow:row;
+    margin:clamp(22px,4vw,34px) clamp(20px,5vw,40px) 0 }
+  .st-bew-waarden div + div{ border-left:0; border-top:1px solid var(--st-lijn-op-donker) }
+  .st-bew-steun a{ grid-template-columns:1fr auto; gap:clamp(6px,2vw,12px) }
+  .st-bew-steun em{ grid-column:1; grid-row:2 }
+  .st-bew-steun span{ grid-column:1; grid-row:3 }
+  .st-bew-steun .vibe-arrow{ grid-column:2; grid-row:1 }
+
+  .st-tech-in{ grid-template-columns:1fr }
+  .st-tech-copy{ padding-right:0 }
+  .st-tech-bouw{ margin-left:0; margin-top:clamp(30px,5vw,48px) }
+
+  .st-expl-in{ grid-template-columns:1fr }
+  .st-expl-copy{ padding-right:0 }
+  .st-route--hoofd{ margin-left:0; margin-bottom:0; margin-top:clamp(28px,5vw,44px) }
+  .st-expl::before{ width:58vw }
+
+  .st-impl-podium{ aspect-ratio:auto; min-height:0; padding:clamp(44px,6vw,68px) 0 }
+  .st-impl-kop{ position:relative; left:auto; top:auto; width:auto; padding:0 clamp(20px,5vw,40px) }
+  .st-impl-as{ display:none }
+  .st-stappen{ position:relative; left:auto; right:auto; top:auto; bottom:auto;
+    grid-template-columns:1fr 1fr; gap:clamp(22px,4vw,34px);
+    padding:clamp(30px,5vw,46px) clamp(20px,5vw,40px) 0 }
+  .st-stappen li{ padding-right:0 }
+  .st-stappen li::before{ position:relative; top:auto; display:block; margin-bottom:.8em }
+  .st-stappen li > .st-stap-n,.st-stappen li > h3,.st-stappen li > p{ top:auto }
+  .st-stappen p{ max-width:46ch }
+
+  .st-faq-in{ grid-template-columns:1fr }
+  .st-faq-register{ padding-right:0 }
+  .st-faq-brug{ margin-left:0; margin-top:clamp(32px,5vw,50px) }
+  .st-faq-uitgang p{ max-width:58ch }
+
+  .st-slot-podium{ aspect-ratio:auto; min-height:0; padding:clamp(48px,7vw,74px) 0 }
+  .st-slot-podium::before{ clip-path:polygon(0 72%, 100% 30%, 100% 100%, 0 100%) }
+  .st-slot-as{ display:none }
+  .st-slot-copy{ position:relative; left:auto; top:auto; width:auto; max-width:none;
+    padding:0 clamp(20px,5vw,40px) }
+  .st-slot-copy .vibe-lead{ max-width:56ch }
+  .st-slot-vlak{ position:relative; right:auto; top:auto; width:auto; max-width:none;
+    margin:clamp(30px,5vw,48px) clamp(20px,5vw,40px) 0 }
+}
+
+@media (max-width:767px){
+  /* drie kolommen zijn op een telefoon te krap voor deze labels */
+  .st-as{ grid-template-columns:1fr }
+  .st-as-item + .st-as-item{ border-top:1px solid var(--st-lijn-op-donker) }
+  .st-ctrl-rails{ grid-template-columns:1fr }
+  .st-stappen{ grid-template-columns:1fr }
+  .st-bew-band{ aspect-ratio:4/3 }
+  .st-mis-statement h2{ font-size:clamp(27px,7.4vw,36px) }
+  .st-spec > div{ grid-template-columns:1fr; gap:.3em }
+  .st-tech-mod{ grid-template-columns:auto 1fr; row-gap:.3em }
+  .st-tech-mod em{ grid-column:2 }
+}
+
+/* de legacyfooter van de oude pagina blijft verborgen — zelfde techniek als
+   home-footer.css:35, zodat er geen tweede footer verschijnt */
+.vibe-footer ~ footer.ftr.v1a{ display:none !important }
+
+@media (prefers-reduced-motion:reduce){
+  .st-faq-lijst summary::after{ transition:none }
+  .st-bew-steun b{ transition:none }
+}

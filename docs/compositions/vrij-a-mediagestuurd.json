@@ -1,0 +1,174 @@
+{
+  "card_version": "1.0",
+  "page": "control:vrij-A-mediagestuurd",
+  "status": "CONTROL",
+  "archetype": "B2",
+  "variant": "mediagestuurd",
+  "visual_protagonist": "fysieke-infrastructuur",
+  "canvas_strategy": {
+    "modes": { "CANVAS": 3, "DOCUMENT": 2, "HYBRID": 2 },
+    "desktop_note": "Het beeld bepaalt de paginabeweging. De twee fotosecties staan op de twee hoogste impactposities en zijn beide randrakend; daartussen valt de pagina terug op getekende dragers en een registerveld, zodat het tweede beeld nog als climax kan lezen en niet als herhaling. De opening is de enige sectie die van rand tot rand vult."
+  },
+  "photo_budget": {
+    "slots": 2,
+    "declared_files": [
+      "assets/logistiek-hero.jpg",
+      "assets/projects/ratio16.jpg"
+    ]
+  },
+  "sections": [
+    {
+      "id": "opening-opslagveld",
+      "purpose": "Het opslagveld in zijn logistieke omgeving vult de opening van rand tot rand; de propositie over netcongestie ligt als smalle laag in het donkerste deel van de drager, niet ernaast.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-01",
+      "protagonist": "foto",
+      "visual_role": "VR-A",
+      "media_treatment": "M1",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-0A-3M",
+        "bindings": [
+          { "from": "propositielaag", "to": "openingsbeeld", "kind": "IN-SCRIM" },
+          { "from": "bewijsregel", "to": "openingsbeeld", "kind": "OP-BEELD" }
+        ]
+      },
+      "geometry_role": "RANDSNEDE",
+      "transition": "GEDRAGEN",
+      "cta_role": "PRIMAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/logistiek-hero.jpg",
+      "asset_class": "A"
+    },
+    {
+      "id": "toepassingsvormen",
+      "purpose": "Vier toepassingsvormen van batterijopslag als ongelijke getekende onderdeelvlakken: piekafvlakking, terugleverbegrenzing, noodvermogen en flexibiliteitsinzet. De grootste tegel wijst waar de bezoeker begint; de drie andere dragen een eigen hoekwaarde en vlakstructuur.",
+      "impact": "MEDIUM",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-02",
+      "protagonist": "technische-compositie",
+      "visual_role": "VR-C",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-2O-2A-0M",
+        "bindings": [
+          { "from": "maatlabel", "to": "dominante onderdeeltegel", "kind": "OVER-RAND" }
+        ]
+      },
+      "geometry_role": "GEEN",
+      "transition": "HARDE-FLIP",
+      "cta_role": "GEEN",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "systeemregister",
+      "purpose": "Registerveld met de specificaties van de opslagkast in twee groepen onder een kop; het gewichtsverschil zit in de eerste rij van elke groep. Het register staat bewust NIET direct voor het slot.",
+      "impact": "QUIET",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-12",
+      "protagonist": "specificatie",
+      "visual_role": "VR-H",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-0A-4M",
+        "bindings": []
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "GEEN",
+      "content_status": "PENDING",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "projectpaneel-ratio16",
+      "purpose": "Het projectbeeld loopt als doorlopende drager naar exact een schermrand door en draagt de tekst in zijn donkerste deel; het bewijsvlak hangt in de drager en de projectnavigatie dekt een rand van buitenaf af. Een onderwerp per drager.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-03",
+      "protagonist": "foto",
+      "visual_role": "VR-A",
+      "media_treatment": "M2",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-2A-0M",
+        "bindings": [
+          { "from": "bewijsvlak", "to": "projectdrager", "kind": "OP-BEELD" },
+          { "from": "projectnavigatie", "to": "projectdrager", "kind": "OVER-RAND" }
+        ]
+      },
+      "geometry_role": "BEELDSNEDE",
+      "transition": "GEDRAGEN",
+      "cta_role": "TEKSTLINK",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/projects/ratio16.jpg",
+      "asset_class": "A"
+    },
+    {
+      "id": "bewijsband",
+      "purpose": "Bewijsband naar maat: alleen de waarden met een benoemde bron, in de hoeveelheid die bestaat, zonder vlak onder de items. Bij nul onderbouwde waarden bestaat de band niet en vervalt de sectie.",
+      "impact": "QUIET",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-07",
+      "protagonist": "metriek-bewijs",
+      "visual_role": "VR-F",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-1O-0A-3M",
+        "bindings": [],
+        "equal_row": {
+          "count": 3,
+          "equal_register_justification": "De drie waarden zijn hetzelfde soort meting aan hetzelfde systeem en vormen daarom een gelijk register; ze ongelijk maken zou een rangorde tonen die de inhoud niet heeft. De band draagt geen vlak, dus er is geen oppervlak dat de gelijkheid tot raster maakt."
+        }
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "GEEN",
+      "content_status": "PENDING",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "slot-regelkast",
+      "purpose": "Escalerend slot zonder foto: de regelkast met de bedieningsmodule die aan de buitenzijde over hem valt, groter dan elk eerder vlak op de pagina en met het merkvlak op een gedeelde lijn, zodat de drie lagen als diepte lezen en niet als drie vormen. De uitgang is het kleinste element.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-10",
+      "protagonist": "gebouwd-object",
+      "visual_role": "VR-B",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-2O-0A-1M",
+        "bindings": [
+          { "from": "bedieningsmodule", "to": "hoofdkast", "kind": "OVER-RAND" },
+          { "from": "uitgangsvlak", "to": "merkvlak", "kind": "KRUIST-NAAD" }
+        ]
+      },
+      "geometry_role": "MERKWIG",
+      "transition": "HARDE-FLIP",
+      "cta_role": "PRIMAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "afsluitende-navigatie",
+      "purpose": "Afsluitende navigatie zonder voetvlak; de kolommen dragen alleen wat bij deze pagina hoort. Een vlak dat niets draagt bestaat niet, dus er is geen voetbeeld.",
+      "impact": "QUIET",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-11",
+      "protagonist": "typografie",
+      "visual_role": "VR-G",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-0O-0A-4M",
+        "bindings": []
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "TEKSTLINK",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    }
+  ],
+  "notes": "CONTROLEKAART, variant A van drie legitieme premiumcomposities voor dezelfde B2-inhoud (batterijopslag). Hier LEIDT HET BEELD: de twee enige fotoslots staan op de twee zwaarste posities en dragen hun sectie zelf; alle overige secties vallen terug op niet-fotografische dragers. Dragervocabulaire zoals deze kaart het gebruikt: VR-A fotografische drager, VR-B gebouwd object, VR-C NF-1 technische productcompositie, VR-D NF-2 systeemtopologie, VR-E NF-5 merkgeometrische compositie, VR-F NF-3 bewijscompositie, VR-G NF-4 typografisch propositiepodium, VR-H registerveld REG-1..REG-5 en NF-6 gestuurde datavisualisatie. Geen enkele sectie declareert een productscreenshot van VIBE.CONTROL: die bestaat niet in de voorraad, dus het slot draagt het gebouwde object. Twee secties staan op PENDING omdat de specrijen en de bewijswaarden een VERIFIED bron per waarde vragen die in deze sessie niet is gemeten; geen van beide is een sectie die zonder haar ongedekte cijfer instort. HIGH-hoofdrolverzameling van deze kaart: foto plus gebouwd-object."
+}

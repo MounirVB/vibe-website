@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vibe/composition-card/1.0",
+  "title": "Vibe compositiekaart",
+  "description": "Beschrijft de ONTWERPINTENTIE van een pagina, structureel. Geen pixelposities, geen kopgraden, geen clip-path-coordinaten, geen homepagespecifieke klassenamen, geen CSS. De kaart wordt geschreven VOOR de implementatie en is het document waarop de poort draait.",
+  "type": "object",
+  "required": ["card_version", "page", "archetype", "variant", "canvas_strategy", "visual_protagonist", "sections"],
+  "additionalProperties": false,
+  "properties": {
+    "card_version": { "const": "1.0" },
+    "page": { "type": "string", "description": "pad binnen de repo, of control:<naam> voor een metadata-only controlekaart" },
+    "status": { "enum": ["MASTER", "MIGRATED", "PAPER", "CONTROL"], "default": "PAPER" },
+    "archetype": { "enum": ["B1", "B2", "B3", "B4", "B5", "B6", "B7", "S2"] },
+    "variant": { "type": "string" },
+    "visual_protagonist": {
+      "type": "string",
+      "description": "waar de pagina visueel over gaat; stuurt de HIGH-reeks",
+      "enum": ["fysieke-infrastructuur", "dakvlak-opwek", "systeemintelligentie", "portefeuille-gebouw", "het-project", "proces-levering", "propositie-tekst", "mens-organisatie"]
+    },
+    "canvas_strategy": {
+      "type": "object",
+      "required": ["modes"],
+      "additionalProperties": false,
+      "properties": {
+        "modes": {
+          "type": "object",
+          "required": ["CANVAS", "DOCUMENT", "HYBRID"],
+          "additionalProperties": false,
+          "properties": {
+            "CANVAS": { "type": "integer", "minimum": 0 },
+            "DOCUMENT": { "type": "integer", "minimum": 0 },
+            "HYBRID": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "desktop_note": { "type": "string" }
+      }
+    },
+    "photo_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "slots": { "type": "integer", "minimum": 0 },
+        "declared_files": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["id", "purpose", "impact", "canvas_mode", "blueprint", "protagonist", "visual_role", "media_treatment", "surface_hierarchy", "geometry_role", "transition", "content_status", "asset_status"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "purpose": { "type": "string" },
+          "impact": { "enum": ["HIGH", "MEDIUM", "QUIET"] },
+          "canvas_mode": { "enum": ["CANVAS", "DOCUMENT", "HYBRID"] },
+          "blueprint": { "type": "string", "pattern": "^BR-[0-9]{2}$" },
+          "protagonist": {
+            "description": "wat in DEZE sectie de hoofdrol speelt",
+            "enum": ["foto", "gebouwd-object", "technische-compositie", "topologie", "specificatie", "metriek-bewijs", "proces", "typografie"]
+          },
+          "visual_role": {
+            "description": "de drager. De acht codes zijn in deze ronde vastgelegd in H7 §7.2 van docs/04-visual-language-v1.3.md; zij stonden daarvoor NERGENS in docs/ gedefinieerd. Hoofdstuk 3 benoemt vier DRAGERSOORTEN (D-0, D-F, D-V, D-O) en is iets anders.",
+            "enum": ["VR-A", "VR-B", "VR-C", "VR-D", "VR-E", "VR-F", "VR-G", "VR-H"]
+          },
+          "media_treatment": { "enum": ["M0", "M1", "M2", "M3", "M4", "M5", "M6"] },
+          "surface_hierarchy": {
+            "type": "object",
+            "required": ["pattern", "bindings"],
+            "additionalProperties": false,
+            "properties": {
+              "pattern": {
+                "description": "DOMINANT/ONDERSTEUNEND/AANGEHECHT/MICRO als telling, bv. 1D-2O-1A",
+                "type": "string",
+                "pattern": "^(0|[1-9])D-(0|[1-9])O-(0|[1-9])A-(0|[1-9])M$"
+              },
+              "bindings": {
+                "description": "hechtingen: een vlak dat OP of OVER een ander vlak of medium ligt. Leeg = los raster.",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["from", "to", "kind"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "from": { "type": "string" },
+                    "to": { "type": "string" },
+                    "kind": { "enum": ["OP-BEELD", "OVER-RAND", "KRUIST-NAAD", "IN-SCRIM"] }
+                  }
+                }
+              },
+              "equal_row": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "count": { "type": "integer", "minimum": 0 },
+                  "equal_register_justification": { "type": "string" }
+                }
+              }
+            }
+          },
+          "geometry_role": { "enum": ["RANDSNEDE", "BEELDSNEDE", "MERKWIG", "ACHTERGRONDVELD", "GEEN"] },
+          "transition": { "enum": ["GEDRAGEN", "GEDEELDE-RAND", "HARDE-FLIP", "RUST"] },
+          "cta_role": { "enum": ["PRIMAIR", "SECUNDAIR", "TEKSTLINK", "GEEN"], "default": "GEEN" },
+          "content_status": { "enum": ["DEKKEND", "PENDING", "CONFLICTING"] },
+          "asset_status": { "enum": ["AANWEZIG", "PENDING", "NVT"] },
+          "asset_ref": { "type": "string" },
+          "asset_class": { "enum": ["A", "B", "C", "D", "V", "PENDING", "NVT"] }
+        }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "card_version": "1.0",
+  "page": "control:schaarste-b2",
+  "status": "CONTROL",
+  "archetype": "B2",
+  "variant": "assetschaarste",
+  "visual_protagonist": "systeemintelligentie",
+  "canvas_strategy": {
+    "modes": {
+      "CANVAS": 3,
+      "DOCUMENT": 1,
+      "HYBRID": 3
+    },
+    "desktop_note": "De drie CANVAS-secties en de drie HYBRID-podia houden hun werkbreedte vast over de hele desktopband; zij krimpen niet mee met een paginabrede wikkel. De enige DOCUMENT-sectie begrenst haar leesmaat op het tekstelement zelf en nergens op een inhoudsdoos, zodat de bewijsband als leesinhoud leest en niet als canvas. Het ritme loopt van volvlaks beeld naar gebouwd object, via een fotografisch podium met twee aangehechte vlakken en een getekende ketenband, door een rustige leesband, naar een getekende drager en een escalerend slot: vijf van de zeven secties dragen hun onderwerp zonder foto."
+  },
+  "photo_budget": {
+    "slots": 2,
+    "declared_files": [
+      "assets/logistiek-hero.jpg",
+      "assets/vve-hero.jpg"
+    ]
+  },
+  "sections": [
+    {
+      "id": "opening-volvlaks-drager",
+      "purpose": "De enige klasse-A-foto van de pagina vult het openingsvlak van rand tot rand en wordt door precies een randovergang tot vorm gemaakt. De propositie ligt als smalle laag IN die drager op een scrim die vanaf de leeszijde opbouwt, niet ernaast in een rastercel. De optionele bewijsband van deze blauwdruk wordt NIET gebouwd: het aantal cellen moet gelijk zijn aan het aantal onderbouwde items, en er is in deze sessie geen onderbouwde verzameling gemeten, dus de band bestaat niet als N.V.T.-met-reden in plaats van als band met lege slots. De sectie draagt daarom nul cijfers en nul projectnamen; haar inhoud is propositie.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-01",
+      "protagonist": "foto",
+      "visual_role": "VR-A",
+      "media_treatment": "M2",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-0A-1M",
+        "bindings": [
+          {
+            "from": "propositielaag",
+            "to": "klasse-A-fotodrager",
+            "kind": "IN-SCRIM"
+          }
+        ]
+      },
+      "geometry_role": "RANDSNEDE",
+      "transition": "GEDRAGEN",
+      "cta_role": "PRIMAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/logistiek-hero.jpg",
+      "asset_class": "A"
+    },
+    {
+      "id": "product-als-gebouwd-object",
+      "purpose": "NF-1 TECHNISCHE PRODUCTCOMPOSITIE. Hier zou een productscreenshot staan; er bestaat geen enkele echte opname van het product in deze repository, en een stockmockup of een dekselframe om een nagebouwd paneel is de uitdrukkelijk verboden terugval. In plaats daarvan is het product een GEBOUWD object in de eigen vormtaal: een hoofdobjectvlak dat het onderwerp is en niet een illustratie naast de tekst, met een kleiner kernspecificatievlak aan de buitenzijde dat het hoofdvlak met een gemeten waarde overlapt en er verticaal volledig in valt. Vier onderdelen dragen een eigen label, elk met een haarlijn die het object werkelijk raakt, dus het aantal aanwijslijnen is gelijk aan het aantal aanwijsregels. Twee vlakken in de sectie, nul beelden, en een zichtbaar label dat de figuur als voorbeeldweergave benoemt.",
+      "impact": "MEDIUM",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-06",
+      "protagonist": "gebouwd-object",
+      "visual_role": "VR-C",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-0A-4M",
+        "bindings": [
+          {
+            "from": "kernspecificatievlak",
+            "to": "objectvlak",
+            "kind": "OVER-RAND"
+          }
+        ]
+      },
+      "geometry_role": "GEEN",
+      "transition": "HARDE-FLIP",
+      "cta_role": "GEEN",
+      "content_status": "PENDING",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "podium-klasse-b-met-aangehecht-bewijs",
+      "purpose": "De enige klasse-B-foto draagt hier een HIGH-sectie, en uitsluitend omdat er twee vlakken OP de drager liggen. Drie registers over een onderwerp: het verhaal als tekstkolom, een resultaatvlak dat de drager met een gemeten overlapwaarde over haar rand kruist, en een identiteitsstrook die volledig binnen de dragerdoos valt en geen vlakrand raakt. Daar waar de tekstkolom over de drager loopt snijdt een flauwe snede het beeld, zodat er geen schone kolomnaad ontstaat. Het onderwerp van deze sectie is NIET de foto maar het aangehechte bewijs: haal het resultaatvlak weg en de sectie zakt naar MEDIUM, want een klasse-B-opname draagt op eigen kracht geen hoofdrol. Harde grendel op de inhoud: geen projectnaam, geen adres, geen vermogen. De identiteitsstrook draagt de aanduiding van het systeem zelf plus een specregel, het resultaat staat in de derde persoon, en er staat geen citaat dat niet bestaat.",
+      "impact": "HIGH",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-08",
+      "protagonist": "metriek-bewijs",
+      "visual_role": "VR-B",
+      "media_treatment": "M3",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-1A-1M",
+        "bindings": [
+          {
+            "from": "resultaatvlak",
+            "to": "klasse-B-fotodrager",
+            "kind": "OVER-RAND"
+          },
+          {
+            "from": "identiteitsstrook",
+            "to": "klasse-B-fotodrager",
+            "kind": "OP-BEELD"
+          }
+        ]
+      },
+      "geometry_role": "BEELDSNEDE",
+      "transition": "GEDEELDE-RAND",
+      "cta_role": "SECUNDAIR",
+      "content_status": "PENDING",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/vve-hero.jpg",
+      "asset_class": "B"
+    },
+    {
+      "id": "keten-als-topologie",
+      "purpose": "NF-2 SYSTEEMTOPOLOGIE. De keten bron, omvorming, opslag, belasting en net als liggende tekenband met een verhouding die breed genoeg is om als beweging te lezen, gedragen door een ondergrond die de band draagt en niet snijdt en die aan een zijde de schermrand uitloopt. Vijf knopen, vier verbindingen, richting zichtbaar op elke verbinding, en nul hubs: een lineaire keten heeft geen zichtbare top, en de enige twee vlakken met een eigen grond zijn de tekenband en het legendavlak dat haar rand kruist. De tekening verklaart het MECHANISME; zij suggereert geen installatie. Daarom: nul cijfers, nul projectnamen, nul adressen, en een zichtbaar label dat haar als schematische weergave benoemt. De bandverhouding en de sectiehoogte zijn AFGELEID en worden samen uitgerekend, zodat de band zowel de liggende verhouding van de blauwdruk haalt als de dominantievloer van de vlakregel.",
+      "impact": "MEDIUM",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-04",
+      "protagonist": "topologie",
+      "visual_role": "VR-D",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-0A-5M",
+        "bindings": [
+          {
+            "from": "legendavlak",
+            "to": "getekende tekenband",
+            "kind": "OVER-RAND"
+          }
+        ]
+      },
+      "geometry_role": "ACHTERGRONDVELD",
+      "transition": "GEDRAGEN",
+      "cta_role": "GEEN",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "bewijsband-op-maat",
+      "purpose": "NF-3 BEWIJSCOMPOSITIE in DOCUMENT MODE, bewust QUIET. Vier bewijswaarden, nul cellen met een eigen vlak, gescheiden door haarlijnen, en per cel een getal, een label EN een zichtbare bronverwijzing naar een pagina in deze codebase. Het aantal kolommen is gelijk aan het aantal onderbouwde items en nooit een vast getal: valt een bron weg, dan verdwijnt de cel en niet de bron. De band is geen vulling tussen twee zware secties; zij staat tussen twee MEDIUM-secties en draagt haar eigen inhoud. Het dominante vlak is hier de sectiegrond zelf, wat de vlakregel voor deze code uitdrukkelijk als N.V.T.-met-reden toestaat. De vrijstaande vorm die deze blauwdruk optioneel toestaat valt weg, omdat het quotum op een pagina van zeven secties nul is.",
+      "impact": "QUIET",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-07",
+      "protagonist": "metriek-bewijs",
+      "visual_role": "VR-F",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-0O-0A-4M",
+        "bindings": [],
+        "equal_row": {
+          "count": 4,
+          "equal_register_justification": "Vier bewijswaarden van dezelfde soort, elk met een eigen bronregel. Het gelijke register IS hier de inhoud: ongelijke cellen zouden een rangorde tussen de vier waarden suggereren die er niet is. Hoofdstuk 3 staat gelijke cellen in deze code juist toe omdat er geen vlak onder zit, waardoor er ook geen vlakwerking is die een verschil moet verantwoorden. Dit is de enige gelijke rij op de pagina; de ketenstappen van de topologie tellen niet mee, want hun richtingsmarkering verschilt per stap en zij dragen geen vlak."
+        }
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "TEKSTLINK",
+      "content_status": "PENDING",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "getekende-drager-met-bewijsvlak",
+      "purpose": "NF-5 MERKGEOMETRISCHE COMPOSITIE. Een gesneden grondvlak in de eigen vormtaal neemt hier de plaats in van fotografie die niet bestaat; het is geen plaatshouder, geen aankondiging en geen render. De drager loopt naar exact een schermrand door, draagt de tekst in haar donkerste deel, en haar snede komt uit de scherpe hoekfamilie. In het vlak ligt ten minste een inhoudselement, want een leeg gesneden vlak is decoratie. Daarop hecht een bewijsvlak met contentgedreven ONGELIJKE cellen, elk met herkomst. Het vlak mag niets suggereren wat er niet is: geen gebouw, geen installatie, geen plaats. De uitgang is ondergeschikt, dus deze sectie draagt de laagste linkdichtheid van de pagina. Dit is het enige merkgeometrische vlak op de pagina en er staat nul vrijstaande versiering naast.",
+      "impact": "MEDIUM",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-03",
+      "protagonist": "technische-compositie",
+      "visual_role": "VR-E",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-1A-3M",
+        "bindings": [
+          {
+            "from": "tekstlaag",
+            "to": "getekend grondvlak",
+            "kind": "IN-SCRIM"
+          },
+          {
+            "from": "aangehecht bewijsvlak",
+            "to": "snede van het getekende grondvlak",
+            "kind": "KRUIST-NAAD"
+          }
+        ]
+      },
+      "geometry_role": "MERKWIG",
+      "transition": "HARDE-FLIP",
+      "cta_role": "TEKSTLINK",
+      "content_status": "PENDING",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "escalerend-slot-als-statement",
+      "purpose": "NF-4 TYPOGRAFISCH PROPOSITIEPODIUM als slot. De zin zelf is het onderwerp: het statement is de grootste kop van de pagina, met een handgezette regelval en nul kaartvlakken. Het statementvlak is de gesneden grond van de sectie; twee geometrische middelen delen een punt, en de statementlaag kruist die naad. De drager is GETEKEND en niet fotografisch, en dat is geen keuze maar een gemeten uitkomst: beide beschikbare bestanden zijn al besteed, de opening mag niet herhaald worden en een bestand hoort hoogstens in een sectie, dus de beeldtoets van deze blauwdruk eindigt in N.V.T.-met-reden en de drager wordt een ankervlak. Twee micro-bewijsregels dragen kwalificerende woorden en geen cijfers, en een primaire uitgang. Zonder die kwalificaties wordt een propositie een garantie.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-10",
+      "protagonist": "typografie",
+      "visual_role": "VR-G",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-0A-2M",
+        "bindings": [
+          {
+            "from": "statementlaag",
+            "to": "gedeeld vormpunt van het ankervlak",
+            "kind": "KRUIST-NAAD"
+          }
+        ]
+      },
+      "geometry_role": "MERKWIG",
+      "transition": "GEDEELDE-RAND",
+      "cta_role": "PRIMAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    }
+  ],
+  "notes": "CONTROLEKAART, metadata-only. Zij bestaat om een aanval te weerstaan: precies een klasse-A-opname, precies een klasse-B-opname, nul productscreenshots. BEELDBOEKHOUDING. Twee unieke bestanden, beide gemeten aanwezig op schijf: assets/logistiek-hero.jpg (klasse A) draagt de opening in M2, assets/vve-hero.jpg (klasse B) draagt een HIGH-sectie in M3. Nul klasse-C, nul klasse-D, nul hergebruik: elk bestand komt in precies een sectie voor en de twee fotosecties zijn niet aangrenzend. De klasse-B-opname draagt haar HIGH uitsluitend door de twee vlakken die OP haar liggen (resultaatvlak over de rand, identiteitsstrook binnen de doos); zonder die hechting zakt de sectie naar MEDIUM. Er is NUL screenshot gedeclareerd, NUL nagebouwd dashboard, NUL stockfoto en NUL project: de kaart noemt geen projectnaam, geen adres en geen vermogen. FOTOLOZE DRAGERS. Vijf secties dragen hun onderwerp zonder foto, elk met media_treatment M0 en asset_status NVT: product-als-gebouwd-object draagt NF-1 TECHNISCHE PRODUCTCOMPOSITIE, keten-als-topologie draagt NF-2 SYSTEEMTOPOLOGIE, bewijsband-op-maat draagt NF-3 BEWIJSCOMPOSITIE, getekende-drager-met-bewijsvlak draagt NF-5 MERKGEOMETRISCHE COMPOSITIE, escalerend-slot-als-statement draagt NF-4 TYPOGRAFISCH PROPOSITIEPODIUM. Elke code komt precies eenmaal voor en er zijn vijf fotoloze secties: dat is het plafond van hoofdstuk 3 (ten hoogste tweemaal per code, ten hoogste vijf NF-secties per pagina) en de reden dat deze volwaardige B2-pagina op zeven secties uitkomt en niet op negen. De dragersoorten zijn D-O (gebouwd object), D-V (getekende band, getekend grondvlak, ankervlak) en D-0 (bewijsband zonder vlak): drie verschillende soorten, terwijl de vloer op vijf fotoloze secties drie vraagt. NF-6 GESTUURDE DATAVISUALISATIE is BEWUST NIET gebruikt: elke reeks vraagt een benoemde primaire bron in deze codebase, en die heb ik in deze sessie niet gemeten; een grafiek zonder gedekte reeks valt volgens haar eigen ondergrens terug op NF-4, en dat zou een tweede NF-4 opleveren in plaats van een drager. DRAGERCODES. In hoofdstuk 3 staat GEEN letterlijke lijst VR-A tot VR-H (gemeten: nul treffers op die reeks in docs/ buiten het schema en de poort); het hoofdstuk noemt zijn dragers D-F, D-O, D-V en D-0 plus de zes NF-codes. Deze kaart gebruikt daarom de volgende expliciet gedeclareerde afbeelding, consistent over alle secties: VR-A fotografische volvlaksdrager, VR-B fotografisch podium met aangehechte vlakken, VR-C gebouwd object, VR-D getekende topologie, VR-E getekend merkgeometrisch grondvlak, VR-F bewijsband zonder vlak, VR-G typografisch statementpodium, VR-H gestuurde datavisualisatie (op deze pagina ongebruikt). CONTENT. Vier secties staan op PENDING omdat hun inhoud een bron vraagt die ik in deze sessie niet heb gemeten: de waarden in het gebouwde object moeten elders op de site gepubliceerd staan met de vindplaats erbij, het resultaatvlak op de klasse-B-drager en het bewijsvlak op de getekende drager vragen herkomst per cel, en de bewijsband vraagt een bronregel per waarde. De drie overige secties staan op DEKKEND omdat hun inhoud propositie is en geen cijfer, projectnaam of adres draagt: de opening, de topologie die het mechanisme verklaart, en het statementslot. PENDING is hier geen plaatshouder: valt een bron weg, dan verdwijnt het element en blijft de compositie staan. De bewijsband is daarom de enige gelijke rij op de pagina en zij draagt haar rechtvaardiging mee. NIET GEMETEN. Of de klasse-B-opname een uitsnede op de stuurmaat van haar blauwdruk overleeft zonder haar onderwerp te verliezen; de werkelijke verhoudingen van de twee bestanden; de luminantie onder de twee vlakken die op die opname liggen. Die drie horen in het reviewerpakket en niet in deze kaart."
+}

@@ -1,0 +1,530 @@
+/* ============================================================================
+   VIBE WEB DESIGN SYSTEM V1.0 — GEDEELDE PRIMITIVES
+   ----------------------------------------------------------------------------
+   Afgeleid van Homepage Master v1 (aae26bf) en bevroren in 8ea4c25.
+   Dit bestand is NIEUW en wordt door geen enkele legacypagina geladen; het
+   introduceren ervan verandert dus niets aan de bestaande site.
+
+   ARCHITECTUUR (frozen, docs/vibe-design-tokens-v1.md §7A)
+     PRIMITIVE  -> ruwe waarde, geen betekenis        --vibe-blue-500
+     SEMANTIC   -> wat de waarde betekent             --color-action
+     COMPONENT  -> alleen waar een component een eigen knop nodig heeft
+   Typografie schaalt met clamp(); cqw is voorbehouden aan bewust
+   canvas-proportionele composities en komt hier niet voor.
+
+   BREAKPOINTS (frozen)
+     >= 1200   desktop
+     768-1199  tablet
+     < 768     mobiel
+   Component-specifieke subbreakpoints alleen met aantoonbare noodzaak.
+
+   HARD RULE
+     Herhaalde vormtaal   -> primitive in dit bestand
+     Unieke compositie    -> paginaspecifieke klasse in de pagina zelf
+   ============================================================================ */
+
+/* ---------------------------------------------------------------- PRIMITIVE */
+:root{
+  /* blauw */
+  --vibe-blue-500:#0073FE;      /* merkblauw, home.css:35 */
+  --vibe-blue-600:#005FE0;      /* hover/pressed, home.css:36 */
+  --vibe-blue-300:#3E9BFF;      /* accent op donker, home.css:37 */
+  --vibe-blue-050:#E4F0FC;      /* tint, home.css:38 */
+  --vibe-blue-025:#F0F7FF;
+
+  /* inkt */
+  --vibe-navy-900:#001632;      /* diepste navy, home.css:42 */
+  --vibe-navy-800:#08203C;      /* navy, home.css:41 */
+  --vibe-navy-700:#0C2A4A;
+  --vibe-slate-600:#4C5771;     /* lopende tekst, home.css:43 */
+  --vibe-slate-500:#656F8A;     /* bijschrift. #6F7A95 (home.css:45) haalde 4,29:1 op wit
+                                   en zakt daarmee onder AA; #656F8A meet 4,79:1 op --vibe-canvas. */
+
+  /* vlak */
+  --vibe-white:#FFFFFF;
+  --vibe-paper:#FCFDFE;         /* kaart op licht, home.css:48 */
+  --vibe-canvas:#F6FAFE;        /* lichte sectie, home.css:49 */
+
+  /* lijn */
+  --vibe-line-ink:rgba(16,28,58,.12);
+  --vibe-line-light:rgba(255,255,255,.14);
+
+  /* ------------------------------------------------------------- SEMANTIC */
+  --color-action:var(--vibe-blue-500);
+  /* merkblauw #0073FE meet 4,30:1 op wit en haalt AA dus NIET voor kleine tekst.
+     Vlakken en knoppen blijven merkblauw (wit-op-blauw haalt AA ruim); kleine
+     tekst op licht gebruikt deze variant, gemeten 4,78:1 op --vibe-canvas. */
+  --color-action-text:#006AE8;
+  --color-action-hover:var(--vibe-blue-600);
+  --color-action-on-dark:var(--vibe-blue-300);
+  --color-ink:var(--vibe-navy-800);
+  --color-ink-deep:var(--vibe-navy-900);
+  --color-body:var(--vibe-slate-600);
+  --color-muted:var(--vibe-slate-500);
+  --color-on-dark:var(--vibe-white);
+  --color-on-dark-soft:rgba(226,238,252,.82);
+  --color-on-dark-muted:rgba(226,238,252,.58);
+  --color-surface:var(--vibe-white);
+  --color-surface-alt:var(--vibe-paper);
+  --color-canvas:var(--vibe-canvas);
+  --color-line:var(--vibe-line-ink);
+  --color-line-on-dark:var(--vibe-line-light);
+
+  /* vorm */
+  --radius-card:14px;
+  --radius-media:12px;
+  --radius-btn:10px;
+  --radius-pill:999px;
+
+  /* elevatie - drie niveaus, conform de frozen hierarchie */
+  --elev-1:0 2px 6px rgba(12,38,72,.06), 0 14px 28px -14px rgba(12,38,72,.20);
+  --elev-2:0 3px 10px rgba(12,38,72,.08), 0 28px 54px -22px rgba(12,38,72,.30);
+  --elev-inset-dark:inset 0 1px 0 rgba(255,255,255,.06);
+
+  /* ritme */
+  --gutter:clamp(20px, 5.4vw, 24px);
+  --section-y:clamp(56px, 8vw, 72px);
+  --stack-1:8px; --stack-2:14px; --stack-3:22px; --stack-4:34px;
+
+  /* maat */
+  --container-max:1240px;
+
+  /* type - clamp() is de standaard */
+  --font:'Urbanist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fs-h1:clamp(34px, 6.2vw, 62px);
+  --fs-h2:clamp(27px, 3.6vw, 44px);
+  --fs-h3:clamp(19px, 1.5vw, 23px);
+  --fs-h4:clamp(16.5px, 1.1vw, 18.5px);
+  --fs-lead:clamp(16.5px, 1.25vw, 20px);
+  --fs-body:clamp(15.5px, 1.05vw, 17px);
+  --fs-small:clamp(13px, .9vw, 14.5px);
+  --fs-eyebrow:clamp(11.5px, .85vw, 13px);
+  --fs-metric:clamp(26px, 2.6vw, 38px);
+
+  /* motion */
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --dur:.2s;
+}
+
+@media (min-width:768px) and (max-width:1199px){
+  :root{ --gutter:clamp(32px, 5vw, 48px); --section-y:clamp(64px, 7vw, 80px) }
+}
+@media (min-width:1200px){
+  :root{ --gutter:clamp(48px, 4.6vw, 80px); --section-y:clamp(84px, 6vw, 112px) }
+}
+
+/* ------------------------------------------------------------------- BASIS */
+*,*::before,*::after{ box-sizing:border-box }
+html{ -webkit-text-size-adjust:100%; scroll-behavior:smooth }
+@media (prefers-reduced-motion:reduce){ html{ scroll-behavior:auto } }
+body{
+  margin:0; min-height:100vh;
+  background:var(--color-surface);
+  color:var(--color-body);
+  font-family:var(--font); font-weight:400;
+  font-size:var(--fs-body); line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:clip;
+}
+img{ max-width:100%; display:block }
+a{ color:inherit; text-decoration:none }
+button{ font:inherit; cursor:pointer; border:0; background:none; color:inherit }
+h1,h2,h3,h4{ margin:0; font-family:var(--font); font-weight:700; color:var(--color-ink); text-wrap:balance }
+
+a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visible{
+  outline:2px solid var(--color-action); outline-offset:3px; border-radius:2px;
+}
+
+/* ------------------------------------------------------------- .vibe-skip */
+.vibe-skip{
+  position:absolute; left:12px; top:-60px; z-index:80;
+  padding:12px 18px; border-radius:0 0 10px 10px;
+  background:var(--color-action); color:#fff;
+  font-size:15px; font-weight:600; transition:top .18s var(--ease);
+}
+.vibe-skip:focus{ top:0 }
+
+/* --------------------------------------------------------- .vibe-container */
+.vibe-container{
+  width:100%; max-width:var(--container-max);
+  margin-inline:auto; padding-inline:var(--gutter);
+}
+/* V1.1 — een bredere maat, alleen voor HIGH-secties. Niet één paginabrede
+   token maar een lokale override: --container-max wordt hier opnieuw gezet,
+   zodat --bleed (zie compositiegrammatica) vanzelf meebeweegt en de sectie
+   aantoonbaar een ander inhoudsvlak krijgt dan de MEDIUM- en QUIET-secties. */
+.vibe-container--wide{ --container-max:1440px }
+/* en een smallere maat voor registers. Drie breedteklassen in plaats van twee:
+   de pagina stond met zeven secties op exact dezelfde verticale lijn. */
+.vibe-container--smal{ --container-max:1100px }
+
+/* ----------------------------------------------------------- .vibe-section */
+.vibe-section{ position:relative; padding-block:var(--section-y) }
+.vibe-section--light{ background:var(--color-surface) }
+.vibe-section--canvas{ background:var(--color-canvas) }
+.vibe-section--tint{ background:linear-gradient(168deg,#EDF6FE 0%,#F4FAFE 52%,#E9F3FE 100%) }
+.vibe-section--ink{ background:var(--color-ink-deep); color:var(--color-on-dark-soft) }
+.vibe-section--ink h1,.vibe-section--ink h2,.vibe-section--ink h3,.vibe-section--ink h4{ color:var(--color-on-dark) }
+.vibe-section--tight{ padding-block:calc(var(--section-y) * .62) }
+
+/* ----------------------------------------------------------- .vibe-eyebrow */
+.vibe-eyebrow{
+  display:block; margin:0 0 var(--stack-2);
+  font-size:var(--fs-eyebrow); font-weight:700;
+  letter-spacing:.14em; text-transform:uppercase;
+  color:var(--color-action-text);
+}
+.vibe-section--ink .vibe-eyebrow{ color:var(--color-action-on-dark) }
+
+/* ----------------------------------------------------------- .vibe-heading */
+.vibe-heading{ font-size:var(--fs-h2); line-height:1.1; letter-spacing:-.018em }
+.vibe-heading--xl{ font-size:var(--fs-h1); line-height:1.04; letter-spacing:-.022em }
+.vibe-heading--sm{ font-size:var(--fs-h3); line-height:1.25; letter-spacing:-.008em }
+.vibe-heading--xs{ font-size:var(--fs-h4); line-height:1.3; letter-spacing:-.004em }
+.vibe-heading em{ font-style:normal; color:var(--color-action) }
+.vibe-section--ink .vibe-heading em{ color:var(--color-action-on-dark) }
+
+/* -------------------------------------------------------------- .vibe-lead */
+.vibe-lead{
+  margin:var(--stack-3) 0 0; max-width:58ch;
+  font-size:var(--fs-lead); line-height:1.55; color:var(--color-body);
+}
+.vibe-section--ink .vibe-lead{ color:var(--color-on-dark-soft) }
+.vibe-body{ margin:var(--stack-2) 0 0; max-width:62ch; line-height:1.62 }
+.vibe-section--ink .vibe-body{ color:var(--color-on-dark-soft) }
+
+/* --------------------------------------------------------------- .vibe-btn */
+.vibe-btn{
+  box-sizing:border-box;
+  display:inline-flex; align-items:center; justify-content:space-between; gap:14px;
+  min-height:52px; padding:0 22px;
+  border-radius:var(--radius-btn);
+  font-size:clamp(15px,1.02vw,16.5px); font-weight:600; line-height:1;
+  transition:background var(--dur) var(--ease), border-color var(--dur) var(--ease),
+             color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.vibe-btn svg{ width:19px; height:19px; flex:none; display:block }
+.vibe-btn--primary{ background:var(--color-action); color:#fff }
+.vibe-btn--primary:hover{ background:var(--color-action-hover) }
+.vibe-btn--secondary{
+  background:var(--color-surface); color:var(--color-ink);
+  border:1.5px solid #46587A;
+}
+.vibe-btn--secondary:hover{ border-color:var(--color-action); color:var(--color-action) }
+.vibe-btn--ghost{
+  background:transparent; color:var(--color-on-dark);
+  border:1.5px solid rgba(255,255,255,.34);
+}
+.vibe-btn--ghost:hover{ border-color:var(--color-on-dark); background:rgba(255,255,255,.07) }
+.vibe-btn--text{
+  min-height:44px; padding:0; gap:10px;
+  justify-content:flex-start; background:none;
+  color:var(--color-action); font-weight:600;
+}
+.vibe-btn--text:hover{ gap:14px }
+.vibe-section--ink .vibe-btn--text{ color:var(--color-action-on-dark) }
+.vibe-btn--lg{ min-height:58px; padding:0 26px }
+
+.vibe-actions{ display:flex; flex-wrap:wrap; gap:12px; margin-top:var(--stack-4) }
+/* Knoppen stapelen vanaf 767, maar pas onder 600 op volle breedte. Op 767 gaf
+   width:100% een 719px brede knop met 440px leegte tussen label en pijl, terwijl
+   dezelfde twee knoppen op 768 samen maar 622px van de 691px nodig hadden. */
+@media (max-width:767px){
+  .vibe-actions{ flex-direction:column; align-items:flex-start }
+  .vibe-actions .vibe-btn{ width:auto; max-width:100% }
+}
+@media (max-width:599px){
+  .vibe-actions{ align-items:stretch }
+  .vibe-actions .vibe-btn{ width:100% }
+  .vibe-actions .vibe-btn--text{ width:auto; align-self:flex-start }
+}
+
+/* -------------------------------------------------------------- .vibe-card */
+.vibe-card{
+  position:relative; box-sizing:border-box;
+  padding:clamp(20px,2vw,30px);
+  border-radius:var(--radius-card);
+  transition:transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.vibe-card--light{ background:var(--color-surface); box-shadow:var(--elev-1); color:var(--color-body) }
+.vibe-card--dark{
+  background:linear-gradient(158deg,#0A2340 0%,#071B33 62%,#04122A 100%);
+  color:var(--color-on-dark-soft); box-shadow:var(--elev-inset-dark);
+  border:1px solid var(--color-line-on-dark);
+}
+.vibe-card--dark h3,.vibe-card--dark h4{ color:var(--color-on-dark) }
+.vibe-card--media{ padding:0; overflow:hidden; background:var(--vibe-blue-050) }
+.vibe-card--outline{ background:var(--color-surface); border:1px solid var(--color-line) }
+a.vibe-card:hover{ transform:translateY(-2px) }
+a.vibe-card--light:hover{ box-shadow:var(--elev-2) }
+
+/* -------------------------------------------------------------- .vibe-icon */
+.vibe-icon{ width:22px; height:22px; flex:none; display:block }
+.vibe-icon--lg{ width:30px; height:30px }
+.vibe-icon-tile{
+  width:46px; height:46px; flex:none;
+  display:grid; place-items:center;
+  border-radius:11px;
+  background:var(--vibe-blue-050); color:var(--color-action);
+}
+.vibe-section--ink .vibe-icon-tile,
+.vibe-card--dark .vibe-icon-tile{ background:rgba(62,155,255,.16); color:var(--color-action-on-dark) }
+.vibe-icon-tile--sm{ width:38px; height:38px; border-radius:9px }
+
+/* ------------------------------------------------------------- .vibe-arrow */
+.vibe-arrow{
+  width:44px; height:44px; flex:none;
+  display:grid; place-items:center;
+  border-radius:var(--radius-pill);
+  background:var(--color-surface); color:var(--color-action);
+  box-shadow:var(--elev-1);
+  transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.vibe-arrow svg{ width:17px; height:17px; display:block }
+a:hover > .vibe-arrow, a:hover .vibe-arrow{ background:var(--color-action); color:#fff }
+
+/* ------------------------------------------------------------ .vibe-metric */
+.vibe-metric{ display:flex; flex-direction:column; gap:4px; min-width:0 }
+.vibe-metric b{
+  font-size:var(--fs-metric); font-weight:700; line-height:1.08;
+  letter-spacing:-.018em; color:var(--color-ink);
+}
+.vibe-metric span{ font-size:var(--fs-small); line-height:1.35; color:var(--color-body) }
+.vibe-section--ink .vibe-metric b{ color:var(--color-on-dark) }
+.vibe-section--ink .vibe-metric span{ color:var(--color-on-dark-muted) }
+.vibe-metric--accent b{ color:var(--color-action) }
+.vibe-section--ink .vibe-metric--accent b{ color:var(--color-action-on-dark) }
+/* bronregel onder een metriek - verplicht zodra er een cijfer staat */
+.vibe-metric cite{
+  margin-top:6px; font-style:normal;
+  font-size:clamp(11px,.78vw,12.5px); letter-spacing:.02em;
+  color:var(--color-body);
+}
+.vibe-section--ink .vibe-metric cite{ color:var(--color-on-dark-muted) }
+
+/* ------------------------------------------------------------- .vibe-media */
+.vibe-media{
+  position:relative; overflow:hidden;
+  border-radius:var(--radius-media);
+  background:var(--vibe-blue-050);   /* lichte plaatshouder: een nog niet
+                                        geladen lazy beeld mag nooit als een
+                                        donker, kapot vlak lezen */
+}
+.vibe-media img{ width:100%; height:100%; object-fit:cover; display:block }
+.vibe-media--scrim::after{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(180deg,
+    rgba(3,20,44,.86) 0%, rgba(3,20,44,.62) 26%,
+    rgba(3,20,44,.20) 52%, rgba(3,20,44,0) 74%);
+}
+.vibe-media--scrim-b::after{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(0deg,
+    rgba(3,20,44,.82) 0%, rgba(3,20,44,.42) 34%, rgba(3,20,44,0) 66%);
+}
+
+/* de Vibe-diagonaal. Alleen inzetten waar hij een beeldvlak van een tekstvlak
+   scheidt; niet als decoratie per sectie herhalen. */
+.vibe-cut-tl{ clip-path:polygon(12% 0, 100% 0, 100% 100%, 0 100%) }
+.vibe-cut-bl{ clip-path:polygon(0 0, 100% 0, 100% 100%, 12% 100%) }
+@media (max-width:1199px){ .vibe-cut-tl,.vibe-cut-bl{ clip-path:none } }
+
+/* ============================================================================
+   COMPOSITIEGRAMMATICA — V1.1
+   Deze klassen bestaan omdat de eerste B2-kandidaat meetbaar faalde op precies
+   drie punten (vibe-section-compositions-v1.md §9.1): elf secties op exact
+   dezelfde containerbreedte, tien secties op exact dezelfde kopgraad en nul
+   overlap in tien van de twaalf secties. Master v1 doet het omgekeerde:
+   inhoudsvlakken tot 1774px in zeven van negen secties, kopgraad 53-76px en
+   48 overlappende elementen.
+   ============================================================================ */
+
+/* DOORBREKEN — een vlak loopt van de container tot één schermrand door.
+   Alleen voor beeld- en decoratievlakken, nooit voor lopende tekst.
+
+   LET OP de maateenheid. De gangbare truc margin-right:calc(50% - 50vw) klopt
+   hier twee keer niet: 50% meet de rastercel in plaats van de container, en
+   100vw telt de verticale scrollbalk mee, wat horizontale overflow geeft.
+   Daarom meet dit met 100cqw tegen .vibe-stage: dat is de contentbreedte van
+   de sectie, zonder scrollbalk. De afstand van de containerinhoud tot de
+   schermrand is (schermbreedte - containerbreedte) / 2 + gutter. Eén formule
+   voor alle schermbreedtes: zodra het scherm smaller is dan de container
+   wordt de uitkomst precies -gutter, en dat is exact de rand. */
+.vibe-stage{ container-type:inline-size }
+.vibe-bleed-r,.vibe-bleed-l,.vibe-bleed-x{
+  --bleed:calc((min(100cqw, var(--container-max)) - 100cqw) / 2 - var(--gutter));
+  width:auto;
+}
+.vibe-bleed-r{ margin-right:var(--bleed) }
+.vibe-bleed-l{ margin-left:var(--bleed) }
+.vibe-bleed-x{ margin-inline:var(--bleed) }
+
+/* LAGEN — een blok legt zich over de rand van het blok ervoor.
+   --lift bepaalt hoever; altijd met z-index, anders tekent vervangen inhoud
+   (een <img>) zich eroverheen. */
+.vibe-lift{ position:relative; z-index:2; margin-top:calc(var(--lift, 40px) * -1) }
+@media (max-width:767px){ .vibe-lift{ --lift:24px } }
+
+/* IMPACTNIVEAUS — de kopgraad verschilt per niveau, dat is wat ritme draagt. */
+/* 4.6vw, niet 3.9vw: op 1199px zat HIGH op 46,8px en MEDIUM op 43,2px, en dat
+   verschil van 3,6px leest niet als een ander niveau. */
+.vibe-section--high  .vibe-heading{ font-size:clamp(31px, 4.6vw, 54px) }
+.vibe-section--quiet .vibe-heading{ font-size:clamp(23px, 2.2vw, 32px) }
+.vibe-section--quiet{ padding-block:calc(var(--section-y) * .72) }
+.vibe-section--high { padding-block:calc(var(--section-y) * 1.1) }
+
+/* ------------------------------------------------------------- .vibe-grid */
+.vibe-grid{ display:grid; gap:clamp(12px,1.4vw,20px) }
+.vibe-grid--2{ grid-template-columns:repeat(2,minmax(0,1fr)) }
+.vibe-grid--3{ grid-template-columns:repeat(3,minmax(0,1fr)) }
+.vibe-grid--4{ grid-template-columns:repeat(4,minmax(0,1fr)) }
+@media (max-width:1199px){
+  .vibe-grid--4{ grid-template-columns:repeat(2,minmax(0,1fr)) }
+}
+@media (max-width:767px){
+  .vibe-grid--2,.vibe-grid--3,.vibe-grid--4{ grid-template-columns:minmax(0,1fr) }
+}
+
+/* kop + actie op één regel, actie wijkt naar onder op mobiel */
+.vibe-sectionhead{
+  display:flex; align-items:flex-end; justify-content:space-between;
+  gap:24px; flex-wrap:wrap;
+}
+.vibe-sectionhead > div{ min-width:0 }
+
+/* ============================================================================
+   SHELL — header, mobiel menu en footer.
+   Statische markup in de pagina, hier gestyled, zodat een gemigreerde pagina
+   hem kan kopieren zonder JS-afhankelijkheid behalve vibe-nav.js voor het menu.
+   ============================================================================ */
+.vibe-header{
+  position:relative; z-index:40;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:24px; min-height:76px;
+  padding-inline:var(--gutter);
+  background:var(--color-surface);
+  border-bottom:1px solid var(--color-line);
+}
+.vibe-logo{ display:flex; align-items:center; gap:11px; flex:none }
+.vibe-logo-badge{ width:40px; height:40px; flex:none; display:block }
+.vibe-logo-tx{ display:flex; flex-direction:column; line-height:1 }
+.vibe-logo-tx b{ font-size:19px; font-weight:800; letter-spacing:.005em; color:var(--color-ink) }
+.vibe-logo-tx span{ font-size:15.5px; font-weight:400; letter-spacing:.14em; color:var(--color-muted) }
+
+.vibe-nav{ display:flex; align-items:center; gap:clamp(18px,2.1vw,34px) }
+.vibe-nav a{
+  font-size:15.5px; font-weight:500; color:var(--color-ink);
+  padding-block:8px; transition:color var(--dur) var(--ease);
+}
+.vibe-nav a:hover,.vibe-nav a[aria-current="page"]{ color:var(--color-action) }
+.vibe-nav a[aria-current="page"]{ font-weight:600 }
+
+.vibe-header-cta{ flex:none }
+.vibe-menubtn{ display:none }
+
+@media (max-width:1199px){
+  .vibe-nav,.vibe-header-cta{ display:none }
+  .vibe-menubtn{
+    display:inline-flex; flex-direction:column; align-items:flex-end; gap:6px;
+    min-height:44px; justify-content:center;
+  }
+  .vibe-menubtn span{ display:block; width:26px; height:2px; background:var(--color-ink); border-radius:2px }
+  .vibe-menubtn b{ font-size:10.5px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--color-muted) }
+  html.vibe-menu-open{ overflow:hidden }
+  html.vibe-menu-open .vibe-header{ background:transparent; border-bottom-color:transparent }
+  html.vibe-menu-open .vibe-logo-tx b{ color:#fff }
+  html.vibe-menu-open .vibe-logo-tx span{ color:rgba(255,255,255,.6) }
+  html.vibe-menu-open .vibe-menubtn span{ background:#fff }
+  html.vibe-menu-open .vibe-menubtn b{ color:rgba(255,255,255,.6) }
+}
+
+.vibe-mobilemenu{ display:none }
+/* Zolang het paneel niet .is-open draagt, vangt het geen klikken. vibe-nav.js zet
+   [hidden] pas na de uitfade (260 ms); in dat venster lag het paneel onzichtbaar
+   maar klikbaar over de pagina, zodat een tik vlak na het sluiten een menulink
+   raakte in plaats van de knop eronder. Gemeten: t=250 ms nog pointer-events:auto. */
+.vibe-mobilemenu:not(.is-open){ pointer-events:none }
+@media (max-width:1199px){
+  .vibe-mobilemenu{
+    position:fixed; inset:0; z-index:39;
+    display:flex; flex-direction:column; justify-content:flex-start; gap:26px;
+    padding:96px var(--gutter) calc(34px + env(safe-area-inset-bottom));
+    background:
+      radial-gradient(120% 80% at 88% 6%, rgba(0,115,254,.34) 0%, rgba(0,115,254,0) 58%),
+      linear-gradient(205deg,#0A2340 0%,#071A31 34%,#061426 68%,#040E1C 100%);
+    opacity:0; transform:translateY(-8px);
+    transition:opacity .24s var(--ease), transform .24s var(--ease);
+    overflow-y:auto;
+  }
+  .vibe-mobilemenu.is-open{ opacity:1; transform:none }
+  /* centreren met auto-marges in plaats van justify-content: bij inhoud die hoger
+     is dan het scherm (liggend 844x390) bleef de eerste link anders permanent
+     onbereikbaar — scrollTop kan niet onder 0. */
+  .vibe-mobilemenu > nav{ margin-top:auto }
+  .vibe-mobilemenu > :last-child{ margin-bottom:auto }
+  /* display:flex hierboven overschrijft het [hidden]-gedrag van de browser;
+     zonder deze regel blijft het gesloten menu als onzichtbare klikbare laag
+     over de pagina liggen. */
+  .vibe-mobilemenu[hidden]{ display:none }
+  .vibe-mobilemenu nav{ display:flex; flex-direction:column }
+  .vibe-mobilemenu nav a{
+    padding:15px 0; border-bottom:1px solid rgba(255,255,255,.10);
+    font-size:clamp(26px,7.4vw,34px); font-weight:700; letter-spacing:-.015em; color:#fff;
+  }
+  .vibe-mobilemenu nav a:first-child{ border-top:1px solid rgba(255,255,255,.10) }
+  .vibe-mobilemenu-cta{
+    box-sizing:border-box; display:flex; align-items:center; justify-content:space-between;
+    gap:14px; min-height:var(--radius-pill); min-height:56px; padding:0 22px;
+    border-radius:var(--radius-btn); background:var(--color-action); color:#fff;
+    font-size:16px; font-weight:600;
+  }
+  /* .vibe-mobilemenu-cta is geen .vibe-btn, dus de svg-maat uit die regel geldt
+     hier niet. Zonder deze regel valt de inline svg terug op zijn eigen voorkeurs-
+     maat en rekt mee met de flexcontainer: gemeten 178px bij 360 en 594px liggend. */
+  .vibe-mobilemenu-cta svg{ width:19px; height:19px; flex:none; display:block }
+  .vibe-mobilemenu-contact{ display:flex; flex-direction:column; gap:8px }
+  .vibe-mobilemenu-contact a{ font-size:15px; color:rgba(255,255,255,.76) }
+  /* lage schermen: compactere maten zodat het menu past */
+  @media (max-height:520px){
+    /* 86px, niet 72: de header is 76px hoog en ligt met z-index 40 bovenop */
+    .vibe-mobilemenu{ padding-top:86px; gap:14px }
+    .vibe-mobilemenu nav a{ font-size:clamp(20px,5vw,26px) }
+  }
+}
+
+/* ------------------------------------------------------------------ FOOTER */
+.vibe-footer{ background:var(--color-canvas); border-top:1px solid var(--color-line); padding-block:var(--section-y) calc(var(--section-y) * .4) }
+.vibe-footer-top{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.5fr); gap:clamp(28px,4vw,64px) }
+.vibe-footer-tag{ margin:16px 0 0; max-width:34ch; color:var(--color-body) }
+.vibe-footer-contact{ list-style:none; margin:22px 0 0; padding:0; display:flex; flex-direction:column; gap:12px }
+.vibe-footer-contact li{ display:flex; align-items:flex-start; gap:12px; font-size:15px; color:var(--color-body) }
+.vibe-footer-contact svg{ width:17px; height:19px; flex:none; margin-top:2px; color:var(--color-action) }
+.vibe-footer-navs{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px }
+.vibe-footer-navs > *{ min-width:0 }
+.vibe-footer-nav b{ display:block; font-size:15.5px; font-weight:700; color:var(--color-ink) }
+.vibe-footer-nav ul{ list-style:none; margin:10px 0 0; padding:0 }
+.vibe-footer-nav a{ display:flex; align-items:center; min-height:40px; font-size:14.5px; line-height:1.3; color:var(--color-body) }
+.vibe-footer-nav a:hover{ color:var(--color-action) }
+.vibe-footer-rule{ height:1px; background:var(--color-line); margin-block:clamp(26px,3vw,40px) 0 }
+.vibe-footer-legal{
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+  gap:14px 22px; padding-top:18px; font-size:13px; color:var(--color-body);
+}
+.vibe-footer-legal nav{ display:flex; flex-wrap:wrap; gap:6px 20px }
+/* raakvlak op minstens 24px: de regelhoogte was 21px (WCAG 2.2 AA, 2.5.8) */
+.vibe-footer-legal nav a{ display:inline-block; padding-block:4px }
+.vibe-footer-legal a:hover{ color:var(--color-action) }
+@media (max-width:999px){
+  .vibe-footer-top{ grid-template-columns:minmax(0,1fr) }
+  .vibe-footer-navs{ padding-top:26px }
+}
+@media (max-width:767px){
+  .vibe-footer-navs{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px 18px }
+  .vibe-footer-legal{ flex-direction:column; align-items:flex-start }
+}
+
+/* hoverstaten uitschakelen waar geen aanwijsapparaat is */
+@media (hover:none){
+  a.vibe-card:hover{ transform:none }
+  a:hover > .vibe-arrow, a:hover .vibe-arrow{ background:var(--color-surface); color:var(--color-action) }
+}

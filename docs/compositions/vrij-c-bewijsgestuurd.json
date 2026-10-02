@@ -1,0 +1,197 @@
+{
+  "card_version": "1.0",
+  "page": "control:vrij-C-bewijsgestuurd",
+  "status": "CONTROL",
+  "archetype": "B2",
+  "variant": "bewijsgestuurd",
+  "visual_protagonist": "het-project",
+  "canvas_strategy": {
+    "modes": { "CANVAS": 3, "DOCUMENT": 3, "HYBRID": 2 },
+    "desktop_note": "Het bewijs bepaalt de paginabeweging. De pagina opent NIET met een beeld maar met het register van de gemeten uitgangssituatie, zodat het eerste beeld al als bevestiging leest in plaats van als belofte. De twee HYBRID-secties staan naast elkaar en vormen samen het bewijsblok: eerst de band met alleen de onderbouwde waarden, dan de gestuurde reeks voor en na. Het slot escaleert op de bewezen claim en niet op een foto."
+  },
+  "photo_budget": {
+    "slots": 2,
+    "declared_files": [
+      "assets/projects/schouwburgring.jpg",
+      "assets/projects/dormio.jpg"
+    ]
+  },
+  "sections": [
+    {
+      "id": "uitgangssituatie-register",
+      "purpose": "De pagina opent met het register van de gemeten uitgangssituatie: aansluitwaarde, piekvraag en contractvermogen voor de plaatsing, met de eerste rij uitgelicht over de rand van het veld. Geen kaartvlak onder een rij.",
+      "impact": "MEDIUM",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-12",
+      "protagonist": "specificatie",
+      "visual_role": "VR-H",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-1A-0M",
+        "bindings": [
+          { "from": "uitgelichte eerste rij", "to": "registerveld", "kind": "OVER-RAND" }
+        ]
+      },
+      "geometry_role": "GEEN",
+      "transition": "GEDEELDE-RAND",
+      "cta_role": "GEEN",
+      "content_status": "PENDING",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "projectdrager-bewijs",
+      "purpose": "Het projectbeeld loopt als doorlopende drager naar exact een schermrand door en draagt de tekst in zijn donkerste deel; drie annotatiecellen hangen aan de drager en zijn zonder hem onbegrijpelijk, en de projectnavigatie dekt een rand van buitenaf af.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-03",
+      "protagonist": "foto",
+      "visual_role": "VR-A",
+      "media_treatment": "M2",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-3A-0M",
+        "bindings": [
+          { "from": "bewijsvlak", "to": "projectdrager", "kind": "OP-BEELD" },
+          { "from": "annotatiecellen", "to": "projectdrager", "kind": "OP-BEELD" },
+          { "from": "projectnavigatie", "to": "projectdrager", "kind": "OVER-RAND" }
+        ]
+      },
+      "geometry_role": "BEELDSNEDE",
+      "transition": "GEDRAGEN",
+      "cta_role": "TEKSTLINK",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/projects/schouwburgring.jpg",
+      "asset_class": "A"
+    },
+    {
+      "id": "bewijsband-naar-maat",
+      "purpose": "Bewijsband met twee onderbouwde items; de leegte in het midden is rust en wordt niet opgevuld, omdat er geen derde waarde met een benoemde bron bestaat. Geen item ligt op een ander.",
+      "impact": "QUIET",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-07",
+      "protagonist": "metriek-bewijs",
+      "visual_role": "VR-F",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-2O-0A-2M",
+        "bindings": [],
+        "equal_row": { "count": 2 }
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "GEEN",
+      "content_status": "PENDING",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "meetreeks-voor-na",
+      "purpose": "Drie registers op een gestuurde datavisualisatie: het verbruiksprofiel voor, tijdens en na de plaatsing van de opslag. De waardenas begint op nul, elke as draagt een eenheid en elke reeks draagt een benoemde bron; de bronregel kruist de rand van het datavlak en de reeksannotatie valt erover.",
+      "impact": "HIGH",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-08",
+      "protagonist": "metriek-bewijs",
+      "visual_role": "VR-H",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-2O-1A-0M",
+        "bindings": [
+          { "from": "reeksannotatie", "to": "datavlak", "kind": "OVER-RAND" },
+          { "from": "bronregel", "to": "datavlak", "kind": "KRUIST-NAAD" }
+        ]
+      },
+      "geometry_role": "RANDSNEDE",
+      "transition": "HARDE-FLIP",
+      "cta_role": "GEEN",
+      "content_status": "PENDING",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "methode-reeks",
+      "purpose": "Gerichte reeks zonder enig vlak: meting, businesscase, plaatsing, oplevering. Gelijke stappen op een gelijke steek, in een rij die duidelijk breder is dan de begeleidende tekst, zodat zij als beweging leest en niet als raster. Geen stap draagt een achtergrond, rand of schaduw.",
+      "impact": "QUIET",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-05",
+      "protagonist": "proces",
+      "visual_role": "VR-G",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-0O-0A-4M",
+        "bindings": []
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "GEEN",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "bestemmingen-op-project",
+      "purpose": "Een tweede projectbeeld is de drager; drie gelijke bestemmingen staan gestapeld in de donkerste zone en de achtergrondhelderheid onder elk vlak wordt gemeten voordat er gebouwd wordt. Geen rand van een vlak valt samen met een rand van het beeld.",
+      "impact": "MEDIUM",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-09",
+      "protagonist": "foto",
+      "visual_role": "VR-A",
+      "media_treatment": "M1",
+      "surface_hierarchy": {
+        "pattern": "1D-3O-0A-0M",
+        "bindings": [
+          { "from": "bestemmingenkolom", "to": "projectdrager", "kind": "OP-BEELD" }
+        ],
+        "equal_row": {
+          "count": 3,
+          "equal_register_justification": "De drie bestemmingen zijn hetzelfde soort vervolgstap met hetzelfde gewicht in de klantreis; ze ongelijk maken zou een rangorde tonen die in de inhoud niet bestaat. Ze liggen volledig op een gemeten donkere zone van het beeld, waardoor de gelijkheid als register leest en niet als drie zwevende kaarten."
+        }
+      },
+      "geometry_role": "ACHTERGRONDVELD",
+      "transition": "GEDRAGEN",
+      "cta_role": "SECUNDAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/projects/dormio.jpg",
+      "asset_class": "A"
+    },
+    {
+      "id": "slot-bewezen-claim",
+      "purpose": "Het slot escaleert op de bewezen claim in plaats van op een beeld: het statement ligt als laag in een merkgeometrisch veld, drie ondersteunende lagen delen met de uitgang een lijn zodat zij als diepte lezen, en de uitgang is het kleinste element van de sectie.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-10",
+      "protagonist": "typografie",
+      "visual_role": "VR-E",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-3O-0A-0M",
+        "bindings": [
+          { "from": "statementlaag", "to": "merkvlak", "kind": "IN-SCRIM" },
+          { "from": "uitgangsvlak", "to": "merkvlak", "kind": "KRUIST-NAAD" }
+        ]
+      },
+      "geometry_role": "MERKWIG",
+      "transition": "HARDE-FLIP",
+      "cta_role": "PRIMAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "afsluitende-navigatie",
+      "purpose": "Afsluitende navigatie zonder voetvlak; alleen de bestemmingen die bij deze pagina horen.",
+      "impact": "QUIET",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-11",
+      "protagonist": "typografie",
+      "visual_role": "VR-G",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-0O-0A-3M",
+        "bindings": []
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "TEKSTLINK",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    }
+  ],
+  "notes": "CONTROLEKAART, variant C van drie legitieme premiumcomposities voor dezelfde B2-inhoud (batterijopslag). Hier LEIDT HET BEWIJS: de opening is een register en niet een beeld, de climax is een gestuurde meetreeks met bron en nullijn, en het slot escaleert typografisch op de bewezen claim. De twee fotoslots dragen bestaande projectopnamen uit de voorraad; er is geen verzonnen project en geen nepdashboard gedeclareerd, want van VIBE.CONTROL bestaat geen enkele echte schermopname in de repo. Een besluit dat van de koppeltabel van hoofdstuk 5 afwijkt en hier bewust is vastgelegd: BR-08 draagt HIGH omdat op een bewijsgestuurde pagina de meetreeks het onderwerp is; de drager is daarom NF-6 met bron per reeks en niet een bewijsband van drie waarden, die een HIGH-sectie volgens hoofdstuk 3 niet zelfstandig kan dragen. Dragervocabulaire als in variant A. Drie secties staan op PENDING omdat het openingsregister, de bewijsband en de meetreeks een VERIFIED bron per waarde vragen die in deze sessie niet is gemeten; geen van drieen is een sectie die zonder haar ongedekte cijfer instort, want de band draagt twee visueel gelijke items en de meetreeks draagt haar eigen vlakhierarchie. HIGH-hoofdrolverzameling van deze kaart: foto plus metriek-bewijs plus typografie."
+}

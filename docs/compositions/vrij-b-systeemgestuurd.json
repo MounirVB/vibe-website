@@ -1,0 +1,236 @@
+{
+  "card_version": "1.0",
+  "page": "control:vrij-B-systeemgestuurd",
+  "status": "CONTROL",
+  "archetype": "B2",
+  "variant": "systeemgestuurd",
+  "visual_protagonist": "systeemintelligentie",
+  "canvas_strategy": {
+    "modes": { "CANVAS": 3, "DOCUMENT": 4, "HYBRID": 3 },
+    "desktop_note": "De techniek bepaalt de paginabeweging, dus de pagina is langer en zwaarder in DOCUMENT MODE dan de twee andere varianten: vier leesbare velden wisselen af met drie HYBRID-secties waarin een vlak op een drager valt. De opening is een gebouwd onderwerp in plaats van een foto, omdat er van het systeem geen fotografie bestaat. De drie CANVAS-secties markeren de enige momenten waarop de topologie of het apparaat de volle werkbreedte neemt."
+  },
+  "photo_budget": {
+    "slots": 2,
+    "declared_files": [
+      "assets/kantoor-hero.jpg",
+      "assets/energieopslag-hero.jpg"
+    ]
+  },
+  "sections": [
+    {
+      "id": "opening-gebouwd-systeem",
+      "purpose": "De opening is een gebouwd onderwerp omdat er van het regelsysteem geen fotografie in de voorraad zit: de hoofdkast met een kleinere bedieningsmodule die aan de buitenzijde over hem valt en verticaal volledig in hem blijft. Elk getoond getal is elders gepubliceerd.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-06",
+      "protagonist": "gebouwd-object",
+      "visual_role": "VR-B",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-0A-2M",
+        "bindings": [
+          { "from": "bedieningsmodule", "to": "hoofdkast", "kind": "OVER-RAND" }
+        ]
+      },
+      "geometry_role": "ACHTERGRONDVELD",
+      "transition": "GEDRAGEN",
+      "cta_role": "SECUNDAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "band-plaatsing",
+      "purpose": "Een gedragen beeldband laat zien waar de opslag in het gebouw landt; een kruisend tekstvlak ligt met het grootste deel van zijn breedte op de band en loopt over een van haar randen heen. De sectie draagt geen uitgang.",
+      "impact": "MEDIUM",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-04",
+      "protagonist": "foto",
+      "visual_role": "VR-A",
+      "media_treatment": "M4",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-0A-0M",
+        "bindings": [
+          { "from": "kruisend tekstvlak", "to": "beeldband", "kind": "KRUIST-NAAD" }
+        ]
+      },
+      "geometry_role": "BEELDSNEDE",
+      "transition": "GEDEELDE-RAND",
+      "cta_role": "GEEN",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/kantoor-hero.jpg",
+      "asset_class": "A"
+    },
+    {
+      "id": "specificatieregister",
+      "purpose": "Registerveld met de elektrische en bouwkundige randvoorwaarden van een opslagopstelling, in twee groepen onder een kop; het gewichtsverschil zit in de eerste rij van elke groep en er staat geen kaartvlak onder een rij.",
+      "impact": "QUIET",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-12",
+      "protagonist": "specificatie",
+      "visual_role": "VR-H",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-0A-4M",
+        "bindings": []
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "GEEN",
+      "content_status": "PENDING",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "registers-bedrijfsmodi",
+      "purpose": "Drie registers op een merkgeometrisch vlak: laden, ontladen en bijregelen als dezelfde beweging in drie toonhoogtes, met een flauwe snede door de drager en een registerkaart die over zijn rand valt.",
+      "impact": "MEDIUM",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-08",
+      "protagonist": "proces",
+      "visual_role": "VR-E",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-2O-1A-0M",
+        "bindings": [
+          { "from": "registerkaart", "to": "merkvlak", "kind": "OVER-RAND" }
+        ]
+      },
+      "geometry_role": "MERKWIG",
+      "transition": "HARDE-FLIP",
+      "cta_role": "GEEN",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "topologie-als-drager",
+      "purpose": "De systeemtopologie is zelf de drager en niet een illustratie ernaast: knopen voor net, opwek, opslag, laadpunten en gebouw met hun verbindingen. De kolom met bestemmingen ligt in de donkerste zone van die drager, en de achtergrondhelderheid onder elk vlak wordt gemeten voordat er gebouwd wordt.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-09",
+      "protagonist": "topologie",
+      "visual_role": "VR-D",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-3O-0A-0M",
+        "bindings": [
+          { "from": "bestemmingenkolom", "to": "topologievlak", "kind": "IN-SCRIM" }
+        ],
+        "equal_row": {
+          "count": 3,
+          "equal_register_justification": "De drie bestemmingen zijn inhoudelijk gelijkwaardige uitgangen van dezelfde topologie; een ongelijke maat zou een voorkeur tonen die het systeem niet kent. Ze liggen gestapeld in een gemeten donkere zone van de drager, zodat de gelijkheid als register leest en niet als rastercel."
+        }
+      },
+      "geometry_role": "ACHTERGRONDVELD",
+      "transition": "GEDRAGEN",
+      "cta_role": "GEEN",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "leeskolom-netcongestie",
+      "purpose": "Lange leeskolom met ankers over netcongestie, aansluitcapaciteit en de voorwaarden waaronder opslag mag terugleveren; de ankerkolom valt over de rand van de leeskolom zodat de twee als een geheel lezen.",
+      "impact": "QUIET",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-13",
+      "protagonist": "typografie",
+      "visual_role": "VR-G",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-1A-0M",
+        "bindings": [
+          { "from": "ankerkolom", "to": "leeskolom", "kind": "OVER-RAND" }
+        ]
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "TEKSTLINK",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "configuraties",
+      "purpose": "Ongelijke verzameling van vier opstellingen. Een item draagt de bestaande opname van de kasten als kaartbeeld, de drie andere zijn getekende onderdeelvlakken met eigen hoekwaarde en vlakstructuur, zodat er geen foto nodig is die niet bestaat.",
+      "impact": "MEDIUM",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-02",
+      "protagonist": "technische-compositie",
+      "visual_role": "VR-C",
+      "media_treatment": "M5",
+      "surface_hierarchy": {
+        "pattern": "1D-2O-2A-0M",
+        "bindings": [
+          { "from": "maatlabel", "to": "dominante onderdeeltegel", "kind": "OVER-RAND" }
+        ]
+      },
+      "geometry_role": "GEEN",
+      "transition": "HARDE-FLIP",
+      "cta_role": "GEEN",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/energieopslag-hero.jpg",
+      "asset_class": "C"
+    },
+    {
+      "id": "bewijsband-bronnen",
+      "purpose": "Bewijsband met twee onderbouwde items naast elkaar, elk met de herkomst in het item zelf; er staan nooit meer kolommen dan er onderbouwde items zijn. Bij nul items bestaat de band niet.",
+      "impact": "QUIET",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-07",
+      "protagonist": "metriek-bewijs",
+      "visual_role": "VR-F",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-2O-0A-0M",
+        "bindings": [],
+        "equal_row": { "count": 2 }
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "GEEN",
+      "content_status": "PENDING",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "slot-opschaling",
+      "purpose": "Het slot escaleert boven de rest van de pagina in mediaschaal en in aantal lagen: dezelfde topologie, nu op portefeuilleniveau, met een uitgangsvlak dat een rand van de topologie kruist en een schaallaag die over het merkvlak valt, zodat de lagen een gedeeld punt hebben.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-10",
+      "protagonist": "topologie",
+      "visual_role": "VR-D",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-0A-2M",
+        "bindings": [
+          { "from": "uitgangsvlak", "to": "topologievlak", "kind": "KRUIST-NAAD" },
+          { "from": "schaallaag", "to": "merkvlak", "kind": "OVER-RAND" }
+        ]
+      },
+      "geometry_role": "MERKWIG",
+      "transition": "HARDE-FLIP",
+      "cta_role": "PRIMAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "afsluitende-navigatie",
+      "purpose": "Afsluitende navigatie zonder voetvlak; drie kolommen met alleen de bestemmingen die bij deze pagina horen.",
+      "impact": "QUIET",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-11",
+      "protagonist": "typografie",
+      "visual_role": "VR-G",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-0O-0A-3M",
+        "bindings": []
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "TEKSTLINK",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    }
+  ],
+  "notes": "CONTROLEKAART, variant B van drie legitieme premiumcomposities voor dezelfde B2-inhoud (batterijopslag). Hier LEIDT DE TECHNIEK: de opening is een gebouwd onderwerp, de climax is de systeemtopologie als drager en het slot schaalt diezelfde topologie op. Er is maar een drager met een klasse-A-foto; de tweede opname is een klasse-C-detail en zit daarom in een BR-02-item met kaartbeeld, nooit in een podium, paneel of band. Twee besluiten die van de koppeltabel van hoofdstuk 5 afwijken en hier bewust zijn vastgelegd: BR-06 draagt HIGH omdat een opening HIGH is en er geen productfotografie bestaat (de doctekst voorziet dit expliciet), en BR-09 draagt HIGH omdat de topologie op deze pagina het onderwerp is en niet een doorverwijzing. Dragervocabulaire als in variant A. Twee secties staan op PENDING omdat de specrijen en de twee bewijsitems een VERIFIED bron per waarde vragen die in deze sessie niet is gemeten. HIGH-hoofdrolverzameling van deze kaart: gebouwd-object plus topologie."
+}

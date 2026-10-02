@@ -1,0 +1,225 @@
+{
+  "card_version": "1.0",
+  "page": "control:A-premium-b2",
+  "status": "CONTROL",
+  "archetype": "B2",
+  "variant": "premium-referentie",
+  "visual_protagonist": "fysieke-infrastructuur",
+  "canvas_strategy": {
+    "modes": {
+      "CANVAS": 4,
+      "DOCUMENT": 2,
+      "HYBRID": 2
+    },
+    "desktop_note": "Onderwerp: systeem-energieopslag, batterijopslag voor bedrijfsmatig vastgoed. De pagina beweegt zes keer tussen de modi en doet dat met een reden per naad, niet als afwisseling. CANVAS draagt de vier secties waarin een drager het onderwerp is: het openingspaneel, het gebouwde onderwerp, de bestemmingenkolom op een fotodrager en het slot. DOCUMENT draagt de twee secties die gelezen worden: het specificatieregister en de voet; die twee hebben geen beeldrand om aan te hechten en declareren hun hechtingslijst daarom leeg, met de modusreden, in plaats van een hechting te claimen die er niet is. HYBRID draagt de twee secties waarin een begrensde kolom naast een ontworpen podium staat: de bewijsband naar maat en de ketenband. De werkbreedte is in alle drie de modi een doelwaarde boven vijfentachtig procent van de viewport en mag bij toenemende schermbreedte niet dalen; er staat geen paginabrede breedtebegrenzing op een wrapper, de leesmaat wordt op het tekstelement zelf begrensd. Het silhouet breekt bewust met de startpagina: die opent met een volvlaks podium en kent nul DOCUMENT-secties, deze pagina opent met een paneel dat naar een schermrand doorloopt en kent twee leessecties. De drie HIGH-momenten liggen op de eerste, de vierde en de zevende sectie, nooit naast elkaar, en zij dragen drie verschillende hoofdrollen: de gerealiseerde locatie, het gebouwde product en de slotzin."
+  },
+  "photo_budget": {
+    "slots": 2,
+    "declared_files": [
+      "assets/projects/dormio.jpg",
+      "assets/kantoor-hero.jpg"
+    ]
+  },
+  "sections": [
+    {
+      "id": "01-openingspaneel",
+      "purpose": "Opent met de claim op een gerealiseerd dak in plaats van met een belofte. De drager loopt naar exact een schermrand door en houdt aan de andere zijde de containermarge met een eenzijdige radius; de richtingsscrim bouwt op vanaf de leeszijde en haar dekkende eerste deel draagt alle tekst, zodat de propositie IN de drager ligt en niet ernaast in een rastercel. De bewijsrij staat als kaal type in dat dekkende deel, met evenveel cellen als er onderbouwde uitspraken bestaan en met de herkomst in de cel; de celbreedtes zijn ongelijk omdat de inhoud ongelijk is. Een merkwig ligt over de paneelrand en houdt de vorm op elke schermbreedte vast. De uitgang is ondergeschikt: een knop en een tekstlink, de laagste linkdichtheid van de pagina, want de primaire uitgang hoort in het slot.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-03",
+      "protagonist": "foto",
+      "visual_role": "VR-B",
+      "media_treatment": "M2",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-0A-3M",
+        "bindings": [
+          {
+            "from": "bewijsrij van drie cellen",
+            "to": "paneelbeeld",
+            "kind": "IN-SCRIM"
+          },
+          {
+            "from": "merkwig",
+            "to": "paneelrand",
+            "kind": "OVER-RAND"
+          }
+        ],
+        "equal_row": {
+          "count": 0,
+          "equal_register_justification": "Dit is bewust GEEN gelijke rij. De drie bewijscellen dragen geen kaartvlak, alleen een haarlijn ertussen, en hun breedtes zijn contentgedreven ongelijk omdat de drie uitspraken van ongelijke lengte zijn. De registertoets wordt hier dus niet gehaald en hoeft dat niet: de rij is geen rang van gelijke kaarten maar een telling van wat onderbouwd is."
+        }
+      },
+      "geometry_role": "RANDSNEDE",
+      "transition": "HARDE-FLIP",
+      "cta_role": "SECUNDAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/projects/dormio.jpg",
+      "asset_class": "A"
+    },
+    {
+      "id": "02-specificatieregister",
+      "purpose": "Zegt wat het systeem is, in de vorm die daarvoor bestaat: een register met gewicht in plaats van een rij tegels. Zes specificatierijen met een uitgelichte eerste rij, en onder dezelfde kop een tweede groep met de vijf vragen die bij dit systeem horen, zodat de vragen geen eigen sectie en geen eigen beeld nodig hebben. Nul kaartvlakken; de scheiding is een haarlijn per rij. De waarden staan UITSLUITEND hier en nergens anders op de pagina in een tweede vorm: dat is de grendel die voorkomt dat een vermogen of een capaciteit twee keer in een andere maat opduikt, de gemeten faalvorm van dit onderwerp. De lichtste zijde van de tweedeling blijft de kopkolom, het register krijgt de zwaarste.",
+      "impact": "MEDIUM",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-12",
+      "protagonist": "specificatie",
+      "visual_role": "VR-F",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-0A-6M",
+        "bindings": []
+      },
+      "geometry_role": "GEEN",
+      "transition": "GEDEELDE-RAND",
+      "cta_role": "TEKSTLINK",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "03-bewijs-naar-maat",
+      "purpose": "Bewijs in de hoeveelheid die bestaat, en niet in een vast aantal slots. Het aantal cellen is gelijk aan het aantal gerealiseerde projecten waarvan de herkomst in deze codebase staat; elke cel draagt een naam, een contextregel en die herkomst. De breedtes zijn ongelijk omdat de namen ongelijk zijn. Het midden van de band blijft aaneengesloten leeg en wordt niet opgevuld omdat het leeg is: die leegte IS de stuurmaat van deze relatie. De band draagt geen vlak, geen rand en geen schaduw; de sectiegrond draagt. Daarom levert de dominantietoets hier N.V.T.-met-reden bewijsband in plaats van FAIL, en daarom is deze sectie QUIET gedeclareerd: met dit aantal waarden kan een vlakloze band geen MEDIUM-sectie zelfstandig dragen, en dat eerlijk declareren is beter dan de band oprekken tot hij een MEDIUM lijkt.",
+      "impact": "QUIET",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-07",
+      "protagonist": "metriek-bewijs",
+      "visual_role": "VR-F",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-0O-0A-2M",
+        "bindings": []
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "TEKSTLINK",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "04-batterijkast-als-gebouwd-onderwerp",
+      "purpose": "Het product is hier het onderwerp, en het is GEBOUWD en niet gefotografeerd: de enige opname van een batterijkast in deze voorraad is een grondopname van detailklasse en mag geen dominante drager zijn. Dus een technische productcompositie van de kast met haar aansluiting en schakelwerk, nul beeldbestanden in de sectie, vijf aanwijsregels zonder vlak die elk met een lijn het object raken, en een zichtbaar label dat zegt dat dit een schematische weergave is. Een kernspecificatievlak staat aan de buitenzijde, kruist de objectrand met een gemeten waarde en valt verticaal volledig in het object, zodat het aanhecht en niet ernaast zweeft. Elk benoemd onderdeel bestaat in het echte product; dit is UITDRUKKELIJK geen nagebouwd regelscherm, want van de regellaag bestaat in deze repository geen enkele echte schermopname en een nagebouwde zou een verzinsel zijn.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-06",
+      "protagonist": "gebouwd-object",
+      "visual_role": "VR-E",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-0A-5M",
+        "bindings": [
+          {
+            "from": "kernspecificatievlak aan de buitenzijde",
+            "to": "objectvlak van de batterijkast",
+            "kind": "KRUIST-NAAD"
+          }
+        ]
+      },
+      "geometry_role": "GEEN",
+      "transition": "HARDE-FLIP",
+      "cta_role": "GEEN",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "05-bestemmingen-op-fotodrager",
+      "purpose": "Waar dit systeem landt, verteld met vier gelijke bestemmingsvlakken die VOLLEDIG op een fotodrager van een gerealiseerd bedrijfspand liggen, verticaal gestapeld op een gelijke steek, met een richtingsverloop onder de kolom zodat zij een veld hebben in plaats van te zweven. Onder het laatste vlak blijft een tiende van de dragerhoogte vrij, zodat de stapel in de drager staat en er niet uitloopt. De drager krijgt een snede waarvan de hoek uit de doosverhouding volgt en niet uit een overgenomen percentage. De tekstkolom heeft een rechte rand: kop, lead en lijst delen dezelfde breedte. De keuze van deze opname is de donkerte: de vlakken moeten op een gemeten ondergrondluminantie liggen die laag genoeg is, en een donker hoekig pand levert die; die meting is een voorwaarde bij uitvoering en is in deze sessie niet gedaan.",
+      "impact": "MEDIUM",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-09",
+      "protagonist": "foto",
+      "visual_role": "VR-C",
+      "media_treatment": "M3",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-4A-0M",
+        "bindings": [
+          {
+            "from": "stapel van vier bestemmingsvlakken",
+            "to": "fotodrager",
+            "kind": "OP-BEELD"
+          }
+        ],
+        "equal_row": {
+          "count": 4,
+          "equal_register_justification": "Dit is de ENIGE gelijke rij van de pagina en zij haalt de registertoets op alle vier de vragen. Uitwisselbaar: de vier bestemmingen hebben geen onderlinge rangorde, van plaats wisselen verandert de betekenis van de sectie niet. Gelijke veldenset: elk vlak draagt icoon, een kop van een regel en een toelichtingsregel, vier van vier identiek, geen vlak draagt een veld dat de andere missen. Gelijke inhoudsmaat: de woordspreiding tussen het langste en het kortste vlak blijft binnen de gemeten band voor een gelijke rang. Geen eigen rang: geen van de vier draagt een eigen uitgang terwijl de andere die missen. Bovendien eist deze relatie gelijke vlakken: ongelijk maken zou haar breken."
+        }
+      },
+      "geometry_role": "BEELDSNEDE",
+      "transition": "GEDRAGEN",
+      "cta_role": "SECUNDAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "AANWEZIG",
+      "asset_ref": "assets/kantoor-hero.jpg",
+      "asset_class": "A"
+    },
+    {
+      "id": "06-ketenband",
+      "purpose": "Verklaart het mechanisme in plaats van een installatie: bron, omvorming, opslag, belasting en net als keten van knopen en verbindingen, liggend in een band met een verhouding boven drie, zodat de keten als richting leest en niet als raster. Vijf knopen, vier verbindingen met zichtbare richting, een legenda zonder vlak en het verplichte label dat zegt dat dit schematisch is; geen projectnaam, geen adres en geen vermogen, want niets daarvan is voor deze tekening geverifieerd. De opslagknoop is de hub en daarmee het enige element met een eigen grond, en hij is tegelijk het ene vlak dat de bandrand kruist met een gemeten overschrijding: het onderwerp van de pagina is letterlijk het enige dat uit de keten steekt. De diagonaal zit in de ondergrond die de band DRAAGT en niet in de band zelf, en die ondergrond loopt aan een zijde de schermrand uit. Afwijking met reden: deze relatie houdt gewoonlijk een kruisend vlak met een eigen kop en body; hier draagt het kruisende vlak alleen het hublabel met een specificatieregel, omdat de topologie de maat van de hub aan de maat van een knoop bindt.",
+      "impact": "MEDIUM",
+      "canvas_mode": "HYBRID",
+      "blueprint": "BR-04",
+      "protagonist": "topologie",
+      "visual_role": "VR-G",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-0O-1A-7M",
+        "bindings": [
+          {
+            "from": "hubvlak van de opslagknoop",
+            "to": "onderrand van de ketenband",
+            "kind": "KRUIST-NAAD"
+          }
+        ]
+      },
+      "geometry_role": "ACHTERGRONDVELD",
+      "transition": "GEDEELDE-RAND",
+      "cta_role": "GEEN",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "07-escalerend-slot",
+      "purpose": "Het slot escaleert aantoonbaar boven de rest van de pagina in twee van de drie middelen: het draagt de grootste kop van de pagina en het hoogste aantal lagen. Het derde middel, de mediaschaal, escaleert NIET, want de breedste drager staat eerder op de pagina; dat is een eerlijke uitkomst en geen fout, en wordt zo opgeschreven in plaats van weggerekend. De scheiding tussen kolom en drager is geen verticale lijn maar een vormpunt; het afspraakvlak is het ene vlak dat dat punt kruist, en de tekstrij houdt afstand tot de schuine rand. Het ankervlak is getekend en niet gefotografeerd: de twee beeldbestanden van deze pagina zijn al in gebruik en deze relatie verbiedt het bestand van de opening, dus de beeldbestandstoets levert hier N.V.T.-met-reden en de mediaschaal escaleert via het getekende vlak. Drie geruststellingen zonder vlak staan bewust ongelijk verdeeld. Nul meelopende knop.",
+      "impact": "HIGH",
+      "canvas_mode": "CANVAS",
+      "blueprint": "BR-10",
+      "protagonist": "typografie",
+      "visual_role": "VR-G",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "1D-1O-0A-3M",
+        "bindings": [
+          {
+            "from": "afspraakvlak",
+            "to": "vormpunt van het getekende ankervlak",
+            "kind": "KRUIST-NAAD"
+          }
+        ]
+      },
+      "geometry_role": "MERKWIG",
+      "transition": "GEDRAGEN",
+      "cta_role": "PRIMAIR",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    },
+    {
+      "id": "08-afsluitende-navigatie",
+      "purpose": "De vlakste hierarchie en de hoogste linkdichtheid van de pagina: geen kop, en de zwaarste letter is het woordmerk. Vijf zones met strikt afnemende steek, geen twee steken gelijk, zodat de voet door positie wordt gescheiden en niet door kaartvlakken; nul kaartvlakken dus. Nul claims behalve geverifieerde bedrijfsgegevens, en nul links naar pagina's die niet bestaan. GEEN voetbeeldvlak: een vlak dat niets van deze pagina draagt bestaat niet, en het beeld dat de startpagina daar gebruikt hoort niet bij dit onderwerp. Daarmee levert de voetvlaktoets N.V.T.-met-reden voet zonder beeldvlak, wat buiten de startpagina de normale toestand is. De voet draagt ook geen knop: de enige primaire uitgang van de pagina staat in het slot.",
+      "impact": "QUIET",
+      "canvas_mode": "DOCUMENT",
+      "blueprint": "BR-11",
+      "protagonist": "typografie",
+      "visual_role": "VR-F",
+      "media_treatment": "M0",
+      "surface_hierarchy": {
+        "pattern": "0D-0O-0A-5M",
+        "bindings": []
+      },
+      "geometry_role": "GEEN",
+      "transition": "RUST",
+      "cta_role": "TEKSTLINK",
+      "content_status": "DEKKEND",
+      "asset_status": "NVT"
+    }
+  ],
+  "notes": "HERKOMST. Deze kaart is afgeleid van de uitgewerkte B2-pagina A in docs/04-visual-language-v1.3.md paragraaf 5.3.2, systeem-energieopslag.html, acht secties, modusreeks CANVAS DOCUMENT HYBRID CANVAS CANVAS HYBRID CANVAS DOCUMENT. Overgenomen: de omvang van acht secties, de modustelling vier CANVAS, twee DOCUMENT en twee HYBRID, het register op de tweede plaats en het slotpaar escalerend slot plus afsluitende navigatie. Gewijzigd, met reden per punt: (1) de opening is de doorlopende drager met aangehecht bewijs in plaats van de openende drager, zodat de pagina niet het podiumsilhouet van de startpagina kopieert; paragraaf 5.3.2 pagina B doet dat al en noemt het de grootste silhouetbreuk, legaal omdat een openende drager niet verplicht is. (2) De gedragen band draagt hier een getekende keten in plaats van een foto, zodat het mechanisme een eigen drager krijgt en het beeldbudget niet opsoupeert. (3) Twee beeldbestanden in plaats van vier, zie hieronder. (4) De orde van het gebouwde onderwerp, de bestemmingenkolom en de bewijsband is veranderd zodat de drie HIGH-momenten op een, vier en zeven liggen en elk een eigen hoofdrol dragen. ||| WAAROM TWEE BESTANDEN. Het fotobudget van dit archetype is een tot twee UNIEKE bestanden; paragraaf 5.3.2 pagina A declareert vier en zou daarop zakken. De twee slots gaan naar twee opnamen die in BEIDE voorraadlijsten klasse A zijn en die in deze sessie met een directorylisting zijn aangetroffen: assets/projects/dormio.jpg voor het openingspaneel en assets/kantoor-hero.jpg voor de bestemmingenkolom. Geen van beide staat op de startpagina, dus de pagina leent haar beeld niet van de master. De paneelbehandeling rust op de gemeten concentratiewaarde van dormio in paragraaf 2.2.5, waar hij bij de onvoorwaardelijke dragers staat; het draagvlak rust op paragraaf 2.2.6, waar vijfentwintig van vijfentwintig bruikbare opnamen de drempel halen. ||| WAAROM GEEN PODIUMBEHANDELING IN DE OPENING. Paragraaf 2.2.4 meet dat de podiumbehandeling op slechts drie opnamen bouwbaar is en dat er van die drie maar een in klasse A valt: precies de openingsopname van de startpagina. Paragraaf 2.2.4 concludeert zelf dat een podium daarom GEEN standaardopening is. Deze pagina opent dus met een paneel. Dat wijkt af van de plaatsingsregel in paragraaf 2.4.4, die een paneel niet in de eerste sectie wil; die regel is daar als referentiebereik geclassificeerd en niet als vloer, de afwijking staat hier met haar reden, en paragraaf 5.3.2 pagina B zet hem zelf al op de eerste plaats. ||| DE DRAGERCODES. Het schema verwijst voor VR-A tot VR-H naar hoofdstuk 3, maar die acht codes staan NERGENS in docs/ gedefinieerd: gemeten met een recursieve zoekactie komen zij alleen voor in docs/schema/composition-card.schema.json en in docs/qa/composition-gate.mjs, en hoofdstuk 3 benoemt vier vlakrollen, vijf registers en zes niet-fotografische middelen, geen acht dragers. Deze kaart neemt daarom de leeswijzer over van de MASTER-kaart docs/compositions/homepage.json, zodat twee kaarten op dezelfde as vergelijkbaar blijven: VR-A volvlaks fotopodium van rand tot rand, VR-B doorlopend fotopaneel dat naar een schermrand uitloopt, VR-C begrensd fotodraagvlak met vlakken erop, VR-D verzameling waarin elk item zijn eigen drager is, VR-E gebouwd object als drager, VR-F vlakloze band of register op de sectiegrond, VR-G getekend merkvlak als drager, VR-H beeldband op een getekende ondergrond. EEN UITBREIDING, hier gedeclareerd: VR-G wordt op deze pagina gebruikt voor een getekend merkvlak dat GEEN beeld draagt, omdat de twee beeldslots elders staan; op de master draagt dat vlak wel een beeld. VR-A, VR-D en VR-H komen op deze pagina niet voor. VR-F draagt hier drie verschillende secties, en dat is geen herhaling: register, bewijsband en navigatievoet verschillen in impact, in relatie en in vlakpatroon. ||| DE VOORRAAD, EEN GEMETEN TEGENSPRAAK. De opdrachtlijst en paragraaf 2.1.5 zijn niet dezelfde lijst. Zij spreken elkaar tegen over de klasse van projects/ratio16, purmerend, burchtstraat, schouwburgring en hedin-amsterdam, en over paden: assets/hedin-alkmaar-2.jpg BESTAAT NIET, het bestand staat op assets/projects/hedin-alkmaar-2.jpg, en logistiek-hero is volgens paragraaf 2.1.2 bytegelijk dezelfde opname als projects/hedin-alkmaar-3 en dus een tweede naam. Deze kaart loopt om die tegenspraak heen door uitsluitend twee bestanden te declareren die in BEIDE lijsten klasse A zijn en waarvan het pad in deze sessie is gecontroleerd. De tegenspraak zelf is NIET opgelost en hoort in een assetbesluit, niet in een compositiekaart. ||| HET PRODUCT IS NIET GEFOTOGRAFEERD, EN DAT IS EEN BESLUIT. De enige opname van een batterijkast in deze voorraad is detailklasse, staat op grondniveau en wordt al door de startpagina gebruikt; paragraaf 5.3.2 laat hem voor deze pagina alleen toe als item in een ongelijke verzameling of als duimnagel in een drieregistersectie, nooit als dominante drager. Deze pagina kiest daarom het gebouwde onderwerp op de vierde sectie: de kast getekend, met aanwijsregels en een zichtbaar schematisch label. Er is NUL echte schermopname van de regellaag in deze repository, dus er wordt geen scherm nagebouwd, geen render gebruikt en geen dashboard verzonnen. ||| GEEN DATAVISUALISATIE. De grafiekdrager is bewust leeg gelaten: dat middel eist per reeks een benoemde primaire bron in deze codebase en minstens vier datapunten, en zo'n reeks is in deze sessie niet gemeten. Een lege dataset levert N.V.T.-met-reden en valt terug op een typografisch middel; met nullen vullen is verboden. Daarom draagt geen sectie van deze pagina een grafiek. ||| CONVENTIE. Het veld transition beschrijft de naad aan de ONDERZIJDE van de sectie, dus de overgang naar de volgende; de laatste sectie sluit met rust. De vlakpatronen tellen DOMINANT, ONDERSTEUNEND, AANGEHECHT en MICRO, waarbij MICRO de elementen zonder vlak zijn: bewijscellen, registerrijen, aanwijsregels, knopen, legendaregels, geruststellingen en voetzones. Twee secties declareren nul DOMINANT omdat zij een vlakloze band of een sluitband zijn; de dominantietoets levert daar N.V.T.-met-reden en geen FAIL. ||| NIET GEMETEN IN DEZE SESSIE, en dus nergens als gedekt geboekt: (1) de inhoud van systeem-energieopslag.html is niet geopend; de inhoudsstatus DEKKEND rust op de gemeten telling nul CONTENT PENDING voor pagina A in paragraaf 5.3.4 en op niets anders. (2) De ondergrondluminantie onder de vier bestemmingsvlakken; die meting is een voorwaarde bij uitvoering en zonder haar zakt die sectie op haar eigen toets. (3) Het werkelijke aantal onderbouwde referenties; het aantal cellen van de bewijsband volgt die telling en de kaart noteert er twee als uitgangspunt. (4) De bronbreedtes van de twee bestanden; alleen hun bestaan en hun pad zijn gecontroleerd. (5) Contrastwaarden van type op beeldpunten in de dekkende scrimzone. (6) Het gedrag onder de mobiele grens: deze kaart beschrijft uitsluitend de desktopcompositie."
+}
