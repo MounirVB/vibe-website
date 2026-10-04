@@ -348,6 +348,27 @@ De vijf leadconfiguraties uit A4, met gemeten regelnummer en doelbestand:
 
 ## 2. TIJDENS — bouwen
 
+### 2.0 Compositieplan — VERPLICHTE STAP, vóór één regel CSS van de pagina wordt geschreven
+
+**V1.1, additief.** Deze stap komt vóór §2.1 en is een stoppunt: zonder vastgelegd compositieplan begint de implementatie niet. Reden: V1.0 legt vast waaruit een pagina bestaat, niet hoe die delen liggen. Een pagina die alle V1.0-regels volgt kan nog steeds generiek zijn — dat is gemeten op de B2-reviewkandidaat (`vibe-section-compositions-v1.md §1.2`: 5 overlappingen tegenover 48 op Master v1, 12 secties op dezelfde containerbreedte van 1240px, tien `<h2>` op exact 44px). Na afloop toetst **P13** in §5 hetzelfde plan aan de zestien anti-patronen.
+
+**Nummerbotsing, let op.** `P1`-`P16` in `vibe-section-compositions-v1.md` zijn **principes** (§2.10 daar); `P1`-`P13` in §5 van dít document zijn **QA-poorten**. Hieronder staat de documentnaam er daarom altijd bij.
+
+- [ ] Bouwtype vastgesteld (§1.3) en het bijbehorende **ritmepatroon** overgenomen uit `vibe-page-archetypes-v1.md §4.1a` / `vibe-section-compositions-v1.md §6.3`. Voor **B1** geldt het gemeten ritme uit `§6.2` daar en wordt niet herbouwd (§0.2). Voor **B7 en S2 bestaat geen patroon**: die twee gaan niet in bouw voordat dat besluit genomen is (`vibe-page-archetypes-v1.md §4.1a`, beide `DECISION REQUIRED`).
+- [ ] **Sectietabel uitgeschreven vóór implementatie**, met per sectie: nummer · familie `C1`-`C12` · ritmeniveau HIGH/MEDIUM/QUIET · ontworpen hoogte of verhouding · breedteklasse · breedte van het beeld · H2-graad. Deze tabel gaat mee in het opleverrapport (§6). Een plan dat pas achteraf wordt opgeschreven is geen plan en telt als NIET GEDRAAID.
+- [ ] Per sectie **één** familie gekozen (`vibe-section-compositions-v1.md §4`). Twee opeenvolgende secties dragen nooit dezelfde familie, behalve `C7` gevolgd door `C8` en `C10` gevolgd door `C11` (selectieregel §4 daar).
+- [ ] Ritmeniveaus geteld tegen `§6.1`: het aantal HIGH volgt het bouwtype (B2: exact 3 op 10-12 secties), **nooit twee HIGH achter elkaar** (§6.2 regel 1), en ten minste 2 QUIET waarvan er één aantoonbaar de **kortste sectie van de pagina** is (§6.2 regel 3). Een MEDIUM-reeks van drie mag, maar alleen als familie én mediaschaal per sectie verschuiven (§6.2 regel 2).
+- [ ] Geen van de twee verboden reeksen uit `§6.4`: niet `HIGH·HIGH·HIGH·HIGH`, en niet vier GENERIEKE secties achter elkaar (alle vier de voorwaarden uit §6.4 tegelijk).
+- [ ] **Breedteklasse per sectie** genoteerd — tekstmarge, marge-breker of volle breedte — en ten minste één inhoudsvlak op de pagina doorbreekt de tekstmarge (anti-patroon A1). Tot hoever een subpagina mag doorbreken is nog open: **DR-C-01**. Neem het besluit bij de master die het als eerste raakt en noteer het (§0.1).
+- [ ] **Ontworpen hoogte** per ankersectie, en één sectie aantoonbaar korter dan de rest. Hoogte = inhoud + gelijke padding op elke sectie is anti-patroon A2.
+- [ ] **Beeldplan:** ten minste één beeld ≥ 50% van de viewportbreedte, dat aan één zijde tot de schermrand loopt of door een snede tot vorm wordt gemaakt (A6). Bestaat die asset niet, dan `CONTENT PENDING` (§4.2 hier) plus een getekend vlak of een in eigen tokens gebouwd object met expliciet label (`C6`); **nooit** een geleend of binnen de pagina herhaald beeld (A8), nooit een plaatshouder of gegenereerd beeld (§1.4.1, §4.4).
+- [ ] **Kopgraadladder** vooraf uitgeschreven: welke sectie welke H2-graad krijgt. De grootste H2 staat in de slot-CTA, niet in de eerste inhoudelijke sectie; niet elke H2 op dezelfde graad (A9). Gemeten referentie: Master v1 spreidt 66,0-53,0px (factor 1,25), de B2-kandidaat 44/44 (factor 1,00). Een exacte ondergrens voor de spreiding is **niet** vastgelegd; de ladder bij tien of meer koppen is **DR-C-02**.
+- [ ] **Slot escaleert** ten opzichte van de opening in minstens twee van drie: kopgraad, mediaschaal, aantal lagen (A10). Slot en footer mogen rijmen (`C10` → `C11`), maar het slot mag de hero niet herhalen.
+- [ ] **Laagplan:** overlap op desktop uitsluitend met `position:absolute` binnen een `position:relative`-sectie en `z-index` 0-11, **nul negatieve marges** (negatieve marges horen in het `max-width:1199px`-blok, zoals `home-project.css:260`, `home-process.css:235`, `home-proof.css:443`, `home-final.css:403`, `home-mobile.css:114`). Elk element dat op een beeld ligt, deelt minstens één rand **exact** met dat beeld of met een vormpunt (A11 en `vibe-section-compositions-v1.md §2.10 P1/P2`).
+- [ ] **Geometrie begroot** vóór het bouwen: één gebaar per sectie, alleen de ankerrollen meer (`§5.9` daar, en §2.5 hier). Een afgeschuind hoekje als enig gebaar is A12.
+- [ ] **Sectieovergangen belegd:** kleuruitdoving naar dezelfde waarde, een gloed met ≥ 100px padding, of een gemeten lege band. Een grens die alleen een haarlijn is of alleen een harde kleurflip zonder vormdrager, is A13.
+- [ ] **Feitenverdeling gecontroleerd:** elk feit staat op één plek. Wat in de opening staat komt niet terug in het register, wat in het register staat niet in de slotsectie (A15). Dit loopt gelijk op met de claimverificatie in §1.2 — de status van het cijfer verandert er niet door.
+
 ### 2.1 Tokens toepassen
 
 Gedeelde laag = `home.css` (`--vibe-*`, 23 tokens, r.35-70) + `home-mobile.css` (`--m-*`, r.15-45). Laadvolgorde is de architectuur: `tokens.css` → `home.css` → negen sectiebestanden → `home-mobile.css` als laatste (`index.html:56-67`).
@@ -695,6 +716,42 @@ Meten op 360, 390, 430, 768, 1024, 1199 en 844×390.
 - [ ] **Eis 5:** een component dat zelf op kliks moet reageren, registreert zijn listener vóór `_footer.js` — anders ziet hij de klik nooit (`_footer.js:157-169`).
 - [ ] **Acceptabel:** 5/5 openen, 0 valse triggers, fallback werkt.
 
+### P13 — Compositie en anti-patronen — V1.1, additief
+
+Deze poort toetst het compositieplan uit §2.0 aan de zestien anti-patronen `A1`-`A16` uit `vibe-section-compositions-v1.md §7`. Zij vervangt geen enkele poort P1-P12 en verandert er niets aan. **Nummerbotsing:** `P1`-`P16` in dat document zijn principes (§2.10 daar), niet poorten.
+
+- [ ] **Methode:** op **1774px**, na volledige scroll, per pagina meten — (a) het aantal cross-element-overlappingen; (b) het aantal `clip-path`-dragers in de DOM; (c) de drie breedste inhoudsvlakken in px; (d) het aantal volle-breedte vlakken; (e) de H2-graad per sectie; (f) de hoogte per sectie; (g) de kolomverhouding van elke tweedeling; (h) de breedte van het breedste beeld als percentage van 1774. Daarna `A1` t/m `A16` één voor één aftekenen tegen die waarden.
+- [ ] **Referentiemeting** (gemeten op 1774px, na volledige scroll):
+
+| Meting | B2-reviewkandidaat (afgekeurd) | Homepage Master v1 (norm) |
+|---|---:|---:|
+| Overlappende elementen | 5 | 48 |
+| `clip-path`-dragers (geometrie) | 2 | 11 |
+| Breedste inhoudsvlakken | 1240 / 1080 / 716 px | 1740 / 1704 / 1584 px |
+| Volle-breedte vlakken | 15 | 25 |
+
+  De homepage **laagt** (48 overlappingen), de B2-pagina **stapelt** (5). De B2-pagina doorbreekt haar container van 1240px nergens; de homepage voert inhoudsvlakken tot 1740px, dus tot op 17px van de schermrand.
+
+- [ ] **Eis — elk aangetroffen anti-patroon is afzonderlijk een FAIL:**
+  - `A1` niet elke sectie op dezelfde containerbreedte; ≥ 1 marge-breker (open punt: **DR-C-01**).
+  - `A2` niet elke sectie byte-identieke verticale padding; ankersecties met ontworpen hoogte; één sectie aantoonbaar korter.
+  - `A3` geen tweedeling binnen 46/54-54/46; de lichtste kant ≤ 42%.
+  - `A4` maximaal twee gelijke kaartrasters per pagina, nooit twee achter elkaar; binnen een set krijgt één kaart een eigen graad.
+  - `A5` geen twee opeenvolgende gelijkverdelingen — wissel van familie, niet van kolomaantal.
+  - `A6` ≥ 1 beeld ≥ 50% van de viewportbreedte.
+  - `A7` het sterkste bewijsmateriaal staat niet als kaartbovenrand.
+  - `A8` geen geleend beeld en geen beeld dat binnen dezelfde pagina wordt herhaald.
+  - `A9` niet elke H2 op dezelfde graad; de grootste H2 staat in de slot-CTA. Geen vastgelegde ondergrens voor de spreiding — referentie 1,25 (Master v1) tegenover 1,00 (B2-kandidaat); ladder bij ≥ 10 koppen is **DR-C-02**.
+  - `A10` het slot escaleert in ≥ 2 van 3 (kopgraad, mediaschaal, aantal lagen) en herhaalt de hero niet.
+  - `A11` nul negatieve marges op desktop en elke overlapping verdiend op de uitlijning. *Streefwaarde, geen harde eis:* ten minste de helft van de secties draagt ≥ 1 cross-element-overlapping.
+  - `A12` elk geometrisch gebaar doet werk — een afgeschuind hoekje als enig gebaar is FAIL.
+  - `A13` geen sectiegrens die alleen een haarlijn is of alleen een harde kleurflip zonder vormdrager.
+  - `A14` een voortgangsmarkering verschilt per stap, of zij vervalt.
+  - `A15` elk feit op één plek; geen drie neutrale rasters met dezelfde waarden.
+  - `A16` het zwaarste compositionele middel valt op de kernpropositie; een vragenregister staat niet direct vóór de slot-CTA, of anders als QUIET met aantoonbaar minder gewicht dan de sectie erna.
+- [ ] **Eis — geen van de twee verboden reeksen** uit `vibe-section-compositions-v1.md §6.4`: `HIGH·HIGH·HIGH·HIGH`, en vier GENERIEKE secties achter elkaar (alle vier de voorwaarden uit §6.4 tegelijk). De drie `SHOULD NOT`-grenzen uit dezelfde paragraaf worden apart gerapporteerd, niet als FAIL geteld.
+- [ ] **Acceptabel:** 16/16 anti-patronen afwezig én 0 verboden reeksen, met de acht meetwaarden uit de methode erbij. Elk aangetroffen anti-patroon = FAIL met sectienummer en meetwaarde. Een anti-patroon dat niet gemeten is heet **NIET GEDRAAID** met reden, nooit PASS.
+
 ### P12 — Poortoverzicht
 
 | Poort | Meting | Acceptabel |
@@ -710,6 +767,9 @@ Meten op 360, 390, 430, 768, 1024, 1199 en 844×390.
 | P9 skiplink | eerste Tab + Enter | 4/4 op 12 viewports |
 | P10 mobiel menu | 8 controles × 7 viewports | 56/56 |
 | P11 Calendly | 5 triggers + negatieve test | 5/5 open, 0 vals |
+| P13 compositie (V1.1) | 8 metingen op 1774px + `A1`-`A16` aftekenen | 16/16 afwezig, 0 verboden reeksen |
+
+*P13 staat hierboven, vóór dit overzicht, zodat P12 het overzicht blijft. De poortnummering loopt dus P1-P11, P13, met P12 als overzichtspoort.*
 
 ---
 
@@ -752,6 +812,7 @@ Zonder deze gegevens is een pagina niet af, ongeacht hoe hij eruitziet.
 ### 6.4 QA-poorten
 
 - [ ] Tabel P1 t/m P11 met per poort: gemeten waarde, eis, PASS/FAIL/NIET GEDRAAID.
+- [ ] **V1.1:** P13 apart gerapporteerd — de acht metingen op 1774px, de aftekening van `A1` t/m `A16`, en de sectietabel uit §2.0 (nummer · familie · ritmeniveau · hoogte · breedteklasse · beeldbreedte · H2-graad). Zonder die sectietabel is P13 **NIET GEDRAAID**, niet PASS.
 - [ ] Voor elke NIET GEDRAAID: de reden. Nooit PASS invullen voor een stap die niet is gedraaid.
 - [ ] Contrastmetingen (P7) met per gemeten plek: tekstkleur, bemonsterde achtergrondkleur, ratio.
 - [ ] Screenshots op alle 12 viewports, opgeslagen naast de Master v1-baseline (`review/homepage-master-v1/` als voorbeeld van de naamgeving: `full-<breedte>.png`, `menu-<breedte>-open.png`, `popup-<breedte>.png`).

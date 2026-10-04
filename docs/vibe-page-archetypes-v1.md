@@ -972,6 +972,32 @@ De geaccepteerde architectuur is **B1 · B2 · B3 · B4 · B5 · B6 · B7 + S2**
 
 **Wat níet samen mag.** B7 mag niet bij B5: `over-ons.html:591` en `waarom-vibe.html:447` sluiten af met een CTA-sectie, en een juridisch document met een conversieknop is een vertrouwensprobleem. S2 mag niet bij enig webtype: `report.css:29` rekent in `width:210mm`/`height:297mm`, alle webtypes in `cqw`.
 
+### 4.1a Ritmepatroon per bouwtype — V1.1, additief
+
+Een bouwtype blijft geen rigide template (§4.1 hierboven, `§1A.3` punt 2 — ongewijzigd). Wat V1.1 toevoegt is geen sectievolgorde maar een **aanbevolen ritme**: per sectie een niveau (HIGH IMPACT / MEDIUM / QUIET) en een compositiefamilie `C1`-`C12`. De patronen hieronder zijn letterlijk overgenomen uit `docs/vibe-section-compositions-v1.md §6.3`; de niveaudefinities staan daar in `§6.1`, het gemeten ritme van Master v1 in `§6.2` en de twee verboden reeksen in `§6.4`. Er is hier geen patroon bedacht: waar §6.3 er geen geeft, staat dat als open punt.
+
+| Bouwtype | Aanbevolen ritmepatroon (`vibe-section-compositions-v1.md §6.3`) | Omvang |
+|---|---|---|
+| **B1 · Startpagina** | **Geen patroon in §6.3** — B1 **is** Master v1 en wordt niet herbouwd (§4.5 hier, `§1A.11` punt 3). Het **gemeten** ritme van B1 staat in `§6.2`: `HIGH C1 · MEDIUM C2 · HIGH C3 · QUIET C4+C5 · MEDIUM C6 · MEDIUM C7+C8 · MEDIUM C9 · HIGH C10 · QUIET C11`. Dat is de referentie waartegen de andere bouwtypes worden gelezen, geen bouwopdracht. | 9 secties, 3 HIGH |
+| **B2 · Propositiepagina** | `1 HIGH C1 · 2 QUIET C7 · 3 MEDIUM C2 · 4 MEDIUM C4 · 5 QUIET C5 · 6 HIGH C3 · 7 MEDIUM C9 · 8 QUIET C12 · 9 MEDIUM C6 of C4 · 10 QUIET C12 · 11 HIGH C10 · 12 QUIET C11` | 10-12 secties, **exact 3 HIGH** |
+| **B3 · Casepagina** | `HIGH C1 · MEDIUM C4 · HIGH C3 · MEDIUM C8 · QUIET C5 · QUIET C12 · MEDIUM C2 · HIGH C10 · QUIET C11` | 8-10 secties, 2-3 HIGH |
+| **B4 · Indexpagina** | `HIGH C1 · MEDIUM C2 · QUIET C7 · MEDIUM (de lijst) · QUIET C5 of leegte · HIGH C10 · QUIET C11` | 5-7 secties, 2 HIGH |
+| **B5 · Standpuntpagina** | `HIGH C1 · QUIET (proza in C4 zonder kaart) · MEDIUM C4 · QUIET C5 · MEDIUM C8 · QUIET C7 · MEDIUM C2 · HIGH C10 · QUIET C11` | 7-9 secties, 2 HIGH |
+| **B6 · Conversie-instrument** | `MEDIUM (gereduceerde opening) · HIGH C6 · QUIET C7 · QUIET C12 · QUIET C11` — **geen `C10`**: het instrument *is* de conversie, een tweede CTA-sectie is een afleiding. De opening is geen beeldpodium maar kop-plus-lead, omdat `C1` een LCP-beeld inbrengt dat op een formulierpagina niets doet. | 4-6 secties, 1 HIGH |
+| **B7 · Juridisch document** | **DECISION REQUIRED — §6.3 geeft geen patroon voor B7.** Wat wél uit `§4` volgt: `C12` (register/FAQ) en `C11` (footer) zijn expliciet geschikt; `C1`, `C7`, `C9` en `C10` zijn expliciet ongeschikt — `C10` omdat een juridisch document met een conversieknop een vertrouwensprobleem is (dezelfde grond als "Wat níet samen mag" hierboven). De overige families noemen B7 niet en zijn dus niet vrijgegeven. *Reden dat het openstaat:* Master v1 bevat geen juridische pagina, dus er is geen gemeten precedent om een ritme uit af te leiden. Te beslissen bij master 6 (`privacy.html`, §4.5). | — |
+| **S2 · Executive Guide** | **DECISION REQUIRED — §6.3 geeft geen patroon voor S2, en dat is consistent:** S2 is geen publiek webtype (C-03) en `report.css:29` rekent in `mm`, terwijl het hele compositiesysteem in `cqw` per referentiecanvas rekent (`§2` daar). `C1` noemt S2 op die grond expliciet ongeschikt. *Reden dat het openstaat:* een ritmesysteem voor een A4-document is een ander stelsel, niet een variant op dit stelsel. Te beslissen bij master 7 (de gated guides, §4.5). | — |
+
+**Varianten binnen B2.** Het patroon is per variant afwijkend, en die afwijkingen zijn vastgeknoopt aan de proofregels in §4.2 hieronder — ze zijn dus bindend, niet smaakvol:
+
+- *SYSTEM* — slot 3 draagt de drie technische pijnpunten; **slot 8 is verplicht** en draagt de specificaties, want dat is de proofregel van deze variant. Bestaat er geen eigen case, dan vervalt slot 6 en heeft de pagina **twee** HIGH: drie is een maximum, geen minimum.
+- *SOLUTION* — slot 3 draagt de vraag/aanbod-vergelijking; **slot 6 is verplicht**. Een oplossingspagina zonder projectbewijs is een belofte, geen propositie (§4.2, proofregel SOLUTION).
+- *SECTOR* — slot 7 draagt de zes sectoruitdagingen onder eigen labels; slot 6 alleen met een case **in die sector** volgens de canonieke taxonomie van §0.4, anders `CASE PROOF = PENDING` en géén casesectie.
+- *GEBIED* — slot 6 vervalt bij gebrek aan lokale onderbouwing en slot 5 krijgt dan extra gewicht. Geen gesuggereerd bewijs (§4.2, proofregel GEBIED; DR-10).
+
+**Twee reeksen die op elk bouwtype verboden zijn** (`§6.4` daar): `HIGH · HIGH · HIGH · HIGH` — vier ankerrollen op één pagina bestaan niet, de gemeten bovengrens is drie — en vier GENERIEKE secties achter elkaar, waarbij een sectie GENERIEK heet als zij aan alle vier deze voorwaarden tegelijk voldoet: tweedeling binnen 46/54-54/46 of een gelijkverdeeld raster; dezelfde containerbreedte als de vorige sectie; een achtergrondstap van ΔRGB ≤ 11 per kanaal of een harde flip zonder vormdrager; nul cross-element-overlappingen.
+
+**Hoe dit wordt afgedwongen:** `vibe-migration-checklist-v1.md §2.0` eist het compositieplan vóór implementatie, `§5 P13` daar toetst de zestien anti-patronen na afloop.
+
 ### 4.2 B2-proofregels per variant — DECIDED — V1.0, expliciet en bindend
 
 Elke B2-variant heeft een **eigen bewijsketen**. Dit is het onderdeel van B2 dat níet configureerbaar is: een variant die zijn proofregel niet kan vullen, mag de bijbehorende sectie niet tonen.

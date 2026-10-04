@@ -1,0 +1,754 @@
+{
+  "_toelichting": [
+    "Bron voor de elf projectpagina's en de projectenoverzichtspagina.",
+    "Elk cijfer hieronder staat op de oorspronkelijke projectpagina en is getoetst in",
+    "docs/vibe-claims-register-v2.md. Waarden die daar als CONFLICTING of PLACEHOLDER",
+    "zijn gemarkeerd (645 kWh, +70% netvermogen) staan hier bewust NIET in.",
+    "Voeg nooit een getal toe zonder het eerst in het claimregister op te nemen."
+  ],
+  "projecten": [
+    {
+      "slug": "project-ratio-16",
+      "titel": "Ratio 16, Duiven",
+      "kop": "Zon, opslag en laden binnen 51 kW.",
+      "plaats": "Duiven",
+      "sector": "Commercieel vastgoed",
+      "sectorFilter": "netcongestie",
+      "opgeleverd": "Juli 2024",
+      "beeld": "assets/projects/ratio-16",
+      "beeldAlt": "Luchtfoto van bedrijfspand Ratio 16 in Duiven met een zonnedak op het witte platte dak en het parkeerterrein ernaast",
+      "lead": "Een bedrijfspand met een transportvermogen van 51 kW, en tegelijk de wens om te verduurzamen én laadplekken toe te voegen voor de huurder. Zonder de aansluiting te verzwaren.",
+      "uitdaging": "Het pand aan de Ratio 16 in Duiven kampte met ernstige netcongestie: een transportvermogen van slechts 51 kW. Er was vraag naar verduurzaming en naar laadplekken voor de huurder, maar beide vragen vermogen dat er op papier niet was. De opgave was dus niet om meer vermogen te krijgen, maar om met hetzelfde vermogen meer te doen.",
+      "aanpak": "Vibe combineerde drie onderdelen tot één systeem: 240 zonnepanelen voor eigen opwek, een batterijsysteem van 157 kW om overschotten op te slaan en piekverbruik af te vlakken, en een laadplein van 132 kW met twaalf laadplekken. De sturing houdt het geheel binnen de grenzen van de bestaande aansluiting.",
+      "resultaat": "Het pand werd verduurzaamd en voorzien van laadfaciliteiten binnen de bestaande netcapaciteit. De aansluiting bleef ongewijzigd op 51 kW. De oorspronkelijke projectpagina noemt hierbij 78% besparing.",
+      "componenten": [
+        {
+          "icoon": "zon",
+          "titel": "240 zonnepanelen",
+          "tekst": "Eigen opwek op het dak, direct gekoppeld aan verbruik en opslag."
+        },
+        {
+          "icoon": "accu",
+          "titel": "157 kW batterijopslag",
+          "tekst": "Vangt overschotten op en vlakt het piekverbruik af."
+        },
+        {
+          "icoon": "laadpaal",
+          "titel": "132 kW laadplein",
+          "tekst": "Twaalf laadplekken voor de huurder, gestuurd op beschikbaar vermogen."
+        },
+        {
+          "icoon": "hub",
+          "titel": "Capaciteitsregie",
+          "tekst": "De sturing bewaakt dat de aansluiting niet wordt overschreden."
+        }
+      ],
+      "metrics": [
+        {
+          "waarde": "51 kW",
+          "label": "Transportvermogen, ongewijzigd",
+          "accent": true
+        },
+        {
+          "waarde": "240",
+          "label": "Zonnepanelen"
+        },
+        {
+          "waarde": "157 kW",
+          "label": "Batterijopslag"
+        },
+        {
+          "waarde": "132 kW",
+          "label": "Laadplein, 12 plekken"
+        }
+      ],
+      "voor": [
+        "Ernstige netcongestie: 51 kW transportvermogen op de aansluiting.",
+        "Geen ruimte voor laadplekken voor de huurder.",
+        "Verduurzaming liep vast op het beschikbare vermogen."
+      ],
+      "na": [
+        "Zon, opslag en laden draaien samen binnen dezelfde 51 kW.",
+        "Twaalf laadplekken beschikbaar op een laadplein van 132 kW.",
+        "De netaansluiting hoefde niet te worden verzwaard."
+      ],
+      "gerelateerd": [
+        "project-hedin-amsterdam",
+        "project-hedin-alkmaar"
+      ],
+      "statement": "De aansluiting bleef 51 kW. Alles wat erbij kwam, paste eronder."
+    },
+    {
+      "slug": "project-hedin-amsterdam",
+      "titel": "Hedin Amsterdam",
+      "kop": "Groeien binnen 215 kW.",
+      "plaats": "Amsterdam",
+      "sector": "Automotive",
+      "sectorFilter": "automotive",
+      "opgeleverd": "Maart 2026",
+      "beeld": "assets/projects/hedin-amsterdam",
+      "beeldAlt": "Vestiging van Hedin Automotive in Amsterdam",
+      "lead": "Een nieuwbouwlocatie die niet binnen de beschikbare netcapaciteit te realiseren was. Met opslag en sturing kwam er alsnog ruimte voor grootschalig laden.",
+      "uitdaging": "Bij Hedin Amsterdam was de beperkte netaansluiting van 215 kW een rem op de groei. Het gebouw verbruikte gemiddeld 160 tot 170 kWh per uur en bereikte bij piekbelasting de maximale capaciteit, waarna uitval ontstond. Netverzwaring was alleen op de lange termijn mogelijk.",
+      "aanpak": "Met een geïntegreerde oplossing van zonnepanelen, 460 kWh batterijopslag en slimme energiesturing is het vraagstuk lokaal opgelost. Binnen de bestaande aansluiting van 215 kW ontstond ruimte voor grootschalig laden, eigen opwek en reservecapaciteit, zonder netverzwaring.",
+      "resultaat": "Hedin Amsterdam heeft extra capaciteit en kan gecontroleerd groeien zonder afhankelijk te zijn van netuitbreiding. Het complete energiesysteem werd in vier weken gerealiseerd en is direct inzetbaar voor gebruikers en bedrijfswagens.",
+      "componenten": [
+        {
+          "icoon": "accu",
+          "titel": "460 kWh batterijopslag",
+          "tekst": "Vangt de piekbelasting op die eerder tot uitval leidde."
+        },
+        {
+          "icoon": "laadpaal",
+          "titel": "20 laadplekken",
+          "tekst": "Grootschalig laden voor gebruikers en bedrijfswagens."
+        },
+        {
+          "icoon": "zon",
+          "titel": "Zonnepanelen",
+          "tekst": "Eigen opwek op locatie, gekoppeld aan opslag en verbruik."
+        },
+        {
+          "icoon": "hub",
+          "titel": "Realtime sturing",
+          "tekst": "Slim netbeheer dat het verbruik binnen de aansluiting houdt."
+        }
+      ],
+      "metrics": [
+        {
+          "waarde": "215 kW",
+          "label": "Bestaande netaansluiting",
+          "accent": true
+        },
+        {
+          "waarde": "460 kWh",
+          "label": "Batterijopslag"
+        },
+        {
+          "waarde": "20",
+          "label": "Laadplekken"
+        },
+        {
+          "waarde": "4 weken",
+          "label": "Realisatietijd"
+        }
+      ],
+      "voor": [
+        "De aansluiting van 215 kW was een knelpunt voor de nieuwbouw.",
+        "Bij piekbelasting werd de maximale capaciteit bereikt en ontstond uitval.",
+        "Netverzwaring was alleen op lange termijn mogelijk."
+      ],
+      "na": [
+        "Ruimte voor grootschalig laden binnen diezelfde 215 kW.",
+        "Eigen opwek en reservecapaciteit op locatie.",
+        "Gecontroleerd kunnen groeien zonder te wachten op het net."
+      ],
+      "gerelateerd": [
+        "project-hedin-alkmaar",
+        "project-ratio-16"
+      ],
+      "statement": "De nieuwbouw hoefde niet te wachten tot het net toe was."
+    },
+    {
+      "slug": "project-hedin-alkmaar",
+      "titel": "Hedin Alkmaar",
+      "kop": "Meer vermogen, in vier dagen.",
+      "plaats": "Alkmaar",
+      "sector": "Automotive",
+      "sectorFilter": "automotive",
+      "opgeleverd": "Mei 2025",
+      "beeld": "assets/projects/hedin-alkmaar",
+      "beeldAlt": "Vestiging van Hedin Automotive in Alkmaar met energieopslag op locatie",
+      "galerij": [
+        {
+          "basis": "assets/projects/hedin-alkmaar-1",
+          "alt": "De vestiging van Hedin Automotive in Alkmaar vanaf het voorterrein, met een bus van Vibe Energy voor de showroom"
+        },
+        {
+          "basis": "assets/projects/hedin-alkmaar-2",
+          "alt": "Luchtfoto van de vestiging in Alkmaar, met het volledig met zonnepanelen belegde dak"
+        },
+        {
+          "basis": "assets/projects/hedin-alkmaar-3",
+          "alt": "De vestiging in Alkmaar schuin van voren gezien, met het zonnedak en het parkeerterrein"
+        },
+        {
+          "basis": "assets/projects/hedin-alkmaar-4",
+          "alt": "Plaatsing van de energieopslagkasten op locatie, aangevoerd op een dieplader"
+        }
+      ],
+      "lead": "De stroomvoorziening moest worden versterkt zodat het pand ook bij hoge vraag voldoende vermogen houdt. De installatie stond er in vier dagen.",
+      "uitdaging": "De stroomvoorziening bij Hedin Automotive in Alkmaar moest worden versterkt, zodat het gebouw altijd over voldoende vermogen beschikt — juist in periodes van hoge vraag. Het doel was onderbrekingen door stroomtekort te voorkomen en de operationele betrouwbaarheid ook bij piekbelasting te borgen.",
+      "aanpak": "Vibe Energy installeerde een energieopslagsysteem van 300 kW. Energie wordt opgeslagen tijdens daluren en ingezet wanneer de vraag stijgt, waardoor het gebouw minder afhankelijk is van het net en de energiekosten dalen.",
+      "resultaat": "De installatie zorgt voor een stabiele stroomvoorziening, ook tijdens piekbelasting. Hedin Automotive is minder netafhankelijk, heeft lagere energiekosten en een hogere operationele betrouwbaarheid.",
+      "componenten": [
+        {
+          "icoon": "accu",
+          "titel": "300 kW energieopslag",
+          "tekst": "Laadt tijdens daluren, levert wanneer de vraag stijgt."
+        },
+        {
+          "icoon": "tijd",
+          "titel": "Vier dagen installatie",
+          "tekst": "Van plaatsing tot inbedrijfstelling op locatie."
+        },
+        {
+          "icoon": "schild",
+          "titel": "Stabiele voorziening",
+          "tekst": "Ook bij piekbelasting blijft het vermogen op peil."
+        },
+        {
+          "icoon": "hub",
+          "titel": "Gestuurde inzet",
+          "tekst": "De regelaar bepaalt wanneer er geladen en ontladen wordt."
+        }
+      ],
+      "metrics": [
+        {
+          "waarde": "300 kW",
+          "label": "Energieopslag",
+          "accent": true
+        },
+        {
+          "waarde": "4 dagen",
+          "label": "Installatietijd"
+        },
+        {
+          "waarde": "Mei 2025",
+          "label": "Opgeleverd"
+        }
+      ],
+      "voor": [
+        "Bij hoge vraag was er onvoldoende vermogen beschikbaar.",
+        "Risico op onderbrekingen door stroomtekort.",
+        "Volledige afhankelijkheid van de netaansluiting."
+      ],
+      "na": [
+        "Stabiele stroomvoorziening, ook tijdens piekbelasting.",
+        "Minder netafhankelijk door opslag op locatie.",
+        "Lagere energiekosten door te laden tijdens daluren."
+      ],
+      "gerelateerd": [
+        "project-hedin-amsterdam",
+        "project-ratio-16"
+      ],
+      "statement": "Vier dagen werk, en het pand draagt zijn eigen pieken."
+    },
+    {
+      "slug": "project-dormio-medemblik",
+      "titel": "Dormio Medemblik",
+      "kop": "Een park dat minder afhankelijk is van het net.",
+      "plaats": "Medemblik",
+      "sector": "Recreatie",
+      "sectorFilter": "recreatie",
+      "opgeleverd": "Oktober 2024",
+      "beeld": "assets/projects/dormio-medemblik",
+      "beeldAlt": "Recreatiepark Dormio in Medemblik met zonnepanelen op de accommodaties",
+      "lead": "Een te kleine bouwaansluiting, en tegelijk de wens om de energielabels van de accommodaties te verbeteren en het park klaar te maken voor de toekomst.",
+      "uitdaging": "Het Dormio Park in Medemblik kampte met een te kleine bouwaansluiting, waardoor er onvoldoende vermogen beschikbaar was voor de vraag op het park. Tegelijk was er behoefte aan betere energielabels voor de woningen en aan een inrichting die de komende jaren meekan.",
+      "aanpak": "Vibe Energy ontwikkelde een slimme energieoplossing die het park minder afhankelijk maakt van het elektriciteitsnet: 215 kWh batterijopslag voor peak-shaving en nachtverbruik, 219 zonnepanelen op de accommodaties voor eigen opwek, en software die verbruik, laden en opslag automatisch balanceert.",
+      "resultaat": "Een duurzaam, efficiënt en toekomstbestendig park met lagere energiekosten, een stabiele stroomvoorziening en een betere gastbeleving. De projectpagina noemt 73% besparing en een verbetering van het energielabel met vier stappen.",
+      "componenten": [
+        {
+          "icoon": "accu",
+          "titel": "215 kWh batterijopslag",
+          "tekst": "Voor peak-shaving en verbruik in de avond en nacht."
+        },
+        {
+          "icoon": "zon",
+          "titel": "219 zonnepanelen",
+          "tekst": "Eigen opwek op de accommodaties van het park."
+        },
+        {
+          "icoon": "hub",
+          "titel": "Automatisch balanceren",
+          "tekst": "Software stemt verbruik, laden en opslag op elkaar af."
+        },
+        {
+          "icoon": "woning",
+          "titel": "Betere energielabels",
+          "tekst": "Het label van de accommodaties ging vier stappen vooruit."
+        }
+      ],
+      "metrics": [
+        {
+          "waarde": "215 kWh",
+          "label": "Batterijopslag",
+          "accent": true
+        },
+        {
+          "waarde": "219",
+          "label": "Zonnepanelen"
+        },
+        {
+          "waarde": "+4",
+          "label": "Energielabelstappen"
+        },
+        {
+          "waarde": "73%",
+          "label": "Besparing"
+        }
+      ],
+      "voor": [
+        "Een te kleine bouwaansluiting voor de vraag op het park.",
+        "Energielabels van de accommodaties bleven achter.",
+        "Weinig ruimte om het park verder te ontwikkelen."
+      ],
+      "na": [
+        "Het hele park gebundeld achter één bouwaansluiting.",
+        "Eigen opwek en opslag vangen de pieken op.",
+        "Energielabel vier stappen vooruit."
+      ],
+      "gerelateerd": [
+        "project-ratio-16",
+        "project-nieuw-schoonoord"
+      ],
+      "statement": "Een park dat zijn eigen avondpiek draagt, op één bouwaansluiting."
+    },
+    {
+      "slug": "project-purmerend",
+      "titel": "Edisonweg 16, Purmerend",
+      "kop": "Opwekken binnen een beperkte teruglevercapaciteit.",
+      "plaats": "Purmerend",
+      "sector": "Bedrijfspand",
+      "sectorFilter": "bedrijfspanden",
+      "opgeleverd": "Juli 2023",
+      "beeld": "assets/projects/purmerend",
+      "beeldAlt": "Bedrijfspand aan de Edisonweg in Purmerend met zonnepanelen op het dak",
+      "lead": "Verduurzamen kon, maar de teruglevercapaciteit was beperkt. Dynamische vermogensregeling bood de uitweg.",
+      "uitdaging": "Het pand aan de Edisonweg 16 in Purmerend moest verduurzaamd worden, maar de teruglevercapaciteit was beperkt: duurzame opwek mocht het net niet overbelasten. Een standaardinstallatie op maximale paneelcapaciteit was daarmee geen optie.",
+      "aanpak": "Vibe Energy installeerde 216 zonnepanelen met een vermogen van 97,7 kW, in combinatie met dynamische vermogensregeling. Daarmee wordt de opwek benut binnen de beperkte teruglevercapaciteit, zonder het net te overbelasten.",
+      "resultaat": "Het energielabel van het pand is met drie stappen verbeterd. De duurzame opwek wordt benut binnen de beperkte teruglevercapaciteit, wat leidt tot een hogere vastgoedwaarde en lagere energiekosten binnen de bestaande aansluiting.",
+      "componenten": [
+        {
+          "icoon": "zon",
+          "titel": "216 zonnepanelen",
+          "tekst": "Een installatie van 97,7 kW op het dak van het bedrijfspand."
+        },
+        {
+          "icoon": "meter",
+          "titel": "Dynamische vermogensregeling",
+          "tekst": "Regelt de opwek terug wanneer het net dat vraagt."
+        },
+        {
+          "icoon": "woning",
+          "titel": "Energielabel +3",
+          "tekst": "Het label van het pand verbeterde met drie stappen."
+        }
+      ],
+      "metrics": [
+        {
+          "waarde": "216",
+          "label": "Zonnepanelen",
+          "accent": true
+        },
+        {
+          "waarde": "97,7 kW",
+          "label": "Opgesteld vermogen"
+        },
+        {
+          "waarde": "+3",
+          "label": "Energielabelstappen"
+        }
+      ],
+      "voor": [
+        "Beperkte teruglevercapaciteit op de aansluiting.",
+        "Duurzame opwek mocht het net niet overbelasten.",
+        "Het energielabel van het pand bleef achter."
+      ],
+      "na": [
+        "216 panelen in bedrijf binnen de bestaande aansluiting.",
+        "Dynamische vermogensregeling voorkomt overbelasting.",
+        "Energielabel drie stappen verbeterd."
+      ],
+      "gerelateerd": [
+        "project-ratio-16",
+        "project-dormio-medemblik"
+      ],
+      "statement": "Opwekken tot precies wat het net aankan, en geen watt meer."
+    },
+    {
+      "slug": "project-van-beethovenstraat",
+      "titel": "Van Beethovenstraat, Nijmegen",
+      "kop": "62 woningen als één complex verduurzaamd.",
+      "plaats": "Nijmegen",
+      "sector": "Wooncomplex",
+      "sectorFilter": "woningportefeuilles",
+      "opgeleverd": "Juni 2024",
+      "beeld": "assets/projects/beethovenstraat",
+      "beeldAlt": "Wooncomplex aan de Van Beethovenstraat in Nijmegen met zonnepanelen op het dak",
+      "lead": "Bewoners wilden lagere energiekosten en duurzamere woningen, zonder ingrijpende aanpassingen aan de woningen zelf.",
+      "uitdaging": "De bewoners van het complex wilden hun energiekosten verlagen en hun woningen verduurzamen. De opgave was een oplossing die financieel aantrekkelijk is én de energieprestatie van het complex verbetert, zonder ingrijpende aanpassingen aan de woningen zelf.",
+      "aanpak": "Vibe Energy ontwierp en installeerde een complete zonne-energie-installatie die past bij een woonomgeving. Met in totaal 302 zonnepanelen nam de opwek per woning aanzienlijk toe. Slimme installatie en optimaal gebruik van het beschikbare dakoppervlak leveren de opbrengst.",
+      "resultaat": "62 woningen verduurzaamd en het energielabel vier stappen vooruit — lagere energiekosten en eigen groene stroom. Gerealiseerd in twee weken, zonder ingrijpende aanpassingen aan de woningen.",
+      "componenten": [
+        {
+          "icoon": "zon",
+          "titel": "302 zonnepanelen",
+          "tekst": "Collectief geëngineerd over het hele dakoppervlak."
+        },
+        {
+          "icoon": "woning",
+          "titel": "62 woningen",
+          "tekst": "Het hele complex in één traject aangepakt."
+        },
+        {
+          "icoon": "tijd",
+          "titel": "Twee weken",
+          "tekst": "Van start tot oplevering, zonder ingrijpende aanpassingen."
+        }
+      ],
+      "metrics": [
+        {
+          "waarde": "62",
+          "label": "Woningen",
+          "accent": true
+        },
+        {
+          "waarde": "302",
+          "label": "Zonnepanelen"
+        },
+        {
+          "waarde": "+4",
+          "label": "Energielabelstappen"
+        },
+        {
+          "waarde": "2 weken",
+          "label": "Doorlooptijd"
+        }
+      ],
+      "voor": [
+        "Hoge energiekosten voor de bewoners van het complex.",
+        "Onbenut dakoppervlak boven 62 woningen.",
+        "Behoefte aan verduurzaming zonder ingrepen in de woningen."
+      ],
+      "na": [
+        "302 panelen in bedrijf voor het hele complex.",
+        "Energielabel vier stappen vooruit.",
+        "Eigen groene stroom voor de bewoners."
+      ],
+      "gerelateerd": [
+        "project-burchtstraat",
+        "project-nieuw-schoonoord"
+      ],
+      "statement": "Eén dak, tweeënzestig huishoudens, één installatie."
+    },
+    {
+      "slug": "project-burchtstraat",
+      "titel": "Burchtstraat, Nijmegen",
+      "kop": "52 woningen verduurzaamd.",
+      "plaats": "Nijmegen",
+      "sector": "Wooncomplex",
+      "sectorFilter": "woningportefeuilles",
+      "opgeleverd": "Oktober 2024",
+      "beeld": "assets/projects/burchtstraat",
+      "beeldAlt": "Wooncomplex aan de Burchtstraat in Nijmegen met zonnepanelen op het dak",
+      "lead": "Een wooncomplex in het centrum van Nijmegen, collectief voorzien van eigen opwek.",
+      "uitdaging": "De bewoners van het complex wilden hun energiekosten verlagen en hun woningen verduurzamen, met een oplossing die financieel aantrekkelijk is en tegelijk de energieprestatie verbetert — zonder ingrijpende aanpassingen aan de woningen.",
+      "aanpak": "Vibe Energy ontwierp en installeerde een complete zonne-energie-installatie die past bij de woonomgeving. Met in totaal 254 zonnepanelen nam de opwek per woning aanzienlijk toe, door slimme installatie en optimaal gebruik van het beschikbare dakoppervlak.",
+      "resultaat": "52 woningen verduurzaamd en het energielabel vier stappen vooruit — lagere energiekosten en eigen groene stroom. Gerealiseerd in twee weken, zonder ingrijpende aanpassingen aan de woningen.",
+      "componenten": [
+        {
+          "icoon": "zon",
+          "titel": "254 zonnepanelen",
+          "tekst": "Over het volledige beschikbare dakoppervlak."
+        },
+        {
+          "icoon": "woning",
+          "titel": "52 woningen",
+          "tekst": "Als één complex aangepakt in plaats van per woning."
+        },
+        {
+          "icoon": "tijd",
+          "titel": "Twee weken",
+          "tekst": "Van start tot oplevering."
+        }
+      ],
+      "metrics": [
+        {
+          "waarde": "52",
+          "label": "Woningen",
+          "accent": true
+        },
+        {
+          "waarde": "254",
+          "label": "Zonnepanelen"
+        },
+        {
+          "waarde": "+4",
+          "label": "Energielabelstappen"
+        },
+        {
+          "waarde": "2 weken",
+          "label": "Doorlooptijd"
+        }
+      ],
+      "voor": [
+        "Hoge energiekosten voor de bewoners.",
+        "Onbenut dakoppervlak boven 52 woningen.",
+        "Verduurzaming moest zonder ingrepen in de woningen."
+      ],
+      "na": [
+        "254 panelen in bedrijf voor het complex.",
+        "Energielabel vier stappen vooruit.",
+        "Eigen groene stroom voor de bewoners."
+      ],
+      "gerelateerd": [
+        "project-van-beethovenstraat",
+        "project-ketsheuvel"
+      ],
+      "statement": "Een complex in de binnenstad, collectief van eigen stroom voorzien."
+    },
+    {
+      "slug": "project-arnhem-60",
+      "titel": "Woningportefeuille Arnhem",
+      "kop": "60 woningen voor een belegger.",
+      "plaats": "Arnhem",
+      "sector": "Woningportefeuille",
+      "sectorFilter": "woningportefeuilles",
+      "opgeleverd": "December 2024",
+      "beeld": "assets/projects/arnhem-60",
+      "beeldAlt": "Woningen in Arnhem met zonnepanelen op het dak, gezien vanuit de lucht",
+      "lead": "Voor een vastgoedbelegger: 60 woningen verduurzamen op een manier die zowel voor de belegger als voor de huurders werkt.",
+      "uitdaging": "Voor een vastgoedbelegger in Arnhem lag de uitdaging in het verduurzamen van 60 woningen op een manier die financieel aantrekkelijk is en het energielabel structureel verbetert — met voordeel voor zowel de belegger als de huurders.",
+      "aanpak": "Vibe Energy ontwierp en installeerde een complete zonne-energie-installatie die past bij de woonomgeving. Met in totaal 254 zonnepanelen nam de opwek per woning aanzienlijk toe; bewoners gebruiken hun eigen groene stroom.",
+      "resultaat": "60 woningen verduurzaamd en het energielabel drie stappen vooruit, gerealiseerd in drie weken zonder ingrijpende aanpassingen. Voor de belegger: een hogere vastgoedwaarde en een toekomstbestendige portefeuille. Voor de huurders: lagere energiekosten.",
+      "componenten": [
+        {
+          "icoon": "zon",
+          "titel": "254 zonnepanelen",
+          "tekst": "Verdeeld over de woningen in de portefeuille."
+        },
+        {
+          "icoon": "portefeuille",
+          "titel": "60 woningen",
+          "tekst": "Portefeuillebreed in één traject aangepakt."
+        },
+        {
+          "icoon": "tijd",
+          "titel": "Drie weken",
+          "tekst": "Van start tot oplevering."
+        }
+      ],
+      "metrics": [
+        {
+          "waarde": "60",
+          "label": "Woningen",
+          "accent": true
+        },
+        {
+          "waarde": "254",
+          "label": "Zonnepanelen"
+        },
+        {
+          "waarde": "+3",
+          "label": "Energielabelstappen"
+        },
+        {
+          "waarde": "3 weken",
+          "label": "Doorlooptijd"
+        }
+      ],
+      "voor": [
+        "Een portefeuille van 60 woningen met achterblijvende labels.",
+        "Verduurzaming moest voor belegger én huurder uitkomen.",
+        "Ingrijpende aanpassingen aan de woningen waren geen optie."
+      ],
+      "na": [
+        "254 panelen in bedrijf over de portefeuille.",
+        "Energielabel drie stappen vooruit.",
+        "Lagere energiekosten voor de huurders."
+      ],
+      "gerelateerd": [
+        "project-nieuw-schoonoord",
+        "project-van-beethovenstraat"
+      ],
+      "statement": "Wat de belegger oplevert en wat de huurder merkt, in één ingreep."
+    },
+    {
+      "slug": "project-ketsheuvel",
+      "titel": "Ketsheuvel, Renkum",
+      "kop": "32 woningen, de grootste labelsprong.",
+      "plaats": "Renkum",
+      "sector": "Wooncomplex",
+      "sectorFilter": "woningportefeuilles",
+      "opgeleverd": "December 2024",
+      "beeld": "assets/projects/ketsheuvel",
+      "beeldAlt": "Woningen aan de Ketsheuvel in Renkum met zonnepanelen op het dak",
+      "lead": "Een kleiner complex, met de grootste labelverbetering van de elf gerealiseerde projecten.",
+      "uitdaging": "De bewoners van het complex wilden hun energiekosten verlagen en hun woningen verduurzamen, met een oplossing die financieel aantrekkelijk is en de energieprestatie verbetert zonder ingrijpende aanpassingen aan de woningen.",
+      "aanpak": "Vibe Energy ontwierp en installeerde een complete zonne-energie-installatie voor het complex. Met in totaal 162 zonnepanelen nam de opwek per woning aanzienlijk toe, door optimaal gebruik van het beschikbare dakoppervlak.",
+      "resultaat": "32 woningen verduurzaamd en het energielabel vijf stappen vooruit — de grootste labelsprong van de projecten die Vibe publiceert. Gerealiseerd in twee weken, zonder ingrijpende aanpassingen aan de woningen.",
+      "componenten": [
+        {
+          "icoon": "zon",
+          "titel": "162 zonnepanelen",
+          "tekst": "Over het beschikbare dakoppervlak van het complex."
+        },
+        {
+          "icoon": "woning",
+          "titel": "32 woningen",
+          "tekst": "Het hele complex in één traject."
+        },
+        {
+          "icoon": "tijd",
+          "titel": "Twee weken",
+          "tekst": "Van start tot oplevering."
+        }
+      ],
+      "metrics": [
+        {
+          "waarde": "32",
+          "label": "Woningen",
+          "accent": true
+        },
+        {
+          "waarde": "162",
+          "label": "Zonnepanelen"
+        },
+        {
+          "waarde": "+5",
+          "label": "Energielabelstappen"
+        },
+        {
+          "waarde": "2 weken",
+          "label": "Doorlooptijd"
+        }
+      ],
+      "voor": [
+        "Hoge energiekosten voor de bewoners.",
+        "Onbenut dakoppervlak boven 32 woningen.",
+        "Behoefte aan een betere energieprestatie."
+      ],
+      "na": [
+        "162 panelen in bedrijf voor het complex.",
+        "Energielabel vijf stappen vooruit.",
+        "Eigen groene stroom voor de bewoners."
+      ],
+      "gerelateerd": [
+        "project-burchtstraat",
+        "project-van-beethovenstraat"
+      ],
+      "statement": "Het kleinste complex van de reeks, met de grootste stap vooruit."
+    },
+    {
+      "slug": "project-nieuw-schoonoord",
+      "titel": "Nieuw-Schoonoord, Velp",
+      "kop": "180 woningen in één traject.",
+      "plaats": "Velp",
+      "sector": "Woningportefeuille",
+      "sectorFilter": "woningportefeuilles",
+      "opgeleverd": "Juni 2024",
+      "beeld": "assets/projects/nieuw-schoonoord",
+      "beeldAlt": "Wooncomplex Nieuw-Schoonoord in Velp met zonnepanelen op het dak",
+      "lead": "Het grootste wooncomplex dat Vibe tot nu toe in één traject verduurzaamde.",
+      "uitdaging": "De bewoners wilden hun energiekosten verlagen en hun woningen verduurzamen. Bij 180 woningen vraagt dat om een aanpak die het complex als geheel behandelt in plaats van woning voor woning.",
+      "aanpak": "Vibe Energy ontwierp en installeerde een zonne-energie-installatie voor het hele complex, met gebruik van het beschikbare dakoppervlak. Het traject is als één gebiedsaanpak uitgevoerd in plaats van als 180 losse projecten.",
+      "resultaat": "180 woningen verduurzaamd en het energielabel vier stappen vooruit — lagere energiekosten en eigen groene stroom, gerealiseerd in twee weken zonder ingrijpende aanpassingen aan de woningen.",
+      "componenten": [
+        {
+          "icoon": "portefeuille",
+          "titel": "180 woningen",
+          "tekst": "Als één traject aangepakt, niet woning voor woning."
+        },
+        {
+          "icoon": "zon",
+          "titel": "Zonnepanelen",
+          "tekst": "Geplaatst op het beschikbare dakoppervlak van het complex."
+        },
+        {
+          "icoon": "tijd",
+          "titel": "Twee weken",
+          "tekst": "Van start tot oplevering."
+        }
+      ],
+      "metrics": [
+        {
+          "waarde": "180",
+          "label": "Woningen",
+          "accent": true
+        },
+        {
+          "waarde": "+4",
+          "label": "Energielabelstappen"
+        },
+        {
+          "waarde": "2 weken",
+          "label": "Doorlooptijd"
+        }
+      ],
+      "voor": [
+        "180 woningen met hoge energiekosten.",
+        "Een aanpak per woning zou te traag en te duur zijn.",
+        "Behoefte aan een betere energieprestatie over het geheel."
+      ],
+      "na": [
+        "Het hele complex in één traject verduurzaamd.",
+        "Energielabel vier stappen vooruit.",
+        "Eigen groene stroom voor de bewoners."
+      ],
+      "gerelateerd": [
+        "project-arnhem-60",
+        "project-schouwburgring"
+      ],
+      "statement": "Honderdtachtig woningen, benaderd als één gebouw."
+    },
+    {
+      "slug": "project-schouwburgring",
+      "titel": "Schouwburgring, Tilburg",
+      "kop": "160 woningen met eigen opwek.",
+      "plaats": "Tilburg",
+      "sector": "Wooncomplex",
+      "sectorFilter": "woningportefeuilles",
+      "opgeleverd": "December 2023",
+      "beeld": "assets/projects/schouwburgring",
+      "beeldAlt": "Wooncomplex aan de Schouwburgring in Tilburg met zonnepanelen op het dak",
+      "lead": "Een groot complex in het centrum van Tilburg, voorzien van 534 zonnepanelen.",
+      "uitdaging": "De bewoners van het complex wilden hun energiekosten verlagen en hun woningen verduurzamen, zonder ingrijpende aanpassingen aan de woningen zelf.",
+      "aanpak": "Vibe Energy ontwierp en installeerde een complete zonne-energie-installatie voor het complex. Met in totaal 534 zonnepanelen — het grootste aantal van de gepubliceerde woningprojecten — nam de opwek per woning aanzienlijk toe.",
+      "resultaat": "160 woningen verduurzaamd met eigen opwek: lagere energiekosten en eigen groene stroom, zonder ingrijpende aanpassingen aan de woningen.",
+      "componenten": [
+        {
+          "icoon": "zon",
+          "titel": "534 zonnepanelen",
+          "tekst": "Het grootste aantal van de gepubliceerde woningprojecten."
+        },
+        {
+          "icoon": "woning",
+          "titel": "160 woningen",
+          "tekst": "Het hele complex in één traject."
+        }
+      ],
+      "metrics": [
+        {
+          "waarde": "160",
+          "label": "Woningen",
+          "accent": true
+        },
+        {
+          "waarde": "534",
+          "label": "Zonnepanelen"
+        },
+        {
+          "waarde": "Dec 2023",
+          "label": "Opgeleverd"
+        }
+      ],
+      "voor": [
+        "Hoge energiekosten voor 160 huishoudens.",
+        "Groot onbenut dakoppervlak.",
+        "Verduurzaming moest zonder ingrepen in de woningen."
+      ],
+      "na": [
+        "534 panelen in bedrijf voor het complex.",
+        "Eigen groene stroom voor de bewoners.",
+        "Lagere energiekosten zonder aanpassing van de woningen."
+      ],
+      "gerelateerd": [
+        "project-nieuw-schoonoord",
+        "project-burchtstraat"
+      ],
+      "statement": "Vijfhonderdvierendertig panelen boven de Schouwburgring."
+    }
+  ]
+}

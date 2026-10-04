@@ -1,0 +1,1053 @@
+/* ============================================================================
+   VIBE ENERGY — BASIS, OPMAAK & COMPONENTEN
+   ----------------------------------------------------------------------------
+   Leest de tokens uit vibe/tokens.css. Bevat uitsluitend vormtaal die in de
+   vijf goedgekeurde Stitch-masters daadwerkelijk voorkomt.
+
+   Volgorde: 1 basis · 2 typografie · 3 opmaak · 4 chrome · 5 componenten
+
+   HARD RULE uit docs/vibe-design-tokens-v1.md §7A, hier aangehouden:
+     herhaalde vormtaal -> klasse in dit bestand
+     unieke compositie  -> paginaspecifieke klasse in de pagina zelf
+   Er is daarom met opzet GEEN .ve-eyebrow en GEEN .ve-label-caps: de
+   Constitution verbiedt decoratieve labels boven koppen.
+   ============================================================================ */
+
+/* =========================================================== 1 · BASIS ==== */
+
+@font-face{
+  font-family:'Space Grotesk';
+  font-style:normal;
+  font-weight:300 700;
+  font-display:swap;
+  src:url('../assets/fonts/space-grotesk-latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,
+    U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,
+    U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'Space Grotesk';
+  font-style:normal;
+  font-weight:300 700;
+  font-display:swap;
+  src:url('../assets/fonts/space-grotesk-latin-ext.woff2') format('woff2');
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,
+    U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,
+    U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+html{
+  -webkit-text-size-adjust:100%;
+  scroll-behavior:smooth;
+  /* de sticky header is 64px hoog; ankers mogen daar niet onder vallen */
+  scroll-padding-top:5.5rem;
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
+
+body{
+  margin:0;
+  background:var(--ve-bg);
+  color:var(--ve-text);
+  font-family:var(--ve-font);
+  font-size:var(--ve-body-size);
+  line-height:var(--ve-body-lh);
+  font-weight:var(--ve-w-body);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  /* de masters zetten overflow-x-hidden op body; nodig door de CTA-glow */
+  overflow-x:hidden;
+}
+
+img,svg,video{display:block;max-width:100%}
+img,video{height:auto}
+
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+
+::selection{background:var(--ve-action);color:#fff}
+
+:focus-visible{
+  outline:2px solid var(--ve-action);
+  outline-offset:3px;
+  border-radius:var(--ve-r-xs);
+}
+
+/* overslaan-naar-inhoud — ontbreekt in Stitch, vereist voor toetsenbordgebruik */
+.ve-skip{
+  position:absolute;left:var(--ve-gutter);top:.5rem;z-index:200;
+  transform:translateY(-200%);
+  background:var(--ve-action);color:#fff;
+  padding:.65rem 1.1rem;border-radius:var(--ve-r-btn);
+  font-size:var(--ve-body-sm-size);font-weight:var(--ve-w-sub);
+  transition:transform var(--ve-dur) var(--ve-ease);
+}
+.ve-skip:focus{transform:translateY(0)}
+
+/* ===================================================== 2 · TYPOGRAFIE ==== */
+/* De vier koptrappen uit de Constitution §2. Geen enkele kop krijgt een label
+   of eyebrow erboven; secties beginnen direct met de kop.
+
+   Nederlandse samenstellingen ("woningportefeuilles",
+   "netaansluitingsoverschrijding") zijn op een telefoon breder dan hun kolom.
+   Zonder deze regel duwt zo'n woord zijn container open en schuift de hele
+   pagina horizontaal. break-word breekt uitsluitend wanneer het moet. */
+.ve-display,.ve-h2,.ve-h3,.ve-h4,.ve-overlay__t,.ve-proj__t,.ve-citaat,
+.ve-metriek__w,.ve-feit__w{overflow-wrap:break-word;min-width:0}
+
+.ve-display{
+  margin:0;
+  font-size:var(--ve-display-size);
+  line-height:var(--ve-display-lh);
+  letter-spacing:var(--ve-display-track);
+  font-weight:var(--ve-w-display);
+  color:var(--ve-text);
+  text-wrap:balance;
+}
+.ve-h2{
+  margin:0;
+  font-size:var(--ve-h2-size);
+  line-height:var(--ve-h2-lh);
+  letter-spacing:var(--ve-h2-track);
+  font-weight:var(--ve-w-head);
+  color:var(--ve-text);
+  text-wrap:balance;
+}
+.ve-h3{
+  margin:0;
+  font-size:var(--ve-h3-size);
+  line-height:var(--ve-h3-lh);
+  letter-spacing:var(--ve-h3-track);
+  font-weight:var(--ve-w-sub);
+  color:var(--ve-text);
+}
+.ve-h4{
+  margin:0;
+  font-size:var(--ve-h4-size);
+  line-height:var(--ve-h4-lh);
+  letter-spacing:var(--ve-h4-track);
+  font-weight:var(--ve-w-sub);
+  color:var(--ve-text);
+}
+
+.ve-lead{
+  margin:0;
+  font-size:var(--ve-body-lg-size);
+  line-height:var(--ve-body-lg-lh);
+  letter-spacing:var(--ve-body-lg-track);
+  color:var(--ve-text-soft);
+}
+.ve-body{margin:0;color:var(--ve-text-soft)}
+.ve-small{
+  margin:0;
+  font-size:var(--ve-body-sm-size);
+  line-height:var(--ve-body-sm-lh);
+  letter-spacing:var(--ve-body-sm-track);
+  color:var(--ve-text-soft);
+}
+/* leesbreedte — Constitution §2 schrijft max-w-2xl voor lopende tekst voor */
+.ve-measure{max-width:42rem}
+.ve-measure-wide{max-width:48rem}
+.ve-measure-narrow{max-width:34rem}
+
+/* datawaarde: een gemeten getal met zijn label. Zelfde grotesk, geen mono. */
+.ve-data{
+  font-size:var(--ve-data-size);
+  line-height:var(--ve-data-lh);
+  letter-spacing:var(--ve-data-track);
+  font-weight:var(--ve-w-med);
+}
+
+.ve-accent{color:var(--ve-action-ink)}
+.ve-on-dark{color:var(--ve-text-on-dark)}
+.ve-on-dark .ve-lead,.ve-on-dark .ve-body,.ve-on-dark .ve-small{color:var(--ve-text-on-dark-soft)}
+.ve-on-dark .ve-display,.ve-on-dark .ve-h2,.ve-on-dark .ve-h3,.ve-on-dark .ve-h4{color:#fff}
+
+/* ========================================================= 3 · OPMAAK ==== */
+
+.ve-wrap{
+  width:100%;
+  max-width:var(--ve-container);
+  margin-inline:auto;
+  padding-inline:var(--ve-gutter);
+}
+.ve-wrap--wide{max-width:var(--ve-container-wide)}
+.ve-wrap--text{max-width:56rem}
+
+/* sectierhythme. --sec is de basis; de modifiers volgen py-24/28/32. */
+.ve-sec{padding-block:var(--ve-sec)}
+.ve-sec--lg{padding-block:var(--ve-sec-lg)}
+.ve-sec--xl{padding-block:var(--ve-sec-xl)}
+.ve-sec--2xl{padding-block:var(--ve-sec-2xl)}
+/* 144px. De masters zetten hun redactionele uitspraken en productonthullingen
+   op py-36; die ruimte is wat ze monumentaal maakt. Niet voor gewone secties. */
+.ve-sec--3xl{padding-block:var(--ve-sec-3xl)}
+.ve-sec--tight{padding-block:var(--ve-s-2xl)}
+.ve-sec--flush-t{padding-top:0}
+.ve-sec--flush-b{padding-bottom:0}
+
+/* vlakcontext — bepaalt of een sectie op canvas, papier of obsidiaan staat */
+.ve-sec--paper{background:var(--ve-surface)}
+.ve-sec--sunken{background:var(--ve-surface-sunken)}
+.ve-sec--dark{background:var(--ve-bg-dark);color:var(--ve-text-on-dark)}
+.ve-sec--dark .ve-lead,.ve-sec--dark .ve-body,.ve-sec--dark .ve-small{color:var(--ve-text-on-dark-soft)}
+.ve-sec--dark .ve-display,.ve-sec--dark .ve-h2,.ve-sec--dark .ve-h3,.ve-sec--dark .ve-h4{color:#fff}
+
+/* Een monumentaal beeld dat direct op tekst volgt, krijgt extra aanloop.
+   Zonder deze regel plakt de fotografie tegen de alinea erboven. */
+.ve-sec > .ve-wrap > .ve-media:not(:first-child){margin-top:var(--ve-s-2xl)}
+
+/* structurele haarlijnen — border-y / border-t border-outline-variant/30 */
+.ve-sec--line-y{border-block:1px solid var(--ve-line)}
+.ve-sec--line-t{border-top:1px solid var(--ve-line)}
+.ve-sec--line-b{border-bottom:1px solid var(--ve-line)}
+
+/* sectiekop: kop + één alinea, links uitgelijnd tenzij expliciet gecentreerd */
+.ve-head{max-width:48rem;margin-bottom:3.5rem}
+.ve-head--wide{max-width:56rem}
+.ve-head--center{margin-inline:auto;text-align:center}
+.ve-head > * + *{margin-top:var(--ve-s-lg)}
+.ve-head--deep{margin-bottom:5rem}
+
+/* verticale stapel met één ritme */
+.ve-stack > * + *{margin-top:var(--ve-s-md)}
+.ve-stack--lg > * + *{margin-top:var(--ve-s-lg)}
+.ve-stack--xl > * + *{margin-top:var(--ve-s-xl)}
+
+/* editoriale split — TYPE C. Standaard 6/6, varianten 5/7 en 7/5.
+   Op tablet valt hij naar één kolom; dat is bewust, een 6/6 split onder
+   1024px laat de fotografie te klein worden. */
+.ve-split{display:grid;gap:var(--ve-s-xl);align-items:center}
+@media (min-width:1024px){
+  .ve-split{grid-template-columns:1fr 1fr;gap:var(--ve-s-2xl)}
+  .ve-split--5-7{grid-template-columns:5fr 7fr}
+  .ve-split--7-5{grid-template-columns:7fr 5fr}
+  .ve-split--top{align-items:start}
+  .ve-split--end{align-items:end}
+  /* beeld links, tekst rechts zonder de leesorde in de HTML om te gooien */
+  .ve-split--swap > :first-child{order:2}
+}
+
+/* kolomrasters. Alleen gebruiken waar de inhoud écht n gelijkwaardige items
+   heeft; de Constitution verbiedt het generieke 3-kaartenraster als default. */
+/* minmax(0,1fr) in plaats van 1fr: een 1fr-track krijgt impliciet een
+   min-content ondergrens, waardoor een kaart met een lange kop de track breder
+   maakt dan haar gelijke deel. Tussen 768 en ~900px liep het raster daardoor
+   buiten de container en werd de rechterkaart afgesneden. minmax(0,1fr) laat de
+   track wél krimpen; waar de inhoud past is het gedrag identiek aan 1fr. */
+.ve-cols{display:grid;gap:var(--ve-s-lg)}
+@media (min-width:640px){.ve-cols--2,.ve-cols--4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:768px){.ve-cols--3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (min-width:1024px){
+  .ve-cols--4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .ve-cols--5{grid-template-columns:repeat(5,minmax(0,1fr))}
+}
+.ve-cols--gap-xl{gap:var(--ve-s-xl)}
+
+/* asymmetrisch 12-koloms raster voor de redactionele composities */
+.ve-grid12{display:grid;gap:var(--ve-s-lg)}
+@media (min-width:768px){
+  .ve-grid12{grid-template-columns:repeat(12,1fr)}
+  .ve-sp-4{grid-column:span 4}.ve-sp-5{grid-column:span 5}
+  .ve-sp-6{grid-column:span 6}.ve-sp-7{grid-column:span 7}
+  .ve-sp-8{grid-column:span 8}.ve-sp-12{grid-column:span 12}
+}
+
+.ve-row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--ve-s-md)}
+.ve-row--between{justify-content:space-between}
+.ve-row--gap-lg{gap:var(--ve-s-lg)}
+
+/* ========================================================= 4 · CHROME ==== */
+
+/* ---- header ---- */
+.ve-header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(255,255,255,.90);
+  backdrop-filter:saturate(1.4) blur(12px);
+  -webkit-backdrop-filter:saturate(1.4) blur(12px);
+  border-bottom:1px solid var(--ve-line);
+}
+.ve-header__bar{
+  max-width:none;
+  display:flex;align-items:center;justify-content:space-between;gap:var(--ve-s-lg);
+  height:64px;
+  padding-inline:var(--ve-gutter);
+}
+.ve-wordmark{
+  display:inline-flex;align-items:center;gap:.4ch;
+  font-size:var(--ve-h4-size);line-height:1;
+  font-weight:700;letter-spacing:.02em;
+  color:var(--ve-text);white-space:nowrap;
+  min-width:0;
+}
+.ve-wordmark__slash{color:var(--ve-action);font-weight:800}
+
+/* Op smalle telefoons moeten woordmerk + CTA + menuknop samen binnen 320px
+   passen. De CTA blijft staan — hij is de primaire navigatie-actie — maar
+   krijgt compactere maten; de paginamarge zakt naar de margin-mobile uit
+   Stitch (1,25rem). */
+@media (max-width:559px){
+  .ve-header__bar{gap:.6rem;padding-inline:1.25rem}
+  .ve-wordmark{font-size:17px;letter-spacing:0}
+  .ve-header__acties{gap:.5rem}
+  .ve-header__acties .ve-btn{padding:.55rem .85rem;font-size:13px}
+  .ve-menubtn{width:38px;height:38px}
+}
+@media (max-width:359px){
+  /* laatste redmiddel: onder 360px wijkt het woordmerk terug naar het merkteken */
+  .ve-wordmark span:first-child,.ve-wordmark span:last-child{font-size:15px}
+}
+
+.ve-nav{display:none}
+@media (min-width:1200px){
+  .ve-nav{display:flex;align-items:center;gap:var(--ve-s-xl)}
+}
+.ve-nav__item{position:relative}
+.ve-nav__link{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.4rem 0;
+  background:none;border:0;cursor:pointer;
+  font-size:var(--ve-body-sm-size);
+  color:var(--ve-text-soft);
+  border-bottom:2px solid transparent;
+  transition:color var(--ve-dur) var(--ve-ease),border-color var(--ve-dur) var(--ve-ease);
+}
+.ve-nav__link:hover{color:var(--ve-text)}
+/* actieve rubriek — blauw met onderstreping, exact als in de masters */
+.ve-nav__link[aria-current],.ve-nav__item--actief > .ve-nav__link{
+  color:var(--ve-action-ink);font-weight:var(--ve-w-sub);
+  border-bottom-color:var(--ve-action-ink);
+}
+.ve-nav__caret{width:14px;height:14px;transition:transform var(--ve-dur) var(--ve-ease)}
+.ve-nav__item--open .ve-nav__caret{transform:rotate(180deg)}
+
+.ve-drop{
+  position:absolute;top:calc(100% + 14px);left:50%;
+  transform:translateX(-50%) translateY(-6px);
+  min-width:28rem;
+  background:var(--ve-surface);
+  border:1px solid var(--ve-hairline);
+  border-radius:var(--ve-r-card);
+  box-shadow:var(--ve-elev-3);
+  padding:var(--ve-s-sm);
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity var(--ve-dur) var(--ve-ease),transform var(--ve-dur) var(--ve-ease),visibility var(--ve-dur);
+}
+.ve-nav__item--open .ve-drop{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+.ve-drop__link{
+  display:flex;gap:var(--ve-s-md);align-items:flex-start;
+  padding:.8rem .9rem;border-radius:var(--ve-r-chip);
+  transition:background var(--ve-dur) var(--ve-ease);
+}
+.ve-drop__link:hover{background:var(--ve-surface-sunken)}
+.ve-drop__ic{
+  flex:0 0 auto;width:36px;height:36px;
+  display:grid;place-items:center;
+  border-radius:var(--ve-r-btn);
+  background:var(--ve-canvas-mid);color:var(--ve-action-ink);
+}
+.ve-drop__ic svg{width:19px;height:19px}
+.ve-drop__t{display:block;font-weight:var(--ve-w-sub);color:var(--ve-text)}
+.ve-drop__d{
+  display:block;margin-top:.15rem;
+  font-size:var(--ve-body-sm-size);line-height:var(--ve-body-sm-lh);
+  color:var(--ve-text-muted);
+}
+
+.ve-header__acties{display:flex;align-items:center;gap:var(--ve-s-sm)}
+.ve-header__ghost{display:none}
+@media (min-width:640px){.ve-header__ghost{display:inline-flex}}
+
+/* ---- mobiel menu ---- */
+.ve-menubtn{
+  display:inline-grid;place-items:center;
+  width:42px;height:42px;
+  background:none;border:1px solid var(--ve-line-strong);
+  border-radius:var(--ve-r-btn);cursor:pointer;color:var(--ve-text);
+}
+@media (min-width:1200px){.ve-menubtn{display:none}}
+.ve-menubtn svg{width:20px;height:20px}
+
+.ve-mobiel{
+  position:fixed;inset:64px 0 0;z-index:99;
+  background:var(--ve-bg);
+  overflow-y:auto;
+  padding:var(--ve-s-lg) var(--ve-gutter) var(--ve-s-2xl);
+  opacity:0;transform:translateY(-8px);
+  transition:opacity var(--ve-dur-slow) var(--ve-ease),transform var(--ve-dur-slow) var(--ve-ease);
+}
+.ve-mobiel.is-open{opacity:1;transform:translateY(0)}
+html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
+.ve-mobiel__groep + .ve-mobiel__groep{margin-top:var(--ve-s-lg);padding-top:var(--ve-s-lg);border-top:1px solid var(--ve-line)}
+.ve-mobiel__kop{
+  font-size:var(--ve-body-sm-size);font-weight:var(--ve-w-sub);
+  color:var(--ve-text-muted);margin-bottom:var(--ve-s-sm);
+}
+.ve-mobiel__link{
+  display:block;padding:.7rem 0;
+  font-size:var(--ve-body-lg-size);font-weight:var(--ve-w-med);
+  color:var(--ve-text);
+}
+.ve-mobiel__link:hover{color:var(--ve-action-ink)}
+.ve-mobiel__cta{margin-top:var(--ve-s-xl)}
+
+/* ---- footer ---- */
+.ve-footer{
+  background:var(--ve-bg-dark);
+  color:var(--ve-text-on-dark);
+  border-top:1px solid var(--ve-line-on-dark);
+}
+.ve-footer a{color:var(--ve-text-on-dark-soft);transition:color var(--ve-dur) var(--ve-ease)}
+.ve-footer a:hover{color:#fff}
+.ve-footer__top{
+  display:grid;gap:var(--ve-s-xl);
+  padding-block:var(--ve-s-3xl) var(--ve-s-2xl);
+}
+@media (min-width:768px){.ve-footer__top{grid-template-columns:1.4fr 1fr 1fr 1fr}}
+.ve-footer__merk{max-width:30rem}
+.ve-footer__claim{
+  margin:var(--ve-s-md) 0 0;
+  font-size:var(--ve-body-lg-size);line-height:var(--ve-body-lg-lh);
+  color:var(--ve-text-on-dark-soft);
+}
+.ve-footer__kop{
+  margin:0 0 var(--ve-s-md);
+  font-size:var(--ve-body-sm-size);font-weight:var(--ve-w-sub);
+  color:#fff;
+}
+.ve-footer__lijst{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
+.ve-footer__lijst a{font-size:var(--ve-body-size)}
+.ve-footer__onder{
+  display:flex;flex-wrap:wrap;gap:var(--ve-s-md) var(--ve-s-lg);
+  align-items:center;justify-content:space-between;
+  padding-block:var(--ve-s-lg);
+  border-top:1px solid var(--ve-line-on-dark);
+  font-size:var(--ve-body-sm-size);
+  color:var(--ve-text-on-dark-muted);
+}
+.ve-footer__onder nav{display:flex;flex-wrap:wrap;gap:var(--ve-s-lg)}
+
+/* ==================================================== 5 · COMPONENTEN ==== */
+
+/* ---- knoppen ---- */
+.ve-btn{
+  /* maten exact uit de masters: px-7 py-3.5 (standaard), px-8 py-4 (--lg),
+     px-5 py-2.5 (--sm) */
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  padding:.875rem 1.75rem;
+  border-radius:var(--ve-r-btn);
+  border:1px solid transparent;
+  font-size:var(--ve-body-size);font-weight:var(--ve-w-sub);
+  letter-spacing:-.005em;
+  cursor:pointer;white-space:nowrap;
+  transition:background var(--ve-dur) var(--ve-ease),border-color var(--ve-dur) var(--ve-ease),
+             color var(--ve-dur) var(--ve-ease),transform var(--ve-dur) var(--ve-ease);
+}
+.ve-btn:active{transform:scale(.97)}
+.ve-btn svg{width:17px;height:17px;flex:0 0 auto}
+
+.ve-btn--primair{background:var(--ve-action);color:var(--ve-on-action);box-shadow:var(--ve-elev-1)}
+.ve-btn--primair:hover{background:var(--ve-action-hover)}
+
+.ve-btn--ghost{background:var(--ve-surface);color:var(--ve-text);border-color:var(--ve-line-strong)}
+.ve-btn--ghost:hover{border-color:var(--ve-action);color:var(--ve-action-ink)}
+
+.ve-btn--stil{background:transparent;color:var(--ve-text-soft);border-color:transparent;padding-inline:.5rem}
+.ve-btn--stil:hover{color:var(--ve-text)}
+
+/* op obsidiaan */
+.ve-btn--ghost-dark{background:transparent;color:#fff;border-color:rgba(255,255,255,.22)}
+.ve-btn--ghost-dark:hover{border-color:#fff}
+
+.ve-btn--sm{padding:.625rem 1.25rem;font-size:var(--ve-body-sm-size)}
+.ve-btn--lg{padding:1rem 2rem}
+.ve-btn--blok{width:100%}
+
+/* tekstlink met pijl */
+.ve-link{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-weight:var(--ve-w-sub);color:var(--ve-action-ink);
+}
+.ve-link svg{width:16px;height:16px;transition:transform var(--ve-dur) var(--ve-ease)}
+.ve-link:hover svg{transform:translateX(3px)}
+
+/* ---- beeldvlakken (TYPE A/D) ----
+   Fotografie is een primaire communicatielaag: deze vlakken zijn met opzet
+   groot. rounded-3xl = 24px, conform Constitution §4. */
+.ve-media{
+  position:relative;
+  border-radius:var(--ve-r-media);
+  overflow:hidden;
+  background:var(--ve-canvas-high);
+  box-shadow:var(--ve-elev-2);
+}
+.ve-media--vlak{box-shadow:var(--ve-elev-1)}
+.ve-media--diep{box-shadow:var(--ve-elev-3)}
+.ve-media--lijn{border:1px solid var(--ve-line)}
+.ve-media > img,.ve-media > video,.ve-media > picture > img{
+  width:100%;height:100%;object-fit:cover;object-position:center;
+}
+/* verhoudingen zoals in de masters */
+.ve-media--21x9{aspect-ratio:21/9}
+.ve-media--16x9{aspect-ratio:16/9}
+.ve-media--16x10{aspect-ratio:16/10}
+.ve-media--3x2{aspect-ratio:3/2}
+.ve-media--4x3{aspect-ratio:4/3}
+.ve-media--1x1{aspect-ratio:1/1}
+/* Mobiel: een 21:9 held wordt 2,5cm hoog. Kantelt daarom naar 4:3. Dat is de
+   art direction die de Constitution op desktop vastlegt, doorgedacht naar klein. */
+@media (max-width:767px){
+  .ve-media--21x9,.ve-media--16x9,.ve-media--16x10{aspect-ratio:4/3}
+  .ve-media--held{aspect-ratio:3/4}
+}
+
+/* donkere contextkaart over fotografie, links onder (TYPE A) */
+.ve-overlay{
+  position:absolute;left:var(--ve-s-lg);right:var(--ve-s-lg);bottom:var(--ve-s-lg);
+  max-width:30rem;
+  background:rgba(7,11,18,.90);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--ve-line-on-dark);
+  border-radius:var(--ve-r-card);
+  padding:var(--ve-s-lg);
+  color:#fff;
+  box-shadow:var(--ve-elev-3);
+}
+@media (min-width:768px){
+  .ve-overlay{left:var(--ve-s-xl);bottom:var(--ve-s-xl);right:auto;padding:var(--ve-s-xl)}
+}
+.ve-overlay__t{margin:0 0 .4rem;font-size:var(--ve-h4-size);line-height:var(--ve-h4-lh);font-weight:var(--ve-w-sub);color:#fff}
+.ve-overlay__d{margin:0;font-size:var(--ve-body-sm-size);line-height:var(--ve-body-sm-lh);color:rgba(255,255,255,.76)}
+/* Mobiel is de overlay op 3:4 beeld te dominant; hij schuift onder het beeld. */
+@media (max-width:559px){
+  .ve-media--overlay-onder{box-shadow:none}
+  .ve-media--overlay-onder .ve-overlay{
+    position:static;left:auto;right:auto;bottom:auto;max-width:none;
+    border-radius:0 0 var(--ve-r-media) var(--ve-r-media);backdrop-filter:none;
+  }
+}
+
+/* lichte badge rechtsonder op beeld */
+.ve-badge{
+  position:absolute;right:var(--ve-s-md);bottom:var(--ve-s-md);
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:rgba(255,255,255,.95);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  border:1px solid var(--ve-line);
+  border-radius:var(--ve-r-btn);
+  padding:.45rem .8rem;
+  font-size:var(--ve-body-sm-size);font-weight:var(--ve-w-med);color:var(--ve-text);
+  box-shadow:var(--ve-elev-1);
+}
+.ve-stip{width:8px;height:8px;border-radius:var(--ve-r-pill);background:var(--ve-live);flex:0 0 auto}
+.ve-stip--actie{background:var(--ve-action)}
+
+/* bijschrift over de onderrand van beeld, met verloop */
+.ve-media__voet{
+  position:absolute;inset:auto 0 0 0;
+  padding:var(--ve-s-lg);
+  background:linear-gradient(to top,rgba(7,11,18,.88),rgba(7,11,18,.35) 55%,transparent);
+  color:#fff;
+  display:flex;flex-wrap:wrap;gap:var(--ve-s-md);align-items:flex-end;justify-content:space-between;
+}
+@media (min-width:768px){.ve-media__voet{padding:var(--ve-s-xl)}}
+.ve-media__voet .ve-small{color:rgba(255,255,255,.78)}
+
+/* Volbreed beeld: breekt uit de container naar de volle viewportbreedte.
+   Voor het ene heroische beeld dat een pagina draagt — vooral op projecten
+   waar maar een foto bestaat. body heeft overflow-x:hidden, dus 100vw
+   veroorzaakt geen horizontale schuifbalk. */
+.ve-media--vol{
+  width:100vw;
+  max-width:100vw;
+  margin-left:calc(50% - 50vw);
+  margin-right:calc(50% - 50vw);
+  border-radius:0;
+}
+@media (min-width:1700px){
+  /* ruim boven de containerbreedte oogt edge-to-edge te breed; dan weer ingekaderd */
+  .ve-media--vol{
+    width:auto;max-width:none;margin-inline:0;border-radius:var(--ve-r-media);
+  }
+}
+
+/* los bijschrift onder beeld (TYPE D, master B3 sectie 3) */
+.ve-bijschrift{
+  margin-top:var(--ve-s-md);
+  display:flex;flex-wrap:wrap;gap:var(--ve-s-sm) var(--ve-s-lg);
+  align-items:baseline;justify-content:space-between;
+}
+
+/* ---- kaarten ---- */
+.ve-kaart{
+  background:var(--ve-surface);
+  border:1px solid var(--ve-line);
+  border-radius:var(--ve-r-card);
+  padding:var(--ve-s-xl);
+  box-shadow:var(--ve-elev-1);
+}
+.ve-kaart--sunken{background:var(--ve-surface-sunken);box-shadow:none}
+.ve-kaart--canvas{background:var(--ve-bg);box-shadow:none}
+.ve-kaart--vlak{box-shadow:none}
+.ve-kaart--ruim{padding:var(--ve-s-2xl)}
+.ve-kaart--dicht{padding:var(--ve-s-lg)}
+/* 2,5rem rondom is op een telefoon een derde van de kaartbreedte */
+@media (max-width:559px){
+  .ve-kaart,.ve-kaart--ruim{padding:var(--ve-s-lg)}
+  .ve-kaart--beeld{padding:0}
+  .ve-kaart--beeld > .ve-kaart__tekst{padding:var(--ve-s-lg)}
+}
+.ve-kaart--kolom{display:flex;flex-direction:column;justify-content:space-between;height:100%}
+.ve-kaart--accent{border-color:var(--ve-action);border-width:2px}
+.ve-kaart--hover:hover{border-color:var(--ve-action)}
+.ve-kaart--dark{
+  background:var(--ve-bg-dark);color:var(--ve-text-on-dark);
+  border-color:var(--ve-line-on-dark);
+}
+.ve-kaart--dark .ve-h3,.ve-kaart--dark .ve-h4{color:#fff}
+.ve-kaart--dark .ve-body,.ve-kaart--dark .ve-small{color:var(--ve-text-on-dark-soft)}
+/* kop van een kaart: titel links, icoon rechts. min-width:0 zodat een lange
+   samenstelling de kaart niet openduwt. */
+.ve-kaart__kop{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:var(--ve-s-md);
+}
+.ve-kaart__kop > :first-child{min-width:0}
+.ve-kaart__kop svg{flex:0 0 auto;color:var(--ve-action)}
+.ve-kaart__voet{
+  margin-top:var(--ve-s-xl);padding-top:var(--ve-s-md);
+  border-top:1px solid var(--ve-line);
+  display:flex;align-items:center;justify-content:space-between;gap:var(--ve-s-md);
+  font-size:var(--ve-body-sm-size);font-weight:var(--ve-w-med);
+}
+.ve-kaart--dark .ve-kaart__voet{border-top-color:var(--ve-line-on-dark)}
+/* beeld in een kaart, vol over de onderrand */
+.ve-kaart--beeld{padding:0;overflow:hidden;display:flex;flex-direction:column}
+.ve-kaart--beeld > .ve-kaart__tekst{padding:var(--ve-s-xl)}
+.ve-kaart--beeld > .ve-kaart__vlak{margin-top:auto;aspect-ratio:16/9;overflow:hidden;background:var(--ve-canvas-mid)}
+.ve-kaart--beeld > .ve-kaart__vlak img{width:100%;height:100%;object-fit:cover}
+
+/* icoonvlak in een kaart */
+.ve-ic{
+  width:48px;height:48px;
+  display:grid;place-items:center;
+  border-radius:var(--ve-r-btn);
+  background:var(--ve-canvas-mid);color:var(--ve-action-ink);
+  margin-bottom:var(--ve-s-lg);
+}
+.ve-ic svg{width:24px;height:24px}
+.ve-ic--vol{background:var(--ve-action);color:#fff}
+.ve-ic--dark{background:rgba(0,82,255,.18);border:1px solid rgba(0,82,255,.38);color:var(--ve-action-on-dark)}
+
+/* ---- pijlers: verticale lijst met haarlijnen (TYPE C, master A1) ---- */
+.ve-pijlers{display:grid;gap:var(--ve-s-lg)}
+.ve-pijler{display:flex;gap:var(--ve-s-md);align-items:flex-start;padding-bottom:var(--ve-s-lg);border-bottom:1px solid var(--ve-line)}
+.ve-pijlers > .ve-pijler:last-child{padding-bottom:0;border-bottom:0}
+.ve-pijler__ic{flex:0 0 auto;color:var(--ve-action);margin-top:.15rem}
+.ve-pijler__ic svg{width:24px;height:24px}
+.ve-pijler h3{margin:0 0 .3rem}
+
+/* ---- rail: blok met accentlijn links (master B2 sectie 2) ---- */
+.ve-rails{display:grid;gap:var(--ve-s-lg)}
+.ve-rail{border-left:2px solid var(--ve-action);padding:.2rem 0 .2rem var(--ve-s-lg)}
+.ve-rail h3{margin:0 0 .3rem}
+
+/* ---- metriekstrip ----
+   Alleen te gebruiken met gemeten waarden. Een cijfer zonder bron hoort hier
+   niet in; zie docs/vibe-claims-register.md. */
+.ve-metriek{display:grid;gap:var(--ve-s-lg)}
+@media (min-width:480px){.ve-metriek{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1024px){
+  .ve-metriek--3{grid-template-columns:repeat(3,1fr)}
+  .ve-metriek--4{grid-template-columns:repeat(4,1fr)}
+  .ve-metriek--5{grid-template-columns:repeat(5,1fr)}
+}
+.ve-metriek--lijn-t{padding-top:var(--ve-s-xl);border-top:1px solid var(--ve-line)}
+.ve-metriek__w{
+  display:block;
+  font-size:var(--ve-h3-size);line-height:1.05;
+  letter-spacing:-.03em;font-weight:var(--ve-w-head);
+  color:var(--ve-text);
+}
+.ve-metriek__l{
+  display:block;margin-top:.45rem;
+  font-size:var(--ve-body-sm-size);line-height:var(--ve-body-sm-lh);
+  color:var(--ve-text-soft);
+}
+.ve-metriek__i--rail{border-left:2px solid var(--ve-action);padding-left:var(--ve-s-lg)}
+
+/* Monumentale variant: wanneer de cijfers het bewijs ván de pagina zijn en niet
+   een voetnoot erbij. Gebruikt de displaytrap in plaats van de kopgrootte. */
+.ve-metriek--groot{gap:var(--ve-s-xl)}
+.ve-metriek--groot .ve-metriek__w{
+  font-size:var(--ve-display-size);
+  line-height:var(--ve-display-lh);
+  letter-spacing:var(--ve-display-track);
+  font-weight:var(--ve-w-display);
+}
+.ve-metriek--groot .ve-metriek__l{
+  margin-top:var(--ve-s-sm);
+  font-size:var(--ve-body-size);line-height:var(--ve-body-lh);
+}
+@media (max-width:767px){
+  .ve-metriek--groot .ve-metriek__w{font-size:var(--ve-h2-size);line-height:var(--ve-h2-lh)}
+}
+
+/* Asymmetrisch galerijmoment: één groot beeld, twee kleinere ernaast.
+   Alleen voor projecten waar daadwerkelijk meerdere foto's bestaan. */
+.ve-galerij{display:grid;gap:var(--ve-s-lg)}
+@media (min-width:768px){
+  .ve-galerij{grid-template-columns:repeat(3,1fr);grid-auto-rows:minmax(0,1fr)}
+  .ve-galerij > :first-child{grid-column:span 2;grid-row:span 2}
+}
+.ve-metriek__w--accent{color:var(--ve-action-ink)}
+.ve-sec--dark .ve-metriek__w,.ve-kaart--dark .ve-metriek__w{color:#fff}
+.ve-sec--dark .ve-metriek__l,.ve-kaart--dark .ve-metriek__l{color:var(--ve-text-on-dark-soft)}
+
+/* feitenbalk: label boven waarde, over de volle breedte (projectmaster) */
+.ve-feiten{display:grid;gap:var(--ve-s-lg)}
+@media (min-width:640px){.ve-feiten{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1024px){.ve-feiten{grid-template-columns:repeat(var(--ve-feiten-n,5),1fr)}}
+.ve-feit__l{display:block;font-size:var(--ve-body-sm-size);color:var(--ve-text-muted)}
+.ve-feit__w{display:block;margin-top:.3rem;font-size:var(--ve-body-lg-size);line-height:1.35;font-weight:var(--ve-w-med);color:var(--ve-text)}
+
+/* ---- fasen: genummerde stappen met bovenlijn (TYPE B) ---- */
+.ve-fasen{display:grid;gap:var(--ve-s-xl)}
+@media (min-width:640px){.ve-fasen{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1024px){.ve-fasen{grid-template-columns:repeat(4,1fr)}}
+.ve-fase{border-top:2px solid var(--ve-line-strong);padding-top:var(--ve-s-lg)}
+.ve-fase--nu{border-top-color:var(--ve-action)}
+.ve-fase__n{
+  display:block;margin-bottom:.6rem;
+  font-size:var(--ve-body-sm-size);font-weight:var(--ve-w-head);
+  color:var(--ve-action-ink);
+}
+.ve-fase h3{margin:0 0 .4rem}
+
+/* ---- stroomdiagram (TYPE G) ----
+   Schematisch: knopen + richting. Geen meetwaarden, want die zouden
+   gefabriceerde telemetrie zijn. */
+.ve-stroom{
+  background:var(--ve-surface);
+  border:1px solid var(--ve-line);
+  border-radius:var(--ve-r-media);
+  padding:var(--ve-s-xl);
+  box-shadow:var(--ve-elev-1);
+}
+@media (min-width:768px){.ve-stroom{padding:var(--ve-s-2xl)}}
+.ve-stroom__rij{display:grid;gap:var(--ve-s-lg);align-items:stretch}
+/* Op tablet twee naast elkaar. Vier knopen op 900px laat per knoop ongeveer
+   100px tekstbreedte over; dan duwt de inhoud het diagram uit de pagina. */
+@media (min-width:768px){
+  .ve-stroom__rij{grid-template-columns:repeat(2,1fr);gap:var(--ve-s-lg)}
+  .ve-stroom__rij--3{grid-template-columns:repeat(3,1fr)}
+}
+@media (min-width:1024px){
+  .ve-stroom__rij{grid-template-columns:repeat(var(--ve-stroom-n,3),1fr);gap:var(--ve-s-xl)}
+}
+.ve-knoop{
+  position:relative;
+  background:var(--ve-surface-sunken);
+  border:1px solid var(--ve-line);
+  border-radius:var(--ve-r-card);
+  padding:var(--ve-s-lg);
+  text-align:center;
+}
+.ve-knoop--kern{background:var(--ve-canvas-mid);border:2px solid var(--ve-action);box-shadow:var(--ve-elev-1)}
+.ve-knoop__ic{color:var(--ve-action);margin:0 auto var(--ve-s-sm)}
+.ve-knoop__ic svg{width:30px;height:30px}
+.ve-knoop h3{margin:0 0 .35rem}
+/* Verbindingspijl tussen knopen. Alleen vanaf 1024px, want pas daar staan alle
+   knopen daadwerkelijk op één rij; in de 2-koloms tabletweergave zou de pijl
+   van de tweede knoop het niets in wijzen. */
+.ve-knoop__pijl{display:none}
+@media (min-width:1024px){
+  .ve-knoop__pijl{
+    display:grid;place-items:center;
+    position:absolute;right:calc(var(--ve-s-xl) * -.5);top:50%;
+    transform:translate(50%,-50%);
+    width:26px;height:26px;z-index:2;
+    background:var(--ve-surface);border:1px solid var(--ve-line);
+    border-radius:var(--ve-r-pill);color:var(--ve-action);
+  }
+  .ve-knoop__pijl svg{width:14px;height:14px}
+}
+.ve-stroom__voet{
+  margin-top:var(--ve-s-xl);padding-top:var(--ve-s-lg);
+  border-top:1px solid var(--ve-line);
+}
+
+/* ---- softwarecanvas (TYPE E) ----
+   Monumentaal donker vlak met de interface erin. 80-100% sectiebreedte. */
+.ve-canvas{
+  background:var(--ve-ink-800);
+  border:1px solid var(--ve-line-on-dark);
+  border-radius:var(--ve-r-media);
+  padding:var(--ve-s-md);
+  box-shadow:var(--ve-elev-3);
+}
+@media (min-width:768px){.ve-canvas{padding:var(--ve-s-xl)}}
+.ve-canvas--licht{background:var(--ve-surface-sunken);border-color:var(--ve-line)}
+.ve-canvas__binnen{
+  border-radius:var(--ve-r-card);
+  overflow:hidden;
+  background:#05080e;
+  border:1px solid var(--ve-line-on-dark);
+}
+.ve-canvas__voet{
+  margin-top:var(--ve-s-md);text-align:center;
+  font-size:var(--ve-body-sm-size);color:var(--ve-text-muted);
+}
+
+/* schematische console — geen cijfers, alleen vorm en verhouding */
+.ve-console{padding:var(--ve-s-lg);color:#fff}
+@media (min-width:768px){.ve-console{padding:var(--ve-s-xl)}}
+.ve-console__balk{
+  display:flex;flex-wrap:wrap;gap:var(--ve-s-md);align-items:center;justify-content:space-between;
+  padding-bottom:var(--ve-s-md);margin-bottom:var(--ve-s-lg);
+  border-bottom:1px solid var(--ve-line-on-dark);
+}
+.ve-console__naam{display:inline-flex;align-items:center;gap:.6rem;font-weight:var(--ve-w-sub);letter-spacing:.01em}
+.ve-console__rij{display:grid;gap:var(--ve-s-lg)}
+@media (min-width:1024px){.ve-console__rij{grid-template-columns:2fr 1fr}}
+.ve-console__vlak{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:var(--ve-r-chip);
+  padding:var(--ve-s-lg);
+}
+.ve-console__legenda{
+  display:flex;flex-wrap:wrap;gap:var(--ve-s-md) var(--ve-s-lg);
+  margin-top:var(--ve-s-md);
+  font-size:var(--ve-body-sm-size);color:rgba(255,255,255,.62);
+}
+.ve-console__legenda span{display:inline-flex;align-items:center;gap:.45rem}
+.ve-sleutel{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
+.ve-sleutel--net{background:rgba(255,255,255,.28)}
+.ve-sleutel--buffer{background:var(--ve-action)}
+.ve-sleutel--zon{background:var(--ve-live-bright)}
+/* staafdiagram zonder waarden: toont de vorm van piekopvang, niet een meting */
+.ve-schema{display:flex;align-items:flex-end;gap:.4rem;height:140px;padding-top:var(--ve-s-md)}
+.ve-schema span{flex:1;border-radius:3px 3px 0 0;background:rgba(255,255,255,.22)}
+.ve-schema span[data-piek]{background:var(--ve-action)}
+.ve-schema span[data-zon]{background:var(--ve-live-bright)}
+.ve-schema__as{
+  display:flex;justify-content:space-between;
+  margin-top:.6rem;padding-top:.6rem;
+  border-top:1px solid var(--ve-line-on-dark);
+  font-size:var(--ve-body-sm-size);color:rgba(255,255,255,.48);
+}
+
+/* verhoudingsbalk — laat de werking van peak shaving zien, relatief */
+.ve-balken{display:grid;gap:var(--ve-s-lg)}
+.ve-balk__kop{display:flex;justify-content:space-between;gap:var(--ve-s-md);margin-bottom:.5rem;font-size:var(--ve-body-sm-size);font-weight:var(--ve-w-med)}
+.ve-balk__spoor{height:12px;border-radius:var(--ve-r-pill);background:var(--ve-canvas-mid);overflow:hidden}
+.ve-balk__vul{height:100%;border-radius:var(--ve-r-pill);background:var(--ve-action)}
+.ve-balk__vul--vraag{background:var(--ve-slate-400)}
+.ve-balk__vul--rest{background:var(--ve-live)}
+
+/* ---- FAQ ---- */
+.ve-faq{display:grid;gap:var(--ve-s-md);max-width:56rem}
+.ve-faq details{
+  background:var(--ve-surface);
+  border:1px solid var(--ve-line);
+  border-radius:var(--ve-r-card);
+  padding:var(--ve-s-lg);
+  box-shadow:var(--ve-elev-1);
+}
+.ve-faq summary{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--ve-s-md);
+  cursor:pointer;list-style:none;
+  font-size:var(--ve-h4-size);line-height:var(--ve-h4-lh);
+  letter-spacing:var(--ve-h4-track);font-weight:var(--ve-w-sub);
+  color:var(--ve-text);
+}
+.ve-faq summary::-webkit-details-marker{display:none}
+.ve-faq summary svg{width:20px;height:20px;flex:0 0 auto;color:var(--ve-text-muted);transition:transform var(--ve-dur) var(--ve-ease)}
+.ve-faq details[open] summary svg{transform:rotate(180deg)}
+.ve-faq details > p{margin:var(--ve-s-md) 0 0;color:var(--ve-text-soft);max-width:56rem}
+
+/* ---- afsluitblok (TYPE I) ---- */
+.ve-slot{
+  background:var(--ve-surface);
+  border:1px solid var(--ve-line);
+  border-radius:var(--ve-r-media);
+  padding:var(--ve-s-xl);
+  box-shadow:var(--ve-elev-1);
+}
+@media (min-width:768px){.ve-slot{padding:var(--ve-s-3xl) var(--ve-s-2xl)}}
+.ve-slot--dark{
+  position:relative;overflow:hidden;
+  background:var(--ve-bg-dark-soft);color:var(--ve-text-on-dark);
+  border-color:var(--ve-line-on-dark);box-shadow:var(--ve-elev-3);
+}
+.ve-slot--dark .ve-h2,.ve-slot--dark .ve-display{color:#fff}
+.ve-slot--dark .ve-lead{color:var(--ve-text-on-dark-soft)}
+/* zachte gloed rechtsonder, zoals in de sectormaster */
+.ve-slot--dark::after{
+  content:'';position:absolute;right:-6rem;bottom:-8rem;
+  width:24rem;height:24rem;border-radius:var(--ve-r-pill);
+  background:rgba(0,82,255,.22);filter:blur(70px);pointer-events:none;
+}
+.ve-slot__inhoud{position:relative;z-index:1;max-width:48rem}
+.ve-slot--center .ve-slot__inhoud{max-width:48rem;margin-inline:auto;text-align:center}
+.ve-slot--center .ve-row{justify-content:center}
+
+/* ---- projectkaart ---- */
+.ve-proj{
+  display:flex;flex-direction:column;height:100%;
+  background:var(--ve-surface);
+  border:1px solid var(--ve-line);
+  border-radius:var(--ve-r-media);
+  overflow:hidden;
+  box-shadow:var(--ve-elev-1);
+  transition:border-color var(--ve-dur) var(--ve-ease),box-shadow var(--ve-dur) var(--ve-ease),transform var(--ve-dur) var(--ve-ease);
+}
+.ve-proj:hover{border-color:var(--ve-action);box-shadow:var(--ve-elev-2);transform:translateY(-2px)}
+.ve-proj__vlak{aspect-ratio:16/10;overflow:hidden;background:var(--ve-canvas-mid)}
+.ve-proj__vlak img{width:100%;height:100%;object-fit:cover;transition:transform var(--ve-dur-slow) var(--ve-ease)}
+.ve-proj:hover .ve-proj__vlak img{transform:scale(1.04)}
+.ve-proj__tekst{padding:var(--ve-s-lg);display:flex;flex-direction:column;gap:.5rem;flex:1}
+@media (min-width:768px){.ve-proj__tekst{padding:var(--ve-s-xl)}}
+.ve-proj__sector{font-size:var(--ve-body-sm-size);font-weight:var(--ve-w-med);color:var(--ve-action-ink)}
+.ve-proj__t{margin:0;font-size:var(--ve-h4-size);line-height:var(--ve-h4-lh);letter-spacing:var(--ve-h4-track);font-weight:var(--ve-w-sub);color:var(--ve-text)}
+.ve-proj:hover .ve-proj__t{color:var(--ve-action-ink)}
+.ve-proj__d{margin:0;font-size:var(--ve-body-size);color:var(--ve-text-soft)}
+.ve-proj__voet{margin-top:auto;padding-top:var(--ve-s-md);font-size:var(--ve-body-sm-size);color:var(--ve-text-muted)}
+
+/* ---- voor/na vergelijking (projectmaster) ---- */
+.ve-vn{display:grid;gap:var(--ve-s-xl)}
+@media (min-width:768px){.ve-vn{grid-template-columns:1fr 1fr}}
+.ve-vn__blok{
+  background:var(--ve-bg);
+  border:1px solid var(--ve-line);
+  border-radius:var(--ve-r-media);
+  padding:var(--ve-s-xl);
+}
+@media (min-width:768px){.ve-vn__blok{padding:var(--ve-s-2xl)}}
+.ve-vn__blok--na{background:var(--ve-surface-sunken);border-color:rgba(0,82,255,.30)}
+.ve-vn__kop{display:flex;align-items:center;gap:.65rem;margin-bottom:var(--ve-s-lg)}
+.ve-vn ul{list-style:none;margin:0;padding:0;display:grid;gap:var(--ve-s-md)}
+.ve-vn li{display:flex;gap:.75rem;align-items:flex-start;color:var(--ve-text-soft)}
+.ve-vn li svg{width:20px;height:20px;flex:0 0 auto;margin-top:.15rem}
+.ve-vn__blok--voor li svg{color:var(--ve-error)}
+.ve-vn__blok--na li svg{color:var(--ve-action)}
+.ve-vn__blok--na li{color:var(--ve-text)}
+
+/* ---- citaat (TYPE H op obsidiaan) ---- */
+.ve-citaat{
+  margin:0;
+  font-size:var(--ve-h2-size);line-height:var(--ve-h2-lh);
+  letter-spacing:var(--ve-h2-track);font-weight:var(--ve-w-sub);
+  color:#fff;text-wrap:balance;
+}
+.ve-citaat__bron{display:block;margin-top:var(--ve-s-lg);font-size:var(--ve-body-size);font-weight:var(--ve-w-body);color:var(--ve-text-on-dark-muted)}
+
+/* ---- specificatieblok ---- */
+.ve-spec{
+  background:var(--ve-surface);
+  border:1px solid var(--ve-line);
+  border-radius:var(--ve-r-card);
+  padding:var(--ve-s-xl);
+  box-shadow:var(--ve-elev-1);
+}
+.ve-spec__kop{display:flex;align-items:center;gap:.7rem;margin-bottom:var(--ve-s-md)}
+.ve-spec__kop svg{width:22px;height:22px;color:var(--ve-action);flex:0 0 auto}
+.ve-spec dl{margin:var(--ve-s-md) 0 0;padding-top:var(--ve-s-md);border-top:1px solid var(--ve-line);display:grid;gap:.5rem}
+.ve-spec dt{font-size:var(--ve-body-sm-size);font-weight:var(--ve-w-sub);color:var(--ve-text)}
+.ve-spec dd{margin:0 0 .35rem;font-size:var(--ve-body-sm-size);color:var(--ve-text-soft)}
+
+/* ---- lopende tekst voor juridische pagina's ---- */
+.ve-prose{max-width:48rem;color:var(--ve-text-soft)}
+.ve-prose > * + *{margin-top:var(--ve-s-md)}
+.ve-prose h2{
+  margin-top:var(--ve-s-xl);
+  font-size:var(--ve-h3-size);line-height:var(--ve-h3-lh);
+  letter-spacing:var(--ve-h3-track);font-weight:var(--ve-w-sub);color:var(--ve-text);
+}
+.ve-prose h3{
+  margin-top:var(--ve-s-lg);
+  font-size:var(--ve-h4-size);line-height:var(--ve-h4-lh);
+  font-weight:var(--ve-w-sub);color:var(--ve-text);
+}
+.ve-prose a{color:var(--ve-action-ink);text-decoration:underline;text-underline-offset:2px}
+.ve-prose ul,.ve-prose ol{margin:0;padding-left:1.35rem;display:grid;gap:.45rem}
+.ve-prose table{width:100%;border-collapse:collapse;font-size:var(--ve-body-size)}
+.ve-prose th,.ve-prose td{text-align:left;padding:.65rem .75rem;border-bottom:1px solid var(--ve-line);vertical-align:top}
+.ve-prose th{font-weight:var(--ve-w-sub);color:var(--ve-text)}
+/* brede tabellen mogen nooit de pagina laten schuiven */
+.ve-scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* ---- formulier ---- */
+.ve-veld{display:grid;gap:.4rem}
+.ve-veld > label{font-size:var(--ve-body-sm-size);font-weight:var(--ve-w-med);color:var(--ve-text)}
+.ve-veld input,.ve-veld select,.ve-veld textarea{
+  width:100%;
+  font:inherit;color:var(--ve-text);
+  background:var(--ve-surface);
+  border:1px solid var(--ve-line-strong);
+  border-radius:var(--ve-r-btn);
+  padding:.75rem .9rem;
+  transition:border-color var(--ve-dur) var(--ve-ease);
+}
+.ve-veld input:focus,.ve-veld select:focus,.ve-veld textarea:focus{border-color:var(--ve-action);outline:none}
+.ve-veld textarea{min-height:8rem;resize:vertical}
+.ve-veld__hint{font-size:var(--ve-body-sm-size);color:var(--ve-text-muted)}
+
+/* ---- cookiemelding ----
+   _consent.js regelt Google Consent Mode v2 en blijft functioneel ongewijzigd;
+   alleen de vormtaal wordt hier naar het nieuwe merk getrokken. De eyebrow
+   (.vck-eb) verdwijnt: de Constitution staat geen labels boven koppen toe. */
+.vck-ov{font-family:var(--ve-font) !important;padding:var(--ve-s-lg) !important}
+.vck{
+  border:1px solid var(--ve-line) !important;
+  border-top:3px solid var(--ve-action) !important;
+  border-radius:var(--ve-r-card) !important;
+  box-shadow:var(--ve-elev-3) !important;
+  max-width:40rem !important;
+}
+.vck-in{padding:var(--ve-s-xl) !important}
+.vck-eb{display:none !important}
+.vck-t{
+  font-family:var(--ve-font) !important;
+  font-size:var(--ve-h4-size) !important;line-height:var(--ve-h4-lh) !important;
+  letter-spacing:var(--ve-h4-track) !important;font-weight:var(--ve-w-sub) !important;
+  color:var(--ve-text) !important;margin:0 0 .5rem !important;
+}
+.vck-p{
+  font-size:var(--ve-body-size) !important;line-height:var(--ve-body-lh) !important;
+  color:var(--ve-text-soft) !important;
+}
+.vck-p a{color:var(--ve-action-ink) !important}
+.vck-b{
+  font-family:var(--ve-font) !important;
+  font-size:var(--ve-body-size) !important;font-weight:var(--ve-w-sub) !important;
+  border-radius:var(--ve-r-btn) !important;padding:.85rem 1.5rem !important;
+}
+.vck-b1{background:var(--ve-action) !important;color:#fff !important}
+.vck-b1:hover{background:var(--ve-action-hover) !important;color:#fff !important}
+.vck-b2{border-color:var(--ve-line-strong) !important;color:var(--ve-text) !important}
+.vck-b2:hover{border-color:var(--ve-action) !important;color:var(--ve-action-ink) !important}
+.vck-b3{color:var(--ve-text-muted) !important}
+.vck-b3:hover{color:var(--ve-text) !important}
+.vck-b:focus-visible,.vck-sw:focus-visible{outline-color:var(--ve-action) !important}
+.vck-rn{font-family:var(--ve-font) !important;color:var(--ve-text) !important}
+.vck-rd{color:var(--ve-text-muted) !important}
+.vck-r,.vck-rows{border-color:var(--ve-line) !important}
+.vck-sw[aria-checked='true']{background:var(--ve-action) !important}
+.vck-sw[disabled]{background:rgba(0,82,255,.38) !important}
+
+/* ---- hulpklassen ---- */
+.ve-hide{display:none}
+@media (max-width:767px){.ve-hide-mob{display:none}}
+@media (min-width:768px){.ve-only-mob{display:none}}
+.ve-sr{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+}
+.ve-puls{animation:ve-puls 2.4s var(--ve-ease) infinite}
+@keyframes ve-puls{0%,100%{opacity:1}50%{opacity:.45}}

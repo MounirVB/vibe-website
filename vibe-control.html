@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<script src="_consent.js"></script>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KM2V7VQ3');</script>
+<script src="_clarity.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VIBE.CONTROL — de stuurlaag over uw energie-assets | Vibe Energy</title>
+<meta name="description" content="VIBE.CONTROL stuurt zonne-energie, opslag, laden en gebouwinstallaties aan als één systeem, binnen vooraf vastgelegde grenzen. Geen dashboard, maar een besturingslaag die ingrijpt.">
+<link rel="canonical" href="https://vibeenergy.nl/vibe-control">
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/png" href="assets/logo.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Vibe Energy">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="VIBE.CONTROL — de stuurlaag over uw energie-assets">
+<meta property="og:description" content="Zonne-energie, opslag, laden en gebouwinstallaties als één gestuurd systeem, binnen vooraf vastgelegde grenzen.">
+<meta property="og:url" content="https://vibeenergy.nl/vibe-control">
+<meta property="og:image" content="https://vibeenergy.nl/img/control-meting.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://vibeenergy.nl/img/control-meting.jpg">
+<meta name="theme-color" content="#0052FF">
+<link rel="preload" href="assets/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="vibe/tokens.css">
+<link rel="stylesheet" href="vibe/vibe.css">
+<script src="vibe/chrome.js" defer></script>
+<style>
+  /* Unieke compositie voor deze pagina: de orkestratiefiguur.
+     Eén grote donkere kern (het product) met OPEN labels eromheen — geen
+     witte kaartjes, want dat leest als een SaaS-architectuurplaat. De
+     verbinding gebeurt met een haarlijn, niet met een bak. */
+  .vc-orkest{display:grid;gap:var(--ve-s-2xl);align-items:center}
+  @media (min-width:1024px){.vc-orkest{grid-template-columns:1fr 1.3fr 1fr;gap:var(--ve-s-2xl)}}
+  .vc-orkest__zij{display:grid;gap:var(--ve-s-2xl)}
+  .vc-asset{position:relative;display:flex;gap:var(--ve-s-md);align-items:flex-start}
+  .vc-asset__ic{
+    flex:0 0 auto;width:44px;height:44px;display:grid;place-items:center;
+    border-radius:var(--ve-r-btn);
+    border:1px solid var(--ve-line-strong);color:var(--ve-action-ink);
+  }
+  .vc-asset__ic svg{width:22px;height:22px}
+  .vc-asset h3{margin:0}
+  /* haarlijn van het label naar de kern toe, alleen waar ze naast elkaar staan */
+  @media (min-width:1024px){
+    .vc-asset::after{
+      content:'';position:absolute;top:22px;height:1px;
+      background:linear-gradient(90deg,var(--ve-line-strong),transparent);
+      left:calc(100% + .75rem);width:var(--ve-s-2xl);
+    }
+    .vc-orkest__zij:last-of-type .vc-asset::after{
+      left:auto;right:calc(100% + .75rem);
+      background:linear-gradient(270deg,var(--ve-line-strong),transparent);
+    }
+  }
+  .vc-kern{
+    text-align:center;color:var(--ve-text-on-dark);
+    background:var(--ve-bg-dark);border:1px solid var(--ve-line-on-dark);
+    border-radius:var(--ve-r-media);padding:var(--ve-s-2xl) var(--ve-s-xl);
+    box-shadow:var(--ve-elev-3);
+  }
+  .vc-kern__ic{
+    width:72px;height:72px;margin:0 auto var(--ve-s-lg);
+    display:grid;place-items:center;border-radius:var(--ve-r-card);
+    background:var(--ve-action);color:#fff;
+  }
+  .vc-kern__ic svg{width:36px;height:36px}
+  .vc-kern__regel{
+    display:flex;justify-content:space-between;gap:var(--ve-s-md);
+    border-top:1px solid var(--ve-line-on-dark);
+    padding:.85rem 0 0;margin-top:.85rem;
+    font-size:var(--ve-body-sm-size);text-align:left;
+  }
+  .vc-asset:hover{border-color:var(--ve-action)}
+  .vc-asset__ic{
+    flex:0 0 auto;width:44px;height:44px;display:grid;place-items:center;
+    border-radius:var(--ve-r-btn);background:var(--ve-canvas-mid);color:var(--ve-action-ink);
+  }
+  .vc-asset__ic svg{width:22px;height:22px}
+  .vc-kern{
+    text-align:center;color:var(--ve-text-on-dark);
+    background:var(--ve-bg-dark);border:2px solid var(--ve-action);
+    border-radius:var(--ve-r-media);padding:var(--ve-s-xl);
+    box-shadow:var(--ve-elev-3);
+  }
+  .vc-kern__ic{
+    width:60px;height:60px;margin:0 auto var(--ve-s-md);
+    display:grid;place-items:center;border-radius:var(--ve-r-card);
+    background:var(--ve-action);color:#fff;
+  }
+  .vc-kern__ic svg{width:30px;height:30px}
+  .vc-kern__regel{
+    display:flex;justify-content:space-between;gap:var(--ve-s-md);
+    background:rgba(255,255,255,.06);border:1px solid var(--ve-line-on-dark);
+    border-radius:var(--ve-r-btn);padding:.6rem .85rem;margin-top:.6rem;
+    font-size:var(--ve-body-sm-size);text-align:left;
+  }
+  /* Art direction voor dit ene fotomoment. De batterijkast heeft linksonder een
+     lichte klimaatunit; daar draagt het standaardverloop van .ve-media__voet het
+     bijschrift niet. Alleen hier een dieper verloop — de component zelf blijft
+     ongemoeid, zoals op de negen andere pagina's die hem gebruiken. */
+  .vc-ijzer .ve-media__voet{
+    background:linear-gradient(to top,
+      rgba(7,11,18,.92), rgba(7,11,18,.66) 45%, rgba(7,11,18,.22) 78%, transparent);
+    padding-top:var(--ve-s-2xl);
+  }
+</style>
+</head>
+
+<body data-pagina="vibe-control">
+
+<noscript data-chrome-fallback>
+  <nav aria-label="Hoofdnavigatie">
+    <a href="/">Home</a> · <a href="systeem-energieopslag">Energieopslag</a> ·
+    <a href="systeem-zonnepanelen">Zonne-energie</a> · <a href="systeem-laadpalen">Laadinfrastructuur</a> ·
+    <a href="vibe-control">VIBE.CONTROL</a> · <a href="microgrids">Microgrids</a> ·
+    <a href="energy-hubs">Energy Hubs</a> · <a href="projecten">Projecten</a> ·
+    <a href="over-ons">Over Vibe</a> · <a href="contact">Plan een gesprek</a>
+  </nav>
+</noscript>
+
+<main id="hoofdinhoud">
+
+  <!-- 1 · TYPE A — GECENTREERDE OPENING -->
+  <section class="ve-sec ve-sec--lg ve-sec--flush-b">
+    <div class="ve-wrap">
+      <div style="max-width:56rem;margin-inline:auto;text-align:center">
+        <h1 class="ve-display">Eén systeem. Volledige controle.</h1>
+        <p class="ve-lead" style="margin-top:var(--ve-s-lg)">
+          VIBE.CONTROL brengt zonne-energie, batterijopslag, laadinfrastructuur en
+          gebouwinstallaties onder één regelaar — en bepaalt per moment waar het beschikbare
+          vermogen heen gaat.
+        </p>
+        <div class="ve-row" style="justify-content:center;margin-top:var(--ve-s-xl)">
+          <a class="ve-btn ve-btn--primair ve-btn--lg" href="https://calendly.com/vibeenergy-sales/30min?hide_gdpr_banner=1" target="_blank" rel="noopener">
+            Plan een gesprek
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-agenda"/></svg>
+          </a>
+          <a class="ve-btn ve-btn--ghost ve-btn--lg" href="#orkestratie">Hoe het werkt</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · TYPE E — MONUMENTAAL SOFTWARECANVAS -->
+  <section class="ve-sec ve-sec--lg ve-sec--flush-t">
+    <div class="ve-wrap ve-wrap--wide">
+      <div class="ve-canvas ve-canvas--licht">
+        <div class="ve-canvas__binnen">
+          <div class="ve-console">
+            <div class="ve-console__balk">
+              <span class="ve-console__naam">
+                <span class="ve-stip ve-stip--actie ve-puls"></span> VIBE.CONTROL — regelstrategie
+              </span>
+              <span class="ve-small" style="color:rgba(255,255,255,.55)">Schematische weergave</span>
+            </div>
+
+            <div>
+              <div class="ve-console__vlak">
+                <p class="ve-small" style="color:rgba(255,255,255,.72);margin-bottom:.4rem">
+                  Waar het vermogen vandaan komt, over een etmaal
+                </p>
+                <div class="ve-schema" style="height:260px" role="img"
+                     aria-label="Schematische grafiek: overdag dekt eigen zonne-opwek een deel van het verbruik, in de avond vangt de batterij de piek op; de afname van het net blijft vlak.">
+                  <span style="height:24%"></span><span style="height:22%"></span>
+                  <span style="height:32%"></span><span data-zon style="height:56%"></span>
+                  <span data-zon style="height:80%"></span><span data-zon style="height:68%"></span>
+                  <span style="height:42%"></span><span data-piek style="height:84%"></span>
+                  <span data-piek style="height:100%"></span><span data-piek style="height:90%"></span>
+                  <span style="height:36%"></span><span style="height:26%"></span>
+                </div>
+                <div class="ve-schema__as"><span>nacht</span><span>ochtend</span><span>middag</span><span>avond</span></div>
+                <div class="ve-console__legenda">
+                  <span><i class="ve-sleutel ve-sleutel--net"></i> Van het net</span>
+                  <span><i class="ve-sleutel ve-sleutel--zon"></i> Eigen opwek</span>
+                  <span><i class="ve-sleutel ve-sleutel--buffer"></i> Uit de batterij</span>
+                </div>
+              </div>
+
+              
+          </div>
+        </div>
+        <div class="ve-console__legenda" style="padding:0 var(--ve-s-lg) var(--ve-s-lg);gap:var(--ve-s-lg) var(--ve-s-xl)">
+          <span>De afname blijft onder de gecontracteerde waarde</span>
+          <span>Het bedrijfsproces heeft voorrang boven optimalisatie</span>
+          <span>De batterij blijft binnen zijn veilige bedrijfsvenster</span>
+          <span>Een failsafe grijpt in als de meting wegvalt</span>
+        </div>
+        <p class="ve-canvas__voet">
+          Schematische weergave van de regelstrategie. Geen meetdata van een bestaande installatie
+          en geen weergave van de productinterface.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · TYPE C — VAN INZICHT NAAR STURING -->
+  <section class="ve-sec ve-sec--lg ve-sec--paper ve-sec--line-y">
+    <div class="ve-wrap">
+      <div class="ve-split">
+        <div>
+          <h2 class="ve-h2">Een dashboard vertelt u wat er gebeurd is.</h2>
+          <p class="ve-lead" style="margin-top:var(--ve-s-md)">
+            Monitoring laat achteraf zien wanneer de aansluiting overbelast raakte of waar de piek
+            zat. Dat is nuttig, maar het verandert niets. VIBE.CONTROL grijpt in op het moment
+            zelf: het stuurt de assets aan in plaats van ze alleen te meten.
+          </p>
+          <div class="ve-rails" style="margin-top:var(--ve-s-xl)">
+            <div class="ve-rail">
+              <h3 class="ve-h4">Het leest uw werkelijke profiel</h3>
+              <p class="ve-body" style="margin-top:.3rem">
+                Kwartierwaarden van opwek en afname, het verbruikspatroon van het pand, de
+                weersverwachting en de tariefmomenten van de dag.
+              </p>
+            </div>
+            <div class="ve-rail">
+              <h3 class="ve-h4">Het beslist binnen vaste grenzen</h3>
+              <p class="ve-body" style="margin-top:.3rem">
+                De operationele grenzen worden vooraf vastgelegd, met een failsafe op de
+                contractwaarde van de aansluiting. Binnen die grenzen optimaliseert het systeem;
+                erbuiten komt het niet.
+              </p>
+            </div>
+            <div class="ve-rail">
+              <h3 class="ve-h4">Het werkt op wat er al staat</h3>
+              <p class="ve-body" style="margin-top:.3rem">
+                Bestaande omvormers en laadpunten worden waar mogelijk via open protocollen onder
+                dezelfde regelaar gebracht, zonder ze te vervangen.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="ve-media ve-media--4x3 ve-media--lijn">
+            <img src="img/control-meting-1200.webp"
+                 srcset="img/control-meting-640.webp 640w, img/control-meting-900.webp 900w,
+                         img/control-meting-1200.webp 1200w"
+                 sizes="(min-width:1024px) 560px, 100vw" width="1200" height="901"
+                 alt="Monteur van Vibe Energy leest op locatie de display van de PV-meting af op een verdeelkast"
+                 loading="lazy" decoding="async">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · TYPE G — ORKESTRATIE -->
+  <section class="ve-sec ve-sec--lg" id="orkestratie">
+    <div class="ve-wrap">
+      <div class="ve-head ve-head--center">
+        <h2 class="ve-h2">Eén laag over al uw energie-assets.</h2>
+        <p class="ve-lead">
+          Geen apart portaal per fabrikant. De assets achter de meter worden samen aangestuurd,
+          vanuit één regelaar met één set grenzen.
+        </p>
+      </div>
+
+      <div class="vc-orkest">
+        <div class="vc-orkest__zij">
+          <div class="vc-asset">
+            <span class="vc-asset__ic"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-zon"/></svg></span>
+            <div>
+              <h3 class="ve-h4">Zon op dak</h3>
+              <p class="ve-small" style="margin-top:.25rem">Opwek sturen in plaats van onbenut terugleveren.</p>
+            </div>
+          </div>
+          <div class="vc-asset">
+            <span class="vc-asset__ic"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-laadpaal"/></svg></span>
+            <div>
+              <h3 class="ve-h4">Laadplein</h3>
+              <p class="ve-small" style="margin-top:.25rem">Vermogen verdeeld op vertrektijd en laadtoestand.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="vc-kern">
+          <span class="vc-kern__ic"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-hub"/></svg></span>
+          <h3 class="ve-h2" style="color:#fff">VIBE.CONTROL</h3>
+          <p class="ve-small" style="color:var(--ve-action-on-dark);margin-top:.3rem">De regelaar op locatie</p>
+          <div class="vc-kern__regel">
+            <span style="color:rgba(255,255,255,.6)">Bewaakt</span>
+            <span style="color:#fff;font-weight:var(--ve-w-sub)">De contractwaarde</span>
+          </div>
+          <div class="vc-kern__regel">
+            <span style="color:rgba(255,255,255,.6)">Beschermt</span>
+            <span style="color:#fff;font-weight:var(--ve-w-sub)">Het bedrijfsproces</span>
+          </div>
+          <div class="vc-kern__regel">
+            <span style="color:rgba(255,255,255,.6)">Benut</span>
+            <span style="color:#fff;font-weight:var(--ve-w-sub)">Eigen opwek eerst</span>
+          </div>
+        </div>
+
+        <div class="vc-orkest__zij">
+          <div class="vc-asset">
+            <span class="vc-asset__ic"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-accu"/></svg></span>
+            <div>
+              <h3 class="ve-h4">Batterijopslag</h3>
+              <p class="ve-small" style="margin-top:.25rem">Laden en ontladen op het juiste moment.</p>
+            </div>
+          </div>
+          <div class="vc-asset">
+            <span class="vc-asset__ic"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-koeling"/></svg></span>
+            <div>
+              <h3 class="ve-h4">Gebouwinstallaties</h3>
+              <p class="ve-small" style="margin-top:.25rem">Klimaat en proceslast meegenomen in de afweging.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="ve-small" style="margin-top:var(--ve-s-2xl);padding-top:var(--ve-s-lg);border-top:1px solid var(--ve-line);display:flex;flex-wrap:wrap;gap:var(--ve-s-md);align-items:center;justify-content:space-between">
+        <span style="color:var(--ve-text)">En onder alles: de netaansluiting, als vaste bovengrens.</span>
+        <a class="ve-link" href="microgrids">Over microgrids
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></a>
+      </p>
+  </section>
+
+  <!-- 5 · TYPE D — DE FYSIEKE WERKELIJKHEID -->
+  <section class="ve-sec ve-sec--lg ve-sec--sunken ve-sec--line-y">
+    <div class="ve-wrap">
+      <div class="ve-head ve-head--center ve-head--wide">
+        <h2 class="ve-h2">Software is pas iets waard als er ijzer aan hangt.</h2>
+        <p class="ve-lead">
+          Vibe is geen softwarebedrijf dat op afstand adviseert. Wij ontwerpen, bouwen en beheren
+          de installaties die deze regelaar aanstuurt — dezelfde partij, dezelfde
+          verantwoordelijkheid.
+        </p>
+      </div>
+      <div class="ve-media ve-media--21x9 ve-media--vol ve-media--diep vc-ijzer">
+        <img src="img/batterij-binnenwerk-1800.webp"
+             srcset="img/batterij-binnenwerk-880.webp 880w, img/batterij-binnenwerk-1400.webp 1400w,
+                     img/batterij-binnenwerk-1800.webp 1800w"
+             sizes="100vw" width="1800" height="1351"
+             style="object-position:center 30%"
+             alt="Geopende batterijkast van Vibe Energy met batterijmodules, oranje DC-bekabeling en de regel- en omvormerkast ernaast"
+             loading="lazy" decoding="async">
+        <div class="ve-media__voet">
+          <p class="ve-small" style="max-width:48ch">
+            De regelaar staat op locatie, naast de installatie die hij aanstuurt.
+          </p>
+          <a class="ve-link" style="color:#fff" href="systeem-energieopslag">
+            Over energieopslag <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · TYPE F — IN BEDRIJF -->
+  <section class="ve-sec ve-sec--lg">
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">In bedrijf op deze locaties.</h2>
+      </div>
+      <div class="ve-grid12">
+        <div class="ve-sp-7">
+          <a class="ve-proj" style="height:100%" href="project-ratio-16">
+          <div class="ve-proj__vlak">
+            <img src="assets/projects/ratio-16-1200.webp"
+                 srcset="assets/projects/ratio-16-640.webp 640w, assets/projects/ratio-16-1200.webp 1200w"
+                 sizes="(min-width:1024px) 700px, 100vw" width="1200" height="675"
+                 alt="Bedrijfspand Ratio 16 in Duiven" loading="lazy" decoding="async">
+          </div>
+          <div class="ve-proj__tekst">
+            <span class="ve-proj__sector">Duiven · 2024</span>
+            <h3 class="ve-proj__t">Ratio 16</h3>
+            <p class="ve-proj__d">Zon, opslag en laden binnen één aansluiting van 51 kW, zonder die te overschrijden.</p>
+            <span class="ve-proj__voet">Bekijk het project →</span>
+          </div>
+        </a>
+        </div>
+        <div class="ve-sp-5">
+          <div class="ve-stack ve-stack--lg" style="height:100%;display:flex;flex-direction:column">
+            <a class="ve-proj" href="project-dormio-medemblik">
+          <div class="ve-proj__vlak" style="aspect-ratio:21/9">
+            <img src="assets/projects/dormio-medemblik-1200.webp"
+                 srcset="assets/projects/dormio-medemblik-640.webp 640w, assets/projects/dormio-medemblik-1200.webp 1200w"
+                 sizes="(min-width:1024px) 460px, 100vw" width="1200" height="675"
+                 alt="Recreatiepark Dormio in Medemblik" loading="lazy" decoding="async">
+          </div>
+          <div class="ve-proj__tekst">
+            <span class="ve-proj__sector">Medemblik · 2024</span>
+            <h3 class="ve-proj__t">Dormio Medemblik</h3>
+            <p class="ve-proj__d">Software die verbruik, laden en opslag over het hele park automatisch balanceert.</p>
+            <span class="ve-proj__voet">Bekijk het project →</span>
+          </div>
+        </a>
+<a class="ve-proj" href="project-hedin-alkmaar">
+          <div class="ve-proj__vlak" style="aspect-ratio:21/9">
+            <img src="assets/projects/hedin-alkmaar-1200.webp"
+                 srcset="assets/projects/hedin-alkmaar-640.webp 640w, assets/projects/hedin-alkmaar-1200.webp 1200w"
+                 sizes="(min-width:1024px) 460px, 100vw" width="1200" height="675"
+                 alt="Hedin Automotive in Alkmaar" loading="lazy" decoding="async">
+          </div>
+          <div class="ve-proj__tekst">
+            <span class="ve-proj__sector">Alkmaar · 2025</span>
+            <h3 class="ve-proj__t">Hedin Alkmaar</h3>
+            <p class="ve-proj__d">Opslag die laadt in daluren en levert wanneer de vraag stijgt.</p>
+            <span class="ve-proj__voet">Bekijk het project →</span>
+          </div>
+        </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · FAQ -->
+  <section class="ve-sec ve-sec--lg ve-sec--paper ve-sec--line-y">
+    <div class="ve-wrap">
+      <div class="ve-head"><h2 class="ve-h2">Goed om te weten.</h2></div>
+      <div class="ve-faq">
+        <details>
+          <summary>Welke assets kunnen worden aangesloten?
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-caret"/></svg></summary>
+          <p>Batterijsystemen, omvormers voor zonne-energie, laadpunten en gebouwinstallaties
+            zoals klimaat en proceslast. Welke koppeling in uw situatie mogelijk is, bepalen we
+            tijdens de analyse aan de hand van de apparatuur die er staat.</p>
+        </details>
+        <details>
+          <summary>Moeten bestaande installaties worden vervangen?
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-caret"/></svg></summary>
+          <p>Meestal niet. Waar de apparatuur een open protocol spreekt, brengen wij haar onder
+            dezelfde regelaar. Vervanging is pas aan de orde als koppelen technisch niet kan.</p>
+        </details>
+        <details>
+          <summary>Hoe wordt voorkomen dat de aansluiting wordt overschreden?
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-caret"/></svg></summary>
+          <p>De contractwaarde is als harde grens in de regelaar vastgelegd. Nadert de afname die
+            waarde, dan schaalt het systeem eerst de niet-kritieke vraag terug en zet het de
+            batterij in. Valt de meting weg, dan treedt een failsafe in werking.</p>
+        </details>
+        <details>
+          <summary>Wie bedient het systeem?
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-caret"/></svg></summary>
+          <p>In de regel niemand bij u. Het systeem draait autonoom binnen de afgesproken grenzen;
+            Vibe monitort en stuurt de strategie bij. U houdt inzicht in wat het systeem doet.</p>
+        </details>
+        <details>
+          <summary>Wat kost het?
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-caret"/></svg></summary>
+          <p>Dat hangt af van het aantal gekoppelde assets en de scope. Bij een energiesysteem dat
+            Vibe levert, is de sturing onderdeel van het geheel.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · TYPE I — AFSLUITING -->
+  <section class="ve-sec ve-sec--lg ve-sec--flush-b" style="padding-bottom:var(--ve-s-3xl)">
+    <div class="ve-wrap">
+      <div class="ve-slot ve-slot--center">
+        <div class="ve-slot__inhoud">
+          <h2 class="ve-h2">Zie wat uw assets samen kunnen.</h2>
+          <p class="ve-lead" style="margin-top:var(--ve-s-md)">
+            In een half uur lopen wij met u door wat er op uw locatie staat en wat een gestuurde
+            laag daarbovenop zou veranderen.
+          </p>
+          <div class="ve-row" style="margin-top:var(--ve-s-xl)">
+            <a class="ve-btn ve-btn--primair ve-btn--lg" href="https://calendly.com/vibeenergy-sales/30min?hide_gdpr_banner=1" target="_blank" rel="noopener">
+              Plan een gesprek
+              <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-agenda"/></svg>
+            </a>
+            <a class="ve-btn ve-btn--ghost ve-btn--lg" href="systeem-energieopslag">Over energieopslag</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div data-chrome-footer></div>
+
+</body>
+</html>

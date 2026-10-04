@@ -36,11 +36,14 @@ De vijf andere documenten dragen elk één bewijsdomein in volledige detaillerin
 | `docs/vibe-page-archetypes-v1.md` | De pagina-archetypes en hun anatomie (§3 daar), de B-mapping van zeven bouwtypes + S2 (§4.1 daar), de besluitenbasis §0.3, de canonieke sectortaxonomie §0.4 en de gemeten brochure-/guide-stand §0.5. | §1A.3, §1A.8, §1A.10, §7 kolom HOMEPAGE ONLY |
 | `docs/vibe-migration-checklist-v1.md` | De uitvoerbare checklist per pagina, de lock-stepmethodiek (§0.1-§0.2 daar), de QA-poorten P1-P12 met hun meetmethode, en het **D-register D1-D20** in de bijlage. | §1A.11, §5, §6 leveren de normen die daar worden afgevinkt; §8 gebruikt de D-nummers |
 | `docs/vibe-legacy-inconsistencies-v1.md` | De legacy-items L-01 e.v.: `tokens.css` versus `home.css`, de twee navigatiesystemen (L-09), de sticky `.mcta` (L-21), de guides zonder navigatie (L-15/L-16), de dode CSS en de scriptconflicten. | §2.4, §8 |
+| `docs/vibe-section-compositions-v1.md` — **V1.1, additief** | De laag tussen component en pagina-archetype: de art direction per homepagesectie S1-S9 (§2 daar), de dertien grammaticaregels (§3), de twaalf compositiefamilies `C1`-`C12` (§4), de geometrieregels inclusief de frequentieregel (§5), het paginaritme HIGH/MEDIUM/QUIET met een ritmepatroon per bouwtype (§6), de zestien anti-patronen `A1`-`A16` (§7) en de elf open punten DR-C-01 t/m DR-C-11 (§8). | §1A.12 |
 
 *De zes documenten zijn in één ronde geschreven en vormen samen v1 van het systeem. Er gelden twee voorrangsregels, in deze volgorde:*
 
 1. ***§1A wint altijd.** De frozen baseline is de primaire bron voor iedere volgende opdracht. Spreekt een detaildocument — of een ander hoofdstuk van dít document — §1A tegen, dan wint §1A en is de tegenspraak een te herstellen fout in dat document.*
 2. ***Buiten §1A wint het detaildocument.** Gaat het om een gemeten detail (een waarde, een maat, een telling, een anatomie) en spreken dit brandbook en een detaildocument elkaar tegen, dan wint het detaildocument, omdat dat dichter bij de gemeten broncode staat.*
+
+*De kop van deze paragraaf, de telling "zes documenten" en de twee voorrangsregels hierboven beschrijven de stand van **V1.0**. De zevende regel in de tabel, `docs/vibe-section-compositions-v1.md`, hoort bij **V1.1** en is additief: hij vervangt geen V1.0-vaststelling en is geen zesde detaildocument bij §1A, maar een nieuwe laag erbovenop. Dezelfde twee voorrangsregels gelden er onverkort voor — §1A wint altijd. Zie §1A.12.*
 
 ---
 
@@ -150,6 +153,28 @@ De vijf andere documenten dragen elk één bewijsdomein in volledige detaillerin
 5. **Ontbrekende businessinformatie blijft `CONTENT PENDING`** en wordt niet met een plaatshouder, een aankondiging of een gegenereerd beeld ingevuld (§6.3).
 
 **Detail:** `vibe-migration-checklist-v1.md §0.1` (methodiek), `§0.2` (de zeven masters), `§1.2` (claimverificatie) en `§5` (QA-poorten P1-P12); §8 van dit document voor de stand van de open punten.
+
+### 1A.12 V1.1 — COMPOSITION EXTENSION
+
+**Status:** `V1.1 — ADDITIEF op V1.0`. Deze paragraaf is zelf **geen** nieuw besluit en draagt daarom niet de stempel `DECIDED — V1.0`. §1A.1 t/m §1A.11 blijven onverkort `FROZEN`; hieronder staat uitsluitend welke laag erbij is gekomen en waar die is vastgelegd.
+
+1. **De architectuurketen heeft één laag erbij.**
+
+```
+TOKENS -> PRIMITIVES -> COMPONENTS -> SECTION COMPOSITIONS -> PAGE ARCHETYPES
+                                      ^^^^^^^^^^^^^^^^^^^^
+                                      nieuw in V1.1
+```
+
+2. **Waar de compositielaag staat:** `docs/vibe-section-compositions-v1.md`. Dat document legt vast wat V1.0 niet vastlegt — niet **waaruit** een pagina bestaat, maar **hoe die delen liggen**: de rangschikking binnen één sectie (twaalf families `C1`-`C12`, §4 daar) en de verhouding tussen secties binnen één pagina (paginaritme HIGH/MEDIUM/QUIET, met een aanbevolen ritmepatroon per bouwtype, §6 daar). Het is afgeleid uit dezelfde bron als dit brandbook: Homepage Master v1, commit `aae26bf`.
+
+3. **V1.0 blijft ongewijzigd.** Niet vervangen en niet geherinterpreteerd: de tokenketen (§1A.5), de primitieveset en het abstractieverbod (§1A.4), de naamgeving (§1A.2), de archetypes B1..B7 + S2 (§1A.3), de claim policy (§1A.7), de navigatiebesluiten (§1A.1, C-01) en het CTA-besluit (§1A.9, C-04), de responsieve architectuur (§1A.6) en de migratiemethodiek (§1A.11). V1.1 introduceert bovendien **geen enkele nieuwe token** (`vibe-section-compositions-v1.md §1.4`). Het compositiedocument is read-only tot stand gekomen en registreert in zijn koptabel dat er geen productiecode is gewijzigd.
+
+4. **Voorrang blijft zoals in §1.3.** Bij tegenspraak wint §1A. Een compositieregel die een bevroren besluit zou doorkruisen, staat in `§8` van het compositiedocument als `DECISION REQUIRED` (DR-C-01 t/m DR-C-11) en geldt daar uitdrukkelijk **niet** als regel. Eén zo'n tegenspraak is al gemeten: familie `C5` (voortgangsrij) noemt zichzelf gedeelde CSS en kandidaat voor `.vibe-steps`, terwijl §1A.4 punt 3 de homepage process timeline (`home-process.css:152-204`) expliciet niet-abstraheerbaar verklaart. §1A.4 wint tot er werkelijk hergebruik in de repository staat; zie `vibe-component-library-v1.md §0.2a` en `§0.4`.
+
+5. **Let op de nummerbotsing.** `P1`-`P16` in het compositiedocument zijn **principes** (§2.10 daar); `P1`-`P13` in `vibe-migration-checklist-v1.md §5` zijn **QA-poorten**. Verwijs er altijd volledig gekwalificeerd naar, met documentnaam erbij.
+
+**Detail:** `docs/vibe-section-compositions-v1.md` §1 (afbakening en gemeten aanleiding), §4 (de twaalf families), §6 (paginaritme en de patronen per bouwtype), §7 (de zestien anti-patronen); `vibe-component-library-v1.md §0.2a` (component tegenover sectiecompositie); `vibe-page-archetypes-v1.md §4.1a` (ritmepatroon per bouwtype); `vibe-migration-checklist-v1.md §2.0` (verplicht compositieplan) en `§5 P13` (anti-patroonpoort).
 
 ---
 

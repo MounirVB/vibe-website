@@ -1,0 +1,181 @@
+/* ============================================================================
+   VIBE ENERGY — DESIGN TOKENS (Stitch Master Brand System)
+   ----------------------------------------------------------------------------
+   Bron: Stitch-project 6901936403926417383 "Vibe Energy Master Brand System",
+   screen f72578fee675 "Website Constitution" + de vijf goedgekeurde masters.
+   Elke waarde hieronder is letterlijk overgenomen uit de Tailwind-config van
+   die masters; niets is hier bijgeschat.
+
+   ARCHITECTUUR (gelijk aan vibe-system.css §7A)
+     PRIMITIVE  -> ruwe waarde, geen betekenis      --ve-blue-600
+     SEMANTIC   -> wat de waarde betekent           --ve-action
+     COMPONENT  -> alleen waar een component een eigen knop nodig heeft
+
+   BREAKPOINTS (overgenomen uit vibe-system.css, ongewijzigd)
+     >= 1200   desktop   -> de primaire visuele referentie van Stitch
+     768-1199  tablet    -> eigen, bewust gekozen trap
+     < 768     mobiel
+
+   HARD RULES uit de Constitution die in tokens zijn vastgelegd
+     - Eén grotesk-familie voor alles. Geen Roboto, geen monospace.
+     - Accent #0052FF uitsluitend voor kinetische elementen en primaire CTA's,
+       nooit verdund naar pastel.
+     - Radii zijn precisie-machinaal: 8 / 12 / 16 / 24 px, niets daartussen.
+   ============================================================================ */
+
+:root{
+
+  /* ------------------------------------------------------------- PRIMITIVE */
+
+  /* blauw — de kinetische as van het merk */
+  --ve-blue-700:#003ec7;   /* primary        : tekstblauw op licht, hover-vlak */
+  --ve-blue-600:#0052ff;   /* primary-container : HET accent, Vibe Electric Blue */
+  --ve-blue-500:#004ced;   /* surface-tint / inverse-primary-brug */
+  --ve-blue-200:#b7c4ff;   /* primary-fixed-dim : accent op donker */
+  --ve-blue-100:#dde1ff;   /* primary-fixed */
+  --ve-blue-050:#dfe3ff;   /* on-primary-container */
+
+  /* inkt — Obsidian Navy, nul vuilgrijs */
+  --ve-ink-900:#070b12;    /* Constitution: diepste obsidiaan, donkere panelen */
+  --ve-ink-850:#0a0e17;    /* donkere context-vlakken in de masters           */
+  --ve-ink-800:#0b1321;    /* software-canvas binnenvlak                      */
+  --ve-ink-700:#0b1c30;    /* on-surface : de lopende inktkleur                */
+  --ve-ink-500:#213145;    /* inverse-surface : donkere overlaykaart           */
+  --ve-slate-600:#434656;  /* on-surface-variant : lopende tekst               */
+  --ve-slate-500:#565e74;  /* secondary                                        */
+  --ve-slate-400:#737688;  /* outline                                          */
+  --ve-slate-300:#c3c5d9;  /* outline-variant                                  */
+
+  /* vlak — Ice White / Pure Signal White, daglicht-architectuur */
+  --ve-paper:#ffffff;      /* surface-container-lowest : kaarten, chrome */
+  --ve-canvas:#f8f9ff;     /* surface / background    : de pagina        */
+  --ve-canvas-low:#eff4ff; /* surface-container-low                      */
+  --ve-canvas-mid:#e5eeff; /* surface-container                          */
+  --ve-canvas-high:#dce9ff;/* surface-container-high                     */
+  --ve-canvas-top:#d3e4fe; /* surface-container-highest / surface-variant */
+  --ve-canvas-dim:#cbdbf5; /* surface-dim                                */
+  --ve-on-dark:#eaf1ff;    /* inverse-on-surface                         */
+
+  /* lijn — structurele haarlijnen */
+  --ve-hairline:#e2e8f0;              /* .arch-border uit master B2/B3 */
+  --ve-line:rgba(195,197,217,.45);    /* outline-variant/30..40        */
+  --ve-line-strong:rgba(195,197,217,.75);
+  --ve-line-on-dark:rgba(255,255,255,.10);
+
+  /* status — alleen als er echt een toestand te melden is */
+  --ve-live:#10b981;       /* Constitution: Live Dispatch Green */
+  --ve-live-bright:#26e1a0;/* tertiary-fixed-dim, op donker     */
+  --ve-warn:#f59e0b;       /* Constitution: Amber Warning       */
+  --ve-error:#ba1a1a;
+
+  /* ---------------------------------------------------------------- SEMANTIC */
+
+  /* actie */
+  --ve-action:var(--ve-blue-600);
+  --ve-action-hover:var(--ve-blue-700);
+  --ve-action-ink:var(--ve-blue-700);   /* accentkleur voor kleine tekst op licht */
+  --ve-action-on-dark:var(--ve-blue-200);
+  --ve-on-action:#ffffff;
+
+  /* tekst */
+  --ve-text:var(--ve-ink-700);
+  --ve-text-soft:var(--ve-slate-600);
+  --ve-text-muted:var(--ve-slate-500);
+  --ve-text-on-dark:#ffffff;
+  --ve-text-on-dark-soft:rgba(234,241,255,.80);
+  --ve-text-on-dark-muted:rgba(234,241,255,.58);
+
+  /* vlakken */
+  --ve-surface:var(--ve-paper);
+  --ve-surface-sunken:var(--ve-canvas-low);
+  --ve-surface-raised:var(--ve-canvas-mid);
+  --ve-bg:var(--ve-canvas);
+  --ve-bg-dark:var(--ve-ink-900);
+  --ve-bg-dark-soft:var(--ve-ink-850);
+
+  /* ------------------------------------------------------------------ VORM */
+  /* Constitution §4 — exact, geen tussenwaarden */
+  --ve-r-xs:4px;      /* DEFAULT  0.25rem */
+  --ve-r-btn:8px;     /* lg       0.5rem  — knoppen, precisie-machinaal */
+  --ve-r-chip:12px;   /* xl       0.75rem */
+  --ve-r-card:16px;   /* 2xl      1rem    — kaarten en datamodules */
+  --ve-r-media:24px;  /* 3xl      1.5rem  — fotografie en softwarecanvas */
+  --ve-r-pill:9999px;
+
+  /* ------------------------------------------------------------------ RUIMTE */
+  --ve-s-xs:.25rem;  --ve-s-sm:.5rem;   --ve-s-md:1rem;
+  --ve-s-lg:1.5rem;  --ve-s-xl:2.5rem;  --ve-s-2xl:4rem;  --ve-s-3xl:6rem;
+
+  /* paginamarge — px-6 / lg:px-12 uit de masters, met tabletstap ertussen */
+  --ve-gutter:1.5rem;
+  /* containerbreedte — max-w-7xl is de norm; de projectmaster gebruikt 1600px */
+  --ve-container:80rem;        /* 1280px */
+  --ve-container-wide:100rem;  /* 1600px — alleen de projectdetailmaster */
+
+  /* sectierhythme — py-20 .. py-36 uit de masters */
+  --ve-sec:5rem;        /* py-20 */
+  --ve-sec-lg:6rem;     /* py-24 */
+  --ve-sec-xl:7rem;     /* py-28 */
+  --ve-sec-2xl:8rem;    /* py-32 */
+  --ve-sec-3xl:9rem;    /* py-36 — alleen voor statements en productonthullingen */
+
+  /* ------------------------------------------------------------------- TYPE */
+  --ve-font:'Space Grotesk','Helvetica Neue',Arial,sans-serif;
+
+  /* mobiele trap (< 768) — display-hero-mobile / headline-lg-mobile */
+  --ve-display-size:40px;   --ve-display-lh:44px;   --ve-display-track:-.03em;
+  --ve-h2-size:32px;        --ve-h2-lh:36px;        --ve-h2-track:-.02em;
+  --ve-h3-size:26px;        --ve-h3-lh:32px;        --ve-h3-track:-.02em;
+
+  /* vast over alle breedtes */
+  --ve-h4-size:22px;        --ve-h4-lh:28px;        --ve-h4-track:-.01em;
+  --ve-body-lg-size:18px;   --ve-body-lg-lh:28px;   --ve-body-lg-track:-.01em;
+  --ve-body-size:15px;      --ve-body-lh:24px;      --ve-body-track:0em;
+  --ve-body-sm-size:13px;   --ve-body-sm-lh:20px;   --ve-body-sm-track:.01em;
+  --ve-data-lg-size:18px;   --ve-data-lg-lh:22px;   --ve-data-lg-track:-.02em;
+  --ve-data-size:13px;      --ve-data-lh:18px;      --ve-data-track:.02em;
+
+  /* gewichten — de Constitution vraagt zwaar en compact */
+  --ve-w-display:700;
+  --ve-w-head:700;
+  --ve-w-sub:600;
+  --ve-w-med:500;
+  --ve-w-body:400;
+
+  /* -------------------------------------------------------------- ELEVATIE */
+  /* Stitch gebruikt shadow-sm .. shadow-2xl; hier teruggebracht tot drie
+     niveaus zodat de vormtaal niet uiteenloopt over 20 pagina's. */
+  --ve-elev-1:0 1px 2px rgba(11,28,48,.05), 0 8px 20px -12px rgba(11,28,48,.18);
+  --ve-elev-2:0 2px 6px rgba(11,28,48,.06), 0 22px 44px -22px rgba(11,28,48,.26);
+  --ve-elev-3:0 4px 12px rgba(11,28,48,.08), 0 44px 80px -34px rgba(11,28,48,.34);
+
+  /* ---------------------------------------------------------------- MOTION */
+  --ve-ease:cubic-bezier(.2,.7,.2,1);
+  --ve-dur:.15s;      /* duration-150 — de masters gebruiken dit overal */
+  --ve-dur-slow:.3s;
+}
+
+/* -------------------------------------------------------------- TABLET TRAP */
+/* Bewuste tussenstap: een sprong van 40px naar 72px display is op 800px breed
+   te hard. Deze trap staat niet in Stitch (dat levert alleen desktop + mobiel)
+   en is dus eigen art direction, binnen dezelfde schaalverhouding. */
+@media (min-width:768px){
+  :root{
+    --ve-display-size:56px;  --ve-display-lh:60px;   --ve-display-track:-.035em;
+    --ve-h2-size:40px;       --ve-h2-lh:44px;        --ve-h2-track:-.025em;
+    --ve-h3-size:29px;       --ve-h3-lh:35px;
+    --ve-gutter:2rem;
+  }
+}
+
+/* ------------------------------------------------------------- DESKTOP TRAP */
+/* Hier staan de letterlijke Stitch-desktopwaarden. Dit is de maat waartegen de
+   visuele QA van de vijf masters is gedaan. */
+@media (min-width:1200px){
+  :root{
+    --ve-display-size:72px;  --ve-display-lh:76px;   --ve-display-track:-.04em;
+    --ve-h2-size:48px;       --ve-h2-lh:52px;        --ve-h2-track:-.03em;
+    --ve-h3-size:32px;       --ve-h3-lh:38px;
+    --ve-gutter:3rem;        /* lg:px-12 */
+  }
+}
