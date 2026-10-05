@@ -1,9 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-11.925 -44.06 265 265" width="265" height="265" fill="#171A1B" fill-rule="nonzero" role="img" aria-label="Vibe Energy">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-11.925 -44.06 265 265" width="265" height="265" fill="#FFFFFF" fill-rule="nonzero" role="img" aria-label="Vibe Energy">
   <title>Vibe Energy</title>
   <!-- Het V-beeldmerk uit de horizontale master assets/vibe-energy-logo.svg,
        groep #mark-v. De twee paden zijn teken voor teken overgenomen: geen
-       nieuwe ankerpunten, geen gewijzigde hoeken, geen transform. Alleen de
-       viewBox is verlegd zodat de V vrij staat op een vierkant vlak.
+       nieuwe ankerpunten, geen gewijzigde hoeken, geen transform. De viewBox is
+       verlegd zodat de V vrij staat op een vierkant vlak, en de fill is wit
+       (#FFFFFF) in plaats van het donkere #171A1B van de master.
        Gemeten bounding box van de V: x 0, y 0, breedte 241,15, hoogte 176,88.
        Vierkant canvas 265 met de V optisch gecentreerd:
          min-x = -(265 - 241,15) / 2 = -11,925

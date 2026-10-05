@@ -302,18 +302,42 @@ body:has(#hoofdinhoud > .ve-sec > .ve-wrap--wide):not(:has(#hoofdinhoud > .ve-se
 /* De horizontale master VIBE ⚡ ENERGY. Alleen weergavegrootte — de SVG zelf
    blijft ongewijzigd. De hoogte hangt aan de font-size van .ve-wordmark, zodat
    het logo de bestaande responsive trap volgt zonder nieuwe breekpunten:
-     22px font -> 19,8px hoog -> 161px breed (gelijk aan het oude woordmerk)
-     17px font -> 15,3px hoog -> 125px breed (onder 560px)
+     22px font -> 24,6px hoog -> 201px breed (desktop)
+     17px font -> 19,0px hoog -> 155px breed (onder 560px)
    aspect-ratio staat hard ingesteld op de verhouding van de master
    (1440,08 / 176,88), zodat er geen layoutsprong is voordat de SVG geladen is. */
 .ve-logo{
   display:block;
-  height:.9em;width:auto;
+  height:1.12em;width:auto;
   aspect-ratio:1440.08 / 176.88;
   /* NOOIT meekrimpen in de flexbalk: krimpen zou de master vervormen. Past het
      logo niet, dan wordt hieronder de WEERGAVEHOOGTE verkleind — de verhouding
-     blijft dan exact 1440,08 / 176,88. */
+     blijft dan exact 1440,08 / 176,88.
+     max-width:none heft de globale img{max-width:100%} op: zonder dat zou een
+     smaller geworden ouder de SVG alsnog horizontaal indrukken. */
   flex:0 0 auto;
+  max-width:none;
+}
+/* De link om het logo is zelf een flexitem van de balk en mag evenmin krimpen,
+   anders knijpt hij het beeld alsnog af. */
+.ve-header .ve-wordmark{flex:0 0 auto}
+
+/* Secundaire header-actie: bellen. Vierkante icoonknop op de ghost-stijl, dus
+   dezelfde radius, rand, hover en focus als de rest van het systeem. Hoogte
+   gelijk aan de primaire CTA (46px desktop / 44px mobiel), ruim boven de
+   44px-touchdrempel. Krimpt nooit mee. */
+/* De selector is bewust specifieker dan .ve-btn: die staat verderop in dit
+   bestand en zou anders met zijn eigen padding de vierkante maat opblazen. */
+.ve-header__acties .ve-telbtn{
+  display:inline-grid;place-items:center;
+  width:46px;height:46px;
+  padding:0;
+  flex:0 0 auto;
+}
+.ve-header__acties .ve-telbtn svg{width:19px;height:19px}
+@media (max-width:559px){
+  .ve-header__acties .ve-telbtn{width:44px;height:44px}
+  .ve-header__acties .ve-telbtn svg{width:18px;height:18px}
 }
 
 /* Op smalle telefoons moeten woordmerk + CTA + menuknop samen binnen 320px
@@ -334,8 +358,32 @@ body:has(#hoofdinhoud > .ve-sec > .ve-wrap--wide):not(:has(#hoofdinhoud > .ve-se
    Gemeten budget = breedte - 48 paginamarge - 42 menu - 135,3 CTA - 19,2 gaps:
      360px -> 115,5px voor het logo  ->  .83em = 14,1px hoog, 114,9px breed
      320px ->  75,5px voor het logo  ->  .54em =  9,2px hoog,  74,8px breed */
+/* Onder 450px past het logo niet meer op volle maat naast telefoonknop, CTA en
+   menuknop. Alleen de WEERGAVEHOOGTE zakt; de verhouding blijft exact.
+   Vast beslag naast het logo (gemeten): 9,6 balkgap + 44 tel + 8 + 135,3 CTA
+   + 8 + 42 menu = 246,9px, plus 48px paginamarge.
+     390px -> 95,1px ruimte -> .68em = 11,6px hoog,  94,1px breed
+     375px -> 80,1px ruimte -> .57em =  9,7px hoog,  78,9px breed
+     360px -> 65,1px ruimte -> .46em =  7,8px hoog,  63,7px breed */
+@media (max-width:449px){
+  .ve-logo{height:.68em}
+}
+@media (max-width:389px){
+  .ve-logo{height:.57em}
+}
+/* Onder 375px wijkt de telefoonknop terug ten gunste van het merk: met vier
+   elementen zou het logo daar naar ~64px zakken, en brand presence weegt hier
+   zwaarder dan de secundaire belactie. Het nummer blijft bereikbaar via de
+   footer en de contactpagina. De selector is specifieker dan .ve-btn, dat
+   verderop in dit bestand staat en anders zou winnen.
+   Ruimte zonder telefoonknop = breedte - 48 marge - 9,6 balkgap - 135,3 CTA
+   - 8 - 42 menu:
+     374px -> 131,1px beschikbaar
+     360px -> 117,1px beschikbaar  ->  .81em = 13,8px hoog, 112,1px breed
+     320px ->  77,1px beschikbaar  ->  .54em =  9,2px hoog,  74,7px breed */
 @media (max-width:374px){
-  .ve-logo{height:.83em}
+  .ve-header__acties .ve-telbtn{display:none}
+  .ve-logo{height:.81em}
 }
 @media (max-width:359px){
   .ve-logo{height:.54em}

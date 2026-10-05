@@ -180,6 +180,10 @@
               (actief('over-ons') ? ' aria-current="page"' : '') + '>Over Vibe</a></div>' +
           '</nav>' +
           '<div class="ve-header__acties">' +
+            /* Secundaire actie: direct bellen. Alleen het icoon, op elke breedte —
+               het nummer komt uit BEDRIJFSGEGEVENS, dezelfde bron als de footer. */
+            '<a class="ve-btn ve-btn--ghost ve-telbtn" href="tel:' + BEDRIJFSGEGEVENS.telHref + '"' +
+              ' aria-label="Bel Vibe Energy" title="Bel direct">' + ic('telefoon') + '</a>' +
             '<a class="ve-btn ve-btn--primair ve-btn--sm" href="' + BOEKING + '">Plan een gesprek</a>' +
             '<button class="ve-menubtn" type="button" aria-expanded="false" aria-controls="ve-mobiel" aria-label="Menu openen">' +
               ic('menu') + '</button>' +
