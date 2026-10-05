@@ -98,21 +98,26 @@
   };
 
   /* ---------------------------------------------------------------- logo
-     ÉÉN bron voor het merkteken. Header en footer renderen allebei hieruit,
-     zodat het logo op één plek vervangen kan worden.
+     ÉÉN bron voor het merkteken. Header en footer renderen allebei hieruit.
 
-     Vandaag is het logo géén afbeelding maar opmaak: drie spans die door
-     .ve-wordmark in vibe/vibe.css worden gezet (de schuine streep krijgt
-     --ve-action). Wordt het straks een bestand, dan is dit de enige plek die
-     verandert — bijvoorbeeld:
-         return '<img src="assets/logo-woordmerk.svg" alt="" width=".." height="..">';
-     De <a>/<span> eromheen, inclusief aria-label en kleur, blijft staan waar
-     hij staat; die hoort bij de header respectievelijk de footer.
+     Het logo is de afgeronde horizontale master VIBE ⚡ ENERGY, als native SVG
+     geladen uit assets/. Twee varianten, identiek van geometrie, alleen andere
+     inkt: -dark (#171A1B) voor een lichte ondergrond, -light (#F7F7F7) voor een
+     donkere. De bestanden worden ONGEWIJZIGD geladen; aan de vorm, de spatiëring
+     en de verhoudingen verandert hier niets. Alleen de weergavegrootte wordt
+     gezet, en die staat in .ve-logo in vibe/vibe.css.
 
-     LET OP: deze functie is uitsluitend centralisatie. De uitvoer is teken
-     voor teken gelijk aan de twee losse kopieën die hier eerder stonden. */
-  function logoMerk() {
-    return '<span>VIBE</span><span class="ve-wordmark__slash">//</span><span>ENERGY</span>';
+     De <a>/<span> eromheen hoort bij de header respectievelijk de footer; de
+     header draagt het aria-label, dus daar is het beeld decoratief. */
+  function logoMerk(variant, alt) {
+    /* variant 'licht' = lichte inkt voor een donkere ondergrond (footer),
+       anders de donkere inkt voor een lichte ondergrond (header).
+       De SVG's zijn de afgeronde horizontale master en worden ongewijzigd
+       geladen; de weergavegrootte komt uit .ve-logo in vibe/vibe.css. */
+    var bestand = variant === 'licht' ? 'vibe-energy-logo-light.svg' : 'vibe-energy-logo-dark.svg';
+    return '<img class="ve-logo" src="assets/' + bestand + '"' +
+           ' alt="' + (alt || '') + '"' + (alt ? '' : ' aria-hidden="true"') +
+           ' decoding="async">';
   }
 
   /* ------------------------------------------------------------- helpers */
@@ -162,9 +167,9 @@
   function header() {
     return '<a class="ve-skip" href="#hoofdinhoud">Direct naar de inhoud</a>' +
       '<header class="ve-header">' +
-        '<div class="ve-header__bar">' +
+        '<div class="ve-wrap ve-header__bar">' +
           '<a class="ve-wordmark" href="/" aria-label="Vibe Energy, naar de homepage">' +
-            logoMerk() +
+            logoMerk('donker') +
           '</a>' +
           '<nav class="ve-nav" aria-label="Hoofdnavigatie">' +
             dropdown('opl', 'Oplossingen', OPLOSSINGEN) +
@@ -175,7 +180,6 @@
               (actief('over-ons') ? ' aria-current="page"' : '') + '>Over Vibe</a></div>' +
           '</nav>' +
           '<div class="ve-header__acties">' +
-            '<a class="ve-btn ve-btn--ghost ve-btn--sm ve-header__ghost" href="projecten.html">Bekijk projecten</a>' +
             '<a class="ve-btn ve-btn--primair ve-btn--sm" href="' + BOEKING + '">Plan een gesprek</a>' +
             '<button class="ve-menubtn" type="button" aria-expanded="false" aria-controls="ve-mobiel" aria-label="Menu openen">' +
               ic('menu') + '</button>' +
@@ -217,7 +221,7 @@
       '<div class="ve-wrap">' +
         '<div class="ve-footer__top">' +
           '<div class="ve-footer__merk">' +
-            '<span class="ve-wordmark" style="color:#fff">' + logoMerk() + '</span>' +
+            '<span class="ve-wordmark">' + logoMerk('licht', 'Vibe Energy') + '</span>' +
             '<p class="ve-footer__claim">Wij ontwerpen, bouwen en beheren lokale energie-infrastructuur achter de meter &mdash; als systeem, niet als los product.</p>' +
             '<ul class="ve-footer__lijst" style="margin-top:1.5rem">' +
               '<li><a href="tel:' + b.telHref + '">' + b.tel + '</a></li>' +

@@ -271,11 +271,24 @@ button{font:inherit;color:inherit}
   -webkit-backdrop-filter:saturate(1.4) blur(12px);
   border-bottom:1px solid var(--ve-line);
 }
+/* De balk draagt .ve-wrap en erft daarmee de canonieke containermaat
+   (--ve-container, margin-inline:auto). Hij had hier max-width:none staan;
+   daardoor liep de header full-bleed terwijl de secties eronder op 1280px
+   gecentreerd stonden — boven 1376px gaf dat een afwijking van (vw-1280)/2.
+   Alleen de maatvoering staat hier; hoogte, flex en marge blijven ongewijzigd. */
 .ve-header__bar{
-  max-width:none;
   display:flex;align-items:center;justify-content:space-between;gap:var(--ve-s-lg);
   height:64px;
   padding-inline:var(--ve-gutter);
+}
+/* De projectdetailmaster zet zijn hele sectiestroom op --ve-container-wide
+   (1600px). Op die pagina's volgt de headerbalk diezelfde rasterlijn, zodat de
+   chrome nooit een eigen marge krijgt. De selector leest de opmaak van de
+   pagina zelf — een pagina met ook maar één gewone .ve-wrap in de sectiestroom
+   telt niet mee — dus er is geen pagina-specifieke offset nodig. Browsers
+   zonder :has() vallen terug op de norm hierboven. */
+body:has(#hoofdinhoud > .ve-sec > .ve-wrap--wide):not(:has(#hoofdinhoud > .ve-sec > .ve-wrap:not(.ve-wrap--wide))) .ve-header__bar{
+  max-width:var(--ve-container-wide);
 }
 .ve-wordmark{
   display:inline-flex;align-items:center;gap:.4ch;
@@ -286,20 +299,46 @@ button{font:inherit;color:inherit}
 }
 .ve-wordmark__slash{color:var(--ve-action);font-weight:800}
 
+/* De horizontale master VIBE ⚡ ENERGY. Alleen weergavegrootte — de SVG zelf
+   blijft ongewijzigd. De hoogte hangt aan de font-size van .ve-wordmark, zodat
+   het logo de bestaande responsive trap volgt zonder nieuwe breekpunten:
+     22px font -> 19,8px hoog -> 161px breed (gelijk aan het oude woordmerk)
+     17px font -> 15,3px hoog -> 125px breed (onder 560px)
+   aspect-ratio staat hard ingesteld op de verhouding van de master
+   (1440,08 / 176,88), zodat er geen layoutsprong is voordat de SVG geladen is. */
+.ve-logo{
+  display:block;
+  height:.9em;width:auto;
+  aspect-ratio:1440.08 / 176.88;
+  /* NOOIT meekrimpen in de flexbalk: krimpen zou de master vervormen. Past het
+     logo niet, dan wordt hieronder de WEERGAVEHOOGTE verkleind — de verhouding
+     blijft dan exact 1440,08 / 176,88. */
+  flex:0 0 auto;
+}
+
 /* Op smalle telefoons moeten woordmerk + CTA + menuknop samen binnen 320px
    passen. De CTA blijft staan — hij is de primaire navigatie-actie — maar
    krijgt compactere maten; de paginamarge zakt naar de margin-mobile uit
    Stitch (1,25rem). */
 @media (max-width:559px){
-  .ve-header__bar{gap:.6rem;padding-inline:1.25rem}
+  /* de paginamarge blijft gelijk aan .ve-wrap, zodat het logo exact op de
+     hoofdgrid van de secties staat; alleen de tussenruimte wordt compacter */
+  .ve-header__bar{gap:.6rem}
   .ve-wordmark{font-size:17px;letter-spacing:0}
   .ve-header__acties{gap:.5rem}
   .ve-header__acties .ve-btn{padding:.55rem .85rem;font-size:13px}
   .ve-menubtn{width:38px;height:38px}
 }
+/* Onder 375px past het logo niet meer op volle maat naast CTA en menuknop.
+   Alleen de WEERGAVEHOOGTE zakt; de verhouding van de master blijft exact.
+   Gemeten budget = breedte - 48 paginamarge - 42 menu - 135,3 CTA - 19,2 gaps:
+     360px -> 115,5px voor het logo  ->  .83em = 14,1px hoog, 114,9px breed
+     320px ->  75,5px voor het logo  ->  .54em =  9,2px hoog,  74,8px breed */
+@media (max-width:374px){
+  .ve-logo{height:.83em}
+}
 @media (max-width:359px){
-  /* laatste redmiddel: onder 360px wijkt het woordmerk terug naar het merkteken */
-  .ve-wordmark span:first-child,.ve-wordmark span:last-child{font-size:15px}
+  .ve-logo{height:.54em}
 }
 
 .ve-nav{display:none}
@@ -359,8 +398,6 @@ button{font:inherit;color:inherit}
 }
 
 .ve-header__acties{display:flex;align-items:center;gap:var(--ve-s-sm)}
-.ve-header__ghost{display:none}
-@media (min-width:640px){.ve-header__ghost{display:inline-flex}}
 
 /* ---- mobiel menu ---- */
 .ve-menubtn{
