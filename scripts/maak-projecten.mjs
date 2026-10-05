@@ -143,7 +143,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         ${heroMedia}
         <div class="ve-overlay">
           <h2 class="ve-overlay__t">${esc(p.titel)}</h2>
-          <p class="ve-overlay__d">${esc(p.sector)} &middot; ${esc(p.plaats)} &middot; opgeleverd ${esc(p.opgeleverd)}</p>
+          <p class="ve-overlay__d">${esc(p.sector)} &middot; ${esc(p.plaats)} &middot; ${p.status ? esc(p.status.toLowerCase()) : `opgeleverd ${esc(p.opgeleverd)}`}</p>
         </div>
       </div>
     </div>
@@ -155,7 +155,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <div class="ve-feiten" style="--ve-feiten-n:4">
         <div><span class="ve-feit__l">Locatie</span><span class="ve-feit__w">${esc(p.plaats)}</span></div>
         <div><span class="ve-feit__l">Sector</span><span class="ve-feit__w">${esc(p.sector)}</span></div>
-        <div><span class="ve-feit__l">Opgeleverd</span><span class="ve-feit__w">${esc(p.opgeleverd)}</span></div>
+        <div><span class="ve-feit__l">${p.status ? 'Status' : 'Opgeleverd'}</span><span class="ve-feit__w">${esc(p.status || p.opgeleverd)}</span></div>
         <div><span class="ve-feit__l">Besturing</span><span class="ve-feit__w" style="color:var(--ve-action-ink)">VIBE.CONTROL</span></div>
       </div>
     </div>
@@ -301,7 +301,7 @@ ${p.na.map((x) => `            <li>${ic('vink')}<span>${esc(x)}</span></li>`).jo
   <section class="ve-sec ve-sec--3xl ve-sec--dark">
     <div class="ve-wrap ve-wrap--wide">
       <p class="ve-citaat" style="max-width:52rem">${esc(p.statement)}</p>
-      <span class="ve-citaat__bron">Vibe Energy &middot; ${esc(p.plaats)}, ${esc(p.opgeleverd)}</span>
+      <span class="ve-citaat__bron">Vibe Energy &middot; ${esc(p.plaats)}, ${esc(p.status || p.opgeleverd)}</span>
     </div>
   </section>
 
@@ -483,9 +483,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <div class="ve-wrap">
       <h1 class="ve-display" style="max-width:46rem">Geen theorie. Gerealiseerd.</h1>
       <p class="ve-lead ve-measure-wide" style="margin-top:var(--ve-s-lg)">
-        Gerealiseerde projecten uit de periode juli 2023 tot en met maart 2026 — van
-        batterijopslag en laadpleinen tot complete wooncomplexen. De waarden hieronder zijn
-        die van de oplevering.
+        Projecten uit de periode 2023 tot en met 2026 — van batterijopslag en laadpleinen
+        tot complete wooncomplexen. De waarden hieronder komen uit de offertes, facturen en
+        inspectierapporten van het project zelf; waar een project nog loopt, staat dat erbij.
       </p>
     </div>
   </section>
@@ -533,7 +533,7 @@ ${uitgelicht.metrics
             de bouw, en daarna het beheer.
           </p>
           <p class="ve-body" style="margin-top:var(--ve-s-md)">
-            Wat hieronder staat, is wat er is opgeleverd. Geen prognoses, geen modellen.
+            Wat hieronder staat, komt uit de projectdocumenten zelf. Geen prognoses, geen modellen.
           </p>
         </div>
       </div>
@@ -565,7 +565,7 @@ ${overige
             <span class="ve-proj__sector">${esc(p.sector)} &middot; ${esc(p.plaats)}</span>
             <h2 class="ve-proj__t">${esc(p.titel)}</h2>
             <p class="ve-proj__d">${esc(p.kop)}</p>
-            <span class="ve-proj__voet">${esc(p.opgeleverd)} &middot; bekijk het project &rarr;</span>
+            <span class="ve-proj__voet">${esc(p.status || p.opgeleverd)} &middot; bekijk het project &rarr;</span>
           </div>
         </a>`
   )
