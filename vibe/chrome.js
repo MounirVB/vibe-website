@@ -97,6 +97,24 @@
     btw: 'NL865924910B01'
   };
 
+  /* ---------------------------------------------------------------- logo
+     ÉÉN bron voor het merkteken. Header en footer renderen allebei hieruit,
+     zodat het logo op één plek vervangen kan worden.
+
+     Vandaag is het logo géén afbeelding maar opmaak: drie spans die door
+     .ve-wordmark in vibe/vibe.css worden gezet (de schuine streep krijgt
+     --ve-action). Wordt het straks een bestand, dan is dit de enige plek die
+     verandert — bijvoorbeeld:
+         return '<img src="assets/logo-woordmerk.svg" alt="" width=".." height="..">';
+     De <a>/<span> eromheen, inclusief aria-label en kleur, blijft staan waar
+     hij staat; die hoort bij de header respectievelijk de footer.
+
+     LET OP: deze functie is uitsluitend centralisatie. De uitvoer is teken
+     voor teken gelijk aan de twee losse kopieën die hier eerder stonden. */
+  function logoMerk() {
+    return '<span>VIBE</span><span class="ve-wordmark__slash">//</span><span>ENERGY</span>';
+  }
+
   /* ------------------------------------------------------------- helpers */
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function ic(naam, klasse) {
@@ -146,7 +164,7 @@
       '<header class="ve-header">' +
         '<div class="ve-header__bar">' +
           '<a class="ve-wordmark" href="/" aria-label="Vibe Energy, naar de homepage">' +
-            '<span>VIBE</span><span class="ve-wordmark__slash">//</span><span>ENERGY</span>' +
+            logoMerk() +
           '</a>' +
           '<nav class="ve-nav" aria-label="Hoofdnavigatie">' +
             dropdown('opl', 'Oplossingen', OPLOSSINGEN) +
@@ -158,7 +176,7 @@
           '</nav>' +
           '<div class="ve-header__acties">' +
             '<a class="ve-btn ve-btn--ghost ve-btn--sm ve-header__ghost" href="projecten.html">Bekijk projecten</a>' +
-            '<a class="ve-btn ve-btn--primair ve-btn--sm" href="' + BOEKING + '" target="_blank" rel="noopener">Plan een gesprek</a>' +
+            '<a class="ve-btn ve-btn--primair ve-btn--sm" href="' + BOEKING + '">Plan een gesprek</a>' +
             '<button class="ve-menubtn" type="button" aria-expanded="false" aria-controls="ve-mobiel" aria-label="Menu openen">' +
               ic('menu') + '</button>' +
           '</div>' +
@@ -180,7 +198,7 @@
       groep('Doelgroepen', DOELGROEPEN, true) +
       groep('Vibe Energy', BEDRIJF, false) +
       '<div class="ve-mobiel__cta">' +
-        '<a class="ve-btn ve-btn--primair ve-btn--blok" href="' + BOEKING + '" target="_blank" rel="noopener">Plan een gesprek</a>' +
+        '<a class="ve-btn ve-btn--primair ve-btn--blok" href="' + BOEKING + '">Plan een gesprek</a>' +
       '</div></div>';
   }
 
@@ -199,8 +217,7 @@
       '<div class="ve-wrap">' +
         '<div class="ve-footer__top">' +
           '<div class="ve-footer__merk">' +
-            '<span class="ve-wordmark" style="color:#fff">' +
-              '<span>VIBE</span><span class="ve-wordmark__slash">//</span><span>ENERGY</span></span>' +
+            '<span class="ve-wordmark" style="color:#fff">' + logoMerk() + '</span>' +
             '<p class="ve-footer__claim">Wij ontwerpen, bouwen en beheren lokale energie-infrastructuur achter de meter &mdash; als systeem, niet als los product.</p>' +
             '<ul class="ve-footer__lijst" style="margin-top:1.5rem">' +
               '<li><a href="tel:' + b.telHref + '">' + b.tel + '</a></li>' +
@@ -238,6 +255,89 @@
     '</footer>';
   }
 
+  /* ------------------------------------------------------- Calendly-popup
+     De boekings-CTA's openen Calendly als overlay BOVEN de pagina; de bezoeker
+     blijft op vibeenergy.nl staan. Dit is de officiële widget
+     (window.Calendly.initPopupWidget), overgenomen uit de vorige productie-
+     implementatie in _footer.js, met twee bewuste correcties:
+
+     1 · TRIGGER OP HREF, NIET OP LINKTEKST.
+         De oude versie herkende een boekingsknop aan zijn tekst
+         (/plan.*gesprek|adviesgesprek|bekijk.*praktijkcase/i). Daardoor ving
+         zij ook gewone navigatieknoppen af — 28 elementen op 16 pagina's,
+         vastgelegd als L-12 in docs/vibe-legacy-inconsistencies-v1.md. Hier
+         is de voorwaarde de bestemming: alleen een link naar exact de
+         boekings-URL opent de popup. Navigatie naar contact, de
+         analyse-aanvragen en alle overige links blijven ongemoeid.
+
+     2 · DE WIDGET LAADT PAS BIJ DE EERSTE KLIK.
+         De oude versie haalde widget.js en widget.css op bij ELKE
+         paginaweergave. Ons cookiebeleid zegt dat Calendly "pas cookies
+         plaatst wanneer u de planningspagina daadwerkelijk opent"; daarom
+         wordt er niets van Calendly geladen tot de bezoeker zelf klikt.
+
+     Er wordt geen stopPropagation() gebruikt (dat was de tweede helft van
+     L-12) en de href blijft in de opmaak staan: zonder JavaScript, of als de
+     widget onbereikbaar is, navigeert de link gewoon naar Calendly. */
+  function bindBoeking() {
+    var CSS = 'https://assets.calendly.com/assets/external/widget.css';
+    var JS = 'https://assets.calendly.com/assets/external/widget.js';
+    var laden = null;
+
+    function assets() {
+      if (laden) return laden;                       // nooit twee keer injecteren
+      laden = new Promise(function (klaar, mislukt) {
+        if (!document.querySelector('link[data-vibe-calendly]')) {
+          var l = document.createElement('link');
+          l.rel = 'stylesheet'; l.href = CSS;
+          l.setAttribute('data-vibe-calendly', '');
+          document.head.appendChild(l);
+        }
+        var s = document.querySelector('script[data-vibe-calendly]');
+        if (s && window.Calendly) { klaar(); return; }
+        if (!s) {
+          s = document.createElement('script');
+          s.src = JS; s.async = true;
+          s.setAttribute('data-vibe-calendly', '');
+          document.head.appendChild(s);
+        }
+        s.addEventListener('load', klaar);
+        s.addEventListener('error', mislukt);
+      });
+      return laden;
+    }
+
+    function boekingslink(a) {
+      var h = a.getAttribute('href') || '';
+      return h.indexOf(BOEKING) === 0;
+    }
+
+    document.addEventListener('click', function (e) {
+      /* laat de browser zijn werk doen bij midden-/rechtsklik en bij
+         ctrl/cmd-klik: wie bewust een nieuw tabblad wil, krijgt dat */
+      if (e.defaultPrevented || e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      var a = e.target.closest ? e.target.closest('a[href]') : null;
+      if (!a || !boekingslink(a)) return;
+
+      var url = a.getAttribute('href');
+      e.preventDefault();                            // bewust géén stopPropagation
+
+      /* al een overlay open? dan niets nogmaals initialiseren */
+      if (document.querySelector('.calendly-overlay')) return;
+
+      assets().then(function () {
+        if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
+          window.Calendly.initPopupWidget({ url: url });
+        } else {
+          location.href = url;                       // widget geladen maar onbruikbaar
+        }
+      }, function () {
+        location.href = url;                         // widget onbereikbaar
+      });
+    });
+  }
+
   /* --------------------------------------------------------------- mount */
   function mount() {
     /* de <noscript>-fallback is alleen nodig zolang dit script niet draaide */
@@ -251,6 +351,7 @@
 
     bindDropdowns();
     bindMobiel();
+    bindBoeking();
   }
 
   /* ---- dropdowns: hover op desktop, klik overal, Escape sluit ---- */

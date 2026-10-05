@@ -20,6 +20,14 @@ const opSlug = Object.fromEntries(projecten.map((p) => [p.slug, p]));
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const ic = (n, extra = '') => `<svg viewBox="0 0 24 24" ${extra} aria-hidden="true"><use href="#ve-i-${n}"/></svg>`;
 
+/* De canonieke boekings-URL, gelijk aan BOEKING in vibe/chrome.js. De primaire
+   "Plan een gesprek"-knop wijst hier rechtstreeks naartoe; bindBoeking() in
+   chrome.js herkent die bestemming en opent Calendly als overlay boven de
+   pagina. Blijft de href staan als fallback wanneer JavaScript of de widget
+   uitvalt. De navigatielinks in de <noscript>-balk blijven naar contact wijzen:
+   dat is navigatie, geen boekingsactie. */
+const BOEKING = 'https://calendly.com/vibeenergy-sales/30min?hide_gdpr_banner=1';
+
 /* Gerenderde breedte van een kaart in "Andere projecten".
    Die staat in .ve-wrap--wide (max 100rem) > .ve-cols--2 .ve-cols--gap-xl,
    dus: (containerbreedte - 2x gutter - 1x gap) / 2, met gutter 1,5/2/3rem per
@@ -374,7 +382,7 @@ ${gerelateerd
             bestaande aansluiting mogelijk is.
           </p>
           <div class="ve-row" style="margin-top:var(--ve-s-xl)">
-            <a class="ve-btn ve-btn--primair ve-btn--lg" href="contact">Plan een gesprek ${ic('pijl')}</a>
+            <a class="ve-btn ve-btn--primair ve-btn--lg" href="${BOEKING}">Plan een gesprek ${ic('pijl')}</a>
             <a class="ve-btn ve-btn--ghost ve-btn--lg" href="projecten">Alle projecten</a>
           </div>
         </div>
@@ -576,7 +584,7 @@ ${overige
             bestaande aansluiting mogelijk is.
           </p>
           <div class="ve-row" style="margin-top:var(--ve-s-xl)">
-            <a class="ve-btn ve-btn--primair ve-btn--lg" href="contact">Plan een gesprek ${ic('pijl')}</a>
+            <a class="ve-btn ve-btn--primair ve-btn--lg" href="${BOEKING}">Plan een gesprek ${ic('pijl')}</a>
             <a class="ve-btn ve-btn--ghost ve-btn--lg" href="over-ons">Over Vibe</a>
           </div>
         </div>
