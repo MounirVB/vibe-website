@@ -124,8 +124,11 @@ function zoekGetallen(zin: string): RuweUitspraak[] {
   const eenheidAlternatieven = EENHEDEN.map((e) =>
     e.patroon.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
   ).join("|");
+  // Het eerste alternatief MOET zijn decimaaldeel meenemen. Zonder
+  // `(?:,\\d+)?` matcht '1.250,5 kW' op '250,5' in plaats van op
+  // '1.250,5' — een factor vijf eraf, en niets dat dat zou opvallen.
   const patroon = new RegExp(
-    `(\\d{1,3}(?:\\.\\d{3})+|\\d+(?:,\\d+)?)\\s*(${eenheidAlternatieven})(?![\\p{L}])`,
+    `(\\d{1,3}(?:\\.\\d{3})+(?:,\\d+)?|\\d+(?:,\\d+)?)\\s*(${eenheidAlternatieven})(?![\\p{L}])`,
     "giu",
   );
 
@@ -171,6 +174,18 @@ function zoekGetallen(zin: string): RuweUitspraak[] {
 function isoDatum(dag: number, maand: number, jaar: number): string | null {
   if (maand < 1 || maand > 12 || dag < 1 || dag > 31) return null;
   if (jaar < 2000 || jaar > 2100) return null;
+  // Echte kalendercontrole, niet alleen dag <= 31: '31 februari 2027'
+  // haalde die test wel en leverde dan een datum op die niet bestaat.
+  // Date rolt een ongeldige dag door naar de volgende maand, dus als de
+  // componenten niet terugkomen zoals ze ingingen, bestaat de datum niet.
+  const d = new Date(Date.UTC(jaar, maand - 1, dag));
+  if (
+    d.getUTCFullYear() !== jaar ||
+    d.getUTCMonth() !== maand - 1 ||
+    d.getUTCDate() !== dag
+  ) {
+    return null;
+  }
   return `${jaar}-${String(maand).padStart(2, "0")}-${String(dag).padStart(2, "0")}`;
 }
 

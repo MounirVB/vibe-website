@@ -212,6 +212,69 @@ daar gemeten, niet bedacht.
 
 ---
 
+## 7b. De repository is niet wat live staat
+
+Dit is de zwaarste bevinding van de bouw, en hij verandert de
+integratievraag. Gemeten op 10 oktober 2026:
+
+| | repository (`main`, `e2faa3b`) | live `www.vibeenergy.nl` |
+|---|---|---|
+| sitemap `<loc>` | 34 | **96** |
+| host in sitemap | `https://vibeenergy.nl` (apex) | `https://www.vibeenergy.nl` |
+| canonical op `/microgrids` | apex | www |
+
+62 live URL's bestaan niet in deze worktree, en het zijn juist de URL's
+die deze opdracht als nog-te-bouwen behandelt:
+
+- **`/kennis` plus 18 kennispagina's**: `batterij-dimensioneren`,
+  `netcongestie-uitgelegd`, `peak-shaving`, `subsidiemechanismen`,
+  `kw-versus-kwh`, `load-balancing`, `terugleverbeperking`,
+  `batterijveiligheid`, `ems-energiemanagementsysteem`,
+  `businesscase-batterij`, `normen-en-keuringen`,
+  `laadinfrastructuur-dimensioneren`, `energiehandel-en-flexibiliteit`,
+  `transportvermogen-versus-aansluitwaarde`, `energieprestatie-meten`,
+  `batterijdegradatie`, `netaansluiting-aanvragen`, `energieadvies`
+- **`/regios`** met een provincie→gemeentehierarchie:
+  `gelderland/{arnhem,nijmegen,duiven,renkum,rheden}`,
+  `noord-brabant/tilburg`,
+  `noord-holland/{alkmaar,amsterdam,medemblik,purmerend}`,
+  `overijssel/hengelo`
+- **`/sectoren`**, en `/netcongestie`, `/laadplein`, `/energieadvies`
+  als echte pagina's in plaats van noindex-stubs
+
+Dat sluit aan op wat al bekend was over deze repository: hij begint op
+2026-08-19 met vier "Add files via upload"-commits en mist alles
+daarvoor; tussen 2025-02 en 2026-07 bestaat er geen enkele archiefopname
+van de site.
+
+**Drie gevolgen die in de code zitten.**
+
+1. Het pagina-register leest nu de live sitemap erbij. `bestaat_in_repo`
+   en `in_sitemap` zijn aparte feiten — die kolommen stonden er al voor.
+   Uitkomst: 51 pagina's in de worktree, 62 die alleen live bestaan.
+2. De onderwerpclusters verwijzen naar de live kennispagina's in plaats
+   van naar noindex-stubs in de repo. Twaalf van de vijftien clusters
+   hebben daarmee een echte eigenaar.
+3. De besluitmotor telt een pagina als eigenaar als hij bestaat, in de
+   worktree óf live. Het effect:
+
+   | pagina-register | NEW_ARTICLE | UPDATE_EXISTING |
+   |---|---|---|
+   | alleen repo | 9 | 5 |
+   | repo + live | **0** | **19** |
+
+   Nul nieuwe URL's. De regel "verbeter een bestaande pagina als de
+   zoekintentie al gedekt is" werkt alleen als je weet welke pagina's er
+   echt zijn.
+
+**En het gevolg dat NIET in code op te lossen is:** een publicatie naar
+deze worktree komt niet op `vibeenergy.nl`. De publicatieketen is in
+beide richtingen bewezen (schrijven, sitemap bijwerken, terugdraaien)
+maar hij schrijft naar een repository die de site niet publiceert. Wie
+de echte publisher is, is in deze sessie niet vastgesteld. Zie §9.
+
+---
+
 ## 8. De publicatiegrens met Release 1
 
 `intel.pagina_register` bezit de canonieke waarheid over wie welke URL mag
@@ -254,6 +317,14 @@ en levert voor de rest een patchvoorstel.
 ---
 
 ## 9. Integratiepunten die openstaan
+
+0. **De echte publisher van vibeenergy.nl is onbekend.** Dit is de
+   blokkade die alle andere overschaduwt. De live site heeft 96
+   sitemap-URL's tegen 34 hier, en 62 live URL's bestaan niet in deze
+   repository. Publiceren naar deze worktree bereikt de site dus niet.
+   Vóór er iets uitgerold kan worden moet vastgesteld worden welke
+   bron productie voedt — en of Release 1 misschien al op die bron
+   gebouwd is, want `/kennis` en `/regios` staan er al.
 
 1. **Dubbeling met het zusterplatform.** Afweging: (a) zo laten — twee merken, twee
    ketens, geen gedeelde productierisico's; (b) later de bronverzamelaar en
