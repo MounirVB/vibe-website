@@ -36,11 +36,21 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { HOST, HOST_APEX, url, href } from './lib/paden.mjs';
 import { graaf, organisatie, website, webpagina, kruimelpad } from './lib/schema.mjs';
-import { NOSCRIPT_NAV } from './lib/sjabloon.mjs';
+import { noscriptNav, zetNavToets } from './lib/sjabloon.mjs';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 const wortel = resolve(hier, '..', '..');
 const DROOG = process.argv.includes('--droog');
+
+/* Voorwaardelijke navigatie-items (nu: /nieuws) horen alleen in de navigatie
+   als hun route op INDEX staat. Dit script draait als stap 6, dus na
+   bouw-routes: het register is er en is actueel. Zonder deze toets zou elke
+   bestaande pagina een link naar een PENDING-route krijgen. */
+const registerRoutes = JSON.parse(
+  readFileSync(resolve(wortel, 'data', 'seo', 'routes.json'), 'utf8')
+).routes;
+const indexRoutes = new Set(registerRoutes.filter((r) => r.staat === 'INDEX').map((r) => r.route));
+zetNavToets((route) => indexRoutes.has(route));
 
 /* ------------------------------------------------- de stubs en hun opvolger
    Per stub: de nieuwe opvolger en waarom. Deze tabel IS het besluit; de
@@ -265,11 +275,7 @@ for (const f of bestanden) {
      root-relatief, extensieloos, en met de nieuwe hubs erin. Geen zichtbaar
      effect — chrome.js verwijdert het blok zodra het draait. */
   if (!isStub && /<noscript data-chrome-fallback>/.test(s)) {
-    const nieuw =
-      '<noscript data-chrome-fallback>\n  <nav aria-label="Hoofdnavigatie">\n    ' +
-      NOSCRIPT_NAV.map(([h, t]) => `<a href="${h}">${t}</a>`).join(' &middot;\n    ') +
-      '\n  </nav>\n</noscript>';
-    const vervangen = s.replace(/<noscript data-chrome-fallback>[\s\S]*?<\/noscript>/, nieuw);
+    const vervangen = s.replace(/<noscript data-chrome-fallback>[\s\S]*?<\/noscript>/, noscriptNav());
     if (vervangen !== s) {
       s = vervangen;
       acties.push('noscript-navigatie bijgewerkt');

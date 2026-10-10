@@ -328,18 +328,138 @@ for (const s of stubs) {
 }
 zet({ route: '404', soort: 'nationaal', subsoort: 'fout', staat: 'NOINDEX', reden: 'Foutpagina. Hoort nooit in de sitemap of in een canonical.', bestaand: true });
 
-/* ---- Release 2: het nieuwspad wordt nu al geclaimd ----
-   Niet om iets te publiceren, maar om te voorkomen dat een latere oplossing,
-   sector of gemeente de slug 'nieuws' krijgt. Het contract staat in
-   data/seo/nieuws-architectuur.json; er is in deze release niets van
-   geïmplementeerd. */
+/* ---- Release 2: het nieuwskanaal ----
+   Release 1 claimde hier alleen het padsegment 'nieuws' en liet de rest
+   PENDING. Release 2.1 vult de toestandsmachine in volgens het contract in
+   data/seo/nieuws-architectuur.json.
+
+   DE KERN: EEN ARTIKEL PROMOVEERT NOOIT ZICHZELF.
+   De redactionele staat staat in het inhoudsbestand en komt daar van een
+   mens. Het intelligenceplatform schrijft artikelen weg als CONCEPT of
+   TER_REDACTIE; alleen GOEDGEKEURD — mét naam en datum van wie het vrijgaf —
+   kan hier naar INDEX. Er is geen drempelgetal, geen teller en geen
+   tijdslot dat dat kan overrulen. Zie intelligence/src/site/nieuwsregister.ts
+   voor de schrijvende kant.
+
+   INGETROKKEN GEEFT GEEN NOINDEX-PAGINA MAAR GEEN PAGINA.
+   De generator maakt alleen bestanden voor INDEX-routes en ruimt met het
+   manifest op wat dat niet meer is. Een ingetrokken artikel verdwijnt dus en
+   de URL geeft 404. Moet een ingetrokken artikel zijn URL houden, dan hoort
+   er een doorverwijsstub te komen zoals de bestaande stubs in de wortel;
+   dat is een redactionele handeling, geen automatische. */
+const NIEUWS_WORTEL = 'nieuws';
+
+/* De vier brontypen die een nieuwsfeit zelfstandig kunnen dragen. MARKTPARTIJ
+   staat er bewust niet bij: een persbericht van een leverancier is een
+   belanghebbende, geen vaststelling. Het contract schrijft deze lijst
+   letterlijk voor. EIGEN_MEETDATA ook niet — eigen data is geen publiek
+   controleerbare bron. */
+const DRAGENDE_BRONSOORTEN = new Set(['WETGEVING', 'TOEZICHTHOUDER', 'NETBEHEERDER', 'STATISTIEK']);
+
+const gemeentecodes = new Set(gemeenten.map((g) => g.gemeentecode));
+const provinciecodes = new Set(provincies.map((p) => p.provinciecode));
+
+/* Wat tot hier in het register staat, is wat een artikel als eigenaar mag
+   aanwijzen. Het nieuwsblok staat daarom bewust ONDERAAN dit bestand. */
+const staatVan = new Map(routes.map((r) => [r.route, r.staat]));
+
+const ISO_DATUM = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Toetst één nieuwsartikel tegen de zes publicatiepoorten uit het contract.
+ * Geeft de eerste reden terug waarom het NIET door mag; null betekent door.
+ */
+function weigerNieuws(j) {
+  const staat = String(j.redactionele_staat || '').toUpperCase();
+
+  if (staat === 'INGETROKKEN') return 'Redactionele staat is INGETROKKEN.';
+  if (staat !== 'GOEDGEKEURD') {
+    return `Redactionele staat is ${staat || 'niet gezet'}; alleen GOEDGEKEURD mag naar INDEX.`;
+  }
+  if (!j.goedgekeurd_door || !String(j.goedgekeurd_door).trim()) {
+    return 'GOEDGEKEURD zonder `goedgekeurd_door`. Een goedkeuring zonder naam is geen goedkeuring.';
+  }
+  if (!ISO_DATUM.test(String(j.goedgekeurd_op || ''))) {
+    return 'GOEDGEKEURD zonder geldige `goedgekeurd_op` (ISO-datum).';
+  }
+  if (!ISO_DATUM.test(String(j.gepubliceerd || ''))) {
+    return '`gepubliceerd` ontbreekt of is geen ISO-datum; een nieuwsartikel zonder datum veroudert onzichtbaar.';
+  }
+
+  const bronnen = Array.isArray(j.bronnen) ? j.bronnen : [];
+  if (!bronnen.length) return 'Geen enkele bron in `bronnen`.';
+  for (const b of bronnen) {
+    if (!b || !b.url || !b.naam) return 'Een bron zonder naam of URL.';
+    if (!ISO_DATUM.test(String(b.datum || ''))) return `Bron '${b.naam}' zonder geldige raadpleegdatum.`;
+  }
+  const dragend = bronnen.filter((b) => DRAGENDE_BRONSOORTEN.has(String(b.soort || '').toUpperCase()));
+  if (!dragend.length) {
+    return `Geen dragende bron. Minstens één van ${[...DRAGENDE_BRONSOORTEN].join(', ')} is vereist; een marktpartij alleen is niet genoeg.`;
+  }
+
+  /* Elk cijfer met bron. Poort 10 van audit.mjs toetst de tekst zelf; hier
+     wordt alleen afgedwongen dat het claimregister zelf compleet is. */
+  const claims = Array.isArray(j.claims) ? j.claims : [];
+  if (claims.some((c) => !c.bron_url || !c.bron_datum)) {
+    return 'Een claim zonder `bron_url` of `bron_datum`.';
+  }
+
+  const eigenaar = String(j.onderwerp_eigenaar || '').replace(/^\/+/, '');
+  if (!eigenaar) {
+    return '`onderwerp_eigenaar` ontbreekt. Een nieuwsartikel leent zijn commerciële intentie en moet zeggen van wie.';
+  }
+  if (staatVan.get(eigenaar) !== 'INDEX') {
+    return `Onderwerp-eigenaar '${eigenaar}' staat niet op INDEX (${staatVan.get(eigenaar) ?? 'bestaat niet'}).`;
+  }
+
+  for (const code of j.regio_links || []) {
+    if (!gemeentecodes.has(code) && !provinciecodes.has(code)) {
+      return `regio_link '${code}' is geen bestaande gemeentecode of provinciecode uit data/geo.`;
+    }
+  }
+
+  for (const r of j.oplossing_links || []) {
+    const k = String(r).replace(/^\/+/, '');
+    if (staatVan.get(k) !== 'INDEX') return `oplossing_link '${k}' staat niet op INDEX.`;
+  }
+
+  return null;
+}
+
+const nieuwsRoutes = [...inhoud.keys()].filter((r) => r === `${NIEUWS_WORTEL}` || r.startsWith(`${NIEUWS_WORTEL}/`));
+let nieuwsIndex = 0;
+
+for (const route of nieuwsRoutes.sort()) {
+  if (route === NIEUWS_WORTEL) continue; /* de hub bouwt de generator zelf */
+  const j = inhoud.get(route).inhoud;
+  const weigering = weigerNieuws(j);
+  if (!weigering) nieuwsIndex += 1;
+  zet({
+    route,
+    soort: 'nationaal',
+    subsoort: 'nieuws',
+    staat: weigering ? 'PENDING' : 'INDEX',
+    reden: weigering
+      ? `Niet gepubliceerd: ${weigering}`
+      : `Goedgekeurd door ${j.goedgekeurd_door} op ${j.goedgekeurd_op}; ${(j.bronnen || []).length} bron(nen), waarvan minstens één dragend.`,
+    bezit: j.onderwerp_eigenaar ? `leent van ${j.onderwerp_eigenaar}` : null,
+    redactionele_staat: String(j.redactionele_staat || '').toUpperCase() || null,
+    bestaand: false,
+  });
+}
+
+/* De hub. Een overzichtspagina zonder artikelen is een lege pagina, dus hij
+   komt pas op INDEX als er iets te overzien is. Zo blijft het kanaal volledig
+   geïmplementeerd en tegelijk onzichtbaar tot de redactie iets vrijgeeft. */
 zet({
-  route: 'nieuws',
+  route: NIEUWS_WORTEL,
   soort: 'nationaal',
-  subsoort: 'nieuws-gereserveerd',
-  staat: 'PENDING',
+  subsoort: 'nieuws-hub',
+  staat: nieuwsIndex > 0 ? 'INDEX' : 'PENDING',
   reden:
-    'Gereserveerd voor Release 2 (News & Market Intelligence Engine). Het contract staat in data/seo/nieuws-architectuur.json. In Release 1 is hiervan NIETS geïmplementeerd: geen generator, geen bestand, geen sitemapregel, geen interne link.',
+    nieuwsIndex > 0
+      ? `Overzicht van ${nieuwsIndex} gepubliceerd(e) artikel(en).`
+      : `Geen enkel goedgekeurd artikel (${nieuwsRoutes.filter((r) => r !== NIEUWS_WORTEL).length} kandidaten in data/inhoud/nieuws/). Een lege nieuwshub wordt niet gepubliceerd.`,
   bestaand: false,
 });
 

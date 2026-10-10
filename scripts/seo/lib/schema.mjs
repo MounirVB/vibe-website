@@ -137,6 +137,46 @@ export function artikel(paginaUrl, { titel, beschrijving, gepubliceerd, gewijzig
   };
 }
 
+/**
+ * Nieuwsartikel. Naast `artikel()` omdat een nieuwsbericht twee dingen draagt
+ * die een TechArticle niet heeft:
+ *
+ * · `citation` — de primaire bronnen, zodat het getal in het artikel zijn
+ *   herkomst meedraagt in de structured data en niet alleen in de zichtbare
+ *   bronregel. Een antwoordmachine die de JSON-LD leest en de HTML overslaat,
+ *   ziet zo nog steeds waar het feit vandaan komt.
+ * · `isBasedOn` — de onderwerp-eigenaar. Het artikel claimt de commerciële
+ *   intentie niet zelf; het leent die van de nationale pagina.
+ *
+ * Er komt bewust GEEN `author` met een persoonsnaam in: de site heeft geen
+ * redactieleden met een profiel, en een verzonnen auteur is een verzinsel.
+ * De organisatie is auteur en uitgever, zoals bij `artikel()`.
+ */
+export function nieuwsartikel(paginaUrl, { titel, beschrijving, gepubliceerd, gewijzigd, bronnen, eigenaarUrl }) {
+  const k = {
+    '@type': 'NewsArticle',
+    '@id': `${paginaUrl}#artikel`,
+    headline: titel,
+    description: beschrijving,
+    datePublished: gepubliceerd,
+    dateModified: gewijzigd || gepubliceerd,
+    author: { '@id': ORG_ID },
+    publisher: { '@id': ORG_ID },
+    inLanguage: 'nl-NL',
+    isPartOf: { '@id': SITE_ID },
+  };
+  if (bronnen && bronnen.length) {
+    k.citation = bronnen.map((b) => ({
+      '@type': 'CreativeWork',
+      name: b.naam,
+      url: b.url,
+      ...(b.datum ? { dateAccessed: b.datum } : {}),
+    }));
+  }
+  if (eigenaarUrl) k.isBasedOn = eigenaarUrl;
+  return k;
+}
+
 /** Bestuurlijk gebied. `code` is de CBS-gemeentecode of de provinciecode. */
 export function gebied(paginaUrl, { naam, soort, code, ouderNaam, centroide }) {
   const g = {

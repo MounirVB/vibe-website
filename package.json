@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "description": "Vibe Energy website — statische site",
   "scripts": {
-    "qa:assets": "node scripts/qa-assets.mjs"
+    "qa:assets": "node scripts/qa-assets.mjs",
+    "seo:bouw": "node scripts/seo/bouw.mjs --offline",
+    "seo:poort": "node scripts/seo/audit.mjs",
+    "qa:nieuws": "node scripts/seo/qa-nieuws.mjs"
   }
 }

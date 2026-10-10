@@ -1,15 +1,33 @@
 {
-  "_toelichting": "GERESERVEERDE ARCHITECTUUR VOOR RELEASE 2 — News & Market Intelligence Engine. Dit bestand beschrijft het contract; er is in Release 1 BEWUST niets van geïmplementeerd. Er is geen generator, geen route op INDEX, geen sitemapregel en geen enkele geautomatiseerde publicatie. Wie Release 2 bouwt, begint hier.",
-  "_status": "GERESERVEERD, NIET GEÏMPLEMENTEERD",
+  "_toelichting": "ARCHITECTUUR VAN HET NIEUWSKANAAL. Release 1 legde dit contract vast zonder er iets van te implementeren. Release 2.1 heeft het geïmplementeerd: de toestandsmachine, de generator, de poort en de QA staan er. Er is nog NUL artikel gepubliceerd, en dat is de bedoelde uitkomst — publiceren vraagt een menselijke goedkeuring die in deze release niet is gegeven.",
+  "_status": "GEÏMPLEMENTEERD IN RELEASE 2.1 — NUL GEPUBLICEERDE ARTIKELEN",
   "_vastgesteld": "2026-10-10",
-  "_release_1_bevat": "niets van dit contract behalve dit bestand en de routereservering",
+  "_geimplementeerd": "2026-10-10",
+  "_waar": {
+    "toestandsmachine": "scripts/seo/bouw-routes.mjs — weigerNieuws(), zes poorten uit dit contract",
+    "generator": "scripts/seo/genereer-nieuws.mjs — hub, artikelpagina's, afgeleide navigatie",
+    "structured_data": "scripts/seo/lib/schema.mjs — nieuwsartikel() met citation en isBasedOn",
+    "navigatie": "scripts/seo/lib/sjabloon.mjs — voorwaardelijk item, zetNavToets()",
+    "poort": "scripts/seo/audit.mjs — poort 16, plus poort 10 en 13 uitgebreid naar nieuws",
+    "qa": "scripts/seo/qa-nieuws.mjs — 47 toetsen met een fixture die daarna wordt opgeruimd",
+    "schrijvende_kant": "intelligence/src/site/nieuwsregister.ts"
+  },
 
   "routereservering": {
     "wortel": "nieuws",
     "artikel": "nieuws/<slug>",
     "waarom_nu_vastleggen": "Het padsegment 'nieuws' wordt hier geclaimd zodat geen latere oplossing, sector of gemeente dezelfde slug krijgt. De slugbotsingspoort in scripts/seo/bouw-routes.mjs kan er dan op toetsen.",
-    "staat_in_release_1": "PENDING — geen bestand, geen sitemapregel, geen interne link."
+    "staat_in_release_1": "PENDING — geen bestand, geen sitemapregel, geen interne link.",
+    "staat_in_release_2_1": "PENDING — de hub komt pas op INDEX zodra er minstens één goedgekeurd artikel is. Een lege nieuwshub wordt niet gepubliceerd."
   },
+
+  "_correctie_op_dit_contract": {
+    "wat": "Onder publicatiepoorten_voor_release_2 stond dat poort 10 van audit.mjs het cijfer-met-bron al afdekt.",
+    "waarom_onjuist": "Poort 10 toetste de zichtbare bronregel per sectie alleen voor soort 'regio'. Een nationale pagina en dus ook een nieuwsbericht viel erbuiten.",
+    "opgelost": "Poort 10 is in Release 2.1 uitgebreid naar subsoort 'nieuws', met een bredere cijferdefinitie (bedragen, percentages, vermogens, energie) en blokkerend in plaats van adviserend."
+  },
+
+  "_activeringsstap_die_een_mens_moet_doen": "vibe/chrome.js draagt de zichtbare navigatie en kan het routeregister niet lezen. Zodra de hub op INDEX komt, moet daar met de hand een /nieuws-link bij. Poort 16 FAALT zolang dat niet is gebeurd, zodat het kanaal niet live kan staan zonder dat een bezoeker het kan vinden.",
 
   "artikelschema": {
     "route": "nieuws/<slug>",

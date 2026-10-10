@@ -428,9 +428,9 @@
     {
       "route": "nieuws",
       "soort": "nationaal",
-      "subsoort": "nieuws-gereserveerd",
+      "subsoort": "nieuws-hub",
       "staat": "PENDING",
-      "reden": "Gereserveerd voor Release 2 (News & Market Intelligence Engine). Het contract staat in data/seo/nieuws-architectuur.json. In Release 1 is hiervan NIETS geïmplementeerd: geen generator, geen bestand, geen sitemapregel, geen interne link.",
+      "reden": "Geen enkel goedgekeurd artikel (0 kandidaten in data/inhoud/nieuws/). Een lege nieuwshub wordt niet gepubliceerd.",
       "bestaand": false
     },
     {

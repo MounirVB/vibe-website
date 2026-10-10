@@ -97,21 +97,28 @@ writeFileSync(resolve(wortel, 'sitemap.xml'), xml);
 
 /* robots.txt — de sitemapverwijzing moet naar de host die 200 geeft, en de
    bouwinvoer hoort geen crawlbudget te kosten. De staticfile-host serveert de
-   hele repowortel, dus data/, scripts/ en docs/ zijn publiek opvraagbaar. Daar
-   staat niets geheims in, maar het is samen enkele megabytes JSON en Markdown
-   die geen zoekresultaat horen te worden. */
+   hele repowortel, dus data/, scripts/, docs/ en intelligence/ zijn publiek
+   opvraagbaar. Daar staat niets geheims in — .env en backups/ zijn genegeerd en
+   de geheimenscan draait in CI — maar het is samen enkele megabytes JSON,
+   Markdown en broncode die geen zoekresultaat horen te worden.
+
+   LET OP: dit is GEEN toegangsbeperking. robots.txt vraagt een crawler iets;
+   het houdt niemand tegen. De beveiliging van het platform zit in de
+   authenticatie van het dashboard en in de rechten op de database, niet hier. */
 const robots = `User-agent: *
 Allow: /
 
 # Bouwinvoer, geen inhoud. Deze mappen worden door de statische host wel
 # geserveerd maar horen niet gecrawld te worden:
-#   data/    het routeregister, de geo- en bewijsdata en de inhoudsbestanden
-#   scripts/ de generator en de poorten
-#   docs/    interne ontwerp- en redactiedocumentatie
+#   data/         het routeregister, de geo- en bewijsdata en de inhoudsbestanden
+#   scripts/      de generator en de poorten
+#   docs/         interne ontwerp- en redactiedocumentatie
+#   intelligence/ de broncode van het intelligenceplatform
 Disallow: /data/
 Disallow: /scripts/
 Disallow: /docs/
 Disallow: /api/
+Disallow: /intelligence/
 
 # Sitemap op de host die zelf 200 geeft. De apex vibeenergy.nl stuurt met 301
 # door naar www; een sitemapverwijzing naar een doorverwijzing is onnodig.

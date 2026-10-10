@@ -55,7 +55,7 @@ function alleInhoud() {
  *
  * Externe links, ankers, mailto en tel blijven ongemoeid.
  */
-function normaliseerHrefs(html, motor) {
+export function normaliseerHrefs(html, motor) {
   let uit = String(html).replace(/href="([^"]+)"/g, (hele, h) => {
     if (/^(https?:|mailto:|tel:|#|\/|javascript:)/i.test(h)) return hele;
     const [pad, rest] = h.split(/(?=[#?])/);
@@ -96,7 +96,7 @@ function alineas(lijst, bronnen, motor) {
   return bronnen && bronnen.length ? `${h}\n        ${bronregel(bronnen)}` : h;
 }
 
-function sectieHtml(s, motor) {
+export function sectieHtml(s, motor) {
   switch (s.soort) {
     case 'tekst':
       return tekstsectie({
@@ -135,6 +135,10 @@ export function bouwNationaal({ register, motor, schrijf, reg }) {
     const r = register.get(route);
     if (!r) { fouten.push(`${pad}: route '${route}' staat niet in het register`); continue; }
     if (r.staat !== 'INDEX') continue;
+    /* Nieuwsartikelen hebben een eigen bouwer: ze leiden hun kruimelpad,
+       verwante links en bronnenlijst af uit de contractvelden in plaats van
+       die te laten uittypen. Zie scripts/seo/genereer-nieuws.mjs. */
+    if (j.type === 'nieuws' || route === 'nieuws' || route.startsWith('nieuws/')) continue;
 
     const paginaUrl = url(route);
 

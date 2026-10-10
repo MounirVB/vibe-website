@@ -1,0 +1,246 @@
+# ============================================================
+#  VIBE ENERGY — KWALITEITSPOORT
+#  ------------------------------------------------------------
+#  Draait op elke pull request en op de integratiebranches. Een
+#  publicatie-PR die hierop faalt mag niet gemerged worden; dat is de
+#  reden dat deze poort bestaat.
+#
+#  WAT DEZE WERKSTROOM BEWUST NIET DOET
+#
+#  · Hij raakt GEEN productiecredential aan. De enige database is een
+#    wegwerpcontainer in de runner. Er is geen secret nodig en er wordt
+#    er geen aangeboden; zie `permissions` hieronder.
+#  · Hij deployt niet. Deze repository publiceert vibeenergy.nl bij
+#    een push naar `main` via Railway, en dat is een handeling van een
+#    mens met een merge, niet van een werkstroom.
+#  · Hij draait geen netwerkophaalacties. INTEL_NETWERK_TOEGESTAAN=0
+#    zet de collector uit; de bronnen zijn van derden en een CI-run
+#    hoort hun servers niet te belasten bij elke commit.
+#
+#  DE REPOSITORY IS PUBLIEK (gemeten 10 oktober 2026). Daarom:
+#  `permissions` staat expliciet op alleen-lezen, en er wordt nergens
+#  `pull_request_target` gebruikt — dat zou code uit een fork met
+#  schrijfrechten laten draaien.
+# ============================================================
+name: Kwaliteitspoort
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - "feat/**"
+      - "fix/**"
+  workflow_dispatch:
+
+# Minimale rechten. Een werkstroom die alleen test hoeft niets te
+# kunnen schrijven.
+permissions:
+  contents: read
+
+concurrency:
+  group: poort-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Node 24 draait TypeScript zonder buildstap; dat is de hele reden dat
+  # dit project geen bundler heeft.
+  NODE_VERSION: "24"
+
+jobs:
+  # ----------------------------------------------------------------
+  #  1. Release 1 — de statische site en zijn zestien poorten
+  # ----------------------------------------------------------------
+  release1:
+    name: Release 1 — SEO/GEO-poorten en reproduceerbaarheid
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # De sitemapgenerator leest git-commitdata voor lastmod, dus
+          # een shallow clone zou verkeerde datums opleveren.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Generatorketen draaien (offline)
+        run: node scripts/seo/bouw.mjs --offline
+
+      - name: De generator moet REPRODUCEERBAAR zijn
+        # Dit is de scherpste poort van Release 1: de gegenereerde HTML
+        # en de sitemap staan gecommit, dus na een volledige ketenrun
+        # hoort `git status` leeg te zijn. Is hij dat niet, dan wijkt de
+        # gecommitte uitvoer af van wat de generator maakt en zou een
+        # deploy iets anders opleveren dan de review liet zien.
+        run: |
+          gewijzigd="$(git status --porcelain -- . ':(exclude)intelligence')"
+          if [ -n "$gewijzigd" ]; then
+            echo "::error::De generatorketen wijzigde bestanden. De gecommitte uitvoer loopt uit de pas."
+            echo "$gewijzigd"
+            git diff --stat -- . ':(exclude)intelligence'
+            exit 1
+          fi
+          echo "git status is leeg: de gecommitte uitvoer klopt met de generator."
+
+      - name: QA nieuwskanaal
+        run: node scripts/seo/qa-nieuws.mjs
+
+      - name: Assetpoort (met vastgelegde basislijn)
+        # qa:assets faalt op de gedeployde basislijn a2fbad7 met twee
+        # bekende, verantwoorde bevindingen in vibe/chrome.js. Deze
+        # wrapper laat precies die twee door en blokkeert op een derde.
+        run: node intelligence/ops/assetpoort.mjs
+
+  # ----------------------------------------------------------------
+  #  2. Release 2 — het intelligenceplatform
+  # ----------------------------------------------------------------
+  release2:
+    name: Release 2 — typecheck, tests en invarianten
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        # Major MOET overeenkomen met productie. pg_dump en pg_restore
+        # weigeren over majors heen, en een migratie die op 17 werkt kan
+        # op 16 anders uitpakken.
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: ci-wegwerp-wachtwoord
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      # Een wegwerpdatabase in de runner. GEEN productiecredential: deze
+      # verbinding bestaat alleen zolang de job draait.
+      INTEL_DB_URL: postgresql://postgres:ci-wegwerp-wachtwoord@127.0.0.1:5432/vibe_intel_ci
+      INTEL_OMGEVING: test
+      INTEL_ORGANISATIE: vibe-energy
+      INTEL_DB_APP_ROL: vibe_intel_app
+      INTEL_DB_ONDERHOUD_ROL: vibe_intel_onderhoud
+      INTEL_SITE_BASIS_URL: https://www.vibeenergy.nl
+      # Geen enkele bron van derden wordt in CI aangeroepen.
+      INTEL_NETWERK_TOEGESTAAN: "0"
+      # Een vast, waardeloos geheim: er loopt in CI geen echte sessie.
+      INTEL_SESSIE_GEHEIM: ci-geheim-dat-nergens-toegang-geeft-32+
+      INTEL_LOG_NIVEAU: waarschuwing
+
+    defaults:
+      run:
+        working-directory: intelligence
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: intelligence/package-lock.json
+
+      - name: Dependencies uit de lockfile
+        # npm ci en niet npm install: ci respecteert de lockfile en
+        # faalt als package.json en de lockfile uit elkaar lopen.
+        run: npm ci
+
+      - name: Lockfile-integriteit
+        run: |
+          if ! git diff --quiet -- package-lock.json; then
+            echo "::error::npm ci wijzigde de lockfile. package.json en package-lock.json lopen uit elkaar."
+            exit 1
+          fi
+          echo "lockfile onveranderd na npm ci"
+
+      - name: PostgreSQL 17-client installeren
+        # De runner heeft standaard de client van Ubuntu, en die is 16.
+        # Een pg16-client WEIGERT een pg17-server te dumpen:
+        #   pg_dump: error: aborting because of server version mismatch
+        # De back-uptoetsen vielen daar op de eerste CI-run precies over,
+        # en dat was geen codefout maar een omgevingsgat. vindPgGereedschap()
+        # zoekt in /usr/lib/postgresql/<major>/bin, dus deze installatie is
+        # genoeg; de clientversie moet de SERVERversie kunnen aankunnen.
+        run: |
+          set -euo pipefail
+          sudo install -d /usr/share/postgresql-common/pgdg
+          # GEEN `gpg --dearmor`: dat opent /dev/tty, en op een runner
+          # bestaat die niet ("gpg: cannot open '/dev/tty'"). apt leest een
+          # ASCII-armored sleutel rechtstreeks, mits de bestandsnaam op
+          # .asc eindigt. Dat scheelt de hele gpg-stap.
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          # Eén regel, geen voortzettingsteken: een backslash-newline bínnen
+          # de aanhalingstekens kwam letterlijk in sources.list terecht.
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+          /usr/lib/postgresql/17/bin/pg_dump --version
+          /usr/lib/postgresql/17/bin/psql --version
+
+      - name: De testdatabase aanmaken
+        run: |
+          /usr/lib/postgresql/17/bin/psql \
+            "postgresql://postgres:ci-wegwerp-wachtwoord@127.0.0.1:5432/postgres" \
+            -v ON_ERROR_STOP=1 -c "create database vibe_intel_ci"
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Migraties toepassen en op drift controleren
+        run: |
+          npm run migreer
+          npm run migreer -- --droog
+
+      - name: Eenheidstoetsen
+        run: npm run test:eenheid
+
+      - name: Integratietoetsen (echte database, applicatierol, RLS actief)
+        run: npm run test:integratie
+
+      - name: Adversariële toetsen
+        run: npm run test:adversarieel
+
+      - name: De volledige regressiepoort
+        # poort.ts draait typecheck, bronregister, migraties,
+        # rolcontrole, invarianten en alle suites, en print een tabel
+        # waarin NIET GEDRAAID iets anders is dan PASS.
+        run: npm run poort
+
+  # ----------------------------------------------------------------
+  #  3. Beveiliging en geheimen
+  # ----------------------------------------------------------------
+  beveiliging:
+    name: Geheimen, kwetsbaarheden en publicatiecontract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Geen geheimen in de boom
+        # Deze repository is PUBLIEK. Een gecommit geheim is dus
+        # onmiddellijk openbaar, en rouleren is de enige herstelactie.
+        run: node intelligence/ops/geheimenscan.mjs
+
+      - name: Kwetsbare dependencies
+        working-directory: intelligence
+        run: |
+          npm ci
+          # Precies twee runtime-dependencies; een hoge bevinding hoort
+          # de poort te blokkeren, lagere worden gerapporteerd.
+          npm audit --audit-level=high
+
+      - name: Publicatiecontract
+        # Het nieuwskanaal mag geen artikel op INDEX hebben zonder
+        # menselijke goedkeuring, en de sitemap moet met het
+        # routeregister kloppen.
+        run: node intelligence/ops/publicatiecontract.mjs
