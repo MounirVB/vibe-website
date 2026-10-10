@@ -3,9 +3,16 @@
    CLI — wachtwoord zetten
    ------------------------------------------------------------
      npm run wachtwoord -- --email <adres> --wachtwoord <geheim>
+     INTEL_WACHTWOORD=<geheim> npm run wachtwoord -- --email <adres>
 
    Gebruikers worden zonder hash gezaaid; zonder deze stap kan er niet
    ingelogd worden. Minimaal twaalf tekens.
+
+   DE TWEEDE VORM BESTAAT OM EEN LEK TE VOORKOMEN. npm echoot de
+   volledige commandoregel naar stdout, en een platform als Railway
+   bewaart die uitvoer als deployment-log. `--wachtwoord` op de
+   commandoregel zet het productiewachtwoord dus in een logarchief.
+   Via de omgeving gebeurt dat niet.
    ============================================================ */
 import { maakPool, metOrganisatie, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
@@ -18,11 +25,14 @@ function argument(naam: string): string | undefined {
 
 async function main(): Promise<number> {
   const email = argument("email");
-  const wachtwoord = argument("wachtwoord");
+  const wachtwoord = argument("wachtwoord") ?? process.env["INTEL_WACHTWOORD"];
   if (!email || !wachtwoord) {
     process.stderr.write("gebruik: npm run wachtwoord -- --email <adres> --wachtwoord <geheim>\n");
+    process.stderr.write("   of:  INTEL_WACHTWOORD=<geheim> npm run wachtwoord -- --email <adres>\n");
     return 2;
   }
+  // De minimumlengte wordt NIET hier bewaakt maar in maakWachtwoordHash();
+  // één plek voor één regel. Die gooit een IntelFout met uitleg.
   const pool = maakPool();
   const organisatieId = await huidigeOrganisatie(pool);
   const hash = await maakWachtwoordHash(wachtwoord);
