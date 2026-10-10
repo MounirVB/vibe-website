@@ -22,7 +22,14 @@ import { configLezen } from "../kern/config.ts";
 import { eenRij, metOrganisatie, rijen, type Pool } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 import { kort, sha256hex, slug } from "../kern/tekst.ts";
-import { boekAanroep, controleerBudget, kiesProvider, type Provider } from "./model.ts";
+import { boekAanroep, kiesProvider, type Provider } from "./model.ts";
+import {
+  budgetStand,
+  isModelToegestaan,
+  meldMislukking,
+  meldSucces,
+  onderbrekerStand,
+} from "../ops/aibeheer.ts";
 import { toetsConcept, vatPoortenSamen, type GebondenUitspraak } from "./poorten.ts";
 
 const log = maakLogger("concept");
@@ -358,8 +365,16 @@ export function inhoudAfdruk(c: {
   bodyMarkdown: string;
   structuredData: unknown;
 }): string {
+  /* De scheiding is een NUL-byte: die kan in normale tekst niet
+     voorkomen, dus de afdruk is ondubbelzinnig. Hij staat hier als
+     ESCAPE en niet als letterlijke byte, en dat is geen smaak.
+     Met een rauwe NUL erin ziet `file` dit bestand als `data` en
+     slaat grep het STIL over: een zoekactie naar kiesProvider in dit
+     bestand gaf nul resultaten terwijl de aanroep er wel staat. Een
+     beveiligingsscan die op grep leunt zou dit hele bestand missen.
+     De hash verandert niet: de string is byte-identiek. */
   return sha256hex(
-    [c.titel, c.directAntwoord, c.bodyMarkdown, JSON.stringify(c.structuredData)].join(" "),
+    [c.titel, c.directAntwoord, c.bodyMarkdown, JSON.stringify(c.structuredData)].join("\u0000"),
   );
 }
 
@@ -462,10 +477,43 @@ export async function maakConcept(
     let modelGebruikt = "deterministisch";
     if (opties.metModel) {
       const provider: Provider = kiesProvider();
-      const budget = await controleerBudget(c, organisatieId);
-      if (!budget.mag) {
+
+      /* Vier grendels vóór een declarabele aanroep, elk met een eigen
+         reden om te bestaan:
+
+           1 de ALLOWLIST — een model dat niet expliciet is toegestaan
+             wordt niet aangeroepen, ook niet als de configuratie hem
+             noemt. Een lege allowlist betekent niets toegestaan; dat
+             is de veilige kant bij een verse installatie.
+           2 de STROOMONDERBREKER — bij een provider die structureel
+             faalt is doorgaan geld betalen voor mislukte aanroepen.
+           3 het BUDGET — dag, maand, tokens en gemeten kosten.
+           4 de deterministische TERUGVAL — elke grendel laat het
+             deterministische concept staan en breekt niets. De
+             ingestielaag en de poorten werken zonder model.
+
+         De orde is niet vrij: allowlist en onderbreker zijn gratis
+         databasevragen, het budget ook, en pas daarna mag er geld
+         uit. */
+      const allow = await isModelToegestaan(c, provider.naam, provider.model);
+      const breker = await onderbrekerStand(c, organisatieId);
+      const budget = await budgetStand(c, organisatieId);
+
+      if (provider.naam !== "openai") {
+        log.info("deterministische provider; geen modelaanroep", { provider: provider.naam });
+      } else if (!allow.toegestaan) {
+        log.waarschuwing("modelaanroep overgeslagen: niet op de allowlist", {
+          model: provider.model,
+          reden: allow.reden,
+        });
+      } else if (breker.open) {
+        log.waarschuwing("modelaanroep overgeslagen: stroomonderbreker open", {
+          tot: breker.openTot,
+          reden: breker.reden,
+        });
+      } else if (!budget.mag) {
         log.waarschuwing("modelaanroep overgeslagen wegens budget", { reden: budget.reden });
-      } else if (provider.naam === "openai") {
+      } else {
         try {
           const antwoord = await provider.genereer({
             doel: "concept_herschrijven",
@@ -480,6 +528,8 @@ export async function maakConcept(
             promptHash: antwoord.promptHash,
             geslaagd: true,
           });
+          // De onderbrekerteller terug naar nul: deze provider werkt.
+          await meldSucces(c, organisatieId);
           const herschreven = { ...concept, bodyMarkdown: antwoord.tekst.trim() };
           // Alleen overnemen als het geen nieuwe getallen introduceert.
           const proef = toetsVoorConcept(herschreven, invoer, uitspraken, bestaandePaden, config.siteBasisUrl);
@@ -505,7 +555,15 @@ export async function maakConcept(
             geslaagd: false,
             foutSoort: (e as Error).message.slice(0, 200),
           });
-          log.waarschuwing("modelaanroep mislukt; deterministische tekst behouden", { fout: e });
+          /* De onderbreker meetellen. Na vijf mislukkingen achtereen
+             gaat hij vijftien minuten open en kost een vastgelopen
+             provider geen geld meer. */
+          const na = await meldMislukking(c, organisatieId, (e as Error).message);
+          log.waarschuwing("modelaanroep mislukt; deterministische tekst behouden", {
+            fout: e,
+            mislukt_achtereen: na.misluktAchtereen,
+            onderbreker_open: na.open,
+          });
         }
       }
     }
