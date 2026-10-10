@@ -42,6 +42,18 @@ const COOKIE = "intel_sessie";
 
 type MetGebruiker = Request & { gebruiker?: Gebruiker };
 
+/**
+ * `; Secure` op de sessiecookie, maar alleen in productie.
+ *
+ * Een Secure-cookie wordt door de browser niet over http verstuurd. In
+ * ontwikkeling loopt het dashboard op http://127.0.0.1, dus daar zou de
+ * vlag inloggen onmogelijk maken. In productie is hij verplicht: zonder
+ * Secure reist het sessiekoekje mee over een eventuele http-verbinding.
+ */
+function cookieSecure(): string {
+  return configLezen().omgeving === "productie" ? "; Secure" : "";
+}
+
 export function maakApp(pool: Pool): express.Express {
   const app = express();
   app.disable("x-powered-by");
@@ -59,6 +71,11 @@ export function maakApp(pool: Pool): express.Express {
       "content-security-policy",
       "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'",
     );
+    // HSTS alleen in productie: op http://127.0.0.1 zou deze header de
+    // ontwikkelomgeving onbereikbaar maken zodra een browser hem onthoudt.
+    if (configLezen().omgeving === "productie") {
+      res.setHeader("strict-transport-security", "max-age=31536000; includeSubDomains");
+    }
     next();
   });
 
@@ -85,7 +102,7 @@ export function maakApp(pool: Pool): express.Express {
       (c) => leesGebruiker(c, sessie.gebruikerId),
     );
     if (!gebruiker) {
-      res.setHeader("set-cookie", `${COOKIE}=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict`);
+      res.setHeader("set-cookie", `${COOKIE}=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict${cookieSecure()}`);
       res.redirect("/inloggen");
       return;
     }
@@ -191,13 +208,13 @@ export function maakApp(pool: Pool): express.Express {
 
     res.setHeader(
       "set-cookie",
-      `${COOKIE}=${maakSessieCookie(kandidaat.id, kandidaat.organisatie_id)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=28800`,
+      `${COOKIE}=${maakSessieCookie(kandidaat.id, kandidaat.organisatie_id)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=28800${cookieSecure()}`,
     );
     res.redirect("/");
   });
 
   app.get("/uitloggen", (_req, res) => {
-    res.setHeader("set-cookie", `${COOKIE}=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict`);
+    res.setHeader("set-cookie", `${COOKIE}=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict${cookieSecure()}`);
     res.redirect("/inloggen");
   });
 
@@ -991,21 +1008,65 @@ async function eersteOrganisatie(pool: Pool, sleutel: string): Promise<number> {
   }
 }
 
-export function startDashboard(): { sluit: () => Promise<void> } {
-  const config = configLezen();
+/** Is dit adres de loopback? */
+export function isLoopback(bind: string): boolean {
+  return bind === "127.0.0.1" || bind === "::1" || bind === "localhost";
+}
+
+/**
+ * Mag het dashboard met deze instellingen starten?
+ *
+ * Geeft een reden terug als het NIET mag, of null als het mag. Apart
+ * en puur zodat de toets hem kan aanroepen zonder een server te
+ * starten.
+ *
+ * De regel die de opdracht eist: localhost-binding is niet het
+ * beveiligingsmodel. Dat is hier zo uitgewerkt dat een publieke
+ * binding in productie ALLEEN mag als de operator expliciet verklaart
+ * dat er een TLS-terminerende proxy voor staat. Zonder die verklaring
+ * weigert het dashboard te starten in plaats van stil onversleuteld
+ * sessiekoekjes over een publiek adres te sturen.
+ */
+export function startWeigering(config: {
+  omgeving: string;
+  dashboardBind: string;
+  dashboardAchterTlsProxy: boolean;
+  dashboardSessieGeheimAanwezig: boolean;
+}): string | null {
   if (!config.dashboardSessieGeheimAanwezig) {
-    throw new Error(
-      "INTEL_SESSIE_GEHEIM ontbreekt of is korter dan 32 tekens; het dashboard start niet zonder sessiegeheim",
+    return "INTEL_SESSIE_GEHEIM ontbreekt of is korter dan 32 tekens; het dashboard start niet zonder sessiegeheim";
+  }
+  if (
+    config.omgeving === "productie" &&
+    !isLoopback(config.dashboardBind) &&
+    !config.dashboardAchterTlsProxy
+  ) {
+    return (
+      `weigering: in productie bindt het dashboard op '${config.dashboardBind}', dus niet op de ` +
+      "loopback, en INTEL_DASHBOARD_ACHTER_TLS_PROXY staat niet aan. Zonder TLS ervoor zou het " +
+      "sessiekoekje onversleuteld over een publiek adres gaan. Bind op 127.0.0.1 en zet er een " +
+      "geauthenticeerde tunnel of reverse proxy voor, of verklaar expliciet dat die proxy er is."
     );
   }
+  return null;
+}
+
+export function startDashboard(): { sluit: () => Promise<void> } {
+  const config = configLezen();
+  const weigering = startWeigering(config);
+  if (weigering) throw new Error(weigering);
+
   const pool = maakPool();
   const app = maakApp(pool);
-  const server = app.listen(config.dashboardPoort, "127.0.0.1", () => {
+  const server = app.listen(config.dashboardPoort, config.dashboardBind, () => {
     log.info("dashboard draait", {
-      url: `http://127.0.0.1:${config.dashboardPoort}`,
-      // Bewust alleen op localhost: dit dashboard hoort niet publiek te
-      // staan, en de statische site draait op een andere service.
-      gebonden_aan: "127.0.0.1",
+      url: `http://${config.dashboardBind}:${config.dashboardPoort}`,
+      // Standaard alleen op de loopback. De beveiliging hangt daar
+      // echter NIET van af: elke route eist een sessie en de rechten
+      // worden per verzoek uit de database gelezen.
+      gebonden_aan: config.dashboardBind,
+      achter_tls_proxy: config.dashboardAchterTlsProxy,
+      omgeving: config.omgeving,
     });
   });
   return {

@@ -166,3 +166,60 @@ test("IntelFout kiest een verstandige herhaalbaarheid per soort", () => {
   assert.equal(new IntelFout("poort", "x").herhaalbaar, false);
   assert.equal(new IntelFout("bron_voorwaarden", "x").herhaalbaar, false);
 });
+
+// ---------------- dashboard: productiebinding ----------------
+// De opdracht eist dat localhost-binding NIET het beveiligingsmodel is.
+// Dat is zo uitgewerkt dat een publieke binding in productie zonder
+// TLS-proxy wordt geweigerd, in plaats van stil toegestaan.
+
+test("dashboard: productie + publieke binding zonder TLS-proxy wordt geweigerd", async () => {
+  const { startWeigering } = await import("../../src/dashboard/server.ts");
+  const reden = startWeigering({
+    omgeving: "productie",
+    dashboardBind: "0.0.0.0",
+    dashboardAchterTlsProxy: false,
+    dashboardSessieGeheimAanwezig: true,
+  });
+  assert.ok(reden, "dit had geweigerd moeten worden");
+  assert.match(reden!, /TLS/);
+});
+
+test("dashboard: productie + publieke binding MET verklaarde TLS-proxy mag", async () => {
+  const { startWeigering } = await import("../../src/dashboard/server.ts");
+  assert.equal(
+    startWeigering({
+      omgeving: "productie",
+      dashboardBind: "0.0.0.0",
+      dashboardAchterTlsProxy: true,
+      dashboardSessieGeheimAanwezig: true,
+    }),
+    null,
+  );
+});
+
+test("dashboard: productie op de loopback mag altijd", async () => {
+  const { startWeigering, isLoopback } = await import("../../src/dashboard/server.ts");
+  assert.ok(isLoopback("127.0.0.1"));
+  assert.ok(isLoopback("::1"));
+  assert.ok(!isLoopback("0.0.0.0"));
+  assert.equal(
+    startWeigering({
+      omgeving: "productie",
+      dashboardBind: "127.0.0.1",
+      dashboardAchterTlsProxy: false,
+      dashboardSessieGeheimAanwezig: true,
+    }),
+    null,
+  );
+});
+
+test("dashboard: zonder sessiegeheim start het nooit, ook niet in ontwikkeling", async () => {
+  const { startWeigering } = await import("../../src/dashboard/server.ts");
+  const reden = startWeigering({
+    omgeving: "ontwikkel",
+    dashboardBind: "127.0.0.1",
+    dashboardAchterTlsProxy: false,
+    dashboardSessieGeheimAanwezig: false,
+  });
+  assert.match(reden!, /INTEL_SESSIE_GEHEIM/);
+});

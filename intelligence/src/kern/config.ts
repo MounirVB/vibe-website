@@ -36,6 +36,24 @@ export type Config = {
 
   readonly dashboardPoort: number;
   readonly dashboardSessieGeheimAanwezig: boolean;
+  /**
+   * Adres waarop het dashboard bindt. Standaard de loopback.
+   *
+   * Dit is instelbaar gemaakt omdat de opdracht expliciet eist dat
+   * localhost-binding NIET het productiebeveiligingsmodel is. Dat
+   * betekent niet dat de binding publiek moet; het betekent dat de
+   * beveiliging niet van de binding mág afhangen. Daarom:
+   * authenticatie en autorisatie per verzoek uit de database, een
+   * Secure-cookie en HSTS in productie, en een weigering om publiek te
+   * binden zonder dat er een TLS-proxy voor staat.
+   */
+  readonly dashboardBind: string;
+  /**
+   * Staat er een TLS-terminerende reverse proxy voor het dashboard?
+   * Alleen dán mag het in productie op een ander adres dan de loopback
+   * binden. Een vlag die de operator bewust zet, geen gok.
+   */
+  readonly dashboardAchterTlsProxy: boolean;
 
   readonly logNiveau: "debug" | "info" | "waarschuwing" | "fout";
   readonly userAgent: string;
@@ -137,6 +155,8 @@ export function configLezen(): Config {
     aiMaxTokensUit: geheel("INTEL_AI_MAX_TOKENS_UIT", 2000),
 
     dashboardPoort: geheel("INTEL_DASHBOARD_POORT", 4320),
+    dashboardBind: tekst("INTEL_DASHBOARD_BIND", "127.0.0.1"),
+    dashboardAchterTlsProxy: vlag("INTEL_DASHBOARD_ACHTER_TLS_PROXY", false),
     dashboardSessieGeheimAanwezig: tekst("INTEL_SESSIE_GEHEIM", "").length >= 32,
 
     logNiveau: (() => {
