@@ -28,11 +28,27 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type pg from "pg";
 import { configLezen } from "../kern/config.ts";
-import { eenRij, metOrganisatie, type Pool } from "../kern/db.ts";
+import { eenRij, metOrganisatie, rijen, type Pool } from "../kern/db.ts";
 import { IntelFout } from "../kern/fouten.ts";
 import { maakLogger } from "../kern/log.ts";
 import { sha256hex } from "../kern/tekst.ts";
-import { heeftRouteregister } from "../site/routeregister.ts";
+import { bronOpSleutel } from "../bronnen/register.ts";
+import {
+  heeftRouteregister,
+  leesRouteregister,
+  routeVoorCluster,
+} from "../site/routeregister.ts";
+import {
+  BRONSOORT_UIT_UITGEVER,
+  bouwNieuwsRecord,
+  draaiNieuwsRecordTerug,
+  h1Uit,
+  isNieuwsPad,
+  leadUit,
+  schrijfNieuwsRecord,
+  type RegisterBron,
+  type RegisterClaim,
+} from "../site/nieuwsregister.ts";
 
 const log = maakLogger("publiceer");
 
@@ -246,15 +262,25 @@ export async function publiceer(
       inhoud_afdruk: string | null;
       goedgekeurde_afdruk: string | null;
       pagina_beheer: string | null;
+      direct_antwoord: string | null;
+      kandidaat_id: number | null;
+      goedgekeurd_door: number | null;
+      goedgekeurd_op: string | null;
+      goedkeurder_naam: string | null;
     }>(
       c,
       `select v.id, v.pad, v.titel, v.meta_omschrijving, v.canonieke_url,
               v.body_markdown, v.structured_data, v.status, v.poorten_geslaagd,
               v.blokkades, v.soort, v.inhoud_afdruk, v.goedgekeurde_afdruk,
+              v.direct_antwoord, v.kandidaat_id, v.goedgekeurd_door,
+              v.goedgekeurd_op::date::text as goedgekeurd_op,
+              g.naam as goedkeurder_naam,
               pr.beheer as pagina_beheer
          from intel.inhoud_versies v
          left join intel.pagina_register pr
                 on pr.organisatie_id = v.organisatie_id and pr.pad = v.pad
+         left join intel.gebruikers g
+                on g.id = v.goedgekeurd_door
         where v.organisatie_id = $1 and v.id = $2`,
       [organisatieId, inhoudVersieId],
     );
@@ -290,14 +316,9 @@ export async function publiceer(
     // een .html schrijven en een <url> aan sitemap.xml plakken niet
     // alleen dubbelop maar actief schadelijk: de volgende generatorrun
     // gooit onze sitemapregel weg en onze pagina staat in geen register.
-    // De integratieroute is een registerrecord, niet een bestand.
+    // De route is dan een registerrecord, niet een bestand.
     if (heeftRouteregister(config.siteWortel)) {
-      return weiger(
-        v.id,
-        "data/inhoud bestaat: Release 1 genereert pagina's en sitemap uit het routeregister. " +
-          "Publiceren hoort dan te gaan via een registerrecord onder data/inhoud/, niet via een " +
-          "directe .html plus een sitemapregel. Zie src/site/routeregister.ts.",
-      );
+      return await publiceerViaRegister(c, organisatieId, v, config, opties, weiger);
     }
 
     const bestandsnaam = `${v.pad.replace(/^\//, "")}.html`;
@@ -413,6 +434,252 @@ export async function publiceer(
   }
 }
 
+/* ------------------------------------------------------------------
+   De registerroute: schrijf een record, geen pagina.
+   ------------------------------------------------------------------ */
+
+type VersieRij = {
+  id: number;
+  pad: string;
+  titel: string;
+  meta_omschrijving: string;
+  canonieke_url: string;
+  body_markdown: string;
+  soort: string;
+  status: string;
+  inhoud_afdruk: string | null;
+  direct_antwoord: string | null;
+  kandidaat_id: number | null;
+  goedgekeurd_op: string | null;
+  goedkeurder_naam: string | null;
+};
+
+/**
+ * Publiceert via het routeregister van Release 1.
+ *
+ * Alleen onder data/inhoud/nieuws/. Een voorstel voor een BESTAANDE
+ * pagina van Release 1 wordt geweigerd: dat bestand heeft al een
+ * schrijver, en dit platform gaat daar niet in staan. Het voorstel
+ * blijft in de database en in het dashboard.
+ */
+async function publiceerViaRegister(
+  c: pg.PoolClient,
+  organisatieId: number,
+  v: VersieRij,
+  config: { siteWortel: string },
+  opties: { droog?: boolean },
+  weiger: (id: number, reden: string) => PublicatieRapport,
+): Promise<PublicatieRapport> {
+  if (!isNieuwsPad(v.pad)) {
+    return weiger(
+      v.id,
+      `pad '${v.pad}' valt buiten data/inhoud/nieuws/. Release 1 bezit dat inhoudsbestand en ` +
+        "SCHEMA.md eist één schrijver per bestand; dit platform overschrijft het niet. " +
+        `Het voorstel (${v.soort}) blijft in de database en is zichtbaar in het dashboard, ` +
+        "zodat een redacteur het kan overbrengen.",
+    );
+  }
+
+  const register = await leesRouteregister(config.siteWortel);
+
+  // De onderwerp-eigenaar: de nationale pagina die de zoekintentie bezit.
+  // Komt uit het cluster van de kandidaat, via dezelfde kaart die de
+  // besluitmotor gebruikt. Nooit geraden op woordovereenkomst.
+  let onderwerpEigenaar: string | null = null;
+  if (v.kandidaat_id !== null) {
+    const cluster = await eenRij<{ sleutel: string }>(
+      c,
+      `select oc.sleutel
+         from intel.inhoud_kandidaten k
+         join intel.onderwerp_clusters oc on oc.id = k.onderwerp_cluster_id
+        where k.organisatie_id = $1 and k.id = $2`,
+      [organisatieId, v.kandidaat_id],
+    );
+    if (cluster) onderwerpEigenaar = routeVoorCluster(cluster.sleutel, register)?.route ?? null;
+  }
+  if (onderwerpEigenaar === null) {
+    return weiger(
+      v.id,
+      "geen onderwerp-eigenaar te bepalen. Het contract eist dat een nieuwsartikel zijn " +
+        "commerciële intentie leent van een bestaande nationale pagina; zonder die eigenaar " +
+        "zou het bericht die intentie zelf claimen en de bestaande pagina beconcurreren.",
+    );
+  }
+
+  // De bronnen en claims, uit de uitspraken die aan deze versie gebonden
+  // zijn. Alleen de PRIMAIRE bron per uitspraak: dat is de vindplaats,
+  // niet een artikel dat erover schrijft.
+  const gebonden = await rijen<{
+    uitspraak_id: number;
+    tekst: string;
+    soort: string;
+    url: string;
+    uitgever: string;
+    doc_titel: string;
+    bron_datum: string | null;
+    bron_sleutel: string;
+  }>(
+    c,
+    `select u.id as uitspraak_id, u.tekst, u.soort,
+            bd.canonieke_url as url, bd.uitgever, bd.titel as doc_titel,
+            coalesce(bd.gepubliceerd_op, bv.opgehaald_op)::date::text as bron_datum,
+            b.sleutel as bron_sleutel
+       from intel.inhoud_uitspraken iu
+       join intel.uitspraken u          on u.id = iu.uitspraak_id
+       join intel.uitspraak_bronnen ub  on ub.uitspraak_id = u.id and ub.rol = 'primair'
+       join intel.brondocument_versies bv on bv.id = ub.versie_id
+       join intel.brondocumenten bd     on bd.id = bv.brondocument_id
+       join intel.bronnen b             on b.id = bd.bron_id
+      where iu.organisatie_id = $1 and iu.inhoud_versie_id = $2
+      order by u.id`,
+    [organisatieId, v.id],
+  );
+
+  // De uitgeverssoort staat in het bronregister in code, niet in de
+  // database: intel.bronnen draagt alleen de uitgevernaam. Onbekende
+  // sleutel valt terug op MARKTPARTIJ en kan een bericht dus niet
+  // alleen dragen — de veilige kant.
+  const bronnenOpUrl = new Map<string, RegisterBron>();
+  for (const g of gebonden) {
+    if (bronnenOpUrl.has(g.url)) continue;
+    const uitgeverSoort = bronOpSleutel(g.bron_sleutel)?.uitgeverSoort ?? "";
+    bronnenOpUrl.set(g.url, {
+      naam: `${g.doc_titel}, ${g.uitgever}`,
+      url: g.url,
+      datum: g.bron_datum ?? "",
+      soort: BRONSOORT_UIT_UITGEVER[uitgeverSoort] ?? "MARKTPARTIJ",
+    });
+  }
+  const bronnen = [...bronnenOpUrl.values()];
+
+  // Alleen een uitspraak met een getal is een claim in de zin van het
+  // contract; een feit zonder cijfer hoeft geen claimregel.
+  const claims: RegisterClaim[] = gebonden
+    .filter((g) => ["cijfer", "prijs", "specificatie", "datum"].includes(g.soort))
+    .map((g) => ({
+      tekst: g.tekst,
+      bron: `${g.doc_titel}, ${g.uitgever}`,
+      bron_url: g.url,
+      bron_datum: g.bron_datum ?? "",
+    }));
+
+  const vandaag = new Date().toISOString().slice(0, 10);
+  const record = bouwNieuwsRecord({
+    pad: v.pad,
+    titel: v.titel,
+    metaOmschrijving: v.meta_omschrijving ?? "",
+    h1: h1Uit(v.titel),
+    lead: leadUit(v.body_markdown, v.meta_omschrijving ?? v.titel),
+    bodyMarkdown: v.body_markdown,
+    gepubliceerd: vandaag,
+    gewijzigd: vandaag,
+    status: v.status,
+    goedgekeurdDoor: v.goedkeurder_naam,
+    goedgekeurdOp: v.goedgekeurd_op,
+    onderwerpEigenaar,
+    oplossingLinks: [],
+    kennisLinks: [],
+    regioLinks: [],
+    bronnen,
+    claims,
+    // "Wat is er veranderd?" is een vaste, deterministische sectielabel —
+    // geen verzonnen vraag en geen bewering. Het directe antwoord zelf
+    // komt letterlijk uit de inhoudsversie.
+    directAntwoord: v.direct_antwoord
+      ? { vraag: "Wat is er veranderd?", antwoord: v.direct_antwoord }
+      : null,
+    herkomst: {
+      inhoudVersieId: v.id,
+      inhoudAfdruk: v.inhoud_afdruk,
+      besluitSoort: v.soort,
+    },
+  });
+
+  const uit = await schrijfNieuwsRecord(config.siteWortel, record, { droog: opties.droog });
+
+  if (opties.droog) {
+    return {
+      inhoudVersieId: v.id,
+      bestandspad: uit.bestandspad,
+      geschreven: false,
+      sitemapBijgewerkt: false,
+      publicatieId: null,
+      reden:
+        `DROOG: zou ${uit.bestondAl ? "overschrijven" : "aanmaken"} (${uit.inhoud.length} bytes). ` +
+        `Redactionele staat wordt ${String(record["redactionele_staat"])}; de sitemap blijft van ` +
+        "de generator van Release 1.",
+    };
+  }
+
+  const publicatie = await eenRij<{ id: number }>(
+    c,
+    `insert into intel.publicaties
+       (organisatie_id, inhoud_versie_id, bestandspad, bestand_hash,
+        vorige_bestand_hash, vorige_inhoud, sitemap_bijgewerkt, status)
+     values ($1,$2,$3,$4,$5,$6,false,'geschreven')
+     returning id`,
+    [
+      organisatieId,
+      v.id,
+      uit.bestandspad,
+      sha256hex(uit.inhoud),
+      uit.vorigeInhoud === null ? null : sha256hex(uit.vorigeInhoud),
+      uit.vorigeInhoud,
+    ],
+  );
+
+  await c.query("update intel.inhoud_versies set status = 'gepubliceerd' where id = $1", [v.id]);
+
+  // in_sitemap blijft FALSE: de route staat pas in sitemap.xml nadat de
+  // generator van Release 1 heeft gedraaid én de toestandsmachine de
+  // route op INDEX heeft gezet. Hier waarheid vastleggen, geen wens.
+  await c.query(
+    `insert into intel.pagina_register
+       (organisatie_id, pad, canonieke_url, bestandspad, titel, soort,
+        in_sitemap, bestaat_in_repo, eigenaar_release, beheer, laatst_gepubliceerd_op)
+     values ($1,$2,$3,$4,$5,'nieuws',false,true,'release2','intelligence',now())
+     on conflict (organisatie_id, pad) do update set
+       canonieke_url          = excluded.canonieke_url,
+       bestandspad            = excluded.bestandspad,
+       titel                  = excluded.titel,
+       bestaat_in_repo        = true,
+       laatst_gepubliceerd_op = now()`,
+    [organisatieId, v.pad, v.canonieke_url, uit.bestandspad, v.titel],
+  );
+
+  await c.query(
+    `insert into intel.publicatiebesluiten
+       (organisatie_id, inhoud_versie_id, besluit, actor_soort, motivatie)
+     values ($1, $2, 'gepubliceerd', 'systeem', $3)`,
+    [
+      organisatieId,
+      v.id,
+      `registerrecord ${uit.bestandspad} (${uit.inhoud.length} bytes), redactionele staat ` +
+        `${String(record["redactionele_staat"])}, eigenaar ${onderwerpEigenaar}, ` +
+        `${bronnen.length} bron(nen)`,
+    ],
+  );
+
+  log.info("registerrecord gepubliceerd", {
+    versie: v.id,
+    bestand: uit.bestandspad,
+    staat: record["redactionele_staat"],
+    eigenaar: onderwerpEigenaar,
+  });
+
+  return {
+    inhoudVersieId: v.id,
+    bestandspad: uit.bestandspad,
+    geschreven: true,
+    sitemapBijgewerkt: false,
+    publicatieId: publicatie?.id ?? null,
+    reden:
+      `registerrecord geschreven (${uit.inhoud.length} bytes), redactionele staat ` +
+      `${String(record["redactionele_staat"])}. De pagina en de sitemapregel maakt de generator ` +
+      "van Release 1; die run en de commit zijn menselijke handelingen.",
+  };
+}
+
 export type TerugdraaiRapport = {
   readonly publicatieId: number;
   readonly bestandspad: string;
@@ -463,6 +730,53 @@ export async function draaiTerug(
 
     const volledigPad = join(config.siteWortel, p.bestandspad);
     let teruggezet: TerugdraaiRapport["teruggezet"] = "niets";
+
+    // Een registerrecord is geen pagina. Terugdraaien betekent hier: het
+    // record herstellen of verwijderen. Een noindex-stub zou onzin zijn —
+    // het bestand is JSON en staat onder data/, dat niet gecrawld wordt.
+    // De pagina zelf verdwijnt bij de volgende generatorrun, die met
+    // data/seo/gegenereerd.json opruimt wat niet langer INDEX is.
+    if (p.bestandspad.endsWith(".json")) {
+      const uit = await draaiNieuwsRecordTerug(
+        config.siteWortel,
+        p.bestandspad,
+        p.vorige_inhoud,
+      );
+      teruggezet = uit.hersteld ? "vorige_inhoud" : uit.verwijderd ? "verwijderd_uit_sitemap" : "niets";
+
+      await c.query("update intel.publicaties set status = 'teruggedraaid' where id = $1", [p.id]);
+      await c.query("update intel.inhoud_versies set status = 'teruggedraaid' where id = $1", [
+        p.inhoud_versie_id,
+      ]);
+      await c.query(
+        `update intel.pagina_register
+            set bestaat_in_repo = $3, in_sitemap = false
+          where organisatie_id = $1 and bestandspad = $2`,
+        [organisatieId, p.bestandspad, uit.hersteld],
+      );
+      await c.query(
+        `insert into intel.publicatiebesluiten
+           (organisatie_id, inhoud_versie_id, besluit, actor_soort, motivatie)
+         values ($1, $2, 'teruggedraaid', 'systeem', $3)`,
+        [
+          organisatieId,
+          p.inhoud_versie_id,
+          `registerrecord ${uit.hersteld ? "hersteld naar de vorige versie" : uit.verwijderd ? "verwijderd" : "ongemoeid"}; ` +
+            "de pagina verdwijnt bij de volgende generatorrun van Release 1",
+        ],
+      );
+
+      log.info("registerrecord teruggedraaid", { publicatie: p.id, bestand: p.bestandspad, teruggezet });
+
+      return {
+        publicatieId: p.id,
+        bestandspad: p.bestandspad,
+        teruggezet,
+        reden:
+          `registerrecord ${uit.hersteld ? "hersteld" : uit.verwijderd ? "verwijderd" : "ongemoeid gelaten"}. ` +
+          "De gepubliceerde pagina verdwijnt pas nadat de generator van Release 1 opnieuw heeft gedraaid.",
+      };
+    }
 
     if (p.vorige_inhoud !== null) {
       await writeFile(volledigPad, p.vorige_inhoud, "utf8");
