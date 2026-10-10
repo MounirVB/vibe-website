@@ -138,18 +138,21 @@ test("slug verwijdert diakrieten en leestekens", () => {
 });
 
 test("logafscherming verbergt verdachte sleutels", () => {
+  // geheimenscan: ok — nep-sleutel die juist verborgen MOET worden
   const r = schoon({ api_key: "sk-geheimgeheimgeheim", gewoon: "zichtbaar" });
   assert.equal(r["api_key"], "[verborgen]");
   assert.equal(r["gewoon"], "zichtbaar");
 });
 
 test("logafscherming verbergt een token dat in een waarde staat", () => {
+  // geheimenscan: ok — nep-sleutel die juist verborgen MOET worden
   const r = schoon({ bericht: "mislukt met sk-abcdefghijklmnopqrstuvwxyz123456" });
   assert.ok(!String(r["bericht"]).includes("abcdefghijkl"), String(r["bericht"]));
   assert.match(String(r["bericht"]), /\[verborgen\]/);
 });
 
 test("logafscherming verbergt een wachtwoord in een Postgres-DSN", () => {
+  // geheimenscan: ok — nep-DSN die juist verborgen MOET worden
   const r = schoon({ dsn: "postgresql://piet:supergeheim@host:5432/db" });
   assert.ok(!String(r["dsn"]).includes("supergeheim"));
 });
