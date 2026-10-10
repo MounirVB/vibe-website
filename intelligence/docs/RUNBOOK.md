@@ -1,12 +1,45 @@
 # Runbook — Vibe Energy Intelligence Platform
 
-**Gemeten op 10 oktober 2026, branch
-`feat/vibe-energy-intelligence-integratie`.**
+**Gemeten op 10 oktober 2026. Productie draait op `main`.**
 
-> **Status van de infrastructuur: NIET UITGEROLD.** Dit runbook beschrijft
-> procedures die lokaal zijn uitgevoerd en bewezen. Waar een procedure
-> alleen lokaal is bewezen staat dat erbij. Lokaal bewezen is niet
-> operationeel.
+> **Status van de infrastructuur: UITGEROLD.** Drie services en een
+> privaat bereikbare PostgreSQL 17.11 draaien in Railway-project
+> `authentic-eagerness`, env `production`. Alle drie deployen vanaf
+> **`main`**, dus een uitrol vereist een merge, en een merge vereist de
+> drie CI-checks.
+>
+> Waar een procedure alleen LOKAAL is bewezen staat dat er nog steeds bij.
+> Lokaal bewezen is niet operationeel.
+
+---
+
+## 0. Een eenmalig commando in productie draaien
+
+Er is **geen shell-toegang**: `railway ssh` antwoordt met
+"You do not have access to this resource." Een eenmalige operatortaak
+draait daarom als een tijdelijke opdracht op de worker, die binnen het
+privénetwerk bij de database kan.
+
+```bash
+# 1. worker tijdelijk tot opsrunner maken (via de GraphQL-API)
+#    startCommand      := '<jouw commando>'
+#    restartPolicyType := NEVER      <- anders herstart een exit-code de taak
+# 2. redeploy, logs lezen
+# 3. ALTIJD terugzetten:
+#    startCommand      := 'npm run worker'
+#    restartPolicyType := ON_FAILURE
+```
+
+**Twee dingen die hier echt fout gaan als je ze overslaat:**
+
+1. **Geef een geheim nooit op de commandoregel.** npm echoot de hele
+   regel naar stdout en Railway bewaart die als deployment-log. Gebruik
+   de omgeving: `INTEL_WACHTWOORD`, niet `--wachtwoord`.
+2. **De worker houdt leases.** Wissel je hem weg terwijl hij een taak
+   vasthoudt, dan verloopt die lease. Dat is níét stuk — de volgende
+   start meldt `verlopen leases teruggegeven: N` en pakt de taak op —
+   maar je ziet ondertussen `LET OP verlopen leases` in de monitor. Dit
+   is in productie waargenomen en werkte zoals bedoeld.
 
 ---
 
@@ -111,7 +144,7 @@ bytes bestaat ook:
 ```bash
 cd intelligence
 npm run restoretest              # nieuwste back-up, geïsoleerde container
-npm run restoretest -- --houd    # container laten staan om in te kijken
+npm run restoretest -- --houd    # doel laten staan om in te kijken
 ```
 
 Wat het doet: start een verse `postgres:17-alpine` in Docker op een eigen
@@ -120,19 +153,46 @@ dump terug en **verifieert** het resultaat. Daarna wordt de container
 weggegooid. **De brondatabase wordt niet aangeraakt; er wordt nooit iets
 verwijderd om een restore te kunnen tonen.**
 
-### Uitkomst van de laatste run
+### Dezelfde test tegen PRODUCTIE
 
-```
-pg_restore gereed in 708 ms
-geslaagd 10   mislukt 0
-EINDOORDEEL RESTORETEST = PASS
+Naast productie staat geen Docker, dus daar gaat de restore naar een
+**wegwerpdatabase op dezelfde server**. Draai dit als eenmalige
+operatortaak (zie §0), met de beheer-URL in de omgeving:
+
+```bash
+INTEL_RESTORETEST_DOEL_URL='<DATABASE_URL van de Postgres-service>' \
+  npm run backup && npm run restoretest
 ```
 
-Geverifieerd: 13/13 migraties, elke kritieke tabel op de rijtelling uit
-het manifest, auditspoor volledig, **append-only bescherming werkt na de
-restore**, elke tabel met `organisatie_id` heeft nog RLS, de tabellen
-zonder RLS zijn exact de zes verantwoorde uitzonderingen, 38 policies,
-21 triggers, 103 check-constraints.
+`grendel()` weigert elke doelnaam die niet vers is aangemaakt, en de
+wegwerpdatabase wordt daarna gedropt — ook als de test faalt. **Zet die
+variabele daarna weer weg**: hij geeft de worker een superuser-URL, en
+dat is geen least privilege.
+
+### Uitkomst, lokaal én in productie
+
+| | lokaal (Docker) | productie (wegwerp-db) |
+|---|---|---|
+| bron | `vibe_intel_dev`, 17.11 (Homebrew) | `railway`, 17.11 (Debian) |
+| dump | 789.309 bytes, 627 TOC-regels | 290.163 bytes, 627 TOC-regels |
+| restore | 762 ms | 1.185 ms |
+| verificaties | **10/10 PASS** | **10/10 PASS** |
+
+Geverifieerd in beide: 14/14 migraties, elke kritieke tabel op de
+rijtelling uit het manifest, auditspoor volledig, **append-only
+bescherming werkt na de restore**, elke tabel met `organisatie_id` heeft
+nog RLS, de tabellen zonder RLS zijn exact de verantwoorde
+uitzonderingen (39 van 46 met RLS), 39 policies, 21 triggers,
+106 check-constraints.
+
+> **Wat hiermee NIET bewezen is: retentie.** De dump landt op een
+> ephemere containerschijf en is na de volgende deploy weg. Railway's
+> eigen back-upschema's vereisen een **Pro-workspace** —
+> `volumeInstanceBackupScheduleUpdate` antwoordt letterlijk *"Manual
+> backups and backup schedules are only available for Pro workspaces"*.
+> Er is dus bewezen dat een back-up van productie terug te zetten is, en
+> níét dat er morgen een back-up ligt. Dat is een plan- en kostenbesluit
+> van de eigenaar.
 
 ### De stap die een ongeteste restoreprocedure mist
 
@@ -312,17 +372,28 @@ dat je het weet. Geen enkel signaal kan OK worden zonder meting.
 | restoretest | 30 dagen | ouder bewijs is geen bewijs meer |
 | AI-budget | 80% van de maand | genoeg marge om in te grijpen |
 
-### Stand op deze commit
+### Stand in PRODUCTIE, na de eerste verwerkingscyclus
 
 ```
-SIGNALEN 20   OK 19   LET OP 0   NIET GEMETEN 1   FOUT 0
+SIGNALEN 19   OK 13   LET OP 2   NIET GEMETEN 4   FOUT 0
 EINDOORDEEL = NIET GEMETEN
 ```
 
-Het enige NIET GEMETEN signaal is **analytics**: vier van vijf
-koppelingen zijn NIET AANGESLOTEN. Dat is geen defect maar een
-ontbrekende autorisatie, en het hoort zichtbaar te blijven tot die er
-is.
+Wat daar staat, en waarom het geen van alle een defect is:
+
+| signaal | niveau | waarom |
+|---|---|---|
+| brongezondheid | LET OP | `rendo-nieuws` is DEGRADED; 20 van 21 bronnen zijn gezond |
+| verlopen leases | LET OP | gevolg van een opsrunner-wissel (§0); de volgende start gaf de lease terug |
+| back-up aanwezigheid | NIET GEMETEN | `/app/backups` is ephemeer — zie de Pro-workspace-blokkade in §3 |
+| restoretest | NIET GEMETEN | hetzelfde merkbestand overleeft de deploy niet |
+| AI-maandbudget | NIET GEMETEN | er is geen maandplafond gezet. **Zet dat vóór je ooit een model aanzet**; nu is de allowlist leeg, dus er is geen declarabele aanroep mogelijk |
+| analytics en CRM | NIET GEMETEN | 5 van 5 koppelingen NIET AANGESLOTEN: geen autorisatie, geen defect |
+
+**Lokaal ziet dit anders uit en dat is correct:** daar meldt
+`planner hartslag` FOUT, omdat op een laptop geen uur-cron draait. In
+productie staat dat signaal op OK. Een monitor die zich niets aantrekt
+van waar hij draait, meet niets.
 
 ### Waar de meldingen naartoe gaan
 
