@@ -31,7 +31,8 @@
     "publiceer": "node src/cli/publiceer.ts",
     "signalen": "node src/cli/signalen.ts",
     "wachtwoord": "node src/cli/wachtwoord.ts",
-    "distributie": "node src/cli/distributie.ts"
+    "distributie": "node src/cli/distributie.ts",
+    "regio": "node src/cli/regio.ts"
   },
   "dependencies": {
     "express": "^4.21.2",

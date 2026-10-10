@@ -135,6 +135,104 @@ export async function leesRouteregister(siteWortel: string): Promise<RegisterUit
   };
 }
 
+/* ------------------------------------------------------------
+   De publicatietoestand van Release 1, alleen-lezen.
+   ------------------------------------------------------------
+   data/seo/routes.json is de uitkomst van de toestandsmachine van
+   Release 1 (scripts/seo/bouw-routes.mjs). Dit platform LEEST die
+   toestand en verandert hem nooit: of een regioroute publicatiegereed
+   is, is een besluit van Release 1 op basis van lokaal bewijs.
+
+   De regionale regels in dat bestand dragen `gemeentecode` en
+   `provinciecode`, dus een CBS-code is zonder tussenstap aan een route
+   te koppelen.
+   ------------------------------------------------------------ */
+
+export type RouteStaat = {
+  readonly route: string;
+  readonly staat: "INDEX" | "PENDING" | "NOINDEX";
+  readonly soort: string;
+  readonly subsoort: string;
+  readonly reden: string;
+  readonly gemeentecode: string | null;
+  readonly provinciecode: string | null;
+};
+
+export type RouteStatenUitkomst = {
+  readonly aanwezig: boolean;
+  readonly reden: string;
+  readonly routes: readonly RouteStaat[];
+};
+
+/** Leest data/seo/routes.json. Ontbreekt het, dan is dat een toestand. */
+export async function leesRouteStaten(siteWortel: string): Promise<RouteStatenUitkomst> {
+  const pad = join(siteWortel, "data", "seo", "routes.json");
+  if (!existsSync(pad)) {
+    return {
+      aanwezig: false,
+      reden: `${pad} bestaat niet; de toestandsmachine van Release 1 heeft hier niet gedraaid.`,
+      routes: [],
+    };
+  }
+  try {
+    const ruw = JSON.parse(await readFile(pad, "utf8")) as { routes?: unknown[] };
+    const routes: RouteStaat[] = [];
+    for (const r of ruw.routes ?? []) {
+      const o = r as Record<string, unknown>;
+      const route = alsTekst(o["route"]);
+      const staat = alsTekst(o["staat"]);
+      if (!route || (staat !== "INDEX" && staat !== "PENDING" && staat !== "NOINDEX")) continue;
+      routes.push({
+        route,
+        staat,
+        soort: alsTekst(o["soort"]) ?? "",
+        subsoort: alsTekst(o["subsoort"]) ?? "",
+        reden: alsTekst(o["reden"]) ?? "",
+        gemeentecode: alsTekst(o["gemeentecode"]),
+        provinciecode: alsTekst(o["provinciecode"]),
+      });
+    }
+    return { aanwezig: true, reden: `${routes.length} routes gelezen`, routes };
+  } catch (e) {
+    log.waarschuwing("routes.json onleesbaar", { pad, fout: e });
+    return { aanwezig: false, reden: `${pad} is onleesbaar: ${String(e)}`, routes: [] };
+  }
+}
+
+/**
+ * Is er voor dit gebied een gepubliceerde regioroute, en welke?
+ *
+ * Geeft de meest specifieke INDEX-route terug: een gemeentehub gaat
+ * voor een provinciehub. Niets gevonden betekent dat Release 1 dit
+ * gebied (nog) niet publiceert — en dat is geen fout maar een feit dat
+ * de regio-impact meeneemt.
+ */
+export function routeVoorGebied(
+  staten: RouteStatenUitkomst,
+  soort: "gemeente" | "provincie" | "netbeheerdergebied" | "land",
+  code: string,
+): { route: string; staat: string } | null {
+  if (soort === "gemeente") {
+    const hub = staten.routes.find(
+      (r) => r.subsoort === "gemeente" && r.gemeentecode === code,
+    );
+    if (hub) return { route: hub.route, staat: hub.staat };
+    return null;
+  }
+  if (soort === "provincie") {
+    const kort = code.replace(/^PV/, "");
+    const hub = staten.routes.find(
+      (r) =>
+        r.subsoort === "provincie" &&
+        (r.provinciecode === code || r.provinciecode === kort || r.provinciecode === `PV${kort}`),
+    );
+    if (hub) return { route: hub.route, staat: hub.staat };
+    return null;
+  }
+  // Een netbeheerdergebied en 'land' hebben per ontwerp geen eigen route.
+  return null;
+}
+
 /**
  * Kaart van clustersleutel naar de route die hem bezit, afgeleid uit het
  * register. Alleen exacte, controleerbare afbeeldingen; geen gokwerk op
