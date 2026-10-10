@@ -695,7 +695,12 @@ try {
         32,
         "De live site antwoordt onafhankelijk van het intelligenceplatform",
         r.ok ? "PASS" : "FAIL",
-        `HTTP ${r.status}, server '${server}'; dit platform draait niet in productie en de site staat`,
+        // Dit scenario werd scherper toen het platform wél live ging: de
+        // site en het platform zijn aparte Railway-services met aparte
+        // faaldomeinen. De site hoort te antwoorden ook als het platform
+        // omvalt, en dat is nu een echte bewering in plaats van een
+        // gevolg van 'er staat nog niets'.
+        `HTTP ${r.status}, server '${server}'; de statische site heeft een eigen faaldomein en antwoordt los van het platform`,
       );
     } catch (e) {
       meld(
