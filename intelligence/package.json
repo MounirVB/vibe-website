@@ -24,7 +24,9 @@
     "test:eenheid": "node --test --test-concurrency=1 test/eenheid/",
     "test:integratie": "node --test --test-concurrency=1 test/integratie/",
     "test:adversarieel": "node --test --test-concurrency=1 test/adversarieel/",
-    "zaai": "node src/cli/zaai.ts"
+    "zaai": "node src/cli/zaai.ts",
+    "besluit": "node src/cli/besluit.ts",
+    "herbouw": "node src/cli/herbouw.ts"
   },
   "dependencies": {
     "express": "^4.21.2",

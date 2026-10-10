@@ -43,7 +43,7 @@ const VOCABULAIRE: readonly Vocabulaire[] = [
   {
     onderwerp: "netbeheer",
     sterk: ["netbeheerder", "investeringsplan", "nettarief", "nettarieven", "tariefstructuur", "netverzwaring"],
-    zwak: ["elektriciteitsnet", "hoogspanning", "middenspanning", "onderstation", "schakelstation", "stroomnet"],
+    zwak: ["elektriciteitsnet", "hoogspanning", "middenspanning", "onderstation", "schakelstation", "stroomnet", "netbeheer"],
     tegen: [],
   },
   {
@@ -83,13 +83,13 @@ const VOCABULAIRE: readonly Vocabulaire[] = [
   {
     onderwerp: "marktprijs",
     sterk: ["day-ahead", "onbalansprijs", "epex", "spotprijs", "negatieve prijzen", "onbalansmarkt"],
-    zwak: ["elektriciteitsprijs", "stroomprijs", "prijspiek", "prijsspreiding", "tarief", "eur/mwh"],
+    zwak: ["elektriciteitsprijs", "stroomprijs", "prijspiek", "prijsspreiding", "eur/mwh"],
     tegen: [],
   },
   {
     onderwerp: "flexibiliteit",
     sterk: ["flexibiliteit", "flexvermogen", "congestiedienst", "gopacs", "afroepbaar vermogen", "demand response"],
-    zwak: ["flex", "sturing", "regelvermogen", "aggregator"],
+    zwak: ["flexvermogen", "regelvermogen", "aggregator", "flexibele capaciteit"],
     tegen: [],
   },
   {
@@ -104,13 +104,13 @@ const VOCABULAIRE: readonly Vocabulaire[] = [
       "batterijpark",
       "peak shaving",
     ],
-    zwak: ["batterij", "opslag", "accu", "mwh", "laadcyclus"],
+    zwak: ["batterij", "batterijen", "energieopslag", "laadcyclus", "opslagcapaciteit"],
     tegen: [],
   },
   {
     onderwerp: "ems",
     sterk: ["energiemanagementsysteem", "ems", "energiemanagement", "load balancing", "lastverdeling"],
-    zwak: ["sturing", "monitoring", "optimalisatie", "slim laden", "smart grid"],
+    zwak: ["slim laden", "smart grid", "energiesturing", "slim stroomgebruik"],
     tegen: [],
   },
   {
@@ -126,13 +126,13 @@ const VOCABULAIRE: readonly Vocabulaire[] = [
       "v2g",
       "bidirectioneel laden",
     ],
-    zwak: ["elektrisch vervoer", "ev", "laden", "truckladen", "laadbehoefte"],
+    zwak: ["elektrisch vervoer", "elektrische auto", "truckladen", "laadbehoefte", "laadvermogen"],
     tegen: [],
   },
   {
     onderwerp: "zonne-energie",
     sterk: ["zonnepanelen", "zonnestroom", "zonnepark", "pv-installatie", "salderingsregeling", "curtailment"],
-    zwak: ["zon", "pv", "opwek", "teruglevering", "wp", "dakopwek"],
+    zwak: ["zonne-energie", "teruglevering", "dakopwek", "zonnedak", "opwekcapaciteit"],
     tegen: [],
   },
   {
@@ -145,31 +145,31 @@ const VOCABULAIRE: readonly Vocabulaire[] = [
       "energieprestatie",
       "bedrijfspand verduurzamen",
     ],
-    zwak: ["vastgoed", "pand", "gebouw", "kantoor", "isolatie", "warmtepomp"],
+    zwak: ["bedrijfspand", "bedrijfsvastgoed", "kantoorpand", "energieprestatie", "warmtepomp"],
     tegen: [],
   },
   {
     onderwerp: "aanbesteding",
     sterk: ["aanbesteding", "aankondiging van een opdracht", "gegunde opdracht", "marktconsultatie", "tender"],
-    zwak: ["opdracht", "gunning", "inschrijving", "raamovereenkomst"],
+    zwak: ["gunning", "inschrijving", "raamovereenkomst", "opdrachtgever"],
     tegen: [],
   },
   {
     onderwerp: "vergunning",
     sterk: ["omgevingsvergunning", "bestemmingsplan", "omgevingsplan", "ruimtelijk plan", "ontwerpbesluit"],
-    zwak: ["vergunning", "zienswijze", "terinzagelegging", "bekendmaking"],
+    zwak: ["vergunning", "zienswijze", "terinzagelegging", "bekendmaking", "ontwerpbesluit"],
     tegen: [],
   },
   {
     onderwerp: "statistiek",
     sterk: ["energiebalans", "statline", "cbs-cijfers", "aardgasbalans", "elektriciteitsbalans"],
-    zwak: ["cijfers", "statistiek", "dataset", "tabel", "indicator"],
+    zwak: ["energiestatistiek", "statline-tabel", "dataset", "energiecijfers"],
     tegen: [],
   },
   {
     onderwerp: "geografie",
     sterk: ["gemeentegebied", "provinciegebied", "bestuurlijke gebieden", "netbeheergebied"],
-    zwak: ["gemeente", "provincie", "regio", "gebied"],
+    zwak: ["gemeentegrens", "provinciegrens", "bestuurlijk gebied"],
     tegen: [],
   },
 ];
@@ -193,27 +193,71 @@ function telTermen(tekst: string, termen: readonly string[]): string[] {
 }
 
 /**
- * Onderwerpen van een tekst, gesorteerd op score. Leeg betekent: dit
- * item gaat niet over een onderwerp dat wij volgen, en dan stopt de
- * verwerking hier.
+ * Onderwerpen van een tekst, gesorteerd op score.
+ *
+ * De titel en de body worden APART gewogen, en dat is de kern van deze
+ * functie. Gemeten probleem: Netbeheer Nederland zet een lange
+ * Drupal-alinea in <description>, en een artikel met de titel "Zo werkt
+ * KOVA bij woningbouwprojecten" noemde ergens in die alinea het woord
+ * "zonnepanelen". Met één gezamenlijke tekst was die ene sterke
+ * bodytreffer genoeg om het stuk op zonne-energie te zetten, en koppelde
+ * de besluitmotor het aan /systeem-zonnepanelen.
+ *
+ * De titel zegt waar een stuk over gaat; de body kan alles aanstippen.
+ * Een sterke term in de titel is dus beslissend, een sterke term die
+ * alleen in de body staat is zwak bewijs.
+ *
+ * Leeg betekent: dit item gaat niet over een onderwerp dat wij volgen,
+ * en dan stopt de verwerking hier.
  */
 export function herkenOnderwerpen(titel: string, tekst: string): OnderwerpTreffer[] {
-  // De titel weegt dubbel: daar staat waar het stuk over gaat.
-  const invoer = `${titel} ${titel} ${tekst}`.toLowerCase();
+  const titelTekst = titel.toLowerCase();
+  const bodyTekst = tekst.toLowerCase();
   const treffers: OnderwerpTreffer[] = [];
 
   for (const v of VOCABULAIRE) {
-    if (telTermen(invoer, v.tegen).length > 0) continue;
-    const sterk = telTermen(invoer, v.sterk);
-    const zwak = telTermen(invoer, v.zwak);
-    const score = sterk.length * 3 + zwak.length;
-    const raakt = sterk.length >= 1 || zwak.length >= 2;
+    if (
+      telTermen(titelTekst, v.tegen).length > 0 ||
+      telTermen(bodyTekst, v.tegen).length > 0
+    ) {
+      continue;
+    }
+
+    const sterkTitel = telTermen(titelTekst, v.sterk);
+    const zwakTitel = telTermen(titelTekst, v.zwak);
+    const sterkBody = telTermen(bodyTekst, v.sterk).filter((t) => !sterkTitel.includes(t));
+    const zwakBody = telTermen(bodyTekst, v.zwak).filter((t) => !zwakTitel.includes(t));
+
+    const score =
+      sterkTitel.length * 6 + zwakTitel.length * 2 + sterkBody.length * 2 + zwakBody.length * 0.5;
+
+    // Een onderwerp raakt alleen als de TITEL het aanwijst, of als de
+    // body het meermaals sterk aanwijst.
+    const raakt = sterkTitel.length >= 1 || zwakTitel.length >= 2 || sterkBody.length >= 2;
     if (raakt) {
-      treffers.push({ onderwerp: v.onderwerp, score, termen: [...sterk, ...zwak] });
+      treffers.push({
+        onderwerp: v.onderwerp,
+        score: Math.round(score * 10) / 10,
+        termen: [
+          ...sterkTitel.map((t) => `titel:${t}`),
+          ...zwakTitel.map((t) => `titel:${t}`),
+          ...sterkBody.map((t) => `body:${t}`),
+          ...zwakBody.map((t) => `body:${t}`),
+        ],
+      });
     }
   }
 
-  return treffers.sort((a, b) => b.score - a.score);
+  const gesorteerd = treffers.sort((a, b) => b.score - a.score);
+
+  // Dubbelzinnigheidsgrendel: twee onderwerpen die vlak bij elkaar
+  // liggen en beide zwak scoren betekent "we weten het niet".
+  const beste = gesorteerd[0];
+  const tweede = gesorteerd[1];
+  if (beste && beste.score < 6 && tweede && beste.score - tweede.score < 2) {
+    return [];
+  }
+  return gesorteerd;
 }
 
 /**
