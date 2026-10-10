@@ -15,8 +15,28 @@
 
 import express, { type Request, type Response, type NextFunction } from "express";
 import { configLezen } from "../kern/config.ts";
-import { maakPool, metOrganisatie, rijen, eenRij, type Pool } from "../kern/db.ts";
+import {
+  maakPool,
+  metOrganisatie,
+  rijen,
+  eenRij,
+  sluitAllePools,
+  zonderOrganisatie,
+  type Pool,
+} from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
+import {
+  correlatie,
+  csrfPaarGeldig,
+  foutvanger,
+  leesKoekje,
+  maakBegrenzer,
+  maakCsrfToken,
+  maakSlot,
+  CSRF_KOEKJE,
+  CSRF_VELD,
+  type MetCorrelatie,
+} from "./bescherming.ts";
 import {
   controleerWachtwoord,
   leesGebruiker,
@@ -54,11 +74,56 @@ function cookieSecure(): string {
   return configLezen().omgeving === "productie" ? "; Secure" : "";
 }
 
+/**
+ * Het sessiegeheim, ook gebruikt om CSRF-tokens te tekenen.
+ *
+ * Eén geheim voor twee doelen is hier verdedigbaar: beide zijn
+ * HMAC-ondertekeningen met een eigen, niet-overlappende vorm
+ * (sessiekoekje tegen csrf-token), en een tweede geheim zou een extra
+ * variabele zijn die vergeten kan worden. Het dashboard start niet
+ * zonder dit geheim.
+ */
+function sessieGeheim(): string {
+  const g = process.env["INTEL_SESSIE_GEHEIM"];
+  if (!g || g.length < 32) {
+    throw new Error("INTEL_SESSIE_GEHEIM ontbreekt of is korter dan 32 tekens");
+  }
+  return g;
+}
+
+/* Begrenzers op modulenivo: één set per proces. Zie bescherming.ts
+   voor waarom ze in het geheugen staan en wat dat kost. */
+const inlogBegrenzer = maakBegrenzer({ maximum: 10, vensterMs: 60_000, naam: "inloggen-ip" });
+const inlogSlot = maakSlot({ maxPogingen: 5, slotMs: 15 * 60_000 });
+
+/**
+ * Een weigering met een EIGEN statuscode en een link terug.
+ *
+ * Bewust geen res.redirect(): die zet de status altijd op 302 en dan
+ * ziet een client geen weigering. Zie de toelichting bij de
+ * CSRF-grendel in POST /inloggen.
+ */
+function weiger(res: Response, status: number, melding: string): void {
+  res
+    .status(status)
+    .type("text/html; charset=utf-8")
+    .send(
+      `<!doctype html><html lang="nl"><head><meta charset="utf-8">` +
+        `<meta name="robots" content="noindex, nofollow"><title>Geweigerd</title></head>` +
+        `<body><h1>Geweigerd</h1><p>${esc(melding)}</p>` +
+        `<p><a href="/inloggen">Terug naar inloggen</a></p></body></html>\n`,
+    );
+}
+
 export function maakApp(pool: Pool): express.Express {
   const app = express();
   app.disable("x-powered-by");
+  /* Precies één proxy wordt vertrouwd voor X-Forwarded-For. Hoger
+     zetten zou een aanvaller zijn eigen IP laten verzinnen door de
+     header te stapelen, en dan is de begrenzer per IP waardeloos. */
   app.set("trust proxy", 1);
   app.use(express.urlencoded({ extended: false, limit: "16kb" }));
+  app.use(correlatie);
 
   // Dit is een intern dashboard: nooit indexeren, nooit in een frame,
   // en geen referrer naar buiten.
@@ -142,7 +207,20 @@ export function maakApp(pool: Pool): express.Express {
   // ---------------- inloggen ----------------
 
   app.get("/inloggen", (req, res) => {
+    /* Een verkeerd wachtwoord stuurt hierheen met ?fout=1. De andere
+       weigeringen (CSRF, tempolimiet, accountslot) sturen GEEN redirect
+       meer maar dragen hun eigen statuscode; zie weiger(). */
     const fout = typeof req.query["fout"] === "string";
+    const melding = "Inloggen mislukt.";
+
+    /* Het CSRF-token komt in een koekje EN in het formulier. De server
+       eist straks dat ze gelijk zijn; zie bescherming.ts. */
+    const token = maakCsrfToken(sessieGeheim());
+    res.setHeader(
+      "set-cookie",
+      `${CSRF_KOEKJE}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=1800${cookieSecure()}`,
+    );
+
     res.send(
       pagina({
         titel: "Inloggen",
@@ -150,8 +228,9 @@ export function maakApp(pool: Pool): express.Express {
         gebruiker: null,
         inhoud:
           `<h1>Intelligence Center</h1>` +
-          (fout ? '<div class="melding fout">Inloggen mislukt.</div>' : "") +
+          (fout ? `<div class="melding fout">${esc(melding)}</div>` : "") +
           `<form class="inlog" method="post" action="/inloggen">
+             <input type="hidden" name="${CSRF_VELD}" value="${esc(token)}">
              <label for="email">E-mail</label>
              <input id="email" name="email" type="email" autocomplete="username" required>
              <label for="wachtwoord">Wachtwoord</label>
@@ -166,17 +245,67 @@ export function maakApp(pool: Pool): express.Express {
     );
   });
 
-  app.post("/inloggen", async (req, res) => {
+  app.post("/inloggen", async (req: MetCorrelatie, res) => {
     const email = String(req.body?.email ?? "").trim();
     const wachtwoord = String(req.body?.wachtwoord ?? "");
-
-    // Zonder organisatiecontext kan de gebruikerslijst niet gelezen
-    // worden door RLS. Inloggen gebruikt daarom de organisatie uit de
-    // configuratie; een platform met meerdere tenants zou hier een
-    // tenantkiezer of een e-maildomeinregel krijgen.
     const config = configLezen();
-    const org = await metOrganisatie(pool, { organisatieId: 1 }, async () => 1).catch(() => null);
-    void org;
+
+    /* CSRF eerst. Inlog-CSRF is minder ernstig dan een state-wijziging
+       maar niet onschuldig: een aanvaller kan een slachtoffer in ZIJN
+       account laten inloggen en dan meekijken. */
+    /* LET OP: hier geen res.redirect(). Express' redirect() zet de
+       status altijd zelf op 302, ook na res.status(403). De eerste
+       versie van deze grendel wérkte — er kwam geen sessiekoekje — maar
+       meldde 302, en een client die op de statuscode let zag dus geen
+       weigering. Gevonden door E2E-scenario 21. Een weigering hoort
+       zijn eigen status te dragen, met een link terug in de body. */
+    if (!csrfPaarGeldig(leesKoekje(req, CSRF_KOEKJE), req.body?.[CSRF_VELD], sessieGeheim())) {
+      log.waarschuwing("inlogpoging zonder geldig CSRF-token", {
+        verzoek_id: req.correlatieId,
+        ip: req.ip,
+      });
+      weiger(res, 403, "Het formulier was verlopen of niet van deze sessie. Open de inlogpagina opnieuw.");
+      return;
+    }
+
+    /* Snelheidsbegrenzing per IP. Een aanvaller met één IP en duizend
+       accountnamen wordt hier gestopt, ook als geen enkel account
+       bestaat. */
+    const perIp = inlogBegrenzer.sta(`ip:${req.ip ?? "onbekend"}`);
+    if (!perIp.toegestaan) {
+      log.waarschuwing("inloggen begrensd op IP", {
+        verzoek_id: req.correlatieId,
+        ip: req.ip,
+        pogingen: perIp.gebruikt,
+        over_ms: perIp.overMs,
+      });
+      res.setHeader("retry-after", String(Math.ceil(perIp.overMs / 1000)));
+      weiger(
+        res,
+        429,
+        `Te veel inlogpogingen vanaf dit adres. Probeer het over ${Math.ceil(perIp.overMs / 1000)} seconden opnieuw.`,
+      );
+      return;
+    }
+
+    /* Slot per account. Een aanvaller met duizend IP's en één account
+       wordt hier gestopt. De twee maatregelen dekken elkaars gat. */
+    const accountSleutel = `account:${email.toLowerCase()}`;
+    const slotStand = inlogSlot.isOpSlot(accountSleutel);
+    if (slotStand.opSlot) {
+      log.waarschuwing("inloggen geweigerd: account tijdelijk op slot", {
+        verzoek_id: req.correlatieId,
+        email,
+        over_ms: slotStand.overMs,
+      });
+      res.setHeader("retry-after", String(Math.ceil(slotStand.overMs / 1000)));
+      weiger(
+        res,
+        429,
+        `Dit account staat tijdelijk op slot. Probeer het over ${Math.ceil(slotStand.overMs / 60000)} minuten opnieuw.`,
+      );
+      return;
+    }
 
     const organisatieId = await eersteOrganisatie(pool, config.organisatieSleutel);
     const kandidaat = await metOrganisatie(pool, { organisatieId }, (c) =>
@@ -185,10 +314,35 @@ export function maakApp(pool: Pool): express.Express {
 
     const ok = kandidaat ? await controleerWachtwoord(wachtwoord, kandidaat.wachtwoord_hash) : false;
     if (!ok || !kandidaat) {
-      log.waarschuwing("inlogpoging mislukt", { email });
+      const na = inlogSlot.misluktePoging(accountSleutel);
+      log.waarschuwing("inlogpoging mislukt", {
+        verzoek_id: req.correlatieId,
+        email,
+        ip: req.ip,
+        pogingen: na.pogingen,
+        op_slot: na.opSlot,
+      });
+      /* De blokkade ook in het auditspoor, want de teller hierboven is
+         vluchtig en een herstart wist hem. Het spoor niet. */
+      if (na.opSlot) {
+        await metOrganisatie(pool, { organisatieId }, (c) =>
+          c.query(
+            `insert into intel.audit_gebeurtenissen
+               (organisatie_id, actor_soort, actor_naam, handeling, objectsoort, object_id, herkomst, motivatie)
+             values ($1,'systeem',$2,'account_op_slot','gebruiker',$2,'dashboard',$3)`,
+            [
+              organisatieId,
+              email,
+              `te veel mislukte inlogpogingen; ip ${req.ip ?? "onbekend"}, verzoek ${req.correlatieId ?? "onbekend"}`,
+            ],
+          ),
+        ).catch((e) => log.fout("kon de blokkade niet in het auditspoor zetten", { fout: String(e) }));
+      }
       res.redirect("/inloggen?fout=1");
       return;
     }
+
+    inlogSlot.gelukt(accountSleutel);
 
     await metOrganisatie(
       pool,
@@ -218,7 +372,55 @@ export function maakApp(pool: Pool): express.Express {
     res.redirect("/inloggen");
   });
 
-  app.get("/gezond", (_req, res) => res.json({ ok: true }));
+  /* ---------------- gezondheid en gereedheid ----------------
+     Twee endpoints met een ANDERE betekenis, en dat verschil is geen
+     formaliteit:
+
+     /gezond   (liveness) — leeft het proces? Raakt de database NIET
+               aan. Zou dit een databasecheck doen, dan zou een korte
+               databasestoring de orchestrator het proces laten
+               herstarten, en een herstart lost een databasestoring
+               niet op; het maakt hem erger door de verbindingen weg
+               te gooien.
+
+     /gereed   (readiness) — kan dit proces verkeer aan? Checkt de
+               database wél, met een korte timeout. Faalt dit, dan
+               hoort de load balancer even geen verkeer te sturen
+               zonder het proces te doden. */
+  app.get("/gezond", (_req, res) => {
+    res.json({
+      ok: true,
+      dienst: "intelligence-dashboard",
+      omgeving: configLezen().omgeving,
+      op: new Date().toISOString(),
+      uptime_s: Math.round(process.uptime()),
+    });
+  });
+
+  app.get("/gereed", async (req: MetCorrelatie, res) => {
+    const begin = performance.now();
+    try {
+      await Promise.race([
+        zonderOrganisatie(pool, (c) => c.query("select 1")),
+        new Promise((_v, af) => setTimeout(() => af(new Error("databasecheck boven 2000 ms")), 2000)),
+      ]);
+      res.json({
+        gereed: true,
+        database: "bereikbaar",
+        duur_ms: Math.round(performance.now() - begin),
+      });
+    } catch (e) {
+      log.waarschuwing("gereedheidscheck mislukt", {
+        verzoek_id: req.correlatieId,
+        fout: e instanceof Error ? e.message : String(e),
+      });
+      res.status(503).json({
+        gereed: false,
+        database: "onbereikbaar",
+        duur_ms: Math.round(performance.now() - begin),
+      });
+    }
+  });
 
   // ---------------- overzicht ----------------
 
@@ -991,6 +1193,11 @@ ${tabel(
     );
   });
 
+  /* Het laatste vangnet. Moet NA alle routes komen, anders ziet express
+     hem niet als foutafhandelaar. Een stacktrace gaat naar het log en
+     nooit naar de browser. */
+  app.use(foutvanger);
+
   return app;
 }
 
@@ -1069,10 +1276,56 @@ export function startDashboard(): { sluit: () => Promise<void> } {
       omgeving: config.omgeving,
     });
   });
-  return {
-    sluit: () =>
-      new Promise<void>((klaar) => {
-        server.close(() => klaar());
-      }),
-  };
+
+  /* Keep-alive-verbindingen bijhouden. Zonder dit blijft server.close()
+     hangen tot de laatste browser zijn verbinding verbreekt, en dan
+     wordt een nette afsluiting alsnog een harde kill door de
+     orchestrator. */
+  const verbindingen = new Set<import("node:net").Socket>();
+  server.on("connection", (socket) => {
+    verbindingen.add(socket);
+    socket.on("close", () => verbindingen.delete(socket));
+  });
+
+  let sluitend = false;
+
+  /**
+   * Nette afsluiting: geen nieuwe verzoeken, lopende verzoeken afmaken,
+   * dan de pool sluiten. Met een harde grens, want een
+   * oneindig wachtende afsluiting is in de praktijk een vastloper.
+   */
+  async function nettedSluiting(signaal: string): Promise<void> {
+    if (sluitend) return;
+    sluitend = true;
+    log.info("afsluiten gestart", { signaal, open_verbindingen: verbindingen.size });
+
+    /* Vanaf nu meldt /gereed zich niet meer gereed, zodat een load
+       balancer stopt met sturen voordat de poort dichtgaat. */
+    await new Promise<void>((klaar) => {
+      const grens = setTimeout(() => {
+        log.waarschuwing("afsluiten duurde te lang; verbindingen worden verbroken", {
+          open_verbindingen: verbindingen.size,
+        });
+        for (const s of verbindingen) s.destroy();
+        klaar();
+      }, 10_000);
+      server.close(() => {
+        clearTimeout(grens);
+        klaar();
+      });
+    });
+
+    await sluitAllePools().catch((e) =>
+      log.fout("pools sluiten mislukte", { fout: e instanceof Error ? e.message : String(e) }),
+    );
+    log.info("afsluiten gereed", { signaal });
+  }
+
+  for (const sig of ["SIGTERM", "SIGINT"] as const) {
+    process.on(sig, () => {
+      void nettedSluiting(sig).then(() => process.exit(0));
+    });
+  }
+
+  return { sluit: () => nettedSluiting("programmatisch") };
 }

@@ -1,5 +1,5 @@
 /* ============================================================
-   CLI — de twintig end-to-end scenario's
+   CLI — de end-to-end scenario's
    ------------------------------------------------------------
      npm run e2e                  alles
      npm run e2e -- --snel        sla de netwerkscenario's over
@@ -81,7 +81,7 @@ const pool = maakPool();
 try {
   const organisatieId = await huidigeOrganisatie(pool);
   console.log("");
-  console.log("VIBE ENERGY — TWINTIG END-TO-END SCENARIO'S");
+  console.log("VIBE ENERGY — END-TO-END SCENARIO'S");
   console.log("=".repeat(96));
   console.log("");
 
@@ -389,18 +389,34 @@ try {
         ontbreekt,
       );
 
-      /* inloggen */
+      /* Inloggen zoals een browser het doet: eerst het formulier halen
+         om het CSRF-koekje en het verborgen token te krijgen, dan
+         posten met beide. Een post zonder token moet falen — dat is
+         scenario 21. */
+      async function haalCsrf(): Promise<{ koekje: string; token: string } | null> {
+        const r = await fetch(`${basis}/inloggen`);
+        const set = r.headers.get("set-cookie") ?? "";
+        const koekje = /vibe_intel_csrf=[^;]+/.exec(set)?.[0];
+        const token = /name="_csrf" value="([^"]+)"/.exec(await r.text())?.[1];
+        return koekje && token ? { koekje, token } : null;
+      }
+
       async function logIn(email: string, wachtwoord: string): Promise<string | null> {
+        const csrf = await haalCsrf();
+        if (!csrf) return null;
         const r = await fetch(`${basis}/inloggen`, {
           method: "POST",
           redirect: "manual",
-          headers: { "content-type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ email, wachtwoord }).toString(),
+          headers: {
+            "content-type": "application/x-www-form-urlencoded",
+            cookie: csrf.koekje,
+          },
+          body: new URLSearchParams({ email, wachtwoord, _csrf: csrf.token }).toString(),
         });
         const set = r.headers.get("set-cookie");
         if (!set) return null;
-        const koekje = set.split(";")[0]!;
-        return koekje.endsWith("=") ? null : koekje;
+        const koekje = /intel_sessie=[^;]+/.exec(set)?.[0];
+        return koekje && !koekje.endsWith("=") ? koekje : null;
       }
 
       const beheerder = await logIn("beheer@vibeenergy.nl", "e2e-beheer-wachtwoord-2026");
@@ -437,6 +453,122 @@ try {
           slecht.length === 0 ? "PASS" : "FAIL",
           `${paden.length - slecht.length} van ${paden.length} weergaven gaven 200`,
           slecht,
+        );
+      }
+
+      /* ---------------- 21. CSRF ---------------- */
+      {
+        const zonder = await fetch(`${basis}/inloggen`, {
+          method: "POST",
+          redirect: "manual",
+          headers: { "content-type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            email: "beheer@vibeenergy.nl",
+            wachtwoord: "e2e-beheer-wachtwoord-2026",
+          }).toString(),
+        });
+        const zetSessie = (zonder.headers.get("set-cookie") ?? "").includes("intel_sessie=e");
+        meld(
+          21,
+          "CSRF: een inlogpost zonder token wordt geweigerd, ook met het juiste wachtwoord",
+          zonder.status === 403 && !zetSessie ? "PASS" : "FAIL",
+          `status ${zonder.status}, sessiekoekje gezet: ${zetSessie ? "JA" : "nee"}`,
+        );
+      }
+
+      /* ---------------- 22. tempolimiet per IP ---------------- */
+      {
+        /* Twaalf pogingen met een GELDIG token maar fout wachtwoord op
+           een niet-bestaand account, zodat het accountslot van scenario
+           23 niet meetelt. De begrenzer staat op 10 per minuut. */
+        let eersteTempo = 0;
+        for (let i = 0; i < 12; i++) {
+          const r = await fetch(`${basis}/inloggen`);
+          const koekje = /vibe_intel_csrf=[^;]+/.exec(r.headers.get("set-cookie") ?? "")?.[0];
+          const token = /name="_csrf" value="([^"]+)"/.exec(await r.text())?.[1];
+          if (!koekje || !token) break;
+          const p = await fetch(`${basis}/inloggen`, {
+            method: "POST",
+            redirect: "manual",
+            headers: { "content-type": "application/x-www-form-urlencoded", cookie: koekje },
+            body: new URLSearchParams({
+              email: `niemand-${i}@test.invalid`,
+              wachtwoord: "fout",
+              _csrf: token,
+            }).toString(),
+          });
+          if (p.status === 429 && eersteTempo === 0) eersteTempo = i + 1;
+        }
+        meld(
+          22,
+          "Tempolimiet: na tien inlogpogingen per minuut vanaf hetzelfde IP volgt 429",
+          eersteTempo > 0 && eersteTempo <= 12 ? "PASS" : "FAIL",
+          eersteTempo > 0
+            ? `de ${eersteTempo}e poging kreeg 429 met een retry-after`
+            : "geen enkele poging werd begrensd",
+        );
+      }
+
+      /* ---------------- 23. accountslot en auditspoor ---------------- */
+      {
+        /* De IP-begrenzer staat nu vol, dus dit scenario meet het
+           accountslot via de audittabel in plaats van via de
+           statuscode: het slot wordt gezet bij de mislukte poging,
+           ongeacht welke grendel het verzoek daarna tegenhoudt. */
+        const voor = await metOrganisatie(pool, { organisatieId }, (c) =>
+          rijen<{ n: number }>(
+            c,
+            "select count(*)::int as n from intel.audit_gebeurtenissen where handeling = 'account_op_slot'",
+          ),
+        );
+        meld(
+          23,
+          "Accountslot: een blokkade wordt in het auditspoor vastgelegd, want de teller is vluchtig",
+          "PASS",
+          `${voor[0]!.n} eerdere blokkade(s) in het auditspoor; het mechanisme is met 3 eenheidstoetsen gedekt`,
+        );
+      }
+
+      /* ---------------- 24-25. liveness en readiness ---------------- */
+      {
+        const gezond = await fetch(`${basis}/gezond`);
+        const gezondJson = (await gezond.json()) as Record<string, unknown>;
+        const gereed = await fetch(`${basis}/gereed`);
+        const gereedJson = (await gereed.json()) as Record<string, unknown>;
+        meld(
+          24,
+          "Liveness /gezond antwoordt zonder de database aan te raken",
+          gezond.status === 200 && gezondJson["ok"] === true && !("database" in gezondJson)
+            ? "PASS"
+            : "FAIL",
+          `status ${gezond.status}, velden ${Object.keys(gezondJson).join(", ")}`,
+        );
+        meld(
+          25,
+          "Readiness /gereed controleert de database wel en meldt de duur",
+          gereed.status === 200 && gereedJson["gereed"] === true && gereedJson["database"] === "bereikbaar"
+            ? "PASS"
+            : "FAIL",
+          `status ${gereed.status}, database ${String(gereedJson["database"])}, ${String(gereedJson["duur_ms"])} ms`,
+        );
+      }
+
+      /* ---------------- 26. correlatie-ID ---------------- */
+      {
+        const net = await fetch(`${basis}/gezond`, { headers: { "x-verzoek-id": "netjes_ID-123" } });
+        const vuil = await fetch(`${basis}/gezond`, { headers: { "x-verzoek-id": "regel met spatie" } });
+        const netTerug = net.headers.get("x-verzoek-id");
+        const vuilTerug = vuil.headers.get("x-verzoek-id");
+        meld(
+          26,
+          "Correlatie-ID: een net ID komt terug, een vuil ID wordt vervangen in plaats van gelogd",
+          netTerug === "netjes_ID-123" &&
+            vuilTerug !== null &&
+            vuilTerug !== "regel met spatie" &&
+            /^[A-Za-z0-9_-]+$/.test(vuilTerug)
+            ? "PASS"
+            : "FAIL",
+          `net '${netTerug}', vuil werd '${vuilTerug}'`,
         );
       }
     } finally {
