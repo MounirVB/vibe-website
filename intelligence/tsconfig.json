@@ -1,0 +1,23 @@
+{
+  "//": "Node 24 draait TypeScript direct via type-stripping. Er is dus geen buildstap; tsc wordt alleen gebruikt om te typechecken. Daarom erasableSyntaxOnly en verbatimModuleSyntax: alles wat niet puur wegstreepbaar is (enum, namespace, parameter properties) zou in runtime stuklopen.",
+  "compilerOptions": {
+    "target": "es2023",
+    "lib": ["es2023"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": false,
+    "noEmit": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}

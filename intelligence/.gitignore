@@ -1,0 +1,8 @@
+# Geheimen horen nooit in git; de wortel-.gitignore dekt dit niet.
+.env
+.env.*
+!.env.voorbeeld
+
+node_modules/
+*.log
+.uitvoer/

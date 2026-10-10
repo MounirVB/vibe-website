@@ -1,0 +1,38 @@
+{
+  "name": "vibe-intelligence",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Vibe Energy Intelligence Platform — markt-, SEO/GEO- en commerciele intelligentie",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "migreer": "node src/cli/migreer.ts",
+    "bronnen": "node src/cli/bronnen.ts",
+    "collector": "node src/cli/collector.ts",
+    "pijplijn": "node src/cli/pijplijn.ts",
+    "worker": "node src/cli/worker.ts",
+    "planner": "node src/cli/planner.ts",
+    "paginascan": "node src/cli/paginascan.ts",
+    "geo": "node src/cli/geo.ts",
+    "analytics": "node src/cli/analytics.ts",
+    "dashboard": "node src/cli/dashboard.ts",
+    "poort": "node src/cli/poort.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --test-concurrency=1 test/",
+    "test:eenheid": "node --test --test-concurrency=1 test/eenheid/",
+    "test:integratie": "node --test --test-concurrency=1 test/integratie/",
+    "test:adversarieel": "node --test --test-concurrency=1 test/adversarieel/"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.11.10",
+    "typescript": "^5.7.2"
+  }
+}
