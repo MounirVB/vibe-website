@@ -166,12 +166,17 @@ jobs:
         # zoekt in /usr/lib/postgresql/<major>/bin, dus deze installatie is
         # genoeg; de clientversie moet de SERVERversie kunnen aankunnen.
         run: |
+          set -euo pipefail
           sudo install -d /usr/share/postgresql-common/pgdg
-          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
-            | sudo gpg --dearmor -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg
-          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg] \
-            http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
-            | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          # GEEN `gpg --dearmor`: dat opent /dev/tty, en op een runner
+          # bestaat die niet ("gpg: cannot open '/dev/tty'"). apt leest een
+          # ASCII-armored sleutel rechtstreeks, mits de bestandsnaam op
+          # .asc eindigt. Dat scheelt de hele gpg-stap.
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          # Eén regel, geen voortzettingsteken: een backslash-newline bínnen
+          # de aanhalingstekens kwam letterlijk in sources.list terecht.
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
           sudo apt-get update -qq
           sudo apt-get install -y -qq postgresql-client-17
           /usr/lib/postgresql/17/bin/pg_dump --version
