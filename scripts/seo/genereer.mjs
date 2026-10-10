@@ -13,7 +13,7 @@ import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { HOST, href, url, bestand, routeGemeente, routeGemeenteFamilie, routeProvincie, routeProvincieFamilie, REGIO_WORTEL } from './lib/paden.mjs';
-import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic } from './lib/sjabloon.mjs';
+import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic, zetNavToets } from './lib/sjabloon.mjs';
 import { artikel, dienst, faq as faqLd, gebied } from './lib/schema.mjs';
 import { Linkmotor, naamVan } from './lib/links.mjs';
 import {
@@ -41,6 +41,12 @@ const projBron = lees('data', 'bewijs', 'projecten-geo.json');
 
 const register = new Map(reg.routes.map((r) => [r.route, r]));
 const motor = new Linkmotor(register);
+
+/* De voorwaardelijke navigatie-items (nu: /nieuws) mogen alleen in de
+   <noscript>-navigatie staan als hun route echt op INDEX staat. Dit MOET vóór
+   de eerste pagina gezet worden, anders draagt de eerst gegenereerde pagina
+   een andere navigatie dan de rest. */
+zetNavToets((route) => motor.isIndex(route));
 
 const provOp = new Map(provincies.map((p) => [p.provinciecode, p]));
 const gemOp = new Map(gemeenten.map((g) => [g.gemeentecode, g]));
@@ -774,6 +780,13 @@ for (const g of gemeenten) {
 const { bouwNationaal } = await import('./genereer-nationaal.mjs');
 const nat = bouwNationaal({ register, motor, schrijf, reg });
 
+/* Het nieuwskanaal. Eigen module omdat een nieuwsartikel zijn navigatie en
+   bronnenlijst afleidt uit de contractvelden in plaats van ze uit te typen.
+   Komt NA bouwNationaal: de hub en de artikelen linken naar nationale
+   pagina's, en de linkmotor moet die al gezien hebben. */
+const { bouwNieuws } = await import('./genereer-nieuws.mjs');
+const nieuws = bouwNieuws({ register, motor, schrijf });
+
 writeFileSync(
   resolve(wortel, 'data', 'seo', 'gegenereerd.json'),
   JSON.stringify(
@@ -795,6 +808,10 @@ const wezen = motor.wezen({ negeer: ['', '404'] });
 console.log(`gegenereerd      : ${geschreven.length} bestanden`);
 console.log(`  regionaal      : ${geschreven.filter((f) => f.startsWith('regios/')).length}`);
 console.log(`  nationaal nieuw: ${nat.aantal}`);
+console.log(
+  `  nieuws         : ${nieuws.artikelen} artikel(en) van ${nieuws.kandidaten} kandidaat/kandidaten` +
+    `, hub ${nieuws.hub ? 'INDEX' : 'PENDING'}`
+);
 if (wezen.length) {
   console.log(`WEESPAGINA'S (${wezen.length}) — INDEX zonder inkomende link uit een gegenereerde pagina:`);
   for (const w of wezen) console.log(`  ${w}`);

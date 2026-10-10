@@ -393,18 +393,32 @@ poort('10 Ongedekte en verboden claims', true, () => {
       fouten.push(`${r.route}: noemt Scope 12 als eigen claim op een nieuwe pagina [NIEUW — blokkeert]`);
     }
   }
-  /* Elk cijfer op een gegenereerde regionale pagina moet een zichtbare
-     bronregel in dezelfde sectie hebben. */
-  for (const r of indexRoutes.filter((x) => x.soort === 'regio')) {
+  /* Elk cijfer op een gegenereerde regionale pagina of in een nieuwsbericht
+     moet een zichtbare bronregel in dezelfde sectie hebben.
+
+     Het contract in data/seo/nieuws-architectuur.json stelt dat deze poort dat
+     voor nieuws "al afdekt". Dat was niet zo: de lus hieronder keek alleen naar
+     soort 'regio'. Een nieuwsbericht is juist de plek waar een los getal het
+     meeste schade doet, want het reist als citaat verder. Vandaar een eigen,
+     bredere cijferdefinitie voor nieuws — en blokkerend, want dit is nieuwe
+     functionaliteit en geen erfenis. */
+  const CIJFER_REGIO = /\b\d{1,3}\.\d{3}\b|\b\d+\s*(hectare|ha|vestigingen|bedrijventerrein)/i;
+  const CIJFER_NIEUWS =
+    /\b\d{1,3}(?:\.\d{3})+\b|\b\d+(?:,\d+)?\s*(?:%|procent|euro|mln|mld|kW|kWh|MW|MWh|GW|GWh|MVA)\b|€\s*\d/i;
+  for (const r of indexRoutes.filter((x) => x.soort === 'regio' || x.subsoort === 'nieuws')) {
     const s = htmlVan(r.route);
     if (!s) continue;
+    const isNieuws = r.subsoort === 'nieuws';
     const secties = alle(/<section\b[^>]*>([\s\S]*?)<\/section>/gi, s);
     for (const sec of secties) {
-      const t = tekstVan(sec);
+      /* Een ISO-datum is een peildatum, geen bewering. Eruit voor de meting. */
+      const t = tekstVan(sec).replace(/\b\d{4}-\d{2}-\d{2}\b/g, ' ');
       /* Getallen met duizendscheiding of een eenheid: dat zijn beweringen. */
-      const heeftCijfer = /\b\d{1,3}\.\d{3}\b|\b\d+\s*(hectare|ha|vestigingen|bedrijventerrein)/i.test(t);
+      const heeftCijfer = (isNieuws ? CIJFER_NIEUWS : CIJFER_REGIO).test(t);
       if (heeftCijfer && !/data-bron/.test(sec)) {
-        fouten.push(`${r.route}: een sectie met een cijfer zonder zichtbare bronregel`);
+        fouten.push(
+          `${r.route}: een sectie met een cijfer zonder zichtbare bronregel${isNieuws ? ' [NIEUW — blokkeert]' : ''}`
+        );
         break;
       }
     }
@@ -488,7 +502,9 @@ poort('13 Conversiepaden', true, () => {
   }
   /* Elke commerciële en regionale pagina moet een weg naar conversie hebben. */
   const commercieel = indexRoutes.filter(
-    (r) => r.soort === 'regio' || ['oplossing', 'sector', 'toepassing', 'subsidie', 'hub'].includes(r.subsoort)
+    (r) =>
+      r.soort === 'regio' ||
+      ['oplossing', 'sector', 'toepassing', 'subsidie', 'hub', 'nieuws', 'nieuws-hub'].includes(r.subsoort)
   );
   for (const r of commercieel) {
     const s = htmlVan(r.route);
@@ -540,6 +556,107 @@ poort('15 Projectverwijzingen', true, () => {
     }
   }
   return { ok: fouten.length === 0, meting: `${slugs.size} echte projecten · verwijzingen op ${indexRoutes.filter((x) => !x.bestaand).length} nieuwe pagina's`, details: fouten };
+});
+
+/* ======================================================= 16 · NIEUWSKANAAL */
+poort('16 Nieuwskanaal', true, () => {
+  const fouten = [];
+  const advies = [];
+  const artikelen = indexRoutes.filter((x) => x.subsoort === 'nieuws');
+  const hub = reg.routes.find((r) => r.route === 'nieuws');
+
+  /* Een artikel dat op INDEX staat zonder goedkeuring in het register is de
+     ernstigste fout die dit kanaal kan maken. De toestandsmachine hoort dat
+     onmogelijk te maken; deze poort controleert of dat ook zo gebleven is. */
+  for (const r of artikelen) {
+    if (r.redactionele_staat !== 'GOEDGEKEURD') {
+      fouten.push(
+        `${r.route}: staat op INDEX met redactionele staat '${r.redactionele_staat ?? 'onbekend'}' in plaats van GOEDGEKEURD [NIEUW — blokkeert]`
+      );
+    }
+    const s = htmlVan(r.route);
+    if (!s) {
+      fouten.push(`${r.route}: INDEX zonder bestand`);
+      continue;
+    }
+
+    /* Zichtbare publicatiedatum. Het contract eist dat een artikel zijn
+       peildatum toont, want een statusclaim veroudert. */
+    if (!/data-nieuws-datum/.test(s)) fouten.push(`${r.route}: geen zichtbare publicatiedatum`);
+
+    /* Zichtbare bronnenlijst met raadpleegdatum. */
+    const bronSectie = een(/<section\b[^>]*id="bronnen"[^>]*>([\s\S]*?)<\/section>/i, s);
+    if (!bronSectie) {
+      fouten.push(`${r.route}: geen zichtbare bronnensectie [NIEUW — blokkeert]`);
+    } else {
+      const links = alle(/<a\b[^>]*href="(https?:[^"]+)"/gi, bronSectie);
+      if (!links.length) fouten.push(`${r.route}: bronnensectie zonder externe bron-URL [NIEUW — blokkeert]`);
+      if (!/geraadpleegd op \d{4}-\d{2}-\d{2}/.test(tekstVan(bronSectie))) {
+        fouten.push(`${r.route}: bronnensectie zonder raadpleegdatum [NIEUW — blokkeert]`);
+      }
+    }
+
+    /* NewsArticle met datePublished, en de bronnen ook in de structured data. */
+    const ld = alle(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/gi, s).join(' ');
+    if (!/"@type"\s*:\s*"NewsArticle"/.test(ld)) {
+      fouten.push(`${r.route}: geen NewsArticle in de JSON-LD [NIEUW — blokkeert]`);
+    }
+    if (!/"datePublished"/.test(ld)) fouten.push(`${r.route}: NewsArticle zonder datePublished`);
+    if (!/"citation"/.test(ld)) advies.push(`${r.route}: NewsArticle zonder citation`);
+
+    /* Zelfverwijzend canoniek. Het contract: een artikel mag NOOIT
+       canonicaliseren naar zijn onderwerp-eigenaar. */
+    const canon = een(/<link rel="canonical" href="([^"]+)"/i, s);
+    if (canon !== url(r.route)) {
+      fouten.push(`${r.route}: canonical is '${canon}' in plaats van zichzelf [NIEUW — blokkeert]`);
+    }
+
+    /* Het artikel moet naar zijn onderwerp-eigenaar linken: het leent die
+       intentie en hoort de lezer er heen te sturen. */
+    const eigenaar = String(r.bezit || '').replace(/^leent van \/?/, '');
+    if (eigenaar && !new RegExp(`href="/${eigenaar}"`).test(s)) {
+      fouten.push(`${r.route}: linkt niet naar zijn onderwerp-eigenaar '${eigenaar}'`);
+    }
+  }
+
+  /* De hub en de navigatie moeten met elkaar in de pas lopen. */
+  if (hub && hub.staat === 'INDEX') {
+    if (!artikelen.length) fouten.push('de hub /nieuws staat op INDEX zonder gepubliceerd artikel [NIEUW — blokkeert]');
+    const h = htmlVan('nieuws');
+    if (!h) {
+      fouten.push('de hub /nieuws staat op INDEX zonder bestand [NIEUW — blokkeert]');
+    } else {
+      for (const r of artikelen) {
+        if (!new RegExp(`href="/${r.route}"`).test(h)) {
+          fouten.push(`de hub linkt niet naar '${r.route}'`);
+        }
+      }
+    }
+    /* De zichtbare navigatie komt uit vibe/chrome.js en die kan het register
+       niet lezen. Staat de hub op INDEX, dan hoort de link daar met de hand
+       bij te komen — anders is het kanaal alleen voor crawlers bereikbaar en
+       niet voor bezoekers. */
+    const chrome = resolve(wortel, 'vibe', 'chrome.js');
+    if (existsSync(chrome) && !/href="\/nieuws"|'\/nieuws'/.test(readFileSync(chrome, 'utf8'))) {
+      fouten.push(
+        'vibe/chrome.js heeft geen /nieuws-link terwijl de hub op INDEX staat; de zichtbare navigatie mist het kanaal [NIEUW — blokkeert]'
+      );
+    }
+  } else if (hub) {
+    /* PENDING hub: dan mag niets ernaar linken. */
+    for (const f of htmlBestanden) {
+      const s = readFileSync(resolve(wortel, f), 'utf8');
+      if (/href="\/nieuws"/.test(s)) fouten.push(`${f}: linkt naar /nieuws terwijl de hub PENDING is [NIEUW — blokkeert]`);
+    }
+  }
+
+  const blokkerend = fouten.filter((f) => f.includes('[NIEUW'));
+  return {
+    ok: blokkerend.length === 0,
+    meting: `${artikelen.length} gepubliceerd artikel(en) · hub ${hub ? hub.staat : 'niet in register'} · ${fouten.length} bevindingen`,
+    details: fouten,
+    advies,
+  };
 });
 
 /* ============================================================== rapport */

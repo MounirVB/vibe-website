@@ -52,6 +52,11 @@ export const NOSCRIPT_NAV = [
   ['/sectoren', 'Sectoren'],
   ['/toepassingen', 'Toepassingen'],
   ['/kennis', 'Kennisbank'],
+  /* Voorwaardelijk: het nieuwskanaal staat alleen in de navigatie als de hub
+     ook echt op INDEX staat. Zonder deze voorwaarde zou elke pagina naar een
+     PENDING-route linken zodra er even geen goedgekeurd artikel is — een 404
+     voor de bezoeker en een bevinding in poort 7. */
+  ['/nieuws', 'Nieuws', true],
   ['/subsidies', 'Subsidies'],
   ['/regios', "Regio's"],
   ['/projecten', 'Projecten'],
@@ -66,10 +71,33 @@ export const NOSCRIPT_NAV = [
   ['/cookiebeleid', 'Cookiebeleid'],
 ];
 
-function noscriptNav() {
+/* De toets voor voorwaardelijke navigatie-items. Standaard FALSE: wie dit
+   sjabloon gebruikt zonder de toets te zetten, krijgt geen voorwaardelijke
+   links. Een vergeten aanroep kan dus nooit een dode link opleveren — alleen
+   een ontbrekende, en dat meldt poort 8 als weespagina. */
+let navToets = () => false;
+
+/**
+ * Zet de INDEX-toets voor voorwaardelijke navigatie-items.
+ * De generator roept dit één keer aan, vóór de eerste pagina.
+ * @param {(route:string)=>boolean} fn route zonder leidende schuine streep
+ */
+export function zetNavToets(fn) {
+  navToets = fn;
+}
+
+/* Geëxporteerd omdat scripts/seo/herstel-bestaand.mjs dezelfde navigatie in de
+   bestaande, met de hand geschreven pagina's zet. Dat bestand bouwde die regel
+   eerder zelf uit NOSCRIPT_NAV; met een voorwaardelijk item ging dat mis — de
+   voorwaarde werd daar niet toegepast en elke bestaande pagina kreeg een link
+   naar een PENDING-route. Eén renderer, één waarheid. */
+export function noscriptNav() {
+  const items = NOSCRIPT_NAV.filter(
+    ([h, , voorwaardelijk]) => !voorwaardelijk || navToets(String(h).replace(/^\/+/, ''))
+  );
   return (
     '<noscript data-chrome-fallback>\n  <nav aria-label="Hoofdnavigatie">\n    ' +
-    NOSCRIPT_NAV.map(([h, t]) => `<a href="${h}">${esc(t)}</a>`).join(' &middot;\n    ') +
+    items.map(([h, t]) => `<a href="${h}">${esc(t)}</a>`).join(' &middot;\n    ') +
     '\n  </nav>\n</noscript>'
   );
 }
@@ -189,13 +217,18 @@ ${o.inhoud}
    Kleine bouwstenen in de taal van vibe.css, zodat een gegenereerde pagina
    niet als vreemd element in het ontwerp staat. */
 
-/** Opening met kruimelpad, H1 en lead. */
-export function opening({ kruimels, kruimelLabel, h1, lead, acties }) {
+/** Opening met kruimelpad, H1 en lead.
+    `naLead` is een optioneel blok direct onder de lead — gebruikt door het
+    nieuwskanaal voor de zichtbare publicatiedatum. Zonder die parameter is de
+    uitvoer byte-identiek aan daarvoor. */
+export function opening({ kruimels, kruimelLabel, h1, lead, acties, naLead }) {
   return `  <section class="ve-sec ve-sec--flush-t" style="padding-top:var(--ve-s-xl)">
     <div class="ve-wrap">
     ${kruimelsHtml(kruimels || [], kruimelLabel)}
       <h1 class="ve-display" style="max-width:52rem;margin-top:var(--ve-s-lg)">${h1}</h1>
       <p class="ve-lead ve-measure-wide" style="margin-top:var(--ve-s-lg)">${lead}</p>${
+    naLead ? `\n      ${naLead}` : ''
+  }${
     acties && acties.length
       ? `
       <div class="ve-row" style="margin-top:var(--ve-s-xl)">

@@ -11,7 +11,7 @@ zodat er nooit twee mensen of processen in dezelfde pagina zitten.
 | veld | verplicht | regel |
 |---|---|---|
 | `route` | ja | zonder schuine streep ervoor, exact zoals in `data/seo/nationaal-doel.json` |
-| `type` | ja | `oplossing` \| `sector` \| `toepassing` \| `kennis` \| `subsidie` \| `hub` |
+| `type` | ja | `oplossing` \| `sector` \| `toepassing` \| `kennis` \| `subsidie` \| `hub` \| `nieuws` |
 | `titel` | ja | de `<title>`. **40–60 tekens**, inclusief ` | Vibe Energy` |
 | `beschrijving` | ja | meta description. **110–158 tekens**. Geen leeg beloftewoord, wel wat de pagina oplevert |
 | `og_titel` | ja | zonder merkstaart, max 60 tekens |
@@ -79,6 +79,28 @@ doorgegeven; al het andere wordt in een `<p>` gezet.
 Een gepubliceerde pagina heeft **minstens 700 woorden** in `<main>`; een kennisartikel minstens
 900. Dat is geen doel maar een ondergrens: eronder is er te weinig gezegd om een eigen pagina te
 rechtvaardigen.
+
+## `type: nieuws` — het nieuwskanaal
+
+Een nieuwsbericht staat onder `data/inhoud/nieuws/<slug>.json` en volgt een AFWIJKEND contract,
+vastgelegd in `data/seo/nieuws-architectuur.json`. Drie verschillen met een gewone pagina:
+
+1. **Het typt zijn navigatie niet uit.** `kruimels`, `verwant` en de bronnenlijst worden afgeleid
+   uit `onderwerp_eigenaar`, `oplossing_links`, `kennis_links`, `regio_links` en `bronnen`. Zet ze
+   dus niet zelf; `scripts/seo/genereer-nieuws.mjs` bouwt ze.
+2. **Het publiceert niet zonder mens.** `redactionele_staat` moet `GOEDGEKEURD` zijn, met
+   `goedgekeurd_door` en `goedgekeurd_op`. Elke andere waarde houdt de route op PENDING. Het
+   intelligenceplatform schrijft `CONCEPT` of `TER_REDACTIE` en kan dat zelf niet veranderen.
+3. **Het heeft een dragende bron nodig.** Minstens één bron van soort `WETGEVING`,
+   `TOEZICHTHOUDER`, `NETBEHEERDER` of `STATISTIEK`. Een `MARKTPARTIJ` alleen is niet genoeg, en
+   `EIGEN_MEETDATA` is niet publiek controleerbaar.
+
+Verder: `gepubliceerd` is verplicht en onveranderlijk, elke bron heeft een raadpleegdatum die
+zichtbaar op de pagina komt, en het bericht is zelfverwijzend canoniek — nooit canonicaliseren naar
+de onderwerp-eigenaar, want dan is het een duplicaat.
+
+Poort 16 in `scripts/seo/audit.mjs` toetst het kanaal; `node scripts/seo/qa-nieuws.mjs` meet de
+hele keten met een fixture en ruimt die daarna op.
 
 ## Voorbeelden
 
