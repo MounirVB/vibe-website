@@ -3,19 +3,32 @@
    ------------------------------------------------------------
      npm run restoretest                 nieuwste back-up terugzetten
      npm run restoretest -- --dump <pad> een specifieke back-up
-     npm run restoretest -- --houd       container laten staan om in te kijken
+     npm run restoretest -- --houd       doel laten staan om in te kijken
+     npm run restoretest -- --doel-url <beheer-url>
+                                         restore naar een WEGWERPDATABASE
+                                         op een bestaande server
 
    DIT IS HET ENIGE BEWIJS DAT EEN BACK-UP WERKT.
    Een geslaagde `pg_dump` bewijst dat er een bestand is. Een geslaagde
    `pg_restore` bewijst dat het terug te zetten is. Alleen deze test
    bewijst dat de inhoud er daarna ook nog HELEMAAL in zit.
 
-   DE ISOLATIE IS ECHT
-   De restore gaat naar een verse Postgres in een Docker-container op
-   een eigen poort, met een eigen wachtwoord, die daarna wordt
-   weggegooid. De brondatabase wordt NIET aangeraakt: er wordt niets
-   verwijderd om een restore te kunnen tonen. Dat is een expliciete
-   eis en ook gewoon verstandig.
+   DE ISOLATIE IS ECHT — IN BEIDE VORMEN
+   Standaard gaat de restore naar een verse Postgres in een
+   Docker-container op een eigen poort, met een eigen wachtwoord, die
+   daarna wordt weggegooid.
+
+   Met `--doel-url` gaat hij naar een NIEUW AANGEMAAKTE database op een
+   bestaande server, die daarna wordt gedropt. Die vorm bestaat omdat
+   een productiedatabase in een privénetwerk hangt waar geen Docker
+   naast staat: een back-up van productie moet ook DAAR terug te zetten
+   zijn, niet alleen op een laptop. De isolatie zit dan in de
+   wegwerpdatabase, en `grendel()` weigert elke doelnaam die niet vers
+   is aangemaakt.
+
+   In beide vormen wordt de brondatabase NIET aangeraakt: er wordt
+   niets verwijderd om een restore te kunnen tonen. Dat is een
+   expliciete eis en ook gewoon verstandig.
 
    WAT ER GEVERIFIEERD WORDT, EN WAAROM JUIST DAT
    Niet "de restore gaf geen fout". Wel:
@@ -55,6 +68,35 @@ const POORT = 55433 + (process.pid % 200);
 const WACHTWOORD = `rt-${process.pid}-${Math.abs(Date.now() % 100000)}`;
 const DB = "restoretest";
 
+/* De beheer-URL voor de `--doel-url`-vorm. Mag ook uit de omgeving
+   komen, zodat het wachtwoord niet in een commandoregel (en daarmee in
+   een deployment-log) belandt. */
+const DOEL_BEHEER_URL = waarde("doel-url") ?? process.env["INTEL_RESTORETEST_DOEL_URL"];
+const NAAR_BESTAANDE_SERVER = Boolean(DOEL_BEHEER_URL);
+/* Een naam die niet kan botsen met een echte database. */
+const WEGWERP_DB = `restoretest_${process.pid}_${process.hrtime.bigint() % 100000n}`;
+
+/**
+ * Weigert een doel dat niet aantoonbaar een wegwerpdatabase is.
+ *
+ * Dit is de enige grendel tussen "een restore testen" en "productie
+ * overschrijven". Hij staat er omdat de fout die hij voorkomt niet te
+ * herstellen is: pg_restore in de verkeerde database schrijft over de
+ * rijen die je juist aan het beschermen was.
+ */
+function grendel(beheerUrl: string): URL {
+  const u = new URL(beheerUrl);
+  const bron = u.pathname.replace(/^\//, "");
+  if (!bron) throw new Error("de beheer-URL noemt geen database");
+  if (bron === WEGWERP_DB) {
+    throw new Error("de wegwerpnaam botst met de brondatabase; dit mag nooit");
+  }
+  if (!/^restoretest_\d+_\d+$/.test(WEGWERP_DB)) {
+    throw new Error(`onverwachte wegwerpnaam ${WEGWERP_DB}`);
+  }
+  return u;
+}
+
 let geslaagd = 0;
 const mislukt: string[] = [];
 function toets(naam: string, ok: boolean, toelichting = "") {
@@ -81,6 +123,7 @@ async function containerLeeft(): Promise<boolean> {
 }
 
 let containerGestart = false;
+let wegwerpDbGemaakt = false;
 
 try {
   /* ---------------- de back-up kiezen ---------------- */
@@ -103,36 +146,64 @@ try {
   console.log(`  back-up        ${dumpPad}`);
   console.log(`  gemaakt op     ${manifest.gemaaktOp}`);
   console.log(`  bronserver     ${manifest.serverVersie}`);
-  console.log(`  doel           Docker-container ${CONTAINER} op poort ${POORT}`);
+  console.log(
+    `  doel           ${
+      NAAR_BESTAANDE_SERVER
+        ? `wegwerpdatabase ${WEGWERP_DB} op de opgegeven server`
+        : `Docker-container ${CONTAINER} op poort ${POORT}`
+    }`,
+  );
   console.log("");
   console.log("  De brondatabase wordt NIET aangeraakt.");
   console.log("");
 
-  /* ---------------- de geisoleerde server ---------------- */
+  /* ---------------- het geisoleerde doel ---------------- */
   console.log("OPZET");
-  await uitvoeren("docker", ["info"]).catch(() => {
-    throw new Error("Docker draait niet; een geisoleerde restoretest kan niet.");
-  });
-
-  await uitvoeren("docker", [
-    "run",
-    "--detach",
-    "--rm",
-    "--name",
-    CONTAINER,
-    "--env",
-    `POSTGRES_PASSWORD=${WACHTWOORD}`,
-    "--env",
-    `POSTGRES_DB=${DB}`,
-    "--publish",
-    `127.0.0.1:${POORT}:5432`,
-    `postgres:${serverMajor}-alpine`,
-  ]);
-  containerGestart = true;
-  console.log(`  container gestart: postgres:${serverMajor}-alpine`);
-
-  const doelUrl = `postgresql://postgres:${WACHTWOORD}@127.0.0.1:${POORT}/${DB}`;
+  let doelUrl: string;
   const gereedschap = await vindPgGereedschap(serverMajor);
+
+  if (NAAR_BESTAANDE_SERVER) {
+    const beheer = grendel(DOEL_BEHEER_URL!);
+    console.log(`  grendel        wegwerpnaam ${WEGWERP_DB} wijkt af van de brondatabase`);
+
+    /* `create database` kan niet in een transactie en niet via een
+       parameter; de naam is daarom hierboven op vorm gecontroleerd. */
+    await uitvoeren(gereedschap.psql, [
+      beheer.toString(),
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-c",
+      `create database ${WEGWERP_DB}`,
+    ]);
+    wegwerpDbGemaakt = true;
+    console.log(`  database       ${WEGWERP_DB} aangemaakt`);
+
+    const d = new URL(beheer.toString());
+    d.pathname = `/${WEGWERP_DB}`;
+    doelUrl = d.toString();
+  } else {
+    await uitvoeren("docker", ["info"]).catch(() => {
+      throw new Error("Docker draait niet; een geisoleerde restoretest kan niet.");
+    });
+
+    await uitvoeren("docker", [
+      "run",
+      "--detach",
+      "--rm",
+      "--name",
+      CONTAINER,
+      "--env",
+      `POSTGRES_PASSWORD=${WACHTWOORD}`,
+      "--env",
+      `POSTGRES_DB=${DB}`,
+      "--publish",
+      `127.0.0.1:${POORT}:5432`,
+      `postgres:${serverMajor}-alpine`,
+    ]);
+    containerGestart = true;
+    console.log(`  container gestart: postgres:${serverMajor}-alpine`);
+    doelUrl = `postgresql://postgres:${WACHTWOORD}@127.0.0.1:${POORT}/${DB}`;
+  }
 
   /* Wachten tot de server echt klaar is. */
   let klaar = false;
@@ -142,7 +213,9 @@ try {
       klaar = true;
       break;
     } catch {
-      if (!(await containerLeeft())) throw new Error("de container is gestopt tijdens het opstarten");
+      if (!NAAR_BESTAANDE_SERVER && !(await containerLeeft())) {
+        throw new Error("de container is gestopt tijdens het opstarten");
+      }
       await wacht(500);
     }
   }
@@ -371,5 +444,31 @@ try {
   } else if (containerGestart) {
     console.log("");
     console.log(`container ${CONTAINER} blijft staan op poort ${POORT} (--houd)`);
+  }
+
+  if (wegwerpDbGemaakt && !heeft("houd")) {
+    /* De wegwerpdatabase MOET weg, ook als de test faalde: hij staat op
+       dezelfde server als productie en kost daar schijfruimte. De drop
+       kan pas als onze eigen verbinding dicht is, vandaar FORCE. */
+    const beheer = DOEL_BEHEER_URL!;
+    /* Major 0: een `drop database` stelt geen eisen aan de clientversie,
+       anders dan een dump. Elke psql in PATH is hier goed genoeg. */
+    const g = await vindPgGereedschap(0).catch(() => null);
+    if (g) {
+      await uitvoeren(g.psql, [beheer, "-c", `drop database if exists ${WEGWERP_DB} with (force)`])
+        .then(() => {
+          console.log("");
+          console.log(`wegwerpdatabase ${WEGWERP_DB} gedropt`);
+        })
+        .catch((e: Error) => {
+          console.error("");
+          console.error(`LET OP: ${WEGWERP_DB} kon niet gedropt worden: ${e.message.slice(0, 200)}`);
+          console.error("Verwijder hem met de hand; hij staat op de productieserver.");
+          process.exitCode = 1;
+        });
+    }
+  } else if (wegwerpDbGemaakt) {
+    console.log("");
+    console.log(`wegwerpdatabase ${WEGWERP_DB} blijft staan (--houd)`);
   }
 }
