@@ -32,7 +32,8 @@
     "signalen": "node src/cli/signalen.ts",
     "wachtwoord": "node src/cli/wachtwoord.ts",
     "distributie": "node src/cli/distributie.ts",
-    "regio": "node src/cli/regio.ts"
+    "regio": "node src/cli/regio.ts",
+    "e2e": "node src/cli/e2e.ts"
   },
   "dependencies": {
     "express": "^4.21.2",
