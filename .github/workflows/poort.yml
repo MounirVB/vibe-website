@@ -157,9 +157,30 @@ jobs:
           fi
           echo "lockfile onveranderd na npm ci"
 
+      - name: PostgreSQL 17-client installeren
+        # De runner heeft standaard de client van Ubuntu, en die is 16.
+        # Een pg16-client WEIGERT een pg17-server te dumpen:
+        #   pg_dump: error: aborting because of server version mismatch
+        # De back-uptoetsen vielen daar op de eerste CI-run precies over,
+        # en dat was geen codefout maar een omgevingsgat. vindPgGereedschap()
+        # zoekt in /usr/lib/postgresql/<major>/bin, dus deze installatie is
+        # genoeg; de clientversie moet de SERVERversie kunnen aankunnen.
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | sudo gpg --dearmor -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg] \
+            http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+          /usr/lib/postgresql/17/bin/pg_dump --version
+          /usr/lib/postgresql/17/bin/psql --version
+
       - name: De testdatabase aanmaken
         run: |
-          PGPASSWORD=ci-wegwerp-wachtwoord psql -h 127.0.0.1 -U postgres -d postgres \
+          /usr/lib/postgresql/17/bin/psql \
+            "postgresql://postgres:ci-wegwerp-wachtwoord@127.0.0.1:5432/postgres" \
             -v ON_ERROR_STOP=1 -c "create database vibe_intel_ci"
 
       - name: Typecheck
