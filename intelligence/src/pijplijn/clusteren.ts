@@ -21,8 +21,9 @@ import type pg from "pg";
 import { eenRij, metOrganisatie, rijen, type Pool } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 import { gebeurtenisSleutel, kort } from "../kern/tekst.ts";
+import { bronOpSleutel } from "../bronnen/register.ts";
 import type { Onderwerp } from "../bronnen/soorten.ts";
-import { gebeurtenisSoortVan, herkenOnderwerpen } from "./onderwerpen.ts";
+import { gebeurtenisSoortVan, herkenOnderwerpen, isProcedureel } from "./onderwerpen.ts";
 import { schrijfUitspraken, vindTegenspraak } from "./uitspraken.ts";
 
 const log = maakLogger("clusteren");
@@ -193,7 +194,29 @@ async function verwerkVersie(
   );
 
   const sleutel = gebeurtenisSleutel(beste.onderwerp, v.titel, v.gepubliceerd_op);
-  const soort = gebeurtenisSoortVan(beste.onderwerp);
+
+  // Twee verschillende vragen, twee verschillende antwoorden:
+  //
+  //   WAT IS DIT?      -> de publicatievorm. Een aanbesteding over
+  //                       zonnepanelen is een aanbesteding.
+  //   WAAR GAAT HET OVER? -> het inhoudelijke onderwerp, en dus het
+  //                       cluster en de bijbehorende Vibe-oplossing.
+  //
+  // Zonder dat onderscheid verdween 'Aanbesteding Zonnepanelen en
+  // Energieopslag' uit de commerciele signalen, omdat zijn soort
+  // 'techniek' werd in plaats van 'aanbesteding'.
+  // De vorm komt uit de BRON, niet uit trefwoorden. Gemeten noodzaak:
+  // de CPV-gefilterde TenderNed-titels heten 'Zonnepanelen en
+  // Energieopslag' en bevatten het woord 'aanbesteding' nergens. Toch
+  // IS het een aanbesteding — dat weet de bron, niet de tekst.
+  const bron = bronOpSleutel(v.bron_sleutel);
+  const vormUitBron =
+    bron?.uitgeverSoort === "aanbestedingen"
+      ? ("aanbesteding" as const)
+      : treffers.find((t) => isProcedureel(t.onderwerp))?.onderwerp ?? null;
+  const soort = vormUitBron
+    ? gebeurtenisSoortVan(vormUitBron)
+    : gebeurtenisSoortVan(beste.onderwerp);
 
   const gebeurtenis = await eenRij<{ id: number; is_nieuw: boolean }>(
     c,
@@ -285,6 +308,9 @@ async function verwerkVersie(
       JSON.stringify({
         ...materialiteit.grondslag,
         onderwerp: beste.onderwerp,
+        publicatievorm: vormUitBron,
+        vorm_herkomst: bron?.uitgeverSoort === "aanbestedingen" ? "bron" : "trefwoord",
+        alle_onderwerpen: treffers.map((t) => t.onderwerp),
         termen: beste.termen.slice(0, 10),
         tegenspraak: tegenspraak.details,
       }),

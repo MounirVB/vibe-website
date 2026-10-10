@@ -208,6 +208,7 @@ export async function zaai(pool: Pool, opties: { siteWortel?: string } = {}): Pr
     const beleidVersie = await zaaiBeleid(c, organisatieId);
     await zaaiKostenplafond(c, organisatieId);
     const koppelingen = await zaaiKoppelingen(c, organisatieId);
+    await zaaiGebruikers(c, organisatieId);
 
     log.info("zaaien gereed", {
       organisatieId,
@@ -463,6 +464,35 @@ async function zaaiKoppelingen(
     uit.push({ sleutel, status, ontbrekend });
   }
   return uit;
+}
+
+/**
+ * Twee gebruikers, zodat vier ogen mogelijk is: een redacteur die
+ * goedkeurt en een beheerder die beleid mag wijzigen. Bewust ZONDER
+ * wachtwoordhash — die moet buiten dit script om gezet worden, en tot
+ * dat moment kan er niet ingelogd worden.
+ */
+async function zaaiGebruikers(c: pg.PoolClient, organisatieId: number): Promise<void> {
+  const gebruikers = [
+    { email: "beheer@vibeenergy.nl", naam: "Beheer", rol: "beheerder" },
+    { email: "redactie@vibeenergy.nl", naam: "Redactie", rol: "redacteur" },
+  ];
+  for (const g of gebruikers) {
+    const rij = await eenRij<{ id: number }>(
+      c,
+      `insert into intel.gebruikers (organisatie_id, email, naam, wachtwoord_hash)
+       values ($1, $2, $3, null)
+       on conflict (lower(email)) do update set naam = excluded.naam
+       returning id`,
+      [organisatieId, g.email, g.naam],
+    );
+    if (!rij) continue;
+    await c.query(
+      `insert into intel.gebruiker_rollen (gebruiker_id, rol)
+       values ($1, $2) on conflict (gebruiker_id, rol) do nothing`,
+      [rij.id, g.rol],
+    );
+  }
 }
 
 /** Leest de organisatie-id; handig voor CLI's na het zaaien. */

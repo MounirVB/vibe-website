@@ -21,6 +21,14 @@ type Vocabulaire = {
   readonly zwak: readonly string[];
   /** Termen die dit onderwerp juist uitsluiten. */
   readonly tegen: readonly string[];
+  /**
+   * Procedureel onderwerp: het zegt welke VORM een publicatie heeft, niet
+   * waar hij over gaat. 'Aanbesteding' en 'vergunning' matchen op elke
+   * aanbesteding en elke vergunning, dus ook op kantoormeubilair en
+   * ICT-beheer. Zo'n onderwerp kan een gebeurtenis kwalificeren maar
+   * nooit alleen dragen; er moet een inhoudelijk onderwerp bij staan.
+   */
+  readonly procedureel?: boolean;
 };
 
 const VOCABULAIRE: readonly Vocabulaire[] = [
@@ -153,12 +161,14 @@ const VOCABULAIRE: readonly Vocabulaire[] = [
     sterk: ["aanbesteding", "aankondiging van een opdracht", "gegunde opdracht", "marktconsultatie", "tender"],
     zwak: ["gunning", "inschrijving", "raamovereenkomst", "opdrachtgever"],
     tegen: [],
+    procedureel: true,
   },
   {
     onderwerp: "vergunning",
     sterk: ["omgevingsvergunning", "bestemmingsplan", "omgevingsplan", "ruimtelijk plan", "ontwerpbesluit"],
     zwak: ["vergunning", "zienswijze", "terinzagelegging", "bekendmaking", "ontwerpbesluit"],
     tegen: [],
+    procedureel: true,
   },
   {
     onderwerp: "statistiek",
@@ -250,14 +260,37 @@ export function herkenOnderwerpen(titel: string, tekst: string): OnderwerpTreffe
 
   const gesorteerd = treffers.sort((a, b) => b.score - a.score);
 
+  // Een publicatie die ALLEEN procedureel matcht gaat niet over ons
+  // onderwerp. Gemeten noodzaak: de ongefilterde TenderNed-feed leverde
+  // 'Europese aanbesteding ICT-beheer', 'Computer Hardware' en
+  // 'kantoormeubilair' als commercieel signaal op, omdat het woord
+  // 'aanbesteding' nu eenmaal in elke aanbesteding staat.
+  const inhoudelijk = gesorteerd.filter((t) => !PROCEDUREEL.has(t.onderwerp));
+  if (inhoudelijk.length === 0) return [];
+
   // Dubbelzinnigheidsgrendel: twee onderwerpen die vlak bij elkaar
   // liggen en beide zwak scoren betekent "we weten het niet".
-  const beste = gesorteerd[0];
-  const tweede = gesorteerd[1];
+  const beste = inhoudelijk[0];
+  const tweede = inhoudelijk[1];
   if (beste && beste.score < 6 && tweede && beste.score - tweede.score < 2) {
     return [];
   }
-  return gesorteerd;
+
+  // Het inhoudelijke onderwerp bepaalt waar het over gaat; de
+  // procedurele onderwerpen blijven erachter staan, want de
+  // besluitmotor gebruikt ze om te zien dat dit een aanbesteding of
+  // vergunning is.
+  return [...inhoudelijk, ...gesorteerd.filter((t) => PROCEDUREEL.has(t.onderwerp))];
+}
+
+/** Onderwerpen die alleen de vorm van een publicatie aanduiden. */
+const PROCEDUREEL: ReadonlySet<Onderwerp> = new Set(
+  VOCABULAIRE.filter((v) => v.procedureel).map((v) => v.onderwerp),
+);
+
+/** Is dit onderwerp alleen een publicatievorm? */
+export function isProcedureel(onderwerp: Onderwerp): boolean {
+  return PROCEDUREEL.has(onderwerp);
 }
 
 /**

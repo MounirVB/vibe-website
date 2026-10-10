@@ -129,16 +129,17 @@ async function verwerkItem(
     c,
     `insert into intel.brondocumenten
        (organisatie_id, bron_id, extern_id, canonieke_url, titel, uitgever, soort,
-        taal, gepubliceerd_op, datum_herkomst, onderwerpen, url_is_identiteit)
+        taal, gepubliceerd_op, datum_herkomst, onderwerpen, url_is_identiteit, extra)
      values ($1, $2, $3, $4, $5,
              (select uitgever from intel.bronnen where id = $2),
              (select soort from intel.bronnen where id = $2),
-             'nl', $6, $7, $8, $9)
+             'nl', $6, $7, $8, $9, $10)
      on conflict (bron_id, extern_id) do update set
        laatst_opgehaald_op = now(),
        canonieke_url       = excluded.canonieke_url,
        status              = 'actief',
-       verdwenen_sinds     = null
+       verdwenen_sinds     = null,
+       extra               = excluded.extra
      returning id, aantal_versies, huidige_versie_id`,
     [
       organisatieId,
@@ -150,6 +151,7 @@ async function verwerkItem(
       item.datumHerkomst,
       onderwerpen,
       urlIsIdentiteit,
+      JSON.stringify(item.extra ?? {}),
     ],
   );
   if (!bestaand) throw new Error(`brondocument kon niet geschreven worden: ${item.externId}`);

@@ -27,7 +27,9 @@
     "zaai": "node src/cli/zaai.ts",
     "besluit": "node src/cli/besluit.ts",
     "herbouw": "node src/cli/herbouw.ts",
-    "concept": "node src/cli/concept.ts"
+    "concept": "node src/cli/concept.ts",
+    "publiceer": "node src/cli/publiceer.ts",
+    "signalen": "node src/cli/signalen.ts"
   },
   "dependencies": {
     "express": "^4.21.2",
