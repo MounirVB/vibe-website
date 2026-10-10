@@ -1,20 +1,35 @@
 # Productie — topologie, variabelen, migratieveiligheid en uitrol
 
-**Gemeten op 10 oktober 2026, op de integratiebranch
-`feat/vibe-energy-intelligence-integratie`.**
+**Gemeten op 10 oktober 2026. `main` staat op `2886583`.**
 
 > ## De belangrijkste regel van dit document
 >
-> **Het intelligenceplatform is NOOIT uitgerold.** Er is geen
-> productiedatabase, geen productieservice, geen draaiende worker en geen
-> draaiende planner. Alles hieronder is ONTWERP plus LOKAAL BEWIJS.
+> **Het intelligenceplatform IS uitgerold.** Sinds 10 oktober 2026 draaien
+> er drie services en een privaat bereikbare PostgreSQL 17.11 in
+> Railway-project `authentic-eagerness`, env `production`. De 14 migraties
+> zijn toegepast, er is uit live bronnen opgehaald, en het dashboard is
+> over HTTPS geauthenticeerd bereikbaar.
 >
-> Wat wél in productie staat, is Release 1: de statische site. Die is
-> gemeten, niet aangenomen.
+> Dit document beschreef tot deze versie het tegenovergestelde. Die regel
+> is vervangen, niet aangevuld: hij is onwaar geworden.
 >
-> Waar hieronder "lokaal bewezen" staat, betekent dat: het werkt op deze
-> machine tegen een lokale database. Het betekent NIET dat het
-> operationeel is.
+> **Wat nog NIET waar is, en waarom dat hier staat:**
+>
+> - **Er is geen duurzame back-upretentie.** De logische back-up is
+>   bewezen (dump van productie, teruggezet in een wegwerpdatabase op de
+>   productieserver, 10/10 verificaties), maar hij schrijft naar een
+>   ephemere containerschijf. Railway's eigen back-upschema's vereisen een
+>   **Pro-workspace**; de workspace is `hobby` en is niet opgewaardeerd.
+> - **Er is geen meldbestemming voor alerts.** `npm run gezondheid` is een
+>   commando, geen alarm. Niemand wordt gebeld.
+> - **Vijf koppelingen zijn NIET AANGESLOTEN** (GSC, Bing, GA4, CRM,
+>   AI-model). Elke funnelstap blijft daarmee ONBEKEND, en dat is geen nul.
+> - **Er is nul inhoud gepubliceerd.** Dat is de bedoelde uitkomst van het
+>   publicatiecontract, geen tekort.
+>
+> Waar hieronder "lokaal bewezen" staat, betekent dat nog steeds: het werkt
+> op deze machine tegen een lokale database, en níét dat het in productie
+> is aangetoond. Wat in productie is gemeten, staat als zodanig benoemd.
 
 ---
 
@@ -28,13 +43,32 @@ Gemeten via de Railway-API en tegen de live site.
 | Omgeving | `production` (`3d83cc3e-ddb5-400c-96b2-4cea2bdd5993`) |
 | Workspace | mounirvb's Projects, plan `hobby` |
 
-Het project draagt **twee** services, beide op dezelfde repository
-`MounirVB/vibe-website`:
+Het project draagt **zes** services. Vijf staan op dezelfde repository
+`MounirVB/vibe-website`; Postgres is een image:
 
-| service | id | rol | branch | commit | deploy |
-|---|---|---|---|---|---|
-| **`vibe-website`** | `0e3c1eee-47ad-4e52-aaf6-7eb9892e0229` | de statische site | `main` | `a2fbad7` | 2026-10-10 05:36Z, RUNNING |
-| `vibe-website-api` | `e225ebbc-7bc4-4eed-b9b8-ff7166367895` | Express-brochuredienst | `main` | `59535f3` | 2026-08-19 22:50Z, RUNNING |
+| service | id | rol | branch | deploy |
+|---|---|---|---|---|
+| **`vibe-website`** | `0e3c1eee-47ad-4e52-aaf6-7eb9892e0229` | de statische site | `main` | `2886583`, SUCCESS |
+| `vibe-website-api` | `e225ebbc-7bc4-4eed-b9b8-ff7166367895` | Express-brochuredienst | `main` | `59535f3`, RUNNING |
+| `vibe-intel-api` | `05a8cf60-b579-4498-99c9-8994f48b95c5` | dashboard, `/gereed` | `main` | SUCCESS |
+| `vibe-intel-worker` | `61e563db-3941-4705-80a0-c00b7c81de3f` | wachtrijverwerker | `main` | SUCCESS |
+| `vibe-intel-planner` | `1022a174-e360-47dd-9bee-9a249e1c5348` | cron `0 * * * *` | `main` | SUCCESS |
+| `Postgres` | `eb4591cb-c6ef-4e05-b31c-4200378f23e2` | PostgreSQL 17.11 | image | SUCCESS |
+
+**Twee valkuilen die deze uitrol echt gekost hebben, en die je terugkrijgt
+als je de database ooit opnieuw opbouwt:**
+
+1. **Railway meldde `RUNNING` terwijl Postgres in een herstartlus zat.**
+   Het volume hield een datadirectory van major 18; de pg17-image weigert
+   die te openen. De enige aanwijzing stond in de logs:
+   *"This image runs PostgreSQL 17 but the data directory holds major
+   version 18."* Opgelost door `PGDATA` naar
+   `/var/lib/postgresql/data/pgdata17` te zetten, zodat pg17 vers
+   initialiseert — er is niets gewist. Dit is precies waarom een
+   deploystatus geen bewijs van gezondheid is.
+2. **`${{PORT}}` is geen Railway-variabele.** Hij loste op naar een lege
+   string, waarna de config stil terugviel op zijn standaard. Zet `PORT`
+   en `INTEL_DASHBOARD_POORT` expliciet.
 
 De statische service:
 
