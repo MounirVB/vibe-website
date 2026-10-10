@@ -43,8 +43,9 @@ describe("de sleutel wordt nooit onthuld", () => {
   });
 
   test("een andere sleutel geeft een andere vingerafdruk", () => {
-    // geheimenscan: ok — nep-sleutels om de afscherming te toetsen
+    // geheimenscan: ok — nep-sleutel om de afscherming te toetsen
     const a = sleutelVorm("sk-proj-eenheelanderesleutel00001111");
+    // geheimenscan: ok — nep-sleutel om de afscherming te toetsen
     const b = sleutelVorm("sk-proj-eenheelanderesleutel00002222");
     assert.notEqual(a.vingerafdruk, b.vingerafdruk);
   });

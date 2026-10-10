@@ -277,6 +277,76 @@ dead-letter queue.
 
 ---
 
+## 5b. Monitoring en alertering
+
+```bash
+npm run gezondheid              # volledig rapport
+npm run gezondheid -- --kort    # alleen wat niet OK is
+npm run gezondheid -- --json    # voor een alerteerder
+```
+
+Twintig signalen over acht groepen: database, ingestie, worker,
+planner, publicatie, AI, beveiliging, koppelingen en back-up.
+
+### Vier niveaus, en NIET GEMETEN is ernstiger dan LET OP
+
+| niveau | betekenis | exitcode |
+|---|---|---|
+| `OK` | binnen de norm | 0 |
+| `FOUT` | iets staat stil of is kapot; hier hoort een melding bij | 1 |
+| `NIET GEMETEN` | deze monitor kan het niet vaststellen | 2 |
+| `LET OP` | loopt op, niets kapot | 3 |
+
+**NIET GEMETEN staat bewust boven LET OP.** Een monitor die bij een
+ontbrekende meting groen zegt is erger dan geen monitor: dan denk je
+dat je het weet. Geen enkel signaal kan OK worden zonder meting.
+
+### De drempels komen uit de gemeten werkelijkheid
+
+| signaal | drempel | waarom juist deze |
+|---|---|---|
+| ingestieversheid | 26 uur | zes bronnen hebben een interval van 24 uur, twee van een week. Een uur zou permanent rood staan en daarmee waardeloos zijn |
+| bronfouten | 3 achtereen | één of twee is een hik, drie is een storing |
+| wachtrijachterstand | 25 taken | de planner maakt er 5 per uur; 25 betekent vijf uur geen worker |
+| back-upleeftijd | 26 uur | haalt de RPO van 24 uur niet |
+| restoretest | 30 dagen | ouder bewijs is geen bewijs meer |
+| AI-budget | 80% van de maand | genoeg marge om in te grijpen |
+
+### Stand op deze commit
+
+```
+SIGNALEN 20   OK 19   LET OP 0   NIET GEMETEN 1   FOUT 0
+EINDOORDEEL = NIET GEMETEN
+```
+
+Het enige NIET GEMETEN signaal is **analytics**: vier van vijf
+koppelingen zijn NIET AANGESLOTEN. Dat is geen defect maar een
+ontbrekende autorisatie, en het hoort zichtbaar te blijven tot die er
+is.
+
+### Waar de meldingen naartoe gaan
+
+**Nergens.** Er is geen goedgekeurd meldkanaal in deze omgeving: geen
+Slack-webhook, geen alerteerdienst, geen afgesproken e-mailadres voor
+operationele meldingen. Een adres verzinnen zou betekenen dat
+meldingen in het niets verdwijnen terwijl het dashboard zegt dat ze
+verstuurd zijn.
+
+Wat er wél is: een exitcode en JSON-uitvoer. Zodra er een kanaal is,
+is dit de hele koppeling:
+
+```bash
+# cron, elk kwartier
+cd /pad/naar/intelligence
+npm run gezondheid -- --json > /tmp/gezondheid.json || \
+  <stuur /tmp/gezondheid.json naar het goedgekeurde kanaal>
+```
+
+**Benodigde autorisatie:** één meldbestemming. Tot die er is draait de
+monitor wel, maar moet iemand hem lezen.
+
+---
+
 ## 6. Wat dit runbook nog niet dekt
 
 Deze onderdelen bestaan als code of configuratie maar zijn **niet

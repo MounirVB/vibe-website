@@ -36,7 +36,8 @@
     "e2e": "node src/cli/e2e.ts",
     "backup": "node src/cli/backup.ts",
     "restoretest": "node src/cli/restoretest.ts",
-    "ai": "node src/cli/ai.ts"
+    "ai": "node src/cli/ai.ts",
+    "gezondheid": "node src/cli/gezondheid.ts"
   },
   "dependencies": {
     "express": "^4.21.2",

@@ -33,7 +33,7 @@
 
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
-import { readdir, readFile } from "node:fs/promises";
+import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import pg from "pg";
@@ -334,6 +334,30 @@ try {
     console.log("EINDOORDEEL RESTORETEST = PASS");
     console.log("De back-up is aantoonbaar terug te zetten, inclusief goedkeuringen,");
     console.log("auditspoor, RLS, policies, triggers en constraints.");
+
+    /* Een merkbestand, zodat de monitor de LEEFTIJD van het laatste
+       bewijs kan meten. Zonder dit staat 'restoretest' in
+       `npm run gezondheid` eeuwig op NIET GEMETEN, en dat is precies
+       het soort blinde vlek dat deze exercitie moet wegnemen: een
+       back-up die nooit is teruggezet is een aanname. */
+    await writeFile(
+      join(DOELMAP, ".laatste-restoretest.json"),
+      JSON.stringify(
+        {
+          op: new Date().toISOString(),
+          uitslag: "PASS",
+          dump: dumpPad,
+          toetsen_geslaagd: geslaagd,
+          restore_ms: restoreMs,
+          bronserver: manifest.serverVersie,
+        },
+        null,
+        2,
+      ) + "\n",
+      "utf8",
+    );
+    console.log("");
+    console.log(`bewijs vastgelegd in ${join(DOELMAP, ".laatste-restoretest.json")}`);
   }
 } catch (e) {
   console.error("");

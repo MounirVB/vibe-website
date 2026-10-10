@@ -1,0 +1,176 @@
+# ============================================================
+#  ANALYTICS-INGEST — Cloud Run Job
+#  ------------------------------------------------------------
+#  NIET UITGEROLD. Dit is een manifest, geen draaiende dienst.
+#  Toepassen maakt billbare resources aan en vraagt dus goedkeuring.
+#
+#  WAAROM CLOUD RUN EN NIET RAILWAY
+#  Gemeten in het zusterplatform en opnieuw bevestigd hier: Railway
+#  heeft geen OIDC-identity-token en geen tokenendpoint. Workload
+#  identity federation kan daar dus niet, en dan blijft alleen een
+#  LANGLEVENDE service-accountsleutel over. Die sleutel zou in een
+#  omgevingsvariabele staan van een dienst die uit een PUBLIEKE
+#  repository bouwt.
+#
+#  Cloud Run draait met een service-identiteit. Er is geen sleutel,
+#  geen JSON-bestand en niets om te lekken of te rouleren: de
+#  container vraagt zijn token bij de metadataserver op.
+#
+#  WAT DEZE JOB WEL EN NIET MAG
+#  De job leest Search Console en GA4 en schrijft naar de
+#  intelligencedatabase. Hij publiceert niets, hij beslist niets en
+#  hij raakt de website niet aan. Faalt hij, dan blijft elke
+#  funnelstap ONBEKEND — en ONBEKEND is geen nul.
+#
+#  GEMETEN STAND VAN HET GCP-PROJECT (10 oktober 2026)
+#    project          vibe-energy-509410 ("Vibe Energy Calender")
+#    rol van operator roles/owner
+#    service accounts 0
+#    run.googleapis.com                 NIET ingeschakeld
+#    searchconsole.googleapis.com       NIET ingeschakeld
+#    analyticsdata.googleapis.com       NIET ingeschakeld
+#    secretmanager.googleapis.com       NIET ingeschakeld
+#    artifactregistry.googleapis.com    NIET ingeschakeld
+#
+#  Er is dus NIETS van deze keten aanwezig. De commando's onderaan
+#  maken hem aan; elk daarvan is een billbare of
+#  configuratiewijzigende handeling.
+# ============================================================
+
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: vibe-analytics-ingest
+  labels:
+    applicatie: vibe-energy-intelligence
+    onderdeel: analytics-ingest
+  annotations:
+    # Geen publieke toegang: een job wordt aangeroepen, niet bezocht.
+    run.googleapis.com/launch-stage: GA
+spec:
+  template:
+    spec:
+      # Geen parallelliteit: de ingest is incrementeel en moet per
+      # property in volgorde lopen, anders botsen twee runs op dezelfde
+      # dagrij.
+      parallelism: 1
+      taskCount: 1
+      template:
+        spec:
+          # Een eigen service-identiteit. GEEN sleutel: de container
+          # haalt zijn token bij de metadataserver.
+          serviceAccountName: vibe-analytics-ingest@vibe-energy-509410.iam.gserviceaccount.com
+          maxRetries: 2
+          timeoutSeconds: 900
+          containers:
+            - image: europe-west4-docker.pkg.dev/vibe-energy-509410/vibe/analytics-ingest:PLAATSHOUDER
+              command: ["node"]
+              args: ["src/cli/analytics.ts", "--ingest"]
+              resources:
+                limits:
+                  # Gemeten uitgangspunt: de ingest is IO-gebonden, niet
+                  # rekenintensief. 512Mi en 1 vCPU is ruim; verhogen
+                  # alleen op een meting, niet op een vermoeden.
+                  cpu: "1"
+                  memory: 512Mi
+              env:
+                - name: INTEL_OMGEVING
+                  value: productie
+                - name: INTEL_ORGANISATIE
+                  value: vibe-energy
+                - name: INTEL_SITE_BASIS_URL
+                  value: https://www.vibeenergy.nl
+
+                # De GSC-property. LET OP: dit is de Vibe ENERGY-property.
+                # Vibe Home gebruikt GTM-WFWS7DRN en een eigen property;
+                # die twee mogen nooit in dezelfde database belanden.
+                - name: INTEL_GSC_SITE_URL
+                  value: https://www.vibeenergy.nl/
+
+                # De databaseverbinding komt uit Secret Manager en staat
+                # NIET in dit bestand. Dit bestand staat in een publieke
+                # repository.
+                - name: INTEL_DB_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: vibe-intel-db-url
+                      key: latest
+
+                # GEEN INTEL_GSC_CLIENT_EMAIL en GEEN
+                # INTEL_GSC_PRIVATE_KEY. Dat is het hele punt van
+                # workload identity: de adapter haalt een
+                # toegangstoken bij de metadataserver op met de
+                # identiteit van de job. Er bestaat geen sleutel om te
+                # lekken.
+                - name: INTEL_GOOGLE_AUTH
+                  value: workload-identity
+
+                - name: INTEL_LOG_NIVEAU
+                  value: info
+
+---
+# ============================================================
+#  DE COMMANDO'S DIE DIT AANMAKEN
+#  ------------------------------------------------------------
+#  Elk van deze regels is een goedkeuringwaardige handeling: ze
+#  schakelen betaalde API's in, maken een identiteit aan of geven
+#  rechten weg. Ze staan hier als DOCUMENTATIE en zijn niet
+#  uitgevoerd.
+#
+#  1. API's inschakelen (billbaar vanaf gebruik)
+#
+#     gcloud services enable \
+#       run.googleapis.com \
+#       artifactregistry.googleapis.com \
+#       secretmanager.googleapis.com \
+#       searchconsole.googleapis.com \
+#       analyticsdata.googleapis.com \
+#       --project vibe-energy-509410
+#
+#  2. De service-identiteit, zonder sleutel
+#
+#     gcloud iam service-accounts create vibe-analytics-ingest \
+#       --display-name "Vibe analytics ingest" \
+#       --project vibe-energy-509410
+#
+#     Let op: er wordt GEEN `gcloud iam service-accounts keys create`
+#     gedaan. Dat zou precies de langlevende sleutel opleveren die
+#     deze opzet vermijdt.
+#
+#  3. Rechten, zo smal mogelijk
+#
+#     gcloud secrets add-iam-policy-binding vibe-intel-db-url \
+#       --member serviceAccount:vibe-analytics-ingest@vibe-energy-509410.iam.gserviceaccount.com \
+#       --role roles/secretmanager.secretAccessor \
+#       --project vibe-energy-509410
+#
+#  4. De Search Console-property delen
+#
+#     Dit kan NIET met gcloud. In Search Console wordt
+#     vibe-analytics-ingest@vibe-energy-509410.iam.gserviceaccount.com
+#     als gebruiker met leesrecht toegevoegd op de property
+#     https://www.vibeenergy.nl/. Dat is een handmatige stap van
+#     iemand die eigenaar van die property is.
+#
+#  5. In GA4 hetzelfde: het service-account als Viewer op de property
+#     die bij VIBE ENERGY hoort. Nooit die van Vibe Home.
+#
+#  6. Plannen
+#
+#     gcloud scheduler jobs create http vibe-analytics-dagelijks \
+#       --schedule "30 4 * * *" --time-zone Europe/Amsterdam \
+#       --uri "https://europe-west4-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/vibe-energy-509410/jobs/vibe-analytics-ingest:run" \
+#       --oauth-service-account-email vibe-analytics-ingest@vibe-energy-509410.iam.gserviceaccount.com \
+#       --project vibe-energy-509410
+#
+#     04:30 Europe/Amsterdam: Search Console levert data met een
+#     vertraging van enkele dagen, dus vroeg in de ochtend ophalen
+#     geeft de meest complete dag zonder de API onnodig te belasten.
+#
+#  WAT ER DAARNA NOG MOET
+#  De adapter in src/analytics/ kent op dit moment alleen de
+#  variant met client_email en private_key. De workload-identityvariant
+#  (token van de metadataserver) moet daar nog bij. Zolang dat niet
+#  gebeurd is blijft de koppeling NIET AANGESLOTEN, en dat is wat
+#  `npm run analytics` nu ook meldt.
+# ============================================================
