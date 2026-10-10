@@ -493,7 +493,9 @@ export function parseerTijdreeks(jsonTekst: string, config: TijdreeksConfig): Pa
     const negatief = reeks.filter((w) => w < 0).length;
     items.push({
       externId: `${config.reeksNaam}:${dag}`,
-      url: config.citatieUrl,
+      // Anker per dag: de citatie wijst naar het endpoint, maar elke
+      // dagsamenvatting krijgt een eigen verwijzing.
+      url: `${config.citatieUrl}#${dag}`,
       titel: `${config.reeksNaam} ${dag}: gemiddeld ${gemiddelde.toFixed(2)} ${eenheid}`.trim(),
       samenvatting:
         `Dagbeeld ${dag}: laagste ${min.toFixed(2)}, hoogste ${max.toFixed(2)}, ` +
