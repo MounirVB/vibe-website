@@ -6,3 +6,7 @@
 node_modules/
 *.log
 .uitvoer/
+
+# Back-ups bevatten goedkeuringen, gebruikers en het auditspoor.
+# Deze repository is PUBLIEK; dumps horen hier nooit in.
+backups/

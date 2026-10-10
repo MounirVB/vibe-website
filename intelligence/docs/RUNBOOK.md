@@ -1,0 +1,232 @@
+# Runbook — Vibe Energy Intelligence Platform
+
+**Gemeten op 10 oktober 2026, branch
+`feat/vibe-energy-intelligence-integratie`.**
+
+> **Status van de infrastructuur: NIET UITGEROLD.** Dit runbook beschrijft
+> procedures die lokaal zijn uitgevoerd en bewezen. Waar een procedure
+> alleen lokaal is bewezen staat dat erbij. Lokaal bewezen is niet
+> operationeel.
+
+---
+
+## 1. Back-up
+
+### Wat er wel en niet op het spel staat
+
+De bronlaag is **herbouwbaar**. `npm run migreer`, `zaai`, `geo` en
+`collector` leverden in twee aparte sessies exact dezelfde 2.103
+documenten en 2.103 versies op. Een verloren bronlaag kost rekentijd en
+netwerkverkeer, geen informatie.
+
+Niet herbouwbaar, en dus de hele reden dat back-up bestaat:
+
+| tabel | waarom onvervangbaar |
+|---|---|
+| `inhoud_versies` (goedkeuringen) | wie wat heeft vrijgegeven, en aan welke inhoudsafdruk dat bond |
+| `publicatiebesluiten` | append-only besluitgeschiedenis |
+| `audit_gebeurtenissen` | append-only auditspoor |
+| `publicaties` | wat er werkelijk is weggeschreven, met de vorige inhoud voor terugdraaien |
+| `gebruikers`, `gebruiker_rollen` | wie toegang heeft |
+| `regio_impacts`, `commerciele_signalen` | beoordeelde voorstellen met hun onderbouwing |
+
+### De procedure
+
+```bash
+cd intelligence
+npm run backup                  # dump + manifest + retentie
+npm run backup -- --lijst       # wat er staat
+npm run backup -- --controleer  # integriteit zonder terugzetten
+```
+
+Doelmap: `intelligence/backups/`, in `.gitignore`. **Deze repository is
+publiek** (gemeten), dus een dump mag daar nooit in.
+
+### De valkuil die dit script afdekt
+
+Deze machine heeft twee `pg_dump`-binaries en de eerste in `PATH` is de
+verkeerde:
+
+```
+/opt/homebrew/opt/postgresql@16/bin/pg_dump   16.14   <- eerst in PATH
+/opt/homebrew/opt/postgresql@17/bin/pg_dump   17.11
+```
+
+De server is 17.11. Gemeten uitkomst van de 16-client:
+
+```
+pg_dump: error: aborting because of server version mismatch
+pg_dump: detail: server version: 17.11; pg_dump version: 16.14
+```
+
+Een back-upscript dat gewoon `pg_dump` aanroept faalt hier dus, en een
+cron die zijn uitvoer niet leest zou dat maanden niet merken. `vindPgGereedschap()`
+zoekt daarom actief de binary die bij de **server** past en weigert een
+te oude client. Een stille back-upfout is erger dan geen back-up.
+
+### Retentiebeleid
+
+| | |
+|---|---|
+| standaard retentie | **30 dagen** (`--retentie <dagen>`) |
+| uitzondering | de **nieuwste** dump wordt nooit opgeruimd, ook niet als hij ouder is dan de retentie |
+| waarom die uitzondering | een machine die een maand uit stond zou bij de eerste run anders zijn enige back-up weggooien voordat er een nieuwe is |
+
+### Integriteit
+
+Drie controles, want "het bestand bestaat" zegt niets — een dump van nul
+bytes bestaat ook:
+
+1. **sha256** vastgelegd in het manifest en opnieuw gemeten bij `--controleer`.
+2. **`pg_restore --list` moet de inhoudsopgave kunnen lezen.** Dat bewijst
+   dat het archief structureel heel is. Gemeten: 612 regels.
+3. **Rijtellingen van de kritieke tabellen** in het manifest, gemeten op
+   de LIVE bron. Daarmee is een restore te *verifiëren* in plaats van
+   alleen te laten slagen.
+
+---
+
+## 2. RPO en RTO
+
+| doel | waarde | onderbouwing |
+|---|---|---|
+| **RPO** (maximaal gegevensverlies) | **24 uur** voor de niet-herbouwbare laag | bij een dagelijkse back-up. De bronlaag heeft feitelijk RPO 0, want die is opnieuw op te halen. |
+| **RTO** (maximale hersteltijd) | **1 uur** | gemeten restoreduur **708 ms** voor 772 kB; de rest van het uur is menselijke reactietijd en het opnieuw opstarten van de diensten |
+| RPO bij hogere frequentie | 1 uur | haalbaar: de dump duurt seconden. Een uurlijkse back-up kost ~770 kB per keep |
+
+**Gemeten, niet aangenomen:** dump 772 kB, restore 708 ms, 13 migraties,
+612 TOC-regels, 44 tabellen.
+
+> **Nog niet geldig voor productie.** Deze cijfers komen van een lokale
+> database met 2.103 documenten. Een productiedatabase die maanden
+> ingest zal groter zijn; RPO/RTO moeten opnieuw gemeten worden zodra de
+> werkelijke omvang bekend is.
+
+---
+
+## 3. Restoreprocedure
+
+### De geteste procedure
+
+```bash
+cd intelligence
+npm run restoretest              # nieuwste back-up, geïsoleerde container
+npm run restoretest -- --houd    # container laten staan om in te kijken
+```
+
+Wat het doet: start een verse `postgres:17-alpine` in Docker op een eigen
+poort met een eigen wachtwoord, maakt de drie applicatierollen aan, zet de
+dump terug en **verifieert** het resultaat. Daarna wordt de container
+weggegooid. **De brondatabase wordt niet aangeraakt; er wordt nooit iets
+verwijderd om een restore te kunnen tonen.**
+
+### Uitkomst van de laatste run
+
+```
+pg_restore gereed in 708 ms
+geslaagd 10   mislukt 0
+EINDOORDEEL RESTORETEST = PASS
+```
+
+Geverifieerd: 13/13 migraties, elke kritieke tabel op de rijtelling uit
+het manifest, auditspoor volledig, **append-only bescherming werkt na de
+restore**, elke tabel met `organisatie_id` heeft nog RLS, de tabellen
+zonder RLS zijn exact de zes verantwoorde uitzonderingen, 38 policies,
+21 triggers, 103 check-constraints.
+
+### De stap die een ongeteste restoreprocedure mist
+
+**De rollen zitten niet in de dump.** De dump is met `--no-owner`
+gemaakt, maar RLS-policies en grants verwijzen bij naam naar
+`vibe_intel_app`, `vibe_intel_lezer` en `vibe_intel_onderhoud`. In een
+verse database bestaan die niet, en dan faalt de restore of komt de
+beveiliging niet mee. De procedure maakt ze daarom eerst aan. Dit is
+precies het soort detail dat je alleen vindt door een restore echt te
+doen.
+
+### Handmatige restore naar een nieuw doel
+
+```bash
+# 1. rollen aanmaken (ZONDER login; de app logt in met de URL-identiteit)
+psql "$DOEL" -c "create role vibe_intel_app nologin"
+psql "$DOEL" -c "create role vibe_intel_lezer nologin"
+psql "$DOEL" -c "create role vibe_intel_onderhoud nologin"
+
+# 2. terugzetten met de binary die bij de SERVER past
+/opt/homebrew/opt/postgresql@17/bin/pg_restore \
+  --dbname "$DOEL" --no-owner --no-privileges --exit-on-error \
+  backups/vibe-intel-<stempel>.dump
+
+# 3. verifiëren tegen het manifest
+cat backups/vibe-intel-<stempel>.dump.manifest.json
+```
+
+### Goedkeuringen en auditspoor na een restore verifiëren
+
+Dat is apart getoetst, want in de ontwikkeldatabase staan nul
+goedkeuringen en dan bewijst "goedkeuringen zijn teruggezet" niets.
+`test/integratie/backup-restore.test.ts` zet een echte goedkeuring,
+dumpt, zet terug in een tweede database en controleert:
+
+- de goedgekeurde versie bestaat, met **de goedkeurder bij naam**
+- `inhoud_afdruk` **en** `goedgekeurde_afdruk` zijn identiek teruggekomen
+  (de binding tussen goedkeuring en inhoud)
+- het goedkeuringsmoment is bewaard
+- het publicatiebesluit staat er, met `actor_soort = 'mens'`
+- de auditregel staat er, met de actornaam
+- `update` op het auditspoor wordt **nog steeds geweigerd**
+- `delete` op publicatiebesluiten wordt **nog steeds geweigerd**
+- de **vier-ogenconstraint geldt nog**: de auteur alsnog als goedkeurder
+  zetten faalt
+
+Uitkomst: **4/4 PASS**.
+
+---
+
+## 4. Herstel van een mislukte migratie
+
+| situatie | wat te doen |
+|---|---|
+| migratie faalt halverwege | **niets doen.** Elke migratie loopt in één transactie; er is niets half toegepast. Repareer het bestand en draai opnieuw. |
+| migratie is toegepast en blijkt verkeerd | **geen down-migratie.** Herstel is een nieuwe, voorwaartse migratie. Een down-migratie op append-only tabellen zou een leugen zijn. |
+| migratiebestand is na toepassing gewijzigd | de runner **weigert** te draaien en meldt drift. Dat is bedoeld. Maak een nieuwe migratie in plaats van een oude te herschrijven. |
+| schema is onherstelbaar | restore uit de laatste back-up volgens §3, dan de ontbrekende migraties opnieuw. |
+
+**Vóór elke productiemigratie:** `npm run backup`, dan
+`npm run backup -- --controleer`. Pas daarna migreren.
+
+---
+
+## 5. Dagelijkse controle
+
+```bash
+cd intelligence
+npm run poort                  # typecheck, migraties, rollen, invarianten, 232 tests
+npm run backup -- --lijst      # staat er een recente back-up?
+npm run bronnen                # bronstatus en toestemming
+```
+
+Bij een incident in de keten:
+
+```bash
+npm run worker -- --leeg       # draai de wachtrij leeg en kijk wat faalt
+```
+
+De wachtrijstatus per soort staat onderaan die uitvoer, inclusief de
+dead-letter queue.
+
+---
+
+## 6. Wat dit runbook nog niet dekt
+
+Deze onderdelen bestaan als code of configuratie maar zijn **niet
+uitgerold**, en hun procedures zijn dus niet in hun doelomgeving
+bewezen:
+
+- de Intelligence API als dienst
+- de worker en de planner als permanente processen
+- geautomatiseerde back-up op een schema
+- monitoring en alertering
+- de productiedatabase zelf
+
+Zie `docs/PRODUCTIE.md` voor de topologie en de openstaande punten.

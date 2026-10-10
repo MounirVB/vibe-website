@@ -33,7 +33,9 @@
     "wachtwoord": "node src/cli/wachtwoord.ts",
     "distributie": "node src/cli/distributie.ts",
     "regio": "node src/cli/regio.ts",
-    "e2e": "node src/cli/e2e.ts"
+    "e2e": "node src/cli/e2e.ts",
+    "backup": "node src/cli/backup.ts",
+    "restoretest": "node src/cli/restoretest.ts"
   },
   "dependencies": {
     "express": "^4.21.2",
