@@ -41,6 +41,7 @@ const STANDAARD = {
   urlPatroon: null,
   uitsluitPatroon: null,
   hergebruikVerklaring: null,
+  levertGebeurtenissen: true,
 } as const;
 
 export const BRONNEN: readonly Bron[] = [
@@ -111,6 +112,7 @@ export const BRONNEN: readonly Bron[] = [
     maxBytes: 20_971_520,
     actief: true,
     inactiefReden: null,
+    levertGebeurtenissen: false,
     bewaren: "netbeheerdercode, naam en gebiedsidentificatie als referentiegeografie.",
     config: { geoSoort: "netbeheerdergebied" },
     notities:
@@ -574,6 +576,7 @@ export const BRONNEN: readonly Bron[] = [
     maxBytes: 52_428_800,
     actief: true,
     inactiefReden: null,
+    levertGebeurtenissen: false,
     bewaren: "gemeente- en provinciecodes met naam, als referentiegeografie. Geen geometrie opslaan.",
     config: {
       geoSoort: "gemeente",

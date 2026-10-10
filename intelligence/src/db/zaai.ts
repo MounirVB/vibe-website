@@ -332,9 +332,10 @@ async function zaaiBronnen(
           robots_gecontroleerd_op, mag_citeren, citaat_limiet_tekens,
           verificatie_status, verificatie_bewijs, verificatie_op,
           ophaalinterval_minuten, min_interval_seconden, max_items_per_ophaling,
-          geo_bereik, onderwerpen, config, tdm_status, toegestane_hosts, max_bytes)
+          geo_bereik, onderwerpen, config, tdm_status, toegestane_hosts, max_bytes,
+          levert_gebeurtenissen)
        values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,
-               $19,$20,$21,$22,$23,$24,$25,$26,$27)
+               $19,$20,$21,$22,$23,$24,$25,$26,$27,$28)
        on conflict (organisatie_id, sleutel) do update set
          uitgever                = excluded.uitgever,
          soort                   = excluded.soort,
@@ -360,7 +361,8 @@ async function zaaiBronnen(
          config                  = excluded.config,
          tdm_status              = excluded.tdm_status,
          toegestane_hosts        = excluded.toegestane_hosts,
-         max_bytes               = excluded.max_bytes`,
+         max_bytes               = excluded.max_bytes,
+         levert_gebeurtenissen   = excluded.levert_gebeurtenissen`,
       [
         organisatieId,
         b.sleutel,
@@ -389,6 +391,7 @@ async function zaaiBronnen(
         b.tdmStatus,
         b.toegestaneHosts,
         b.maxBytes,
+        b.levertGebeurtenissen,
       ],
     );
     geschreven += 1;

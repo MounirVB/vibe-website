@@ -115,6 +115,12 @@ export type Bron = {
   readonly actief: boolean;
   /** Verplicht als actief false is: waarom staat deze bron uit. */
   readonly inactiefReden: string | null;
+  /**
+   * Levert deze bron marktgebeurtenissen, of alleen referentiedata?
+   * PDOK-gemeentegrenzen zijn geen gebeurtenis in de markt; die vullen
+   * intel.geo_bereiken. Zie migratie 0012.
+   */
+  readonly levertGebeurtenissen: boolean;
 
   /** Welke itemurls meetellen. Uitsluiten wint van includeren. */
   readonly urlPatroon: RegExp | null;
