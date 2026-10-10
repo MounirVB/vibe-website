@@ -26,7 +26,8 @@ import {
 } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 import { BRONNEN } from "../bronnen/register.ts";
-import { scanSite, type ScanUitkomst } from "../site/paginascan.ts";
+import { leesLiveSitemap, scanSite, type ScanUitkomst } from "../site/paginascan.ts";
+import { haalOp } from "../bronnen/http.ts";
 
 const log = maakLogger("zaai");
 
@@ -50,77 +51,77 @@ export const CLUSTERS: readonly {
     omschrijving:
       "Beschikbare transportcapaciteit, congestiegebieden, wachtrijen en congestiemanagement.",
     risico: "hoog",
-    paginaKandidaten: ["/oplossing-netcongestie", "/netcongestie-check", "/microgrids"],
+    paginaKandidaten: ["/kennis/netcongestie-uitgelegd", "/netcongestie", "/oplossing-netcongestie", "/microgrids"],
   },
   {
     sleutel: "bess",
     naam: "Batterijopslag voor bedrijven",
     omschrijving: "Vermogen- en energiedimensionering, peak shaving, handel en levensduur.",
     risico: "midden",
-    paginaKandidaten: ["/systeem-energieopslag"],
+    paginaKandidaten: ["/kennis/batterij-dimensioneren", "/kennis/batterijdegradatie", "/systeem-energieopslag"],
   },
   {
     sleutel: "batterijveiligheid",
     naam: "Batterijveiligheid en normen",
     omschrijving: "Brandveiligheid, opstelling, normen en vergunningseisen rond opslag.",
     risico: "hoog",
-    paginaKandidaten: ["/systeem-energieopslag"],
+    paginaKandidaten: ["/kennis/batterijveiligheid", "/systeem-energieopslag"],
   },
   {
     sleutel: "ems",
     naam: "Energiemanagement",
     omschrijving: "Sturing, meting, load balancing en optimalisatie achter de meter.",
     risico: "midden",
-    paginaKandidaten: ["/vibe-control", "/systeem-ems"],
+    paginaKandidaten: ["/kennis/ems-energiemanagementsysteem", "/kennis/load-balancing", "/vibe-control"],
   },
   {
     sleutel: "laadinfrastructuur",
     naam: "Laadinfrastructuur",
     omschrijving: "Laadpleinen, laadvermogen, exploitatie en netimpact van laden.",
     risico: "midden",
-    paginaKandidaten: ["/oplossing-laadplein", "/systeem-laadpalen"],
+    paginaKandidaten: ["/kennis/laadinfrastructuur-dimensioneren", "/laadplein", "/systeem-laadpalen"],
   },
   {
     sleutel: "zonne-energie",
     naam: "Zonnestroom voor bedrijven",
     omschrijving: "Opbrengst, curtailment, terugleverbeperking en dakgebonden opwek.",
     risico: "laag",
-    paginaKandidaten: ["/systeem-zonnepanelen"],
+    paginaKandidaten: ["/kennis/terugleverbeperking", "/systeem-zonnepanelen"],
   },
   {
     sleutel: "subsidie",
     naam: "Subsidies en fiscale regelingen",
     omschrijving: "SDE++, EIA, MIA/Vamil, SCE, ISDE: voorwaarden, bedragen en termijnen.",
     risico: "hoog",
-    paginaKandidaten: ["/oplossing-subsidies"],
+    paginaKandidaten: ["/kennis/subsidiemechanismen", "/oplossing-subsidies"],
   },
   {
     sleutel: "regelgeving",
     naam: "Regelgeving en toezicht",
     omschrijving: "Energiewet, netcodes, tariefbesluiten en toezichthouderbesluiten.",
     risico: "hoog",
-    paginaKandidaten: [],
+    paginaKandidaten: ["/kennis/normen-en-keuringen"],
   },
   {
     sleutel: "rendement",
     naam: "Businesscase en rendement",
     omschrijving: "Terugverdientijd, kasstromen en aannames achter een businesscase.",
     risico: "hoog",
-    paginaKandidaten: ["/oplossing-exploitatie", "/exploitatie-zonder-investering"],
+    paginaKandidaten: ["/kennis/businesscase-batterij", "/oplossing-exploitatie"],
   },
   {
     sleutel: "marktprijs",
     naam: "Marktprijzen en flexwaarde",
     omschrijving: "Day-ahead prijzen, onbalans, spreiding en de waarde van flexibiliteit.",
     risico: "midden",
-    paginaKandidaten: ["/energiehandel-flexmarkten"],
+    paginaKandidaten: ["/kennis/energiehandel-en-flexibiliteit"],
   },
   {
     sleutel: "vastgoedverduurzaming",
     naam: "Verduurzaming van bedrijfsvastgoed",
     omschrijving: "Energielabel, Paris Proof, en energie als vastgoedopbrengst.",
     risico: "midden",
-    paginaKandidaten: ["/oplossing-energielabel", "/oplossing-paris-proof"],
+    paginaKandidaten: ["/kennis/energieprestatie-meten", "/oplossing-energielabel"],
   },
   {
     sleutel: "aanbesteding",
@@ -141,7 +142,7 @@ export const CLUSTERS: readonly {
     naam: "Netbeheer",
     omschrijving: "Investeringsplannen, nettarieven en werkzaamheden van netbeheerders.",
     risico: "midden",
-    paginaKandidaten: ["/oplossing-netcongestie"],
+    paginaKandidaten: ["/kennis/transportvermogen-versus-aansluitwaarde", "/kennis/netaansluiting-aanvragen", "/oplossing-netcongestie"],
   },
   {
     sleutel: "statistiek",
@@ -156,6 +157,8 @@ export type ZaaiRapport = {
   readonly organisatieId: number;
   readonly paginasGescand: number;
   readonly paginasGeschreven: number;
+  readonly livePaginas: number;
+  readonly liveAlleenPaden: readonly string[];
   readonly sitemapZonderBestand: readonly string[];
   readonly indexeerbaarZonderSitemap: readonly string[];
   readonly clustersGeschreven: number;
@@ -197,12 +200,26 @@ export async function zaai(pool: Pool, opties: { siteWortel?: string } = {}): Pr
 
   const scan = await scanSite(siteWortel);
 
+  // De live sitemap erbij, want de repository loopt achter op productie.
+  const liveHost = new URL(config.siteBasisUrl).host;
+  const livePaden = await leesLiveSitemap(config.siteBasisUrl, async (url) => {
+    const uitkomst = await haalOp({
+      url,
+      toegestaneHosts: [liveHost],
+      maxBytes: 4_194_304,
+      accept: "application/xml, text/xml",
+    });
+    return uitkomst.soort === "ok" ? uitkomst.body : null;
+  }).catch(() => new Set<string>());
+
   return metOrganisatie(pool, { organisatieId }, async (c) => {
     const paginasGeschreven = await zaaiPaginas(c, organisatieId, scan, config.siteBasisUrl);
+    const livePaginas = await zaaiLivePaginas(c, organisatieId, livePaden, scan, config.siteBasisUrl);
     const { geschreven: clustersGeschreven, zonderPagina } = await zaaiClusters(
       c,
       organisatieId,
       scan,
+      livePaden,
     );
     const { geschreven: bronnenGeschreven, actief } = await zaaiBronnen(c, organisatieId);
     const beleidVersie = await zaaiBeleid(c, organisatieId);
@@ -221,6 +238,8 @@ export async function zaai(pool: Pool, opties: { siteWortel?: string } = {}): Pr
       organisatieId,
       paginasGescand: scan.paginas.length,
       paginasGeschreven,
+      livePaginas,
+      liveAlleenPaden: [...livePaden].filter((p) => !scan.paginas.some((x) => x.pad === p)).sort(),
       sitemapZonderBestand: scan.sitemapZonderBestand,
       indexeerbaarZonderSitemap: scan.indexeerbaarZonderSitemap,
       clustersGeschreven,
@@ -286,10 +305,15 @@ async function zaaiClusters(
   c: pg.PoolClient,
   organisatieId: number,
   scan: ScanUitkomst,
+  livePaden: ReadonlySet<string>,
 ): Promise<{ geschreven: number; zonderPagina: string[] }> {
-  const bestaandePaden = new Set(
-    scan.paginas.filter((p) => !p.isRedirectStub && p.indexeerbaar).map((p) => p.pad),
-  );
+  // Een cluster mag ook een LIVE pagina als eigenaar hebben. De
+  // kennispagina's op productie bestaan niet in de repo, maar ze bezitten
+  // de zoekintentie wel degelijk.
+  const bestaandePaden = new Set([
+    ...scan.paginas.filter((p) => !p.isRedirectStub && p.indexeerbaar).map((p) => p.pad),
+    ...livePaden,
+  ]);
   let geschreven = 0;
   const zonderPagina: string[] = [];
 
@@ -464,6 +488,47 @@ async function zaaiKoppelingen(
     uit.push({ sleutel, status, ontbrekend });
   }
   return uit;
+}
+
+/**
+ * Pagina's die live staan maar niet in de worktree. Die krijgen
+ * bestaat_in_repo = false en blijven eigendom van Release 1: ze bestaan,
+ * ze bezitten een zoekintentie, en dit platform kan ze niet schrijven
+ * omdat het bestand hier niet is.
+ */
+async function zaaiLivePaginas(
+  c: pg.PoolClient,
+  organisatieId: number,
+  livePaden: ReadonlySet<string>,
+  scan: ScanUitkomst,
+  basisUrl: string,
+): Promise<number> {
+  const inRepo = new Set(scan.paginas.map((p) => p.pad));
+  let n = 0;
+  for (const pad of livePaden) {
+    if (inRepo.has(pad)) continue;
+    const soort = pad.startsWith("/kennis")
+      ? "kennis"
+      : pad.startsWith("/regios")
+        ? "regio"
+        : pad.startsWith("/sectoren")
+          ? "sector"
+          : pad.startsWith("/project")
+            ? "project"
+            : "overig";
+    await c.query(
+      `insert into intel.pagina_register
+         (organisatie_id, pad, canonieke_url, titel, soort,
+          in_sitemap, bestaat_in_repo, eigenaar_release, beheer)
+       values ($1, $2, $3, null, $4, true, false, 'release1', 'handmatig')
+       on conflict (organisatie_id, pad) do update set
+         in_sitemap = true,
+         soort      = excluded.soort`,
+      [organisatieId, pad, `${basisUrl}${pad === "/" ? "" : pad}`, soort],
+    );
+    n += 1;
+  }
+  return n;
 }
 
 /**

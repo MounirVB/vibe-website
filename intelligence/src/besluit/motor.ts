@@ -388,7 +388,12 @@ export async function neemBesluiten(
          left join intel.pagina_register pr
                 on pr.organisatie_id = g.organisatie_id
                and pr.pad = oc.canonieke_pagina
-               and pr.bestaat_in_repo
+               -- Een pagina bezit de zoekintentie als hij BESTAAT: in de
+               -- worktree of live. De repository loopt achter op
+               -- productie (34 sitemap-URL's hier, 96 live), dus alleen
+               -- op bestaat_in_repo filteren zou de live kennispagina's
+               -- negeren en ten onrechte NEW_ARTICLE opleveren.
+               and (pr.bestaat_in_repo or pr.in_sitemap)
         where g.organisatie_id = $1
           and g.status <> 'afgewezen'
           and ($2::boolean or not exists (

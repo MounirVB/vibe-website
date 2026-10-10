@@ -343,12 +343,28 @@ export function toetsConcept(c: ConceptTeToetsen): PoortUitkomst[] {
   }
 
   // 15. Eigendom van het doelbestand
+  //
+  // Bewust ADVIES en niet blokkerend. Deze poortenset beoordeelt of de
+  // INHOUD klopt; of wij het bestand mogen schrijven is een andere
+  // vraag, en die wordt onafhankelijk afgedwongen in publiceer(), dat
+  // een pagina met beheer='handmatig' weigert.
+  //
+  // Dat onderscheid is nodig omdat een patchvoorstel voor een
+  // Release 1-pagina een volwaardig product is: de tekst is
+  // bewijsgebonden, de poorten zijn gehaald, en een mens kan hem
+  // overnemen. Hem als 'mislukt' markeren zou de hele regel
+  // UPDATE_EXISTING onbruikbaar maken — en dat is juist de regel die de
+  // opdracht boven een nieuwe URL stelt.
   if (c.doelPaginaBeheer === "handmatig") {
     uit.push(
-      gefaald("eigendom_van_pagina", [
-        `pagina ${c.pad} staat op handmatig beheer (Release 1-eigendom); dit platform levert ` +
-          "een patchvoorstel en schrijft het bestand niet",
-      ]),
+      gefaald(
+        "eigendom_van_pagina",
+        [
+          `pagina ${c.pad} staat op handmatig beheer (Release 1-eigendom); dit platform levert ` +
+            "een patchvoorstel en schrijft het bestand niet",
+        ],
+        "advies",
+      ),
     );
   } else uit.push(geslaagd("eigendom_van_pagina"));
 

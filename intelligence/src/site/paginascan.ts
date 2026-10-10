@@ -115,6 +115,41 @@ export function leesPagina(
   };
 }
 
+/**
+ * Haalt de publieke paden uit de LIVE sitemap. Gemeten noodzaak: de
+ * repository loopt achter op productie. De repo-sitemap heeft 34 URL's
+ * op de apex-host; de live sitemap heeft 96 op www, met /kennis (18
+ * kennispagina's), /regios (provincies en gemeenten) en /sectoren die
+ * in de repo niet bestaan.
+ *
+ * Het pagina-register moet dus BEIDE kennen: wat in de worktree staat
+ * (bestaat_in_repo) en wat live staat (in_sitemap). Een cluster dat in
+ * de repo geen eigenaar heeft, kan er live wel een hebben — en dan is
+ * UPDATE_EXISTING het juiste besluit in plaats van NEW_ARTICLE.
+ */
+export async function leesLiveSitemap(
+  basisUrl: string,
+  haal: (url: string) => Promise<string | null>,
+): Promise<Set<string>> {
+  const xml = await haal(`${basisUrl.replace(/\/+$/, "")}/sitemap.xml`);
+  if (xml === null) return new Set();
+  const paden = new Set<string>();
+  const patroon = /<loc>\s*([^<\s]+)\s*<\/loc>/gi;
+  let m: RegExpExecArray | null;
+  while ((m = patroon.exec(xml)) !== null) {
+    const loc = m[1];
+    if (!loc) continue;
+    try {
+      const u = new URL(loc);
+      const pad = u.pathname.replace(/\/+$/, "");
+      paden.add(pad === "" ? "/" : pad);
+    } catch {
+      // onbruikbare loc overslaan
+    }
+  }
+  return paden;
+}
+
 /** Haalt de publieke paden uit sitemap.xml. Ontbreekt die, dan lege set. */
 export async function leesSitemapPaden(siteWortel: string): Promise<Set<string>> {
   let xml: string;

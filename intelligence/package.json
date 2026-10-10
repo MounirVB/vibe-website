@@ -29,7 +29,9 @@
     "herbouw": "node src/cli/herbouw.ts",
     "concept": "node src/cli/concept.ts",
     "publiceer": "node src/cli/publiceer.ts",
-    "signalen": "node src/cli/signalen.ts"
+    "signalen": "node src/cli/signalen.ts",
+    "wachtwoord": "node src/cli/wachtwoord.ts",
+    "distributie": "node src/cli/distributie.ts"
   },
   "dependencies": {
     "express": "^4.21.2",
