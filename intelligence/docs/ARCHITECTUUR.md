@@ -212,19 +212,67 @@ daar gemeten, niet bedacht.
 
 ---
 
-## 7b. De repository is niet wat live staat
+## 7b. GECORRIGEERD — de repository IS wel wat live staat
 
-Dit is de zwaarste bevinding van de bouw, en hij verandert de
-integratievraag. Gemeten op 10 oktober 2026:
+> **Deze paragraaf stond fout in Release 2 en is in Release 2.1
+> weerlegd met directe configuratie- en productiebewijzen.** De oude
+> conclusie luidde "de repository is niet wat live staat". Dat was een
+> verkeerde gevolgtrekking, geen meting. Hij is hieronder blijven staan
+> omdat de manier waarop hij misging leerzaam is.
 
-| | repository (`main`, `e2faa3b`) | live `www.vibeenergy.nl` |
+**Wat er werkelijk aan de hand was.** De vergelijking was gemaakt tussen
+de *live* sitemap en de *lokale* `main` (`e2faa3b`). Die lokale branch
+liep twee commits achter op `origin/main`, en juist die twee commits
+zijn Release 1 — het SEO/GEO-fundament dat de 62 "ontbrekende" pagina's
+toevoegt. Er is nooit `git fetch` gedaan voordat de conclusie werd
+getrokken. De 62 URL's ontbraken niet in de repository; ze ontbraken in
+de *checkout*.
+
+**Het bewijs dat het omkeert** (gemeten 10 oktober 2026):
+
+| meting | uitkomst |
+|---|---|
+| `git ls-remote origin refs/heads/main` | `a2fbad7` |
+| branch `seo-geo-fundament` | `a2fbad7` — identiek |
+| Railway-service `vibe-website`, actieve deploy | branch `main`, commit **`a2fbad7`** |
+| sitemap op branch `a2fbad7` vs. live | **96 locs tegen 96**, verschilset leeg |
+| `kennis/netcongestie-uitgelegd`, `regios/gelderland/arnhem`, `subsidies` | **byte-identiek**, SHA-256 gelijk |
+| responseheader live | `server: railway-hikari` |
+| aangepast domein op de service | `www.vibeenergy.nl` → poort 8080 |
+
+De keten is dus: `github.com/MounirVB/vibe-website` → branch `main` →
+Railway-project `authentic-eagerness`, service `vibe-website`
+(railpack `provider: staticfile`, Caddy 2.11.4, repowortel als webroot,
+geen buildcommando) → `www.vibeenergy.nl`. Een push naar `main` is een
+productiedeploy.
+
+**Waarom de verwarring zo hardnekkig was.** Hetzelfde Railwayproject
+draagt twee services op dezelfde repository. De checkout
+`~/projects/vibe-website` is gelinkt aan de *andere*: `vibe-website-api`,
+de Express-brochuredienst, die sinds 19 augustus op `59535f3` staat.
+`railway status` in die map wijst dus naar een service die de site niet
+serveert en die maanden achterloopt. De statische service staat er los
+naast en is nooit bekeken.
+
+**De les, en die is algemener dan dit geval:** "ik zie het niet in mijn
+werkboom" is geen meting van wat live staat. `git fetch` en de
+deployconfiguratie van de host zijn dat wel. Een afwezigheid is pas een
+bevinding als je hebt vastgesteld dat je op de juiste plek keek.
+
+### De oorspronkelijke, onjuiste tekst
+
+Hieronder staat wat er stond. De tabel zelf was correct gemeten; alleen
+de linkerkolom beschrijft een achterlopende checkout en niet "de
+repository".
+
+| | repository (`main`, `e2faa3b` — **achterlopend**) | live `www.vibeenergy.nl` |
 |---|---|---|
 | sitemap `<loc>` | 34 | **96** |
 | host in sitemap | `https://vibeenergy.nl` (apex) | `https://www.vibeenergy.nl` |
 | canonical op `/microgrids` | apex | www |
 
-62 live URL's bestaan niet in deze worktree, en het zijn juist de URL's
-die deze opdracht als nog-te-bouwen behandelt:
+62 live URL's bestonden niet in die worktree — ze stonden op
+`origin/main`, dat niet was opgehaald:
 
 - **`/kennis` plus 18 kennispagina's**: `batterij-dimensioneren`,
   `netcongestie-uitgelegd`, `peak-shaving`, `subsidiemechanismen`,
@@ -242,12 +290,14 @@ die deze opdracht als nog-te-bouwen behandelt:
 - **`/sectoren`**, en `/netcongestie`, `/laadplein`, `/energieadvies`
   als echte pagina's in plaats van noindex-stubs
 
-Dat sluit aan op wat al bekend was over deze repository: hij begint op
-2026-08-19 met vier "Add files via upload"-commits en mist alles
-daarvoor; tussen 2025-02 en 2026-07 bestaat er geen enkele archiefopname
-van de site.
+Dat de repository op 2026-08-19 begint met vier "Add files via
+upload"-commits en alles daarvoor mist, blijft waar — maar dat is een
+gat in de *historie*, niet in de huidige inhoud. De huidige `main` is
+compleet en staat live.
 
-**Drie gevolgen die in de code zitten.**
+**Drie gevolgen die in de code zitten** — deze blijven alle drie geldig,
+want ze leunen op "bestaat deze pagina ergens aantoonbaar", en dat is
+nu juist beter onderbouwd dan eerst:
 
 1. Het pagina-register leest nu de live sitemap erbij. `bestaat_in_repo`
    en `in_sitemap` zijn aparte feiten — die kolommen stonden er al voor.
@@ -267,11 +317,15 @@ van de site.
    zoekintentie al gedekt is" werkt alleen als je weet welke pagina's er
    echt zijn.
 
-**En het gevolg dat NIET in code op te lossen is:** een publicatie naar
-deze worktree komt niet op `vibeenergy.nl`. De publicatieketen is in
-beide richtingen bewezen (schrijven, sitemap bijwerken, terugdraaien)
-maar hij schrijft naar een repository die de site niet publiceert. Wie
-de echte publisher is, is in deze sessie niet vastgesteld. Zie §9.
+**Wat de correctie verandert voor de publicatieketen.** De oude tekst
+zei: "een publicatie naar deze worktree komt niet op vibeenergy.nl, en
+wie de echte publisher is weten we niet." Dat is omgekeerd. Een
+registerrecord in deze repository komt wél op `vibeenergy.nl`, zodra
+iemand de generator draait, committeert en naar `main` pusht. Dat maakt
+de keten niet gevaarlijker dan bedoeld — er zitten drie menselijke
+handelingen tussen, en poort 16 houdt het nieuwskanaal tegen zolang de
+zichtbare navigatie in `vibe/chrome.js` de link mist — maar het betekent
+dat `git push origin main` in deze repository een productiedeploy is.
 
 ---
 
@@ -310,21 +364,32 @@ Gemeten over de bestaande site, zodat het register op feiten gevuld kan worden:
   `composition-gate.mjs` kent alleen archetypes B1–B7 en S2, dus een nieuw
   nieuws-archetype zou daar falen op KP-01 "onbekend archetype".
 
-De publicatie-adapter raakt daarom **niets** van Release 1 aan tot integratie: hij
-schrijft alleen bestanden waarvan het pagina-register zegt dat Release 2 ze bezit,
-en levert voor de rest een patchvoorstel.
+**Bijgewerkt in Release 2.1.** De publicatie-adapter schrijft nu precies één
+soort bestand: `data/inhoud/nieuws/<slug>.json`, het registerrecord uit het
+contract in `data/seo/nieuws-architectuur.json`. Geen HTML en geen
+sitemapregel — die bezit de generator van Release 1. Alle andere mappen onder
+`data/inhoud/` zijn van de redactie van Release 1; een voorstel voor zo'n
+pagina wordt geweigerd met reden en blijft als patchvoorstel in de database
+en het dashboard staan. Zie `src/site/nieuwsregister.ts`.
 
 ---
 
 ## 9. Integratiepunten die openstaan
 
-0. **De echte publisher van vibeenergy.nl is onbekend.** Dit is de
-   blokkade die alle andere overschaduwt. De live site heeft 96
-   sitemap-URL's tegen 34 hier, en 62 live URL's bestaan niet in deze
-   repository. Publiceren naar deze worktree bereikt de site dus niet.
-   Vóór er iets uitgerold kan worden moet vastgesteld worden welke
-   bron productie voedt — en of Release 1 misschien al op die bron
-   gebouwd is, want `/kennis` en `/regios` staan er al.
+0. ~~**De echte publisher van vibeenergy.nl is onbekend.**~~
+   **OPGELOST in Release 2.1, en de conclusie was omgekeerd.** Deze
+   repository publiceert de site wél: `origin/main` = `a2fbad7` staat als
+   actieve deploy op de Railway-service `vibe-website` in project
+   `authentic-eagerness`, met `www.vibeenergy.nl` als aangepast domein.
+   De sitemap op die commit is identiek aan live (96 van 96) en drie
+   steekproefpagina's zijn byte-identiek. Zie §7b voor het volledige
+   bewijs en voor hoe de onjuiste conclusie ontstond (een lokale `main`
+   die twee commits achterliep, plus een Railway-link die naar de
+   brochure-API wees in plaats van naar de statische service).
+
+   **Gevolg:** `git push origin main` in deze repository is een
+   productiedeploy. Dat is geen openstaand integratiepunt meer maar een
+   staande waarschuwing.
 
 1. **Dubbeling met het zusterplatform.** Afweging: (a) zo laten — twee merken, twee
    ketens, geen gedeelde productierisico's; (b) later de bronverzamelaar en
@@ -338,8 +403,15 @@ en levert voor de rest een patchvoorstel.
    OIDC/identity-token en geen tokenendpoint, dus workload identity federation is
    daar onmogelijk en alleen een langlevende sleutel zou overblijven. Daarom draait
    de GSC-ingest daar als Cloud Run Job. Hetzelfde geldt hier.
-4. **Navigatie.** Een `/kennis`- of `/nieuws`-rubriek vraagt een vijfde array in
-   `vibe/chrome.js`. Dat bestand is gedeeld met Release 1 en wordt niet aangeraakt.
+4. **Navigatie.** Half opgelost in Release 2.1. De crawlbare
+   `<noscript>`-navigatie draagt `/nieuws` nu automatisch, maar alleen als
+   de hub op INDEX staat — `zetNavToets()` in
+   `scripts/seo/lib/sjabloon.mjs`, toegepast door zowel de generator als
+   `herstel-bestaand.mjs`. De zichtbare navigatie zit in
+   `vibe/chrome.js`, en dat bestand kan het routeregister niet lezen; daar
+   hoort de link met de hand bij zodra het kanaal opengaat. Poort 16
+   FAALT zolang dat niet gebeurd is, zodat het kanaal niet live kan staan
+   zonder dat een bezoeker het kan vinden.
 5. **Composition gate.** Een nieuw archetype voor artikelen moet in
    `docs/qa/composition-gate.mjs` geregistreerd worden. Ook Release 1-gebied.
 
