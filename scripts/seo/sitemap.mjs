@@ -95,9 +95,23 @@ ${regels.join('\n')}
 `;
 writeFileSync(resolve(wortel, 'sitemap.xml'), xml);
 
-/* robots.txt — de sitemapverwijzing moet naar de host die 200 geeft. */
+/* robots.txt — de sitemapverwijzing moet naar de host die 200 geeft, en de
+   bouwinvoer hoort geen crawlbudget te kosten. De staticfile-host serveert de
+   hele repowortel, dus data/, scripts/ en docs/ zijn publiek opvraagbaar. Daar
+   staat niets geheims in, maar het is samen enkele megabytes JSON en Markdown
+   die geen zoekresultaat horen te worden. */
 const robots = `User-agent: *
 Allow: /
+
+# Bouwinvoer, geen inhoud. Deze mappen worden door de statische host wel
+# geserveerd maar horen niet gecrawld te worden:
+#   data/    het routeregister, de geo- en bewijsdata en de inhoudsbestanden
+#   scripts/ de generator en de poorten
+#   docs/    interne ontwerp- en redactiedocumentatie
+Disallow: /data/
+Disallow: /scripts/
+Disallow: /docs/
+Disallow: /api/
 
 # Sitemap op de host die zelf 200 geeft. De apex vibeenergy.nl stuurt met 301
 # door naar www; een sitemapverwijzing naar een doorverwijzing is onnodig.
