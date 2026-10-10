@@ -28,6 +28,11 @@ import { maakLogger } from "../kern/log.ts";
 import { BRONNEN } from "../bronnen/register.ts";
 import { leesLiveSitemap, scanSite, type ScanUitkomst } from "../site/paginascan.ts";
 import { haalOp } from "../bronnen/http.ts";
+import {
+  leesRouteregister,
+  routeVoorCluster,
+  type RegisterUitkomst,
+} from "../site/routeregister.ts";
 
 const log = maakLogger("zaai");
 
@@ -158,6 +163,9 @@ export type ZaaiRapport = {
   readonly paginasGescand: number;
   readonly paginasGeschreven: number;
   readonly livePaginas: number;
+  readonly registerPaginas: number;
+  readonly registerAanwezig: boolean;
+  readonly registerReden: string;
   readonly liveAlleenPaden: readonly string[];
   readonly sitemapZonderBestand: readonly string[];
   readonly indexeerbaarZonderSitemap: readonly string[];
@@ -212,14 +220,20 @@ export async function zaai(pool: Pool, opties: { siteWortel?: string } = {}): Pr
     return uitkomst.soort === "ok" ? uitkomst.body : null;
   }).catch(() => new Set<string>());
 
+  // Het routeregister van Release 1, als het al samengevoegd is.
+  const register = await leesRouteregister(siteWortel);
+  log.info("routeregister", { aanwezig: register.aanwezig, reden: register.reden });
+
   return metOrganisatie(pool, { organisatieId }, async (c) => {
     const paginasGeschreven = await zaaiPaginas(c, organisatieId, scan, config.siteBasisUrl);
+    const registerPaginas = await zaaiRegisterPaginas(c, organisatieId, register, config.siteBasisUrl);
     const livePaginas = await zaaiLivePaginas(c, organisatieId, livePaden, scan, config.siteBasisUrl);
     const { geschreven: clustersGeschreven, zonderPagina } = await zaaiClusters(
       c,
       organisatieId,
       scan,
       livePaden,
+      register,
     );
     const { geschreven: bronnenGeschreven, actief } = await zaaiBronnen(c, organisatieId);
     const beleidVersie = await zaaiBeleid(c, organisatieId);
@@ -239,6 +253,9 @@ export async function zaai(pool: Pool, opties: { siteWortel?: string } = {}): Pr
       paginasGescand: scan.paginas.length,
       paginasGeschreven,
       livePaginas,
+      registerPaginas,
+      registerAanwezig: register.aanwezig,
+      registerReden: register.reden,
       liveAlleenPaden: [...livePaden].filter((p) => !scan.paginas.some((x) => x.pad === p)).sort(),
       sitemapZonderBestand: scan.sitemapZonderBestand,
       indexeerbaarZonderSitemap: scan.indexeerbaarZonderSitemap,
@@ -306,6 +323,7 @@ async function zaaiClusters(
   organisatieId: number,
   scan: ScanUitkomst,
   livePaden: ReadonlySet<string>,
+  register: RegisterUitkomst,
 ): Promise<{ geschreven: number; zonderPagina: string[] }> {
   // Een cluster mag ook een LIVE pagina als eigenaar hebben. De
   // kennispagina's op productie bestaan niet in de repo, maar ze bezitten
@@ -320,7 +338,11 @@ async function zaaiClusters(
   for (const cluster of CLUSTERS) {
     // Alleen een canonieke pagina zetten die er echt is en die
     // indexeerbaar is. Een redirect-stub is geen eigenaar.
-    const pagina = cluster.paginaKandidaten.find((p) => bestaandePaden.has(p)) ?? null;
+    // Rangorde: het routeregister van Release 1 is de sterkste bron,
+    // daarna een pagina die bestaat (repo of live).
+    const uitRegister = routeVoorCluster(cluster.sleutel, register);
+    const pagina =
+      uitRegister?.pad ?? cluster.paginaKandidaten.find((p) => bestaandePaden.has(p)) ?? null;
     if (!pagina) zonderPagina.push(cluster.sleutel);
 
     await c.query(
@@ -488,6 +510,45 @@ async function zaaiKoppelingen(
     uit.push({ sleutel, status, ontbrekend });
   }
   return uit;
+}
+
+/**
+ * Routes uit het routeregister van Release 1. Die bezitten hun
+ * zoekintentie per definitie: ze zijn er met titel, beschrijving en een
+ * direct antwoord. Eigendom blijft bij Release 1.
+ */
+async function zaaiRegisterPaginas(
+  c: pg.PoolClient,
+  organisatieId: number,
+  register: RegisterUitkomst,
+  basisUrl: string,
+): Promise<number> {
+  if (!register.aanwezig) return 0;
+  let n = 0;
+  for (const r of register.routes) {
+    const soort = ["kennis", "hub", "sector", "oplossing", "toepassing"].includes(r.type)
+      ? r.type === "hub" || r.type === "toepassing" || r.type === "oplossing"
+        ? "oplossing"
+        : r.type === "sector"
+          ? "sector"
+          : "kennis"
+      : "overig";
+    await c.query(
+      `insert into intel.pagina_register
+         (organisatie_id, pad, canonieke_url, bestandspad, titel, soort,
+          in_sitemap, bestaat_in_repo, eigenaar_release, beheer)
+       values ($1,$2,$3,$4,$5,$6,true,true,'release1','handmatig')
+       on conflict (organisatie_id, pad) do update set
+         titel           = coalesce(excluded.titel, intel.pagina_register.titel),
+         soort           = excluded.soort,
+         bestandspad     = excluded.bestandspad,
+         in_sitemap      = true,
+         bestaat_in_repo = true`,
+      [organisatieId, r.pad, `${basisUrl}${r.pad}`, r.bestandspad, r.titel, soort],
+    );
+    n += 1;
+  }
+  return n;
 }
 
 /**

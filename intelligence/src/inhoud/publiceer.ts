@@ -32,6 +32,7 @@ import { eenRij, metOrganisatie, type Pool } from "../kern/db.ts";
 import { IntelFout } from "../kern/fouten.ts";
 import { maakLogger } from "../kern/log.ts";
 import { sha256hex } from "../kern/tekst.ts";
+import { heeftRouteregister } from "../site/routeregister.ts";
 
 const log = maakLogger("publiceer");
 
@@ -281,6 +282,21 @@ export async function publiceer(
       return weiger(
         v.id,
         `pagina ${v.pad} staat op handmatig beheer; dit platform schrijft dat bestand niet`,
+      );
+    }
+
+    // Zodra het routeregister van Release 1 bestaat, GENEREERT die
+    // generator de pagina's en de sitemap uit data/. Dan is rechtstreeks
+    // een .html schrijven en een <url> aan sitemap.xml plakken niet
+    // alleen dubbelop maar actief schadelijk: de volgende generatorrun
+    // gooit onze sitemapregel weg en onze pagina staat in geen register.
+    // De integratieroute is een registerrecord, niet een bestand.
+    if (heeftRouteregister(config.siteWortel)) {
+      return weiger(
+        v.id,
+        "data/inhoud bestaat: Release 1 genereert pagina's en sitemap uit het routeregister. " +
+          "Publiceren hoort dan te gaan via een registerrecord onder data/inhoud/, niet via een " +
+          "directe .html plus een sitemapregel. Zie src/site/routeregister.ts.",
       );
     }
 
