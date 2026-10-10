@@ -261,6 +261,97 @@ export async function geefVerlopenTerug(
   return r.length;
 }
 
+export type DlqTaak = {
+  readonly id: number;
+  readonly soort: string;
+  readonly pogingen: number;
+  readonly laatsteFout: string | null;
+  readonly laatsteFoutSoort: string | null;
+  readonly bijgewerktOp: string;
+};
+
+/** Wat staat er in de dead-letter queue, en waarom? */
+export async function dlqInhoud(
+  c: pg.PoolClient,
+  organisatieId: number,
+  limiet = 50,
+): Promise<readonly DlqTaak[]> {
+  const r = await rijen<{
+    id: number;
+    soort: string;
+    pogingen: number;
+    laatste_fout: string | null;
+    laatste_fout_soort: string | null;
+    bijgewerkt_op: string;
+  }>(
+    c,
+    `select id, soort, pogingen, laatste_fout, laatste_fout_soort,
+            bijgewerkt_op::text as bijgewerkt_op
+       from intel.taken
+      where organisatie_id = $1 and status = 'dlq'
+      order by bijgewerkt_op desc
+      limit $2`,
+    [organisatieId, limiet],
+  );
+  return r.map((x) => ({
+    id: x.id,
+    soort: x.soort,
+    pogingen: x.pogingen,
+    laatsteFout: x.laatste_fout,
+    laatsteFoutSoort: x.laatste_fout_soort,
+    bijgewerktOp: x.bijgewerkt_op,
+  }));
+}
+
+/**
+ * Zet dlq-taken terug in de wachtrij.
+ *
+ * DIT IS EEN MENSELIJKE HANDELING, en daarom een aparte functie en een
+ * aparte vlag op de CLI. Een worker die zijn eigen dlq leegtrekt is
+ * geen dlq: dan draait een kapotte taak eeuwig rond en is het enige
+ * effect dat de fout vaker in het log staat. Een taak komt in de dlq
+ * omdat er iets te BESLISSEN valt — een bron die van vorm veranderde,
+ * een ontbrekende variabele, een uitgever die blokkeert.
+ *
+ * De pogingenteller gaat op nul, want anders is de taak na één
+ * hervatting meteen weer op.
+ */
+export async function hervatUitDlq(
+  c: pg.PoolClient,
+  organisatieId: number,
+  opties: { soort?: string; taakIds?: readonly number[] } = {},
+): Promise<readonly number[]> {
+  const voorwaarden: string[] = ["organisatie_id = $1", "status = 'dlq'"];
+  const params: unknown[] = [organisatieId];
+  if (opties.soort) {
+    params.push(opties.soort);
+    voorwaarden.push(`soort = $${params.length}`);
+  }
+  if (opties.taakIds && opties.taakIds.length) {
+    params.push(opties.taakIds);
+    voorwaarden.push(`id = any($${params.length})`);
+  }
+
+  const r = await rijen<{ id: number }>(
+    c,
+    `update intel.taken
+        set status = 'wachtend',
+            pogingen = 0,
+            beschikbaar_op = now(),
+            vergrendeld_door = null,
+            vergrendeld_op = null,
+            zichtbaarheid_tot = null,
+            bijgewerkt_op = now()
+      where ${voorwaarden.join(" and ")}
+      returning id`,
+    params,
+  );
+  if (r.length) {
+    log.info("taken hervat uit de dlq", { aantal: r.length, soort: opties.soort ?? "alle" });
+  }
+  return r.map((x) => x.id);
+}
+
 export type WachtrijBeeld = {
   readonly status: string;
   readonly soort: string;

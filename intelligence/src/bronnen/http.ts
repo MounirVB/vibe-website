@@ -80,7 +80,7 @@ export type HaalUitkomst =
       duurMs: number;
     };
 
-function hostToegestaan(url: string, toegestaneHosts: readonly string[]): boolean {
+export function hostToegestaan(url: string, toegestaneHosts: readonly string[]): boolean {
   try {
     const host = new URL(url).host.toLowerCase();
     return toegestaneHosts.some((h) => {
@@ -94,8 +94,28 @@ function hostToegestaan(url: string, toegestaneHosts: readonly string[]): boolea
   }
 }
 
-/** Alleen https, en geen lokale of interne adressen. */
-function schemaEnDoelToegestaan(url: string): string | null {
+/**
+ * Alleen https, en geen lokale of interne adressen.
+ *
+ * DIT IS DE SSRF-POORTWACHTER. Een uitgever bepaalt waar zijn feed
+ * naartoe redirect; zonder deze controle kan hij dit platform dus
+ * laten praten met iets op het interne netwerk of met een
+ * metadata-endpoint van de hostingprovider.
+ *
+ * EEN ECHT GAT DAT HIER ZAT, gevonden door
+ * test/integratie/weerbaarheid.test.ts:
+ *
+ *   new URL("https://[::1]/x").hostname === "[::1]"
+ *
+ * `hostname` geeft een IPv6-adres MET vierkante haken terug. De
+ * vergelijking `host === "::1"` matchte daardoor nooit en de
+ * IPv6-loopback werd doorgelaten. De haken worden nu eerst gestript,
+ * en er is meteen gedekt wat er verder aan IPv6-interne reeksen
+ * bestaat: link-local (fe80::/10), unique-local (fc00::/7), het
+ * ongespecificeerde adres en IPv4-gemapte vormen als
+ * ::ffff:127.0.0.1.
+ */
+export function schemaEnDoelToegestaan(url: string): string | null {
   let u: URL;
   try {
     u = new URL(url);
@@ -103,17 +123,33 @@ function schemaEnDoelToegestaan(url: string): string | null {
     return "geen geldige URL";
   }
   if (u.protocol !== "https:") return `protocol ${u.protocol} is niet toegestaan, alleen https`;
-  const host = u.hostname.toLowerCase();
-  if (
-    host === "localhost" ||
+
+  // Haken eraf: new URL().hostname geeft IPv6 als '[::1]'.
+  const host = u.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+
+  const ipv4Intern =
     host === "127.0.0.1" ||
-    host === "::1" ||
-    host.endsWith(".local") ||
-    host.endsWith(".internal") ||
+    /^127\./.test(host) ||
     /^10\./.test(host) ||
     /^192\.168\./.test(host) ||
     /^172\.(1[6-9]|2\d|3[01])\./.test(host) ||
-    /^169\.254\./.test(host)
+    /^169\.254\./.test(host) ||
+    host === "0.0.0.0";
+
+  const ipv6Intern =
+    host === "::1" ||
+    host === "::" ||
+    /^fe[89ab][0-9a-f]:/.test(host) || // fe80::/10 link-local
+    /^f[cd][0-9a-f]{2}:/.test(host) || // fc00::/7 unique-local
+    /^::ffff:/.test(host); // IPv4-gemapt; de IPv4-regels hieronder gelden dan niet meer
+
+  if (
+    host === "localhost" ||
+    host.endsWith(".localhost") ||
+    host.endsWith(".local") ||
+    host.endsWith(".internal") ||
+    ipv4Intern ||
+    ipv6Intern
   ) {
     return `host ${host} is intern of lokaal`;
   }

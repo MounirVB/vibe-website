@@ -197,6 +197,66 @@ Uitkomst: **4/4 PASS**.
 
 ---
 
+## 4b. Het ophaalschema, en waarom het zo staat
+
+De planner draait **elk uur** en zet één `ophalen`-taak neer. Dat lijkt
+veel, maar de collector beslist per bron of die bron al aan de beurt is.
+Gemeten verdeling over de 21 actieve bronnen:
+
+| interval | bronnen | voorbeeld |
+|---|---|---|
+| 60 min | 1 | `tenderned-laatste-publicatie` — de snelst bewegende feed |
+| 180 min | 1 | `rijksoverheid-nieuws` |
+| 360 min | 3 | `acm-besluiten`, `netbeheer-nederland-nieuws`, `tenderned-publicaties` |
+| 480 min | 1 | `solar365` |
+| 720 min | 7 | netbeheerder-sitemaps, `rvo-opendata-artikelen`, `energy-charts` |
+| 1440 min | 6 | `cbs-datasets-catalogus`, kleinere netbeheerders, `rvo-subsidie-sitemap` |
+| 10080 min | 2 | `pdok-bestuurlijke-gebieden`, `mijnaansluiting-netbeheergebieden` — referentiegeografie |
+
+Daarbovenop geldt een **minimum van 5 seconden tussen twee verzoeken aan
+dezelfde host**, en conditionele verzoeken met ETag en
+`If-Modified-Since`. Gemeten in de laatste ronde: 16 bronnen `ok`,
+**5 `niet_gewijzigd`** — die laatste leverden dus een 304 en kostten de
+uitgever niets.
+
+**Waarom een uurlijkse planner en niet een cron per bron.** Eén cron is
+één ding dat kan falen en één ding om te monitoren. De
+intervalbeslissing hoort bij de bron, niet bij de planner; die staat in
+`intel.bronnen.ophaalinterval_minuten` en is daar per bron te
+verantwoorden. De planner is dus een dom hartje en de bron is de
+autoriteit.
+
+**Kosten.** Een uurlijkse ronde die niets te doen heeft kost één
+databasequery en een paar milliseconden. De geo-bronnen staan op
+wekelijks omdat de gemeente-indeling wekelijks niet verandert — die
+werden in Release 2 eenmalig voor 342 gemeenten opgehaald en zijn
+daarna referentiedata.
+
+---
+
+## 4c. Dead-letter queue
+
+```bash
+npm run worker -- --dlq            # wat staat er in, en waarom
+npm run worker -- --dlq-hervat     # alles terugzetten in de wachtrij
+npm run worker -- --dlq-hervat --soort ophalen   # alleen één soort
+```
+
+**Hervatten is met opzet een menselijke handeling.** Een worker die zijn
+eigen dlq leegtrekt is geen dlq: dan draait een kapotte taak eeuwig rond
+en is het enige effect dat de fout vaker in het log staat. Een taak komt
+in de dlq omdat er iets te *beslissen* valt — een bron die van vorm
+veranderde, een ontbrekende variabele, een uitgever die blokkeert.
+
+Hervatten zet de pogingenteller op nul, want anders is de taak na één
+hervatting meteen weer op.
+
+Een taak met een **niet-herhaalbare** fout (`IntelFout` met soort
+`configuratie`) gaat direct naar de dlq zonder de pogingen op te maken.
+Een vierde poging vindt dezelfde ontbrekende variabele niet alsnog.
+
+---
+
 ## 5. Dagelijkse controle
 
 ```bash

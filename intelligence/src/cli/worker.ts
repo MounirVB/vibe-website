@@ -22,7 +22,9 @@ import { maakPool, metOrganisatie, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
 import { maakLogger } from "../kern/log.ts";
 import {
+  dlqInhoud,
   geefVerlopenTerug,
+  hervatUitDlq,
   pakTaak,
   laatMislukken,
   rondAf,
@@ -124,6 +126,36 @@ for (const sig of ["SIGINT", "SIGTERM"] as const) {
 
 try {
   const organisatieId = await huidigeOrganisatie(pool);
+
+  /* --dlq toont de dead-letter queue; --dlq-hervat zet hem terug.
+     Hervatten is met opzet een MENSELIJKE handeling en geen automatisme
+     van de worker: een worker die zijn eigen dlq leegtrekt is geen dlq.
+     Zie hervatUitDlq(). */
+  if (heeft("dlq") || heeft("dlq-hervat")) {
+    const inhoud = await metOrganisatie(pool, { organisatieId }, (c) =>
+      dlqInhoud(c, organisatieId),
+    );
+    console.log("");
+    console.log(`DEAD-LETTER QUEUE — ${inhoud.length} taak/taken`);
+    console.log("");
+    for (const t of inhoud) {
+      console.log(`  [${t.id}] ${t.soort.padEnd(14)} ${t.pogingen} pogingen  ${t.bijgewerktOp}`);
+      console.log(`       ${t.laatsteFoutSoort ?? "onbekend"}: ${(t.laatsteFout ?? "").slice(0, 120)}`);
+    }
+    if (heeft("dlq-hervat")) {
+      const soort = waarde("soort");
+      const hervat = await metOrganisatie(pool, { organisatieId }, (c) =>
+        hervatUitDlq(c, organisatieId, soort ? { soort } : {}),
+      );
+      console.log("");
+      console.log(`${hervat.length} taak/taken teruggezet in de wachtrij (pogingen op nul)`);
+      console.log("Draai de worker om ze te verwerken.");
+    } else if (inhoud.length) {
+      console.log("");
+      console.log("Hervatten: npm run worker -- --dlq-hervat [--soort <soort>]");
+    }
+    process.exit(0);
+  }
 
   // Eerst opruimen: taken van een omgevallen worker terugleggen.
   const teruggegeven = await metOrganisatie(pool, { organisatieId }, (c) =>
