@@ -26,7 +26,8 @@
     "test:adversarieel": "node --test --test-concurrency=1 test/adversarieel/",
     "zaai": "node src/cli/zaai.ts",
     "besluit": "node src/cli/besluit.ts",
-    "herbouw": "node src/cli/herbouw.ts"
+    "herbouw": "node src/cli/herbouw.ts",
+    "concept": "node src/cli/concept.ts"
   },
   "dependencies": {
     "express": "^4.21.2",

@@ -26,6 +26,12 @@ const log = maakLogger("db");
 // veilig: onze id's blijven ruim onder 2^53.
 pg.types.setTypeParser(pg.types.builtins.INT8, (v) => Number.parseInt(v, 10));
 
+// Een `date`-kolom is een dag, geen tijdstip. node-pg maakt er standaard
+// een Date van, en dan krijgt een datum zonder tijd alsnog een tijdzone
+// — met als gevolg dat 2027-01-01 in een westelijke zone als 2026-12-31
+// leest. Hier blijft het de ISO-string die de database teruggaf.
+pg.types.setTypeParser(pg.types.builtins.DATE, (v) => v);
+
 export type Pool = pg.Pool;
 export type Client = pg.PoolClient;
 
