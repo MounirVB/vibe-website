@@ -1,0 +1,208 @@
+{
+  "route": "kennis/peak-shaving",
+  "type": "kennis",
+  "titel": "Peak shaving en piekreductie uitgelegd | Vibe Energy",
+  "beschrijving": "Wat een piek is, over welk tijdvenster hij wordt gemeten, hoe u een afkapgrens kiest en wat die keuze kost aan kW en kWh. Met een rekenvoorbeeld.",
+  "og_titel": "Peak shaving: de piek afvlakken in plaats van inkopen",
+  "h1": "Peak shaving: de piek afvlakken in plaats van inkopen",
+  "lead": "Peak shaving is het verlagen van de hoogste kwartierwaarden van een aansluiting. De techniek is eenvoudig; de keuze waar u afkapt is dat niet. Die ene grens bepaalt hoeveel vermogen u nodig heeft, hoeveel capaciteit, en hoe betrouwbaar het systeem moet zijn.",
+  "data_pagina": "kennis",
+  "kruimels": [{ "naam": "Kennisbank", "route": "kennis" }],
+  "kruimel_label": "Peak shaving",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw pieken doorrekenen" },
+    { "soort": "ghost", "anker": "#rekenen", "label": "Direct naar het rekenvoorbeeld" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat is peak shaving?",
+    "antwoord": "Peak shaving is het verlagen van de hoogste vermogenspieken van een elektriciteitsaansluiting, door die pieken op te vangen uit een andere bron of door verbruikers tijdelijk terug te regelen. Op een grootverbruikaansluiting wordt het afgenomen vermogen per kwartier vastgelegd, dus een piek is de hoogste kwartierwaarde en niet een kortdurende stroomstoot. Peak shaving begint met het kiezen van een afkapgrens. Alles wat boven die grens uitkomt moet ergens anders vandaan komen: uit opslag, uit eigen opwek, of uit belasting die wacht. De hoogte boven de grens bepaalt het benodigde vermogen in kW; de hoogte maal de duur bepaalt de benodigde energie in kWh.",
+    "voorbehoud": "Peak shaving verlaagt de piek, niet het jaarverbruik, en verhoogt de aansluitwaarde of het gecontracteerd transportvermogen niet. Of het op een locatie werkt, hangt af van de vorm van het kwartiersprofiel: een vlak profiel heeft geen piek om af te vlakken."
+  },
+
+  "secties": [
+    {
+      "soort": "specs",
+      "kop": "Wat er bij peak shaving precies telt",
+      "rijen": [
+        ["Kwartierwaarde", "Het gemiddeld afgenomen vermogen over één kwartier, in kW. Dit is de eenheid waarin een piek op een grootverbruikaansluiting bestaat."],
+        ["Piek", "De hoogste kwartierwaarde in een gekozen periode: een dag, een maand of een jaar. Welke periode telt, volgt uit waarvoor u de piek verlaagt."],
+        ["Afkapgrens", "De waarde waarboven u niets meer van het net wilt afnemen. Een ontwerpkeuze, geen meetwaarde."],
+        ["Overschrijding", "Hoeveel een kwartierwaarde boven de afkapgrens uitkomt, in kW. Bepaalt het benodigde vermogen."],
+        ["Overschrijdingsduur", "Hoeveel aaneengesloten kwartieren boven de grens liggen. Samen met de overschrijding bepaalt dit de benodigde energie."],
+        ["Hersteltijd", "De tijd tussen twee pieken. Bepaalt met welk vermogen een batterij moet bijladen — en dat laden telt zelf mee als afname."]
+      ],
+      "noot": "Alleen de afkapgrens kiest u zelf. De vijf andere regels volgen uit uw kwartiersprofiel zodra die grens vastligt — en de hersteltijd is daarvan de regel die in ontwerpen het vaakst wordt overgeslagen."
+    },
+    {
+      "soort": "tekst",
+      "id": "kwartier",
+      "kop": "Een piek bestaat alleen in het venster waarin hij gemeten wordt",
+      "lead": "Niet de gebeurtenis bepaalt de piek, maar de meetperiode.",
+      "alineas": [
+        "Op een grootverbruikaansluiting wordt het afgenomen vermogen per kwartier vastgelegd: één getal per vijftien minuten, het gemiddelde over dat kwartier. Dat venster bepaalt wat er als piek zichtbaar wordt, en dat is minder voor de hand liggend dan het klinkt.",
+        "Twee heel verschillende problemen zien er in dezelfde data namelijk heel verschillend uit. De aanloopstroom van een grote motor duurt enkele seconden. In een kwartiergemiddelde verdwijnt die bijna volledig, terwijl de kabel en de beveiliging hem wél voelen. Een laadplein waar drie voertuigen een half uur achter elkaar laden, staat juist voluit in de kwartierwaarden.",
+        "De eerste vraag bij piekreductie is daarom niet hoe hoog de piek is, maar welk venster u wilt beschermen. Gaat het om de kwartierwaarde waarop uw netbeheerder meet, dan is afvlakken met opslag of begrenzing de route. Gaat het om een momentane stroompiek die een beveiliging laat aanspreken, dan is het een installatievraagstuk: aanloopstroombegrenzing, verdeling over de fasen, selectiviteit. Een regeling die op kwartierwaarden stuurt, ziet dat tweede probleem niet eens.",
+        "Vraag daarom het kwartiersprofiel op en niet het jaaroverzicht. Een totaal in kWh over een maand of een jaar middelt precies weg wat u wilt zien. En vraag het over een volledig jaar: de seizoenen en de hoogste piek horen erin te zitten."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "grens",
+      "kop": "De afkapgrens is de duurste regel in het ontwerp",
+      "lead": "Eén zelfgekozen getal bepaalt het vermogen, de capaciteit en het aantal uren dat het systeem moet werken.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "De afkapgrens is de waarde waarboven u niets meer van het net wilt afnemen. Alles erboven moet ergens anders vandaan komen. Hoe lager u de lijn legt, hoe meer kwartieren erboven uitkomen, hoe hoger de hoogste overschrijding, en hoe langer er achter elkaar geleverd moet worden.",
+        "Die relatie is niet recht. Een jaar bestaat uit 4 × 24 × 365 = 35.040 kwartieren. Zet die allemaal op een rij van hoog naar laag en u krijgt een kromme die bovenaan steil daalt en daarna lang vlak doorloopt. De eerste stap naar beneden raakt een handvol kwartieren: weinig energie, dus een klein systeem. De laatste stappen raken duizenden kwartieren en vele uren aaneen, en daar loopt de benodigde capaciteit hard op.",
+        "Welke grens de juiste is, volgt uit wat u ermee wilt. Wie nieuwe belasting onder een bestaand plafond wil krijgen, heeft de grens al: de waarde die de aansluiting of de transportovereenkomst stelt. Wie zijn gecontracteerd transportvermogen wil verlagen, kiest de grens zelf en weegt de besparing op de netbeheerderskosten af tegen het systeem dat die grens het hele jaar moet volhouden. Dat zijn twee verschillende berekeningen met twee verschillende uitkomsten, en ze leiden vrijwel nooit tot dezelfde grens.",
+        "Reken daarom niet één grens door, maar een reeks. De vorm van de kromme laat zien waar de knik zit: het punt waarboven elke extra kilowatt reductie onevenredig veel capaciteit kost."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Peak shaving en load shifting zijn niet hetzelfde",
+      "lead": "Beide verplaatsen energie in de tijd. Ze worden door iets anders aangestuurd en ze vragen een ander systeem.",
+      "alineas": [
+        "<h3>Peak shaving</h3>",
+        "De trigger is een vermogensdrempel. Het systeem grijpt in zodra de afname de grens nadert, en dat zijn weinig momenten per jaar. Het vraagt veel vermogen en relatief weinig energie. De waarde zit in wat u niet hoeft bij te contracteren, te verzwaren of af te zeggen.",
+        "<h3>Load shifting</h3>",
+        "De trigger is een prijs of een eigen overschot. Het systeem laadt wanneer stroom goedkoop is of het dak meer maakt dan het pand gebruikt, en ontlaadt wanneer het omgekeerde geldt. Dat gebeurt vrijwel dagelijks, vraagt veel energie en matig vermogen, en de waarde zit in het verschil tussen twee momenten.",
+        "<h3>Waarom ze elkaar in de weg zitten</h3>",
+        "Een batterij kan beide, maar niet op hetzelfde moment en niet met dezelfde kilowattuur. Een systeem dat leeg is omdat het in de avond op de prijs is ontladen, vangt de ochtendpiek van de productie niet meer op. Wie piekreductie als harde randvoorwaarde heeft, moet dus een deel van de capaciteit reserveren en dat deel buiten de handel houden. Dat is geen softwareknop maar een ontwerpkeuze met een prijs.",
+        "Daar hoort nog een valkuil bij die zelden op tijd wordt gezien: <strong>laden is afname</strong>. Een batterij die op het verkeerde moment bijlaadt, verhoogt precies de kwartierwaarde die u wilde verlagen. Het laadvermogen moet dus binnen de afkapgrens passen, en de sturing moet weten hoeveel ruimte er onder die grens op dit moment nog over is."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "rekenen",
+      "kop": "Van kwartiersprofiel naar kW en kWh",
+      "lead": "De afleiding is eenvoudig genoeg om zelf te doen. De correcties erna maken het verschil tussen een rekensom en een ontwerp.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "<p><strong>Rekenvoorbeeld met verzonnen, ronde getallen.</strong> Het laat de methode zien en is geen uitkomst van een bestaande locatie. Stel: de afkapgrens is 150 kW, en op de zwaarste dag van het jaar staan vier kwartieren boven die grens.</p>",
+        "<table><thead><tr><th>Kwartier</th><th>Kwartierwaarde</th><th>Overschrijding</th></tr></thead><tbody><tr><td>11:15</td><td>190 kW</td><td>40 kW</td></tr><tr><td>11:30</td><td>230 kW</td><td>80 kW</td></tr><tr><td>11:45</td><td>210 kW</td><td>60 kW</td></tr><tr><td>12:00</td><td>170 kW</td><td>20 kW</td></tr></tbody></table>",
+        "Het benodigde <strong>vermogen</strong> is de hoogste overschrijding: 80 kW. Een systeem van 60 kW haalt het kwartier van 11:30 niet, hoeveel capaciteit het ook heeft.",
+        "De benodigde <strong>energie</strong> is de som van de overschrijdingen maal de duur van een kwartier: (40 + 80 + 60 + 20) kW × 0,25 uur = 50 kWh. Dat is wat er in deze ene periode uit de batterij moet komen.",
+        "Daarna volgen de correcties. Niet de volledige nominale capaciteit van een batterij is bruikbaar. De bruikbare capaciteit neemt over de levensduur af. Laden en ontladen kost rendement. En het systeem moet vóór de volgende piek weer op peil zijn: zit er een uur tussen twee van deze dagpieken, dan is 50 kWh terugladen in dat uur een extra afname van 50 kW — die ook onder de grens van 150 kW moet passen. Precies op dat punt loopt een ontwerp dat alleen op de piekhoogte is gemaakt, alsnog vast.",
+        "De uitkomst van dit voorbeeld is dus een systeem in de orde van 80 kW met een bruikbare 50 kWh, plus marge. Dat is een ander apparaat dan 50 kW met 200 kWh, ook al klinken beide in een eerste gesprek als een batterij van vergelijkbare grootte. Welke verhouding u nodig heeft, volgt uit de vorm van uw pieken en niet uit uw jaarverbruik."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "De hoogste piek van het jaar bepaalt hoe betrouwbaar het moet zijn",
+      "lead": "Een grens die u één keer per jaar overschrijdt, is nog steeds een grens.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Is de afkapgrens hard — omdat de aansluiting het fysiek niet meer draagt, of omdat u contractueel niet hoger mag — dan moet het ontwerp het zwaarste kwartier van het jaar aankunnen, niet het gemiddelde van een werkdag. Dat verschuift de vraag van prestatie naar betrouwbaarheid.",
+        "Een systeem dat de piek bijna altijd opvangt, is daarmee niet automatisch goed genoeg. Het enige kwartier dat ertoe doet, kan het kwartier zijn waarin het systeem in onderhoud staat, de ladingstoestand te laag is of de meteruitlezing wegvalt. Dan is er die ene keer niets om de piek mee af te vlakken.",
+        "In de praktijk vraagt dat drie dingen van het ontwerp. Een reservering in de ladingstoestand die niet voor verschuiving of handel wordt gebruikt. Een regeling die bij verlies van het meetsignaal naar een veilige stand valt in plaats van door te rekenen op oude data. En een tweede verdedigingslinie in de regelbare belasting: laadpunten en niet-kritische processen die hard worden teruggeregeld als de batterij niet beschikbaar is. Die tweede linie kost geen capaciteit, alleen comfort, en voorkomt dat één storing de piek van het jaar neerzet.",
+        "Hoe zwaar betrouwbaarheid weegt, hangt af van wat een overschrijding kost. Is de grens de fysieke capaciteit van de aansluiting, dan is het een vraag van leveringszekerheid. Is het een tariefgrens, dan is het een rekensom. Welke grootheden bij u worden afgerekend — gecontracteerd vermogen, hoogst gemeten vermogen, afgenomen energie — staat in uw transportovereenkomst en in de tarievenlijst van uw netbeheerder. Ga daar niet van uit, kijk het na.",
+        "Dat tariefstelsel staat bovendien niet stil. Netbeheer Nederland liet CE Delft de voorgenomen herziening van het grootverbruiktarief doorrekenen; dat onderzoek wijst een tijdsafhankelijk kilowattuurtarief in combinatie met een maandelijks piektarief (kWmax) aan als de meest gebruiksvriendelijke en effectieve variant. In zo'n stelsel telt niet alleen hoe hoog uw piek is maar ook wanneer hij valt, en wordt hij per maand afgerekend in plaats van over een heel jaar. Een afkapgrens die vandaag op uw huidige tarief is geoptimaliseerd, is dus een aanname met een houdbaarheidsdatum; de grens die uit uw fysieke capaciteit volgt, is dat niet. Leg bij elke doorrekening daarom vast welke tariefaanname eronder zit, zodat u die aanname los kunt vervangen als het stelsel verandert — en toets een kandidaat-grens ook op de maand waarin uw piek het hoogst is, niet alleen op het jaar."
+      ],
+      "bronnen": [
+        { "naam": "Herziening tariefstelsel grootverbruik houdt nettarieven binnen de perken, Netbeheer Nederland", "url": "https://www.netbeheernederland.nl/artikelen/nieuws/herziening-tariefstelsel-grootverbruik-houdt-nettarieven-binnen-de-perken", "datum": "2025-05-28" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wanneer peak shaving niet werkt",
+      "lead": "Zes gevallen waarin het antwoord nee is, of waarin het antwoord iets anders is.",
+      "alineas": [
+        "<ul><li><strong>Het profiel is vlak.</strong> Ligt uw kwartierwaarde het hele etmaal dicht bij het maximum, dan is er geen piek om af te vlakken. Lager uitkomen betekent dan minder afnemen, niet anders afnemen.</li><li><strong>De overschrijding duurt uren.</strong> Een ploegendienst die een halve dag boven de grens blijft, vraagt energie en geen piekvermogen. De benodigde capaciteit loopt dan zo hard op dat verzwaren of het proces zelf aanpassen eerder in beeld komt.</li><li><strong>Het probleem zit in de momentane stroom.</strong> Een beveiliging die aanspreekt, een spanningsdip bij het starten van een motor of onbalans tussen de fasen zijn installatievraagstukken. Een regeling op kwartierwaarden ziet ze niet.</li><li><strong>Er is geen dal om in bij te laden.</strong> Komen de pieken kort na elkaar, dan haalt het systeem de tweede niet. Begrenzen van de belasting is dan betrouwbaarder dan bufferen.</li><li><strong>Er is geen prikkel.</strong> Zit u ruim onder uw gecontracteerd vermogen en wordt bij u niet op het hoogst gemeten vermogen afgerekend, dan levert piekreductie alleen niets op. De businesscase moet dan uit eigen verbruik of uit flexibiliteit komen.</li><li><strong>Het knelpunt zit aan de invoedingskant.</strong> Een beperking op teruglevering is geen piekprobleem in de afname en vraagt een andere ingreep.</li></ul>",
+        "En in alle gevallen geldt de grens die hierboven al stond: afvlakken verandert niets aan uw aansluitwaarde en niets aan uw gecontracteerd transportvermogen. Het maakt ruimte binnen wat er al ligt. Wie structureel meer nodig heeft dan de aansluiting kan dragen, heeft een zwaardere aansluiting nodig, en dan is de netbeheerder de route."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar u hiermee verder komt",
+      "lead": "De aanleiding, het systeem, het volledige ontwerp en twee locaties waar nieuwe belasting onder een bestaande grens is gebracht.",
+      "kaarten": [
+        { "kop": "De aanleiding", "tekst": "Een korte gelijktijdige piek die uw gecontracteerde vermogen voor het hele jaar bepaalt.", "route": "toepassingen/pieken-in-verbruik", "label": "Pieken in verbruik" },
+        { "kop": "Het systeem", "tekst": "Wat een batterij achter de meter is, hoe hij wordt opgesteld en wat de sturing ervan beslist.", "route": "systeem-energieopslag", "label": "Energieopslag" },
+        { "kop": "Het volledige ontwerp", "tekst": "Bruikbare capaciteit, laadvermogen, degradatie en cycli: van rekensom naar dimensionering.", "route": "kennis/batterij-dimensioneren", "label": "Batterij dimensioneren" },
+        { "kop": "De eenheden", "tekst": "Waarom een piek in kW staat en een factuur in kWh, en waarom die twee niet door elkaar mogen lopen.", "route": "kennis/kw-versus-kwh", "label": "kW versus kWh" },
+        { "kop": "Ratio 16, Duiven", "tekst": "Een bedrijfspand waar zon, opslag en laden samen onder de bestaande aansluiting zijn gebracht.", "route": "project-ratio-16", "label": "Bekijk het project" },
+        { "kop": "Hedin Amsterdam", "tekst": "Een locatie waar de piekbelasting eerder tot uitval leidde en nu met opslag en sturing wordt opgevangen.", "route": "project-hedin-amsterdam", "label": "Bekijk het project" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over peak shaving",
+  "faq": [
+    {
+      "vraag": "Is piekreductie hetzelfde als peak shaving?",
+      "antwoord": "Inhoudelijk wel: beide betekenen de hoogste kwartierwaarden van een aansluiting verlagen. In de praktijk wordt peak shaving vaker gebruikt als er opslag in het spel is, en piekreductie als het ook gaat om het begrenzen en verschuiven van verbruikers."
+    },
+    {
+      "vraag": "Hoe groot moet de batterij zijn voor peak shaving?",
+      "antwoord": "Dat volgt uit twee getallen uit uw kwartiersprofiel. De hoogste overschrijding boven de gekozen grens geeft het vermogen in kW. Die overschrijding maal de duur geeft de energie in kWh. Daarna komen de correcties voor bruikbare capaciteit, rendement en de tijd die het systeem heeft om vóór de volgende piek weer bij te laden."
+    },
+    {
+      "vraag": "Kan peak shaving ook zonder batterij, met alleen een energiemanagementsysteem?",
+      "antwoord": "Soms wel. Komen uw pieken voort uit gelijktijdigheid van regelbare belasting — laadpunten, koeling, een droger — dan kan begrenzen en verschuiven genoeg zijn. Is de piek het gevolg van een proces dat niet kan wachten, dan moet het vermogen ergens anders vandaan komen."
+    },
+    {
+      "vraag": "Verlaagt peak shaving mijn energierekening?",
+      "antwoord": "Het raakt het vermogensafhankelijke deel, niet het verbruik. Hoeveel het oplevert, hangt af van welke grootheden uw netbeheerder bij u afrekent en van hoeveel u uw piek werkelijk verlaagt. Het leveringsdeel in kWh blijft vrijwel gelijk; een batterij verliest zelfs een klein deel aan rendement."
+    },
+    {
+      "vraag": "Hoeveel meetdata heb ik nodig om een afkapgrens te kiezen?",
+      "antwoord": "Een volledig jaar aan kwartierwaarden. Een maand laat zien dát er pieken zijn, maar niet hoe hoog de hoogste is — en juist die bepaalt het ontwerp als de grens hard is."
+    },
+    {
+      "vraag": "Werkt peak shaving ook als ik geen zonnepanelen heb?",
+      "antwoord": "Ja. Piekafvlakking werkt op uw afnameprofiel en heeft geen eigen opwek nodig. Zon op het dak verandert de vorm van dat profiel en daarmee de grens die logisch is, maar is geen voorwaarde."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Verder in de kennisbank",
+      "items": [
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Energiemanagementsysteem" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/batterijdegradatie", "naam": "Batterijdegradatie" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "netcongestie", "naam": "Netcongestie" }
+      ]
+    },
+    {
+      "kop": "Waar dit speelt",
+      "items": [
+        { "route": "toepassingen/pieken-in-verbruik", "naam": "Pieken in verbruik" },
+        { "route": "toepassingen/bestaande-aansluiting-optimaliseren", "naam": "Bestaande aansluiting optimaliseren" },
+        { "route": "toepassingen/batterij-slim-inzetten", "naam": "Batterij slim inzetten" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Een afkapgrens kiezen is rekenwerk",
+    "tekst": "Stuur het kwartiersprofiel van uw aansluiting over een volledig jaar, met uw aansluitwaarde en uw gecontracteerd transportvermogen. Wij rekenen een reeks grenzen door en laten zien waar de kromme knikt: welk vermogen en welke capaciteit elke grens kost, en waar afvlakken ophoudt zinnig te zijn.",
+    "primair": { "route": "contact", "label": "Laat uw pieken doorrekenen" },
+    "secundair": { "route": "kennis", "label": "Terug naar de kennisbank" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Onderzoek dat CE Delft in opdracht van Netbeheer Nederland uitvoerde, wijst een tijdsafhankelijk kilowattuurtarief (kWh) in combinatie met een maandelijks piektarief (kWmax) aan als de meest gebruiksvriendelijke en effectieve variant voor een herzien tariefstelsel voor grootverbruikers.",
+      "bron": "Herziening tariefstelsel grootverbruik houdt nettarieven binnen de perken, Netbeheer Nederland",
+      "bron_url": "https://www.netbeheernederland.nl/artikelen/nieuws/herziening-tariefstelsel-grootverbruik-houdt-nettarieven-binnen-de-perken",
+      "bron_datum": "2025-05-28"
+    }
+  ]
+}

@@ -1,0 +1,350 @@
+{
+  "route": "subsidies",
+  "type": "subsidie",
+  "titel": "Subsidies voor energieopslag en laden | Vibe Energy",
+  "beschrijving": "Er is geen nationale subsidie alleen voor batterijopslag bij bedrijven. Per regeling: de voorwaarde die vooraf beslist, gecontroleerd op 10 oktober 2026.",
+  "og_titel": "Geen subsidie speciaal voor batterijopslag bij bedrijven",
+  "h1": "Subsidies en regelingen: wat een batterij wel en niet subsidiabel maakt",
+  "lead": "Er bestaat geen nationale subsidie die uitsluitend batterijopslag achter de meter bij bedrijven vergoedt. Een batterij kan wel onderdeel zijn van een regeling die over iets anders gaat, en elke regeling heeft één voorwaarde die vooraf beslist. Hieronder staat per regeling welke voorwaarde dat is.",
+  "data_pagina": "subsidies",
+  "kruimels": [],
+  "kruimel_label": "Subsidies",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw investering doorrekenen" },
+    { "soort": "ghost", "anker": "#per-regeling", "label": "Direct naar de regelingen" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Is er subsidie voor batterijopslag bij een bedrijf?",
+    "antwoord": "Er bestaat geen zelfstandige nationale investeringssubsidie uitsluitend voor batterijopslag achter de meter bij bedrijven. De RVO-overzichtspagina over investeren in een batterij somt regelingen op waarin een batterij onderdeel kan zijn van iets anders: de Energie-investeringsaftrek (EIA) als het bedrijfsmiddel op de Energielijst staat, de subsidie voor flexibel elektriciteitsverbruik (Flex-e) bij een grootverbruikaansluiting, en SPRILA als de batterij bij laadinfrastructuur op dezelfde laadlocatie hoort. Elke route heeft dus een voorwaarde die vóór de batterij komt. Gecontroleerd op 10 oktober 2026; RVO is de enige geldende bron voor de actuele stand.",
+    "voorbehoud": "Dit antwoord gaat over landelijke regelingen voor gewone commerciële ondernemingen. Regelingen van provincies en gemeenten zijn hier niet onderzocht, en bedragen, staffels en budgetten staan hier bewust niet in. Loketdata en voorwaarden wijzigen tussentijds."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "kern",
+      "kop": "Geen batterijsubsidie, wel regelingen waarin een batterij mee kan",
+      "lead": "Dat verschil bepaalt hoe u een aanvraag opzet, en of hij kans maakt.",
+      "alineas": [
+        "Wie zoekt op subsidie voor batterijopslag komt uit bij een reeks regelingen die allemaal over iets anders gaan. Dat is geen toeval. Er bestaat geen zelfstandige nationale investeringssubsidie uitsluitend voor batterijopslag achter de meter bij bedrijven. De RVO-overzichtspagina over investeren in een batterij somt regelingen op waarin een batterij onderdeel kan zijn van een grotere maatregel: van een opwekinstallatie, van een flexibiliteitsmaatregel, van een laadlocatie. Gecontroleerd op 10 oktober 2026.",
+        "Praktisch betekent dat het volgende. De regeling bepaalt niet of uw batterij nuttig is, maar of hij binnen de omschrijving valt die de regeling gebruikt. Een batterij die uitsluitend een piek afvlakt of een terugleverbeperking opvangt, is technisch goed te verdedigen en valt buiten vrijwel elke omschrijving. Dezelfde batterij, geplaatst bij een zonnedak of gekoppeld aan een laadlocatie, kan er wel in passen.",
+        "Daarom staat per regeling één ding centraal op deze pagina: de voorwaarde die vooraf beslist. Niet het bedrag, want aan een bedrag heeft u pas iets als u binnen de omschrijving valt.",
+        "<p><a class=\"ve-link\" href=\"https://www.rvo.nl/onderwerpen/netcongestie/investeren-batterij\" rel=\"nofollow noopener\" target=\"_blank\">RVO — Energieopslag: investeren in een batterij voor uw bedrijf</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "RVO — Energieopslag: investeren in een batterij voor uw bedrijf", "url": "https://www.rvo.nl/onderwerpen/netcongestie/investeren-batterij", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Per regeling: de voorwaarde die vooraf beslist",
+      "rijen": [
+        ["EIA — Energie-investeringsaftrek", "Open, zonder sluitingsdatum van de regeling. Voorwaarde: het bedrijfsmiddel moet op de Energielijst staan. Het is een extra aftrek van de fiscale winst, geen uitkering. Gecontroleerd op 10 oktober 2026."],
+        ["Flex-e — subsidie voor flexibel elektriciteitsverbruik", "Voorwaarde: een grootverbruikaansluiting groter dan 3 × 80 ampère. Het onderdeel flexibiliteitsmaatregelen is per 4 oktober 2026 overtekend en het loket sluit 15 oktober 2026 om 17:00. Gecontroleerd op 10 oktober 2026."],
+        ["SPRILA — private laadinfrastructuur bij bedrijven", "Loket open tot 18 december 2026 om 12:00. Voorwaarde: dit is een laadinfrastructuursubsidie. Een batterij komt alleen in aanmerking in combinatie met laadinfrastructuur op de laadlocatie, maximaal 1.000 kWh per laadlocatie. Gecontroleerd op 10 oktober 2026."],
+        ["SDE++", "Gesloten; opent 27 oktober 2026 en sluit 26 november 2026 om 17:00. Voorwaarde die hier beslist: de SDE++ subsidieert geen energieopslag. Gecontroleerd op 10 oktober 2026."],
+        ["DUMAVA — duurzaam maatschappelijk vastgoed 2025", "Loket open tot 16 oktober 2026 om 17:00, en bijlage 3 bevat de maatregel H.3 Energieopslag. Voorwaarde: de regeling is voor maatschappelijk vastgoed en sluit inkomstenbelasting- en vennootschapsbelastingplichtigen uit. Gecontroleerd op 10 oktober 2026."],
+        ["SCE — Coöperatieve Energieopwekking", "Ronde 2026 gesloten op 1 oktober 2026; RVO schrijft dat de regeling waarschijnlijk begin 2027 weer opent. Voorwaarde: dit is een exploitatiesubsidie voor energiecoöperaties en VvE's voor nieuwe zonne- of windinstallaties, geen investeringssubsidie en geen batterijsubsidie. Gecontroleerd op 10 oktober 2026."]
+      ],
+      "noot": "Deze tabel is een momentopname, gecontroleerd op 10 oktober 2026. Loketdata en voorwaarden wijzigen tussentijds; de RVO-pagina van de regeling zelf is de enige geldende bron."
+    },
+    {
+      "soort": "tekst",
+      "id": "per-regeling",
+      "kop": "De EIA is een aftrek, geen uitkering — en de Energielijst beslist",
+      "lead": "De breedste route, en de route die het vaakst verkeerd wordt gelezen.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "De Energie-investeringsaftrek geeft 40% extra aftrek van de fiscale winst over de investering. Dat is géén vergoeding van 40% van de batterij. Wat u er netto aan overhoudt is die 40% maal het tarief waartegen u belasting betaalt, en zonder belastbare winst is het nul. Gecontroleerd op 10 oktober 2026.",
+        "<h3>Twee codes, twee voorwaarden</h3>",
+        "Voor opslag staan er twee codes op de Energielijst. Code 251118 eist zonnepanelen van meer dan 15 kW piek op dezelfde aansluiting: de batterij is daar het sluitstuk van een opwekinstallatie. Code 260101 eist marktkoppeling via optimalisatiesoftware: de batterij moet dan gestuurd worden op marktsignalen, niet alleen op het eigen verbruiksprofiel. Gecontroleerd op 10 oktober 2026.",
+        "Een losstaande batterij die alleen piekafvlakking doet of alleen een terugleverbeperking opvangt, past op geen van beide codes. Dat is vooraf te zien: u leest het af aan het ontwerp, niet aan de aanvraag. Wie de aftrek wil meenemen, moet die eis dus in het ontwerp meewegen — en dan geldt de omgekeerde waarschuwing even hard: koppel een batterij niet aan de markt alleen om een code te halen, want dan rekent u met een sturing die u functioneel niet nodig heeft.",
+        "<h3>De meldtermijn is de tweede val</h3>",
+        "De EIA wordt gemeld, niet vooraf toegekend. De melding moet binnen 3 maanden na de opdrachtdatum bij RVO liggen. Die opdrachtdatum is het moment waarop u de verplichting aangaat, niet de leverdatum en niet de factuurdatum. Wie na oplevering gaat uitzoeken of er nog iets mogelijk was, is doorgaans te laat. Gecontroleerd op 10 oktober 2026.",
+        "<p><a class=\"ve-link\" href=\"https://www.rvo.nl/subsidies-financiering/eia/ondernemers\" rel=\"nofollow noopener\" target=\"_blank\">RVO — Energie-investeringsaftrek voor ondernemers</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "RVO — Energie-investeringsaftrek (EIA) voor ondernemers", "url": "https://www.rvo.nl/subsidies-financiering/eia/ondernemers", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Flex-e: de enige regeling waarin de batterij zelf het doel mag zijn",
+      "lead": "En precies daar is het budget al overtekend.",
+      "alineas": [
+        "De subsidie voor flexibel elektriciteitsverbruik, Flex-e, is juridisch een subsidiemodule in titel 4.12 van de Regeling nationale EZ-subsidies. Van de regelingen op deze pagina is dit de enige waarin een batterij het hoofddoel van de investering mág zijn in plaats van een bijkomend onderdeel. Gecontroleerd op 10 oktober 2026.",
+        "Twee dingen horen daar in één adem bij. De voorwaarde: u heeft een grootverbruikaansluiting groter dan 3 × 80 ampère. En de stand: het onderdeel flexibiliteitsmaatregelen is per 4 oktober 2026 overtekend en het loket sluit op 15 oktober 2026 om 17:00. Gecontroleerd op 10 oktober 2026.",
+        "Overtekend betekent dat er meer is aangevraagd dan er budget is. Een aanvraag die daarna binnenkomt staat achteraan in een rij die het budget al heeft opgebruikt, ook al staat het loket formeel nog open. Of er in 2027 een nieuwe openstelling komt, is onbekend. Behandel deze regeling daarom niet als een financieringsbron waarop u een project kunt plannen.",
+        "<p><a class=\"ve-link\" href=\"https://www.rvo.nl/subsidies-financiering/flex-e/flexibiliteitsmaatregelen\" rel=\"nofollow noopener\" target=\"_blank\">RVO — Flex-e, subsidie voor flexibiliteitsmaatregelen</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "RVO — Flex-e, subsidie voor flexibiliteitsmaatregelen", "url": "https://www.rvo.nl/subsidies-financiering/flex-e/flexibiliteitsmaatregelen", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "SPRILA: de batterij mag mee als onderdeel van de laadlocatie",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "De Subsidieregeling Private Laadinfrastructuur bij bedrijven is paragraaf 2.3 van de Tijdelijke subsidieregeling zero-emissie mobiliteit van het ministerie van Infrastructuur en Waterstaat. Het loket is open tot 18 december 2026 om 12:00. Gecontroleerd op 10 oktober 2026.",
+        "De voorwaarde zit in de naam: dit is een laadinfrastructuursubsidie. Een batterij komt alleen in aanmerking in combinatie met laadinfrastructuur op de laadlocatie, met een maximum van 1.000 kWh per laadlocatie. Gecontroleerd op 10 oktober 2026. Een batterij bij een productiehal die niets met laden te maken heeft, valt erbuiten — ook als hij technisch identiek is aan een batterij die wél meekomt.",
+        "Voor wie toch al laadpunten plaatst, verandert dat de ordening van het project: de laadinfrastructuur is dan het hoofdonderdeel en de batterij vangt de gelijktijdigheid op. Welk vermogen in kW en welke capaciteit in kWh daarvoor nodig is, volgt uit het laadprofiel en uit wat de aansluiting kan dragen — niet uit het maximum dat de regeling noemt. Een maximum is een bovengrens, geen ontwerpuitgangspunt.",
+        "<p><a class=\"ve-link\" href=\"https://www.rvo.nl/subsidies-financiering/laadinfrastructuur/sprila-aanschaf\" rel=\"nofollow noopener\" target=\"_blank\">RVO — SPRILA, aanschaf private laadinfrastructuur</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "RVO — SPRILA, aanschaf private laadinfrastructuur bij bedrijven", "url": "https://www.rvo.nl/subsidies-financiering/laadinfrastructuur/sprila-aanschaf", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Drie regelingen die vaak worden genoemd en hier niet passen",
+      "lead": "Niet omdat ze niet bestaan, maar omdat hun voorwaarde elders ligt.",
+      "alineas": [
+        "<h3>SDE++</h3>",
+        "De SDE++ komt vrijwel altijd ter sprake zodra het over een energie-investering gaat. Voor opslag is dat een doodlopend spoor: de SDE++ subsidieert geen energieopslag. Op 10 oktober 2026 is het loket gesloten; het opent 27 oktober 2026 en sluit 26 november 2026 om 17:00. Gecontroleerd op 10 oktober 2026. Die data zijn dus relevant voor andere plannen, niet voor een batterij.",
+        "<h3>DUMAVA</h3>",
+        "DUMAVA, de Subsidieregeling duurzaam maatschappelijk vastgoed 2025, komt het dichtst bij een echte opslagsubsidie: bijlage 3 bevat de maatregel H.3 Energieopslag. De voorwaarde maakt hem voor de meeste bedrijven onbruikbaar. DUMAVA is voor maatschappelijk vastgoed en sluit inkomstenbelasting- en vennootschapsbelastingplichtigen uit. Een gewone commerciële onderneming valt er dus buiten, ongeacht het gebouw of de maatregel. Het loket is open tot 16 oktober 2026 om 17:00. Gecontroleerd op 10 oktober 2026.",
+        "<h3>SCE</h3>",
+        "De Subsidieregeling Coöperatieve Energieopwekking is een exploitatiesubsidie voor energiecoöperaties en VvE's voor nieuwe zonne- of windinstallaties. Het is geen investeringssubsidie en geen batterijsubsidie. De ronde 2026 is gesloten op 1 oktober 2026; RVO schrijft dat de regeling waarschijnlijk begin 2027 weer opent. Gecontroleerd op 10 oktober 2026.",
+        "<p><a class=\"ve-link\" href=\"https://www.rvo.nl/subsidies-financiering/sde/aanvragen\" rel=\"nofollow noopener\" target=\"_blank\">RVO — SDE++ aanvragen</a> · <a class=\"ve-link\" href=\"https://www.rvo.nl/subsidies-financiering/dumava\" rel=\"nofollow noopener\" target=\"_blank\">RVO — DUMAVA</a> · <a class=\"ve-link\" href=\"https://www.rvo.nl/subsidies-financiering/sce\" rel=\"nofollow noopener\" target=\"_blank\">RVO — SCE</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "RVO — SDE++ aanvragen", "url": "https://www.rvo.nl/subsidies-financiering/sde/aanvragen", "datum": "2026-10-10" },
+        { "naam": "RVO — DUMAVA, subsidieregeling duurzaam maatschappelijk vastgoed", "url": "https://www.rvo.nl/subsidies-financiering/dumava", "datum": "2026-10-10" },
+        { "naam": "RVO — SCE, Subsidieregeling Coöperatieve Energieopwekking", "url": "https://www.rvo.nl/subsidies-financiering/sce", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "De volgorde waarin u deze zes regelingen afloopt",
+      "lead": "Vier vragen op rij. De eerste die nee oplevert, maakt de rest overbodig.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "<h3>1 · Drie regelingen vallen af voordat u naar uw installatie kijkt</h3>",
+        "De SDE++ subsidieert geen energieopslag. DUMAVA sluit inkomstenbelasting- en vennootschapsbelastingplichtigen uit. De SCE is er voor energiecoöperaties en VvE's die opwek bijbouwen. Voor een gewone commerciële onderneming met een batterijplan zijn dat drie keer nee, hoe goed de techniek ook past. Blijven over: EIA, Flex-e en SPRILA.",
+        "<h3>2 · Waar de batterij aan hangt, bepaalt welke van de drie overblijft</h3>",
+        "Hangt hij aan een zonnedak op dezelfde aansluiting of aan sturing op marktsignalen, dan komt de Energielijst van de EIA in beeld. Hangt hij aan laadpunten op dezelfde laadlocatie, dan is het SPRILA. Staat hij los van beide en heeft u een grootverbruikaansluiting, dan blijft Flex-e over. Hangt hij nergens aan, dan is er geen route. Dat is een uitkomst, geen vergissing.",
+        "<h3>3 · Pas daarna kijkt u naar de agenda</h3>",
+        "De drie overgebleven routes lopen op een andere klok. Bij Flex-e is het budget van het onderdeel flexibiliteitsmaatregelen al verdeeld. Bij SPRILA loopt een loket af op een vaste datum. Bij de EIA heeft de regeling geen sluitingsdatum, maar hangt de meldtermijn aan úw opdrachtdatum. Alleen in dat laatste geval bepaalt uw eigen planning de deadline, en niet omgekeerd.",
+        "<h3>4 · De vorm van de regeling komt het laatst</h3>",
+        "Pas als er een route overblijft, is de vraag wat zij oplevert. Een aftrek werkt anders dan een bijdrage, een plafond zegt niets over wat u krijgt en een melding is geen toekenning. Die mechanica beweegt niet mee met de loketdata en staat daarom apart uitgewerkt.",
+        "<p><a class=\"ve-link\" href=\"kennis/subsidiemechanismen\">Hoe subsidiemechanismen werken — aftrek, bijdrage, plafond en melding</a></p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat subsidie niet oplost",
+      "lead": "De eerlijke grens van deze pagina.",
+      "alineas": [
+        "Deze pagina beslist niets over uw installatie. Zij zegt per regeling welke voorwaarde vooraf beslist; of een batterij op uw locatie iets oplost, is een andere vraag. Een batterij die te klein is voor uw piek wordt van een regeling niet groter, en een batterij die te groot is voor uw profiel blijft duur. Vermogen in kW volgt uit de hoogte van de piek boven de grens die u kiest, bruikbare capaciteit in kWh uit die hoogte maal de duur van de piek. Dat rekenwerk staat los van elke regeling hierboven.",
+        "Ook netcongestie blijft staan. Geen van de zes regelingen hierboven geeft u een hogere aansluitwaarde of meer gecontracteerd transportvermogen — daar gaat uitsluitend uw netbeheerder over. Opslag en sturing maken ruimte binnen de grens die al vastligt, en dat doen ze met of zonder bijdrage even goed. Een regeling verkort dus wel een terugverdientijd en nooit een wachtrij.",
+        "Wat deze pagina verder niet dekt: provinciale en gemeentelijke regelingen zijn hier niet onderzocht, en bedragen, staffels en budgetten staan er bewust niet in. Die bewegen te snel om op een overzichtspagina te zetten; de regelingspagina van RVO houdt ze bij.",
+        "Blijft over: een gesloten loket is geen reden om een project te schrappen, en een open loket geen reden om er een te beginnen. Bij Ratio 16 in Duiven paste het hele systeem — zon, opslag en laden — onder de bestaande aansluiting. Die keuze kwam uit het kwartiersprofiel van het pand, en zonder die keuze had geen enkele regeling het probleem opgelost.",
+        "<p><a class=\"ve-link\" href=\"project-ratio-16\">Ratio 16, Duiven — zon, opslag en laden binnen de bestaande aansluiting</a></p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Deze pagina is een momentopname, gecontroleerd op 10 oktober 2026",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Alle standen, loketdata en voorwaarden hierboven zijn gecontroleerd op 10 oktober 2026 bij RVO. Subsidieregelingen bewegen tussentijds: budget raakt op, loketten schuiven, de Energielijst wordt herzien en een nieuwe openstelling kan andere voorwaarden hebben dan de vorige. Een overzichtspagina loopt daar per definitie achter.",
+        "RVO is de enige geldende bron. Controleer vóór elke beslissing de regelingspagina zelf, en baseer geen aanvraag op een samenvatting — ook niet op deze.",
+        "<ul><li><a class=\"ve-link\" href=\"https://www.rvo.nl/onderwerpen/netcongestie/investeren-batterij\" rel=\"nofollow noopener\" target=\"_blank\">Investeren in een batterij voor uw bedrijf</a></li><li><a class=\"ve-link\" href=\"https://www.rvo.nl/subsidies-financiering/eia/ondernemers\" rel=\"nofollow noopener\" target=\"_blank\">Energie-investeringsaftrek (EIA)</a></li><li><a class=\"ve-link\" href=\"https://www.rvo.nl/subsidies-financiering/flex-e/flexibiliteitsmaatregelen\" rel=\"nofollow noopener\" target=\"_blank\">Flex-e, flexibiliteitsmaatregelen</a></li><li><a class=\"ve-link\" href=\"https://www.rvo.nl/subsidies-financiering/laadinfrastructuur/sprila-aanschaf\" rel=\"nofollow noopener\" target=\"_blank\">SPRILA, private laadinfrastructuur</a></li><li><a class=\"ve-link\" href=\"https://www.rvo.nl/subsidies-financiering/sde/aanvragen\" rel=\"nofollow noopener\" target=\"_blank\">SDE++</a></li><li><a class=\"ve-link\" href=\"https://www.rvo.nl/subsidies-financiering/dumava\" rel=\"nofollow noopener\" target=\"_blank\">DUMAVA</a></li><li><a class=\"ve-link\" href=\"https://www.rvo.nl/subsidies-financiering/sce\" rel=\"nofollow noopener\" target=\"_blank\">SCE</a></li></ul>"
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Wat aan een aanvraag voorafgaat",
+      "lead": "Eerst het ontwerp en de businesscase, dan de regeling.",
+      "kaarten": [
+        { "kop": "Hoe regelingen in elkaar zitten", "tekst": "Aftrek, exploitatiesubsidie, investeringssubsidie en tenderprincipe: welk mechanisme welke opbrengst geeft.", "route": "kennis/subsidiemechanismen", "label": "Subsidiemechanismen" },
+        { "kop": "Het probleem waar het meestal om gaat", "tekst": "Geen extra transportvermogen beschikbaar, terwijl de plannen doorlopen. Wat er achter de meter kan.", "route": "netcongestie", "label": "Netcongestie" },
+        { "kop": "Het systeem zelf", "tekst": "Wat batterijopslag op een bedrijfslocatie doet, hoe hij wordt gedimensioneerd en waar de grens ligt.", "route": "systeem-energieopslag", "label": "Energieopslag" },
+        { "kop": "De rekenkant", "tekst": "Van kwartiersprofiel naar terugverdientijd, en waar een regeling in dat rijtje terechtkomt: achteraan.", "route": "kennis/businesscase-batterij", "label": "Businesscase batterij" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over subsidies en regelingen",
+  "faq": [
+    {
+      "vraag": "Is er subsidie voor een batterij bij mijn bedrijf?",
+      "antwoord": "Niet als zelfstandige regeling. Er bestaat geen nationale investeringssubsidie uitsluitend voor batterijopslag achter de meter bij bedrijven. Een batterij kan wel binnen een andere regeling vallen: via de Energielijst van de EIA, via Flex-e of via SPRILA bij een laadlocatie. Elk van die routes heeft een voorwaarde die vooraf beslist. Gecontroleerd op 10 oktober 2026."
+    },
+    {
+      "vraag": "Vergoedt de EIA 40% van mijn batterij?",
+      "antwoord": "Nee. De EIA geeft 40% extra aftrek van de fiscale winst over de investering. Uw netto voordeel is die 40% maal het tarief waartegen u belasting betaalt, en zonder belastbare winst is er geen voordeel. Gecontroleerd op 10 oktober 2026."
+    },
+    {
+      "vraag": "Kan ik Flex-e nog aanvragen?",
+      "antwoord": "Het onderdeel flexibiliteitsmaatregelen is per 4 oktober 2026 overtekend en het loket sluit 15 oktober 2026 om 17:00. Een aanvraag komt daarmee in een rij te staan waarin het budget al is verdeeld. Of er in 2027 een nieuwe openstelling komt, is onbekend. Gecontroleerd op 10 oktober 2026."
+    },
+    {
+      "vraag": "Subsidieert de SDE++ energieopslag?",
+      "antwoord": "Nee. De SDE++ subsidieert geen energieopslag. Het loket is op 10 oktober 2026 gesloten, opent 27 oktober 2026 en sluit 26 november 2026 om 17:00; die data gelden voor andere plannen, niet voor een batterij. Gecontroleerd op 10 oktober 2026."
+    },
+    {
+      "vraag": "Komt mijn bedrijf in aanmerking voor DUMAVA?",
+      "antwoord": "Alleen als het om maatschappelijk vastgoed gaat. DUMAVA sluit inkomstenbelasting- en vennootschapsbelastingplichtigen uit, dus een gewone commerciële onderneming valt erbuiten — ook al staat de maatregel H.3 Energieopslag in bijlage 3. Het loket is open tot 16 oktober 2026 om 17:00. Gecontroleerd op 10 oktober 2026."
+    },
+    {
+      "vraag": "Helpt subsidie tegen netcongestie?",
+      "antwoord": "Niet rechtstreeks. Geen regeling geeft u extra gecontracteerd transportvermogen of een hogere aansluitwaarde; dat loopt via uw netbeheerder. Subsidie kan de terugverdientijd van opslag en sturing verkorten, maar de ruimte die u krijgt komt uit het ontwerp, niet uit de regeling."
+    },
+    {
+      "vraag": "Wat heeft u van ons nodig om dit te beoordelen?",
+      "antwoord": "Het kwartiersprofiel van de aansluiting, de aansluitwaarde en het gecontracteerde transportvermogen, plus wat er aan opwek en laadpunten staat of gepland is. Daaruit volgt het ontwerp. Pas als dat vaststaat, is te zeggen of de investering binnen de omschrijving van een regeling past."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Hoe regelingen werken",
+      "items": [
+        { "route": "kennis/subsidiemechanismen", "naam": "Subsidiemechanismen" },
+        { "route": "kennis/businesscase-batterij", "naam": "Businesscase batterij" },
+        { "route": "kennis/energiehandel-en-flexibiliteit", "naam": "Energiehandel en flexibiliteit" },
+        { "route": "kennis/energieprestatie-meten", "naam": "Energieprestatie meten" },
+        { "route": "energieadvies", "naam": "Energieadvies" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "laadplein", "naam": "Laadplein" }
+      ]
+    },
+    {
+      "kop": "Waar de investering meestal over gaat",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "toepassingen/batterij-slim-inzetten", "naam": "Batterij slim inzetten" },
+        { "route": "toepassingen/terugleverbeperking", "naam": "Terugleverbeperking" },
+        { "route": "toepassingen/pieken-in-verbruik", "naam": "Pieken in verbruik" },
+        { "route": "verduurzaming-bedrijfspanden", "naam": "Verduurzaming bedrijfspanden" }
+      ]
+    },
+    {
+      "kop": "Bewijs",
+      "items": [
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "project-ratio-16", "naam": "Ratio 16, Duiven" },
+        { "route": "project-hazenweg-61", "naam": "Hazenweg 61, Hengelo" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Reken eerst het systeem door, de regeling daarna",
+    "tekst": "Stuur ons het kwartiersprofiel van uw aansluiting en uw aansluitgegevens. Wij bepalen welk vermogen en welke capaciteit de locatie nodig heeft, en benoemen daarna welke regeling er volgens de stand van dat moment bij past — of dat er geen is.",
+    "primair": { "route": "contact", "label": "Laat uw investering doorrekenen" },
+    "secundair": { "route": "kennis/subsidiemechanismen", "label": "Lees hoe regelingen werken" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Er bestaat geen zelfstandige nationale investeringssubsidie uitsluitend voor batterijopslag achter de meter bij bedrijven; de RVO-overzichtspagina somt regelingen op waarin een batterij onderdeel van iets anders kan zijn.",
+      "bron": "RVO — Energieopslag: investeren in een batterij voor uw bedrijf",
+      "bron_url": "https://www.rvo.nl/onderwerpen/netcongestie/investeren-batterij",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De Energie-investeringsaftrek (EIA) geeft 40% extra aftrek van de fiscale winst over de investering; het netto voordeel is 40% maal het belastingtarief en nul zonder belastbare winst.",
+      "bron": "RVO — Energie-investeringsaftrek (EIA) voor ondernemers",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/eia/ondernemers",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De EIA is op 10 oktober 2026 open en de regeling heeft geen sluitingsdatum; voorwaarde is dat het bedrijfsmiddel op de Energielijst staat.",
+      "bron": "RVO — Energie-investeringsaftrek (EIA) voor ondernemers",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/eia/ondernemers",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Op de Energielijst staan voor opslag twee codes: 251118 eist zonnepanelen van meer dan 15 kW piek op dezelfde aansluiting, 260101 eist marktkoppeling via optimalisatiesoftware.",
+      "bron": "RVO — Energie-investeringsaftrek (EIA) voor ondernemers",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/eia/ondernemers",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De EIA-melding moet binnen 3 maanden na de opdrachtdatum bij RVO zijn gedaan.",
+      "bron": "RVO — Energie-investeringsaftrek (EIA) voor ondernemers",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/eia/ondernemers",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Flex-e is een subsidiemodule in titel 4.12 van de Regeling nationale EZ-subsidies; het onderdeel flexibiliteitsmaatregelen staat een batterij als hoofddoel toe.",
+      "bron": "RVO — Flex-e, subsidie voor flexibiliteitsmaatregelen",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/flex-e/flexibiliteitsmaatregelen",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Flex-e vereist een grootverbruikaansluiting groter dan 3 × 80 ampère.",
+      "bron": "RVO — Flex-e, subsidie voor flexibiliteitsmaatregelen",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/flex-e/flexibiliteitsmaatregelen",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Het Flex-e-onderdeel flexibiliteitsmaatregelen is per 4 oktober 2026 overtekend en het loket sluit 15 oktober 2026 om 17:00.",
+      "bron": "RVO — Flex-e, subsidie voor flexibiliteitsmaatregelen",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/flex-e/flexibiliteitsmaatregelen",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "SPRILA is paragraaf 2.3 van de Tijdelijke subsidieregeling zero-emissie mobiliteit van het ministerie van Infrastructuur en Waterstaat; het loket is open tot 18 december 2026 om 12:00.",
+      "bron": "RVO — SPRILA, aanschaf private laadinfrastructuur bij bedrijven",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/laadinfrastructuur/sprila-aanschaf",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Binnen SPRILA komt een batterij alleen in aanmerking in combinatie met laadinfrastructuur op de laadlocatie, met een maximum van 1.000 kWh per laadlocatie.",
+      "bron": "RVO — SPRILA, aanschaf private laadinfrastructuur bij bedrijven",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/laadinfrastructuur/sprila-aanschaf",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De SDE++ subsidieert geen energieopslag.",
+      "bron": "RVO — SDE++ aanvragen",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/sde/aanvragen",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Het SDE++-loket is op 10 oktober 2026 gesloten; het opent 27 oktober 2026 en sluit 26 november 2026 om 17:00.",
+      "bron": "RVO — SDE++ aanvragen",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/sde/aanvragen",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Het DUMAVA-loket is open tot 16 oktober 2026 om 17:00 en bijlage 3 van de regeling bevat de maatregel H.3 Energieopslag.",
+      "bron": "RVO — DUMAVA, subsidieregeling duurzaam maatschappelijk vastgoed",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/dumava",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "DUMAVA is bedoeld voor maatschappelijk vastgoed en sluit inkomstenbelasting- en vennootschapsbelastingplichtigen uit.",
+      "bron": "RVO — DUMAVA, subsidieregeling duurzaam maatschappelijk vastgoed",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/dumava",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De SCE is een exploitatiesubsidie voor energiecoöperaties en VvE's voor nieuwe zonne- of windinstallaties, geen investeringssubsidie en geen batterijsubsidie.",
+      "bron": "RVO — SCE, Subsidieregeling Coöperatieve Energieopwekking",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/sce",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De SCE-ronde 2026 is gesloten op 1 oktober 2026; RVO schrijft dat de regeling waarschijnlijk begin 2027 weer opent.",
+      "bron": "RVO — SCE, Subsidieregeling Coöperatieve Energieopwekking",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/sce",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

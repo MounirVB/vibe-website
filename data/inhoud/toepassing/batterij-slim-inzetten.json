@@ -1,0 +1,208 @@
+{
+  "route": "toepassingen/batterij-slim-inzetten",
+  "type": "toepassing",
+  "titel": "Bestaande batterij slimmer inzetten | Vibe Energy",
+  "beschrijving": "Uw batterij levert minder op dan verwacht. Welke vier taken hij kan hebben, waarom die om dezelfde capaciteit vechten en wie de rangorde stelt.",
+  "og_titel": "Bestaande batterij slimmer inzetten",
+  "h1": "De batterij staat er. De vraag is wat hij moet doen.",
+  "lead": "Een batterij die minder oplevert dan verwacht, is meestal niet te klein. Hij heeft geen opdracht. Vier taken kunnen aanspraak maken op hetzelfde vermogen, dezelfde capaciteit en dezelfde laadtoestand, en zonder vastgelegde rangorde doet de batterij geen van die vier goed.",
+  "data_pagina": "toepassingen",
+  "kruimels": [{ "naam": "Toepassingen", "route": "toepassingen" }],
+  "kruimel_label": "Batterij slim inzetten",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Regelstrategie voor bestaande batterijopslag",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw regelstrategie doorlichten" },
+    { "soort": "ghost", "anker": "#taken", "label": "De vier taken op een rij" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Waarom levert een bestaande batterij minder op dan verwacht?",
+    "antwoord": "Een batterij achter de meter kan vier taken hebben: piekafvlakking, eigen opwek bewaren, noodstroom en marktinzet. Die taken gebruiken hetzelfde vermogen in kW, dezelfde capaciteit in kWh en dezelfde laadtoestand, dus ze kunnen niet alle vier tegelijk voorrang hebben. Levert een batterij minder op dan verwacht, dan ontbreekt doorgaans niet de capaciteit maar de regelstrategie: een vastgelegde rangorde die per meetinterval bepaalt welke taak het vermogen krijgt, onder welke grenswaarde en met welke reservering. Zonder die rangorde valt de regeling terug op de fabrieksinstelling, en die kent uw grenswaarde, uw reservering voor noodstroom en uw tarief niet.",
+    "voorbehoud": "Dit antwoord gaat over een batterij die er al staat. Het zegt niets over de vraag of dat systeem groot genoeg is: een batterij die op een ander verbruiksprofiel is gedimensioneerd, haalt de piek ook met een sluitende regelstrategie niet. Een regelstrategie wijzigt ook uw aansluitwaarde en uw gecontracteerd transportvermogen niet."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "stilstand",
+      "kop": "Een batterij zonder regelstrategie staat vooral stil",
+      "lead": "De hardware is passief. Wat een batterij oplevert, wordt bepaald door wat hem per meetinterval wordt opgedragen.",
+      "alineas": [
+        "Een batterijsysteem laadt en ontlaadt niet uit zichzelf. Het volgt een opdracht: laad bij, ontlaad, of doe niets. Die opdracht komt van een regelaar, en die heeft drie dingen nodig. Een meting op het punt dat u wilt beschermen. Een grenswaarde waaronder uw afname moet blijven. En een rangorde voor het geval twee taken tegelijk aanspraak maken. Ontbreekt een van die drie, dan regelt het systeem op wat er bij oplevering in de regelaar is ingevuld, en daar staan uw grenswaarde, uw reservering en uw tariefstructuur niet in.",
+        "<h3>Zes bevindingen die een bestaande batterij laten onderpresteren</h3>",
+        "<ul><li><strong>De meting zit op de verkeerde plek.</strong> Meet de regelaar achter een tussenverdeler in plaats van op het overnamepunt, dan ziet hij de gebouwlast of het laadplein niet. Wat hij niet ziet, kan hij niet opvangen.</li><li><strong>Er staat geen grenswaarde, of een grenswaarde boven de hoogste piek.</strong> Dan slaat de batterij nooit aan voor piekafvlakking, hoe groot hij ook is.</li><li><strong>De batterij wordt continu vol gehouden.</strong> Dat voelt veilig, maar het betekent dat er midden op de dag geen ruimte is voor zonoverschot. De opwek gaat alsnog het net op.</li><li><strong>De batterij laadt op het verkeerde moment.</strong> Laadt hij bij terwijl de ochtendpiek loopt, dan maakt het laden zelf de piek die u wilde wegnemen.</li><li><strong>Het laadplein staat buiten de regeling.</strong> De batterij vangt dan op wat de laadpunten vragen, in plaats van dat de laadpunten eerst worden begrensd. Dat kost meer batterijcapaciteit dan nodig.</li><li><strong>De zonne-omvormer topt zichzelf af.</strong> Bij een terugleverbeperking begrenst de omvormer zijn eigen productie, zonder dat de batterij eerst de kans krijgt het overschot op te nemen.</li></ul>",
+        "Elk van deze punten is een instelling, een meetpunt of een ontbrekende koppeling. Geen ervan wordt opgelost door een grotere batterij te kopen."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "taken",
+      "kop": "De vier taken die een batterij kan hebben",
+      "lead": "Vier taken, elk met een eigen eis aan vermogen, capaciteit en laadtoestand.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "<h3>1 · Piekafvlakking</h3>",
+        "De batterij levert het verschil tussen uw werkelijke vraag en de grens die u wilt aanhouden, zodat uw afname onder uw gecontracteerd transportvermogen blijft. Dit is de taak met de hardste eis aan timing: een piek valt in een paar meetintervallen, en wie daar niet geladen staat, mist hem. Het effect zit in kW. De capaciteit in kWh bepaalt alleen hoe lang hij het volhoudt.",
+        "<h3>2 · Eigen opwek bewaren</h3>",
+        "Produceert het dak meer dan het pand gebruikt, dan gaat het overschot de batterij in in plaats van terug het net op. Deze taak vraagt het omgekeerde van de vorige: vrije capaciteit op het moment dat de zon doorkomt. Het effect zit in kWh, en in het verschil tussen wat u voor afname betaalt en wat u voor teruglevering krijgt.",
+        "<h3>3 · Noodstroom</h3>",
+        "Valt het net weg, dan kan een batterij een deel van de installatie overnemen. Dat vraagt twee dingen die de andere taken niet vragen. Een omschakelinrichting die uw installatie van het net losneemt, want een batterij zonder netscheiding doet bij netuitval niets, hoe vol hij ook is. En een deel van de capaciteit dat permanent gereserveerd blijft en dus voor geen enkele andere taak beschikbaar is. Daarbij hoort nog een ontwerpkeuze: een voorziening die na een korte onderbreking inspringt is iets anders dan een voorziening die zonder onderbreking overneemt. Welke van de twee u nodig heeft, is geen instelling maar een uitvoering.",
+        "<h3>4 · Marktinzet</h3>",
+        "Een batterij kan reageren op prijsverschillen over de dag, of capaciteit beschikbaar stellen aan een partij die daarmee flexibiliteit verhandelt. Deze taak vraagt vrij schakelbaar vermogen op momenten die de markt bepaalt en niet uw bedrijfsvoering. Hij vraagt ook laadcycli, en cycli zijn eindig. Wat marktinzet technisch en contractueel vereist, staat apart uitgelegd onder <a class=\"ve-link\" href=\"/kennis/energiehandel-en-flexibiliteit\">energiehandel en flexibiliteit</a>."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Wat elke taak van dezelfde batterij vraagt",
+      "rijen": [
+        ["Piekafvlakking", "Vermogen (kW) op precies het meetinterval waarin uw afname boven de grenswaarde dreigt te komen, plus genoeg ontlaadruimte om de hele overschrijding te overbruggen. Vraagt dus dat de batterij vóór de piek geladen is."],
+        ["Eigen opwek bewaren", "Vrije capaciteit (kWh) op het moment dat het dak meer levert dan het pand gebruikt. Een batterij die dan vol is, bewaart niets."],
+        ["Noodstroom", "Een permanent gereserveerd deel van de capaciteit dat geen andere taak mag aanspreken, plus schakelapparatuur die de installatie van het net losneemt en een keuze welke groepen meegaan."],
+        ["Marktinzet", "Vrij schakelbaar vermogen op momenten die uw bedrijfsvoering niet bepaalt, een partij die kan handelen, en de bereidheid laadcycli te maken die levensduur kosten."],
+        ["Wat ze delen", "Eén vermogen in kW, één capaciteit in kWh en één laadtoestand. Dat is de hele reden dat de taken elkaar in de weg zitten: er is geen tweede batterij waarin de volgende taak kan uitwijken."]
+      ],
+      "noot": "Vermogen begrenst hoe hoog een piek is die de batterij kan wegnemen; capaciteit begrenst hoe lang. Welke taak bij u het zwaarst weegt, volgt uit het kwartiersprofiel en uit uw contract, niet uit het specificatieblad van de batterij."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Dezelfde kilowatts, dezelfde kilowatturen, dezelfde laadtoestand",
+      "lead": "De taken sluiten elkaar technisch niet uit. Ze willen op hetzelfde moment iets anders van hetzelfde systeem.",
+      "alineas": [
+        "Piekafvlakking wil dat de batterij vol is vóór de ochtendpiek. Eigen opwek bewaren wil dat hij leeg is als de zon doorkomt. Noodstroom wil dat een deel nooit wordt aangeraakt. Marktinzet wil ontladen wanneer de prijs hoog is, en dat kan precies het moment zijn waarop uw productielijn aanslaat. De laadtoestand is één getal; die vier wensen passen er niet gelijktijdig in.",
+        "Daarbij komt het vermogen. Eén omvormer kan niet tegelijk vol ontladen voor een piek en laden met zonoverschot. Vragen twee taken op hetzelfde moment meer dan het omvormervermogen, dan wijkt er een. De enige vraag is welke, en dat hoort u te hebben bepaald voordat het zover is.",
+        "<h3>Rekenvoorbeeld</h3>",
+        "Dit is rekenkunde ter illustratie, geen opgave uit een project. Neem een systeem van 100 kW / 200 kWh. Reserveert u 50 kWh voor noodstroom, dan blijft 150 kWh bruikbaar. Een piek die twee uur lang 60 kW boven uw grenswaarde ligt, kost 120 kWh. Dan is er op die dag 30 kWh over voor alle andere taken samen — en dat is vóór u rekening houdt met de ondergrens die de fabrikant voor de laadtoestand voorschrijft en met de capaciteit die over de levensduur verdwijnt.",
+        "De praktische conclusie: met vier taken op één batterij kiest u niet alleen wat hij doet, maar vooral wat er het eerst sneuvelt als het botst. Die keuze vastleggen heet prioriteren."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Prioriteren is een rangorde, geen voorkeur",
+      "lead": "Een regelstrategie is een geordende lijst regels die de regelaar per meetinterval afgaat.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Prioriteren betekent niet dat één taak belangrijker is dan een andere. Het betekent dat voor elk meetinterval vastligt welke taak het vermogen krijgt als twee taken het tegelijk opeisen, met welke marge, en tot welke laadtoestand. Een werkbare strategie bestaat daarom uit vier soorten afspraken: een rangorde van de taken, een grenswaarde per taak, reserveringen die andere taken niet mogen aanspreken, en tijdvensters waarin een taak wel of niet mag ingrijpen.",
+        "<h3>Wie die rangorde stelt</h3>",
+        "De eigenaar van het risico. Dat is u — niet de installateur, en niet de partij die de flexibiliteit verhandelt. Wie de gevolgen draagt van een gemiste piek of een stilgevallen proces, hoort te bepalen wat voorgaat. Daarbij horen twee praktische eisen. De rangorde staat opgeschreven, in plaats van alleen in een parameterveld van een regelaar. En hij wordt herzien als uw contract, uw tarief, uw bezetting of uw installatie verandert: een strategie die in januari klopte, klopt in juli niet automatisch nog.",
+        "Eén regel ligt bij ons vast en staat niet ter discussie: de bedrijfsvoering gaat voor optimalisatie. Een systeem dat een proces laat vallen om een prijsverschil te pakken, heeft geen slimme strategie maar een verkeerde rangorde.",
+        "<p>Dat samenspel is ook fysiek werk. Op de Hazenweg in Hengelo brengt één energiemanagementsysteem batterijopslag, het zonnedak, de laadpunten en een noodstroomaggregaat samen, met een nieuwe hoofdverdeler die het geheel verbindt. De verdeling tussen die onderdelen is daar een instelling van het systeem geworden, niet een eigenschap van losse kasten. <a class=\"ve-link\" href=\"/project-hazenweg-61\">Bekijk het project in Hengelo</a></p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat wij doorlichten voordat er een instelling verandert",
+      "lead": "Een bestaand systeem opnieuw inregelen zonder te weten wat het nu doet, is gokken met uw proces.",
+      "alineas": [
+        "Wij vragen daarom eerst het volgende op, en pas daarna gaat er iets aan de regeling anders.",
+        "<ul><li><strong>Het kwartiersprofiel van de aansluiting</strong> — hoe hoog de pieken zijn, hoe lang ze duren en wanneer ze vallen. Niet het jaarverbruik: daarin zijn precies die pieken weggemiddeld.</li><li><strong>Uw aansluitgegevens</strong> — de aansluitwaarde in kVA of in ampère per fase, en het gecontracteerd transportvermogen in kW. Die twee zijn niet hetzelfde en bepalen samen welke grenswaarde zinvol is. Het verschil staat uitgelegd bij <a class=\"ve-link\" href=\"/kennis/transportvermogen-versus-aansluitwaarde\">transportvermogen en aansluitwaarde</a>.</li><li><strong>Het logboek van de batterij</strong> — het verloop van de laadtoestand over een representatieve periode en het aantal gemaakte cycli. Een vlakke laadtoestand verraadt een systeem dat niets doet; een continu volle batterij verraadt een verkeerde rangorde.</li><li><strong>De plaats van de metingen</strong> — meet de regelaar op het overnamepunt, of ergens achter een tussenverdeler? Zit dit verkeerd, dan is elke verdere discussie over parameters zinloos.</li><li><strong>De begrenzingen die al vastliggen</strong> — een terugleverbeperking, een maximaal invoedvermogen in de omvormerinstelling, een afspraak met de netbeheerder over invoeden of afnemen.</li><li><strong>Wat er schakelbaar is naast de batterij</strong> — laadpunten, koeling, warmtepompen, een deel van de proceslast. Vermogen dat u kunt uitstellen, hoeft de batterij niet te leveren.</li></ul>",
+        "Daaruit volgt welk van drie problemen u heeft: een instelling, een ontbrekende koppeling, of een systeem dat voor een ander profiel is gekocht. Die drie vragen een ander antwoord, en alleen de eerste twee zijn met sturing op te lossen. Hoe de sturing zelf per moment afweegt, staat op <a class=\"ve-link\" href=\"/vibe-control\">VIBE.CONTROL</a>."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De grens van slimmer inzetten.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "<strong>Meer taken op dezelfde batterij betekent minder zekerheid per taak.</strong> Dat is geen instelfout, dat is de kern van de rekensom. Elke taak die u toevoegt, legt beslag op vermogen of capaciteit dat een andere taak op hetzelfde moment kan willen. Wie noodstroom, piekafvlakking en marktinzet alle drie hard wil garanderen, heeft een groter systeem nodig of moet aanvaarden dat er soms één wijkt. Een regelstrategie maakt die afweging expliciet. Zij neemt hem niet weg.",
+        "Een batterij die te klein is voor uw piek, blijft te klein. Sturing verdeelt wat er is; zij maakt geen vermogen en geen capaciteit. Komt uw piek hoger boven de grenswaarde dan de batterij kan leveren, of blijft hij langer boven die grens dan de bruikbare capaciteit toelaat, dan is het een dimensioneringsvraag en geen regelvraag. Zie <a class=\"ve-link\" href=\"/kennis/batterij-dimensioneren\">een batterij dimensioneren</a>.",
+        "Ook de omvormer is een harde grens. De capaciteit in kWh zegt niets over hoe hard een batterij kan in- en uitladen; dat is het omvormervermogen in kW. Een systeem met veel kWh en weinig kW vlakt een scherpe, korte piek niet af, ongeacht de strategie.",
+        "Marktinzet is niet gratis. Elke extra cyclus kost levensduur, en de opbrengst hangt af van prijzen die u niet bepaalt. Dat hoort als afweging in de businesscase te staan, met de onzekerheid erbij, en niet als bonus bovenop een bestaande berekening.",
+        "En een regelstrategie verandert niets aan uw aansluiting. Uw aansluitwaarde en uw gecontracteerd transportvermogen blijven wat ze zijn. Slimmer inzetten betekent dat u er minder vaak tegenaan loopt, niet dat er vermogen bij komt.",
+        "Tot slot: voor sommige taken is een instelling niet genoeg. Noodstroom vraagt schakelapparatuur en een keuze welke groepen meegaan bij netuitval. Marktinzet vraagt een contract en soms een andere meetinrichting. Dat is werk aan de installatie, geen parameter."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar het knelpunt bij u zit",
+      "lead": "Vier aanleidingen die elk om een andere taak van dezelfde batterij vragen.",
+      "kaarten": [
+        { "kop": "De piek bepaalt de rekening", "tekst": "Wordt uw gecontracteerd transportvermogen bepaald door een korte gelijktijdige piek en niet door uw gemiddelde verbruik, dan weegt piekafvlakking het zwaarst.", "route": "toepassingen/pieken-in-verbruik", "label": "Pieken in verbruik" },
+        { "kop": "De opwek mag niet het net op", "tekst": "Bij een terugleverbeperking valt een deel van de productie weg. Dan weegt het bewaren van eigen opwek het zwaarst.", "route": "toepassingen/terugleverbeperking", "label": "Terugleverbeperking" },
+        { "kop": "Het proces kan meebewegen", "tekst": "Is een deel van de last uit te stellen, dan hoeft de batterij dat vermogen niet te leveren en houdt u capaciteit over.", "route": "toepassingen/processen-sturen-met-ems", "label": "Processen sturen met een EMS" },
+        { "kop": "Meer dan één locatie", "tekst": "Met meerdere panden en aansluitingen verschilt de rangorde per locatie, terwijl u er één rapportage over wilt.", "route": "toepassingen/meerdere-locaties", "label": "Meerdere locaties" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over de inzet van een bestaande batterij",
+  "faq": [
+    {
+      "vraag": "Waarom doet mijn batterij niets tijdens de piek?",
+      "antwoord": "Meestal om een van drie redenen. De regelaar meet niet op het overnamepunt en ziet de piek niet aankomen. Er staat geen grenswaarde, of een grenswaarde die hoger ligt dan uw hoogste piek. Of de batterij was op dat moment te leeg, omdat een andere taak hem had leeggetrokken. Alle drie zijn vast te stellen uit het kwartiersprofiel en het logboek van de batterij naast elkaar."
+    },
+    {
+      "vraag": "Kan één batterij piekafvlakking en noodstroom tegelijk doen?",
+      "antwoord": "Technisch wel, maar niet met dezelfde capaciteit. Noodstroom vraagt een deel dat permanent gereserveerd blijft; dat deel is voor piekafvlakking niet beschikbaar. Daarnaast is er schakelapparatuur nodig die de installatie van het net losneemt. U kunt beide taken dus combineren, mits u aanvaardt dat de reservering de ruimte voor piekafvlakking verkleint."
+    },
+    {
+      "vraag": "Wie bepaalt de prioritering van de taken?",
+      "antwoord": "De eigenaar van het risico, en dat is de gebruiker van de installatie. Wij leggen de rangorde vast, rekenen de gevolgen per taak door en voeren hem in de sturing in, maar de keuze welke taak wijkt als het botst is uw keuze. Eén regel staat bij ons niet ter discussie: de bedrijfsvoering gaat voor optimalisatie."
+    },
+    {
+      "vraag": "Kan een batterij van een andere leverancier worden bijgestuurd?",
+      "antwoord": "Dat hangt af van het koppelvlak. Is er een open interface naar de omvormer en de batterijmanager, dan kan er een regellaag boven de bestaande installatie. Is het systeem gesloten, dan blijft u bij wat de fabrieksinstellingen toelaten. Welke van de twee het is, stellen wij als eerste vast; het bepaalt of een nieuwe regelstrategie überhaupt uitvoerbaar is."
+    },
+    {
+      "vraag": "Levert marktinzet meer op dan piekafvlakking?",
+      "antwoord": "Dat is niet in het algemeen te zeggen en verschilt per locatie. Piekafvlakking verlaagt een kostenpost die u kent, met een uitkomst die uit uw eigen profiel volgt. Marktinzet levert een variabele opbrengst die afhangt van prijzen die u niet bepaalt en van cycli die levensduur kosten. In de vergelijking hoort dat verschil in zekerheid mee te wegen, niet alleen het bedrag."
+    },
+    {
+      "vraag": "Moet de regelstrategie opnieuw worden bekeken als er iets verandert?",
+      "antwoord": "Ja. Een nieuw laadplein, een extra machine, een gewijzigd transportcontract, een andere bezetting of een uitgebreid zonnedak verandert de vorm van uw pieken en daarmee de juiste rangorde. Een strategie is een afspraak over een situatie, niet een eenmalige instelling."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De sturing en de systemen",
+      "items": [
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Het energiemanagementsysteem" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/energiehandel-en-flexibiliteit", "naam": "Energiehandel en flexibiliteit" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/batterijdegradatie", "naam": "Batterijdegradatie" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/energieprestatie-meten", "naam": "Energieprestatie meten" }
+      ]
+    },
+    {
+      "kop": "Verwante toepassingen",
+      "items": [
+        { "route": "toepassingen/pieken-in-verbruik", "naam": "Pieken in verbruik" },
+        { "route": "toepassingen/terugleverbeperking", "naam": "Terugleverbeperking" },
+        { "route": "toepassingen/processen-sturen-met-ems", "naam": "Processen sturen met een EMS" },
+        { "route": "toepassingen/bestaande-aansluiting-optimaliseren", "naam": "Bestaande aansluiting optimaliseren" },
+        { "route": "toepassingen/meerdere-locaties", "naam": "Meerdere locaties" }
+      ]
+    },
+    {
+      "kop": "Verder",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "energieadvies", "naam": "Energieadvies" },
+        { "route": "projecten", "naam": "Projecten" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Laat eerst zien wat hij nu doet",
+    "tekst": "Stuur het kwartiersprofiel van uw aansluiting, uw aansluit- en transportgegevens en het logboek van de batterij. Wij leggen die naast elkaar en benoemen wat uw systeem per taak kan en wat het nu laat liggen. Is het een dimensioneringsprobleem en geen regelprobleem, dan zeggen we dat ook.",
+    "primair": { "route": "contact", "label": "Laat uw regelstrategie doorlichten" },
+    "secundair": { "route": "vibe-control", "label": "Hoe de sturing per moment afweegt" }
+  },
+
+  "claims": []
+}

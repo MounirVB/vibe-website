@@ -1,0 +1,232 @@
+{
+  "route": "sectoren/productie-en-industrie",
+  "type": "sector",
+  "titel": "Energie voor maakindustrie en productie | Vibe Energy",
+  "beschrijving": "Aanloopstroom, batches en ploegwissels bepalen uw kwartierpiek. Hoe opslag en sturing een productielocatie binnen de bestaande aansluiting laten groeien.",
+  "og_titel": "Energie voor maakindustrie en procesinstallaties",
+  "h1": "Een productielocatie piekt op aanloop, niet op jaarverbruik.",
+  "lead": "Een machinepark vraagt bij het aanslaan meer dan het typeplaatje zegt, en een batch die samenvalt met de ploegwissel legt uw gecontracteerd transportvermogen voor een heel jaar vast. Wij beginnen bij het kwartiersprofiel en bij de vraag welke processen werkelijk verschuifbaar zijn.",
+  "data_pagina": "sectoren",
+  "kruimels": [{ "naam": "Sectoren", "route": "sectoren" }],
+  "kruimel_label": "Productie en industrie",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Energie-infrastructuur voor productielocaties en procesinstallaties",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw kwartiersprofiel doorrekenen" },
+    { "soort": "ghost", "anker": "#aanloop", "label": "Aanloopstroom versus nominaal vermogen" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Waarom loopt een productielocatie tegen de grens van zijn aansluiting aan?",
+    "antwoord": "Op een productielocatie wordt de piek zelden bepaald door het jaarverbruik, maar door gelijktijdigheid: motoren die bij het starten een meervoud van hun nominale stroom trekken, procesapparatuur die in batches aanslaat, en een ploegwissel waarin schoonmaak, insteltijd en de start van de nieuwe serie over elkaar heen lopen. Het gecontracteerd transportvermogen wordt daarmee vastgelegd door enkele kwartieren per maand. Wie juist die kwartieren verlaagt — met opslag die het verschil levert en met een energiemanagementsysteem dat verschuifbare verbruikers uit elkaar trekt — houdt ruimte over om binnen dezelfde aansluiting uit te breiden.",
+    "voorbehoud": "Dit geldt voor een profiel met uitschieters. Een continuproces dat dag en nacht vlak en hoog belast is, heeft geen piekprobleem maar een capaciteitsprobleem; daar maakt opslag geen ruimte vrij. En een batterij verhoogt de aansluitwaarde niet en creëert geen extra gecontracteerd transportvermogen."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "aanloop",
+      "kop": "Aanloopstroom en nominaal vermogen zijn twee verschillende getallen",
+      "lead": "Wat op het typeplaatje staat, is niet wat de machine bij het starten vraagt.",
+      "alineas": [
+        "Een asynchrone motor die direct op het net wordt gestart, trekt gedurende korte tijd een meervoud van zijn nominale stroom. Dat is geen storing maar natuurkunde: het draaiveld moet de rotor en de aangekoppelde last op toeren brengen. Hoe groter het traagheidsmoment — een ventilator met zware schoepen, een centrifuge, een hydraulische pers, een volle menger — hoe langer die aanloop duurt en hoe dieper hij ingrijpt.",
+        "Die aanloop raakt twee dingen die los van elkaar staan. Het eerste is uw eigen installatie: de kabel, de beveiliging en de spanning op de rail. Een harde directe start kan een spanningsdip geven waar andere apparatuur op reageert — een frequentieregelaar die afschakelt, een besturing die herstart. Het tweede is de meting van de netbeheerder. Die legt het gemiddelde vermogen per kwartier vast, en een aanlooppiek van enkele seconden verdwijnt daar grotendeels in.",
+        "Daarom is een aanloopprobleem niet automatisch een netprobleem, en een netprobleem niet automatisch een aanloopprobleem. Een spanningsdip bij het starten lost u op in de installatie: een sterdriehoekschakeling, een softstarter, of een frequentieregelaar die het toerental opbouwt. Een te hoge kwartierpiek lost u op in de gelijktijdigheid: welke machines, compressoren, ovens en laders tegelijk aanstaan en hoe lang ze dat volhouden. Alleen dat tweede is het terrein van opslag en sturing.",
+        "Wie de twee door elkaar haalt, koopt een batterij voor een probleem dat in de verdeelkast zit."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Vijf getallen op een productielocatie, en waar ze over gaan",
+      "rijen": [
+        ["Aanloopstroom", "Wat een motor bij het starten kort trekt: een meervoud van de nominale stroom, gedurende seconden. Bepaalt de keuze van kabel, beveiliging en startmethode. Nauwelijks terug te zien in de kwartierwaarde."],
+        ["Nominaal vermogen", "Het vermogen op het typeplaatje, bij volle belasting. De meeste procesmotoren draaien structureel onder die waarde. De som van alle typeplaatjes is daarom geen bruikbare ontwerpwaarde."],
+        ["Kwartiergemiddelde", "Het gemiddelde vermogen over een kwartier, zoals de netbeheerder het vastlegt. Hieraan wordt uw hoogste waarde per maand afgelezen."],
+        ["Gecontracteerd transportvermogen", "Het vermogen in kW dat u met de netbeheerder bent overeengekomen te mogen afnemen. Hiervoor betaalt u, ook in de maanden dat u het niet raakt. Dit is het getal dat netcongestie blokkeert."],
+        ["Gelijktijdigheid", "Welk deel van het machinepark op hetzelfde moment aanstaat. Op een productielocatie is dit vrijwel altijd de werkelijke oorzaak van de piek, en het enige dat zonder nieuwe aansluiting te beïnvloeden is."]
+      ],
+      "noot": "Een zesde getal hoort erbij maar staat vaak alleen op papier: de fysieke aansluitcapaciteit, in kVA of in ampère per fase. Die begrenst wat de kabel en de aansluitkast kunnen dragen, ongeacht wat u contracteert."
+    },
+    {
+      "soort": "tekst",
+      "id": "profiel",
+      "kop": "Ploegendienst geeft het profiel zijn vorm",
+      "lead": "Het aantal ploegen bepaalt niet zozeer hoeveel u verbruikt, maar vooral hoe uw profiel eruitziet.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "<h3>Eén ploeg</h3>",
+        "De zwaarste kwartieren liggen bij het opstarten. Compressoren bouwen de persluchtdruk op, ovens en smeltbaden gaan van koud naar bedrijfstemperatuur, koeling haalt de nacht in. Daarna zakt het verbruik terug naar het niveau van de productie zelf. Het profiel heeft één scherpe kop per dag, en op de eerste werkdag na het weekend de scherpste van de week.",
+        "<h3>Twee ploegen</h3>",
+        "Er komt een tweede kop bij de ploegwissel. Daar overlappen schoonmaak, insteltijd en de start van de nieuwe serie: afzuiging draait door, een reinigingscyclus loopt, en de nieuwe ploeg zet machines aan terwijl de vorige nog niet alles heeft uitgezet. Die overlap duurt kort en is vaak de hoogste piek van het etmaal.",
+        "<h3>Drie ploegen en continuproductie</h3>",
+        "Hoe meer ploegen, hoe vlakker het profiel. Dat is gunstig voor het net en ongunstig voor de businesscase van piekafvlakking: er valt minder kop af te halen. Bij een echt continuproces verdwijnt het piekprobleem en blijft een capaciteitsvraag over — zie de grens verderop op deze pagina.",
+        "In alle drie de gevallen moet de vorm uit de meting komen en niet uit een aanname. Wij vragen daarom het kwartiersprofiel van een volledig jaar op, zodat seizoen, geplande stilstand en de vakantieweken erin zitten. Een jaartotaal in kWh kan deze vorm niet laten zien: de pieken zijn erin weggemiddeld."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Welke processen verschuifbaar zijn, en welke niet",
+      "lead": "Een energiemanagementsysteem kan alleen verplaatsen wat het proces vrijgeeft.",
+      "alineas": [
+        "<h3>Meestal wel verschuifbaar</h3>",
+        "<ul><li><strong>Persluchtcompressoren</strong> — binnen de bandbreedte van het buffervat, zolang de minimumdruk gehaald blijft.</li><li><strong>Koeling, vrieshuis en klimaatinstallaties</strong> — de thermische massa is de buffer: voorkoelen vóór de piek, laten doorlopen erna, binnen de temperatuurgrenzen die het product toestaat.</li><li><strong>Laden van heftrucks, interne transportmiddelen en bedrijfswagens</strong> — zelden tijdkritisch, mits het voertuig bij het begin van de ploeg vol is.</li><li><strong>Waterbehandeling, pompen naar een buffervat, afvalpersen</strong> — werk dat pas aan het eind van de dag klaar hoeft te zijn.</li><li><strong>Een batchoven of droger buiten het kritieke pad</strong> — als de planning ruimte heeft tussen twee batches.</li></ul>",
+        "<h3>Niet verschuifbaar</h3>",
+        "<ul><li><strong>Een proces met een vaste temperatuur- of tijdcurve.</strong> Uitstel verandert het product, en dan is het geen energiediscussie meer.</li><li><strong>Continu doorlopende lijnen</strong> — extrusie, een smelt die op temperatuur moet blijven, een spuitgietcyclus die niet onderbroken kan worden zonder uitval en afkeur.</li><li><strong>Veiligheidsfuncties</strong> — afzuiging van dampen en stof, rookgasafvoer, noodverlichting, besturing en veiligheidskringen. Die komen in geen enkel scenario in de begrenzing.</li><li><strong>Koeling van halffabricaten met een kwaliteitsgrens</strong> — die grens staat in het productdossier, niet in het energiemodel.</li></ul>",
+        "De regel in onze regelstrategie is daarom onveranderlijk: procesveiligheid en productkwaliteit gaan voor energieoptimalisatie. Een verbruiker komt pas in de sturing als de proceseigenaar de grens aangeeft waarbinnen geschoven mag worden, en die grens is hard. Valt de communicatie weg, dan vallen de installaties terug op hun eigen bedrijfsvoering en niet op de laatste opdracht van het regelsysteem.",
+        "In de praktijk pakt een sturing daarom eerst wat buiten het proces ligt: de batterij, de laadpunten, de compressor, de koeling en de teruglevering van het dak. Het proces zelf komt pas daarna aan de orde, en meestal alleen met een vrijgave per installatie."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "uitbreiding",
+      "kop": "Uitbreiding van een lijn is meestal de aanleiding",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Het gesprek begint zelden bij energie. Het begint bij een nieuwe lijn, een extra robotcel, een koelcel of een oven die erbij komt — en bij een netbeheerder die laat weten dat er in dit voedingsgebied geen extra transportvermogen beschikbaar is. Vanaf dat punt zijn er drie dingen te meten.",
+        "<ul><li><strong>Hoeveel ruimte er onder uw gecontracteerde waarde zit.</strong> Uit het kwartiersprofiel volgt hoeveel kwartieren per jaar werkelijk in de buurt van de grens komen, hoe hoog ze komen en hoe lang ze daar blijven.</li><li><strong>Wat de nieuwe installatie gelijktijdig met de bestaande vraagt.</strong> Niet de som van de typeplaatjes, maar de vraag in de kwartieren waarin de lijn draait. Een lijn die in de nachtploeg start, komt een heel ander profiel binnen dan een lijn die bij de ochtendstart met alles meeschakelt.</li><li><strong>Of uw eigen installatie het aankan.</strong> Een hoofdverdeler, een kabeltracé of een transformator die al op zijn grens zit, wordt niet geholpen door opslag. Dat is een aparte post in de begroting en vaak de langste levertijd.</li></ul>",
+        "Pas daarna volgt de dimensionering. De hoogte van de piek boven de gekozen grens geeft het vermogen in kW; die hoogte maal de duur geeft de bruikbare capaciteit in kWh. Rekenvoorbeeld, zonder meting van een bestaande locatie: komt het verbruik twee kwartieren achter elkaar 100 kW boven de grens, dan vraagt dat 100 kW vermogen en 50 kWh energie. Dezelfde overschrijding die een hele ochtend aanhoudt, vraagt hetzelfde vermogen en een veelvoud van die capaciteit. Dat is precies waarom het jaarverbruik hier geen antwoord geeft.",
+        "Of er in uw voedingsgebied ruimte is, staat op de Capaciteitskaart van Netbeheer Nederland. Let op dat een voedingsgebied geen gemeente is: het is een verzameling postcodes rond één onderstation, en die grenzen lopen dwars door gemeentegrenzen heen. De jaartallen die de kaart bij geplande netuitbreidingen noemt, zijn planningen en geen toezegging.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Noodstroom is een aparte eis, met een eigen ontwerp",
+      "lead": "Een batterij die pieken afvlakt, is nog geen noodstroomvoorziening.",
+      "alineas": [
+        "Een installatie voor piekafvlakking staat parallel aan het net en volgt het net. Valt de netspanning weg, dan valt zo'n installatie standaard mee uit. Dat verrast mensen, dus het hoort vooraf op tafel: piekafvlakking en noodstroom zijn twee verschillende functies, en de tweede moet u er expliciet in ontwerpen. Dat vraagt een netscheidende voorziening en een regeling die de eilandbedrijfstoestand opbouwt.",
+        "Drie vragen bepalen welke voorziening past: welke belastingen moeten doordraaien, hoe lang, en hoeveel onderbreking ze mogen zien.",
+        "<ul><li><strong>Geen onderbreking</strong> — besturing, meet- en registratieapparatuur, servers. Dat is werk voor een UPS; een systeem met een omschakeltijd is daarvoor te laat.</li><li><strong>Een korte onderbreking</strong> — afzuiging, koeling van halffabricaten, een lijn die netjes moet uitlopen in plaats van abrupt stoppen. Hier kan opslag met eilandbedrijf een rol spelen.</li><li><strong>Langdurig doordraaien</strong> — een hele hal die de productie afmaakt. Dat is een vraag om brandstof en niet om opslag: een aggregaat met voorraad, eventueel met opslag ernaast zodat het aggregaat niet in zijn laagste lastgebied hoeft te draaien.</li></ul>",
+        "De keuze werkt door in de hoofdverdeler, in de selectiviteit van de beveiliging en in de kosten. Daarom hoort hij aan het begin van het ontwerp en niet nadat de batterij er staat."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De eerlijke grens van deze aanpak op een productielocatie.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "<strong>Een vlakke, hoge belasting is geen piekprobleem.</strong> Een continuproces dat de hele dag dicht bij de grens van de aansluiting draait, heeft geen kop om af te halen. Een batterij zou dan onafgebroken moeten leveren en nooit meer kunnen laden — en een batterij maakt geen energie, hij verschuift die in de tijd. Dan resteert een capaciteitsvraag: zwaardere aansluiting, een andere procesinrichting, of een deel van de productie elders. Dat zeggen wij liever bij de analyse dan bij de oplevering.",
+        "<strong>Spanningsdips en aanloopverschijnselen blijven installatiewerk.</strong> Flikkering, een wegvallende frequentieregelaar of een beveiliging die bij het starten aanspreekt, lossen zich niet op met een regelstrategie. Daar hoort een startmethode, een kabelberekening of een aanpassing in de verdeelinrichting bij.",
+        "<strong>Uw aansluitwaarde verandert niet.</strong> De fysieke aansluitcapaciteit en het gecontracteerd transportvermogen blijven wat ze zijn, tot u ze zelf wijzigt. Het verschil is dat u er minder vaak tegenaan loopt — en dat een afgevlakte piek het in sommige gevallen mogelijk maakt het gecontracteerde vermogen juist te verlágen. Dat is een besparing op de netbeheerderskosten, geen uitbreiding.",
+        "<strong>En niets hiervan staat vooraf vast zonder meting.</strong> Zonder kwartiersprofiel, zonder eendraadschema en zonder inzicht in welke processen vrijgegeven mogen worden, is elk ontwerp een aanname."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Twee projecten met hetzelfde mechanisme",
+      "lead": "De projecten die Vibe publiceert, liggen in vastgoed, automotive, recreatie en woningbouw. Twee daarvan laten zien wat op een productielocatie net zo werkt.",
+      "alineas": [
+        "<h3>Ratio 16, Duiven</h3>",
+        "Een bedrijfspand waar zon, opslag en laden zijn toegevoegd zonder het transportvermogen te wijzigen. De sturing bewaakt dat de aansluiting niet wordt overschreden; de aansluitwaarde bleef wat hij was. Dat is dezelfde vraag die op tafel ligt bij een extra productielijn.",
+        "<p><a class=\"ve-link\" href=\"/project-ratio-16\">Bekijk het project Ratio 16, Duiven</a></p>",
+        "<h3>Hazenweg 61, Hengelo</h3>",
+        "Een kantoorpand in uitbreiding waar opslag, een opnieuw gelegd zonnedak, laadpunten en een noodstroomaggregaat onder één energiemanagementsysteem zijn gebracht, met een nieuwe hoofdverdeler die het geheel verbindt. Die combinatie — opslag en noodstroom in één ontwerp, met de verdeelinrichting erbij — is wat een productielocatie meestal nodig heeft.",
+        "<p><a class=\"ve-link\" href=\"/project-hazenweg-61\">Bekijk het project Hazenweg 61, Hengelo</a></p>"
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit op uw locatie op neerkomt",
+      "lead": "De vier situaties waarin een productielocatie ons meestal belt.",
+      "kaarten": [
+        { "kop": "De nieuwe lijn past niet", "tekst": "Een extra lijn, oven of koelcel vraagt vermogen dat u niet mag afnemen, en verzwaren kan in dit voedingsgebied niet op tijd.", "route": "toepassingen/netcongestie-bij-uitbreiding", "label": "Netcongestie bij uitbreiding" },
+        { "kop": "Het proces moet meedoen in de sturing", "tekst": "Compressoren, koeling en batchapparatuur kunnen schuiven, maar alleen binnen grenzen die het proces stelt.", "route": "toepassingen/processen-sturen-met-ems", "label": "Processen sturen met een EMS" },
+        { "kop": "Een paar kwartieren bepalen de rekening", "tekst": "De ploegwissel of de ochtendstart legt uw gecontracteerde vermogen voor het hele jaar vast.", "route": "toepassingen/pieken-in-verbruik", "label": "Pieken in verbruik" },
+        { "kop": "Heftrucks en bedrijfswagens erbij", "tekst": "Intern transport en het wagenpark elektrificeren, terwijl de productie dezelfde aansluiting al vol maakt.", "route": "toepassingen/elektrificatie-bedrijfswagens", "label": "Elektrificatie van bedrijfswagens" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen van productielocaties",
+  "faq": [
+    {
+      "vraag": "Vangt een batterij de aanloopstroom van mijn motoren op?",
+      "antwoord": "Niet als dat de vraag is. Een aanloopstroom duurt seconden en is vooral een zaak van de kabel, de beveiliging en de spanning op uw rail; daar horen een softstarter, een sterdriehoekschakeling of een frequentieregelaar bij. Opslag en sturing werken op het kwartiergemiddelde: de gelijktijdigheid van machines, compressoren, ovens en laders over minuten en uren."
+    },
+    {
+      "vraag": "Moet ik mijn productieproces laten sturen door een energiesysteem?",
+      "antwoord": "Nee. Procesveiligheid en productkwaliteit gaan voor energieoptimalisatie. Een sturing pakt eerst wat buiten het proces ligt: de batterij, de laadpunten, perslucht, koeling en de teruglevering van het dak. Een procesinstallatie komt alleen in de regelstrategie als de proceseigenaar expliciet een grens aangeeft, en bij een storing in de communicatie valt elke installatie terug op haar eigen bedrijfsvoering."
+    },
+    {
+      "vraag": "Wij draaien een continuproces. Heeft opslag dan zin?",
+      "antwoord": "Voor piekafvlakking vaak niet. Is de belasting dag en nacht vlak en hoog, dan is er geen kop om af te halen en zou een batterij onafgebroken moeten leveren zonder gelegenheid om te laden. Dan heeft u een capaciteitsvraag, niet een piekvraag. Opslag kan in zo'n geval nog wel zinvol zijn voor noodstroom of voor het opvangen van een geplande opstart na stilstand, maar dat zijn andere vragen met een andere businesscase."
+    },
+    {
+      "vraag": "Blijft mijn productie doorlopen bij een stroomstoring?",
+      "antwoord": "Alleen als dat zo ontworpen is. Een installatie voor piekafvlakking volgt het net en valt bij uitval mee uit. Doordraaien vraagt een netscheidende voorziening, een eilandbedrijfregeling en een keuze welke belastingen hoe lang moeten overleven. Besturing en meetapparatuur vragen een UPS; een hele hal die lang moet doordraaien vraagt een aggregaat."
+    },
+    {
+      "vraag": "Wat heeft u van ons nodig om te rekenen?",
+      "antwoord": "Het kwartiersprofiel van uw aansluiting over een volledig jaar, uw aansluitwaarde en uw gecontracteerd transportvermogen, een eendraadschema of de gegevens van de hoofdverdeler, en een lijst van de zware verbruikers met hun startmethode. Daarnaast per proces de vraag of en binnen welke grenzen het mag schuiven."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "microgrids", "naam": "Microgrids" }
+      ]
+    },
+    {
+      "kop": "Waar het probleem vandaan komt",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie oplossen" },
+        { "route": "toepassingen/netcongestie-bij-uitbreiding", "naam": "Netcongestie bij uitbreiding" },
+        { "route": "toepassingen/geen-extra-transportvermogen", "naam": "Geen extra transportvermogen" },
+        { "route": "toepassingen/processen-sturen-met-ems", "naam": "Processen sturen met een EMS" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Energiemanagementsysteem" },
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" }
+      ]
+    },
+    {
+      "kop": "Verwante sectoren",
+      "items": [
+        { "route": "sectoren/opslag-en-distributie", "naam": "Opslag en distributie" },
+        { "route": "sectoren/bedrijventerreinen", "naam": "Bedrijventerreinen" },
+        { "route": "industrie-logistiek", "naam": "Logistiek" },
+        { "route": "sectoren", "naam": "Alle sectoren" },
+        { "route": "projecten", "naam": "Projecten" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Stuur het profiel, dan rekenen wij de kwartieren na",
+    "tekst": "Met het kwartiersprofiel van een volledig jaar, uw aansluitgegevens en een lijst van de zware verbruikers brengen wij in beeld welke kwartieren uw gecontracteerde vermogen bepalen, hoeveel daarvan met opslag en sturing weg te nemen is, en wat er overblijft. Blijkt verzwaren de enige route, dan zeggen we dat ook.",
+    "primair": { "route": "contact", "label": "Laat uw kwartiersprofiel doorrekenen" },
+    "secundair": { "route": "kennis/peak-shaving", "label": "Lees hoe peak shaving werkt" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare transportcapaciteit per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De jaartallen die de Capaciteitskaart bij geplande netuitbreidingen noemt, zijn planningen en geen toezegging.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — FAQ",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/faq/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

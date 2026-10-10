@@ -1,0 +1,245 @@
+{
+  "route": "kennis/netaansluiting-aanvragen",
+  "type": "kennis",
+  "titel": "Netaansluiting aanvragen of verzwaren | Vibe Energy",
+  "beschrijving": "Welke netbeheerder bij uw adres hoort, waar de grens van 3 × 80 A ligt, wat een transportverzoek vraagt en wat er in een congestiegebied gebeurt.",
+  "og_titel": "Netaansluiting aanvragen of verzwaren",
+  "h1": "Een netaansluiting aanvragen of verzwaren",
+  "lead": "Een aansluiting aanvragen of verzwaren loopt altijd via de netbeheerder van het adres. De aanvraag bestaat uit twee dingen die vaak door elkaar lopen: de fysieke aansluiting en het transport dat erover mag. In een congestiegebied is het tweede het knelpunt, niet de kabel.",
+  "data_pagina": "kennis",
+  "kruimels": [{ "naam": "Kennisbank", "route": "kennis" }],
+  "kruimel_label": "Netaansluiting aanvragen",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw aanvraag onderbouwen" },
+    { "soort": "ghost", "anker": "#gegevens", "label": "Welke gegevens een aanvraag vraagt" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Hoe vraagt u een netaansluiting aan of laat u die verzwaren?",
+    "antwoord": "Een netaansluiting aanvragen of verzwaren gaat via de regionale netbeheerder van het adres. Die ligt per adres vast en is niet te kiezen. De aanvraag bestaat uit twee delen: de fysieke aansluiting, uitgedrukt in ampère per fase of in kVA, en het transportvermogen in kW dat daarover mag worden afgenomen of ingevoed. Aansluitingen tot en met 3 × 80 A gelden als kleine aansluiting; daarboven is het een grote aansluiting, met een eigen transportovereenkomst en een eigen meetinrichting. Ligt het adres in een congestiegebied, dan kan de netbeheerder de aansluiting meestal wel aanleggen maar het gevraagde transport niet toezeggen. Het verzoek komt dan in de wachtrij van dat voedingsgebied.",
+    "voorbehoud": "Een aanvraag indienen is geen toezegging: pas een aanbod van de netbeheerder dat u ondertekent legt iets vast. Een jaartal dat een netbeheerder voor netverzwaring noemt, is een planning. Doorlooptijden en tarieven verschillen per netbeheerder en per gebied en staan niet in deze uitleg."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "netbeheerder",
+      "kop": "Eerst vaststellen wie uw netbeheerder is",
+      "lead": "Niet uw gemeente bepaalt dat, en niet uw leverancier. Het adres bepaalt het.",
+      "alineas": [
+        "Voor elektriciteit zijn er zes regionale netbeheerders: Liander, Enexis, Stedin, Westland Infra, Coteq en Rendo. Welke van de zes uw aansluiting beheert, volgt uit het adres van de aansluiting. U kiest daar niet in, zoals u wel in een leverancier kiest. Een bedrijf met vestigingen in meerdere provincies heeft daardoor vaak met meerdere netbeheerders te maken, elk met eigen portalen, eigen formulieren en een eigen stand van zaken per gebied.",
+        "Zoek het op per adres. Op eancodeboek.nl voert u postcode en huisnummer in en ziet u welke netbeheerder bij dat adres hoort en welke EAN-code de aansluiting heeft. Die EAN-code is het nummer waarmee netbeheerder, leverancier, meetbedrijf en installateur over dezelfde aansluiting praten. Houd hem bij elke aanvraag en elke vraag over capaciteit bij de hand; zonder dat nummer gaat een gesprek over het pand, niet over de aansluiting.",
+        "Verwar de netbeheerder niet met de leverancier. De leverancier verkoopt u energie. De netbeheerder legt de aansluiting aan, beheert het net, meet en bepaalt of er transportcapaciteit beschikbaar is. Het landelijke hoogspanningsnet is de taak van TenneT, maar uw aanvraag loopt via de regionale netbeheerder — tenzij u rechtstreeks op het hoogspanningsnet wordt aangesloten. Ook als de krapte verderop in de keten zit, blijft de regionale netbeheerder uw aanspreekpunt.",
+        "<p><a class=\"ve-link\" href=\"https://www.eancodeboek.nl/\" rel=\"nofollow noopener\" target=\"_blank\">eancodeboek.nl — netbeheerder en EAN-code per adres</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "EAN Codeboek — netbeheerder en EAN-code opzoeken per adres", "url": "https://www.eancodeboek.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Kleine of grote aansluiting: waar de grens ligt",
+      "rijen": [
+        ["Doorlaatwaarde", "Wat de aansluiting fysiek mag doorlaten, in ampère per fase of in kVA. Dit staat in de aansluitovereenkomst en bepaalt in welke categorie de aansluiting valt."],
+        ["De grens", "Tot en met 3 × 80 A is het een kleine aansluiting. Daarboven een grote aansluiting. Huishoudens hebben vaak 1 × 35 A of 3 × 25 A; een bedrijfspand met koeling, laadpunten of proceslast zit er meestal boven."],
+        ["Rekenvoorbeeld", "3 × 80 A bij 400 V is √3 × 400 V × 80 A, ongeveer 55 kVA. Dat is rekenkunde, geen aanbod: of die 80 A per fase er werkelijk ligt, hangt af van de kabel, de transformator en de ruimte in het voedingsgebied."],
+        ["Meten bij een grote aansluiting", "Bij een grote aansluiting contracteert u zelf een erkend meetbedrijf. Dat plaatst en onderhoudt de meetinrichting, verzamelt de meetdata — waaronder de kwartierwaarden — en levert die aan de netbeheerder."],
+        ["Transport bij een grote aansluiting", "Naast de aansluiting komt er een transportovereenkomst met een gecontracteerd transportvermogen in kW. Dat getal kan in een congestiegebied geblokkeerd raken; de kabel zelf is daar niet het probleem."]
+      ],
+      "noot": "De grens gaat over de doorlaatwaarde van de aansluiting, niet over uw jaarverbruik in kWh. Een pand met een lage jaarafname en een korte, hoge gelijktijdige piek kan een grote aansluiting nodig hebben, terwijl een pand met een vlak profiel en een hogere jaarafname onder de grens blijft."
+    },
+    {
+      "soort": "tekst",
+      "kop": "De aansluiting en het transport zijn twee dingen",
+      "lead": "Dit onderscheid bepaalt wat u aanvraagt, wat u krijgt en wat u betaalt.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "De <strong>aansluiting</strong> is het fysieke deel: de kabel van het net naar uw pand, de aansluitkast, bij zwaardere waarden een transformator en soms een eigen ruimte daarvoor. Dit deel is grondwerk, materiaal en soms een vergunning. Het is vastgelegd in de aansluitovereenkomst, met de doorlaatwaarde als harde grens.",
+        "Het <strong>transport</strong> is het recht om over die aansluiting vermogen af te nemen of in te voeden. Dat staat in de transportovereenkomst, als gecontracteerd transportvermogen in kW. Aansluiten is een wettelijke taak van de netbeheerder; transport toezeggen kan hij niet als het net in dat gebied daar fysiek geen ruimte voor heeft. Daarom kan een aanvraag voor een zwaardere aansluiting technisch haalbaar zijn en toch stranden: niet op de kabel, maar op het transportrecht.",
+        "Een verzwaring raakt meestal beide delen, maar niet altijd. Soms is de bestaande kabel ruim genoeg en vraagt u alleen een hoger transportvermogen aan. Dan komt er geen schop in de grond en gaat het om een wijziging van de overeenkomst — die in een congestiegebied net zo goed in de wachtrij komt. Omgekeerd kan een zwaardere kabel nodig zijn zonder dat u meer vermogen wilt contracteren, bijvoorbeeld bij een andere inrichting van het pand.",
+        "Afname en invoeding zijn twee aparte vragen met twee aparte getallen. Komen er zonnepanelen of een batterij die kan terugleveren, dan vraagt u invoedingsvermogen aan, en dat kan apart vol zitten. In veel gebieden is er voor invoeding minder ruimte dan voor afname; dan volgt een beperking op wat u mag terugleveren.",
+        "<p>Het verschil tussen de twee grootheden staat uitgebreider in <a class=\"ve-link\" href=\"kennis/transportvermogen-versus-aansluitwaarde\">transportvermogen en aansluitwaarde</a>, en wat een beperking op teruglevering praktisch betekent in <a class=\"ve-link\" href=\"toepassingen/terugleverbeperking\">terugleverbeperking</a>.</p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "gegevens",
+      "kop": "Wat een aanvraag van u vraagt",
+      "lead": "Hoe preciezer dit is, hoe minder keer de aanvraag heen en weer gaat.",
+      "alineas": [
+        "<ul><li><strong>Adres en EAN-code</strong> van de bestaande aansluiting. Bij nieuwbouw de kadastrale aanduiding en de bouwlocatie.</li><li><strong>Gewenste doorlaatwaarde</strong> in ampère per fase of in kVA, en of het gaat om een nieuwe aansluiting, een verzwaring, een verlaging of een verplaatsing.</li><li><strong>Gevraagd transportvermogen in kW</strong>, apart voor afname en voor invoeding. Één getal voor beide richtingen is vrijwel altijd verkeerd.</li><li><strong>De aard van de last:</strong> welke installaties, welk vermogen per stuk, en hoeveel daarvan gelijktijdig aan staan. Gelijktijdigheid maakt de piek, niet de som van de typeplaatjes.</li><li><strong>Verbruikshistorie.</strong> Bij een bestaande grote aansluiting het kwartiersprofiel; bij een kleine aansluiting de jaarafname plus een onderbouwing van de nieuwe last.</li><li><strong>Opwek, opslag en laden:</strong> komt er een zonnedak, een batterij of laadinfrastructuur bij, en worden die gestuurd? Een gestuurde installatie vraagt een andere onderbouwing dan een ongestuurde.</li><li><strong>Een situatietekening:</strong> waar de aansluiting het pand binnenkomt en waar ruimte is voor een aansluitkast of een transformatorruimte. Bij zwaardere waarden stelt u die ruimte vaak zelf beschikbaar, op uw eigen terrein.</li><li><strong>Wie de aanvrager is.</strong> Bij een gehuurd pand loopt een wijziging van de aansluiting via de eigenaar; leg vooraf vast wie aanvraagt en wie de kosten draagt.</li><li><strong>Gewenste datum</strong> en wat er van die datum afhangt: een verhuizing, een productielijn, een huurcontract.</li></ul>",
+        "Vraag niet ruim \"voor de zekerheid\" aan. Een te hoog gecontracteerd transportvermogen betaalt u ook als u het niet gebruikt, en in een congestiegebied vraagt u ruimte die een ander ook nodig heeft. Een te laag aangevraagde waarde levert een aansluiting waar uw plan niet in past, en een tweede traject achteraan de rij. Dimensioneer op het gemeten profiel en op de gelijktijdigheid die u werkelijk verwacht, niet op de som van alle vermogens in het pand.",
+        "Dat gemeten profiel is ook het materiaal waarmee u de aanvraag onderbouwt. Een netbeheerder die ziet dat uw piek gestuurd wordt en hoe hoog hij werkelijk is, beoordeelt een ander verzoek dan een netbeheerder die alleen een optelsom krijgt."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat er gebeurt als het adres in een congestiegebied ligt",
+      "lead": "Dan verschuift de vraag van \"kan het technisch\" naar \"is er transportruimte en wanneer\".",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Voorziet een netbeheerder een structureel tekort aan transportcapaciteit in een gebied, dan doet hij daarvan een formele melding bij de ACM: de vooraankondiging. Daarna volgt een congestieonderzoek, waarin hij nagaat wat de aard van het tekort is en of congestiemanagement ruimte kan vrijmaken. De uitkomst publiceert hij in een congestierapport. Zo'n onderzoek kan ook starten zonder dat er al een wachtrij is, bijvoorbeeld wanneer de netbeheerder fysieke congestie verwacht door autonome groei van bestaande aangeslotenen.",
+        "Een <strong>wachtrij</strong> bestaat uit de transportverzoeken in een voedingsgebied die nog niet zijn toegekend. Uw aanvraag komt daar dan in te staan. Belangrijk om te weten: de volgorde in een congestiegebied is niet alleen de datum van uw aanvraag. Netbeheerders zijn sinds 1 januari 2026 verplicht in congestiegebieden een prioriteringskader toe te passen, met drie categorieën die voorrang krijgen op de rest: partijen die congestie verzachten, veiligheidsfuncties zoals acute zorg, defensie en waterbeheer, en basisbehoeften zoals wonen, onderwijs, telecom en openbaar vervoer. Wie aanspraak maakt op een categorie, moet dat onderbouwen.",
+        "Of er in uw gebied ruimte is, en voor welke richting, staat op de Capaciteitskaart van Netbeheer Nederland. Zoek daar op uw postcode, niet op uw plaats: de status geldt per voedingsgebied, en dat is een verzameling postcodes rond één onderstation die geen gemeentegrens volgt. Afname en invoeding hebben elk hun eigen status. Een genoemd jaartal voor een netuitbreiding is een planning, geen toezegging.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a> · achtergrond in <a class=\"ve-link\" href=\"kennis/netcongestie-uitgelegd\">netcongestie uitgelegd</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — Definities", "url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/", "datum": "2026-10-10" },
+        { "naam": "ACM — Codebesluit prioriteringsruimte transportverzoeken 2025", "url": "https://www.acm.nl/nl/publicaties/codebesluit-prioriteringsruimte-transportverzoeken-2025", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Als de aanvraag niet snel kan: vier keuzes",
+      "lead": "Ze sluiten elkaar niet uit. Meestal is het een combinatie, met de aanvraag die blijft staan.",
+      "kaarten": [
+        { "kop": "Dien hem toch in, en houd hem actueel", "tekst": "Zonder aanvraag bestaat uw vraag niet voor de netbeheerder en komt uw gebied niet in beeld bij een congestieonderzoek. Wijzigt uw plan, pas dan de gevraagde waarden aan in plaats van een tweede aanvraag te openen." },
+        { "kop": "Vraag naar een alternatief transportrecht", "tekst": "Sommige netbeheerders bieden transport in afgesproken tijdblokken, bijvoorbeeld de nachtelijke uren, of een volledig variabel recht waarmee u transporteert wanneer er ruimte is. U ruilt zekerheid in voor eerdere toegang. Gebied en voorwaarden verschillen per netbeheerder; vraag het bij de uwe na." },
+        { "kop": "Vraag minder, door gelijktijdigheid te sturen", "tekst": "Dynamische load balancing bij laadpunten en een energiemanagementsysteem dat processen verschuift, verlagen het vermogen dat u werkelijk nodig heeft. Dat verkleint de aanvraag of maakt hem overbodig.", "route": "kennis/load-balancing", "label": "Load balancing" },
+        { "kop": "Doe het binnen de aansluiting die er ligt", "tekst": "Opslag en sturing vangen de piek op, zodat zon, laden of een extra machine onder de bestaande grens passen. Dit werkt op pieken, niet op een structureel te hoge gemiddelde vraag.", "route": "toepassingen/geen-extra-transportvermogen", "label": "Zonder extra transportvermogen" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Twee locaties waar de aanvraag niet de uitkomst bepaalde",
+      "alineas": [
+        "Bij <a class=\"ve-link\" href=\"project-hedin-amsterdam\">Hedin Amsterdam</a> was netverzwaring alleen op de lange termijn mogelijk. Het plan is daar binnen de bestaande aansluiting gerealiseerd, met opslag, eigen opwek en sturing onder één regelaar. Bij <a class=\"ve-link\" href=\"project-ratio-16\">Ratio 16 in Duiven</a> kwamen zon, opslag en een laadplein op een pand met een krappe aansluiting; die aansluiting bleef ongewijzigd.",
+        "Beide trajecten begonnen niet bij een formulier, maar bij een profiel: hoe hoog de piek is, hoe lang hij duurt en hoeveel daarvan gelijktijdigheid is. Dat profiel bepaalt of u een zwaardere aansluiting nodig heeft of alleen een andere verdeling binnen de aansluiting die er al ligt.",
+        "<p>Meer over de route binnen de bestaande aansluiting: <a class=\"ve-link\" href=\"netcongestie\">netcongestie oplossen achter de meter</a>.</p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De eerlijke grens van deze route.",
+      "alineas": [
+        "Een aanvraag indienen is geen toezegging. Er ligt pas iets vast als de netbeheerder een aanbod doet en u dat ondertekent. En een jaartal dat in een planning of op een capaciteitskaart staat, is een planning: zet er geen investeringsbesluit op zonder terugvalscenario.",
+        "Wij zijn niet uw netbeheerder. Een wachtrij kunnen wij niet versnellen en vermogen kunnen wij niet toewijzen. Wat wij kunnen, is uw vraag meten en verlagen: de piek, de gelijktijdigheid en het vermogen dat u werkelijk moet contracteren. Dat maakt de aanvraag kleiner en beter onderbouwd — het maakt hem niet sneller.",
+        "Een batterij achter de meter verhoogt uw aansluitwaarde niet en creëert geen extra gecontracteerd transportvermogen. Hij maakt ruimte binnen wat er al is. Ligt uw <strong>gemiddelde</strong> vraag over de dag boven wat de aansluiting kan leveren, dan is verzwaren de enige echte route; opslag is dan hoogstens een overbrugging.",
+        "Een alternatief transportrecht is geen gratis extra capaciteit. U krijgt eerder toegang in ruil voor minder zekerheid: op de momenten dat het net vol zit, kunt u niet of minder transporteren. Dat werkt alleen als uw proces kan wijken of als opslag het gat vult. Reken dat door voordat u ondertekent."
+      ]
+    }
+  ],
+
+  "faq_kop": "Veelgestelde vragen over aanvragen en verzwaren",
+  "faq": [
+    {
+      "vraag": "Hoe weet ik wie mijn netbeheerder is?",
+      "antwoord": "Dat volgt uit het adres van de aansluiting. Voor elektriciteit zijn er zes regionale netbeheerders: Liander, Enexis, Stedin, Westland Infra, Coteq en Rendo. Op eancodeboek.nl zoekt u op postcode en huisnummer welke netbeheerder bij het adres hoort en wat de EAN-code van de aansluiting is. U kunt niet van netbeheerder wisselen; van leverancier wel."
+    },
+    {
+      "vraag": "Waar ligt de grens tussen een kleine en een grote aansluiting?",
+      "antwoord": "Bij de doorlaatwaarde. Tot en met 3 × 80 A is het een kleine aansluiting, daarboven een grote. Bij een grote aansluiting hoort een transportovereenkomst met een gecontracteerd transportvermogen in kW en contracteert u zelf een erkend meetbedrijf voor de meetinrichting."
+    },
+    {
+      "vraag": "Kan de netbeheerder mijn aanvraag weigeren?",
+      "antwoord": "Aansluiten is een wettelijke taak van de netbeheerder. Het transport over die aansluiting is iets anders: is er in het voedingsgebied fysiek geen ruimte, dan kan het gevraagde transportvermogen niet worden toegezegd en komt het verzoek in de wachtrij. In congestiegebieden geldt sinds 1 januari 2026 bovendien een prioriteringskader, waardoor de datum van uw aanvraag niet het enige is dat de volgorde bepaalt."
+    },
+    {
+      "vraag": "Is er iets veranderd nu de Energiewet geldt?",
+      "antwoord": "De Elektriciteitswet 1998 en de Gaswet zijn per 1 januari 2026 ingetrokken. In de nieuwe terminologie heet het een kleine of een grote aansluiting in plaats van kleinverbruik en grootverbruik. De grens zelf is onveranderd: de ACM omschrijft een kleine aansluiting als elektriciteit tot en met 3 × 80 A."
+    },
+    {
+      "vraag": "Moet ik ruim aanvragen, voor het geval ik later groei?",
+      "antwoord": "Nee. Gecontracteerd transportvermogen betaalt u ook als u het niet gebruikt, en in een congestiegebied vraagt u ruimte die een ander ook nodig heeft. Dimensioneer op het gemeten kwartiersprofiel en op de werkelijke gelijktijdigheid, en leg vast hoe u groeit: met sturing binnen dezelfde aansluiting, of met een tweede traject op het moment dat het nodig is."
+    },
+    {
+      "vraag": "Krijg ik met een batterij een zwaardere aansluiting?",
+      "antwoord": "Nee. Uw doorlaatwaarde en uw gecontracteerd transportvermogen blijven ongewijzigd. Een batterij verandert wat u binnen die grenzen kunt doen, door de piek af te vlakken en energie in de tijd te verschuiven. Hij vervangt geen verzwaring die u structureel nodig heeft."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Verder in de kennisbank",
+      "items": [
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/netcongestie-uitgelegd", "naam": "Netcongestie uitgelegd" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/laadinfrastructuur-dimensioneren", "naam": "Laadinfrastructuur dimensioneren" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" }
+      ]
+    },
+    {
+      "kop": "Binnen de aansluiting die er ligt",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "toepassingen/geen-extra-transportvermogen", "naam": "Geen extra transportvermogen" },
+        { "route": "toepassingen/netcongestie-bij-uitbreiding", "naam": "Netcongestie bij uitbreiding" },
+        { "route": "toepassingen/laden-met-beperkte-aansluiting", "naam": "Laden met een beperkte aansluiting" },
+        { "route": "energy-hubs", "naam": "Energy Hubs" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "projecten", "naam": "Projecten" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Onderbouw de aanvraag met een meting",
+    "tekst": "Stuur ons het kwartiersprofiel van uw aansluiting, uw doorlaatwaarde en uw gecontracteerd transportvermogen, plus wat u wilt toevoegen. Wij rekenen door welk vermogen u werkelijk moet aanvragen, wat binnen de bestaande aansluiting past en waar verzwaren de enige route is.",
+    "primair": { "route": "contact", "label": "Laat uw aanvraag onderbouwen" },
+    "secundair": { "route": "kennis", "label": "Terug naar de kennisbank" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Een kleine aansluiting is elektriciteit tot en met 3 × 80 A; zakelijke afnemers hebben meestal een grotere aansluiting dan 3 × 80 A. Huishoudens hebben vaak 1 × 35 A of 3 × 25 A.",
+      "bron": "ACM — Afnemers en aansluitingen",
+      "bron_url": "https://www.acm.nl/nl/energie/elektriciteit-en-gas/rechten-van-afnemers/afnemers-en-aansluitingen",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De Elektriciteitswet 1998 en de Gaswet zijn per 1 januari 2026 ingetrokken; het Energiebesluit is per diezelfde datum in werking getreden.",
+      "bron": "Staatsblad 2025, 348 — Besluit van 3 november 2025 houdende vaststelling van het tijdstip van inwerkingtreding van het Energiebesluit en van de intrekking van de Elektriciteitswet 1998 en de Gaswet",
+      "bron_url": "https://zoek.officielebekendmakingen.nl/stb-2025-348.html",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Netbeheerders zijn vanaf 1 januari 2026 verplicht in congestiegebieden het prioriteringskader voor transportverzoeken te gebruiken; dat kader kent drie categorieën met voorrang: congestieverzachters, veiligheidsfuncties (acute zorg, defensie, waterbeheer) en basisbehoeften (wonen, onderwijs, telecom, openbaar vervoer).",
+      "bron": "ACM — Codebesluit prioriteringsruimte transportverzoeken 2025 (publicatiedatum 12-12-2025)",
+      "bron_url": "https://www.acm.nl/nl/publicaties/codebesluit-prioriteringsruimte-transportverzoeken-2025",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Een wachtrij bestaat uit de transportverzoeken per voedingsgebied die nog niet zijn toegekend. Een congestieonderzoek kan ook starten als er nog geen wachtrij is, maar de netbeheerder fysieke congestie verwacht door autonome groei. Een mogelijk tekort aan transportcapaciteit wordt afgekondigd met een formele melding bij de ACM.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Bij een grote aansluiting contracteert de aangeslotene zelf een erkend meetbedrijf; dat plaatst en onderhoudt de meetinrichting, verzamelt de meetdata en levert die aan de netbeheerder.",
+      "bron": "Stedin — Wat doet een meetbedrijf voor bedrijven?",
+      "bron_url": "https://www.stedin.net/zakelijk/klantenservice/veelgestelde-vragen/wat-doet-een-meetbedrijf-voor-bedrijven",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Netbeheerders bieden naast een vast transportrecht ook alternatieve transportrechten aan: een tijdsblokgebonden recht dat in vooraf afgesproken tijdblokken geldt, en een volledig variabel (non-firm) recht dat geldt wanneer er ruimte op het net is. Beschikbaarheid, gebied en voorwaarden verschillen per netbeheerder.",
+      "bron": "Stedin — Alternatieve transportrechten",
+      "bron_url": "https://www.stedin.net/zakelijk/energietransitie/beschikbare-netcapaciteit/flexoplossingen/alternatieve-transportrechten",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Zes regionale netbeheerders verzorgen de elektriciteitsnetten in Nederland: Liander, Enexis, Stedin, Westland Infra, Coteq en Rendo.",
+      "bron": "Netbeheer Nederland — onze leden",
+      "bron_url": "https://www.netbeheernederland.nl/onze-leden",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Via eancodeboek.nl is per postcode en huisnummer op te zoeken welke netbeheerder bij een adres hoort en welke EAN-code de aansluiting heeft.",
+      "bron": "EAN Codeboek",
+      "bron_url": "https://www.eancodeboek.nl/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

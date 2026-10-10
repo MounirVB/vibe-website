@@ -1,0 +1,182 @@
+{
+  "route": "kennis/energiehandel-en-flexibiliteit",
+  "type": "kennis",
+  "titel": "Energiehandel en flexibiliteit | Vibe Energy",
+  "beschrijving": "Day-ahead, intraday, onbalans en de balanceermarkten: wat deelname vereist, wat een aggregator doet en waarom flexinkomsten geen vaste terugverdientijd zijn.",
+  "og_titel": "Energiehandel en flexibiliteit voor bedrijven",
+  "h1": "Energiehandel en flexibiliteit: wat een bedrijf hier werkelijk mee kan",
+  "lead": "Flexibiliteit is een product: het vermogen om op afroep harder of zachter te verbruiken of te leveren. Daar bestaan markten voor, maar elk van die markten kent toegangseisen, leveringsverplichtingen en een inkomen dat per jaar verschilt. Deze pagina zet de mechanismen op een rij en benoemt waar de grens ligt.",
+  "data_pagina": "kennis",
+  "kruimels": [{ "naam": "Kennisbank", "route": "kennis" }],
+  "kruimel_label": "Energiehandel en flexibiliteit",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw inzetstrategie doorrekenen" },
+    { "soort": "ghost", "anker": "#prioriteit", "label": "Direct naar het prioriteitsbesluit" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Hoe werken energiehandel en flexibiliteitsmarkten voor een bedrijf met opslag?",
+    "antwoord": "Energiehandel loopt via vier mechanismen. Op de day-ahead-markt wordt de levering van morgen verhandeld; op de intradaymarkt wordt diezelfde dag bijgestuurd. De onbalansafrekening verrekent het verschil tussen aangemeld programma en werkelijke afname of levering. Op de balanceermarkten koopt de landelijke netbeheerder reservevermogen in: daar verkoopt u beschikbaar vermogen in kW, geen energie in kWh. Een individuele locatie doet dat zelden zelf: elke markt vraagt een partij met programmaverantwoordelijkheid en een minimale biedgrootte, en de balanceermarkten daarbovenop prekwalificatie en harde beschikbaarheid. Een bedrijfsbatterij gaat daarom via een aggregator die veel locaties bundelt.",
+    "voorbehoud": "Dit antwoord zegt niets over wat marktdeelname oplevert. Flexibiliteitsinkomsten bewegen met de prijsspreiding, de marktregels en het aanbod van andere batterijen, en zijn daarom geen basis voor een vaste terugverdientijd. Marktinzet creëert ook geen transportcapaciteit: uw aansluitwaarde en uw gecontracteerd transportvermogen blijven wat ze zijn."
+  },
+
+  "secties": [
+    {
+      "soort": "specs",
+      "kop": "Waar elektriciteit en flexibiliteit verhandeld worden",
+      "rijen": [
+        ["Day-ahead", "De levering van morgen, verhandeld op de dag ervoor, per uur of per kwartier. Dit is de prijscurve die een dynamisch leveringscontract aan u doorgeeft. Een batterij kan hierop reageren door te laden op een laag moment en te ontladen op een hoog moment."],
+        ["Intraday", "Handel op de dag zelf, tot kort voor het leveringsmoment. Hier wordt gecorrigeerd als het weer, een storing of een productieplan afwijkt van wat een dag eerder is aangemeld. Vraagt een partij die continu in de markt zit."],
+        ["Onbalans", "Geen markt waarop u biedt, maar de afrekening achteraf van het verschil tussen het aangemelde programma en de werkelijke levering of afname. Wie toevallig de goede kant op afwijkt, wordt vergoed; wie de verkeerde kant op afwijkt, betaalt."],
+        ["Balanceermarkten van de TSO", "De landelijke netbeheerder contracteert reservevermogen om de frequentie op peil te houden: vermogen dat binnen seconden of binnen minuten omhoog of omlaag moet. Het product is beschikbaarheid in kW, met een geteste reactietijd. Hier zit de prekwalificatie en de boeteclausule."],
+        ["Congestiemanagement", "Een apart mechanisme, en geen energiemarkt: de regionale netbeheerder koopt binnen één voedingsgebied vermogen in om een knelpunt te ontlasten. Het product is transport, niet energie, en het geldt alleen waar en wanneer dat gebied knelt."]
+      ],
+      "noot": "De eerste twee gaan over energie (kWh) op een tijdstip. Het vierde gaat over vermogen (kW) dat op afroep klaarstaat. Een batterij die zijn vermogen al grotendeels aan de locatie heeft toegezegd, kan niet in beide tegelijk leveren. Over congestiemanagement en de voedingsgebieden staat meer op <a class=\"ve-link\" href=\"netcongestie\">de pagina over netcongestie</a>."
+    },
+    {
+      "soort": "tekst",
+      "id": "eisen",
+      "kop": "Wat deelname in de praktijk vereist",
+      "lead": "De techniek is zelden het struikelblok. De administratieve en contractuele keten is dat wel.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "<ul><li><strong>Een partij met programmaverantwoordelijkheid.</strong> Elektriciteit wordt afgerekend tegen een vooraf aangemeld programma. Alleen een erkende marktpartij mag dat programma indienen; een individuele aangeslotene doet dat niet zelf. Alles wat u op een markt aanbiedt, loopt dus via de partij die uw programma beheert of via een aggregator die daarmee samenwerkt.</li><li><strong>Prekwalificatie.</strong> Voor de balanceermarkten moet een installatie aantoonbaar binnen de gevraagde tijd het gevraagde vermogen leveren, herhaalbaar en meetbaar. Dat is een test met een procedure, geen specificatie uit een datasheet.</li><li><strong>Een minimale biedgrootte.</strong> Elk product heeft een ondergrens. Eén bedrijfsbatterij blijft daar vaak onder, zeker als een deel van het vermogen al voor de locatie is gereserveerd.</li><li><strong>Beschikbaarheid, niet beschikbaarheid wanneer het past.</strong> Wie een blok heeft verkocht, moet in dat blok kunnen leveren — ook op de dag dat het pand juist een hoge piek maakt. Niet leveren is contractbreuk met een financiële sanctie.</li><li><strong>Meting en telemetrie.</strong> De markt wil meetwaarden op een fijnere tijdschaal dan de netbeheerdersmeting oplevert, via een beveiligde verbinding, plus een besturingsinterface die een extern signaal kan opvolgen zonder de lokale grenzen te schenden.</li><li><strong>Een afspraak met uw leverancier.</strong> Een leveringscontract gaat uit van afname. Leveren of terugleveren vanuit dezelfde aansluiting raakt dat contract, en soms ook de tariefstructuur erin. Regel dat schriftelijk vooraf.</li></ul>",
+        "De som hiervan is de reden dat een enkele locatie zelden zelfstandig deelneemt. Niet omdat een batterij het niet kan, maar omdat de keten van programma, meting, prekwalificatie en aansprakelijkheid niet op één aansluiting is ingericht. De investering in die keten staat niet in verhouding tot wat één systeem kan aanbieden."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat een aggregator doet, en wat u ervoor inlevert",
+      "lead": "Een aggregator bundelt de capaciteit van veel locaties tot één verhandelbaar product.",
+      "alineas": [
+        "Een aggregator voegt installaties samen tot een portefeuille die wél aan de biedgrootte en de beschikbaarheidseis komt, verzorgt de prekwalificatie, plaatst de biedingen, stuurt de assets aan op het leveringsmoment, verwerkt de afrekening en keert uit. Daarnaast draagt hij een deel van het risico: als de portefeuille niet levert, is dat zijn contractbreuk, niet die van één deelnemer. Dat is precies de dienst waarvoor hij een deel van de opbrengst houdt.",
+        "Daar staat tegenover dat u zeggenschap over uw eigen installatie weggeeft, binnen afgesproken grenzen. Die grenzen zijn het hele contract. Leg vooraf vast welk vermogen en welke energievoorraad voor de locatie gereserveerd blijven, op welke momenten dat geldt, wie die instelling mag wijzigen en wat er gebeurt als de markt en de locatie elkaar in de weg zitten.",
+        "<h3>Zes vragen die vóór ondertekening beantwoord moeten zijn</h3>",
+        "<ul><li>Wie heeft op het moment van een conflict het laatste woord over de batterij — uw regelsysteem of het marktsignaal?</li><li>Wie draagt de kosten als de batterij leeg is op het moment dat de piek komt, en de aansluiting de overschrijding maakt?</li><li>Hoeveel cycli per jaar mag de aggregator gebruiken, en past dat binnen de garantievoorwaarden van het systeem?</li><li>Hoe lang loopt het contract, en wat gebeurt er aan het einde met de telemetrie en de koppeling?</li><li>Hoe wordt de vergoeding bepaald en hoe is die te controleren tegen uw eigen meetwaarden?</li><li>Wat gebeurt er als de marktproducten veranderen en uw installatie niet meer prekwalificeert?</li></ul>",
+        "De regelstrategie die deze grenzen bewaakt is geen bijzaak. Zonder een regelsysteem dat de harde lokale begrenzing altijd boven een extern signaal zet, is marktdeelname een risico op uw eigen aansluiting. Hoe die afweging per kwartier wordt gemaakt, staat op <a class=\"ve-link\" href=\"vibe-control\">de pagina over VIBE.CONTROL</a> en in de uitleg over <a class=\"ve-link\" href=\"kennis/ems-energiemanagementsysteem\">het energiemanagementsysteem</a>."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Een dynamisch leveringscontract is geen marktdeelname",
+      "lead": "Twee dingen die in gesprekken door elkaar lopen, met twee verschillende risico's.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Met een dynamisch leveringscontract krijgt u de marktprijs doorgegeven, meestal per uur of per kwartier. U bent dan prijsgevoelig, maar u bent geen marktpartij: er is geen prekwalificatie, geen leveringsverplichting en geen boeterisico. Wat u kunt doen is uw eigen vraag verschuiven. Laden wanneer het goedkoop is, een proces uitstellen, de batterij vullen op een laag prijsmoment en ontladen op een hoog moment. Dat is handelen met uw eigen verbruik, binnen uw eigen aansluiting.",
+        "Actieve marktinzet is iets anders. Dan verkoopt u een product aan een derde, met een leveringsverplichting en een sanctie als u niet levert. Dat is een ander soort inkomen en een ander soort risico. De twee sluiten elkaar niet uit: een locatie kan een dynamisch contract hebben en daarnaast via een aggregator aan een balanceermarkt deelnemen. Maar het zijn twee besluiten, met twee verschillende randvoorwaarden en twee verschillende gesprekspartners.",
+        "Let bij een dynamisch contract op drie dingen. Of de afrekening per kwartier of per uur gaat, want dat bepaalt hoe fijn u kunt sturen. Of uw meting en uw regelsysteem op diezelfde tijdschaal werken, want anders stuurt u op cijfers van gisteren. En welk deel van uw rekening helemaal niet marktgevoelig is: netbeheerderskosten en belastingen bewegen niet met de prijscurve mee. Wie alleen naar het leveringsdeel kijkt, overschat het effect van verschuiven."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "prioriteit",
+      "kop": "Marktinzet en piekafvlakking vechten om dezelfde capaciteit",
+      "lead": "Eén batterij heeft één vermogen en één energievoorraad. Elke kW die aan de markt is beloofd, is niet beschikbaar voor de piek.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Piekafvlakking vraagt een geladen batterij op een voorspelbaar moment: vlak vóór de piek die u wilt wegnemen. Marktinzet vraagt juist vrijheid in de laadtoestand, omdat de waarde zit in kunnen reageren op een signaal dat u niet zelf kiest. Die twee eisen botsen regelmatig. Staat de batterij leeg omdat hij op de markt is ingezet, dan loopt de piek door naar de aansluiting — en zo'n overschrijding is niet met één kwartier bijsturen ongedaan te maken. Hoe lang een overschrijding van uw gecontracteerd transportvermogen doorwerkt in het transporttarief, en waarom die in een congestiegebied geen extra vermogen oplevert, staat uitgewerkt bij <a class=\"ve-link\" href=\"toepassingen/pieken-in-verbruik\">pieken in verbruik</a>.",
+        "Daarom hoort er een expliciete rangorde in het regelsysteem te staan, met harde en zachte lagen:",
+        "<ul><li><strong>Harde grens van de aansluiting.</strong> Nooit overschrijden. Geen marktsignaal mag hieraan komen.</li><li><strong>Procescontinuïteit.</strong> Wat niet mag uitvallen, krijgt voorrang boven elke opbrengst.</li><li><strong>Eigen opwek bewaren.</strong> Zonne-overschot dat anders tegen een lage vergoeding het net op gaat.</li><li><strong>Marktinzet.</strong> Met het vermogen en de energie die na de drie lagen hierboven over zijn.</li></ul>",
+        "<h3>Rekenvoorbeeld</h3>",
+        "Een systeem van 100 kW / 200 kWh moet elke werkdag een piek van 60 kW gedurende een uur wegnemen. Daarvoor is 60 kW nodig en 60 kWh, op een voorspelbaar moment. Wat overblijft is 40 kW, plus de capaciteit die buiten dat venster vrij is en op tijd weer vol kan zijn. Dát is wat u aan de markt kunt aanbieden. Biedt u het volledige systeem aan, dan is de piekafvlakking niet langer gegarandeerd.",
+        "<p class=\"ve-small\">Rekenvoorbeeld om de verhouding te laten zien. Geen opgave van een bestaande installatie.</p>",
+        "De rangorde is dus geen instelling die u later nog even wijzigt: hij bepaalt hoe groot het systeem moet worden. Wie marktinzet serieus wil, dimensioneert daar extra kW en extra kWh voor — en betaalt die ook. Hoe die dimensionering uit een kwartiersprofiel volgt, staat in <a class=\"ve-link\" href=\"kennis/batterij-dimensioneren\">een batterij dimensioneren</a>; de inzetkant staat op <a class=\"ve-link\" href=\"toepassingen/batterij-slim-inzetten\">een batterij slim inzetten</a>.",
+        "Er is nog een tweede schaarste. Een batterij heeft een eindig aantal cycli voordat de bruikbare capaciteit onder de ontwerpwaarde zakt, en marktinzet verbruikt cycli. Hoeveel dat mag, hoort in het aggregatorcontract te staan en binnen de garantievoorwaarden te passen. Zie <a class=\"ve-link\" href=\"kennis/batterijdegradatie\">batterijdegradatie</a> voor wat dat met de bruikbare capaciteit doet."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "De risicokant: variabel inkomen is geen terugverdientijd",
+      "lead": "Vier dingen bepalen wat flexibiliteit opbrengt, en geen van de vier staat onder uw invloed.",
+      "alineas": [
+        "Het eerste is de prijsspreiding over de dag: hoe groot het verschil is tussen het goedkoopste en het duurste moment. Dat verschil beweegt met het weer, met brandstofprijzen en met de samenstelling van het productiepark. Het tweede is hoeveel andere batterijen hetzelfde doen. Flexibiliteit is een markt met aanbod; groeit dat aanbod, dan daalt de vergoeding voor hetzelfde product. Het derde zijn de marktregels en de productdefinities zelf, die veranderen. Het vierde is de tariefstructuur van de netbeheerder, die bepaalt wat het kost om te laden en te ontladen en dus hoeveel spreiding u nodig heeft voordat een cyclus zinvol is.",
+        "Daar komt de contractduur bij. Een aggregatorcontract loopt korter dan de technische levensduur van een batterij. Een vergoeding van dit jaar mag u dus niet over de volledige afschrijving uitsmeren, want niemand kan u die vergoeding voor die looptijd toezeggen.",
+        "Daarom hoort flexibiliteit in een businesscase als bovengrens-scenario, niet als basisregel. De som die de investering moet dragen, bestaat uit de posten die fysiek of contractueel vastliggen: een lagere piek, een eventueel lager gecontracteerd transportvermogen, meer eigen verbruik, en het alternatief dat u vermijdt of uitstelt. Komt de case daarmee niet uit, dan komt hij er met marktinkomsten ook niet uit — alleen later, en met meer onzekerheid. Hoe die rekensom is opgebouwd, staat in <a class=\"ve-link\" href=\"kennis/businesscase-batterij\">de businesscase van een batterij</a>.",
+        "En of de aannames achteraf klopten, blijkt alleen uit meting. Zonder een vastgelegde basislijn per kwartier is niet te bepalen of een opbrengst uit de markt kwam of uit een toevallig ander verbruiksjaar. Zie <a class=\"ve-link\" href=\"kennis/energieprestatie-meten\">energieprestatie meten</a>."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat flexibiliteit niet oplost",
+      "lead": "De eerlijke grens van dit onderwerp.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Marktinzet creëert <strong>geen transportcapaciteit</strong>. Uw aansluitwaarde verandert er niet van en uw gecontracteerd transportvermogen ook niet. Een voedingsgebied dat vol zit, wordt er niet vrij door. Handelen gebeurt binnen de grens die er al ligt.",
+        "Niet elke locatie heeft iets aan te bieden. Een vlak verbruiksprofiel zonder regelbare last en zonder opslag heeft geen flexibiliteit; dan valt er niets te verkopen behalve het verschuiven van uw eigen inkoop. En een systeem dat de eigen piek al nauwelijks haalt, houdt niets over voor de markt — het toch aanbieden kost u dan de piekafvlakking die de investering rechtvaardigde.",
+        "Flexibiliteit lost ook geen meetprobleem op. Zonder kwartiersmeting weet u niet wat u heeft, en zonder regelsysteem dat de lokale grens boven een extern signaal stelt, kunt u niets veilig aanbieden. En wie meerdere locaties heeft, moet eerst per locatie weten wat er vrij is voordat een portefeuille iets betekent; zie <a class=\"ve-link\" href=\"toepassingen/meerdere-locaties\">meerdere locaties</a>.",
+        "De samenvatting in één regel: <strong>flexibiliteitsinkomsten zijn een bonus op een case die zonder die inkomsten al moet kloppen.</strong> Zo gebruiken wij ze ook in een voorstel — als scenario naast de basis, niet als onderdeel van de basis."
+      ]
+    }
+  ],
+
+  "faq_kop": "Veelgestelde vragen over energiehandel en flexibiliteit",
+  "faq": [
+    {
+      "vraag": "Kan mijn batterij geld verdienen op de energiemarkt?",
+      "antwoord": "Technisch vaak wel, maar in de praktijk via een aggregator en alleen met het vermogen en de capaciteit die niet voor de locatie zijn gereserveerd. Wat het oplevert noemen wij niet vooraf: dat hangt af van de prijsspreiding, de marktregels en het aanbod van andere batterijen, en die veranderen allemaal binnen de levensduur van het systeem."
+    },
+    {
+      "vraag": "Wat is het verschil tussen een dynamisch contract en marktdeelname?",
+      "antwoord": "Bij een dynamisch leveringscontract krijgt u de marktprijs doorgegeven en verschuift u uw eigen verbruik. U heeft geen leveringsverplichting. Bij actieve marktinzet verkoopt u een product aan een derde, met een prekwalificatie, een beschikbaarheidseis en een sanctie als u niet levert. Het eerste is prijsgevoeligheid, het tweede is een verplichting."
+    },
+    {
+      "vraag": "Wat doet een aggregator precies?",
+      "antwoord": "Hij bundelt installaties van veel locaties tot één portefeuille die aan de minimale biedgrootte en de beschikbaarheidseis komt, verzorgt de prekwalificatie, plaatst biedingen, stuurt de assets aan op het leveringsmoment en verwerkt de afrekening. Daarvoor houdt hij een deel van de opbrengst en draagt hij een deel van het risico."
+    },
+    {
+      "vraag": "Kan ik piekafvlakking en marktinzet combineren?",
+      "antwoord": "Ja, maar niet met dezelfde kW en dezelfde kWh op hetzelfde moment. Er moet een rangorde in het regelsysteem staan: de harde grens van de aansluiting eerst, dan procescontinuïteit, dan eigen opwek, dan de markt met wat overblijft. Wil marktinzet echt iets betekenen, dan dimensioneert u het systeem daarop."
+    },
+    {
+      "vraag": "Mag ik flexibiliteitsinkomsten meenemen in mijn terugverdientijd?",
+      "antwoord": "Niet in de basisberekening. Zet ze als apart scenario naast de posten die vastliggen: een lagere piek, een eventueel lager gecontracteerd transportvermogen, meer eigen verbruik en het vermeden of uitgestelde alternatief. Een aggregatorcontract loopt korter dan de batterij, dus een vergoeding van nu geldt niet voor de hele afschrijving."
+    },
+    {
+      "vraag": "Krijg ik door marktdeelname meer transportvermogen?",
+      "antwoord": "Nee. Uw aansluitwaarde en uw gecontracteerd transportvermogen blijven ongewijzigd, en een congestiegebied komt er niet door vrij. Marktinzet gebeurt binnen de grens die er al ligt. Wat er binnen die grens wél mogelijk is, staat op de pagina over netcongestie."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Verder in de kennisbank",
+      "items": [
+        { "route": "kennis/businesscase-batterij", "naam": "Businesscase batterij" },
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Energiemanagementsysteem" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/batterijdegradatie", "naam": "Batterijdegradatie" },
+        { "route": "kennis/energieprestatie-meten", "naam": "Energieprestatie meten" }
+      ]
+    },
+    {
+      "kop": "De sturing en de inzet",
+      "items": [
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "toepassingen/batterij-slim-inzetten", "naam": "Batterij slim inzetten" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "toepassingen/meerdere-locaties", "naam": "Meerdere locaties" }
+      ]
+    },
+    {
+      "kop": "Waarom het net knelt",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "subsidies", "naam": "Subsidies en regelingen" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Eerst de case, dan de markt",
+    "tekst": "Stuur het kwartiersprofiel van uw aansluiting en uw aansluitgegevens. Wij rekenen eerst door wat piekafvlakking en eigen verbruik binnen uw bestaande aansluiting opleveren. Daarna laten we zien welk vermogen en welke capaciteit daarna nog vrij zijn voor marktinzet, en onder welke voorwaarden.",
+    "primair": { "route": "contact", "label": "Laat uw inzetstrategie doorrekenen" },
+    "secundair": { "route": "kennis", "label": "Terug naar de kennisbank" }
+  },
+
+  "claims": []
+}

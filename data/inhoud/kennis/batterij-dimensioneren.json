@@ -1,0 +1,224 @@
+{
+  "route": "kennis/batterij-dimensioneren",
+  "type": "kennis",
+  "titel": "Een zakelijke batterij dimensioneren | Vibe Energy",
+  "beschrijving": "Vermogen en capaciteit van een zakelijke batterij volgen uit het kwartiersprofiel: kW uit de piekhoogte, kWh uit de duur, plus correctie voor degradatie.",
+  "og_titel": "Batterij dimensioneren: van profiel naar kW en kWh",
+  "h1": "Hoeveel kW en hoeveel kWh heeft uw batterij nodig?",
+  "lead": "Een batterij heeft twee maten: een vermogen in kW en een capaciteit in kWh. Beide volgen uit de vorm van uw pieken, niet uit uw jaarverbruik. Daarna gaan er nog drie correcties over de uitkomst: de bruikbare diepte, het rondgangsrendement en de capaciteit die aan het eind van de ontwerpperiode nog nodig is.",
+  "data_pagina": "kennis",
+  "kruimels": [{ "naam": "Kennisbank", "route": "kennis" }],
+  "kruimel_label": "Batterij dimensioneren",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw batterijmaat doorrekenen" },
+    { "soort": "ghost", "anker": "#rekenvoorbeeld", "label": "Direct naar het rekenvoorbeeld" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Hoe dimensioneert u een zakelijke batterij?",
+    "antwoord": "Een zakelijke batterij wordt gedimensioneerd op het kwartiersprofiel van de aansluiting, niet op het jaarverbruik. Het benodigde vermogen in kW volgt uit de hoogte van de piek boven de grens die de netafname niet mag overschrijden. De benodigde energie in kWh volgt uit de oppervlakte boven die grens: de overschrijding maal de duur ervan. Op die uitkomst komen drie correcties. Niet de hele nominale capaciteit is bruikbaar, want de besturing houdt de laadtoestand tussen een boven- en een ondergrens. Een deel van de energie gaat verloren bij laden en ontladen. En de bruikbare capaciteit neemt over de levensduur af. Pas daarna staat de nominale capaciteit vast die geplaatst moet worden.",
+    "voorbehoud": "Deze rekenwijze bepaalt de maat van een batterij, niet de waarde ervan. Of de uitkomst financieel rond komt, hangt af van tarieven, inzetstrategie en levensduur. Daarnaast verandert een batterij uw aansluitwaarde en uw gecontracteerd transportvermogen niet; hij maakt ruimte binnen wat er al ligt."
+  },
+
+  "secties": [
+    {
+      "soort": "specs",
+      "kop": "Zes grootheden die samen het ontwerp vastleggen",
+      "rijen": [
+        ["Vermogen (kW)", "Hoe hard het systeem kan laden en ontladen. Begrenst de hoogte van de piek die weggenomen kan worden. Dit getal komt van de omvormers, niet van het aantal modules."],
+        ["Nominale capaciteit (kWh)", "De energie die de modules op papier bevatten. Dit is het getal op het typeplaatje en in de prijs, en niet het getal waarmee u rekent."],
+        ["Bruikbare capaciteit (kWh)", "Het deel van die nominale capaciteit dat werkelijk ingezet mag worden. De begrenzing zit in de ontlaaddiepte die het systeem toestaat, plus de marge die de regelaar aanhoudt."],
+        ["C-rate", "Vermogen gedeeld door capaciteit, per uur. 1C is in één uur van vol naar leeg; 0,5C is in twee uur. Elk systeem heeft een maximum, en dat maximum begrenst welke verhouding kW op kWh te bouwen is."],
+        ["Rondgangsrendement", "Het deel van de ingeladen energie dat er aan de andere kant weer uit komt. Het verschil blijft achter in de cellen en in de omzetting door de omvormer. Het eigen verbruik van de kast staat hier los van en hoort apart te worden afgetrokken, anders rekent u die post twee keer mee."],
+        ["Degradatiereserve", "De extra capaciteit die u nu plaatst om aan het eind van de ontwerpperiode nog te kunnen doen wat u vandaag wilt."]
+      ],
+      "noot": "Een specificatie met alleen kWh zegt niets over de piek die weggenomen kan worden; een specificatie met alleen kW zegt niets over hoe lang dat lukt. Vraag altijd om beide, plus de toegestane C-rate, de ontlaaddiepte en het rondgangsrendement."
+    },
+    {
+      "soort": "tekst",
+      "id": "profiel",
+      "kop": "Het startpunt is het kwartiersprofiel, niet het jaarverbruik",
+      "lead": "Een jaartotaal middelt precies de informatie weg waar het ontwerp op rust.",
+      "alineas": [
+        "Een jaarverbruik in kWh is een totaal. Het zegt hoeveel energie er door de aansluiting is gegaan, en niets over de momenten waarop dat gebeurde. Precies die momenten bepalen de maat van een batterij. Twee locaties met hetzelfde jaartotaal kunnen pieken hebben die ver uiteenlopen, en dus een volstrekt ander systeem nodig hebben.",
+        "Het kwartiersprofiel is de reeks meetwaarden per kwartier van uw aansluiting. Elke zakelijke aansluiting met een telwerk op afstand heeft die reeks; uw leverancier of meetbedrijf levert hem als bestand. Daaruit blijkt per kwartier hoe hoog de afname was, en dus hoe hoog, hoe lang en hoe vaak u boven een gekozen grens uitkomt.",
+        "<h3>Drie dingen die alleen uit het profiel blijken</h3>",
+        "<ul><li><strong>Hoogte.</strong> De hoogste kwartierwaarde boven de gekozen grens. Dit is het vermogen dat de batterij moet kunnen leveren.</li><li><strong>Duur.</strong> Hoe lang de afname boven die grens blijft, en hoe ver zij er in die tijd gemiddeld boven zit. De gemiddelde overschrijding maal de duur in uren is de energie die de batterij moet kunnen afgeven. Rekenen met de piekhoogte in plaats van met het gemiddelde levert een systeem op dat te groot is, want de piek staat er maar één kwartier.</li><li><strong>Frequentie en spreiding.</strong> Hoe vaak de overschrijding voorkomt en hoeveel tijd er tussen twee overschrijdingen zit. Dat bepaalt of de batterij tussendoor kan bijladen.</li></ul>",
+        "Een jaar aan meetdata is daarbij het minimum. Een profiel van één maand mist het seizoen: een koelinstallatie piekt in de zomer, een warmtepomp in de winter, en een laadplein volgt de bezetting van het terrein. Wie op een zomermaand dimensioneert, komt in januari tekort.",
+        "En het profiel moet het toekomstige profiel zijn. Komen er laadpunten, een extra productielijn of elektrische heftrucks bij, dan hoort de verwachte belasting daarvan eerst bij het gemeten profiel te worden opgeteld, met een expliciete aanname over gelijktijdigheid. Dimensioneren op het verleden levert een systeem dat op de dag van oplevering al te klein is."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Van de vorm van de piek naar kW en kWh",
+      "lead": "Hoogte geeft vermogen, oppervlakte geeft energie, en het dal ertussen bepaalt of het werkt.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "De grens waaronder de netafname moet blijven is een ontwerpkeuze, geen natuurwet. Hoe lager u die grens legt, hoe meer uren er onder de piek vandaan moeten en hoe groter het systeem wordt. Hoe hoger u hem legt, hoe kleiner het systeem en hoe minder er bereikt wordt.",
+        "Die afweging is het eigenlijke ontwerpwerk, en er liggen drie verschillende kandidaat-grenzen op tafel: het gecontracteerd transportvermogen uit uw transportovereenkomst, de fysieke capaciteit van de aansluiting zoals die er ligt, en de waarde waarover het nettarief wordt afgerekend. Die drie vallen zelden samen. Welke u kiest bepaalt wat de batterij oplevert: ruimte binnen de aansluiting die er al ligt om nieuwe belasting aan te zetten, of een lagere afrekening.",
+        "Het vermogen volgt uit de hoogte: het verschil tussen de hoogste kwartierwaarde en de grens, in kW. De capaciteit volgt uit de oppervlakte: de gemiddelde overschrijding in kW maal de duur van die overschrijding in uren, en dat geeft kWh. Let op de eenheid: vier kwartieren zijn één uur, dus wie een aantal kwartieren rechtstreeks met kilowatts vermenigvuldigt komt vier keer te hoog uit. Verder is het rekenkunde op het profiel en niets meer.",
+        "Daarna komt een derde vraag die vaak wordt overgeslagen: wanneer laadt de batterij weer bij? De energie die eruit ging moet erin terug voordat de volgende overschrijding begint, en dat bijladen gebeurt via dezelfde aansluiting, dus onder dezelfde grens. Een profiel met één lange piek per dag en een rustige nacht is eenvoudig. Een profiel met drie pieken binnen één ploegendienst en nauwelijks dal ertussen vraagt óf meer vermogen om sneller bij te laden, óf meer capaciteit om twee pieken achter elkaar te kunnen dragen.",
+        "Daarom is de maatvoering nooit los te zien van de regelstrategie. Dezelfde installatie met een andere grens, een andere voorspelling en een andere voorrangsorde levert een ander resultaat. Hoe die afweging per kwartier wordt gemaakt, staat bij <a class=\"ve-link\" href=\"/vibe-control\">de sturing</a>."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Nominaal is niet bruikbaar",
+      "lead": "Tussen het getal op het typeplaatje en de kWh die u kunt inzetten zitten drie aftrekposten.",
+      "alineas": [
+        "<h3>Ontlaaddiepte</h3>",
+        "Een batterij die volledig leeg wordt getrokken en volledig vol wordt geladen, veroudert sneller. Daarom begrenst de besturing de boven- en de ondergrens van de laadtoestand. Het venster tussen die twee grenzen is de ontlaaddiepte; dat is een percentage, en de kWh binnen dat venster is de bruikbare capaciteit waarmee u rekent. Vraag de leverancier welk deel van de nominale capaciteit het systeem vrijgeeft, en of die grens vast is of instelbaar — want een ruimere grens koopt u met een kortere levensduur.",
+        "<h3>Eigen verbruik van het systeem</h3>",
+        "Koeling of verwarming van de kast, de besturing en de omvormers in stand-by gebruiken zelf energie, en in een koude of een warme week meer dan in een milde. Dat verbruik gaat ten koste van wat er netto beschikbaar is en hoort dus in de berekening, niet in de voetnoot.",
+        "<h3>Rondgangsrendement</h3>",
+        "Het rondgangsrendement zegt hoeveel van de ingeladen kWh er weer uit komt. Het verlies zit in de cellen en in de dubbele omzetting door de omvormer: van wisselspanning naar gelijkspanning bij laden en terug bij ontladen. Vraag of het opgegeven rendement het eigen verbruik van de kast al bevat; zit dat er niet in, dan komt het er bovenop en moet u het niet twee keer aftrekken. Voor de maatvoering betekent dit dat u iets meer moet inladen dan u wilt afgeven. Voor de businesscase betekent het meer.",
+        "Bij piekafvlakking is dat verlies een bijzaak: de waarde zit in het vermogen dat u niet hoeft te contracteren, en de verloren kWh zijn een kleine kostenpost. Bij prijsgestuurd laden en ontladen is het verlies hoofdzaak: het prijsverschil tussen laden en ontladen moet eerst het rendementsverlies en de verouderingskosten van die cyclus dekken voordat er iets overblijft. Hetzelfde systeem kan op de ene taak uit komen en op de andere niet.",
+        "<h3>De C-rate als bovengrens op de verhouding</h3>",
+        "Ten slotte begrenst de C-rate welke verhouding tussen kW en kWh te bouwen is. Een hoge, korte piek vraagt veel kW op weinig kWh, en dus een hoge C-rate. Ligt die boven wat het systeem continu toelaat, dan is er maar één uitweg: meer capaciteit plaatsen dan u voor de energie nodig heeft, alleen om het vermogen te kunnen leveren. Dat is geen fout in het ontwerp, maar de reden dat een piekbatterij soms groter uitvalt dan de rekensom op de energie suggereert."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "rekenvoorbeeld",
+      "kop": "Een rekenvoorbeeld, stap voor stap",
+      "lead": "Zes stappen van een gemeten piek naar de capaciteit die u plaatst.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "<p><strong>Alle getallen hieronder zijn gekozen om de rekenstap te laten zien. Dit is een voorbeeld, geen meting en geen aanbeveling. Uw eigen profiel levert andere uitkomsten.</strong></p>",
+        "Neem een locatie waarvan de netafname onder 120 kW moet blijven. Uit het kwartiersprofiel komt een werkdagpiek in de late middag: acht opeenvolgende kwartieren boven die grens, met als hoogste kwartierwaarde 190 kW en een gemiddelde overschrijding van 40 kW over die twee uur.",
+        "<h3>Stap 1 — vermogen uit de hoogte</h3>",
+        "190 kW min 120 kW is 70 kW. Dat is wat de batterij op het zwaarste kwartier moet kunnen leveren. Levert hij minder, dan komt de afname alsnog boven de grens uit en is het doel niet gehaald.",
+        "<h3>Stap 2 — energie uit de oppervlakte</h3>",
+        "Acht kwartieren zijn twee uur. Een gemiddelde overschrijding van 40 kW gedurende twee uur is 80 kWh. Dat is de energie die de batterij tijdens die piek moet afgeven.",
+        "<h3>Stap 3 — van bruikbaar naar nominaal</h3>",
+        "Die 80 kWh is de bruikbare capaciteit, niet de maat op het typeplaatje. Stel dat het systeem in dit voorbeeld 90% van de nominale capaciteit vrijgeeft. Dan hoort bij een afgifte van 80 kWh een nominale capaciteit van 80 gedeeld door 0,90, dus ongeveer 89 kWh. Het eigen verbruik van de kast is hier buiten beschouwing gelaten om de stap leesbaar te houden; in een echte berekening komt die post er nog bij.",
+        "<h3>Stap 4 — de degradatiereserve</h3>",
+        "De batterij moet dit niet alleen in het eerste jaar kunnen, maar ook aan het eind van de periode waarvoor u hem aanschaft. Rekent u in dit voorbeeld met 80% resterende bruikbare capaciteit op dat moment, dan wordt het 89 gedeeld door 0,80, dus ongeveer 111 kWh nominaal. Dat is de maat die u vandaag plaatst.",
+        "<h3>Stap 5 — het herlaadvenster</h3>",
+        "Die 80 kWh moet voor de volgende werkdag weer in de batterij. Met een rondgangsrendement van 88% in dit voorbeeld kost dat ongeveer 91 kWh aan laadenergie, en bij een laadvermogen van 70 kW duurt dat ruim een uur onafgebroken. Die 70 kW moet bovendien zelf onder de grens van 120 kW passen: de rest van de locatie mag op dat moment niet meer dan 50 kW vragen. Heeft het profiel dat dal niet, dan gaat u terug naar stap 1 met een hogere grens of een andere verdeling tussen vermogen en capaciteit.",
+        "<h3>Stap 6 — de verhouding controleren</h3>",
+        "70 kW op 111 kWh is een C-rate van ongeveer 0,6 per uur. Ligt dat binnen wat het systeem continu toestaat, dan is het ontwerp consistent. Zo niet, dan plaatst u meer capaciteit dan de energieberekening vraagt.",
+        "De uitkomst van dit voorbeeld is dus geen batterij van 80 kWh, maar ruim 110 kWh nominaal met 70 kW omvormervermogen — en dat alleen voor deze ene taak, op deze ene grens. Wie de stappen 3 tot 5 overslaat, bestelt een systeem dat op papier klopt en in het veld tekortkomt."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Eén batterij, meerdere taken die om dezelfde kWh concurreren",
+      "lead": "Een batterij kan veel, maar niet alles op hetzelfde moment.",
+      "alineas": [
+        "Elke taak legt beslag op twee schaarse dingen: op vermogen in kW op dat moment, en op laadtoestand in kWh op dat moment. Wie vier taken op één systeem legt zonder voorrangsorde, krijgt een installatie die op het beslissende kwartier leeg of vol blijkt te staan.",
+        "<h3>De taken en wat ze opeisen</h3>",
+        "<ul><li><strong>Piek afvlakken</strong> — vraagt dat er op het moment van de piek genoeg lading én genoeg vermogen over is. Dat betekent een ondergrens in de laadtoestand die in de uren vóór de verwachte piek niet mag worden aangeraakt.</li><li><strong>Eigen opwek bewaren</strong> — vraagt vrije ruimte midden op de dag, precies wanneer de piekreserve de batterij liefst gevuld houdt.</li><li><strong>Prijsgestuurd laden en ontladen</strong> — vraagt de vrijheid om vol en leeg te gaan wanneer de prijs dat zegt, en dat is precies de vrijheid die een piekreserve wegneemt.</li><li><strong>Laadondersteuning</strong> — vraagt vermogen op onvoorspelbare momenten, afhankelijk van wie er aankomt en met welke laadbehoefte.</li><li><strong>Overbrugging bij uitval</strong> — vraagt een vaste hoeveelheid lading die permanent gereserveerd blijft en dus nooit voor iets anders beschikbaar is.</li></ul>",
+        "De consequentie voor het dimensioneren is eenvoudig en wordt zelden expliciet gemaakt: bepaal welke taak de eerste is, dimensioneer op die taak, en kijk daarna wat de overige taken nog mogen gebruiken van wat er overblijft. Een systeem dat op de som van alle taken wordt gedimensioneerd is te duur. Een systeem dat op de goedkoopste taak wordt gedimensioneerd haalt de belangrijkste niet.",
+        "Die voorrangsorde is geen papieren afspraak. Hij zit in de regelaar, die per kwartier afweegt welke rol voorgaat, en hij hoort vóór de aanschaf vast te staan omdat hij de maat van het systeem bepaalt. Op de Hazenweg 61 in Hengelo staan opslag, een zonnedak, laadpunten en noodstroom onder één energiemanagementsysteem; dat is het type situatie waarin die orde expliciet gemaakt moet worden. <a class=\"ve-link\" href=\"/project-hazenweg-61\">Bekijk dat project</a>."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Degradatie hoort in de maatvoering, niet in de verrassing",
+      "lead": "De vraag is niet of de capaciteit afneemt, maar met welke restcapaciteit u aan het eind nog moet kunnen werken.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "De bruikbare capaciteit van een batterij neemt af. Dat verloop is niet rechtlijnig en het hangt af van hoe u hem gebruikt: hoe diep u ontlaadt, hoe vaak per dag, bij welk vermogen en bij welke temperatuur. Voor het ontwerp doen maar twee vragen mee. Hoeveel capaciteit wilt u aan het eind van de periode nog kunnen inzetten, en hoe komt u daar?",
+        "<h3>Drie manieren om dat op te vangen</h3>",
+        "<ul><li><strong>Nu ruimer plaatsen.</strong> U plaatst meteen de capaciteit die aan het eind nog nodig is. Dat kost in het begin meer, en in de eerste jaren heeft u capaciteit over die u aan een tweede taak kunt geven.</li><li><strong>Later uitbreiden.</strong> U plaatst wat u nu nodig heeft en houdt ruimte, bekabeling en omvormervermogen vrij om later modules bij te zetten. Dat vraagt dat de opstelling daar bij het ontwerp al op is ingericht, want achteraf is het een verbouwing.</li><li><strong>De taak laten meeschalen.</strong> Bij sommige toepassingen mag de prestatie met de capaciteit meelopen; dan accepteert u dat de grens over de jaren iets omhoog kruipt. Bij een harde grens op de aansluiting kan dat niet.</li></ul>",
+        "Wat u ook kiest: de aanname over de resterende capaciteit hoort in de berekening te staan, met het jaartal waarvoor hij geldt en het gebruikspatroon waarop hij is gebaseerd. Diepe dagelijkse cycli bij hoog vermogen vragen een grotere reserve dan een paar ondiepe cycli per week. Een restcapaciteit zonder jaartal en zonder gebruikspatroon is geen aanname maar een hoop.",
+        "Hoe degradatie technisch werkt, welke mechanismen eraan bijdragen en hoe de resterende capaciteit gemeten wordt, hoort bij een ander onderwerp dan de maatvoering. Dat staat in het artikel over batterijdegradatie."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dimensioneren niet oplost",
+      "lead": "De eerlijke grens van deze rekenwijze.",
+      "alineas": [
+        "Een goed gedimensioneerde batterij lost een piekprobleem op. Hij lost geen tekort op. Komt uw <strong>gemiddelde</strong> afname over de dag boven de grens van de aansluiting uit, dan helpt geen enkele capaciteit: wat er 's nachts niet in kan, kan er 's middags niet uit. Dan is verzwaren de route, of het verbruik minder gelijktijdig maken.",
+        "De maatvoering verandert ook niets aan uw aansluitwaarde of aan uw gecontracteerd transportvermogen. Die blijven wat ze zijn tot u ze zelf laat wijzigen. Een batterij maakt ruimte binnen die grens; hij verlegt de grens niet.",
+        "Eén extreme uitschieter per jaar is bijna nooit een reden om op te dimensioneren. Een systeem dat urenlang het dubbele moet dragen, enkel om een storing of een eenmalige testrun op te vangen, staat de rest van het jaar stil. Zulke uitschieters horen eerst uit het profiel gehaald en apart beoordeeld te worden: is dit herhaalbaar gedrag, of was dit een incident?",
+        "En een ontwerp zonder meetdata is een gok. Een dimensionering op basis van een jaarverbruik, een aansluitwaarde en een aangenomen piekvorm levert een getal dat plausibel oogt en niets betekent. De uitkomst hangt volledig aan het profiel van de aansluiting zelf, en dat is dus waar wij beginnen."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Wat hier net buiten valt",
+      "lead": "Deze pagina gaat over de maat. Vier onderwerpen die eraan vastzitten, staan apart.",
+      "kaarten": [
+        { "kop": "kW of kWh", "tekst": "Het onderscheid tussen vermogen en energie, en waar u welk getal tegenkomt in uw contracten en specificaties.", "route": "kennis/kw-versus-kwh", "label": "kW versus kWh" },
+        { "kop": "Peak shaving", "tekst": "Hoe de grens wordt gekozen en hoe de regelaar hem bewaakt — de strategie waar de maatvoering uit volgt.", "route": "kennis/peak-shaving", "label": "Peak shaving" },
+        { "kop": "Batterijdegradatie", "tekst": "Waarom de bruikbare capaciteit afneemt, welke factoren dat versnellen en hoe restcapaciteit wordt vastgesteld.", "route": "kennis/batterijdegradatie", "label": "Batterijdegradatie" },
+        { "kop": "Businesscase batterij", "tekst": "Wat de gekozen maat kost en opbrengt: tarieven, inzeturen, rendementsverlies en verouderingskosten per cyclus.", "route": "kennis/businesscase-batterij", "label": "Businesscase batterij" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Veelgestelde vragen over dimensioneren",
+  "faq": [
+    {
+      "vraag": "Kan ik een batterij dimensioneren op mijn jaarverbruik?",
+      "antwoord": "Nee. Een jaarverbruik in kWh middelt precies weg waar het ontwerp op rust: de hoogte, de duur en de frequentie van de pieken. Twee locaties met hetzelfde jaartotaal kunnen een heel verschillend systeem nodig hebben. Het kwartiersprofiel van de aansluiting is het startpunt, bij voorkeur over een volledig jaar."
+    },
+    {
+      "vraag": "Wat betekent een C-rate?",
+      "antwoord": "De verhouding tussen vermogen en capaciteit, per uur. Een systeem dat in één uur van vol naar leeg kan, werkt op 1C; in twee uur is dat 0,5C. Elk systeem heeft een maximum dat het continu aankan, en dat maximum begrenst hoeveel kW u op een gegeven aantal kWh kunt zetten."
+    },
+    {
+      "vraag": "Waarom is de bruikbare capaciteit kleiner dan de nominale?",
+      "antwoord": "Omdat de besturing de laadtoestand tussen een boven- en een ondergrens houdt: volledig vol en volledig leeg versnelt de veroudering. Daarnaast gebruikt het systeem zelf energie voor koeling en besturing. Reken daarom met de bruikbare capaciteit die de leverancier opgeeft, niet met het getal op het typeplaatje."
+    },
+    {
+      "vraag": "Hoeveel capaciteit moet ik extra plaatsen voor degradatie?",
+      "antwoord": "Dat volgt uit twee dingen: de periode waarover u de prestatie wilt vasthouden, en het gebruikspatroon dat u de batterij geeft. Diepe dagelijkse cycli bij hoog vermogen vragen een grotere reserve dan een paar ondiepe cycli per week. De aanname hoort met jaartal en gebruikspatroon in de berekening te staan, niet als los percentage."
+    },
+    {
+      "vraag": "Kan één batterij piekafvlakking en prijsgestuurde inzet combineren?",
+      "antwoord": "Technisch wel, maar niet gratis. Piekafvlakking vraagt dat er lading gereserveerd blijft voor het moment van de piek; prijsgestuurde inzet vraagt juist de vrijheid om vol en leeg te gaan. In een werkbaar ontwerp is één taak leidend en gebruiken de andere wat er overblijft, met een voorrangsorde die in de regelaar is vastgelegd."
+    },
+    {
+      "vraag": "Wat heeft u nodig om dit voor mijn locatie te rekenen?",
+      "antwoord": "Het kwartiersprofiel van de aansluiting over minimaal een jaar, uw aansluitwaarde en uw gecontracteerd transportvermogen, en de belasting die u nog wilt toevoegen: laadpunten, machines, koeling, met een aanname over gelijktijdigheid. Daar volgt de haalbare grens uit, en daaruit het vermogen en de capaciteit."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Verder in de kennisbank",
+      "items": [
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/batterijdegradatie", "naam": "Batterijdegradatie" },
+        { "route": "kennis/businesscase-batterij", "naam": "Businesscase batterij" },
+        { "route": "kennis/batterijveiligheid", "naam": "Batterijveiligheid" },
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Energiemanagementsysteem" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "netcongestie", "naam": "Netcongestie" }
+      ]
+    },
+    {
+      "kop": "Waar dit speelt",
+      "items": [
+        { "route": "toepassingen/pieken-in-verbruik", "naam": "Pieken in verbruik" },
+        { "route": "toepassingen/batterij-slim-inzetten", "naam": "Batterij slim inzetten" },
+        { "route": "toepassingen/geen-extra-transportvermogen", "naam": "Geen extra transportvermogen" },
+        { "route": "projecten", "naam": "Projecten" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Uw profiel, niet een vuistregel",
+    "tekst": "Stuur het kwartiersprofiel van uw aansluiting en de belasting die u nog wilt toevoegen. Wij rekenen de haalbare grens, het benodigde vermogen en de bruikbare capaciteit door, inclusief de correcties voor ontlaaddiepte, rendement en degradatie. Komt er geen werkbare maat uit, dan zeggen we dat.",
+    "primair": { "route": "contact", "label": "Laat uw batterijmaat doorrekenen" },
+    "secundair": { "route": "systeem-energieopslag", "label": "Over energieopslag" }
+  },
+
+  "claims": []
+}

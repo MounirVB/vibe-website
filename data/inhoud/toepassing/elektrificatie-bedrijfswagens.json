@@ -1,0 +1,226 @@
+{
+  "route": "toepassingen/elektrificatie-bedrijfswagens",
+  "type": "toepassing",
+  "titel": "Bedrijfswagens en wagenpark elektrificeren | Vibe Energy",
+  "beschrijving": "Bedrijfswagens elektrificeren raakt eerst de aansluiting. Van ritprofiel naar energie per voertuig per dag, en waarom het laadvenster het vermogen bepaalt.",
+  "og_titel": "Bedrijfswagens elektrificeren: eerst de aansluiting",
+  "h1": "Uw bedrijfswagens worden elektrisch. Uw aansluiting weet dat nog niet.",
+  "lead": "Een wagenpark dat elektrisch wordt, verplaatst zijn energievraag van de tankpas naar uw netaansluiting — en wel in de uren dat de voertuigen stilstaan. Daarom begint een laadplan niet bij het aantal laadpunten, maar bij het ritprofiel en het laadvenster.",
+  "data_pagina": "toepassingen",
+  "kruimels": [{ "naam": "Toepassingen", "route": "toepassingen" }],
+  "kruimel_label": "Elektrificatie bedrijfswagens",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Laadinfrastructuur voor een elektrisch wagenpark",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw laadplan doorrekenen" },
+    { "soort": "ghost", "anker": "#rekenen", "label": "Direct naar de rekengang" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat betekent het elektrificeren van bedrijfswagens voor de netaansluiting?",
+    "antwoord": "Een elektrisch wagenpark verplaatst de energievraag van de tankpas naar de netaansluiting, en wel in een smal tijdvak. De benodigde energie per voertuig per dag volgt uit het ritprofiel: dagkilometers maal het verbruik per kilometer. Het benodigde vermogen volgt uit die energie gedeeld door het aantal uren dat het voertuig op eigen terrein staat. Daarom is het laadvenster bepalend en niet de grootte van het accupakket: hetzelfde pakket vraagt in een hele nacht een fractie van het vermogen dat het in twee uur vraagt. Wie eerst het venster en de gelijktijdigheid vastlegt, weet hoeveel vermogen de aansluiting werkelijk moet dragen — en hoeveel laadpunten daarbij horen.",
+    "voorbehoud": "Dit antwoord zegt niets over de kosten per laadpunt en niets over de vraag of uw voedingsgebied ruimte heeft voor extra transportvermogen. Het zegt ook niet dat laden binnen de bestaande aansluiting altijd kan: of dat lukt, blijkt uit het kwartiersprofiel van de locatie en uit het ritprofiel van het wagenpark."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "aansluiting-eerst",
+      "kop": "De laadvraag raakt de aansluiting eerder dan de begroting",
+      "lead": "Niet omdat laden duur is, maar omdat de aansluiting de enige factor is waar u niet over gaat.",
+      "alineas": [
+        "Een dieselwagenpark haalt zijn energie uit een tank. Die tank wordt bij een pomp gevuld, met een vermogen dat nergens in uw gebouw zichtbaar is. Zodra dezelfde voertuigen elektrisch rijden, loopt al die energie door uw meterkast, in de uren dat de auto's stilstaan. De hoeveelheid energie per jaar is daarbij zelden het knelpunt. Het knelpunt is dat die energie door één aansluiting moet, binnen een venster van een paar uur, bovenop de last die het pand zelf al heeft.",
+        "Daar komt bij dat een laadpunt zich anders gedraagt dan de rest van uw gebouw. Verlichting, klimaat en kantoorapparatuur vormen samen een vrij vlakke last die langzaam op en af beweegt. Een ongestuurde laadsessie gedraagt zich als een schakelaar: het voertuig trekt het maximum dat het laadpunt vrijgeeft, of niets. Dat vermogen is wel te doseren, maar alleen wanneer er sturing op zit. Zonder sturing vormen tien voertuigen die om half zes allemaal aan de stekker gaan geen vlakke last maar één blok, en dat blok komt boven op de avondlast van het pand.",
+        "Daarom loopt dit traject bijna altijd op de aansluiting vast voordat het op de begroting vastloopt. Wat een laadpunt kost, kunt u zelf beslissen en desnoods faseren. Of u extra transportvermogen krijgt, beslist de netbeheerder, en in een voedingsgebied met congestie kan dat antwoord luiden dat er op korte termijn niets bij kan. Dat is een andere soort beperking: geen bedrag dat u kunt bijleggen, maar een grens die er staat.",
+        "De bruikbare consequentie is een omgekeerde vraagstelling. Begin niet bij het aantal laadpunten dat u wilt, maar bij het vermogen dat het wagenpark gelijktijdig nodig heeft. Het aantal punten volgt uit het vermogen en het venster. Andersom werkt het niet."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Wat wij per voertuig nodig hebben om te rekenen",
+      "rijen": [
+        ["Dagkilometers, niet het gemiddelde", "Het jaargemiddelde zegt weinig. Het ontwerp volgt uit de drukke dag die regelmatig terugkomt. Een rit die één keer per jaar voorkomt hoort niet in het ontwerp, maar in de uitwijk."],
+        ["Verbruik per kilometer", "Uit de voertuigdata of de leasespecificatie, inclusief de invloed van lading, koeling en winter. Dit getal bepaalt de energie per dag — niet het laadvermogen."],
+        ["Standtijd op eigen terrein", "Het moment van terugkomst en het moment van vertrek. Het verschil ertussen is het laadvenster. Dit is het getal dat het vermogen bepaalt."],
+        ["Spreiding van terugkomst", "Komen alle voertuigen binnen het halfuur terug, of druppelen ze over een paar uur binnen? Dit is de gelijktijdigheid, en die is meestal te beïnvloeden zonder techniek."],
+        ["Vermogen van de boordlader", "Een voertuig neemt op wisselstroom nooit meer op dan zijn eigen lader toestaat. Een zwaarder laadpunt maakt zo'n voertuig niet sneller vol en levert alleen een hogere aansluitvraag op papier."],
+        ["Minimale vertrekstand", "Hoeveel bereik moet er bij vertrek in staan? Elk voertuig volledig vol willen hebben is een eis die vermogen kost en die vaak niet nodig is."]
+      ],
+      "noot": "Deze zes gegevens vormen samen het laadprofiel van het wagenpark. Pas daarna is de vraag welke laadpunten erbij horen zinvol te beantwoorden."
+    },
+    {
+      "soort": "tekst",
+      "id": "rekenen",
+      "kop": "Van ritprofiel naar energie per voertuig per dag",
+      "lead": "Drie stappen, en elke stap gebruikt een getal dat u zelf kunt meten.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Dagkilometers maal verbruik per kilometer geeft de energie per voertuig per dag, in kWh. Die energie gedeeld door de uren van het laadvenster geeft het gemiddelde vermogen per voertuig, in kW. Het aantal voertuigen dat gelijktijdig laadt maal dat vermogen geeft de belasting die de aansluiting ziet.",
+        "<h3>Rekenvoorbeeld met aangenomen getallen</h3>",
+        "<p>De getallen hieronder zijn aannames om de rekengang te laten zien. Het zijn geen metingen, geen norm en geen uitkomst van een project.</p>",
+        "<ul><li>Acht bestelwagens, elk 150 km op een drukke dag, bij een aangenomen verbruik van 0,30 kWh per kilometer: 45 kWh per voertuig per dag.</li><li>Samen dus 360 kWh per nacht.</li><li>Een laadvenster van 18:00 tot 06:00 is twaalf uur: gemiddeld 30 kW.</li><li>Maar acht laadpunten van elk 11 kW die om 18:00 tegelijk starten, vragen 88 kW gedurende ruim vier uur — en daarna niets.</li></ul>",
+        "Hetzelfde wagenpark, dezelfde energie, bijna een factor drie verschil in vermogen. Het eerste getal is wat u nodig heeft. Het tweede is wat u krijgt wanneer niemand de sessies spreidt. Dat verschil is precies waar een laadprofiel en <a class=\"ve-link\" href=\"kennis/load-balancing\">load balancing</a> over gaan.",
+        "Let in deze rekengang op de twee eenheden. De 360 kWh is energie en bepaalt uw verbruik. De 88 kW is vermogen en bepaalt of de aansluiting het houdt. Een probleem met kW lost u niet op met minder kWh; zie <a class=\"ve-link\" href=\"kennis/kw-versus-kwh\">kW versus kWh</a>.",
+        "Nog twee correcties horen in de rekengang thuis, anders valt het ontwerp aan de krappe kant uit. Laden kent verlies, dus er gaat meer in de aansluiting dan er in de accu aankomt. En de laadcurve is niet vlak: een voertuig neemt het laatste stuk van zijn pakket langzamer op. Rekent u met vol vermogen tot het einde van de sessie, dan valt het echte laadvenster langer uit dan op papier."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Het laadvenster is bepalend, niet het accupakket",
+      "lead": "Een groter pakket geeft meer bereik. Het vraagt niet automatisch meer laadvermogen.",
+      "alineas": [
+        "Wat vermogen vraagt, is de combinatie van de energie die erin moet en de tijd die daarvoor is. Hetzelfde pakket dat in een hele nacht gevuld mag worden, vraagt een fractie van het vermogen van dat pakket in twee uur. Het accupakket bepaalt dus uw bereik en uw actieradius; het laadvenster bepaalt uw aansluiting.",
+        "Daarmee is de eerste echte ontwerpkeuze niet technisch maar logistiek: hoe lang staat een voertuig op uw terrein, en wanneer precies? Drie situaties met hetzelfde wagenpark leveren drie verschillende installaties op.",
+        "<ul><li><strong>Eén dienst, nacht vrij.</strong> Voertuigen komen in de middag terug en vertrekken in de ochtend. Een lang venster, dus laag vermogen per punt. Dit is het gunstigste geval: het venster is lang genoeg om de sessies achter elkaar te zetten in plaats van naast elkaar.</li><li><strong>Twee diensten.</strong> Een voertuig staat twee uur tussen twee ritten. Dezelfde kWh in een fractie van de tijd. Hier verschuift de vraag naar hoger vermogen per punt, en soms naar gelijkstroomladen op een deel van de plekken.</li><li><strong>Onvoorspelbare terugkomst.</strong> Servicebussen die over de hele middag en avond binnendruppelen. Het venster is lang, maar de spreiding is onbekend. Dan is sturing belangrijker dan vermogen.</li></ul>",
+        "Wie het venster vastlegt voordat hij laadpunten kiest, dimensioneert op het vermogen dat het venster vraagt. Wie laadpunten kiest en daarna naar het venster kijkt, dimensioneert op de som van die punten en komt uit op een installatie die een paar uur per etmaal vol staat en de rest van de tijd stil — met een aansluitvraag die op die paar uur is gebaseerd.",
+        "Een tweede winst zit in de laadstrategie per voertuig. Niet elk voertuig hoeft om zes uur 's ochtends vol te zijn. Een voertuig dat die dag een korte route rijdt, kan achteraan in de rij. Dat vraagt dat het systeem weet welke vertrekstand nodig is, en dat is een afspraak tussen de ritplanning en de sturing — geen instelling op het laadpunt. Hoe u van laadprofiel naar een aantal punten en een vermogen per punt komt, staat in <a class=\"ve-link\" href=\"kennis/laadinfrastructuur-dimensioneren\">laadinfrastructuur dimensioneren</a>."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Gefaseerd elektrificeren: de aansluiting knelt in stappen",
+      "lead": "De grens komt niet geleidelijk in zicht. Hij komt op één lichting voertuigen.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Een wagenpark gaat zelden in één keer over: leasecontracten lopen op verschillende momenten af, en in lichtingen overstappen spreidt de investering. Maar fasering heeft één eigenschap die laat opvalt: de aansluiting knelt niet mee met de fasering, hij knelt op één stap.",
+        "De eerste voertuigen passen in de ruimte die er toevallig nog is. Ze laden op vol vermogen, want er is plek, en dat werkt. Bij de volgende lichting ook nog. En dan komt er een lichting waarbij de som van de laadlast en de pandlast op een koude dinsdagavond boven de grens uitkomt. Op dat moment is er geen tijd meer: de voertuigen staan er al, de ritten zijn al ingepland, en een aanvraag voor extra transportvermogen kan in een congestiegebied lang duren.",
+        "Twee maatregelen voorkomen dat.",
+        "<ul><li><strong>Reken de eindsituatie door voordat fase één wordt aangelegd.</strong> Niet om alles meteen te plaatsen, maar om te weten op welke stap de grens in zicht komt en wat er op die stap moet gebeuren: spreiden, begrenzen, opslag bijzetten of toch verzwaren. Een stap waarvan u het antwoord kent, is geen verrassing.</li><li><strong>Leg kabel en verdeling op de eindsituatie aan, en de laadpunten per fase.</strong> Het graafwerk, de kabel en de centrale verdeling zijn het duurste en het meest storende deel van een laadplein. Dat twee of drie keer doen kost meer dan het in één keer op de eindsituatie leggen. De laadpunten zelf zijn juist het eenvoudigst bij te plaatsen.</li></ul>",
+        "Houd er ook rekening mee dat een piek een contractgevolg heeft. Eén gelijktijdige laadpiek kan het vermogen bepalen waarop uw transportcontract wordt afgerekend, en dat werkt door in de maanden daarna. Een fase die technisch nog net past, kan dus toch een kostenstap zijn.",
+        "En kijk vóór fase één op de Capaciteitskaart van Netbeheer Nederland wat er in uw voedingsgebied beschikbaar is. Als verzwaren bij fase drie de enige route blijkt, wilt u dat niet bij fase drie ontdekken. Let bij het lezen op twee dingen: een voedingsgebied is een verzameling postcodes rond één onderstation en geen gemeente, dus de status geldt voor uw postcode en niet voor uw plaats. En de jaartallen bij geplande netuitbreidingen zijn planningen, geen toezeggingen.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "Twee veelgenoemde uitwegen verschuiven het capaciteitsprobleem in plaats van het weg te nemen. En opslag op het terrein doet minder dan er vaak van wordt verwacht.",
+      "alineas": [
+        "<h3>Thuisladen bij medewerkers</h3>",
+        "Thuisladen is nuttig, en voor een personenauto met een vaste bestuurder vaak het goedkoopste laadpunt dat er is. Alleen lost het uw capaciteitsvraag niet op: het verplaatst hem. Het vermogen gaat dan door de aansluiting van de medewerker en door hetzelfde regionale net, op het moment dat de woonwijk zelf piekt. Daarnaast levert het drie praktische beperkingen op. U heeft geen zeggenschap over het moment van laden, u heeft meetgegevens en een verrekening per laadsessie nodig, en het werkt niet voor voertuigen die aan het eind van de dag op het bedrijfsterrein moeten staan. Een bestelwagen met gereedschap of lading gaat niet mee naar huis.",
+        "<h3>Onderweg laden</h3>",
+        "Openbaar snelladen kost per kWh meer dan laden op eigen terrein — in dat tarief zit de laadinfrastructuur van een derde partij — en het kost bovendien betaalde tijd van een bestuurder. Het is afhankelijk van de beschikbaarheid op dat moment en op die plek, en het staat haaks op planbaarheid. Als uitwijk voor de uitzonderlijke rit is het precies goed; als basis onder de dagelijkse laadbehoefte van een wagenpark is het een verborgen kostenpost en een planningsrisico. Bovendien verdwijnt uw meetgegeven: u ziet niet meer wat een voertuig werkelijk nodig heeft, en dus ook niet waarop u moet dimensioneren.",
+        "<h3>En wat opslag op het terrein niet doet</h3>",
+        "Een batterij vangt de gelijktijdigheid van een laadplein op en maakt ruimte binnen de aansluiting die er al ligt. Hij verhoogt uw aansluitwaarde niet en hij creëert geen extra gecontracteerd transportvermogen. Komt uw gemiddelde vraag over het laadvenster boven wat de aansluiting kan leveren, dan helpt opslag ook niet: een batterij verschuift energie in de tijd, hij maakt geen energie. In dat geval is verzwaren de route, eventueel met een tijdelijke voorziening zolang dat duurt.",
+        "Tot slot: niets hiervan is vooraf vast te stellen zonder te meten. Het kwartiersprofiel van de aansluiting en het ritprofiel van het wagenpark zijn de twee bestanden waar dit op draait. Zonder die twee is elk laadplan een aanname, en aannames komen in dit dossier laat en duur terug."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Binnen een bestaande aansluiting, gerealiseerd",
+      "lead": "Twee locaties waar het laden naast de last van het pand op de bestaande aansluiting moest blijven passen, en één waar opslag de piekvraag opvangt. Wat er per locatie staat, leest u op de projectpagina.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "kaarten": [
+        { "kop": "Hedin Amsterdam", "tekst": "Autobedrijf in Amsterdam waar de bestaande aansluiting de rem op de groei was. Met opslag en sturing kwam er ruimte voor het laden van gebruikers en bedrijfswagens.", "route": "project-hedin-amsterdam", "label": "Bekijk het project" },
+        { "kop": "Ratio 16, Duiven", "tekst": "Bedrijfspand in Duiven waar het laadplein voor de huurder binnen het bestaande transportvermogen moest blijven, naast eigen opwek en opslag op dezelfde aansluiting.", "route": "project-ratio-16", "label": "Bekijk het project" },
+        { "kop": "Hedin Alkmaar", "tekst": "Vestiging in Alkmaar waar energieopslag is bijgezet zodat het pand ook bij hoge vraag vermogen houdt, met sturing op de bestaande zonnepaneelinstallatie.", "route": "project-hedin-alkmaar", "label": "Bekijk het project" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar deze vraag aan grenst",
+      "lead": "Het wagenpark is één kant van de zaak. Dit zijn de pagina's voor de rest.",
+      "kaarten": [
+        { "kop": "De sector", "tekst": "Transport, bezorging en wagenparken: de laadlogistiek per dienstrooster en per depot.", "route": "sectoren/transport-en-wagenparken", "label": "Transport en wagenparken" },
+        { "kop": "De hardware", "tekst": "Laadpunten, verdeling en sturing als één installatie, in plaats van losse palen op een terrein.", "route": "systeem-laadpalen", "label": "Laadinfrastructuur" },
+        { "kop": "Meer dan een paar plekken", "tekst": "Een laadplein met meerdere punten op één aansluiting, inclusief verdeling en begrenzing.", "route": "laadplein", "label": "Laadplein" },
+        { "kop": "De aansluiting zit al vol", "tekst": "Wanneer het pand de laadlast op de huidige aansluiting niet gelijktijdig kan dragen.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met een beperkte aansluiting" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over het elektrificeren van een wagenpark",
+  "faq": [
+    {
+      "vraag": "Hoeveel laadpunten kan ik op mijn huidige aansluiting plaatsen?",
+      "antwoord": "Dat volgt niet uit de aansluitwaarde alleen, maar uit de ruimte die op het laadmoment overblijft naast de pandlast, en uit de gelijktijdigheid. Met dynamische load balancing mag de som van de nominale vermogens groter zijn dan die ruimte: het systeem begrenst de punten zodra de aansluiting vol loopt, zodat ze niet allemaal tegelijk op vol vermogen komen te staan. Hoeveel punten het bij u zijn, volgt uit het kwartiersprofiel van de aansluiting en het ritprofiel van het wagenpark."
+    },
+    {
+      "vraag": "Heb ik snelladers nodig voor mijn bestelwagens?",
+      "antwoord": "Meestal niet. Snelladen is nodig als het laadvenster kort is: bij twee diensten, of bij een voertuig dat midden op de dag moet bijladen. Staat een voertuig de hele nacht stil, dan is wisselstroomladen op laag vermogen goedkoper, belast het de aansluiting minder en is het milder voor de accu. Vaak is een mengvorm het antwoord: veel punten op laag vermogen, plus een enkele snellaadplek voor uitzonderingen."
+    },
+    {
+      "vraag": "Moeten we eerst verzwaren voordat we kunnen elektrificeren?",
+      "antwoord": "Niet per definitie. Begin met het laadprofiel: de energie per voertuig per dag en het venster waarin die erin kan. In veel gevallen past de vraag binnen de bestaande aansluiting zodra de sessies worden gespreid en begrensd, eventueel met opslag voor de gelijktijdigheid. Verzwaren is nodig wanneer de gemiddelde vraag over het laadvenster boven de grens van de aansluiting uitkomt."
+    },
+    {
+      "vraag": "Wat gebeurt er met het laden als het pand zelf een piek heeft?",
+      "antwoord": "Bij dynamische load balancing meet het systeem de actuele belasting van de aansluiting en verdeelt het wat er over is. De laadpunten laden dan langzamer in plaats van af te schakelen. Zakt de overgebleven ruimte onder de minimale stroom die een laadsessie nodig heeft, dan pauzeert een sessie wel; welke sessie dat is, hoort een keuze in de sturing te zijn en geen toeval. Bij statisch verdelen gebeurt dat niet: daar krijgt het laadplein een vast budget, ongeacht of het pand op dat moment veel of weinig gebruikt. Dat vaste budget is eenvoudiger, maar het laat capaciteit ongebruikt."
+    },
+    {
+      "vraag": "Kunnen we beginnen met een paar voertuigen en later uitbreiden?",
+      "antwoord": "Ja, en dat is vaak verstandig. Reken dan wel de eindsituatie door voordat fase één wordt aangelegd, en leg de kabel en de centrale verdeling op die eindsituatie aan. De laadpunten zijn eenvoudig bij te plaatsen; het graafwerk en de verdeling zijn dat niet. Zo weet u ook op welke fase de grens van de aansluiting in zicht komt."
+    },
+    {
+      "vraag": "Werkt thuisladen als alternatief voor laden op het terrein?",
+      "antwoord": "Voor personenauto's met een vaste bestuurder is thuisladen een goede aanvulling. Het verplaatst de capaciteitsvraag naar de aansluiting van de medewerker en naar hetzelfde regionale net, u heeft geen zeggenschap over het laadmoment en u heeft een verrekening per sessie nodig. Voor bedrijfswagens die op het terrein moeten staan, is het geen alternatief."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Voor wie dit speelt",
+      "items": [
+        { "route": "sectoren/transport-en-wagenparken", "naam": "Transport en wagenparken" },
+        { "route": "sectoren/automotive", "naam": "Automotive" },
+        { "route": "sectoren/opslag-en-distributie", "naam": "Opslag en distributie" },
+        { "route": "sectoren/bouw", "naam": "Bouw" },
+        { "route": "industrie-logistiek", "naam": "Logistiek" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "laadplein", "naam": "Laadplein" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/laadinfrastructuur-dimensioneren", "naam": "Laadinfrastructuur dimensioneren" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" }
+      ]
+    },
+    {
+      "kop": "Verwante toepassingen",
+      "items": [
+        { "route": "toepassingen/laden-met-beperkte-aansluiting", "naam": "Laden met een beperkte aansluiting" },
+        { "route": "toepassingen/pieken-in-verbruik", "naam": "Pieken in verbruik" },
+        { "route": "toepassingen/meerdere-locaties", "naam": "Meerdere locaties" },
+        { "route": "netcongestie", "naam": "Netcongestie" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Stuur ons twee bestanden, dan rekenen wij het door",
+    "tekst": "Het kwartiersprofiel van uw aansluiting en het ritprofiel van het wagenpark: dagkilometers, terugkomst- en vertrektijden en het aantal voertuigen per fase. Daaruit volgt de energie per voertuig per dag, het benodigde vermogen per laadpunt en de stap waarop de aansluiting knelt. Blijkt verzwaren de enige route, dan zeggen we dat ook.",
+    "primair": { "route": "contact", "label": "Laat uw laadplan doorrekenen" },
+    "secundair": { "route": "laadplein", "label": "Zo bouwen wij een laadplein" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare capaciteit per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De op de Capaciteitskaart genoemde jaartallen voor netuitbreidingen zijn planningen en geen garantie.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — FAQ",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/faq/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

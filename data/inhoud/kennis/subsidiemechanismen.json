@@ -1,0 +1,234 @@
+{
+  "route": "kennis/subsidiemechanismen",
+  "type": "kennis",
+  "titel": "Hoe subsidiemechanismen werken | Vibe Energy",
+  "beschrijving": "Aftrek, investeringssubsidie of exploitatiesubsidie: welk mechanisme wanneer geld oplevert, waarom een plafond geen toezegging is en hoe een recht vervalt.",
+  "og_titel": "Hoe subsidiemechanismen werken",
+  "h1": "Hoe een subsidieregeling werkt, en wanneer hij geld oplevert",
+  "lead": "Een regeling levert geen geld op omdat uw investering nuttig is, maar omdat hij binnen een omschrijving valt en omdat het mechanisme uitkeert. Een aftrek, een investeringssubsidie en een exploitatiesubsidie betalen op verschillende momenten, onder verschillende voorwaarden en met verschillend risico.",
+  "data_pagina": "kennis",
+  "kruimels": [{ "naam": "Kennisbank", "route": "kennis" }],
+  "kruimel_label": "Subsidiemechanismen",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw investering doorrekenen" },
+    { "soort": "ghost", "anker": "#mechanismen", "label": "Direct naar de mechanismen" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Hoe werken subsidiemechanismen bij een energie-investering?",
+    "antwoord": "Subsidiemechanismen verschillen in de vorm waarin ze uitkeren. Een fiscale aftrek verlaagt de belastbare winst: het voordeel is het aftrekbare bedrag maal het tarief waartegen belasting wordt betaald, en zonder belastbare winst is het nul. Een investeringssubsidie hangt aan de investering zelf en kent een aanvraag, een beschikking en een uitbetaling, begrensd door een plafond per aanvraag en door het budget van de regeling. Een exploitatiesubsidie vergoedt jaren achteraf per geleverde eenheid en hangt dus af van wat de installatie werkelijk doet. Daarnaast bepaalt de verdeelsystematiek of er iets komt: volgorde van binnenkomst tot het budget op is, of rangschikking tussen aanvragen.",
+    "voorbehoud": "Dit antwoord beschrijft hoe mechanismen werken, niet de stand van een regeling. Welke regelingen bestaan, welke voorwaarden, termijnen en bedragen gelden en of er budget is, staat hier niet en verandert tussentijds."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "mechanismen",
+      "kop": "Drie mechanismen, drie momenten waarop er geld komt",
+      "lead": "Het woord subsidie dekt vormen die zich financieel niets van elkaar aantrekken.",
+      "alineas": [
+        "In gesprekken over een energie-investering gaan fiscale regelingen, investeringssubsidies en exploitatieregelingen op één hoop. Dat is geen woordenkwestie, want het mechanisme bepaalt wanneer het geld komt, waar het vandaan komt, wat u ervoor moet doen en wie het risico draagt dat het niet komt.",
+        "<h3>Fiscale aftrek</h3>",
+        "Een fiscale aftrek is geen uitkering. U mag een deel van de investering extra ten laste van de fiscale winst brengen. Het loopt dus via uw aangifte en niet via een betaling van een uitvoeringsorganisatie. Het voordeel valt daarmee later, bij de aanslag over het jaar waarin u de investering doet, en het is een verlaging van een belastingbedrag en geen inkomst. Zulke regelingen werken vaak met een melding binnen een termijn in plaats van een toekenning vooraf: u meldt de investering, de aftrek verwerkt u zelf in de aangifte, en de toets kan jaren later bij een controle alsnog volgen. Zekerheid heeft u dus pas achteraf.",
+        "<h3>Investeringssubsidie</h3>",
+        "Een investeringssubsidie hangt aan de investering zelf. Hier is wel een aanvraag, een beschikking en een betaling, vaak in delen: een voorschot na toekenning en een eindafrekening na oplevering, op basis van wat u werkelijk heeft besteed. Het budget van zo'n regeling is eindig, dus er zit altijd een verdeelsystematiek op. En de aanvraag gaat in de regel vóór de opdracht: wie eerst koopt en daarna aanvraagt, loopt tegen de eis aan dat de investering nog niet mocht zijn begonnen. De opdrachtdatum is bij dit mechanisme dus een beslismoment, niet een administratief feit.",
+        "<h3>Exploitatiesubsidie</h3>",
+        "Een exploitatiesubsidie vergoedt niet de aanschaf maar het gebruik: een bedrag per geleverde eenheid, over een looptijd van meerdere jaren, meestal als aanvulling op een marktprijs. Dat heeft twee gevolgen. U krijgt niets als de installatie niets levert, en de hoogte beweegt tegen de markt in: hoe hoger de prijs die u zelf maakt, hoe lager de aanvulling. Zo'n regeling dekt dus vooral een prijsrisico af. Voor de financiering van de bouw heeft u er op het moment van bouwen niets aan, en voor de jaren daarna krijgt u een verplichting om te blijven meten en verantwoorden.",
+        "Naast deze drie bestaan er leningen en garantstellingen. Die veranderen niet wat de investering kost, alleen hoe u hem financiert. Zet ze dus niet aan de opbrengstkant van een berekening; het blijft een verplichting."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Waarop u een mechanisme leest",
+      "rijen": [
+        ["Fiscale aftrek", "Verlaagt de belastbare winst. Het voordeel is het aftrekbare bedrag maal uw belastingtarief. Komt via de aangifte, achteraf. Geen winst betekent in dat jaar geen voordeel."],
+        ["Investeringssubsidie", "Bedrag op de investering. Aanvraag vooraf, beschikking, uitbetaling met eindafrekening. Eindig budget, dus een verdeelsystematiek en een plafond."],
+        ["Exploitatiesubsidie", "Vergoeding per geleverde eenheid over een looptijd. Hangt af van de werkelijke prestatie en van de marktprijs. Levert niets op het moment van investeren."],
+        ["Lening of garantstelling", "Verandert de financieringslast, niet de kosten. Blijft een verplichting op uw balans."],
+        ["Verdeelsystematiek", "Volgorde van binnenkomst tot het budget op is, of rangschikking van aanvragen op criteria. Dit bepaalt óf u iets krijgt."],
+        ["Grondslag", "Niet uw factuurtotaal maar de kosten die de regeling subsidiabel noemt. Fundatie, bekabeling, netkoppeling en engineering vallen er soms binnen en soms buiten."]
+      ],
+      "noot": "In aanmerking komen en iets krijgen zijn twee verschillende dingen. Het eerste hangt af van de omschrijving, het tweede van het mechanisme, de grondslag en het budget."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Een aftrek is pas geld als er belastbare winst is",
+      "lead": "Het punt waarop de meeste berekeningen te gunstig uitvallen.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Een aftrek verlaagt de grondslag waarover u belasting betaalt. Wat u er netto aan overhoudt is dus het aftrekbare bedrag maal het tarief waartegen u die belasting betaalt. Wie het aftrekpercentage als opbrengst in een businesscase zet, rekent met een getal dat nergens wordt uitgekeerd.",
+        "Zonder belastbare winst is dat voordeel in dat jaar nul. Dat raakt meer situaties dan het lijkt. Een onderneming in een verliesjaar, een vennootschap die net is opgericht voor de ontwikkeling van een locatie, een entiteit die niet aan de winstbelasting is onderworpen: in al die gevallen is de aftrek op het moment van investeren waardeloos. Verlies kan doorgaans met latere jaren worden verrekend, maar dan verschuift het voordeel naar een jaar dat u vooraf niet kent, en een voordeel later is minder waard dan een voordeel nu.",
+        "De structuur telt ook mee. De aftrek landt bij de entiteit die de investering doet en de aangifte doet. Staat de installatie in een vastgoedvennootschap zonder winst terwijl de winst in een werkmaatschappij valt, dan is de vraag niet of de regeling bestaat maar wie hem kan gebruiken. Dat is een fiscale vraag, geen technische: leg hem voor aan degene die uw aangifte verzorgt, voordat u de investering ergens onderbrengt.",
+        "<h3>Wat dit praktisch betekent</h3>",
+        "<ul><li>Een aftrek hoort in een businesscase als een kasstroom in een later jaar, niet als korting op de investering.</li><li>Hij hoort pas meegerekend te worden als uw fiscale positie bekend is, inclusief het jaar waarin u hem kunt benutten.</li><li>Een melding bij een uitvoeringsorganisatie is géén toekenning van de aftrek. De aanslag beslist, en die komt later.</li></ul>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Plafond en overtekening: een open loket is geen beschikbaar budget",
+      "lead": "Twee begrippen die bepalen of u in de rij staat of in de regeling.",
+      "alineas": [
+        "Regelingen kennen twee soorten plafond, en ze doen iets heel verschillends. Het eerste is een bovengrens per aanvraag, per project of per locatie: de maximale omvang waarmee u mee mag doen. Het tweede is het budget van de regeling als geheel: de som die er te verdelen is. De eerste grens bepaalt de hoogte van úw aanvraag, de tweede bepaalt of er voor u nog iets over is.",
+        "Overtekening betekent dat er meer is aangevraagd dan er budget is. Vanaf dat moment is een openstaand loket geen kans meer. De pagina van de regeling spreekt nog over aanvragen, de datum staat nog in de toekomst, maar de verdeling is al gemaakt. Lees daarom altijd twee dingen naast elkaar: is het loket open, en is er nog budget.",
+        "<h3>Wat 'wie het eerst komt' in de praktijk doet</h3>",
+        "Bij volgorde van binnenkomst telt het tijdstip waarop een <strong>volledige</strong> aanvraag binnen is. Dat verschuift het werk naar voren. Ontbreekt er een bijlage, dan krijgt u doorgaans de gelegenheid om aan te vullen, maar het moment van volledigheid kan dan gaan gelden als het moment van binnenkomst — en dat is precies waarop de rij wordt gesorteerd. Een haastig ingediende, halve aanvraag koopt dus geen plaats; hij kost er een.",
+        "De tweede vorm werkt anders. Bij een rangschikking worden alle aanvragen uit een periode onderling vergeleken op criteria die de regeling noemt. Dan is snelheid niet beslissend maar de score, en kan een aanvraag die aan alle voorwaarden voldoet toch afvallen omdat andere aanvragen beter scoorden. Een afwijzing is daar geen oordeel over uw project.",
+        "Wat dit voor uw planning betekent is onaangenaam en eenvoudig: een regeling is geen financieringsbron waarop u een project kunt plannen. Behandel hem als een voordeel dat u meeneemt als het er is, en leg de beslissing om te investeren niet in handen van een budget waar u geen invloed op heeft."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "De code op de maatregelenlijst beslist, niet de techniek die u bedoelt",
+      "lead": "Waarom twee technisch identieke installaties verschillend uitpakken.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Veel regelingen werken met een lijst van bedrijfsmiddelen of maatregelen. Elke regel op die lijst heeft een code, een omschrijving en een reeks eisen. Die regel is de juridische eenheid waarop u aanvraagt of meldt. Uw installatie wordt dus niet beoordeeld als systeem, maar vertaald naar een of meer codes.",
+        "Dat heeft een gevolg dat tegen het gevoel in gaat. De eisen in een code gaan vaak niet over de werking van het apparaat, maar over de context: wat er nog meer aanwezig moet zijn, waarop het systeem gestuurd moet worden, wat er gemeten moet kunnen worden. Twee identieke batterijen kunnen daarom verschillend uitpakken, omdat de ene bij een opwekinstallatie of een laadlocatie staat en de andere niet. Een functionele verdediging — dit lost een reëel probleem op — doet daar niets aan. Past de investering op geen enkele code, dan is er geen route, hoe verstandig de investering ook is.",
+        "Daar hoort de omgekeerde waarschuwing bij. Ga niet ontwerpen om een code te halen. Wie een sturing, een koppeling of een extra onderdeel toevoegt enkel omdat een regel dat eist, koopt techniek die hij functioneel niet nodig heeft en betaalt die zelf terug. De omvang in kW en kWh van een opslagsysteem volgt uit het kwartiersprofiel van de locatie: de hoogte van de piek boven de gekozen grens bepaalt het vermogen, die hoogte maal de duur bepaalt de bruikbare capaciteit. Een maximum in een regeling is een bovengrens, nooit een ontwerpuitgangspunt.",
+        "Zulke lijsten worden periodiek herzien. Een code kan van omschrijving veranderen, strenger worden of verdwijnen. Wat voor een project van vorig jaar gold, hoeft voor hetzelfde project vandaag niet te gelden. Controleer dus de versie van de lijst die geldt op het moment dat u de verplichting aangaat, en bewaar die versie bij uw dossier."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Melden is een handeling met een termijn, geen formaliteit",
+      "lead": "De fout die niet te repareren is.",
+      "alineas": [
+        "Regelingen vallen in twee soorten als het om het moment gaat. Een subsidie vraagt u aan vóór de opdracht en wacht u af. Een fiscale regeling meldt u na de opdracht, binnen een termijn. In het tweede geval gaat de klok lopen op het moment waarop u de verplichting aangaat — de opdrachtdatum — en niet op de leverdatum, niet op de factuurdatum en niet op de datum van ingebruikname.",
+        "Die startdatum is scherper dan hij lijkt. Een ondertekende opdrachtbevestiging is een verplichting. Een akkoord per e-mail kan er al een zijn. Een mondelinge gunning die daarna wordt uitgewerkt, kan het moment al hebben gezet. Wie pas na oplevering gaat uitzoeken of er nog iets mogelijk was, is daarom vrijwel altijd te laat.",
+        "Te laat melden is bovendien geen tekortkoming die u later goedmaakt. Zo'n termijn is een vervaltermijn: na het verstrijken bestaat het recht niet meer, ongeacht of de investering aan alle inhoudelijke eisen voldoet. Er is dan niets meer te herstellen, want de investering is al gedaan. Net als bij een subsidie die vóór de opdracht moet zijn aangevraagd, kost één dag te laat hier het volledige voordeel en niet een deel ervan.",
+        "<h3>Wat daar tegen helpt</h3>",
+        "<ul><li>Zet de melding in het inkoopproces, naast het ondertekenen van de opdracht, en niet in de administratie achteraf.</li><li>Leg per investering de opdrachtdatum vast, met het document waaruit die datum blijkt.</li><li>Behandel meerwerk en gefaseerde opdrachten als eigen momenten; ze kunnen een eigen datum hebben.</li><li>Houd er rekening mee dat de verplichtingen niet stoppen bij de melding. Regelingen eisen vaak dat het bedrijfsmiddel daadwerkelijk in gebruik wordt genomen en een periode in gebruik blijft; vervreemden of verwijderen binnen die periode kan het voordeel terugdraaien.</li></ul>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Staatssteun en cumulatie, op hoofdlijnen",
+      "lead": "De reden dat regelingen elkaar in de weg kunnen zitten.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Overheidssteun aan een onderneming valt onder Europese staatssteunregels. Daarom hangt elke regeling in een kader: een vrijstelling, een goedgekeurde regeling of een route voor beperkte steunbedragen. Dat kader is geen formaliteit, want het bepaalt wat er maximaal aan publieke middelen in één project mag zitten en hoe regelingen zich tot elkaar verhouden.",
+        "Voor u komt dat op drie dingen neer. Ten eerste is er vaak een grens aan het aandeel van de kosten dat uit publieke middelen mag komen. Stapelen loopt daar tegenaan: twee regelingen die elk afzonderlijk mogelijk zijn, kunnen samen boven die grens komen. Ten tweede bevat een regeling meestal een cumulatiebepaling die zegt of steun uit een andere bron op dezelfde kosten is toegestaan, en zo ja tot welk punt. Soms mag het niet op dezelfde kostenpost, terwijl het wel mag op een andere post in hetzelfde project. Ten derde moet u bij een aanvraag opgeven welke steun u al heeft ontvangen of aangevraagd — en dat gaat doorgaans over het hele concern en over een voorafgaande periode, niet over deze vestiging of dit jaar.",
+        "Daar zitten twee valkuilen in. Een provinciale of gemeentelijke bijdrage is ook steun en telt dus mee, ook als die bijdrage over iets anders ging. En een steunroute voor beperkte bedragen kent een plafond per onderneming over een voorafgaande periode: een eerdere, ongerelateerde bijdrage kan daarmee een nieuwe aanvraag blokkeren.",
+        "Praktisch: houd één overzicht bij van alle ontvangen en aangevraagde steun per concern, met datum, verstrekker en kostenpost. Niet omdat het mooi staat, maar omdat u die opgave bij elke aanvraag ondertekent en een onjuiste opgave kan leiden tot intrekking en terugvordering."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat de uitvoeringsorganisatie doet, en wat niet",
+      "lead": "De tegenpartij in dit proces beoordeelt papier, geen plannen.",
+      "alineas": [
+        "Een regeling wordt vastgesteld door een bestuursorgaan en uitgevoerd door een uitvoeringsorganisatie. Bij landelijke energieregelingen is dat meestal een rijksdienst; bij provinciale en gemeentelijke regelingen de provincie of de gemeente zelf; bij fiscale regelingen loopt de melding langs de uitvoerder terwijl de aanslag bij de Belastingdienst ligt. Die organisatie houdt het loket, toetst de aanvraag aan de regeling, geeft een beschikking af, betaalt, controleert achteraf en behandelt bezwaar.",
+        "Wat zij niet doet, is minstens zo belangrijk. Zij beoordeelt niet of uw investering verstandig is, en een goede onderbouwing van het nut weegt niet op tegen een voorwaarde waaraan u niet voldoet. Zij onderhandelt niet over voorwaarden. Een antwoord van een helpdesk of uit een vooroverleg is geen beschikking en bindt haar niet in uw zaak. En zij kan een verstreken termijn niet herstellen.",
+        "Twee dingen volgen daaruit voor de manier waarop u aanvraagt. Het dossier moet zelfstandig leesbaar zijn: een technische omschrijving die aansluit op de code of de omschrijving waarop u aanvraagt, een kostenonderbouwing per post die overeenkomt met wat de regeling subsidiabel noemt, en de stukken die de data en de omvang bewijzen. De beoordelaar kent uw locatie niet en vult niets voor u aan.",
+        "En de tekst van de regeling gaat voor op de uitleg erover. De samenvatting op een website — ook die van de uitvoerder, en ook deze pagina — is hulp bij het lezen. De vastgestelde regelingstekst is wat geldt. Bij een beslissing die geld kost, leest u die tekst, of laat u hem lezen.",
+        "<p><a class=\"ve-link\" href=\"subsidies\">Welke regelingen er zijn en wat er per regeling vooraf beslist</a></p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat geen enkel mechanisme oplost",
+      "lead": "De eerlijke grens van dit hele onderwerp.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Geen mechanisme maakt een slechte businesscase goed. Elke regeling dekt een deel van de kosten of van de opbrengst; de richting van de case verandert daar niet van. Een systeem dat zich op uw eigen verbruik niet terugverdient, verdient zich met een bijdrage sneller niet terug. Werkt een case alleen mét subsidie, dan heeft u geen businesscase maar een afhankelijkheid: van een budgetbesluit dat buiten uw invloed ligt, van een beoordeling die u niet stuurt en bij een exploitatieregeling ook van jaren blijven leveren en verantwoorden.",
+        "Een regeling levert ook geen transportvermogen. Geen enkel mechanisme verhoogt uw aansluitwaarde of uw gecontracteerd transportvermogen; dat loopt uitsluitend via uw netbeheerder. Opslag en sturing maken ruimte binnen de grens die er al ligt, en dat werkt met of zonder bijdrage precies hetzelfde. Een wachtrij wordt er niet korter van en een doorlooptijd niet sneller.",
+        "Verder verandert een regeling niets aan het ontwerp. Dimensionering volgt uit het kwartiersprofiel van de aansluiting, niet uit een lijst of een plafond. Wie het omdraait, koopt het bedrijfsmiddel dat de regeling beschrijft in plaats van het systeem dat de locatie nodig heeft, en houdt daar jaren last van.",
+        "De juiste volgorde is daarom: eerst meten, dan ontwerpen, dan rekenen, en pas daarna kijken welk mechanisme erbij past. Bij Ratio 16 in Duiven begon het werk met het uitlezen van het kwartiersprofiel van de aansluiting: vastleggen waar de piek zit en welke ruimte onbenut blijft, en daarna opwek, opslag en laden dimensioneren zodat het geheel binnen het bestaande transportvermogen blijft. Bij de Hazenweg 61 in Hengelo bepaalde de uitbreiding van het pand wat er nodig was: de bestaande panelen moesten wijken en de elektrische infrastructuur moest de nieuwe installaties aankunnen, waarna opslag, opwek, laden en noodstroom onder één energiemanagementsysteem zijn gebracht. In beide gevallen kwam de omvang uit de locatie. Welk mechanisme daar eventueel bij past, is een vraag van daarna; het hoort de omvang niet te bepalen.",
+        "<p><a class=\"ve-link\" href=\"project-ratio-16\">Ratio 16, Duiven</a> · <a class=\"ve-link\" href=\"project-hazenweg-61\">Hazenweg 61, Hengelo</a></p>"
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar u hierna verder leest",
+      "lead": "De stand van de regelingen staat elders; hier stond alleen de werking.",
+      "kaarten": [
+        { "kop": "De regelingen zelf", "tekst": "Welke landelijke regelingen er zijn voor opslag, opwek en laden, en welke voorwaarde per regeling vooraf beslist.", "route": "subsidies", "label": "Subsidies en regelingen" },
+        { "kop": "De rekenkant", "tekst": "Welke posten de businesscase van een batterij bepalen, en waarom een bijdrage daarin nooit de eerste post is.", "route": "kennis/businesscase-batterij", "label": "Businesscase batterij" },
+        { "kop": "Voor de aanvraag", "tekst": "Meten, profiel en ontwerp: het dossier waaruit blijkt wat de locatie nodig heeft, vóór er een regeling bij komt.", "route": "energieadvies", "label": "Energieadvies" },
+        { "kop": "Wat u daarna moet aantonen", "tekst": "Exploitatieregelingen vragen jaren verantwoording. Hoe u energieprestatie meet en vastlegt.", "route": "kennis/energieprestatie-meten", "label": "Energieprestatie meten" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over de werking van regelingen",
+  "faq": [
+    {
+      "vraag": "Wat is het verschil tussen een aftrek en een subsidie?",
+      "antwoord": "Een aftrek verlaagt uw belastbare winst en levert daardoor minder belasting op, via uw aangifte en achteraf. Een subsidie is een betaling op basis van een beschikking. Bij een aftrek is uw voordeel het aftrekbare bedrag maal uw belastingtarief; bij een subsidie is het het toegekende bedrag."
+    },
+    {
+      "vraag": "Heb ik iets aan een aftrek als mijn vennootschap geen winst maakt?",
+      "antwoord": "In dat jaar niet. Een aftrek werkt op de belastbare winst, dus zonder winst is het voordeel nul. Verlies is doorgaans met latere jaren te verrekenen, waardoor het voordeel naar een later en onzeker jaar verschuift. Leg dit voor aan degene die uw aangifte verzorgt voordat u de investering in een entiteit onderbrengt."
+    },
+    {
+      "vraag": "Het loket is nog open. Kan ik dan nog aanvragen?",
+      "antwoord": "Formeel wel, feitelijk vaak niet. Is een regeling overtekend, dan is er meer aangevraagd dan er budget is en is de verdeling al gemaakt. Lees dus altijd zowel of het loket open is als of er nog budget is."
+    },
+    {
+      "vraag": "Mijn installatie doet precies wat de regeling beoogt. Is dat genoeg?",
+      "antwoord": "Nee. Beoordeeld wordt of de investering past op de omschrijving en de eisen van een code op de maatregelenlijst. Die eisen gaan vaak over de context — wat er nog meer aanwezig is, waarop er gestuurd wordt, wat er gemeten wordt — en niet over het nut. Past het op geen code, dan is er geen route."
+    },
+    {
+      "vraag": "Wat gebeurt er als ik een melding te laat doe?",
+      "antwoord": "Dan vervalt het recht. Zo'n termijn is een vervaltermijn en geen inspanningsverplichting, en hij begint te lopen op het moment waarop u de verplichting aangaat — niet bij levering, factuur of ingebruikname. Omdat de investering dan al is gedaan, is er niets meer te herstellen."
+    },
+    {
+      "vraag": "Kan ik twee regelingen combineren?",
+      "antwoord": "Soms, binnen grenzen. Staatssteunregels begrenzen welk deel van de kosten uit publieke middelen mag komen, en regelingen bevatten een cumulatiebepaling over steun uit andere bronnen op dezelfde kosten. Een provinciale of gemeentelijke bijdrage telt mee, en de opgave gaat doorgaans over het hele concern."
+    },
+    {
+      "vraag": "Kan ik vooraf zekerheid krijgen dat mijn investering in aanmerking komt?",
+      "antwoord": "Bij een subsidie geeft de beschikking die zekerheid, en die komt na uw aanvraag. Bij een fiscale regeling komt de zekerheid pas bij de aanslag. Een antwoord uit een vooroverleg of van een helpdesk is geen beschikking en bindt de uitvoeringsorganisatie niet in uw zaak."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Verder in de kennisbank",
+      "items": [
+        { "route": "kennis/businesscase-batterij", "naam": "Businesscase batterij" },
+        { "route": "kennis/energieprestatie-meten", "naam": "Energieprestatie meten" },
+        { "route": "kennis/energiehandel-en-flexibiliteit", "naam": "Energiehandel en flexibiliteit" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/normen-en-keuringen", "naam": "Normen en keuringen" }
+      ]
+    },
+    {
+      "kop": "De regelingen en het advies",
+      "items": [
+        { "route": "subsidies", "naam": "Subsidies en regelingen" },
+        { "route": "energieadvies", "naam": "Energieadvies" },
+        { "route": "verduurzaming-bedrijfspanden", "naam": "Verduurzaming bedrijfspanden" }
+      ]
+    },
+    {
+      "kop": "Waar de investering meestal over gaat",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "toepassingen/batterij-slim-inzetten", "naam": "Batterij slim inzetten" },
+        { "route": "toepassingen/bestaande-aansluiting-optimaliseren", "naam": "Bestaande aansluiting optimaliseren" }
+      ]
+    },
+    {
+      "kop": "Bewijs",
+      "items": [
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "project-ratio-16", "naam": "Ratio 16, Duiven" },
+        { "route": "project-hazenweg-61", "naam": "Hazenweg 61, Hengelo" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Eerst het ontwerp, dan het mechanisme",
+    "tekst": "Stuur ons het kwartiersprofiel van uw aansluiting, uw aansluitwaarde en uw gecontracteerd transportvermogen. Wij bepalen welk vermogen en welke capaciteit de locatie nodig heeft en wat dat oplevert op uw eigen verbruik. Pas als dat vaststaat, is te zeggen of er een regeling bij past.",
+    "primair": { "route": "contact", "label": "Laat uw investering doorrekenen" },
+    "secundair": { "route": "subsidies", "label": "Bekijk de regelingen" }
+  },
+
+  "claims": []
+}

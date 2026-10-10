@@ -1,0 +1,210 @@
+{
+  "route": "kennis/energieprestatie-meten",
+  "type": "kennis",
+  "titel": "Energieprestatie meten: de basislijn eerst | Vibe Energy",
+  "beschrijving": "Zonder basislijn is een dashboard een gevoel. Welke meetpunten u nodig heeft, waarom een factuur geen meetinstrument is en hoe u effect aantoont.",
+  "og_titel": "Energieprestatie meten: de basislijn eerst",
+  "h1": "Energieprestatie meten: wat u vastlegt voordat u ingrijpt",
+  "lead": "Een energiesysteem dat u niet meet, kunt u niet beoordelen. En wat u pas meet nadat u heeft ingegrepen, kunt u niet meer vergelijken. Energieprestatie meten begint daarom niet bij een dashboard, maar bij de vraag welke meetpunten er zijn en welke basislijn er ligt voordat de eerste installatie wordt aangesloten.",
+  "data_pagina": "kennis",
+  "kruimels": [{ "naam": "Kennisbank", "route": "kennis" }],
+  "kruimel_label": "Energieprestatie meten",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw meetgegevens doorrekenen" },
+    { "soort": "ghost", "anker": "#basislijn", "label": "Direct naar het vaststellen van een basislijn" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Hoe meet je de energieprestatie van een gebouw of een installatie?",
+    "antwoord": "Energieprestatie meten vraagt drie dingen: meetpunten, een basislijn en een correctie. Meetpunten zijn de plaatsen waar vermogen en energie worden vastgelegd: de hoofdmeting op de aansluiting, submetering per installatiedeel, een aparte meting van de opwek en een meting van wat de opslag in en uit gaat. De basislijn is het gemeten gedrag van de locatie over een representatieve periode vóór de ingreep, op kwartierniveau. De correctie zet invloeden apart die niets met de ingreep te maken hebben: buitentemperatuur, bedrijfsdrukte, productievolume en bezetting. Ontbreekt een van die drie, dan meet een dashboard verbruik maar geen prestatie.",
+    "voorbehoud": "Dit zegt niets over de hoogte van een besparing op een specifieke locatie. Een meetopzet maakt effect zichtbaar; hij maakt het niet groter. En een basislijn die achteraf uit facturen wordt gereconstrueerd blijft een schatting, hoe zorgvuldig hij ook is opgeschreven."
+  },
+
+  "secties": [
+    {
+      "soort": "specs",
+      "kop": "De meetpunten die u nodig heeft om iets te kunnen zeggen",
+      "rijen": [
+        ["Hoofdmeting op de aansluiting", "De meting van de netbeheerder of het meetbedrijf, plus de hoofdmeting in de verdeelinrichting. Legt per kwartier vast hoeveel er is afgenomen en teruggeleverd, en welk vermogen daarbij hoorde. Dit is het enige punt waar het net uw locatie ziet."],
+        ["Submetering per installatiedeel", "Een eigen meting achter de hoofdmeting, per groep of per installatie: klimaat, koeling, productielijn, laadinfrastructuur, verlichting. Zonder submetering weet u dát er een piek was, niet welk deel hem maakte."],
+        ["Opwekmeting", "Een meting aan de omvormerzijde van het zonnedak, los van de hoofdmeting. Nodig om opwek te scheiden van verminderde afname: netafname die daalt kan evengoed betekenen dat het pand stillag."],
+        ["Opslagmeting", "Laad- en ontlaadvermogen in kW en de energie in kWh die in en uit de batterij gaat, gescheiden gemeten. Het verschil tussen in en uit is het rondgangsverlies; hangt de kast achter hetzelfde meetpunt, dan zit zijn eigen verbruik daar ook in. Dat verlies hoort in de prestatie, niet buiten de telling."],
+        ["Stuurgegevens", "De grenswaarden en setpoints die het regelsysteem op dat moment aanhield. Zonder die gegevens is een afwijking niet te onderscheiden: was het gedrag van de installatie, of een keuze van de sturing?"],
+        ["Contextreeksen", "Buitentemperatuur, draaiuren, productie-eenheden, laadsessies, bezetting. Dit zijn geen energiegegevens, maar zonder deze reeksen is er later niets te corrigeren."]
+      ],
+      "noot": "Een meetopzet is pas compleet als de energiebalans sluit: netafname plus eigen opwek plus wat de batterij ontlaadt, tegenover de som van de submetingen plus teruglevering plus wat de batterij laadt en de verliezen onderweg. Opwek hoort dus aan de aanvoerkant van die balans en wordt niet bij de submetingen opgeteld. Blijft er een onverklaard deel over, dan meet u een gedeelte van de locatie en noemt u het het geheel."
+    },
+    {
+      "soort": "tekst",
+      "id": "factuur",
+      "kop": "Een factuur is een afrekening, geen meetinstrument",
+      "lead": "Wat u verschuldigd bent is een andere vraag dan wat uw installatie deed.",
+      "alineas": [
+        "Een maand- of jaarfactuur bundelt kwartierwaarden tot totalen, rekent tarieven en toeslagen mee die onderweg zijn gewijzigd, en loopt over een periode die zelden samenvalt met de periode waarin u iets veranderde. Als meetinstrument mist hij precies de resolutie waar het om gaat.",
+        "<p><strong>Rekenvoorbeeld.</strong> Een maand van dertig dagen bevat 2.880 kwartieren (30 × 24 × 4). Een maandfactuur vat die samen in een handvol getallen. De hoogste kwartierwaarde van die maand — de waarde waaraan uw gecontracteerd transportvermogen wordt afgemeten — is één van die 2.880. Juist dat ene kwartier is in het maandtotaal weggemiddeld.</p>",
+        "Daar komt bij dat een factuur meerdere dingen tegelijk verandert. Een lagere rekening kan komen door minder verbruik, door een ander leveringstarief, door een milde winter, door een week bedrijfsvakantie of door een gewijzigde vermogenscomponent in het transportdeel. Wie de rekening als meting gebruikt, schrijft al die effecten toe aan de ingreep die er het dichtst bij ligt.",
+        "Facturen zijn wel bruikbaar voor één ding: controleren of de bedragen overeenkomen met wat u zelf heeft gemeten. Dat is administratieve controle, geen prestatiemeting."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Een momentopname is geen basislijn",
+      "lead": "Het verschil zit niet in de nauwkeurigheid, maar in de spreiding.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Een week meten geeft een momentopname. Die is nuttig: u ziet of de meetopzet werkt, u vindt de grootste verbruikers en u ziet hoe de gelijktijdigheid op een werkdag loopt. Hij is niet geschikt om een effect aan toe te schrijven, want hij bevat één bedrijfstoestand.",
+        "Een basislijn is een gemeten reeks over een periode die alle toestanden bevat waarin de locatie normaal werkt: werkdagen en weekenden, dag- en nachtbedrijf, winter en zomer, drukke en stille weken, gepland onderhoud en stilstand. Pas dan weet u hoe breed de normale band is.",
+        "<h3>Waarom de band belangrijker is dan het gemiddelde</h3>",
+        "Twee locaties kunnen hetzelfde gemiddelde hebben en een volstrekt andere spreiding. Verandert u iets en meet u daarna een afwijking die binnen de normale band valt, dan heeft u niets aangetoond: die afwijking kwam ook voor zonder ingreep. Alleen een verandering die buiten de band ligt, is een resultaat. Zonder basislijn kent u die band niet en kunt u dus geen enkele uitspraak onderbouwen.",
+        "Daarom moet de meetperiode vóór de ingreep liggen. Een batterij, een zonnedak of een regelsysteem verandert het verbruiksprofiel vanaf de dag dat het aangaat. Vanaf dat moment bestaat de oude situatie niet meer en kunt u haar alleen nog reconstrueren."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "basislijn",
+      "kop": "Een basislijn vaststellen in vijf stappen",
+      "lead": "Dit gebeurt vóór de aanschaf, niet bij de oplevering.",
+      "alineas": [
+        "<h3>1 · Bepaal welke uitspraak u later wilt doen</h3>",
+        "Een basislijn is niet neutraal; hij hoort bij een vraag. Wilt u aantonen dat de piek is gedaald, dan is de grootheid het hoogste kwartiervermogen per maand in kW. Wilt u aantonen dat eigen opwek vaker zelf wordt gebruikt, dan is de grootheid de verhouding tussen opwek en gelijktijdig verbruik in kWh. Wie dat vooraf niet kiest, meet alles en bewijst niets.",
+        "<h3>2 · Leg de meetpunten en de meetwijze vast</h3>",
+        "Welke meter, welk meetinterval, welke eenheid, welk tijdstempel en welke tijdzone. Een reeks waarin zomer- en wintertijd door elkaar lopen en een reeks met ontbrekende kwartieren zijn beide onbruikbaar om mee te vergelijken. Noteer ook wat níét gemeten wordt, zodat die gaten later niet als nul worden gelezen.",
+        "<h3>3 · Meet een volledige cyclus</h3>",
+        "Voor een gebouw met klimaatinstallatie is dat een vol jaar, omdat verwarmen en koelen tegengesteld op het weer reageren. Voor een productielocatie is het minstens één volledige productiecyclus, met de seizoenspieken erin. Kan dat niet, dan noteert u expliciet welke toestanden ontbreken en wat daardoor buiten de bewijslast valt.",
+        "<h3>4 · Leg de contextreeksen naast de energiereeksen</h3>",
+        "Buitentemperatuur per uur, draaiuren, productie-eenheden, laadsessies, bezettingsgraad. Deze reeksen hebben hetzelfde tijdstempel nodig als de energiereeksen. Worden ze pas later opgehaald, dan zijn ze zelden nog op kwartierniveau terug te halen.",
+        "<h3>5 · Bevries de basislijn en de aannames</h3>",
+        "Zet vast welke periode de basislijn is, welke dagen eruit zijn gelaten en waarom. Een basislijn die ná de ingreep nog wordt bijgesteld is geen referentie meer, maar een uitkomst. Dat vastleggen hoort bij de meting, niet bij de rapportage."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Corrigeren voor weer en bedrijfsdrukte",
+      "lead": "Niet elk verschil tussen basislijn en nameting is uw ingreep.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Een locatie verbruikt in een koude januari meer dan in een milde. Een hal die twee ploegen draait in plaats van één, verbruikt meer. Die verschillen hebben niets met uw ingreep te maken en zitten toch in het verschil tussen basislijn en nameting. Corrigeren betekent: dat deel apart zetten voordat u de rest toeschrijft.",
+        "<h3>Weer</h3>",
+        "Voor warmte- en koudevraag is de buitentemperatuur de bepalende variabele. De gangbare methode is normaliseren met graaddagen: het verbruik wordt uitgedrukt per graaddag, zodat een koude en een milde periode vergelijkbaar worden. Voor verlichting en processen werkt dat niet; die volgen daglengte en orders, geen temperatuur. Gebruik per installatiedeel de noemer die erbij hoort.",
+        "<h3>Bedrijfsdrukte</h3>",
+        "Voor processen is de noemer de productie: energie per geproduceerde eenheid, per verwerkte pallet, per laadsessie, per bezette kamer. Zo'n kengetal maakt perioden met verschillende drukte vergelijkbaar. Let op dat het verband zelden recht is: de meeste installaties hebben een basisverbruik dat ook bij lage productie doorloopt, waardoor energie per eenheid stijgt zodra het stiller wordt. Dat is geen verslechterde prestatie.",
+        "<h3>Wat u niet weg kunt corrigeren</h3>",
+        "Een verbouwing, een nieuwe productielijn, een huurderwissel, een gewijzigd gecontracteerd transportvermogen: dat verandert de locatie zelf. Dat is geen ruis maar een breuk in de reeks. De eerlijke behandeling is de reeks splitsen en de perioden niet met elkaar vergelijken — niet een correctiefactor bedenken die het verschil toch wegneemt."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Een dashboard zonder basislijn geeft vooral een gevoel",
+      "lead": "Bewaken en beoordelen zijn twee verschillende functies.",
+      "alineas": [
+        "Een monitoringportaal toont actuele waarden, dagprofielen en totalen. Dat is nuttig voor de bedrijfsvoering: u ziet een storing, een installatie die niet meedoet, een laadpunt dat vol trekt terwijl de productie piekt. Dat is bewaking, en daarvoor heeft u geen basislijn nodig.",
+        "Prestatiemeting is iets anders. Die vergelijkt gemeten gedrag met een referentie. Een dashboard zonder referentie kan alleen hoog en laag tonen; de interpretatie komt dan van de kijker. Groene cijfers die niemand ergens mee vergelijkt, bevestigen het beeld waarmee u binnenkwam.",
+        "Wat een dashboard wél tot prestatiemeting maakt: een vastgelegde grenswaarde per grootheid, een vastgelegde basislijnperiode, de contextreeksen ernaast, en een zichtbare melding wanneer een meetpunt uitvalt. Dat laatste wordt het vaakst vergeten. Een uitgevallen meter levert geen nul, maar niets — en een systeem dat niets als nul optelt, laat de prestatie onbedoeld verbeteren.",
+        "Bij <a class=\"ve-link\" href=\"project-hazenweg-61\">Hazenweg 61 in Hengelo</a> staan opslag, opwek, laadpunten en noodstroom onder één energiemanagementsysteem. Dat is precies de situatie waarin submetering per installatiedeel noodzakelijk is: zonder die scheiding is bij een afwijking op de hoofdmeting niet vast te stellen welk deel haar veroorzaakte."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De grens van prestatiemeting, zonder omhaal.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Wat u niet heeft gemeten voordat u ingreep, kunt u achteraf niet toeschrijven. Een reconstructie uit facturen, uit een vergelijkbaar pand of uit een rekenmodel levert een schatting op. Zo'n schatting kan bruikbaar zijn om een investeringsbeslissing te onderbouwen, maar het is geen bewijs van effect en het hoort ook niet als bewijs te worden gepresenteerd.",
+        "Meten verlaagt verder niets. Het maakt zichtbaar waar vermogen en energie heen gaan en het maakt een ingreep beoordeelbaar. De ingreep zelf is iets anders: opslag, opwek, sturing of een aanpassing in het proces.",
+        "Meten lost ook geen capaciteitsprobleem op. Ligt uw gemiddelde vraag boven uw <a class=\"ve-link\" href=\"kennis/transportvermogen-versus-aansluitwaarde\">gecontracteerd transportvermogen of boven de fysieke capaciteit van de aansluiting</a>, dan blijft dat zo, hoe fijnmazig u het ook vastlegt. Een meting bepaalt wel welke ingreep kans maakt, en of die ingreep daarna deed wat ervan verwacht werd.",
+        "En niet elke grootheid is op locatie te meten. Het deel van uw energierekening dat verandert door marktprijzen of door tarieven van de netbeheerder staat buiten uw installatie. Dat hoort in de businesscase, niet in de prestatiemeting van de installatie."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar de meting in de rest van de keten past",
+      "lead": "Meten staat niet los van sturen, plannen en vergelijken.",
+      "kaarten": [
+        { "kop": "De sturing legt de gegevens vast", "tekst": "Welke grenswaarden het regelsysteem aanhoudt en welke gegevens het per installatiedeel registreert.", "route": "vibe-control", "label": "VIBE.CONTROL" },
+        { "kop": "Wat een EMS wel en niet doet", "tekst": "Het verschil tussen bewaken, begrenzen en optimaliseren, en welke meetpunten een EMS daarvoor nodig heeft.", "route": "kennis/ems-energiemanagementsysteem", "label": "EMS uitgelegd" },
+        { "kop": "Van meetgegevens naar een plan", "tekst": "Wat er uit een kwartiersprofiel en een basislijn volgt voordat er iets wordt aangeschaft.", "route": "energieadvies", "label": "Energieadvies" },
+        { "kop": "Meerdere locaties vergelijken", "tekst": "Waarom locaties met een verschillend profiel niet op één kengetal te leggen zijn, en wat dan wel werkt.", "route": "toepassingen/meerdere-locaties", "label": "Meerdere locaties" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over meten en monitoring",
+  "faq": [
+    {
+      "vraag": "Kan ik een basislijn achteraf uit mijn facturen halen?",
+      "antwoord": "Alleen als schatting. Een factuur bevat totalen, geen kwartierwaarden, en bundelt tariefwijzigingen, weerinvloed en bedrijfsdrukte in één bedrag. Vraag in plaats daarvan de kwartiergegevens van uw meetbedrijf of netbeheerder op; die zijn fijnmaziger dan de factuur en bruikbaar als vertrekpunt. Toeschrijven van effect blijft daarmee zwakker dan met een vooraf gemeten basislijn."
+    },
+    {
+      "vraag": "Hoe lang moet ik meten voordat ik een basislijn heb?",
+      "antwoord": "Lang genoeg om alle toestanden te bevatten waarin de locatie normaal werkt. Voor een gebouw met verwarming en koeling is dat een vol jaar, omdat de twee tegengesteld op het weer reageren. Voor een proceslocatie minstens één volledige productiecyclus met de seizoenspieken erin. Korter kan, mits u opschrijft welke toestanden ontbreken en wat u daardoor niet kunt aantonen."
+    },
+    {
+      "vraag": "Heb ik submetering nodig, of is de hoofdmeting genoeg?",
+      "antwoord": "De hoofdmeting zegt wat de aansluiting zag. Zij zegt niet welk installatiedeel de piek maakte. Zodra er meer dan één beïnvloedbare verbruiker achter de meter zit — klimaat, koeling, laadpunten, een productielijn — heeft u submetering nodig om een afwijking ergens aan te kunnen toeschrijven."
+    },
+    {
+      "vraag": "Is een jaar met een milde winter een geldige basislijn?",
+      "antwoord": "Ja, als u voor het weer corrigeert. Doet u dat niet, dan vergelijkt u een milde winter met een koude en schrijft u dat verschil aan uw ingreep toe. Normaliseer de warmte- en koudevraag met graaddagen en bewaar de temperatuurreeks bij de meetgegevens."
+    },
+    {
+      "vraag": "Wat doet u met gaten in de meetreeks?",
+      "antwoord": "Die moeten zichtbaar blijven. Een ontbrekend kwartier is niet nul. Wordt het als nul meegeteld, dan daalt het gemeten verbruik zonder dat er iets is veranderd en lijkt de prestatie te verbeteren. Markeer ontbrekende perioden en laat ze aan beide zijden van de vergelijking buiten de telling."
+    },
+    {
+      "vraag": "Meet een batterij zijn eigen prestatie?",
+      "antwoord": "Een batterijsysteem registreert laad- en ontlaadvermogen en de bijbehorende energie. Dat is zijn eigen telling, niet de prestatie van de locatie. Om die te beoordelen heeft u de hoofdmeting ernaast nodig, plus het verschil tussen wat erin ging en wat eruit kwam: het rondgangsverlies, inclusief het eigen verbruik van de kast als dat achter hetzelfde meetpunt zit."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Verder in de kennisbank",
+      "items": [
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "EMS: energiemanagementsysteem" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/businesscase-batterij", "naam": "Businesscase batterij" },
+        { "route": "kennis/batterijdegradatie", "naam": "Batterijdegradatie" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" }
+      ]
+    },
+    {
+      "kop": "Van meting naar ingreep",
+      "items": [
+        { "route": "energieadvies", "naam": "Energieadvies" },
+        { "route": "toepassingen/meerdere-locaties", "naam": "Meerdere locaties" },
+        { "route": "toepassingen/bestaande-aansluiting-optimaliseren", "naam": "Bestaande aansluiting optimaliseren" },
+        { "route": "toepassingen/batterij-slim-inzetten", "naam": "Batterij slim inzetten" }
+      ]
+    },
+    {
+      "kop": "Bewijs",
+      "items": [
+        { "route": "project-hazenweg-61", "naam": "Hazenweg 61, Hengelo" },
+        { "route": "project-ratio-16", "naam": "Ratio 16, Duiven" },
+        { "route": "projecten", "naam": "Alle projecten" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Wij beginnen bij uw meetgegevens",
+    "tekst": "Stuur het kwartiersprofiel van uw aansluiting en, als u ze heeft, de submetingen per installatiedeel. Wij leggen de basislijn vast, benoemen welke toestanden erin ontbreken en zeggen wat daarmee wel en niet aantoonbaar is.",
+    "primair": { "route": "contact", "label": "Laat uw meetgegevens doorrekenen" },
+    "secundair": { "route": "kennis", "label": "Terug naar de kennisbank" }
+  },
+
+  "claims": []
+}

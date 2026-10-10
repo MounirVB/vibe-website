@@ -1,0 +1,233 @@
+{
+  "route": "sectoren/bedrijventerreinen",
+  "type": "sector",
+  "titel": "Bedrijventerreinen en parkmanagement | Vibe Energy",
+  "beschrijving": "Op een bedrijventerrein vraagt elk bedrijf apart capaciteit in hetzelfde voedingsgebied. Wat collectief organiseren oplevert, en wat een energy hub vraagt.",
+  "og_titel": "Bedrijventerreinen: samen organiseren wat apart vastloopt",
+  "h1": "Eén terrein, één voedingsgebied, allemaal apart in de rij",
+  "lead": "Bedrijven op hetzelfde terrein vragen ieder voor zich transportvermogen aan bij dezelfde netbeheerder, in hetzelfde voedingsgebied. Hun verbruiksprofielen vullen elkaar deels aan, maar dat ziet niemand zolang elke aanvraag los wordt beoordeeld. Collectief organiseren begint hier niet bij techniek, maar bij een afspraak.",
+  "data_pagina": "sectoren",
+  "kruimels": [{ "naam": "Sectoren", "route": "sectoren" }],
+  "kruimel_label": "Bedrijventerreinen",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Collectieve energievoorziening op bedrijventerreinen",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Vraag een terreinanalyse aan" },
+    { "soort": "ghost", "anker": "#samen", "label": "Waarom samen hier anders rekent" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Waarom is energie op een bedrijventerrein een collectieve vraag?",
+    "antwoord": "De panden op een bedrijventerrein hebben elk een eigen aansluiting, maar ze hangen aan dezelfde kabels en hetzelfde onderstation: één voedingsgebied. Is daar geen transportcapaciteit vrij, dan is die er voor alle bedrijven op het terrein niet. Vraagt iedereen apart om extra transportvermogen, dan vragen buren om dezelfde schaarse ruimte en wordt elke aanvraag los beoordeeld. Gezamenlijk organiseren maakt zichtbaar wat een losse aanvraag verbergt: de piek van een koelhuis, een kantoor, een laadplein en een machinepark vallen op verschillende momenten. Wie die profielen achter één koppelpunt of in een energy hub combineert, heeft samen minder gelijktijdig vermogen nodig dan ieder apart.",
+    "voorbehoud": "Samenwerken verandert niets aan de aansluitwaarde of het gecontracteerde transportvermogen van een individuele deelnemer. En delen levert alleen op als de profielen elkaar werkelijk aanvullen: lijken ze op elkaar, dan pieken ze samen en valt er niets te verdelen."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "samen",
+      "kop": "Per pand telt uw eigen gelijktijdigheid. Per terrein komt er een laag bij.",
+      "lead": "Dat is het hele verschil tussen een individuele en een collectieve aanpak.",
+      "alineas": [
+        "Voor de netbeheerder is een bedrijventerrein geen eenheid. Elk pand heeft een eigen aansluiting, een eigen aansluitovereenkomst en een eigen gecontracteerd transportvermogen. Wat wél gedeeld is, zit erachter: de middenspanningsring en het onderstation die het terrein voeden. Alle panden liggen in hetzelfde voedingsgebied — een verzameling postcodes rond dat onderstation, die geen terreingrens en geen gemeentegrens volgt.",
+        "Daardoor pakken losse aanvragen hier slechter uit dan elders. Vraagt elk bedrijf voor zich extra transportvermogen aan, dan vragen buren om dezelfde ruimte, in de volgorde waarin hun aanvraag binnenkomt. Niemand in die rij heeft er iets aan dat de buurman overdag piekt en hij zelf 's nachts. Het terrein als geheel komt niet in de beoordeling voor, want het terrein is geen aangeslotene.",
+        "Binnen één pand gaat capaciteit over de eigen gelijktijdigheid: welk deel van uw eigen installaties op hetzelfde moment aan staat. Over een terrein heen komt daar een tweede laag bij: of de pieken van verschillende bedrijven samenvallen. Een koelhuis draait het hardst in de zomer en vaak door de nacht. Een kantoor piekt op werkdagen rond het midden van de dag. Een laadplein piekt bij ploegwissel of in de avond. Een machinepark piekt bij het opstarten. Vallen die momenten uiteen, dan is de som van de afzonderlijke pieken hoger dan de piek van de som.",
+        "Dat verschil is de enige echte winst van een collectief. En het is niet te zien in een jaarverbruik of in één aansluiting. Het blijkt pas als de kwartiersprofielen van de deelnemende aansluitingen over elkaar heen worden gelegd."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Vijf grootheden die op een terrein niet van dezelfde partij zijn",
+      "rijen": [
+        ["Aansluiting per pand", "De fysieke capaciteit van de eigen aansluiting, in kVA of in ampère per fase. Die staat op naam van de aangeslotene en verandert niet doordat er wordt samengewerkt."],
+        ["Gecontracteerd transportvermogen", "Het vermogen in kW dat per aansluiting met de netbeheerder is afgesproken, en waarvoor per aansluiting wordt betaald. Blijft per deelnemer gelden, tenzij deelnemers bewust achter één gezamenlijk koppelpunt gaan."],
+        ["Voedingsgebied", "De verzameling postcodes rond het onderstation dat het terrein voedt. Gedeeld door alle panden, en niet gelijk aan de terreingrens."],
+        ["Gelijktijdigheid binnen een pand", "Welk deel van uw eigen installaties tegelijk aan staat. Hier werken load balancing, opslag en sturing op de eigen locatie."],
+        ["Gelijktijdigheid tussen panden", "Of de pieken van verschillende bedrijven op hetzelfde moment vallen. Hier zit de winst van een collectief — en hier zit ook de reden dat een collectief soms niets oplevert."]
+      ],
+      "noot": "De eerste twee zijn juridisch van één partij. De laatste twee zijn fysiek van het terrein. Een collectief ontstaat precies daar waar die twee werelden bij elkaar worden gebracht: met een contract, niet met een kabel."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat een energy hub technisch is — en wat hij niet doet",
+      "lead": "De techniek is bekend. Het verschil zit in wie eigenaar is en wie voorrang krijgt.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Een energy hub is een groep aangeslotenen die het beschikbare vermogen in hun voedingsgebied samen gebruiken in plaats van ieder apart. De onderdelen zijn dezelfde als op één locatie: opslag, eigen opwek, laadinfrastructuur en een energiemanagementsysteem dat op elk moment bepaalt wie vermogen krijgt en wie wacht. Alleen staat het nu niet per pand, maar op terreinniveau — en dat verandert de dimensionering.",
+        "Een batterij voor vier deelnemers is zelden de som van vier batterijen. Het vermogen in kW volgt uit de hoogste gezamenlijke piek boven de gekozen grens, niet uit de hoogste piek van elke deelnemer apart. De bruikbare capaciteit in kWh volgt uit de hoogte van die gezamenlijke overschrijding maal hoe lang hij duurt. Juist omdat de pieken op verschillende momenten vallen, valt die gezamenlijke overschrijding lager uit dan de optelsom van de individuele.",
+        "<h3>Rekenvoorbeeld</h3>",
+        "Stel: drie aansluitingen op één terrein hebben elk een piek van 100 kW, en die pieken liggen op verschillende momenten — koeling in de nacht, kantoor midden op de dag, laden aan het eind van de middag. Apart gecontracteerd is dat 3 × 100 kW. Achter één koppelpunt is de hoogste gelijktijdige vraag geen 300 kW, maar iets boven de hoogste individuele piek. Hoeveel precies, bepaalt de overlap in de kwartiersprofielen. Dit is een rekenvoorbeeld om de denkwijze te laten zien, geen uitkomst van een locatie.",
+        "<h3>Twee vormen, met een ander papierspoor</h3>",
+        "<ul><li><strong>Eén gezamenlijk koppelpunt.</strong> De deelnemers hangen achter één aansluiting, met meting per deelnemer erachter. Technisch het sterkst, want alle vermogen is op één punt te verdelen. Organisatorisch het zwaarst: er is één aangeslotene, en die partij moet bestaan, contracteren, factureren en aansprakelijkheid dragen.</li><li><strong>Eigen aansluitingen, gezamenlijke sturing.</strong> Iedereen houdt zijn aansluiting en zijn transportovereenkomst, maar installaties en afspraken worden afgestemd. Lichter te organiseren, maar er komt minder vermogen vrij, omdat de netbeheerder nog steeds per aansluiting afrekent en elke deelnemer dus zijn eigen grens houdt.</li></ul>",
+        "Netbeheerders kennen daarnaast contractvormen waarin een groep aangeslotenen onderling afspraken maakt over het gebruik van de beschikbare ruimte. Wat in uw voedingsgebied mogelijk is, bepaalt de netbeheerder — Liander, Enexis, Stedin, Westland Infra, Coteq of Rendo, afhankelijk van waar het terrein ligt. Dat gesprek hoort vooraan in het traject, niet achteraan.",
+        "Wat een hub niet doet: hij creëert geen extra gecontracteerd transportvermogen en verhoogt geen enkele aansluitwaarde. Hij maakt ruimte binnen wat er al ligt, door vraag in de tijd te verschuiven en voorrang te regelen."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Het papier is hier zwaarder dan de techniek",
+      "lead": "Terreinen lopen zelden vast op een ontwerp. Ze lopen vast op eigendom, verdeling en aansprakelijkheid.",
+      "alineas": [
+        "Een installatieontwerp voor een terrein is een bekende opgave: profielen op elkaar leggen, een grens kiezen, vermogen en capaciteit bepalen, de sturing inrichten. De vragen daarna zijn de lastige, want ze gaan over geld en risico tussen partijen die elkaar niet gekozen hebben.",
+        "<h3>Wat er geregeld moet zijn voordat er een kabel ligt</h3>",
+        "<ul><li><strong>Een rechtsvorm.</strong> Een terrein kan geen contract ondertekenen. Er moet een entiteit zijn die de installatie bezit of huurt, die met de netbeheerder en met een leverancier contracteert, die kan factureren en die aansprakelijkheid draagt. Coöperatie, besloten vennootschap of vereniging: de keuze volgt uit wat het collectief moet kunnen, niet uit voorkeur.</li><li><strong>Een verdeelsleutel.</strong> Wie krijgt vermogen op het moment dat er te weinig is? Naar historisch gebruik, naar inleg, naar wat een proces technisch niet kan missen, of simpelweg wie het eerst vraagt? Dit hoort vooraf en op papier, inclusief wat er gebeurt als een deelnemer groeit.</li><li><strong>Aansprakelijkheid.</strong> Wie betaalt als het collectief de grens overschrijdt, en wat als die overschrijding aantoonbaar uit de installatie van één deelnemer komt? Zonder dat antwoord tekent geen enkele penvoerder.</li><li><strong>Een beheerder.</strong> Iemand moet het systeem bedrijven, storingen oppakken, onderhoud laten doen, meten en afrekenen. Dat is een rol met een contract en een bereikbaarheidsafspraak, geen taak die er bij iemand bij komt.</li><li><strong>Toe- en uittreden.</strong> Panden wisselen van eigenaar en van gebruiker. Een deelnemer die vertrekt neemt zijn profiel mee, en dat verandert de dimensionering voor wie blijft. Leg vooraf vast wat uittreden kost en wie de resterende verplichting draagt.</li><li><strong>Levering aan derden.</strong> Elektriciteit doorleveren aan andere bedrijven is in Nederland een gereguleerde activiteit. Welke rol het collectief daarin heeft, hoort juridisch getoetst te zijn voordat de eerste factuur uitgaat.</li></ul>",
+        "Deze lijst is de reden dat collectieve projecten blijven hangen. Niet omdat de techniek onzeker is, maar omdat niemand mandaat heeft om namens het terrein te beslissen. De tekening is doorgaans eerder klaar dan de afspraken."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "De parkmanager bepaalt of het van de grond komt",
+      "lead": "Niet omdat hij de techniek kiest, maar omdat hij de deelnemers en het besluitproces in handen heeft.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Op een terrein met parkmanagement of een ondernemersvereniging is er al een partij die weet wie welk pand bezit, wie er huurt, wie investeert en wie over een jaar vertrekt. Dat is precies de informatie die een collectief energieplan nodig heeft en die een installateur niet heeft. De parkmanager kan de deelnemers bij elkaar zetten, een mandaat laten vaststellen en het proces tussen twee bijeenkomsten doorlopend houden.",
+        "Wat wij van die rol nodig hebben is concreet: welke bedrijven meedoen, welke aansluitingen daarbij horen, de kwartiersprofielen van die aansluitingen, en een besluitmoment met een datum. Met die vier dingen is een terreinontwerp te maken dat ergens op rust. Zonder mandaat blijft elk traject in de inventarisatie steken, hoe goed de businesscase ook is.",
+        "De parkmanager is daarmee niet automatisch de ondertekenaar. Contracteren vraagt een rechtsvorm met bevoegdheid; parkmanagement is in veel gevallen een dienst, geen eigenaar. Dat onderscheid vroeg maken voorkomt dat er maanden wordt gerekend aan een plan dat uiteindelijk niemand kan aangaan."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De gevallen waarin collectief organiseren geen vermogen vrijmaakt.",
+      "alineas": [
+        "<strong>Profielen die op elkaar lijken.</strong> Delen werkt alleen als de pieken uiteenlopen. Een terrein vol vrijwel identieke koelhuizen is het schoolvoorbeeld van het tegendeel: ze draaien hetzelfde proces, met dezelfde seizoenen en dezelfde bedrijfstijden, en ze pieken allemaal op hetzelfde moment. Dan is de piek van de som vrijwel de som van de pieken en valt er niets te verdelen. Wat er dan nog overblijft, is per locatie de eigen piek verlagen, of wachten op netverzwaring.",
+        "<strong>Een structureel tekort.</strong> Komt de gemiddelde vraag van het terrein over de dag boven wat het voedingsgebied kan leveren, dan helpt verdelen niet. Opslag verschuift energie in de tijd, hij maakt geen energie. Dan is netverzwaring de route, eventueel met een tijdelijke voorziening in de tussentijd.",
+        "<strong>Eén dominante deelnemer.</strong> Is één bedrijf verantwoordelijk voor het grootste deel van de vraag, dan betalen de overige deelnemers mee aan een piek waar ze geen invloed op hebben. Zo'n configuratie is beter als een individueel project op die locatie, met eventueel aparte afspraken voor de rest.",
+        "<strong>Huurders zonder horizon.</strong> Een collectieve installatie vraagt een verplichting over meerdere jaren. Een huurder met een korte resterende termijn kan die niet aangaan zonder de eigenaar. Dat is geen technische blokkade, maar hij stopt een traject net zo hard.",
+        "<strong>Een status die niet per terrein bestaat.</strong> Netbeheerders publiceren beschikbare capaciteit per voedingsgebied, niet per bedrijventerrein en niet per gemeente. Een groot terrein kan door meer dan één voedingsgebied worden gevoed. Controleer daarom per postcode wat er vrij is, en behandel een jaartal voor een netuitbreiding als planning en niet als toezegging.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op de postcode van het terrein</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Hoe deze vorm er in gerealiseerd werk uitziet",
+      "lead": "Drie locaties waar meerdere gebruikers achter één grens samenkomen, en wat daar onder één sturing is gebracht.",
+      "alineas": [
+        "Het dichtste bij een terreinopstelling staat <a class=\"ve-link\" href=\"/project-dormio-medemblik\">Dormio in Medemblik</a>: accommodaties die samen achter één bouwaansluiting hangen, met opslag, eigen opwek en sturing ertussen. Dat is de hubvorm in het klein — veel gebruikers, één grens, één regelaar die bepaalt wie wanneer vermogen krijgt.",
+        "Bij <a class=\"ve-link\" href=\"/project-ratio-16\">Ratio 16 in Duiven</a> speelt de verhuurder-huurderverhouding die op terreinen zo vaak de rem is: de eigenaar wilde verduurzamen en de huurder wilde laadplekken, binnen een transportvermogen dat niet omhoog kon. Zon, opslag en laden zijn daar onder één sturing gebracht zodat ze elkaar niet in de weg zitten.",
+        "Bij <a class=\"ve-link\" href=\"/project-hazenweg-61\">Hazenweg 61 in Hengelo</a> staat de andere helft van het verhaal: opslag, opwek, laden en noodstroom die als losse installaties naast elkaar stonden, onder één energiemanagementsysteem en één hoofdverdeler. Op een terrein is dat dezelfde opgave, met het verschil dat de deelnemers daar verschillende eigenaren hebben.",
+        "<p><a class=\"ve-link\" href=\"/projecten\">Alle gerealiseerde projecten</a></p>"
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit op een terrein concreet op neerkomt",
+      "lead": "Vier richtingen, afhankelijk van hoe ver het collectief wil gaan.",
+      "kaarten": [
+        { "kop": "Capaciteit samen gebruiken", "tekst": "Meerdere aangeslotenen die het beschikbare vermogen in hun voedingsgebied verdelen in plaats van ieder apart aanvragen.", "route": "energy-hubs", "label": "Energy Hubs" },
+        { "kop": "Eén gestuurd netwerk op het terrein", "tekst": "Opwek, opslag en verbruik achter één koppelpunt, met een regelaar die de grens bewaakt en voorrang bepaalt.", "route": "microgrids", "label": "Microgrids" },
+        { "kop": "Het net zit vol in dit voedingsgebied", "tekst": "Geen extra transportvermogen te krijgen, terwijl de plannen van meerdere bedrijven op het terrein doorlopen.", "route": "netcongestie", "label": "Netcongestie" },
+        { "kop": "Nog te ontwikkelen kavels", "tekst": "Bij nieuwbouw en gebiedsontwikkeling is de energie-infrastructuur nog een ontwerpkeuze in plaats van een reparatie.", "route": "sectoren/gebiedsontwikkeling", "label": "Gebiedsontwikkeling" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over collectieve energie op bedrijventerreinen",
+  "faq": [
+    {
+      "vraag": "Krijgen wij met een energy hub meer transportvermogen van de netbeheerder?",
+      "antwoord": "Nee. De aansluitwaarde en het gecontracteerde transportvermogen van elke deelnemer blijven wat ze zijn. Wat verandert is hoeveel activiteit er binnen die grenzen past, doordat pieken worden afgevlakt en voorrang wordt geregeld. Komt er één gezamenlijk koppelpunt, dan is dat een nieuwe aansluiting met een eigen aanvraag en een eigen beoordeling door de netbeheerder."
+    },
+    {
+      "vraag": "Wat is de eerste stap op ons terrein?",
+      "antwoord": "Drie dingen verzamelen: welke bedrijven serieus meedoen, welke aansluitingen daarbij horen, en de kwartiersprofielen van die aansluitingen. Daarnaast de postcodes van het terrein opzoeken op de Capaciteitskaart van Netbeheer Nederland, zodat duidelijk is of er ruimte is voor afname, voor invoeding, of geen van beide."
+    },
+    {
+      "vraag": "Moeten alle bedrijven op het terrein meedoen?",
+      "antwoord": "Nee, en een grote groep is niet automatisch beter. Wat telt is of de profielen elkaar aanvullen. Een kleine groep met uiteenlopende bedrijfstijden levert meer verdeelbare ruimte op dan een grote groep die hetzelfde proces draait."
+    },
+    {
+      "vraag": "Welke rechtsvorm hoort bij zo'n collectief?",
+      "antwoord": "Dat volgt uit wat het collectief moet kunnen: bezitten of huren, contracteren met netbeheerder en leverancier, factureren aan deelnemers en aansprakelijkheid dragen. Laat die keuze juridisch toetsen. Wij leveren het technische ontwerp en de getallen waar de keuze op rust, niet het juridische advies."
+    },
+    {
+      "vraag": "Wij huren ons pand. Kunnen we meedoen?",
+      "antwoord": "Alleen samen met de eigenaar, want een collectieve installatie vraagt een verplichting over meerdere jaren. Is dat niet rond te krijgen, dan is er vaak nog wel winst binnen uw eigen meter: piekafvlakking, load balancing op de laadpunten en sturing van uw eigen processen."
+    },
+    {
+      "vraag": "Geldt een congestiestatus voor ons hele bedrijventerrein?",
+      "antwoord": "Nee. Beperkingen worden gepubliceerd per voedingsgebied: een verzameling postcodes rond een onderstation. Die grenzen volgen geen terreingrens en geen gemeentegrens, en een groot terrein kan door meer dan één voedingsgebied worden gevoed. Kijk daarom per aansluiting en per postcode."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Zo wordt capaciteit gedeeld",
+      "items": [
+        { "route": "energy-hubs", "naam": "Energy Hubs" },
+        { "route": "microgrids", "naam": "Microgrids" },
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "laadplein", "naam": "Laadplein" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis", "naam": "Kennisbank" }
+      ]
+    },
+    {
+      "kop": "Verwante toepassingen",
+      "items": [
+        { "route": "toepassingen/geen-extra-transportvermogen", "naam": "Geen extra transportvermogen" },
+        { "route": "toepassingen/bestaande-aansluiting-optimaliseren", "naam": "Bestaande aansluiting optimaliseren" },
+        { "route": "toepassingen/processen-sturen-met-ems", "naam": "Processen sturen met een EMS" },
+        { "route": "toepassingen/meerdere-locaties", "naam": "Meerdere locaties" }
+      ]
+    },
+    {
+      "kop": "Andere sectoren op het terrein",
+      "items": [
+        { "route": "sectoren/gebiedsontwikkeling", "naam": "Gebiedsontwikkeling" },
+        { "route": "sectoren/opslag-en-distributie", "naam": "Opslag en distributie" },
+        { "route": "sectoren/productie-en-industrie", "naam": "Productie en industrie" },
+        { "route": "industrie-vastgoed", "naam": "Kantoren en vastgoed" },
+        { "route": "sectoren", "naam": "Alle sectoren" }
+      ]
+    },
+    {
+      "kop": "Bewijs, regio en regelingen",
+      "items": [
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "regios", "naam": "Regio's" },
+        { "route": "subsidies", "naam": "Subsidies en regelingen" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Leg de profielen naast elkaar voordat u een plan maakt",
+    "tekst": "Stuur de kwartiersprofielen en aansluitgegevens van de deelnemende bedrijven. Wij leggen ze over elkaar, laten zien hoeveel gelijktijdig vermogen er werkelijk nodig is en welke verdeling er mogelijk is. Blijkt dat de profielen te veel op elkaar lijken, dan zeggen we dat ook — dan is een collectief de verkeerde route.",
+    "primair": { "route": "contact", "label": "Vraag een terreinanalyse aan" },
+    "secundair": { "route": "energy-hubs", "label": "Hoe een energy hub werkt" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare capaciteit per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De op de Capaciteitskaart genoemde jaartallen voor netuitbreidingen zijn planningen en geen garantie.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — FAQ",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/faq/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

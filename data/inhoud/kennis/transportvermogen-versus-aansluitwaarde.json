@@ -1,0 +1,184 @@
+{
+  "route": "kennis/transportvermogen-versus-aansluitwaarde",
+  "type": "kennis",
+  "titel": "Transportvermogen of aansluitwaarde | Vibe Energy",
+  "beschrijving": "Aansluitcapaciteit, gecontracteerd transportvermogen en werkelijke belasting zijn drie verschillende grenzen. Waar u ze vindt en wie ze wijzigt.",
+  "og_titel": "Transportvermogen of aansluitwaarde: drie grenzen",
+  "h1": "Drie grenzen op één aansluiting, en ze zijn niet hetzelfde",
+  "lead": "Een zakelijke aansluiting heeft niet één maximum maar drie: wat de kabel fysiek kan dragen, wat u aan transport hebt gecontracteerd, en wat u werkelijk afneemt. Welke van de drie knelt, bepaalt bij wie u moet zijn en wat de oplossing kost. Wie ze door elkaar haalt, vraagt het verkeerde aan.",
+  "data_pagina": "kennis",
+  "kruimels": [{ "naam": "Kennisbank", "route": "kennis" }],
+  "kruimel_label": "Transportvermogen en aansluitwaarde",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw aansluitgegevens doorrekenen" },
+    { "soort": "ghost", "anker": "#vinden", "label": "Waar u de getallen vindt" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat is het verschil tussen aansluitwaarde en gecontracteerd transportvermogen?",
+    "antwoord": "De aansluitwaarde, ook aansluitcapaciteit genoemd, is de fysieke grens van de aansluiting: wat de kabel, de aansluitkast en de hoofdbeveiliging kunnen dragen. Die waarde staat in de aansluitovereenkomst met de netbeheerder, in kVA of in ampère per fase. Het gecontracteerd transportvermogen is de hoeveelheid vermogen in kW die u met de netbeheerder bent overeengekomen te mogen afnemen. Dat staat in de transportovereenkomst, daar betaalt u jaarlijks voor, en dat is het getal dat netcongestie blokkeert. Het gecontracteerd transportvermogen kan nooit hoger zijn dan de aansluitcapaciteit; lager kan het wel, en in een congestiegebied is dat vaak precies het knelpunt.",
+    "voorbehoud": "Dit onderscheid beschrijft een grootverbruikaansluiting voor elektriciteit. Voor kleinverbruik, voor gas en voor invoeding gelden andere begrippen en andere contractvormen. Welke posten uw netbeheerder in rekening brengt en wat ze kosten, staat op het tarievenblad van die netbeheerder."
+  },
+
+  "secties": [
+    {
+      "soort": "specs",
+      "kop": "De drie grenzen naast elkaar",
+      "rijen": [
+        ["Fysieke aansluitcapaciteit", "Wat de kabel, de aansluitkast en de hoofdbeveiliging kunnen dragen. Staat in de aansluitovereenkomst, in kVA of in ampère per fase (bijvoorbeeld 3 × 160 A). Wijzigen betekent fysiek werk aan de aansluiting."],
+        ["Gecontracteerd transportvermogen", "Het vermogen in kW dat u met de netbeheerder bent overeengekomen te mogen afnemen. Staat in de transportovereenkomst. Hier betaalt u jaarlijks voor, gebruikt of niet, en dit is het getal dat in een congestiegebied niet omhoog kan."],
+        ["Werkelijke belasting", "Wat er op dit moment door de meter gaat, en wat de hoogste kwartierwaarde van de maand was. Dit is het enige van de drie dat u zelf, achter de meter, kunt veranderen."],
+        ["De rangorde", "Werkelijke belasting ≤ gecontracteerd transportvermogen ≤ aansluitcapaciteit. Een contract boven de fysieke capaciteit bestaat niet. Een belasting boven het contract bestaat wél, en die kost geld."],
+        ["Afname en invoeding", "Apart geregeld. U kunt ruimte hebben voor afname en tegelijk een beperking op invoeding, of omgekeerd. Eén getal dekt dus niet beide richtingen."]
+      ],
+      "noot": "Verwar deze drie niet met het verschil tussen vermogen en energie. kW en kWh zijn twee eenheden; dit zijn drie grenzen, en alle drie staan ze in kW of kVA."
+    },
+    {
+      "soort": "tekst",
+      "id": "vinden",
+      "kop": "Waar u elk van de drie getallen vindt",
+      "lead": "Alle drie staan ze zwart op wit. Op drie verschillende plekken.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "<ul><li><strong>Aansluitcapaciteit</strong> — in de aansluitovereenkomst, of in de gecombineerde aansluit- en transportovereenkomst met uw netbeheerder. Uitgedrukt in kVA, of in ampère per fase. Hebt u het document niet meer, dan staan de aansluitcategorie en de capaciteit ook in het klantportaal van de netbeheerder.</li><li><strong>Gecontracteerd transportvermogen</strong> — in de transportovereenkomst, en terug te vinden als vermogenspost op de nota van uw netbeheerder. Belast uw energieleverancier de netbeheerkosten door, dan staat het op het netbeheerdeel van die nota.</li><li><strong>Werkelijke belasting</strong> — in de kwartierwaarden van uw meter, op te vragen bij uw meetbedrijf of via het portaal waar uw meetdata staat. Dit is het enige van de drie dat geen getal is maar een profiel.</li><li><strong>De hoofdbeveiliging</strong> — in de verdeelinrichting zelf. De ampèrewaarde op de hoofdzekering of de vermogensschakelaar hoort bij de aansluitcapaciteit, en is in de praktijk de grens die als eerste merkbaar wordt.</li></ul>",
+        "Let op de eenheid. Een aansluiting in kVA en een contract in kW zijn niet één op één te vergelijken: kVA is schijnbaar vermogen, kW is actief vermogen. Bij een vermogensfactor onder de één ligt het aantal bruikbare kilowatt lager dan het aantal kilovoltampère dat op papier staat. Op een locatie met veel motoren, koeling of oude verlichting is dat verschil geen afronding.",
+        "Let ook op de datum van het contract. Een transportovereenkomst die jaren geleden is afgesloten, hoort bij een bedrijfsvoering die er inmiddels anders uitziet. Veel locaties betalen voor een contractwaarde die nooit meer wordt gehaald. Een enkele locatie betaalt voor te weinig en loopt elke maand tegen een overschrijding aan."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wie het wijzigt, en wat die wijziging vraagt",
+      "lead": "Geen van de drie getallen wijzigt uw energieleverancier.",
+      "alineas": [
+        "De aansluiting en het transport zijn een zaak van uw netbeheerder, en dat is per gebied een andere partij: Liander, Enexis, Stedin, Westland Infra, Coteq of Rendo. Uw leverancier verkoopt kilowatturen en kan aan geen van beide contracten iets veranderen. Een capaciteitsgesprek dat bij de leverancier begint, loopt dood.",
+        "<h3>1 · De fysieke aansluiting verzwaren</h3>",
+        "Dit is bouwwerk. Een zwaardere kabel, een andere aansluitkast, soms een eigen ruimte voor een transformatorstation — een ruimte die u zelf inricht, bereikbaar houdt en onderhoudt. U vraagt het aan bij de netbeheerder en u betaalt een eenmalige bijdrage voor de aanleg. Daarna verandert ook uw vaste last: een zwaardere aansluiting valt vaak in een andere tariefcategorie, met een ander vastrecht en een andere periodieke aansluitvergoeding. De doorlooptijd hangt af van het gebied en van wat er fysiek moet gebeuren. Vraag die bij de aanvraag op, en vraag hem schriftelijk.",
+        "<h3>2 · Meer transportvermogen contracteren</h3>",
+        "Dit is papierwerk, en juist daarom gaat het mis. Administratief is een verhoging niets meer dan één ander getal in de transportovereenkomst. Of u hem krijgt, hangt niet van uw installatie af maar van de ruimte in het voedingsgebied waar u op zit. Zit dat gebied vol, dan wordt de verhoging geweigerd of in een wachtrij geplaatst, hoe ruim uw eigen aansluiting ook is.",
+        "<h3>3 · De werkelijke belasting veranderen</h3>",
+        "Dit is het enige dat volledig binnen uw eigen terrein valt. Gelijktijdigheid beperken, zware verbruikers in de tijd uit elkaar trekken, laadvermogen laten meebewegen met wat er over is, en pieken opvangen met opslag. Hier hebt u niemands toestemming voor nodig en geen wachtrij voor af te wachten. De keerzijde: het verandert geen van de twee contractwaarden, en het werkt alleen als het knelpunt een piek is."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "verzwaren",
+      "kop": "Verzwaren en contracteren zijn twee verschillende aanvragen",
+      "lead": "In een congestiegebied is bijna altijd de tweede het probleem.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Een verzwaring verandert de aansluiting tussen uw installatie en het net. Het knelpunt bij netcongestie zit daar niet. Dat zit stroomopwaarts: in de middenspanningsring, in het onderstation, in de transformator die uw hele voedingsgebied bedient. Een zwaardere kabel naar uw pand verandert daaraan niets.",
+        "Daarom kunt u een ruime aansluitcapaciteit hebben en toch geen kilowatt extra mogen afnemen. De fysieke ruimte is er; het recht op transport is er niet. Omgekeerd geldt het ook: een hoger contract heeft geen zin zolang de aansluiting het niet draagt. De contractwaarde kan nooit boven de aansluitcapaciteit uitkomen.",
+        "<h3>Rekenvoorbeeld, geen meting</h3>",
+        "Een aansluiting van 3 × 160 A bij een netspanning van 400 volt kan ongeveer 111 kVA dragen: 400 × 160 × √3. Houdt u in dit voorbeeld een vermogensfactor van 0,95 aan, dan is dat ruwweg 105 kW actief vermogen. Een gecontracteerd transportvermogen van 120 kW kan op zo'n aansluiting dus niet bestaan. Maar een contract van 60 kW kan er wél op staan, terwijl de kabel bijna het dubbele zou kunnen dragen. Dat is precies de situatie waarin verzwaren niets oplost en een hoger contract wordt geweigerd: u hebt al kabel over, en wat u mist is transportruimte in het gebied.",
+        "<h3>Waar de ruimte in uw gebied staat</h3>",
+        "Of er ruimte is in uw voedingsgebied, staat niet in uw contract maar op de Capaciteitskaart van Netbeheer Nederland. Zoek daar op uw postcode en niet op uw plaats: een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Welk van de drie is uw probleem?",
+      "lead": "Begin bij het symptoom. Dat wijst vrij nauwkeurig één van de drie aan.",
+      "kaarten": [
+        { "kop": "De hoofdbeveiliging slaat af", "tekst": "Spanningsdips bij het aanslaan van zware verbruikers, een zekering die eruit gaat. Dit gaat over de fysieke aansluitcapaciteit, of over de verdeling daarachter.", "route": "kennis/netaansluiting-aanvragen", "label": "Netaansluiting aanvragen of verzwaren" },
+        { "kop": "De netbeheerder wijst uw aanvraag af", "tekst": "U vraagt meer vermogen en krijgt een verwijzing naar congestie of een wachtrij. Dit gaat over gecontracteerd transportvermogen, niet over uw kabel.", "route": "netcongestie", "label": "Netcongestie" },
+        { "kop": "De nota stijgt, het verbruik niet", "tekst": "Eén korte gelijktijdige piek tilt de vermogenspost op, terwijl het aantal kilowattuur gelijk blijft. Dit gaat over de werkelijke belasting.", "route": "kennis/kw-versus-kwh", "label": "kW versus kWh" },
+        { "kop": "U betaalt voor vermogen dat u nooit haalt", "tekst": "De contractwaarde is jaren geleden vastgesteld en uw hoogste kwartier blijft er structureel onder. Hier valt een vaste jaarlast te verlagen.", "route": "toepassingen/bestaande-aansluiting-optimaliseren", "label": "Bestaande aansluiting optimaliseren" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Een hoger contract kost jaarlijks geld, ook ongebruikt",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Gecontracteerd transportvermogen is geen reservering die u gratis kunt aanhouden. De tarievenbladen van de netbeheerders kennen voor grootverbruik naast een vastrecht doorgaans twee vermogensposten: één over het vermogen dat u hebt gecontracteerd, en één over de hoogste gemeten kwartierpiek in de maand. De eerste loopt door of u hem gebruikt of niet. Welke posten voor u gelden en wat ze kosten, staat op het openbare tarievenblad van uw eigen netbeheerder.",
+        "Aan de andere kant van de grens staat de overschrijding. Gaat uw werkelijke belasting structureel boven de contractwaarde, dan kan de netbeheerder de overschrijding in rekening brengen of het contract aanpassen. Hoe dat precies gaat, staat in uw transportovereenkomst en in de tarievenregeling van uw netbeheerder — niet in een algemene vuistregel.",
+        "<h3>Rekenvoorbeeld, geen meting</h3>",
+        "Stel dat een locatie 300 kW heeft gecontracteerd en dat de hoogste kwartierwaarde van het jaar 180 kW is. Dan wordt er elk jaar voor 120 kW betaald die nooit door de meter gaat. Dat is geen energieverlies en het staat niet op het leveringsdeel van de nota. Het is een vaste post bij de netbeheerder, en hij staat er net zo lang als niemand het contract aanpast.",
+        "<h3>Verlagen kan, maar niet op één jaar meetdata</h3>",
+        "De verleiding is dan om het contract te verlagen tot net boven de gemeten piek. Doe dat niet op één jaar meetdata en niet zonder marge. Een verlaging is een contractwijziging met voorwaarden en termijnen die per netbeheerder verschillen, en in een congestiegebied is de ruimte die u inlevert niet zonder meer terug te halen: die gaat naar het gebied, niet in de wacht voor u. Vraag de voorwaarden op voordat u verlaagt, en reken met een piek die ook uw groeiplannen aankan.",
+        "Hier ligt wel de tweede helft van de businesscase van piekafvlakking. Wordt uw piek structureel en aantoonbaar lager, dan is een lager contract een besparing die elk jaar terugkomt. Dat is geen uitbreiding van capaciteit. Dat is minder capaciteit betalen dan u ongebruikt aanhield."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit onderscheid niet oplost",
+      "lead": "De eerlijke grens van deze uitleg.",
+      "alineas": [
+        "Het uit elkaar halen van de drie getallen maakt geen capaciteit vrij. Het zorgt ervoor dat u de juiste aanvraag doet bij de juiste partij, en dat u geen maanden wacht op een verzwaring die uw probleem niet was. De beschikbare ruimte in uw voedingsgebied verandert er niet van.",
+        "Opslag en sturing achter de meter raken alleen de derde grootheid. Uw aansluitcapaciteit blijft wat hij is, en uw gecontracteerd transportvermogen blijft wat het is tot u het zelf wijzigt. Een batterij creëert geen transportvermogen en verhoogt geen aansluitwaarde. Hij verandert wat u binnen die twee grenzen kunt doen.",
+        "En er is een geval waarin ook dat niet helpt. Ligt uw <strong>gemiddelde</strong> vraag over de dag boven de grens, dan is het geen piekprobleem meer. Een batterij verschuift energie in de tijd; hij maakt geen energie. Dan is verzwaren de route, met alles wat daar in een congestiegebied bij komt kijken — inclusief de kans dat het transportdeel alsnog wordt geweigerd.",
+        "Ten slotte: dit zijn drie getallen op één aansluiting. Hebt u meerdere aansluitingen op één terrein, of één aansluiting waarachter meerdere huurders zitten, dan komt daar een verdeelvraag bij die hier niet is behandeld.",
+        "Twee locaties waar de derde grootheid het werk deed: <a class=\"ve-link\" href=\"project-ratio-16\">Ratio 16 in Duiven</a> en <a class=\"ve-link\" href=\"project-hedin-amsterdam\">Hedin Amsterdam</a>. In beide gevallen bleef de aansluiting ongewijzigd en is er onder die bestaande grens bij gebouwd."
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over aansluitwaarde en transportvermogen",
+  "faq": [
+    {
+      "vraag": "Is mijn aansluitwaarde hetzelfde als mijn gecontracteerd transportvermogen?",
+      "antwoord": "Nee. De aansluitwaarde is de fysieke capaciteit van de aansluiting, in kVA of ampère per fase, en staat in de aansluitovereenkomst. Het gecontracteerd transportvermogen is het vermogen in kW dat u mag afnemen, staat in de transportovereenkomst en is vaak lager. In een congestiegebied is het verschil tussen die twee precies waar u tegenaan loopt."
+    },
+    {
+      "vraag": "Krijg ik met een zwaardere kabel meer transportvermogen?",
+      "antwoord": "Niet automatisch. Een verzwaring vergroot de fysieke capaciteit van uw aansluiting. Het recht om meer te transporteren is een aparte toezegging van de netbeheerder en hangt af van de ruimte in uw voedingsgebied. Zit dat gebied vol, dan verandert een zwaardere kabel daaraan niets."
+    },
+    {
+      "vraag": "Kan ik mijn gecontracteerd transportvermogen verlagen?",
+      "antwoord": "Vaak wel, en het verlaagt een vaste jaarlast. Maar het is een contractwijziging met voorwaarden en termijnen die per netbeheerder verschillen, en in een congestiegebied is de ingeleverde ruimte niet zonder meer terug te halen. Verlaag pas als u de pieken over meerdere seizoenen hebt gemeten en uw groeiplannen hebt meegerekend."
+    },
+    {
+      "vraag": "Mijn energieleverancier zegt dat hij er niets aan kan doen. Klopt dat?",
+      "antwoord": "Ja. Een leverancier verkoopt energie; de aansluiting en het transport liggen bij de netbeheerder van uw gebied. Afhankelijk van waar u zit is dat Liander, Enexis, Stedin, Westland Infra, Coteq of Rendo."
+    },
+    {
+      "vraag": "Welke gegevens hebt u nodig om hierover mee te denken?",
+      "antwoord": "Drie dingen: de aansluitcapaciteit uit uw aansluitovereenkomst, het gecontracteerd transportvermogen uit uw transportovereenkomst, en de kwartierwaarden van uw meter over minstens een jaar. Zonder die derde is er niets te berekenen, want de pieken zijn in een jaartotaal weggemiddeld."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Verder in de kennisbank",
+      "items": [
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/netaansluiting-aanvragen", "naam": "Netaansluiting aanvragen" },
+        { "route": "kennis/netcongestie-uitgelegd", "naam": "Netcongestie uitgelegd" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" }
+      ]
+    },
+    {
+      "kop": "Wat u ermee kunt",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "toepassingen/bestaande-aansluiting-optimaliseren", "naam": "Bestaande aansluiting optimaliseren" },
+        { "route": "toepassingen/geen-extra-transportvermogen", "naam": "Geen extra transportvermogen" },
+        { "route": "toepassingen/pieken-in-verbruik", "naam": "Pieken in verbruik" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Stuur de twee contractwaarden en het profiel",
+    "tekst": "Met uw aansluitcapaciteit, uw gecontracteerd transportvermogen en de kwartierwaarden van een jaar rekenen wij door welke van de drie grenzen bij u knelt, wat er binnen de bestaande aansluiting past en of een lager contract haalbaar is. Is verzwaren de enige route, dan zeggen we dat.",
+    "primair": { "route": "contact", "label": "Laat uw aansluitgegevens doorrekenen" },
+    "secundair": { "route": "kennis", "label": "Terug naar de kennisbank" }
+  },
+
+  "claims": []
+}

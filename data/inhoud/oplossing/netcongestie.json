@@ -1,0 +1,186 @@
+{
+  "route": "netcongestie",
+  "type": "oplossing",
+  "titel": "Netcongestie oplossen voor bedrijven | Vibe Energy",
+  "beschrijving": "Geen extra transportvermogen beschikbaar? Met opslag, opwek en sturing achter de meter groeit uw verbruik binnen de aansluiting die er al ligt.",
+  "og_titel": "Netcongestie oplossen zonder de aansluiting te verzwaren",
+  "h1": "Het net zit vol. Uw plannen hoeven niet stil te staan.",
+  "lead": "Netcongestie betekent niet dat er te weinig stroom is. Het betekent dat er op uw moment te weinig transportcapaciteit is. Dat verschil bepaalt de oplossing: niet meer vermogen inkopen, maar het vermogen dat u heeft beter verdelen over de dag.",
+  "data_pagina": "netcongestie",
+  "kruimels": [],
+  "kruimel_label": "Netcongestie",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Netcongestie oplossen achter de meter",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Vraag een netcongestieanalyse aan" },
+    { "soort": "ghost", "anker": "#wat-het-is", "label": "Wat netcongestie precies is" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat is netcongestie en wat kan een bedrijf eraan doen?",
+    "antwoord": "Netcongestie is een tekort aan transportcapaciteit op het elektriciteitsnet: de kabels en onderstations in een gebied kunnen op de piekmomenten niet al het gevraagde vermogen tegelijk vervoeren. Een bedrijf dat hierdoor geen extra transportvermogen krijgt, kan twee dingen doen. Wachten op netverzwaring, wat jaren kan duren. Of de eigen piekvraag verlagen en verschuiven, zodat de bestaande aansluiting meer werk doet: met batterijopslag die de piek opvangt, met eigen opwek die op het juiste moment wordt ingezet, en met een regelsysteem dat verbruikers zoals laadpunten begrenst wanneer het vol zit.",
+    "voorbehoud": "Een batterij achter de meter creëert geen extra gecontracteerd transportvermogen en verhoogt uw aansluitwaarde niet. Hij verandert alleen wát u binnen die grens kunt doen. Of dat genoeg is, hangt af van uw verbruiksprofiel en van hoeveel u wilt bijplaatsen."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "wat-het-is",
+      "kop": "Netcongestie is een transportprobleem, geen energietekort",
+      "lead": "Het woord suggereert schaarste aan stroom. Dat is het niet.",
+      "alineas": [
+        "Elektriciteit wordt in Nederland ruim genoeg geproduceerd. Wat knelt, is het vervoer. Tussen de hoogspanningsmast en uw meterkast zit een keten van onderstations, middenspanningsringen en kabels, en elke schakel heeft een maximum. Vragen te veel aangeslotenen in hetzelfde voedingsgebied op hetzelfde moment vermogen, dan bereikt die keten zijn grens. De netbeheerder kan dan geen nieuwe of grotere aansluiting toezeggen, ook niet als er landelijk stroom over is.",
+        "Daarom is netcongestie plaatselijk en tijdgebonden. Plaatselijk, omdat de grens per voedingsgebied verschilt: een verzameling postcodes rond één onderstation. Tijdgebonden, omdat het alleen knelt op de momenten dat iedereen tegelijk vraagt — in de praktijk vaak een paar uur per dag.",
+        "Dat maakt de oplossing ook anders dan mensen verwachten. U hoeft niet meer energie te kopen. U moet uw vraag anders over de dag verdelen, zodat uw piek lager wordt dan de grens die er al is."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Vijf begrippen die door elkaar gaan lopen",
+      "rijen": [
+        ["Fysieke aansluitcapaciteit", "Wat de kabel en de aansluitkast technisch kunnen dragen. Vastgelegd in de aansluitovereenkomst, uitgedrukt in kVA of in ampère per fase (bijvoorbeeld 3 × 80 A)."],
+        ["Gecontracteerd transportvermogen", "Het vermogen dat u met de netbeheerder bent overeengekomen te mogen afnemen, in kW. Hier betaalt u voor, ook als u het niet gebruikt. Dit is het getal dat netcongestie blokkeert."],
+        ["Vermogen (kW)", "Hoe hard er op dít moment wordt getrokken. Bepaalt of de aansluiting het houdt."],
+        ["Energie (kWh)", "Hoeveel er over een periode is verbruikt. Bepaalt uw energierekening, niet of de aansluiting het houdt."],
+        ["Gelijktijdigheid", "Welk deel van uw installaties op hetzelfde moment aan staat. Dit is bijna altijd de echte oorzaak van een piek, en bijna altijd het goedkoopst te beïnvloeden."]
+      ],
+      "noot": "Wie deze vijf door elkaar haalt, komt uit op de verkeerde ingreep. Een probleem met kW los je niet op met minder kWh, en een probleem met gelijktijdigheid los je niet op met een grotere aansluiting."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat er achter de meter werkelijk verandert",
+      "lead": "Drie ingrepen, die elkaar nodig hebben om effect te hebben.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "<h3>1 · De piek opvangen met opslag</h3>",
+        "Een batterij levert vermogen op het moment dat uw verbruik boven een gekozen grens uitkomt, en laadt bij wanneer er ruimte is. Daarmee verlaagt u de piek die het net ziet, zonder uw productie of uw laadgedrag aan te passen. De batterij wordt gedimensioneerd op het kwartiersprofiel van de locatie: niet op het aantal kWh dat u per jaar gebruikt, maar op de hoogte en de duur van de pieken die u wilt wegnemen.",
+        "<h3>2 · Eigen opwek op het juiste moment inzetten</h3>",
+        "Zon op het eigen dak verlaagt uw netafname, maar alleen als opwek en verbruik samenvallen. Doen ze dat niet, dan gaat de overproductie het net op — precies wanneer daar het minst ruimte voor is, en vaak met een terugleverbeperking als gevolg. Met opslag ertussen schuift die opwek naar het moment dat u hem zelf nodig heeft.",
+        "<h3>3 · Begrenzen in plaats van uitbreiden</h3>",
+        "Een regelsysteem kent de actuele belasting van de aansluiting en verdeelt wat er over is. Laadpunten laden langzamer als de productie piekt, en sneller als het stil is. Zo kunt u meer laadpunten plaatsen dan de aansluiting op papier toelaat, omdat ze nooit allemaal vol trekken."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De eerlijke grens van deze aanpak.",
+      "alineas": [
+        "Als uw <strong>gemiddelde</strong> vraag over de dag boven de grens van uw aansluiting uitkomt, helpt opslag niet. Een batterij schuift energie in de tijd; hij maakt geen energie. Wie structureel meer nodig heeft dan de aansluiting kan leveren, heeft een zwaardere aansluiting nodig — en dan is wachten op netverzwaring de route, eventueel met een tijdelijke voorziening in de tussentijd.",
+        "Ook verandert er niets aan uw <strong>gecontracteerd transportvermogen</strong>. Dat blijft wat het is, tot u het zelf wijzigt. Het verschil is dat u er minder vaak tegenaan loopt, en dat u het in sommige gevallen juist kunt <em>verlagen</em> omdat uw piek is afgevlakt — dat is een besparing op de netbeheerderskosten, geen uitbreiding.",
+        "En er is geen enkele oplossing die vooraf zonder meting vaststaat. Of dit bij u werkt en wat het kost, blijkt uit het kwartiersprofiel van uw aansluiting. Dat is waar wij beginnen."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Of er in uw gebied ruimte is, staat op de Capaciteitskaart",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Netbeheerders publiceren de beschikbare capaciteit per voedingsgebied op de Capaciteitskaart van Netbeheer Nederland. Daar ziet u per postcode of er ruimte is voor afname en voor invoeding, of er een wachtrij is, en welke netuitbreidingen gepland staan.",
+        "Let op twee dingen bij het lezen van die kaart. Een voedingsgebied is géén gemeente: de grenzen lopen dwars door gemeentegrenzen heen, en vrijwel elke gemeente wordt door meer dan één voedingsgebied bediend. Een status geldt dus voor uw postcode, niet voor uw plaats. En een genoemd jaartal voor een netuitbreiding is een planning, geen toezegging; de kaart zegt dat zelf ook.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit in de praktijk op neerkomt",
+      "lead": "De situaties waarin netcongestie een concreet plan blokkeert.",
+      "kaarten": [
+        { "kop": "Uitbreiden kan niet door", "tekst": "Een extra productielijn, een koelhuis of een nieuwe hal past niet binnen het vermogen dat u mag afnemen.", "route": "toepassingen/netcongestie-bij-uitbreiding", "label": "Netcongestie bij uitbreiding" },
+        { "kop": "Laden loopt tegen de grens", "tekst": "De bedrijfswagens moeten elektrisch, maar de aansluiting kan de laadpunten niet gelijktijdig dragen.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met een beperkte aansluiting" },
+        { "kop": "Het dak mag niet vol terugleveren", "tekst": "De netbeheerder beperkt de invoeding, waardoor een deel van de opbrengst van uw zonnepanelen wegvalt.", "route": "toepassingen/terugleverbeperking", "label": "Terugleverbeperking" },
+        { "kop": "Eén korte piek bepaalt de rekening", "tekst": "Een paar minuten gelijktijdigheid per maand bepaalt uw gecontracteerde vermogen voor het hele jaar.", "route": "toepassingen/pieken-in-verbruik", "label": "Pieken in verbruik" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over netcongestie",
+  "faq": [
+    {
+      "vraag": "Krijg ik met een batterij een zwaardere aansluiting?",
+      "antwoord": "Nee. Uw aansluitwaarde en uw gecontracteerd transportvermogen blijven ongewijzigd. Een batterij verandert alleen hoeveel u binnen die grens kunt doen, door de piek af te vlakken en energie in de tijd te verschuiven."
+    },
+    {
+      "vraag": "Hoe lang duurt netverzwaring in een congestiegebied?",
+      "antwoord": "Dat verschilt per gebied en per netbeheerder, en het is geen vast getal. De Capaciteitskaart van Netbeheer Nederland noemt per voedingsgebied of er een wachtrij is en welke netuitbreidingen gepland staan; die jaartallen zijn planningen en geen toezeggingen. Vraag uw netbeheerder altijd om de stand voor uw eigen aansluiting."
+    },
+    {
+      "vraag": "Werkt dit ook als ik geen zonnepanelen heb?",
+      "antwoord": "Ja. Piekafvlakking werkt op uw verbruiksprofiel en heeft geen eigen opwek nodig. Zonnepanelen maken de businesscase vaak beter omdat opslag dan ook eigen opwek bewaart, maar ze zijn geen voorwaarde."
+    },
+    {
+      "vraag": "Is netcongestie een eigenschap van mijn gemeente?",
+      "antwoord": "Nee. Beperkingen worden gepubliceerd per voedingsgebied: een verzameling postcodes rond een onderstation. Die grenzen lopen dwars door gemeentegrenzen, en vrijwel elke gemeente valt onder meerdere voedingsgebieden. Een status voor een hele gemeente bestaat niet."
+    },
+    {
+      "vraag": "Waar begint zo'n traject?",
+      "antwoord": "Bij meten. Wij hebben het kwartiersprofiel van uw aansluiting nodig, uw aansluitwaarde en uw gecontracteerd transportvermogen. Daaruit volgt hoe hoog en hoe lang uw pieken zijn, en dus of en hoe ze weg te nemen zijn."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "energy-hubs", "naam": "Energy Hubs" },
+        { "route": "microgrids", "naam": "Microgrids" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/netcongestie-uitgelegd", "naam": "Netcongestie uitgelegd" },
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/netaansluiting-aanvragen", "naam": "Netaansluiting aanvragen" }
+      ]
+    },
+    {
+      "kop": "Voor wie",
+      "items": [
+        { "route": "industrie-logistiek", "naam": "Logistiek" },
+        { "route": "industrie-vastgoed", "naam": "Kantoren en vastgoed" },
+        { "route": "sectoren/productie-en-industrie", "naam": "Productie en industrie" },
+        { "route": "sectoren/bedrijventerreinen", "naam": "Bedrijventerreinen" }
+      ]
+    },
+    {
+      "kop": "Bewijs en regio",
+      "items": [
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "regios", "naam": "Regio's" },
+        { "route": "subsidies", "naam": "Subsidies en regelingen" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Begin met meten, niet met kopen",
+    "tekst": "Stuur ons het kwartiersprofiel van uw aansluiting en de aansluitgegevens. Wij rekenen door hoe hoog uw pieken zijn, wat er binnen de bestaande aansluiting mogelijk is en waar de grens ligt. Als verzwaren de enige route is, zeggen we dat ook.",
+    "primair": { "route": "contact", "label": "Vraag een netcongestieanalyse aan" },
+    "secundair": { "route": "projecten", "label": "Bekijk gerealiseerde projecten" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren beschikbare capaciteit per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De op de Capaciteitskaart genoemde jaartallen voor netuitbreidingen zijn planningen en geen garantie.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — FAQ",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/faq/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

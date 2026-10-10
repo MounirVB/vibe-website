@@ -1,0 +1,197 @@
+{
+  "route": "kennis/normen-en-keuringen",
+  "type": "kennis",
+  "titel": "Keuringen en inspecties van installaties | Vibe Energy",
+  "beschrijving": "Waarom een energie-installatie wordt geïnspecteerd, wie het vraagt en van wie, welke documenten erbij horen en waarom dat dossier tijdens de bouw ontstaat.",
+  "og_titel": "Keuringen en inspecties van energie-installaties",
+  "h1": "Keuringen, inspecties en het dossier van uw installatie",
+  "lead": "Een inspectie is geen formaliteit en ook geen stempel. Het is het moment waarop iemand buiten het bouwteam vaststelt dat de installatie is wat de papieren zeggen. Wie dat vraagt, wat hij wil zien en wanneer het is vastgelegd, bepaalt of dat een halve dag kost of een reconstructie wordt.",
+  "data_pagina": "kennis",
+  "kruimels": [{ "naam": "Kennisbank", "route": "kennis" }],
+  "kruimel_label": "Normen en keuringen",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw dossier nalopen" },
+    { "soort": "ghost", "anker": "#dossier", "label": "Wat in het dossier hoort" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Welke keuringen en inspecties horen bij een zakelijke energie-installatie?",
+    "antwoord": "Bij een zakelijke energie-installatie bestaan drie controlemomenten met drie verschillende opdrachtgevers. De oplevering is de controle van de partij die heeft gebouwd: doormeten, inregelen en overdragen met schema's, meetrapporten en een conformiteitsverklaring. Een periodieke inspectie is een herhaalde beoordeling door iemand die niet bij de bouw betrokken was, en toetst of de installatie in de opgeleverde staat is gebleven. Een verzekeringsinspectie volgt uit de polis: de verzekeraar wil vastgesteld hebben dat het risico is wat hij denkt te dekken. Wat voor u geldt, volgt uit uw polis, uw huurcontract en het bevoegd gezag op uw locatie — niet uit de techniek.",
+    "voorbehoud": "Deze uitleg gaat over het proces: wie wat vraagt en welke documenten daarbij horen. Welke inspectieregeling voor uw installatie geldt en met welke termijn, staat in uw polisvoorwaarden en in de voorwaarden van het bevoegd gezag. Dat verschilt per installatie en per locatie en is hier niet af te leiden."
+  },
+
+  "secties": [
+    {
+      "soort": "specs",
+      "kop": "Drie controlemomenten, drie opdrachtgevers",
+      "rijen": [
+        ["Oplevering", "De controle van de partij die heeft gebouwd. De installatie wordt doorgemeten en ingeregeld, de instellingen worden vastgelegd en het geheel wordt overgedragen met schema's, meetrapporten en een verklaring dat het geleverde overeenkomt met het ontwerp."],
+        ["Periodieke inspectie", "Een herhaalde beoordeling door iemand die niet bij de bouw betrokken was. De vraag is smal: is de installatie nog in de staat waarin hij is opgeleverd, en klopt het dossier nog met wat er hangt?"],
+        ["Verzekeringsinspectie", "Een voorwaarde uit de polis. De verzekeraar wil vastgesteld hebben dat het risico is wat hij denkt te dekken, en stelt daarom eisen aan wat er wordt bekeken, door wie en met welke termijn."],
+        ["Beoordeling na wijziging", "Een losse beoordeling omdat er iets is veranderd: opslag erbij, een laadstation erbij, een verdeler vervangen. Een bestaand rapport dekt die wijziging niet, want het beschrijft de installatie van vóór de wijziging."],
+        ["Onderhoud", "Geen inspectie. Onderhoud houdt de installatie in stand; een inspectie stelt alleen vast wat de staat is. Ze vervangen elkaar niet, en een bevinding die niemand oplost is alleen een vastgelegd probleem."]
+      ],
+      "noot": "Wie deze momenten door elkaar haalt, denkt gedekt te zijn met een rapport dat over iets anders gaat. Een opleverrapport is geen periodieke inspectie, een periodieke inspectie is geen onderhoudsbeurt, en geen van de drie zegt iets over hoe de installatie presteert."
+    },
+    {
+      "soort": "tekst",
+      "id": "waarom",
+      "kop": "Waarom een inspectie bestaat",
+      "lead": "Drie belangen, die alle drie om hetzelfde vragen: aantoonbaarheid.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Een elektrische installatie is na oplevering grotendeels onzichtbaar. Kabels liggen in goten en kanalen, verbindingen zitten achter deuren, instellingen staan in software. Wie later wil weten of er goed is aangelegd, kan dat niet zien. Alleen meten en nalezen. Daar komen inspecties uit voort, en ze komen uit drie verschillende hoeken.",
+        "<h3>De verzekeraar wil het risico kennen</h3>",
+        "Een verzekeraar dekt geen gebouw maar een risico. Bij elektrische installaties, en bij opslag en opwek in het bijzonder, hangt dat risico af van hoe er is gebouwd en of dat zo is gebleven. Daarom staan er in zakelijke polissen voorwaarden over beoordeling en termijn. Loopt die termijn af, of is er iets gewijzigd zonder dat het is vastgelegd, dan gaat het gesprek bij schade eerst daarover. Dat is zelden een technische discussie. Het gaat vrijwel altijd over wat u kunt aantonen.",
+        "<h3>Het bevoegd gezag stelt voorwaarden aan de opstelling</h3>",
+        "Een batterijsysteem brengt een energiehoeveelheid op een locatie die daar eerder niet stond. Gemeente, omgevingsdienst en brandweer kunnen daarom voorwaarden stellen aan de plek, de afstand tot het pand, de ventilatie, de compartimentering en de bereikbaarheid voor hulpdiensten. Dat zijn ontwerpvoorwaarden, geen inspectiepunten. Ze horen vóór de bouw op tafel, omdat ze bepalen waar de kasten komen te staan. Wat er voor opslag inhoudelijk speelt, staat bij <a class=\"ve-link\" href=\"/kennis/batterijveiligheid\">batterijveiligheid</a>.",
+        "<h3>U wilt het zelf kunnen aantonen</h3>",
+        "De derde reden wordt het minst genoemd en is het meest praktisch. Bij een verkoop, een huurderswissel, een financieringsvraag of een uitbreiding wordt om het dossier gevraagd. Een installatie zonder dossier is in dat gesprek een onbekende. Hij werkt misschien uitstekend, maar niemand kan het nagaan, en dan wordt hij als risico ingeprijsd. Het dossier is dus geen administratie. Het is de waarde van de installatie, opgeschreven."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wie vraagt wat, en van wie",
+      "lead": "Bij één installatie kunnen vier partijen iets willen, en ze willen niet hetzelfde.",
+      "alineas": [
+        "Ze vragen het ook op vier verschillende momenten: het bevoegd gezag vóór de aanvraag, de netbeheerder bij de registratie van de wijziging, de bouwende partij bij de overdracht en de verzekeraar na inbedrijfname. Eén verzamelverzoek aan de installateur dekt die vier dus niet, en wie het als één vraag behandelt, mist meestal het moment dat het vroegst valt.",
+        "<ul><li><strong>De verzekeraar</strong> vraagt aan de drager van het risico: een beoordeling door een partij die niet heeft gebouwd, met een rapport en een termijn voor de volgende keer.</li><li><strong>Het bevoegd gezag</strong> vraagt aan de eigenaar van het pand: een onderbouwing dat de opstelling aan de gestelde voorwaarden voldoet. Meestal al bij de aanvraag, dus voordat er iets staat.</li><li><strong>De netbeheerder</strong> vraagt aan de aangeslotene: duidelijkheid over wat er op de aansluiting is bijgeplaatst, en registratie van opwek. Dat is een administratieve handeling en staat los van elke inspectie.</li><li><strong>De eigenaar of de huurder</strong> vraagt aan de bouwende partij: een dossier dat compleet is bij de overdracht, inclusief de instellingen van de sturing.</li></ul>",
+        "In een huursituatie loopt dit vaak scheef. De huurder laat laadpunten of opslag plaatsen, de eigenaar verzekert het pand, en het rapport belandt bij degene die de opdracht gaf. Bij een huurderswissel verdwijnt het daarmee uit het gebouw. Spreek daarom bij de opdracht af wie het dossier beheert, waar het ligt en wie het bij een mutatie overdraagt. Dat is een afspraak van twee regels die later veel uitzoekwerk voorkomt.",
+        "Dezelfde scheefstand zit in het beheer na oplevering. Een installatie die niemand als zijn eigendom beschouwt, wordt niet onderhouden en niet beoordeeld. Leg daarom bij de opdracht ook vast wie de storingsdienst doet en binnen welke tijd er wordt gereageerd. Dat hoort in dezelfde alinea als het dossier, want het gaat over dezelfde vraag: wie is na de oplevering aan zet?"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "dossier",
+      "kop": "Wat er in het dossier van een installatie hoort",
+      "lead": "Geen map met garantiebewijzen, maar de beschrijving waarmee iemand anders de installatie kan begrijpen, doormeten en veilig uitbreiden.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "<ul><li><strong>Schema's van de werkelijk uitgevoerde situatie</strong> — verdeelschema's en een overzicht van de keten van aansluiting tot eindgroep. Niet de ontwerpversie, maar de versie waarin de wijzigingen van de bouw zijn verwerkt.</li><li><strong>Meetrapporten</strong> — de gemeten waarden op het moment van oplevering, per onderdeel herleidbaar. Dit is het nulpunt waartegen elke latere beoordeling afzet. Zonder nulpunt is een afwijking niet aan te wijzen.</li><li><strong>Een conformiteitsverklaring</strong> — de schriftelijke verklaring van de bouwende partij dat het geleverde overeenkomt met het ontwerp en de afspraken. Bij <a class=\"ve-link\" href=\"/project-nieuw-schoonoord\">Nieuw-Schoonoord in Velp</a> hoort die verklaring bij de eindoplevering.</li><li><strong>Instellingen en parameters</strong> — de grenswaarden in de sturing: op welk vermogen wordt begrensd, welke prioriteit heeft laden, wat gebeurt er bij het wegvallen van de meting. Zonder deze lijst is niet te zien waarom het systeem doet wat het doet.</li><li><strong>Typegegevens van wat er werkelijk hangt</strong> — modules, omvormers, beveiligingen en onderconstructie, met serienummers waar die er zijn.</li><li><strong>Beeldmateriaal van wat is weggewerkt</strong> — doorvoeren, aansluitingen en bevestigingen die na afbouw niet meer te zien zijn.</li><li><strong>Een wijzigingslogboek</strong> — één lijst met wat er na oplevering is aangepast, door wie en wanneer.</li></ul>",
+        "De laatste twee staan zelden in een bestek, en zijn in de praktijk precies de twee die later worden gemist. Een foto van een doorvoer kost niets op het moment dat de doorvoer open ligt. Daarna is het sloopwerk.",
+        "Let bij de overdracht op de vorm. Een dossier dat alleen als papier bestaat, ligt na een verhuizing nergens meer. Een dossier dat alleen in het portaal van een leverancier staat, is van die leverancier. Vraag de bestanden zelf, in een formaat dat u kunt openen zonder abonnement, en bewaar ze bij de overige gebouwdocumenten."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Waarom vastleggen tijdens de bouw goedkoper is dan reconstrueren",
+      "lead": "Hetzelfde dossier kost tijdens de bouw uren en achteraf dagen.",
+      "alineas": [
+        "Een dossier dat tijdens de bouw ontstaat, kost de tijd van monteurs die er toch al staan, bij een installatie die toch al open is. Een dossier dat achteraf wordt gereconstrueerd, kost een nieuw bezoek, nieuwe metingen en soms stilstand. Dat verschil zit in drie dingen.",
+        "<h3>Bereikbaarheid</h3>",
+        "Tijdens de bouw staat de kast open en liggen de kabels los. Na afbouw moet er gedemonteerd worden om hetzelfde te kunnen vaststellen. Sommige onderdelen zijn dan definitief weggewerkt, en daarvan is alleen nog vast te stellen dát ze er zijn, niet hoe ze zijn uitgevoerd.",
+        "<h3>Spanning</h3>",
+        "Een deel van de metingen aan een installatie kan alleen spanningsloos. Tijdens de bouw is dat de normale toestand. Na inbedrijfname betekent het dat uw pand, uw koeling, uw proces of uw laadplein stilstaat op een moment dat u zelf moet plannen en dat uw huurder of uw productie merkt.",
+        "<h3>Geheugen</h3>",
+        "Wie heeft bijgevoerd, welke groep is omgelegd, waarom staat de begrenzing op deze waarde: dat weet de monteur die er stond, en later weet hij het niet meer. Wat niet is vastgelegd op het moment dat het werd gedaan, wordt daarna gereconstrueerd met aannames. En een aanname in een dossier is schadelijker dan een leeg veld, omdat niemand hem later nog als aanname herkent.",
+        "Daarom hoort het dossier in de opdracht te staan en niet in de oplevering. Welke documenten u verwacht, in welk formaat, en bij wie ze worden aangeleverd: dat is één alinea in de opdrachtbrief. Staat die alinea er niet, dan krijgt u wat gebruikelijk is bij die partij, en dat is zelden wat een onafhankelijke beoordelaar later nodig heeft."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Uitbreiden zonder het dossier bij te werken",
+      "lead": "De meeste dossiers lopen niet vast bij de oplevering, maar bij de eerste uitbreiding.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Er komt opslag bij een bestaand zonnedak, of een laadstation bij een bestaande verdeler. Het nieuwe deel wordt netjes gedocumenteerd. Het bestaande deel niet, want daar is niets aan veranderd — behalve de keten waarin het hangt, en dat is precies wat een beoordeling onderzoekt.",
+        "<h3>Wat er dan feitelijk misgaat</h3>",
+        "<ul><li><strong>De beveiliging klopt niet meer op papier.</strong> Een extra bron of een extra afgaande groep verandert wat er bij een fout gebeurt. Laat het schema de oude situatie zien, dan toetst niemand die verandering, ook niet de partij die de uitbreiding bouwt.</li><li><strong>De grenswaarde in de sturing staat op de oude situatie.</strong> Een begrenzing die bij oplevering klopte, kan na uitbreiding de verkeerde grens bewaken. Dat merkt u pas bij de eerste gelijktijdige piek, en dan is het een storing en geen papieren kwestie.</li><li><strong>Het bestaande rapport dekt de wijziging niet.</strong> Het beschrijft de installatie zoals die was. Na de uitbreiding is het een document over een installatie die niet meer bestaat.</li><li><strong>De verzekeraar leest de polisvoorwaarden, niet de bedoeling.</strong> Een wijziging die niet is gemeld of niet is vastgelegd, is bij schade het eerste waar het gesprek over gaat.</li><li><strong>De volgende partij begint opnieuw.</strong> Wie na u komt, treft twee halve dossiers aan en moet het verschil uitmeten. Dat is de duurste vorm van documentatie die er bestaat, en u betaalt hem twee keer: één keer in uitzoekwerk en één keer in vertraging.</li></ul>",
+        "Een uitbreiding is dus geen bijlage bij een bestaand dossier. Het is een nieuwe versie ervan: de schema's van de werkelijke situatie, de metingen van het gewijzigde deel, de nieuwe instellingen van de sturing en een regel in het wijzigingslogboek. Bij het kantoorpand aan de <a class=\"ve-link\" href=\"/project-hazenweg-61\">Hazenweg 61 in Hengelo</a> is dat de reden dat de uitbreiding, de nieuwe hoofdverdeler, het herlegde zonnedak, het laden en de sturing als één traject zijn behandeld en na oplevering onafhankelijk zijn geïnspecteerd.",
+        "Bij een bestaande installatie zonder volledig dossier is de eerste stap daarom niet uitbreiden, maar vaststellen wat er staat. Wat er ontbreekt bepaalt wat er nog gemeten moet worden, en dat is beter te weten vóór het ontwerp van de uitbreiding dan erna."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat een inspectie niet oplost",
+      "lead": "Een beoordeling is een momentopname van de staat van een installatie. Dat is waardevol, en het is beperkt.",
+      "alineas": [
+        "<ul><li><strong>Geen garantie voor de periode erna.</strong> Een rapport zegt wat er op die dag is vastgesteld. Een verbinding die een week later losloopt, staat er niet in.</li><li><strong>Geen prestatiemeting.</strong> Dat een installatie veilig en volgens het ontwerp is aangelegd, zegt niets over de opbrengst, over het eigen verbruik of over de hoogte van uw pieken. Dat is een ander meetvraagstuk en staat bij <a class=\"ve-link\" href=\"/kennis/energieprestatie-meten\">energieprestatie meten</a>.</li><li><strong>Geen onderhoud.</strong> Een beoordelaar stelt vast, hij repareert niet en hij reinigt niet. De opvolging van de bevindingen is een aparte opdracht met een aparte planning.</li><li><strong>Geen uitspraak over de sturing.</strong> Of het energiemanagement de juiste keuze maakt op het juiste moment, blijkt niet uit een elektrische beoordeling maar uit de meetdata van de locatie.</li><li><strong>Geen vervanging van het gesprek met uw verzekeraar.</strong> Wat uw polis vraagt, staat in uw polis. Een rapport dat niet aan die voorwaarden is opgehangen, kan inhoudelijk goed en formeel het verkeerde document zijn.</li></ul>",
+        "En een beoordeling lost geen ontwerpfout op. Staat een batterij op een plek waar het bevoegd gezag hem niet wil, of is een laadverdeler te klein gekozen voor de uitbreiding die al in de planning staat, dan komt dat terug als bevinding en niet als oplossing. Die keuzes horen in het ontwerp, en daar zijn ze goedkoop: een tracé dat op uitbreiding is voorbereid kost bij de aanleg weinig en achteraf een nieuwe sleuf.",
+        "Tot slot: een rapport maakt een installatie niet veilig, het stelt vast dat hij het was. Veiligheid komt uit het ontwerp, uit de uitvoering en uit het beheer daarna. De beoordeling is het bewijs, niet de oorzaak."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Hoe dit bij opgeleverd werk zichtbaar is",
+      "lead": "Drie opgeleverde installaties waar beoordeling en overdracht bij het werk hoorden, en twee onderwerpen die er direct aan vastzitten.",
+      "kaarten": [
+        { "kop": "Purmerend, Edisonweg", "tekst": "Een zonnedak op een bedrijfspand, beoordeeld door een inspecteur die niet bij de bouw betrokken was. Het rapport hoort bij de installatie, niet bij de installateur.", "route": "project-purmerend", "label": "Bekijk het project" },
+        { "kop": "Formupgrade, Arnhem", "tekst": "Een plat bedrijfsdak, afgemeld na een onafhankelijke inspectie, met een vastgelegde datum voor de volgende beoordeling.", "route": "project-formupgrade", "label": "Bekijk het project" },
+        { "kop": "Hazenweg 61, Hengelo", "tekst": "Uitbreiding, een nieuwe hoofdverdeler, een herlegd zonnedak, opslag en laden in één traject. Eén keten betekent één dossier en één beoordeling, niet vijf losse opleveringen.", "route": "project-hazenweg-61", "label": "Bekijk het project" },
+        { "kop": "Opslag vraagt een eigen gesprek", "tekst": "Bij een batterij gaat het niet alleen over de elektrische keten, maar ook over opstelling, afstand, compartimentering en de voorwaarden van het bevoegd gezag.", "route": "kennis/batterijveiligheid", "label": "Batterijveiligheid" },
+        { "kop": "Zon op het bedrijfsdak", "tekst": "Wat er bij een zonne-installatie hoort aan schema's, metingen en overdracht, en wie het beheer na de oplevering doet.", "route": "systeem-zonnepanelen", "label": "Zonne-energie" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over keuringen en inspecties",
+  "faq": [
+    {
+      "vraag": "Wie is verantwoordelijk voor de inspectie: de eigenaar of de huurder?",
+      "antwoord": "Dat staat in de huurovereenkomst en in de polis, niet in de techniek. In de praktijk verzekert de eigenaar het pand en laat de huurder de installatie plaatsen, waardoor het rapport bij degene belandt die de opdracht gaf. Spreek bij de opdracht af wie de beoordeling laat uitvoeren, wie het dossier bewaart en wie het bij een mutatie overdraagt."
+    },
+    {
+      "vraag": "Hoe vaak moet een installatie beoordeeld worden?",
+      "antwoord": "Er is geen termijn die voor alle installaties geldt. De termijn volgt uit uw polisvoorwaarden en uit de aard van de installatie, en staat in het rapport van de vorige beoordeling. Vraag die termijn expliciet op en zet hem in de agenda van degene die het pand beheert, niet in die van de installateur."
+    },
+    {
+      "vraag": "Mag de installateur zijn eigen werk keuren?",
+      "antwoord": "De oplevering is per definitie de controle van de bouwende partij: doormeten, inregelen, vastleggen en overdragen. Een beoordeling die als onafhankelijk moet gelden, vraagt iemand die niet bij de bouw betrokken was. Dat zijn twee verschillende producten met twee verschillende rapporten; vraag ze niet in één opdracht uit."
+    },
+    {
+      "vraag": "Wat is een conformiteitsverklaring?",
+      "antwoord": "Een schriftelijke verklaring van de partij die heeft gebouwd dat het geleverde overeenkomt met het ontwerp en de gemaakte afspraken. Het is een overdrachtsdocument bij de oplevering. Het is geen onafhankelijk oordeel en het vervangt geen periodieke beoordeling."
+    },
+    {
+      "vraag": "Moet opslag ook beoordeeld worden als het zonnedak al is bekeken?",
+      "antwoord": "Een beoordeling gaat over de installatie zoals die op dat moment is bekeken. Komt er opslag bij een bestaand zonnedak, dan verandert de keten waarin dat dak hangt: een extra bron, een andere verdeling, nieuwe instellingen in de sturing en meestal een nieuwe opstelling buiten. Dat deel zit niet in een eerder rapport."
+    },
+    {
+      "vraag": "Wij hebben geen dossier meer. Wat nu?",
+      "antwoord": "Dan begint het met vaststellen wat er staat: de werkelijke keten in beeld brengen, de installatie doormeten en de instellingen van de sturing uitlezen. Daaruit volgt een actuele set schema's en een nulpunt. Dat is werk, maar het is eenmalig, en het is minder werk dan dezelfde reconstructie onder tijdsdruk tijdens een verkoop of een schademelding."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Verder in de kennisbank",
+      "items": [
+        { "route": "kennis/batterijveiligheid", "naam": "Batterijveiligheid" },
+        { "route": "kennis/energieprestatie-meten", "naam": "Energieprestatie meten" },
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Energiemanagementsysteem" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/terugleverbeperking", "naam": "Terugleverbeperking" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" }
+      ]
+    },
+    {
+      "kop": "Opgeleverd werk",
+      "items": [
+        { "route": "project-purmerend", "naam": "Edisonweg, Purmerend" },
+        { "route": "project-formupgrade", "naam": "Formupgrade, Arnhem" },
+        { "route": "project-hazenweg-61", "naam": "Hazenweg 61, Hengelo" },
+        { "route": "projecten", "naam": "Alle projecten" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Vraag het dossier uit voordat u de opdracht gunt",
+    "tekst": "Zet in de opdracht welke documenten u bij de oplevering verwacht: schema's van de werkelijk uitgevoerde situatie, de meetrapporten, een conformiteitsverklaring en de instellingen van de sturing. Bij een nieuwe installatie leggen wij die tijdens de bouw vast. Bij een bestaande installatie kunnen wij nagaan wat er in uw dossier ontbreekt en wat daarvoor nog gemeten moet worden.",
+    "primair": { "route": "contact", "label": "Laat uw dossier nalopen" },
+    "secundair": { "route": "kennis", "label": "Terug naar de kennisbank" }
+  },
+
+  "claims": []
+}

@@ -1,0 +1,230 @@
+{
+  "route": "toepassingen/meerdere-locaties",
+  "type": "toepassing",
+  "titel": "Energiebeheer op meerdere locaties | Vibe Energy",
+  "beschrijving": "Tien, vijftig of honderd adressen, elk met een eigen profiel en netbeheerder. Wat u centraal standaardiseert, wat per locatie verschilt en hoe u faseert.",
+  "og_titel": "Energiebeheer op tien, vijftig of honderd locaties",
+  "h1": "Eén portefeuille. Per locatie een ander antwoord.",
+  "lead": "U beheert energie op tien, vijftig of honderd adressen. Het voelt als één opgave, maar elke aansluiting heeft een eigen profiel, een eigen grens, een eigen netbeheerder en een eigen dak. Centraal standaardiseert u de werkwijze. Per locatie bepaalt u het systeem.",
+  "data_pagina": "toepassingen",
+  "kruimels": [{ "naam": "Toepassingen", "route": "toepassingen" }],
+  "kruimel_label": "Meerdere locaties",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Energiebeheer op meerdere locaties",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Vraag een portefeuille-analyse aan" },
+    { "soort": "ghost", "anker": "#gegevens", "label": "Welke gegevens u per locatie nodig heeft" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Hoe pakt u energiebeheer op meerdere locaties aan?",
+    "antwoord": "Energiebeheer over meerdere locaties begint bij de vaststelling dat elke aansluiting een eigen opgave is: een eigen kwartiersprofiel, een eigen aansluitwaarde en gecontracteerd transportvermogen, een eigen netbeheerder en voedingsgebied, en een eigen dak. Centraal wordt de werkwijze vastgelegd: één vaste gegevensuitvraag per adres, dezelfde meetgrootheden, één sturingslaag met per locatie eigen grenswaarden en een beperkte reeks componenten. Per locatie wordt de dimensionering bepaald. De uitvoering gaat in tranches, gesorteerd op waar een bedrijfsplan stilstaat, waar de piek de kosten bepaalt en waar toch al werk gepland staat.",
+    "voorbehoud": "Dit antwoord zegt niet dat één ontwerp op alle locaties past; dat is juist de fout die het probeert te voorkomen. Het zegt ook niets over het delen van vermogen tussen locaties: afzonderlijke aansluitingen kunnen elkaars piek niet opvangen."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "verschillen",
+      "kop": "Hetzelfde probleem krijgt per locatie een ander antwoord",
+      "lead": "Vijf dingen verschillen per adres, en elk van de vijf verandert het ontwerp.",
+      "alineas": [
+        "Een portefeuille voelt als één programma: kosten omlaag, pieken beheersbaar, laadvraag opgevangen. In de techniek is het een verzameling losse aansluitingen die elkaar niet zien. Elke aansluiting heeft een eigen meter, een eigen transportovereenkomst, een eigen voedingsgebied en een eigen netbeheerder. Een batterij op het ene adres doet niets voor de piek op het andere.",
+        "<h3>Het kwartiersprofiel</h3>",
+        "Twee panden met een vergelijkbaar jaarverbruik kunnen een volstrekt verschillende piekvorm hebben. Een distributiecentrum met twee ploegen heeft brede, lange overschrijdingen. Een winkel met koeling en een snellader heeft korte, hoge uitschieters. Het benodigde vermogen volgt uit de hoogte van de piek boven de gekozen grens; de bruikbare capaciteit uit die hoogte maal de duur. Dezelfde kast op beide locaties is op minstens één van de twee verkeerd gedimensioneerd.",
+        "<h3>De aansluiting</h3>",
+        "Fysieke aansluitcapaciteit in kVA of ampère per fase, en gecontracteerd transportvermogen in kW: twee verschillende grenzen, en in een portefeuille lopen ze zelden gelijk op. Op het ene adres is het contract krap en de kabel ruim, op het andere precies omgekeerd. Dat bepaalt of de ingreep in het contract zit, in de verdeelinrichting, of in opslag.",
+        "<h3>De netbeheerder en het voedingsgebied</h3>",
+        "Er zijn zes regionale netbeheerders voor elektriciteit: Liander, Enexis, Stedin, Westland Infra, Coteq en Rendo. Een portefeuille van enige omvang zit bijna altijd bij meer dan één. Procedures, wachtrijen en beschikbare ruimte verschillen daarmee per adres. Capaciteit wordt gepubliceerd per voedingsgebied — een verzameling postcodes rond één onderstation — en dat gebied volgt geen gemeentegrens. Twee filialen in dezelfde stad kunnen dus onder een ander regime vallen.",
+        "<h3>Het dak en het terrein</h3>",
+        "Draagkracht, dakopbouw en de resterende levensduur van de dakbedekking bepalen of zon nu kan of pas bij de volgende dakvervanging. Daarnaast: is er buitenruimte voor een batterijopstelling, is er plek in de hoofdverdeler, en is het pand in eigendom of gehuurd. Bij huur is de resterende looptijd de harde grens van de businesscase, niet de levensduur van de installatie.",
+        "<h3>Het gebruik</h3>",
+        "Gelijktijdigheid verschilt per functie. Een kantoor met thuiswerkdagen, een koelhuis dat doorloopt, een werkplaats die om acht uur alles tegelijk aanzet: dezelfde apparaten in een andere ritmiek geven een andere piek. Dit is de enige van de vijf die geen hardware vraagt."
+      ],
+      "bronnen": [
+        { "naam": "Netbeheer Nederland — onze leden", "url": "https://www.netbeheernederland.nl/onze-leden", "datum": "2026-10-10" },
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities", "url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Wat één verschil doet met het ontwerp",
+      "rijen": [
+        ["Piekvorm", "Kort en hoog vraagt veel kW en weinig kWh. Breed en lang vraagt het omgekeerde. Eén standaardverhouding tussen vermogen en capaciteit past per definitie niet op beide."],
+        ["Contract of kabel", "Is het gecontracteerd transportvermogen de grens, dan is een contractwijziging soms al genoeg. Is de fysieke aansluitcapaciteit de grens, dan verandert alleen de netbeheerder dat."],
+        ["Voedingsgebied", "Ruimte in het gebied bepaalt of uitbreiden een aanvraag is of een wachtrij. Die status geldt per postcode, niet per plaats en niet per gemeente."],
+        ["Dakstatus", "Een dak dat binnen enkele jaren toch open gaat, bepaalt het moment van de zoninvestering, niet het rendement ervan."],
+        ["Eigendomsvorm", "Bij een gehuurd pand begrenst de resterende contractduur wat een terugverdientijd waard is, en bepaalt de eigenaar wie mag aanbrengen."],
+        ["Laadvraag", "Het aantal laadpunten maal het vermogen per punt is bijna nooit de werkelijke gelijktijdige vraag. Hoeveel ruimte daartussen zit, verschilt per locatie en per wagenpark."]
+      ],
+      "noot": "Vier van deze zes staan niet in uw energiecontract en niet in uw boekhouding. Ze komen uit de locatie zelf. Een portefeuilleplan dat alleen op facturen is gebouwd, is daarom altijd te grof."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat centraal wel te standaardiseren is",
+      "lead": "Niet het systeem. Wel bijna alles eromheen.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "De winst van een portefeuille zit niet in één ontwerp voor alle adressen. Die zit in het eenmalig vastleggen van wat zich wél laat herhalen, zodat per locatie alleen de techniek nog een keuze is.",
+        "<ul><li><strong>Meten en rapporteren</strong> — dezelfde grootheden, dezelfde meetpunten, hetzelfde interval op elk adres. Zonder dat vergelijkt u geen locaties maar meetverschillen.</li><li><strong>Eén sturingslaag</strong> — hetzelfde regelsysteem over alle locaties, met per aansluiting een eigen grenswaarde. De logica is gelijk, de instellingen niet.</li><li><strong>De gegevensuitvraag</strong> — één vaste lijst die u per adres invult. Een locatie met een ontbrekend veld is niet traag, die is niet beoordeelbaar.</li><li><strong>Componentfamilies</strong> — een beperkte reeks batterijmodules, omvormers en laadpunten in vaste stappen. Geen enkele maat, maar een korte reeks maten uit dezelfde familie. Dat houdt onderhoud, voorraad en kennis beheersbaar.</li><li><strong>Inrichtings- en veiligheidsafspraken</strong> — opstelling, vrije afstanden, afsluitbaarheid, toegang voor beheer. Eenmaal vastleggen, overal toepassen.</li><li><strong>De beslisregel</strong> — niet welke oplossing een locatie krijgt, maar welke drempel een locatie moet halen om in de volgende tranche te komen.</li></ul>",
+        "Wat zich níét laat standaardiseren: de dimensionering, het dakplan, de indeling van het laadplein en de route langs de netbeheerder. Dat zijn per adres andere getallen, andere doorlooptijden en soms een ander antwoord dan u hoopte. Wie die vier toch centraal vastzet, koopt uniformiteit en betaalt met installaties die niet passen.",
+        "<p>De sturingslaag is bij ons <a class=\"ve-link\" href=\"/vibe-control\">VIBE.CONTROL</a>: dezelfde logica op elke locatie, per aansluiting anders ingesteld.</p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Twee vestigingen, dezelfde organisatie, niet hetzelfde systeem",
+      "alineas": [
+        "<a class=\"ve-link\" href=\"/project-hedin-amsterdam\">Hedin Amsterdam</a> en <a class=\"ve-link\" href=\"/project-hedin-alkmaar\">Hedin Alkmaar</a> zijn twee vestigingen van dezelfde organisatie, in dezelfde sector. Het zijn twee verschillende installaties geworden, omdat de opgave per vestiging anders lag. In Amsterdam was de bestaande aansluiting de bindende grens en moest daarbinnen ruimte komen voor grootschalig laden. In Alkmaar was de opgave dat het pand ook bij hoge vraag voldoende vermogen houdt. Twee opgaven, twee ontwerpen. Wat zich over een portefeuille wél laat herhalen is de werkwijze eromheen — de uitvraag, de meetgrootheden en de sturingslaag; de dimensionering hoort daar niet bij. De cijfers per vestiging staan op de projectpagina's en zijn niet uitwisselbaar.",
+        "Hetzelfde patroon in woningportefeuilles. In Nijmegen zijn de <a class=\"ve-link\" href=\"/project-van-beethovenstraat\">Van Beethovenstraat</a>, de <a class=\"ve-link\" href=\"/project-burchtstraat\">Burchtstraat</a>, de <a class=\"ve-link\" href=\"/project-kwakkenbergflat\">Kwakkenbergflat</a> en de <a class=\"ve-link\" href=\"/project-piersonstraat\">Piersonstraat</a> elk afzonderlijk aangepakt: complexen in één stad, met per complex een eigen dak, een eigen meterkast en een eigen besluit. De uitkomsten verschillen per complex en zijn niet tot één portefeuillegemiddelde te herleiden. Dat is precies het punt van deze pagina.",
+        "<p>Meer over portefeuillewerk in woningbezit: <a class=\"ve-link\" href=\"/industrie-residentieel\">woningportefeuilles</a>.</p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Hoe u prioriteert als niet alles tegelijk kan",
+      "lead": "Een portefeuille wordt in tranches uitgevoerd. De volgorde bepaalt het resultaat meer dan de techniek.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Budget, montagecapaciteit en de doorlooptijd bij netbeheerders maken gelijktijdig uitvoeren onmogelijk zodra het om meer dan een handvol adressen gaat. De vraag is dus niet óf u faseert, maar waarop u sorteert. Vier criteria, in deze orde:",
+        "<h3>1 · Waar een bedrijfsplan stilstaat</h3>",
+        "Een locatie waar een uitbreiding, een extra productielijn of de elektrificatie van het wagenpark niet doorgaat omdat het vermogen ontbreekt, kost geen energiegeld maar omzet. Die gaat voor, ook als de energiebesparing daar lager is dan elders.",
+        "<h3>2 · Waar de piek de rekening bepaalt</h3>",
+        "Op locaties waar een korte gelijktijdige piek het gecontracteerde vermogen voor het hele jaar vastzet, is de ingreep het snelst terug te rekenen. Dat zijn zelden de locaties met het hoogste jaarverbruik; het zijn de locaties met het scherpste profiel. Oppervlakte en kWh voorspellen de opbrengst slecht, de piekvorm voorspelt hem goed.",
+        "<h3>3 · Waar toch al werk gepland staat</h3>",
+        "Een dakvervanging, een verbouwing, een nieuwe hoofdverdeler of het verlengen van een huurcontract zijn de momenten waarop de meerkosten van een installatie het laagst zijn. Een locatie waarvan het dak over twee jaar toch open gaat, hoort niet in de eerste tranche. Een locatie waar de verbouwing volgende maand begint, hoort er wel in, ook als de businesscase op zichzelf niet bovenaan staat.",
+        "<h3>4 · Waar de netbeheerder ruimte heeft</h3>",
+        "Zit het voedingsgebied vol, dan verandert dat niet of u achter de meter iets kunt doen — daar levert het juist vaak het meest op. Het verandert wel de volgorde van alles waarvoor u een zwaardere aansluiting nodig heeft, want daar hangt een wachtrij aan. Of er in een gebied ruimte is, staat per postcode op de Capaciteitskaart van Netbeheer Nederland.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek per postcode</a></p>",
+        "Wat in deze volgorde ontbreekt is \"de grootste locatie eerst\". Grootte zegt niets over de drie dingen die er wél in staan: een plan dat stilstaat, een scherp piekprofiel en een werkmoment dat toch al gepland is. Een klein filiaal met een snellader kan hoger uitkomen dan een groot distributiecentrum met een vlak profiel."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "gegevens",
+      "kop": "Wat u per locatie nodig heeft voordat vergelijken zin heeft",
+      "lead": "Zonder deze velden rangschikt u op gevoel in plaats van op grond.",
+      "alineas": [
+        "<ul><li><strong>Aansluiting</strong> — EAN, netbeheerder, en of het een grootverbruik- of kleinverbruikaansluiting is.</li><li><strong>Kwartiersprofiel</strong> — afname en teruglevering over een volledig jaar. Een jaartotaal in kWh middelt precies weg waar het om gaat.</li><li><strong>Twee grenzen</strong> — de fysieke aansluitcapaciteit in kVA of ampère per fase, en het gecontracteerd transportvermogen in kW. Dat zijn verschillende getallen; vul ze niet in één veld in.</li><li><strong>Postcode</strong> — voor de capaciteitsstatus van het voedingsgebied.</li><li><strong>Eigendomsvorm</strong> — eigendom of huur, bij huur de resterende looptijd en wie mag aanbrengen.</li><li><strong>Dak</strong> — oppervlak, draagkracht, opbouw, staat en resterende levensduur van de dakbedekking, plus bestaande panelen met het omvormervermogen.</li><li><strong>Beperkingen op invoeding</strong> — een terugleverbeperking of begrensde invoeding, en de voorwaarde waaronder die geldt.</li><li><strong>Laadpunten</strong> — aantal, vermogen per punt, en of er al dynamisch wordt verdeeld.</li><li><strong>Ruimte</strong> — vrije posities in de hoofdverdeler, en buitenruimte of een technische ruimte voor opslag.</li><li><strong>Verbinding</strong> — een bruikbare netwerkverbinding voor meten en sturen, en wie die beheert.</li><li><strong>Plannen</strong> — uitbreiding, nieuwe machines, elektrificatie van het wagenpark, of verkoop of afstoten binnen de planperiode.</li></ul>",
+        "Twee velden staan in geen enkel energiedossier en worden daarom gemakkelijk overgeslagen: de resterende looptijd van het huurcontract en de staat van de dakbedekking. Beide kunnen een technisch kloppend plan onuitvoerbaar maken nádat het is goedgekeurd, en dat is de duurste plek om het te ontdekken.",
+        "Pas als deze lijst voor alle adressen gevuld is, zegt een ranglijst iets. Daarvoor vergelijkt u de locaties waarvan u veel weet met de locaties waarvan u weinig weet, en dat levert stelselmatig de verkeerde volgorde op: de best gedocumenteerde locatie komt bovenaan, niet de meest urgente.",
+        "Het laatste veld is het ongemakkelijkste. Een locatie die binnen de planperiode wordt afgestoten, krijgt geen investering met een langere terugverdientijd dan de resterende eigendomsduur. Die vraag hoort vóór het technisch ontwerp gesteld te worden, niet erna."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De eerlijke grens van portefeuillewerk.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Een standaardoplossing over alle locaties uitrollen levert op de meeste locaties het verkeerde systeem. Dat is geen inkoopfout maar een rekenkundige. Kiest u één ontwerp dat op het gemiddelde profiel past, dan is het te klein voor de scherpe locaties en te groot voor de vlakke. Te klein betekent dat de piek er alsnog doorheen komt en de ingreep nauwelijks iets oplevert. Te groot betekent kapitaal in een kast die het grootste deel van het jaar stilstaat. Alleen de adressen die toevallig dicht bij dat gemiddelde liggen, krijgen wat ze nodig hebben.",
+        "Centraal beheer verlaagt op zichzelf geen enkele piek. Eén overzicht over honderd adressen maakt de verschillen zichtbaar; het neemt ze niet weg. Monitoring rendeert pas als er per locatie een grenswaarde en een installatie achter zitten.",
+        "Er is ook geen sturing tússen uw aansluitingen. Ruimte op de ene locatie is niet beschikbaar voor de piek op de andere: ze hangen aan verschillende netten, en de energie zou over het openbare net moeten. Vermogen delen kan alleen binnen één gebied, tussen partijen op één koppeling. Dat is een <a class=\"ve-link\" href=\"/energy-hubs\">energy hub</a>, en dat is iets anders dan een portefeuille.",
+        "En er zijn locaties die hier niet mee te helpen zijn. Komt de <strong>gemiddelde</strong> vraag over de dag boven de grens van de aansluiting uit, dan houdt opslag op. Een batterij verschuift energie in de tijd, maakt er niets bij, en verhoogt uw aansluitwaarde of uw gecontracteerd transportvermogen niet. Zulke adressen horen in een ander spoor: verzwaren, het proces aanpassen, of de functie verplaatsen naar een locatie waar de ruimte er al is. Dat hoort in de eerste beoordeling te blijken, niet na de eerste tranche."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit in de praktijk op neerkomt",
+      "lead": "Portefeuilles verschillen in wat zich herhaalt en wat niet.",
+      "kaarten": [
+        { "kop": "Winkels en filialen", "tekst": "Veel adressen met een vergelijkbare functie, maar sterk verschillende aansluitingen, daken en huurcontracten.", "route": "sectoren/retail", "label": "Retail" },
+        { "kop": "Woningportefeuilles", "tekst": "Per complex een eigen dak, een eigen meterkast en een eigen eigenaarsvraag. Bewoners maken de planning een factor.", "route": "industrie-residentieel", "label": "Woningportefeuilles" },
+        { "kop": "Beginnen met één uitvraag", "tekst": "Een scan per locatie die op dezelfde grootheden uitkomt, zodat de adressen onderling vergelijkbaar worden.", "route": "energieadvies", "label": "Energieadvies" },
+        { "kop": "Vergelijkbaar meten", "tekst": "Welke grootheden u vastlegt en hoe u ze tussen adressen vergelijkbaar houdt.", "route": "kennis/energieprestatie-meten", "label": "Energieprestatie meten" },
+        { "kop": "Eén sturingslaag", "tekst": "Dezelfde logica op elke locatie, met per aansluiting een eigen grenswaarde.", "route": "vibe-control", "label": "VIBE.CONTROL" },
+        { "kop": "Meerdere partijen, één gebied", "tekst": "Vermogen delen kan binnen één voedingsgebied, tussen partijen op één koppeling.", "route": "energy-hubs", "label": "Energy Hubs" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over meerdere locaties",
+  "faq": [
+    {
+      "vraag": "Kan ik één standaardsysteem over al mijn locaties uitrollen?",
+      "antwoord": "Dat kan, maar het past dan op weinig adressen. Eén ontwerp dat op het gemiddelde profiel is gekozen, is te klein voor de locaties met scherpe pieken en te groot voor de vlakke. Wat u wel standaardiseert is de werkwijze: de gegevensuitvraag, de meetgrootheden, de sturingslaag en een beperkte reeks componentmaten. De dimensionering blijft per locatie."
+    },
+    {
+      "vraag": "Kan de batterij op de ene locatie de piek op de andere opvangen?",
+      "antwoord": "Nee. Afzonderlijke aansluitingen zien elkaar niet; de energie zou over het openbare net moeten. Vermogen delen kan alleen binnen één gebied, tussen partijen op één koppeling. Dat is een energy hub en vraagt een andere opzet dan een portefeuille van losse adressen."
+    },
+    {
+      "vraag": "Welke locatie doe ik als eerste?",
+      "antwoord": "In deze orde: de locatie waar een bedrijfsplan stilstaat door gebrek aan vermogen, dan de locatie waar een korte piek het gecontracteerde vermogen voor het hele jaar vastzet, dan de locatie waar toch al dakwerk of een verbouwing gepland staat. Sorteren op grootte valt buiten die orde: het formaat van een locatie zegt niets over een geblokkeerd plan, een scherp piekprofiel of een gepland werkmoment."
+    },
+    {
+      "vraag": "Hebben al mijn locaties dezelfde netbeheerder?",
+      "antwoord": "Zelden bij meer dan een paar adressen. Er zijn zes regionale netbeheerders voor elektriciteit: Liander, Enexis, Stedin, Westland Infra, Coteq en Rendo. Beschikbare capaciteit wordt bovendien per voedingsgebied gepubliceerd, een verzameling postcodes rond één onderstation. Een status per gemeente bestaat niet, dus twee filialen in dezelfde stad kunnen verschillend uitpakken."
+    },
+    {
+      "vraag": "Wat heeft u van mij nodig voor een portefeuille-analyse?",
+      "antwoord": "Per aansluiting het kwartiersprofiel over een volledig jaar, de fysieke aansluitcapaciteit en het gecontracteerd transportvermogen, de postcode, de eigendomsvorm met bij huur de resterende looptijd, en de staat van het dak. Daarnaast de plannen per locatie. Adressen met gaten in die lijst nemen we niet mee in de rangschikking, want dan vergelijken we onvergelijkbare dingen."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Portefeuillewerk",
+      "items": [
+        { "route": "energieadvies", "naam": "Energieadvies" },
+        { "route": "kennis/energieprestatie-meten", "naam": "Energieprestatie meten" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "toepassingen/bestaande-aansluiting-optimaliseren", "naam": "Bestaande aansluiting optimaliseren" },
+        { "route": "toepassingen/pieken-in-verbruik", "naam": "Pieken in verbruik" }
+      ]
+    },
+    {
+      "kop": "Voor wie",
+      "items": [
+        { "route": "sectoren/retail", "naam": "Retail" },
+        { "route": "industrie-residentieel", "naam": "Woningportefeuilles" },
+        { "route": "industrie-vastgoed", "naam": "Kantoren en vastgoed" },
+        { "route": "industrie-logistiek", "naam": "Logistiek" },
+        { "route": "sectoren/bedrijventerreinen", "naam": "Bedrijventerreinen" },
+        { "route": "sectoren/parkeren", "naam": "Parkeren" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Wat een EMS doet" },
+        { "route": "kennis/businesscase-batterij", "naam": "Businesscase batterij" }
+      ]
+    },
+    {
+      "kop": "Bewijs en context",
+      "items": [
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "energy-hubs", "naam": "Energy Hubs" },
+        { "route": "regios", "naam": "Regio's" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Begin met één uitvraag voor alle adressen",
+    "tekst": "Stuur de kwartiersprofielen en de aansluitgegevens van uw locaties, met de postcode per adres. Wij brengen ze op dezelfde grootheden, zetten ze naast elkaar en geven een volgorde met per locatie het ontwerp dat erbij hoort. Adressen waar achter de meter niets te halen is, benoemen we als zodanig.",
+    "primair": { "route": "contact", "label": "Vraag een portefeuille-analyse aan" },
+    "secundair": { "route": "projecten", "label": "Bekijk gerealiseerde projecten" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Zes regionale netbeheerders verzorgen de elektriciteitsnetten in Nederland: Liander, Enexis, Stedin, Westland Infra, Coteq en Rendo.",
+      "bron": "Netbeheer Nederland — onze leden",
+      "bron_url": "https://www.netbeheernederland.nl/onze-leden",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare capaciteit per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

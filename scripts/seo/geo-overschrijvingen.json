@@ -1,0 +1,30 @@
+{
+  "_toelichting": "Afwijkingen van de registernaam, uitsluitend voor de publieke weergave en de URL. De gemeentecode blijft de sleutel; de officiële naam blijft bewaard in het veld naam_officieel. Elke regel heeft een reden.",
+  "gemeente_slug": {
+    "0164": { "slug": "hengelo", "weergave": "Hengelo", "reden": "Het register schrijft 'Hengelo (O)'. De haakjes horen bij de registratie, niet bij de plaatsnaam. Er is geen tweede gemeente Hengelo, dus de slug blijft eenduidig." },
+    "0373": { "slug": "bergen-nh", "weergave": "Bergen (NH)", "reden": "Er bestaan twee gemeenten Bergen. Ze staan in verschillende provincies en botsen dus niet in het pad, maar het achtervoegsel voorkomt verwarring in titels en breadcrumbs." },
+    "0893": { "slug": "bergen-l", "weergave": "Bergen (L)", "reden": "Zie 0373." },
+    "0518": { "slug": "den-haag", "weergave": "Den Haag", "reden": "De officiële naam is 's-Gravenhage, maar de gemeente zelf, het publiek en de zoekvraag gebruiken Den Haag. De officiële naam blijft in naam_officieel staan." },
+    "0796": { "slug": "s-hertogenbosch", "weergave": "'s-Hertogenbosch", "reden": "Officiële naam aangehouden; 'Den Bosch' is een alias in de inhoud, niet in het pad, omdat de officiële vorm ook veel gezocht wordt en de slug anders niet herleidbaar is." }
+  },
+  "gemeente_alias": {
+    "0796": ["Den Bosch"],
+    "0518": ["'s-Gravenhage"],
+    "0164": ["Hengelo (Overijssel)"]
+  },
+  "provincie_alias": {
+    "PV21": ["Friesland"],
+    "PV20": [],
+    "PV22": [],
+    "PV23": [],
+    "PV24": [],
+    "PV25": [],
+    "PV26": [],
+    "PV27": [],
+    "PV28": [],
+    "PV29": [],
+    "PV30": [],
+    "PV31": []
+  },
+  "_provincie_alias_reden": "Fryslân is de officiële naam en blijft de slug. 'Friesland' is in Nederland een veelgebruikte variant en staat daarom als alias in titel en inhoud, niet in het pad."
+}

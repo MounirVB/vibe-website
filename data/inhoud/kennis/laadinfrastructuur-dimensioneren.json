@@ -1,0 +1,225 @@
+{
+  "route": "kennis/laadinfrastructuur-dimensioneren",
+  "type": "kennis",
+  "titel": "Laadinfrastructuur dimensioneren | Vibe Energy",
+  "beschrijving": "Van energie per voertuig naar ontwerpvermogen: standtijd, gelijktijdigheid, AC of DC, en waarom het kabeltracé en de verdeler de echte kostenpost zijn.",
+  "og_titel": "Laadinfrastructuur dimensioneren: van profiel naar vermogen",
+  "h1": "Laadinfrastructuur dimensioneren: drie vragen bepalen het ontwerp",
+  "lead": "Een laadplein wordt zelden te klein ontworpen. Het wordt meestal te zwaar ontworpen, omdat het aantal punten maal het vermogen per punt als uitgangspunt wordt genomen. Het werkelijke ontwerpvermogen volgt uit energie per voertuig, standtijd en gelijktijdigheid — in die volgorde.",
+  "data_pagina": "kennis",
+  "kruimels": [{ "naam": "Kennisbank", "route": "kennis" }],
+  "kruimel_label": "Laadinfrastructuur dimensioneren",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw laadbehoefte doorrekenen" },
+    { "soort": "ghost", "anker": "#rekenvoorbeeld", "label": "Direct naar het rekenvoorbeeld" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Hoe dimensioneert u laadinfrastructuur voor een bedrijfslocatie?",
+    "antwoord": "Laadinfrastructuur dimensioneren begint bij energie, niet bij vermogen. Per voertuig bepaalt u hoeveel kWh er per etmaal bij moet, en hoeveel uur dat voertuig stilstaat op de plek waar het laadpunt komt. Energie gedeeld door standtijd geeft het vermogen dat dat voertuig nodig heeft. Daarna bepaalt u hoeveel voertuigen per kwartier gelijktijdig laden; de hoogste som van die gelijktijdige vraag, opgeteld bij de gebouwlast op datzelfde kwartier, is het ontwerpvermogen. Het aantal punten maal het vermogen per punt is de bovengrens van de hardware en vrijwel nooit het ontwerpvermogen — maar wel wat er kan gebeuren zolang niets die grens actief begrenst.",
+    "voorbehoud": "Deze werkwijze zegt niets over wat uw aansluiting aankan. Standtijd en gelijktijdigheid verlagen het benodigde vermogen, maar niet de energie die er per etmaal doorheen moet. Bij een kort laadvenster en veel kWh per voertuig is er geen verdeling die het ontwerp alsnog laat passen."
+  },
+
+  "secties": [
+    {
+      "soort": "specs",
+      "kop": "De drie vragen, en de twee getallen die eruit volgen",
+      "rijen": [
+        ["1 · Hoeveel energie per voertuig per dag?", "In kWh, afgeleid uit de werkelijke kilometers en het werkelijke verbruik per kilometer — niet uit de opgave van de fabrikant. Dit is de hoeveelheid die er per etmaal door de aansluiting moet en de enige grootheid die u niet kunt wegregelen."],
+        ["2 · Hoe lang staat het voertuig?", "In uren, op de plek waar het laadpunt komt. Energie gedeeld door standtijd geeft het vermogen dat dit voertuig nodig heeft. Een langere standtijd verlaagt dat vermogen rechtstreeks en is daarmee de goedkoopste ontwerpkeuze die er is."],
+        ["3 · Hoeveel voertuigen laden gelijktijdig?", "Per kwartier, niet per dag. De overlap van de standtijden bepaalt hoeveel punten op hetzelfde moment vermogen vragen. Dit is de vraag die het vaakst wordt aangenomen in plaats van onderbouwd."],
+        ["Het ontwerpvermogen (kW)", "De hoogste som over de dag van alle gelijktijdige laadvraag, opgeteld bij de gebouwlast op datzelfde kwartier. Het maximum van de som, niet de som van de maxima."],
+        ["Het nominale vermogen (kW)", "Aantal punten maal het vermogen per punt. Dit is de bovengrens van de hardware. Het is zelden het ontwerpvermogen, maar het is wél wat er gebeurt zodra alles tegelijk aan gaat en niets de aansluiting begrenst."],
+        ["De benodigde energie (kWh)", "Aantal voertuigen maal de energie per voertuig per etmaal. Dit getal bepaalt of het laadvenster lang genoeg is, en het verandert niet door slimmer te verdelen."]
+      ],
+      "noot": "Vraag 1 en 3 gaan over uw bedrijfsvoering, niet over techniek. Daarom komt een bruikbaar laadontwerp uit het dienstrooster en de rittenadministratie, en niet uit een productcatalogus."
+    },
+    {
+      "soort": "tekst",
+      "id": "drie-vragen",
+      "kop": "Begin bij de energie. Vermogen is een afgeleide.",
+      "lead": "De standaardvolgorde — eerst punten, dan vermogen, dan de vraag of de aansluiting het trekt — levert bijna altijd een te zwaar ontwerp op.",
+      "alineas": [
+        "Een voertuig vraagt geen vermogen. Het vraagt energie, en wel een hoeveelheid die vastligt in de rit van morgen. Hoe hard die energie erin moet, bepaalt u zelf met de tijd die u ervoor neemt. Vermogen is dus geen eis maar een uitkomst: de energie die erbij moet, gedeeld door het aantal uren dat het voertuig er staat.",
+        "Dat verschuift de belangrijkste ontwerpparameter naar de standtijd, en dat is precies de parameter die in de meeste plannen niet wordt genoemd. Een bestelbus die van het eind van de middag tot het begin van de ochtend op het terrein staat, heeft een laadvenster van een halve dag. Dezelfde bus die tussen twee ritten een uur stilstaat, heeft bij dezelfde energiebehoefte een veelvoud aan vermogen nodig. Hetzelfde voertuig, dezelfde kWh, een volstrekt ander ontwerp.",
+        "<h3>Waar de energie per voertuig vandaan komt</h3>",
+        "<ul><li><strong>De rittenadministratie of de telematica</strong> — werkelijke kilometers per voertuig per dag, uitgesplitst naar de zwaarste weken en niet als jaargemiddelde.</li><li><strong>De laadsessies van een bestaand voertuig</strong> — als er al elektrisch wordt gereden, is de afgenomen kWh per sessie de betrouwbaarste bron die u heeft.</li><li><strong>Het dienstrooster</strong> — aankomst- en vertrektijden per voertuig. Dit levert zowel de standtijd als de overlap tussen voertuigen.</li></ul>",
+        "Reken op de zware weken, niet op het gemiddelde. In de koude maanden gaat er meer kWh per kilometer in, en voorverwarmen, koeling op de trailer of een beladen rit telt daar bovenop. Tussen de meter en de accu zit bovendien verlies: de aansluiting ziet iets meer dan er in het voertuig terechtkomt.",
+        "Eén ontwerpvrijheid wordt vaak vergeten: een voertuig hoeft niet vol. Het hoeft genoeg te hebben voor de rit van morgen. Wie op \"vol\" ontwerpt, koopt vermogen voor de laatste procenten — precies het deel dat het langzaamst laadt en het zelden nodig is."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "rekenvoorbeeld",
+      "kop": "Een rekenvoorbeeld, met aangenomen getallen",
+      "lead": "Dezelfde vloot, twee laadvensters — en in dit voorbeeld een ontwerpvermogen dat een factor zes verschilt.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "<p><strong>Voorbeeld, geen meetwaarden.</strong> De getallen hieronder zijn aangenomen om de rekenstap te laten zien. Ze komen niet van een bestaande locatie en zijn geen opgave van een gerealiseerd project.</p>",
+        "Neem een vloot van achttien bestelbussen die per dag elk 45 kWh nodig hebben. Ze komen aan het eind van de middag binnen en vertrekken aan het begin van de ochtend: een laadvenster van ongeveer 12,5 uur.",
+        "<ul><li><strong>Energie per nacht:</strong> 18 × 45 kWh = 810 kWh.</li><li><strong>Vermogen per bus:</strong> 45 kWh / 12,5 uur = 3,6 kW.</li><li><strong>Gelijktijdig vermogen:</strong> 18 × 3,6 kW ≈ 65 kW, als alle bussen de hele nacht door laden.</li><li><strong>Nominaal vermogen van de hardware:</strong> 18 punten × 11 kW = 198 kW.</li></ul>",
+        "Het ontwerp hoeft dus niet 198 kW te dragen, maar ongeveer 65 kW plus de gebouwlast op datzelfde kwartier. Die laadvraag valt in de uren dat het gebouw grotendeels uit staat, dus die gebouwlast is laag — nul is hij niet, en hij hoort er wel bij. Wie in dit voorbeeld op het nominale getal aansluit, vraagt ongeveer drie keer zoveel transportvermogen aan als de bedrijfsvoering nodig heeft, met de wachttijd en de vaste kosten die daarbij horen.",
+        "Verander nu één aanname. Dezelfde achttien bussen rijden in twee diensten en wisselen in hetzelfde venster van twee uur: ze staan dan alle achttien gelijktijdig aan een laadpunt. De energie blijft 810 kWh per etmaal, maar het venster krimpt: 45 kWh / 2 uur = 22,5 kW per bus, en 18 × 22,5 kW = 405 kW gelijktijdig. Dat getal per bus zit boven wat veel bedrijfswagens via wisselstroom aannemen, dus het ontwerp verandert van aard: er is zwaarder vermogen nodig én andere laadtechniek.",
+        "Leg die wissel een uur uit elkaar, zodat negen bussen eerder binnenkomen dan de andere negen, en de gelijktijdige vraag halveert terwijl de energie per etmaal gelijk blijft. Dat is vraag 3 uit de tabel: niet de standtijd per voertuig, maar de overlap tussen de standtijden. Daarom is 810 kWh gedeeld door het venster een bovengrens en geen ontwerpvermogen — het ontwerpvermogen volgt pas uit de overlap die het rooster werkelijk oplevert.",
+        "De rekenstap is in beide gevallen dezelfde. De uitkomst is bij volledige overlap zes keer zo hoog, puur door de standtijd. Daarom is het eerste gesprek over een laadplein een gesprek over de planning, niet over de hardware."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "AC of DC, en wanneer DC echt nodig is",
+      "lead": "Bij wisselstroom zit de gelijkrichter in het voertuig. Bij gelijkstroom zit hij in uw installatie. Dat verschil bepaalt waar de grens valt.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Een AC-laadpunt is in de kern een geschakeld en beveiligd aftakpunt met communicatie; het is geen aansluiting en het voegt niets aan de aansluiting toe. Het vermogen dat eruit komt, wordt begrensd door de boordlader van het voertuig: de gelijkrichter die daar vastzit en die u niet met een zwaarder laadpunt vervangt. Een punt van 3 × 32 A — ongeveer 22 kW — levert niets extra aan een voertuig dat intern minder aanneemt, en een deel van de bedrijfswagens neemt eenfasig of beperkt driefasig aan. Dit is de meest voorkomende misrekening in laadplannen: betalen voor AC-vermogen dat de vloot niet kan opnemen, en het ook nog in de aansluitberekening meenemen.",
+        "Bij DC-laden staat de gelijkrichter in de laadkast. Daarmee haalt u de begrenzing uit het voertuig, maar u haalt hem naar uw eigen installatie: de kast vraagt ruimte, koeling, een eigen voeding en een zwaardere afgaande groep, en hij is zelf een verbruiker. Eén DC-kast kan vaak meerdere uitgangen bedienen die het beschikbare vermogen onderling verdelen — handig bij voertuigen die elkaar afwisselen, maar het betekent ook dat twee voertuigen tegelijk langzamer laden dan de kast op papier kan.",
+        "<h3>DC is nodig wanneer</h3>",
+        "<ul><li>de standtijd korter is dan de energiebehoefte gedeeld door het maximale AC-vermogen van het voertuig — dan haalt wisselstroom het simpelweg niet;</li><li>het voertuig geen bruikbare AC-ingang heeft, zoals bij veel zwaar materieel en veel vrachtvoertuigen;</li><li>het punt bezoekers of derden bedient die kort blijven en geen planning volgen;</li><li>één opstelling meerdere plekken moet bedienen met voertuigen die elkaar afwisselen.</li></ul>",
+        "<h3>DC is niet nodig wanneer</h3>",
+        "<ul><li>de vloot 's nachts op eigen terrein staat en het venster ruim is;</li><li>het om personeels- of bezoekersparkeren gaat waar het voertuig uren blijft staan;</li><li>het benodigde vermogen per voertuig lager is dan wat de voertuigen via wisselstroom aannemen.</li></ul>",
+        "In de praktijk is de verstandige verdeling vaak: veel AC voor het nachtelijke venster, en één of twee DC-punten voor de uitzondering. Laat de zeldzaamste rit niet het hele plein dimensioneren. Een korte tussenlading per dag voor twee voertuigen is een DC-punt waard; het is geen reden om achttien plekken op DC te zetten. Een gerealiseerd voorbeeld van zon, opslag en laden binnen één bestaande aansluiting staat bij <a class=\"ve-link\" href=\"/project-ratio-16\">Ratio 16 in Duiven</a>.",
+        "<p>Zie ook <a class=\"ve-link\" href=\"/systeem-laadpalen\">laadinfrastructuur als systeem</a> en de uitwerking van een volledig <a class=\"ve-link\" href=\"/laadplein\">laadplein</a>.</p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Een gelijktijdigheidsfactor hoort onderbouwd, niet aangenomen",
+      "lead": "Gelijktijdigheid is geen eigenschap van de hardware. Het is een eigenschap van uw bedrijfsvoering, en die kunt u meten.",
+      "alineas": [
+        "In veel plannen staat een factor als vaststaand gegeven: een percentage waarmee het nominale vermogen naar beneden wordt gerekend. Zo'n getal zonder herkomst is geen onderbouwing maar een hoop. Een factor is pas bruikbaar als u kunt zeggen waar hij uit volgt, onder welke omstandigheden hij geldt en wat hem handhaaft.",
+        "<h3>Vier stappen die een factor onderbouwen</h3>",
+        "<ul><li><strong>Tel voertuigen, geen punten.</strong> Punten zijn een gemak; de belasting komt van voertuigen. Zet per voertuig de aankomst, het vertrek en de energiebehoefte op één rij.</li><li><strong>Leg de standtijden over elkaar.</strong> Per kwartier ziet u hoeveel voertuigen aanwezig zijn en hoeveel daarvan nog energie nodig hebben. Dat is de gelijktijdigheid, en het is een profiel over de dag — geen enkel getal.</li><li><strong>Leg dat profiel over het kwartiersprofiel van de aansluiting.</strong> De laadlast komt bovenop de gebouwlast op hetzelfde moment. Eindigt de dienst om vijf uur terwijl de koeling en de installaties nog draaien, dan vallen de pieken samen.</li><li><strong>Laat de factor handhaven.</strong> Een dynamische begrenzing op de aansluiting meet wat er over is en verdeelt dat over de punten. Daarmee wordt de aanname een randvoorwaarde in plaats van een verwachting.</li></ul>",
+        "Die laatste stap is het verschil tussen een onderbouwing en een gok, omdat de gevolgen van een verkeerde factor zo asymmetrisch zijn. Rekent u te ruim, dan koopt u een te zware installatie en te veel gecontracteerd transportvermogen. Rekent u te krap zonder begrenzing, dan overschrijdt u de aansluiting en valt er iets uit. Rekent u te krap mét begrenzing, dan duurt het laden langer — hinderlijk, maar beheersbaar, en zichtbaar voordat het een probleem wordt.",
+        "Meet opnieuw na inbedrijfstelling. De eerste weken sessiedata bevestigen of weerleggen de aanname, en dat is het moment om het laadschema aan te passen in plaats van de aansluiting. Hoe het verdelen zelf werkt, staat in <a class=\"ve-link\" href=\"/kennis/load-balancing\">load balancing</a>.",
+        "Eén situatie laat zich niet uit een rooster afleiden: publiek of bezoekersladen. Daar komen voertuigen aan zonder planning, en een factor uit een dienstlijst bestaat niet. Dan werkt alleen een harde bovengrens op de aansluiting, aangevuld met sessiedata die over de maanden het werkelijke patroon laten zien."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "De kostenpost zit in de grond en in de verdeler",
+      "lead": "Niet in de laadpaal. Het tracé en de verdeelinrichting bepalen vaak het grootste deel van de investering, en worden het vaakst te laat in kaart gebracht.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Een laadpunt is een afgebakend product met een bekende prijs. Het tracé ernaartoe is dat niet. De lengte van de sleuf, het aantal doorkruisingen van rijbaan en inrit, een boring onder een weg, het herstel van bestrating of asfalt, de bodemgesteldheid en de kabels en leidingen die er al liggen: dat samen bepaalt wat het kost om vermogen naar de parkeervakken te brengen. Op openbaar terrein komt daar een opbreekvergunning en de planning van de wegbeheerder bij, en op eigen terrein het gegeven dat de vakken tijdens het werk niet bruikbaar zijn.",
+        "Over afstand speelt ook de techniek mee. Een lange voeding naar de verste hoek vraagt bij hetzelfde vermogen een grotere kabeldoorsnede om de spanningsval binnen de ontwerpgrens te houden, of een tussenverdeler halverwege. Dat is een afweging tussen koper en bouwkunde, en hij valt per locatie anders uit.",
+        "<h3>Wat er in de verdeelinrichting moet passen</h3>",
+        "<ul><li><strong>Vrije velden</strong> voor de afgaande groepen van de laadpunten, nu en in de volgende fase.</li><li><strong>Railvermogen</strong> dat het ontwerpvermogen draagt, inclusief de gebouwlast die er al op zit.</li><li><strong>Selectiviteit van de beveiliging</strong>, zodat een storing op één punt niet een hele groep of het pand meeneemt.</li><li><strong>Aardfoutbeveiliging per punt</strong> en een deugdelijke aarding en potentiaalvereffening op het laadterrein.</li><li><strong>Meting</strong>: een meetpunt op de aansluiting voor de begrenzing, en submetering als u per gebruiker of per huurder wilt afrekenen.</li><li><strong>Een communicatiepad</strong> naar elk punt. Zonder verbinding met de meter en de punten kan niets dynamisch worden begrensd; valt die verbinding weg, dan moeten de punten terugvallen op een veilige lage waarde.</li><li><strong>Fysieke ruimte</strong>: opstelruimte en werkruimte voor de verdeler, en bij DC of opslag ook vloeroppervlak, toegang en afstand tot het gebouw.</li></ul>",
+        "Een verdeler laat zich niet altijd uitbreiden. Zit hij vol, dan komt er een nieuwe verdeler met een nieuwe voeding bij, en dat is een andere orde van grootte dan een extra groep. Bij <a class=\"ve-link\" href=\"/project-hazenweg-61\">Hazenweg 61 in Hengelo</a> kwam opslag, opwek, laden en noodstroom samen in een nieuwe hoofdverdeler onder één energiemanagementsysteem; dat deel van het werk is in zulke projecten zelden het zichtbare deel, maar vaak het bepalende."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Ruimte reserveren is goedkoper dan opnieuw graven",
+      "lead": "De sleuf is de duurste handeling van het hele project. Hij is één keer open.",
+      "alineas": [
+        "Het grootste deel van de kosten van een tracé zit in het openmaken en dichtmaken van de grond, niet in het koper dat erin gaat. Dat maakt de rekensom voor groei eenvoudig: wat u in de eerste fase meeneemt, kost een fractie van wat het later apart kost.",
+        "<ul><li><strong>Leg wachtbuizen</strong> over het volledige tracé, inclusief de aftakkingen naar de vakken die pas in een volgende fase een punt krijgen.</li><li><strong>Dimensioneer de hoofdvoeding op de eindsituatie</strong>, niet op fase één. Een zwaardere kabel in een open sleuf is goedkoop; dezelfde kabel in een gesloten sleuf is een nieuw project.</li><li><strong>Houd velden en railvermogen vrij</strong> in de verdeler, en kies de verdeler op het eindbeeld.</li><li><strong>Plaats fundaties en sokkels</strong> voor latere punten terwijl de bestrating toch open is.</li><li><strong>Reserveer opstelruimte</strong> voor een batterij of een DC-kast, met de toegang en de afstanden die daarbij horen.</li></ul>",
+        "Reserveren is geen vrijbrief om alles maximaal uit te voeren. De toets is of de eindsituatie in een plan met een datum staat: een vervangingsschema van de vloot, aflopende leasecontracten, een huurder die uitbreidt. Staat die datum er niet, dan reserveert u ruimte in de grond en in de verdeler, maar koopt u het vermogen nog niet. Een vloot die \"ooit elektrisch wordt\" levert anders ofwel een overgedimensioneerde installatie, ofwel een tweede keer graven — en dat zijn de twee uitkomsten die dit ontwerp juist moet voorkomen.",
+        "Denk daarom in voertuigen per jaar, niet in punten nu. Uit het aantal elektrische voertuigen per jaar volgt de energie per etmaal, en daaruit volgt het vermogen dat het tracé en de verdeler in de eindsituatie moeten dragen. Dat getal is de maat waarop u de grond openmaakt."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dimensioneren niet oplost",
+      "lead": "De grens van deze aanpak is scherp en rekenkundig.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Bij een kort laadvenster en veel energie per voertuig is er geen slimme verdeling die het oplost. Verdelen herverdeelt vermogen over de tijd en over de punten; het maakt geen energie en het verlengt het venster niet. Is de energiebehoefte gedeeld door de beschikbare tijd groter dan wat er beschikbaar is, dan loopt elk schema vast. De routes die dan overblijven zijn andere routes: meer standtijd inbouwen in de planning, voertuigen afwisselen over meer uren, een deel van de energie elders opnemen, of de aansluiting verzwaren.",
+        "Een batterij verandert dat beeld maar gedeeltelijk. Hij vlakt de piek af en verschuift energie binnen de dag, zodat het laden binnen de bestaande aansluiting past. Hij creëert geen extra gecontracteerd transportvermogen en verhoogt uw aansluitwaarde niet, en hij heeft zelf een venster nodig om weer te laden. Is het tekort structureel over het hele etmaal, dan is opslag een dure manier om hetzelfde tekort te verplaatsen.",
+        "Ook de voertuigen zelf zetten een grens. Wat de boordlader in het voertuig aanneemt, kunt u niet wegontwerpen met een zwaarder AC-punt. En een laadpunt dat op papier meer kan dan de kabel of de verdeler erachter, doet niet meer dan de zwakste schakel in die keten.",
+        "Tot slot: zonder meetdata is dit rekenwerk een reeks aannames die netjes op elkaar aansluiten. Het kwartiersprofiel van de aansluiting, de aankomst- en vertrektijden en de werkelijke energie per voertuig zijn de drie bestanden waarmee een laadontwerp staat of valt. Twee van de drie komen uit uw eigen bedrijfsvoering. Hoe groeien binnen een bestaande aansluiting er in de praktijk uitziet, staat bij <a class=\"ve-link\" href=\"/project-hedin-amsterdam\">Hedin Amsterdam</a>."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit op uw locatie landt",
+      "lead": "Dezelfde rekenstap, vier verschillende uitgangsposities.",
+      "kaarten": [
+        { "kop": "De aansluiting is de beperking", "tekst": "Het laadvenster is ruim genoeg, maar de aansluiting draagt de gelijktijdige vraag niet. Dan gaat het over begrenzen en verschuiven binnen wat er ligt.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met een beperkte aansluiting" },
+        { "kop": "Een vloot die elektrificeert", "tekst": "Bedrijfswagens die op eigen terrein overnachten: het gunstigste profiel dat er is, en het ontwerp dat het vaakst te zwaar wordt gemaakt.", "route": "sectoren/transport-en-wagenparken", "label": "Transport en wagenparken" },
+        { "kop": "Verdelen over de punten", "tekst": "Statisch verdeelt een vast budget; dynamisch meet de actuele belasting van de aansluiting en verdeelt wat er over is.", "route": "kennis/load-balancing", "label": "Load balancing" },
+        { "kop": "Van ontwerp naar laadplein", "tekst": "De stap van rekenwerk naar een uitgevoerd plein: tracé, verdeler, opstelling, sturing en afrekening.", "route": "laadplein", "label": "Laadplein" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Veelgestelde vragen over dimensioneren",
+  "faq": [
+    {
+      "vraag": "Kan ik het ontwerpvermogen berekenen als aantal punten maal vermogen per punt?",
+      "antwoord": "Dat getal is de bovengrens van de hardware, niet het ontwerpvermogen. Het ontwerpvermogen is de hoogste som van de gelijktijdige laadvraag plus de gebouwlast op datzelfde kwartier. Let wel op: zolang niets de aansluiting actief begrenst, is het nominale getal wat er kán gebeuren. De lagere waarde mag u pas aanhouden als een dynamische begrenzing hem handhaaft."
+    },
+    {
+      "vraag": "Heb ik snelladers nodig voor mijn bedrijfswagens?",
+      "antwoord": "Dat volgt uit de standtijd. Staan de voertuigen 's nachts op eigen terrein, dan is het benodigde vermogen per voertuig laag en is wisselstroom vrijwel altijd voldoende. Is het venster kort, bijvoorbeeld tussen twee diensten, dan kan de energiebehoefte gedeeld door de beschikbare tijd boven het AC-vermogen van het voertuig uitkomen. Dan is gelijkstroom nodig — voor die voertuigen, niet per definitie voor het hele plein."
+    },
+    {
+      "vraag": "Hoe onderbouw ik een gelijktijdigheidsfactor?",
+      "antwoord": "Door hem te berekenen in plaats van aan te nemen. Zet per voertuig aankomst, vertrek en energiebehoefte op een rij, leg de standtijden over elkaar en kijk per kwartier hoeveel voertuigen nog energie nodig hebben. Leg dat profiel over het kwartiersprofiel van de aansluiting. Laat de uitkomst daarna handhaven door een dynamische begrenzing, zodat een uitzondering laadtijd kost en geen uitval."
+    },
+    {
+      "vraag": "Wat kost een laadplein het meest?",
+      "antwoord": "Vaak niet de laadpunten, maar het kabeltracé en de verdeelinrichting. Sleuflengte, doorkruisingen, herstel van bestrating en de vraag of de bestaande verdeler nog vrije velden en voldoende railvermogen heeft, bepalen het grootste deel van de investering. Laat het tracé en de bestaande verdeelinrichting daarom opnemen voordat er hardware wordt gekozen, niet erna."
+    },
+    {
+      "vraag": "Moet ik nu al rekening houden met uitbreiding?",
+      "antwoord": "Ja, in de grond en in de verdeler. Wachtbuizen over het hele tracé, een hoofdvoeding op de eindsituatie en vrije velden kosten in een open sleuf een fractie van wat ze later los kosten. Het vermogen hoeft u nog niet te kopen; de ruimte ervoor wel te reserveren, mits de eindsituatie in een plan met een datum staat."
+    },
+    {
+      "vraag": "Welke gegevens heeft u van mij nodig?",
+      "antwoord": "Het kwartiersprofiel van de aansluiting, de aansluitwaarde en het gecontracteerd transportvermogen, een lijst met voertuigen met hun aankomst- en vertrektijden, en de kilometers of de gereden energie per voertuig per dag. Met die vier komt het ontwerpvermogen uit een berekening in plaats van uit een aanname."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Verder in de kennisbank",
+      "items": [
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/netaansluiting-aanvragen", "naam": "Netaansluiting aanvragen" },
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Energiemanagementsysteem" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "laadplein", "naam": "Laadplein" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" }
+      ]
+    },
+    {
+      "kop": "Wanneer dit speelt",
+      "items": [
+        { "route": "toepassingen/laden-met-beperkte-aansluiting", "naam": "Laden met een beperkte aansluiting" },
+        { "route": "toepassingen/elektrificatie-bedrijfswagens", "naam": "Elektrificatie van bedrijfswagens" },
+        { "route": "toepassingen/pieken-in-verbruik", "naam": "Pieken in verbruik" },
+        { "route": "sectoren/transport-en-wagenparken", "naam": "Transport en wagenparken" },
+        { "route": "sectoren/parkeren", "naam": "Parkeren" }
+      ]
+    },
+    {
+      "kop": "Gerealiseerd",
+      "items": [
+        { "route": "project-ratio-16", "naam": "Ratio 16, Duiven" },
+        { "route": "project-hedin-amsterdam", "naam": "Hedin Amsterdam" },
+        { "route": "project-hazenweg-61", "naam": "Hazenweg 61, Hengelo" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Wij rekenen het ontwerpvermogen voor u uit",
+    "tekst": "Stuur het kwartiersprofiel van uw aansluiting en een lijst met voertuigen, aankomst- en vertrektijden en de dagelijkse kilometers. Daaruit volgt het ontwerpvermogen, de verdeling over AC en DC, en wat het tracé en de verdeler moeten kunnen. Past het niet binnen de bestaande aansluiting, dan zeggen we dat.",
+    "primair": { "route": "contact", "label": "Laat uw laadbehoefte doorrekenen" },
+    "secundair": { "route": "kennis", "label": "Terug naar de kennisbank" }
+  },
+
+  "claims": []
+}

@@ -1,0 +1,85 @@
+{
+  "_toelichting": "De beoogde nationale route-architectuur. Dit is het DOEL, niet de publicatielijst: een route komt hier te staan zodra hij architectonisch bestaat, en wordt pas INDEX als er een inhoudsbestand onder data/inhoud/ ligt dat alle poorten haalt. Zonder inhoudsbestand blijft hij PENDING, met die reden.",
+  "_versie": "1.0.0",
+  "_vastgesteld": "2026-10-10",
+
+  "_waarom_geen_150": "De opdracht noemt circa 150 nationale pagina's. Na het samenvoegen van overlappende zoekintenties (zie data/seo/oplossingen.json, sleutel consolidaties) houden we minder canonieke eigenaars over. Dat is geen versmalling van de opdracht maar de uitvoering ervan: de opdracht eist expliciet één canonieke eigenaar per primaire intentie en verbiedt publiceren om een getal te halen. Het verschil zit in termen als 'bedrijfsbatterij', 'zakelijke energieopslag', 'slim energiebeheer', 'dynamic load balancing', 'energieprestatie en monitoring' en 'vermogensuitbreiding zonder netverzwaring' — die krijgen geen eigen pagina maar een sectie, een kennisartikel of een synoniem in de kop van hun eigenaar.",
+
+  "bestaand": [
+    { "route": "", "type": "home", "bezit": "merknavigatie", "status": "BESTAAND" },
+    { "route": "systeem-energieopslag", "type": "oplossing", "bezit": "zakelijke batterij / energieopslag", "status": "BESTAAND" },
+    { "route": "systeem-zonnepanelen", "type": "oplossing", "bezit": "zonnepanelen voor bedrijven", "status": "BESTAAND" },
+    { "route": "systeem-laadpalen", "type": "oplossing", "bezit": "zakelijke laadpalen", "status": "BESTAAND" },
+    { "route": "vibe-control", "type": "oplossing", "bezit": "EMS / slim energiebeheer / flexibiliteit", "status": "BESTAAND" },
+    { "route": "microgrids", "type": "oplossing", "bezit": "microgrid / energiecentrale achter de meter", "status": "BESTAAND" },
+    { "route": "energy-hubs", "type": "oplossing", "bezit": "energy hub / capaciteit delen", "status": "BESTAAND" },
+    { "route": "industrie-logistiek", "type": "sector", "bezit": "logistiek, transport, koeling", "status": "BESTAAND" },
+    { "route": "industrie-vastgoed", "type": "sector", "bezit": "kantoren en commercieel vastgoed", "status": "BESTAAND" },
+    { "route": "industrie-vve", "type": "sector", "bezit": "VvE en wooncomplexen", "status": "BESTAAND" },
+    { "route": "industrie-recreatie", "type": "sector", "bezit": "recreatie, parken, hotels", "status": "BESTAAND" },
+    { "route": "industrie-residentieel", "type": "sector", "bezit": "woningportefeuilles", "status": "BESTAAND" },
+    { "route": "projecten", "type": "hub", "bezit": "projectoverzicht", "status": "BESTAAND" },
+    { "route": "over-ons", "type": "bedrijf", "bezit": "over Vibe", "status": "BESTAAND" },
+    { "route": "contact", "type": "conversie", "bezit": "contact en aanvraag", "status": "BESTAAND" },
+    { "route": "privacy", "type": "juridisch", "bezit": "privacyverklaring", "status": "BESTAAND" },
+    { "route": "algemene-voorwaarden", "type": "juridisch", "bezit": "algemene voorwaarden", "status": "BESTAAND" },
+    { "route": "cookiebeleid", "type": "juridisch", "bezit": "cookiebeleid", "status": "BESTAAND" }
+  ],
+
+  "nieuw": [
+    { "route": "netcongestie", "type": "oplossing", "bezit": "netcongestie / transportvermogen / vermogensuitbreiding zonder netverzwaring", "prioriteit": 1 },
+    { "route": "laadplein", "type": "oplossing", "bezit": "laadplein realiseren en exploiteren", "prioriteit": 1 },
+    { "route": "energieadvies", "type": "oplossing", "bezit": "energieadvies en energiescan voor bedrijven", "prioriteit": 1 },
+    { "route": "verduurzaming-bedrijfspanden", "type": "oplossing", "bezit": "verduurzaming bedrijfsvastgoed / energielabel / Paris Proof", "prioriteit": 1 },
+
+    { "route": "sectoren", "type": "hub", "bezit": "sectoroverzicht", "prioriteit": 1 },
+    { "route": "sectoren/automotive", "type": "sector", "bezit": "dealerbedrijven en automotive", "prioriteit": 1 },
+    { "route": "sectoren/transport-en-wagenparken", "type": "sector", "bezit": "transport, wagenparken, elektrificatie bedrijfswagens", "prioriteit": 1 },
+    { "route": "sectoren/opslag-en-distributie", "type": "sector", "bezit": "warehousing, distributiecentra", "prioriteit": 2 },
+    { "route": "sectoren/productie-en-industrie", "type": "sector", "bezit": "maakindustrie, procesinstallaties", "prioriteit": 1 },
+    { "route": "sectoren/gebiedsontwikkeling", "type": "sector", "bezit": "projectontwikkeling en nieuwbouw", "prioriteit": 2 },
+    { "route": "sectoren/bedrijventerreinen", "type": "sector", "bezit": "bedrijventerreinen en parkmanagement", "prioriteit": 1 },
+    { "route": "sectoren/retail", "type": "sector", "bezit": "winkels en winkelcentra", "prioriteit": 2 },
+    { "route": "sectoren/horeca", "type": "sector", "bezit": "hotels, restaurants, horeca", "prioriteit": 2 },
+    { "route": "sectoren/zorgvastgoed", "type": "sector", "bezit": "zorginstellingen en zorgvastgoed", "prioriteit": 2 },
+    { "route": "sectoren/parkeren", "type": "sector", "bezit": "parkeergarages en parkeerterreinen", "prioriteit": 2 },
+    { "route": "sectoren/bouw", "type": "sector", "bezit": "bouwplaatsen en tijdelijke stroom", "prioriteit": 3 },
+
+    { "route": "toepassingen", "type": "hub", "bezit": "toepassingenoverzicht", "prioriteit": 1 },
+    { "route": "toepassingen/netcongestie-bij-uitbreiding", "type": "toepassing", "bezit": "netcongestie bij bedrijfsuitbreiding", "prioriteit": 1 },
+    { "route": "toepassingen/geen-extra-transportvermogen", "type": "toepassing", "bezit": "geen extra transportvermogen beschikbaar", "prioriteit": 1 },
+    { "route": "toepassingen/laden-met-beperkte-aansluiting", "type": "toepassing", "bezit": "elektrisch laden met een beperkte aansluiting", "prioriteit": 1 },
+    { "route": "toepassingen/pieken-in-verbruik", "type": "toepassing", "bezit": "pieken in elektriciteitsverbruik", "prioriteit": 1 },
+    { "route": "toepassingen/terugleverbeperking", "type": "toepassing", "bezit": "terugleverbeperking bij zonnepanelen", "prioriteit": 1 },
+    { "route": "toepassingen/batterij-slim-inzetten", "type": "toepassing", "bezit": "slimme inzet van batterijopslag", "prioriteit": 2 },
+    { "route": "toepassingen/meerdere-locaties", "type": "toepassing", "bezit": "energiebeheer op meerdere locaties", "prioriteit": 2 },
+    { "route": "toepassingen/elektrificatie-bedrijfswagens", "type": "toepassing", "bezit": "elektrificatie van bedrijfswagens", "prioriteit": 2 },
+    { "route": "toepassingen/processen-sturen-met-ems", "type": "toepassing", "bezit": "bedrijfsprocessen sturen met een EMS", "prioriteit": 2 },
+    { "route": "toepassingen/bestaande-aansluiting-optimaliseren", "type": "toepassing", "bezit": "optimalisatie van een bestaande aansluiting", "prioriteit": 1 },
+
+    { "route": "kennis", "type": "hub", "bezit": "kennisbank", "prioriteit": 1 },
+    { "route": "kennis/kw-versus-kwh", "type": "kennis", "bezit": "kW versus kWh", "prioriteit": 1 },
+    { "route": "kennis/transportvermogen-versus-aansluitwaarde", "type": "kennis", "bezit": "transportvermogen, aansluitwaarde en gecontracteerd vermogen", "prioriteit": 1 },
+    { "route": "kennis/netcongestie-uitgelegd", "type": "kennis", "bezit": "wat netcongestie is", "prioriteit": 1 },
+    { "route": "kennis/peak-shaving", "type": "kennis", "bezit": "peak shaving", "prioriteit": 1 },
+    { "route": "kennis/batterij-dimensioneren", "type": "kennis", "bezit": "een batterij dimensioneren", "prioriteit": 1 },
+    { "route": "kennis/batterijdegradatie", "type": "kennis", "bezit": "batterijdegradatie en levensduur", "prioriteit": 1 },
+    { "route": "kennis/batterijveiligheid", "type": "kennis", "bezit": "brandveiligheid van batterijopslag", "prioriteit": 1 },
+    { "route": "kennis/ems-energiemanagementsysteem", "type": "kennis", "bezit": "wat een EMS doet", "prioriteit": 1 },
+    { "route": "kennis/load-balancing", "type": "kennis", "bezit": "load balancing, statisch en dynamisch", "prioriteit": 1 },
+    { "route": "kennis/terugleverbeperking", "type": "kennis", "bezit": "terugleverbeperking en curtailment", "prioriteit": 1 },
+    { "route": "kennis/laadinfrastructuur-dimensioneren", "type": "kennis", "bezit": "laadinfrastructuur dimensioneren", "prioriteit": 1 },
+    { "route": "kennis/netaansluiting-aanvragen", "type": "kennis", "bezit": "een netaansluiting aanvragen of verzwaren", "prioriteit": 1 },
+    { "route": "kennis/businesscase-batterij", "type": "kennis", "bezit": "de businesscase van een zakelijke batterij", "prioriteit": 1 },
+    { "route": "kennis/energiehandel-en-flexibiliteit", "type": "kennis", "bezit": "energiehandel en flexmarkten", "prioriteit": 2 },
+    { "route": "kennis/energieprestatie-meten", "type": "kennis", "bezit": "energieprestatie en monitoring", "prioriteit": 2 },
+    { "route": "kennis/normen-en-keuringen", "type": "kennis", "bezit": "relevante normen en keuringen", "prioriteit": 2 },
+    { "route": "kennis/subsidiemechanismen", "type": "kennis", "bezit": "hoe subsidiemechanismen werken", "prioriteit": 2 },
+
+    { "route": "subsidies", "type": "hub", "bezit": "subsidies en regelingen", "prioriteit": 1 }
+  ],
+
+  "_regios_niet_hier": "De route /regios staat NIET in deze lijst. Hij wordt door de regionale motor zelf gegenereerd (scripts/seo/bouw-routes.mjs, REGIO_WORTEL) en krijgt daar zijn staat en reden. Hem hier ook noemen zou dezelfde route twee keer in het register zetten; het register faalt daar hard op.",
+
+  "_subsidiepaginas": "Routes onder /subsidies/<regeling> worden NIET hier vooraf vastgelegd. Ze komen alleen in het register als scripts/seo/haal-regelingen of een handmatig geverifieerd inhoudsbestand aantoont dat de regeling bestaat, met bron-URL en brondatum. Een pagina over een regeling die niet blijkt te bestaan is een verzinsel."
+}

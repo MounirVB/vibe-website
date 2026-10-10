@@ -1,0 +1,213 @@
+{
+  "route": "toepassingen/laden-met-beperkte-aansluiting",
+  "type": "toepassing",
+  "titel": "Laden met een beperkte aansluiting | Vibe Energy",
+  "beschrijving": "Laadpunten plaatsen terwijl de aansluiting vol zit: wat dynamische load balancing verdeelt, wat standtijd oplevert en wanneer er echt meer vermogen nodig is.",
+  "og_titel": "Laadpunten plaatsen terwijl de aansluiting vol zit",
+  "h1": "De aansluiting zit vol. De laadpunten kunnen er toch komen.",
+  "lead": "U wilt laadpunten plaatsen en de aansluiting kan ze niet allemaal tegelijk dragen. Dat hoeft geen blokkade te zijn: het aantal punten maal het vermogen per punt is vrijwel nooit de vraag die werkelijk ontstaat. Wat u nodig heeft, volgt uit standtijd, gelijktijdigheid en de ruimte die onder uw grens nog vrij is.",
+  "data_pagina": "toepassingen",
+  "kruimels": [{ "naam": "Toepassingen", "route": "toepassingen" }],
+  "kruimel_label": "Laden met een beperkte aansluiting",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Laadinfrastructuur binnen een beperkte aansluiting",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw laadplan doorrekenen" },
+    { "soort": "ghost", "anker": "#gelijktijdigheid", "label": "Waarom de som niet klopt" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Kan ik laadpunten plaatsen als mijn aansluiting daar te klein voor lijkt?",
+    "antwoord": "Vaak wel. De som van alle laadpunten maal hun nominale vermogen is een theoretisch maximum dat in de praktijk zelden optreedt: voertuigen komen verspreid aan, nemen minder op dan het punt aanbiedt, en een bijna volle accu laadt langzamer. Dynamische load balancing meet de actuele belasting van de aansluiting, inclusief de gebouwlast, en verdeelt alleen de ruimte die daaronder nog vrij is over de actieve sessies. Hoeveel vermogen een laadpunt daarbij nodig heeft, volgt uit de standtijd van het voertuig en de energie die het moet bijladen, niet uit het typeplaatje. Batterijopslag kan die ruimte verder vergroten door kortdurend vermogen bij te leveren.",
+    "voorbehoud": "Dit zegt niets over uw aansluitwaarde of uw gecontracteerd transportvermogen: die blijven ongewijzigd. En het geldt niet voor een situatie waarin elk voertuig binnen hetzelfde korte venster vol moet zijn. Dan is de gelijktijdige vraag wél de som van de punten en is er werkelijk meer vermogen nodig."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "gelijktijdigheid",
+      "kop": "Aantal punten maal vermogen is geen ontwerpgetal",
+      "lead": "Het is een bovengrens die bijna nooit optreedt, en er wordt toch op gedimensioneerd.",
+      "alineas": [
+        "Tel het nominale vermogen van alle laadpunten bij elkaar op en u houdt een getal over waar vrijwel geen bestaande aansluiting tegen opgewassen is. Rekenvoorbeeld: acht punten van 22 kW is 176 kW op papier. Dat is een typeplaatjesom, geen vraagvoorspelling. Hij treedt alleen op wanneer alle acht punten op hetzelfde moment bezet zijn, met acht voertuigen die allemaal het volle driefasige vermogen opnemen en allemaal een accu hebben die nog ruim genoeg leeg is om dat aan te nemen.",
+        "In de praktijk breken vier dingen die som af. De bezetting is zelden volledig, omdat voertuigen verspreid aankomen en vertrekken. Het voertuig bepaalt zelf wat het opneemt: een auto met een eenfasige boordlader haalt uit een punt van 22 kW niet meer dan die boordlader kan, ongeacht wat het punt aanbiedt. Een accu die bijna vol is, neemt minder op, dus het laadvermogen loopt aan het eind van een sessie terug. En een voertuig dat klaar is, vraagt niets meer terwijl het nog aan de kabel hangt.",
+        "Daar komt de gebouwlast bij. De aansluiting draagt niet alleen de laadpunten, maar ook koeling, verlichting, compressoren en proces. Die last beweegt over de dag, dus de ruimte die laadpunten mogen gebruiken beweegt mee. Een vast budget per punt laat die beweging ongebruikt: op het moment dat de hal stilligt, mag het laadplein er niets extra's mee doen.",
+        "<strong>Gelijktijdigheid</strong> is daarom het getal dat het ontwerp bepaalt, niet het aantal punten. Hoe dat voor uw locatie uitpakt, volgt uit het rooster van uw voertuigen en uit het kwartiersprofiel van uw aansluiting. Een vuistregel die zonder die twee gegevens een aantal punten noemt, raadt."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Wat het ontwerp werkelijk nodig heeft",
+      "rijen": [
+        ["Standtijd per voertuig", "Hoe lang het voertuig aan de kabel staat. Dit is de deler: dezelfde bij te laden energie vraagt bij een langere standtijd minder vermogen."],
+        ["Bij te laden energie (kWh)", "Wat er per voertuig per sessie in moet, afgeleid uit de dagelijkse rit. Niet de accucapaciteit — een voertuig komt zelden leeg terug."],
+        ["Vermogen per punt (kW)", "Volgt uit de twee regels hierboven, plus het maximum van de boordlader. Een zwaarder punt dan het voertuig kan opnemen levert niets."],
+        ["Gelijktijdigheid", "Welk deel van de punten op hetzelfde moment werkelijk vermogen vraagt. Bepaald door het aankomst- en vertrekrooster, niet door het aantal punten."],
+        ["Ruimte onder de grens", "Wat er op dat moment vrij is binnen uw aansluitcapaciteit en uw gecontracteerd transportvermogen, nadat de gebouwlast eraf is."],
+        ["Verdeling over de fasen", "Een zekering begrenst per fase. Eenfasige punten die ongelijk over de drie fasen staan, laten de aansluiting struikelen op de zwaarst belaste fase terwijl de andere twee ruimte over hebben."]
+      ],
+      "noot": "Alleen de eerste twee regels komen uit uw bedrijfsvoering; de rest volgt daaruit. Wie met het vermogen per punt begint, rekent de verkeerde kant op."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dynamische load balancing meet en verdeelt",
+      "lead": "Statisch verdelen is een budget. Dynamisch verdelen is een meting.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "<h3>Statisch: een vast budget per punt</h3>",
+        "Bij statische verdeling krijgt elk laadpunt een vaste bovengrens, zo gekozen dat de som van die grenzen onder de aansluiting blijft. Dat is eenvoudig en vraagt geen meting. Het kost ook vermogen: het budget staat vast, dus een punt dat leegstaat geeft zijn deel niet vrij en de ruimte die de gebouwlast overlaat blijft onbenut. Op een locatie met weinig punten en een ruime aansluiting is dat te verdedigen. Op een locatie waar juist de aansluiting de beperking is, niet.",
+        "<h3>Dynamisch: meten waar het knelt</h3>",
+        "Dynamische load balancing meet de werkelijke belasting op het punt waar de grens zit — doorgaans de hoofdverdeler direct achter de aansluiting — en meet daarmee de gebouwlast mee. Tussen die meting en de ingestelde grenswaarde blijft een hoeveelheid vermogen over. Dat restant wordt over de actieve sessies verdeeld, per fase, en opnieuw berekend zodra de meting verandert. Verspringt de gebouwlast omhoog, dan knijpen de laadpunten binnen enkele seconden af; valt hij weg, dan krijgen ze de ruimte terug.",
+        "Daar horen twee randvoorwaarden bij die in een verkoopverhaal vaak ontbreken. De verdeling moet <strong>per fase</strong> rekenen, want de aansluiting begrenst per fase en niet op het totaal; een regeling die alleen het totaal bewaakt, kan een fase overbelasten terwijl de som netjes onder de grens blijft. En er is een <strong>ondergrens</strong>: onder een bepaalde laadstroom stopt een voertuig met laden en moet de sessie opnieuw worden opgestart. Een regelaar die een klein restant over steeds meer sessies blijft uitsmeren, zet uiteindelijk alles stil. Daarom werkt een bruikbare verdeling met prioriteit en met wachtrijen: liever een deel van de voertuigen op werkbaar vermogen en de rest in de rij, dan alles onder de ondergrens.",
+        "Wat dynamische verdeling niet doet: uw aansluitwaarde verhogen of uw gecontracteerd transportvermogen vergroten. Zij houdt de afname onder een grens die u zelf kiest, en gebruikt de ruimte onder die grens beter dan een vast budget dat kan."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "De standtijd bepaalt het vermogen per punt",
+      "lead": "Dezelfde kilowatturen vragen minder vermogen als er meer tijd voor is.",
+      "alineas": [
+        "Een voertuig heeft geen vermogen nodig. Het heeft energie nodig, binnen de tijd dat het stilstaat. Het vermogen per punt is daarvan de uitkomst, niet het uitgangspunt.",
+        "Rekenvoorbeeld. Een bestelbus rijdt zijn dagrit en moet 's nachts 60 kWh bijladen. Staat hij van 17:00 tot 06:00 aan de kabel, dan is dat dertien uur voor 60 kWh: ruim 4,5 kW gemiddeld. Een punt van 11 kW is daarvoor al ruim bemeten, en vier van die bussen vragen samen gemiddeld nog geen 20 kW. Diezelfde 60 kWh in een pauze van drie kwartier vraagt 80 kW, voor één voertuig.",
+        "Dat verschil is de hele ontwerpvraag. Nachtladen op een depot is een energieprobleem met veel tijd en dus weinig vermogen. Bijladen tussen twee ritten is een vermogensprobleem met weinig tijd. Op precies dezelfde aansluiting passen in het eerste geval veel meer punten dan in het tweede, en dat is de reden dat twee locaties met hetzelfde aantal voertuigen een volstrekt ander ontwerp krijgen.",
+        "Standtijd is bovendien iets waaraan u kunt draaien, en dat is vaak goedkoper dan draaien aan vermogen. Een bus die om 22:00 wordt aangesloten in plaats van om 17:00 geeft vijf uur ruimte weg voor niets. Een vertrekrooster dat de voertuigen over het eerste uur van de ochtend spreidt, haalt de piek uit de laatste laaduren. En een voertuig dat aan de kabel blijft hangen nadat het klaar is, bezet een punt maar vraagt geen vermogen: dat is een probleem met het aantal punten, niet met de aansluiting.",
+        "Let wel op de omgekeerde fout. Standtijd die u niet zeker weet, mag u niet inrekenen. Moet een voertuig onverwacht twee uur eerder weg, dan is de resterende energie niet in te halen op een punt dat op de volle standtijd is gedimensioneerd. Voor die gevallen hoort er een punt met meer vermogen te staan, of een prioriteitsregel die dat voertuig voortrekt ten koste van de rest."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat opslag ertussen toevoegt",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Load balancing verdeelt wat er is. Opslag verandert hoeveel er op een moment te verdelen valt — binnen dezelfde aansluiting, zonder dat uw aansluitwaarde of uw gecontracteerd transportvermogen wijzigt.",
+        "De batterij levert vermogen op de momenten dat de vraag boven de gekozen grens uitkomt en laadt bij wanneer er ruimte is. Voor een laadplein betekent dat twee dingen. Korte pieken hoeven niet meer tot afknijpen te leiden: een bezetting die een halfuur doorschiet, of een snellader die aanslaat terwijl de proceslast al hoog zit. En de ruimte die 's nachts, tussen de ploegen of in het weekend onbenut blijft, is bruikbaar om de batterij te vullen voor het volgende drukke venster.",
+        "De dimensionering volgt het kwartiersprofiel van de locatie, samen met het laadrooster. De hoogte van de piek boven de grens die u wilt aanhouden geeft het vermogen in kW. Die hoogte maal de duur geeft de bruikbare capaciteit in kWh. Een laadplein met korte, hoge pieken vraagt daarom veel kW en weinig kWh; een depot dat de hele nacht boven de grens zit, vraagt het omgekeerde. Wie alleen op kWh dimensioneert, koopt een systeem dat de piek niet haalt.",
+        "Met zon op het dak komt er een derde reden bij. Opwek en laadvraag vallen op een bedrijfslocatie zelden samen: het dak produceert midden op de dag, de bedrijfswagens staan 's avonds en 's nachts. Opslag ertussen schuift die opwek naar het moment dat de laadpunten erom vragen, in plaats van dat zij terug het net op gaat op het uur dat daar het minst ruimte voor is.",
+        "Een batterij is geen gratis vermogen. Hij verliest een deel van wat erin gaat aan rendement, hij vraagt ruimte en een opstelling op het terrein, en zijn bruikbare capaciteit neemt over de levensduur af. Die drie horen in de berekening te zitten vóór de aanschaf, niet in de verrassing erna."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De eerlijke grens van sturen en bufferen.",
+      "alineas": [
+        "Er is één geval waarin geen regeling en geen batterij helpt: als elk voertuig binnen hetzelfde korte venster vol moet zijn. Dan is de gelijktijdige vraag wél de som van de punten, en die som houdt ook langer aan dan een buffer kan overbruggen. Denk aan een vloot die om 05:00 leeg binnenkomt en om 06:00 compleet en vol moet vertrekken, of aan een publieke snellaadlocatie waar elke sessie per definitie kort en zwaar is. Daar is werkelijk meer vermogen nodig, en dan gaat het gesprek over verzwaren of over een ander depotconcept.",
+        "Opslag verschuift die grens maar beperkt. Een batterij overbrugt een venster van minuten tot enkele uren; hij maakt geen energie. Is de energie die uw voertuigen per etmaal nodig hebben groter dan wat de aansluiting per etmaal kan leveren nadat de gebouwlast eraf is, dan repareert geen enkele verdeling dat. De routes zijn dan een zwaardere aansluiting, een deel van de vloot dat elders laadt, of minder voertuigen op deze locatie.",
+        "Let ook op de schakels vóór de aansluiting. Een eigen transformator, de hoofdverdeler, het kabeltracé naar het laadplein en de vrije ruimte in de verdeelkast hebben elk hun eigen maximum. Load balancing houdt zich aan de grenswaarde die u instelt; het controleert niet of de kabel in de grond die waarde kan dragen. Dat is een ontwerpvraag die vóór de plaatsing hoort te worden gesteld, niet bij de eerste storing.",
+        "En of er in uw gebied ruimte is voor een zwaardere aansluiting, is geen eigenschap van uw gemeente. Netbeheerders publiceren de beschikbare capaciteit per voedingsgebied: een verzameling postcodes rond één onderstation, waarvan de grenzen dwars door gemeentegrenzen lopen. Kijk dus op uw postcode, niet op uw plaatsnaam.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Gerealiseerd binnen een bestaande aansluiting",
+      "alineas": [
+        "Bij <a class=\"ve-link\" href=\"/project-ratio-16\">Ratio 16 in Duiven</a> staan zonne-opwek, batterijopslag en een laadplein op één bestaande aansluiting, met sturing die het geheel binnen die aansluiting houdt. De aansluiting is daarvoor niet verzwaard.",
+        "Bij <a class=\"ve-link\" href=\"/project-hedin-amsterdam\">Hedin Amsterdam</a> liggen laadplekken, gebouwlast en batterijopslag achter dezelfde bestaande aansluiting. Dat is de situatie waarin de meting op de hoofdverdeler bepaalt wat de laadpunten mogen opnemen.",
+        "Bij <a class=\"ve-link\" href=\"/project-hedin-alkmaar\">Hedin Alkmaar</a> is energieopslag op locatie geplaatst die in de daluren laadt en bij stijgende vraag levert, met sturing over de bestaande zonnepaneelinstallatie. Daar zet de pandlast de piek en niet een laadplein: dezelfde rekenvraag, een andere vraagkant.",
+        "De waarden per locatie staan op de projectpagina's zelf. Ze zijn niet overdraagbaar: welk vermogen uw laadpunten nodig hebben en hoeveel punten er passen, volgt uit uw eigen rooster en uw eigen kwartiersprofiel."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar u verder leest",
+      "lead": "Deze pagina gaat over het probleem. De techniek en het aanbod staan elders.",
+      "kaarten": [
+        { "kop": "Het laadsysteem", "tekst": "Laadpunten, verdeelinrichting en sturing als één installatie: wat er geplaatst wordt en hoe het aan de aansluiting hangt.", "route": "systeem-laadpalen", "label": "Laadinfrastructuur" },
+        { "kop": "Een laadplein aanleggen", "tekst": "Meerdere plekken op één locatie, van terreininrichting en kabeltracé tot exploitatie en afrekening.", "route": "laadplein", "label": "Laadplein" },
+        { "kop": "Load balancing uitgelegd", "tekst": "Statisch versus dynamisch, meten per fase, prioriteit en de minimumstroom waaronder een voertuig stopt met laden.", "route": "kennis/load-balancing", "label": "Load balancing" },
+        { "kop": "Laadinfrastructuur dimensioneren", "tekst": "De rekenwijze van rooster naar vermogen per punt, en hoe u ruimte houdt voor uitbreiding van de vloot.", "route": "kennis/laadinfrastructuur-dimensioneren", "label": "Dimensioneren" },
+        { "kop": "Het net zit vol", "tekst": "Waarom er in uw voedingsgebied geen extra transportvermogen te krijgen is, en wat er achter de meter nog wel kan.", "route": "netcongestie", "label": "Netcongestie" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over laden binnen een beperkte aansluiting",
+  "faq": [
+    {
+      "vraag": "Hoeveel laadpunten passen er op mijn aansluiting?",
+      "antwoord": "Dat is zonder uw gegevens niet te zeggen. Nodig zijn het kwartiersprofiel van uw aansluiting, uw aansluitwaarde en uw gecontracteerd transportvermogen, en het rooster van de voertuigen met de energie die zij per dag bijladen. Daaruit volgt het aantal punten én het vermogen per punt. Elke vuistregel die zonder die gegevens een aantal noemt, raadt."
+    },
+    {
+      "vraag": "Verhoogt load balancing mijn aansluitwaarde?",
+      "antwoord": "Nee. Uw aansluitwaarde en uw gecontracteerd transportvermogen blijven ongewijzigd. Load balancing houdt de afname onder een grenswaarde die binnen die waarden valt en gebruikt de ruimte eronder beter dan een vast budget per punt."
+    },
+    {
+      "vraag": "Laden de voertuigen dan langzamer?",
+      "antwoord": "Soms, en alleen wanneer het nodig is. Een dynamische regeling knijpt pas af als de gebouwlast en de laadvraag samen tegen de grenswaarde aan lopen. Of dat merkbaar is, hangt af van de standtijd: een voertuig dat de hele nacht staat, haalt zijn energie ook met minder vermogen binnen."
+    },
+    {
+      "vraag": "Heb ik een batterij nodig om laadpunten te kunnen plaatsen?",
+      "antwoord": "Niet altijd. Levert de ruimte onder uw grenswaarde over de standtijd van de voertuigen genoeg energie op, dan is sturing voldoende. Opslag wordt interessant bij korte, hoge pieken, bij korte standtijden en wanneer u eigen opwek van het dak wilt bewaren voor het laden in de avond."
+    },
+    {
+      "vraag": "Wat als er eenfasige en driefasige laadpunten door elkaar staan?",
+      "antwoord": "Dan moet de verdeling per fase rekenen. Een zekering begrenst per fase: eenfasige punten die alle op dezelfde fase zijn aangesloten, laten de aansluiting op die fase struikelen terwijl de twee andere fasen ruimte over hebben. Dat is in de eerste plaats een aandachtspunt in het aansluitontwerp, niet iets wat software achteraf repareert."
+    },
+    {
+      "vraag": "Kan ik later uitbreiden zonder opnieuw te verbouwen?",
+      "antwoord": "Dat hangt af van wat u nu aanlegt. Kabeltracé, verdeelinrichting en de meetpositie voor de regeling zijn de duurste onderdelen om later te vervangen. Als het aantal voertuigen gaat groeien, hoort die groei in het ontwerp van die drie te zitten, ook wanneer u met minder punten begint."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "laadplein", "naam": "Laadplein" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/laadinfrastructuur-dimensioneren", "naam": "Laadinfrastructuur dimensioneren" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Energiemanagementsysteem" }
+      ]
+    },
+    {
+      "kop": "Verwante vragen",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "toepassingen/elektrificatie-bedrijfswagens", "naam": "Elektrificatie van bedrijfswagens" },
+        { "route": "toepassingen/geen-extra-transportvermogen", "naam": "Geen extra transportvermogen" },
+        { "route": "toepassingen/pieken-in-verbruik", "naam": "Pieken in verbruik" }
+      ]
+    },
+    {
+      "kop": "Voor wie",
+      "items": [
+        { "route": "sectoren/automotive", "naam": "Automotive" },
+        { "route": "sectoren/transport-en-wagenparken", "naam": "Transport en wagenparken" },
+        { "route": "sectoren/parkeren", "naam": "Parkeren" },
+        { "route": "industrie-logistiek", "naam": "Logistiek" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Begin bij het rooster, niet bij het aantal punten",
+    "tekst": "Stuur ons het kwartiersprofiel van uw aansluiting, uw aansluitgegevens en het rooster van de voertuigen: hoeveel er zijn, wanneer ze staan en hoeveel ze per dag bijladen. Daaruit volgt hoeveel punten er passen, welk vermogen per punt nodig is en of opslag iets toevoegt. Past het niet binnen de bestaande aansluiting, dan zeggen we dat ook.",
+    "primair": { "route": "contact", "label": "Laat uw laadplan doorrekenen" },
+    "secundair": { "route": "projecten", "label": "Bekijk gerealiseerde projecten" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare capaciteit per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

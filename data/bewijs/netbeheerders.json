@@ -1,0 +1,6007 @@
+{
+  "_toelichting": "Netbeheerder elektriciteit per gemeente, bepaald door punt-in-vlak op een raster binnen de gemeentegrens. Bij zeker=false raakt de gemeente meer dan één netbeheergebied en mag geen enkele netbeheerder als DE netbeheerder van die gemeente worden genoemd.",
+  "_aandeel_betekent": "Benaderd oppervlakte-aandeel op een gelijkmatig raster in graden. Geen aandeel in inwoners of aansluitingen.",
+  "bron_netbeheergebieden": "Stichting Mijnaansluiting.nl — WFS mijnaansluiting_open:netbeheergebieden_elektriciteit",
+  "bron_netbeheergebieden_url": "https://public.geodata.mijnaansluiting.nl/geoserver/mijnaansluiting_open/wfs?service=wfs&version=2.0.0&request=GetFeature&typeNames=mijnaansluiting_open:netbeheergebieden_elektriciteit&outputFormat=application/json&srsName=EPSG:4326",
+  "licentie_netbeheergebieden": "Publiek domein (Public Domain Mark 1.0) — bronhouder Stichting Mijnaansluiting.nl, geregistreerd op data.overheid.nl als dataset 81000-netbeheergebieden-elektriciteit--gas--media--riolering--warmte-en-water",
+  "bron_gemeentegrenzen": "PDOK — CBS Gebiedsindelingen 2026, laag gemeente_gegeneraliseerd",
+  "bron_gemeentegrenzen_url": "https://service.pdok.nl/cbs/gebiedsindelingen/2026/wfs/v1_0?service=WFS&version=2.0.0&request=GetFeature&typeNames=gemeente_gegeneraliseerd&outputFormat=application/json&srsName=EPSG:4326",
+  "bron_datum": "2026-10-10",
+  "scope": "NETBEHEERDERGEBIED, toegerekend aan GEMEENTELIJK",
+  "netbeheerders": [
+    {
+      "label": "Westland Infra",
+      "naam": "Westland Infra Netbeheer B.V.",
+      "code": "Westland",
+      "website": "https://www.westlandinfra.nl"
+    },
+    {
+      "label": "Enexis",
+      "naam": "Enexis Netbeheer B.V.",
+      "code": "ENX",
+      "website": "https://www.enexis.nl"
+    },
+    {
+      "label": "Coteq",
+      "naam": "Coteq Netbeheer B.V.",
+      "code": "coteq",
+      "website": "https://coteqnetbeheer.nl"
+    },
+    {
+      "label": "Rendo",
+      "naam": "N.V. Rendo",
+      "code": "rendo",
+      "website": "https://www.rendonetwerken.nl"
+    },
+    {
+      "label": "Liander",
+      "naam": "Liander N.V",
+      "code": "002Liander",
+      "website": "https://www.liander.nl/regio"
+    },
+    {
+      "label": "Stedin",
+      "naam": "Stedin",
+      "code": "stedin",
+      "website": "https://www.stedin.net/"
+    }
+  ],
+  "_zekerheid_klassen": {
+    "EENDUIDIG": "alle steekproefpunten bij één netbeheerder",
+    "OVERWEGEND": "grootste aandeel >= 90%; een rand valt elders en moet genoemd worden",
+    "VERDEELD": "grootste aandeel < 90%; GEEN netbeheerder mag als DE netbeheerder worden genoemd"
+  },
+  "gemeenten_bepaald": 342,
+  "gemeenten_eenduidig": 311,
+  "gemeenten_overwegend": 21,
+  "gemeenten_verdeeld": 10,
+  "gemeenten_gesplitst": 31,
+  "per_gemeente": {
+    "1507": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 84,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1509": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 70,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1525": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 76,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1581": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 79,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1586": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 85,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1598": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 88,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1621": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 75,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1640": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 71,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1641": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 62,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1652": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 101,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1655": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 94,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1658": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 85,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1659": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 90,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1667": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 92,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1669": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 63,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1674": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 76,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1676": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 55,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1680": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 60,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1681": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 91,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1690": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 77,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1695": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 78,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1696": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": false,
+      "zekerheid": "VERDEELD",
+      "aandeel_grootste": 53.5,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 53.5
+        },
+        {
+          "label": "Stedin",
+          "aandeel": 46.5
+        }
+      ],
+      "steekproefpunten": 101,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1699": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 79,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1700": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 65,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1701": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 75,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1705": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 66,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1706": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 71,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1708": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": false,
+      "zekerheid": "VERDEELD",
+      "aandeel_grootste": 81.1,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 81.1
+        },
+        {
+          "label": "Liander",
+          "aandeel": 12.2
+        },
+        {
+          "label": "Rendo",
+          "aandeel": 6.8
+        }
+      ],
+      "steekproefpunten": 74,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1709": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 80,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1711": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 77,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1714": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 92,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1719": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 77,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1721": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 85,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1723": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 66,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1724": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 77,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1728": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 84,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1729": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 84,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1730": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 58,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1731": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 67,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1734": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 87,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1735": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 94.2,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 94.2
+        },
+        {
+          "label": "Coteq",
+          "aandeel": 4.7
+        },
+        {
+          "label": "Liander",
+          "aandeel": 1.2
+        }
+      ],
+      "steekproefpunten": 86,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1740": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 78,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1742": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 96,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1771": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 79,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1773": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 95.3,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 95.3
+        },
+        {
+          "label": "Liander",
+          "aandeel": 4.7
+        }
+      ],
+      "steekproefpunten": 86,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1774": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 98.1,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 98.1
+        },
+        {
+          "label": "Coteq",
+          "aandeel": 1.9
+        }
+      ],
+      "steekproefpunten": 54,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1783": {
+      "netbeheerder": "Westland Infra",
+      "netbeheerder_naam": "Westland Infra Netbeheer B.V.",
+      "website": "https://www.westlandinfra.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Westland Infra",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 76,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1842": {
+      "netbeheerder": "Westland Infra",
+      "netbeheerder_naam": "Westland Infra Netbeheer B.V.",
+      "website": "https://www.westlandinfra.nl",
+      "zeker": false,
+      "zekerheid": "VERDEELD",
+      "aandeel_grootste": 89.3,
+      "verdeling": [
+        {
+          "label": "Westland Infra",
+          "aandeel": 89.3
+        },
+        {
+          "label": "Stedin",
+          "aandeel": 10.7
+        }
+      ],
+      "steekproefpunten": 56,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1859": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 85,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1876": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 88,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1883": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 82,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1884": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 91,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1891": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 89,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1892": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": false,
+      "zekerheid": "VERDEELD",
+      "aandeel_grootste": 50.8,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 50.8
+        },
+        {
+          "label": "Liander",
+          "aandeel": 49.2
+        }
+      ],
+      "steekproefpunten": 65,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1894": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 79,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1895": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 95,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1896": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 75,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1900": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 54,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1901": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 72,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1903": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 78,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1904": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 58,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1911": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 57,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1916": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 96.7,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 96.7
+        },
+        {
+          "label": "Liander",
+          "aandeel": 3.3
+        }
+      ],
+      "steekproefpunten": 61,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1924": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 47,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1926": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 81,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1930": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 69,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1931": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 76,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1940": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 62,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1942": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 147,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 24
+    },
+    "1945": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 68,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1948": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 92,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1949": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 83,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1950": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 82,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1952": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 76,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1954": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 58,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1955": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 74,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1959": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 79,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1960": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 98.7,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 98.7
+        },
+        {
+          "label": "Stedin",
+          "aandeel": 1.3
+        }
+      ],
+      "steekproefpunten": 78,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1961": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 81,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1963": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 95,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1966": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 43,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1969": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 98.8,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 98.8
+        },
+        {
+          "label": "Liander",
+          "aandeel": 1.2
+        }
+      ],
+      "steekproefpunten": 86,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1970": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 75,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1978": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 73,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1979": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 55,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1980": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 77,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1982": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 84,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1991": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 94,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "1992": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 79,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0014": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 61,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0034": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 77,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0037": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 64,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0047": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 101,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0050": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 81,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0059": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 76,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0060": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 71,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0072": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 81,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0074": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 52,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0080": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 63,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0085": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 79,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0086": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 66,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0088": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 51,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0090": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 92,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0093": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 90,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 24
+    },
+    "0096": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 101,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 24
+    },
+    "0098": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 97.2,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 97.2
+        },
+        {
+          "label": "Enexis",
+          "aandeel": 2.8
+        }
+      ],
+      "steekproefpunten": 72,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0106": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 83,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0109": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 81,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0114": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 106,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0118": {
+      "netbeheerder": "Rendo",
+      "netbeheerder_naam": "N.V. Rendo",
+      "website": "https://www.rendonetwerken.nl",
+      "zeker": false,
+      "zekerheid": "VERDEELD",
+      "aandeel_grootste": 53.2,
+      "verdeling": [
+        {
+          "label": "Rendo",
+          "aandeel": 53.2
+        },
+        {
+          "label": "Enexis",
+          "aandeel": 46.8
+        }
+      ],
+      "steekproefpunten": 77,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0119": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 61,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0141": {
+      "netbeheerder": "Coteq",
+      "netbeheerder_naam": "Coteq Netbeheer B.V.",
+      "website": "https://coteqnetbeheer.nl",
+      "zeker": false,
+      "zekerheid": "VERDEELD",
+      "aandeel_grootste": 56.1,
+      "verdeling": [
+        {
+          "label": "Coteq",
+          "aandeel": 56.1
+        },
+        {
+          "label": "Enexis",
+          "aandeel": 43.9
+        }
+      ],
+      "steekproefpunten": 98,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0147": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 78,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0148": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 82,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0150": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 97.8,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 97.8
+        },
+        {
+          "label": "Liander",
+          "aandeel": 2.2
+        }
+      ],
+      "steekproefpunten": 89,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0153": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 95,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0158": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 87,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0160": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 62,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0163": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 68,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0164": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 63,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0166": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 98.6,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 98.6
+        },
+        {
+          "label": "Liander",
+          "aandeel": 1.4
+        }
+      ],
+      "steekproefpunten": 73,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0168": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 85,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0171": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 93,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0173": {
+      "netbeheerder": "Coteq",
+      "netbeheerder_naam": "Coteq Netbeheer B.V.",
+      "website": "https://coteqnetbeheer.nl",
+      "zeker": false,
+      "zekerheid": "VERDEELD",
+      "aandeel_grootste": 71.1,
+      "verdeling": [
+        {
+          "label": "Coteq",
+          "aandeel": 71.1
+        },
+        {
+          "label": "Enexis",
+          "aandeel": 28.9
+        }
+      ],
+      "steekproefpunten": 90,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0175": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 75,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0177": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 74,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0180": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 104,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0183": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 70,
+      "punten_buiten_elk_gebied": 1,
+      "raster": 12
+    },
+    "0184": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 89,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0189": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 75,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0193": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 75,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0197": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 74,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0200": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 83,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0202": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 76,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0203": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 98.6,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 98.6
+        },
+        {
+          "label": "Stedin",
+          "aandeel": 1.4
+        }
+      ],
+      "steekproefpunten": 74,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0209": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 90,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0213": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 72,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0214": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 74,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0216": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 98.8,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 98.8
+        },
+        {
+          "label": "Stedin",
+          "aandeel": 1.2
+        }
+      ],
+      "steekproefpunten": 81,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0221": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 82,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0222": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 79,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0225": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 81,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0226": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 92,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0228": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 97,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0230": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 65,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0232": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 83,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0233": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 86,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0243": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 69,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0244": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 68,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0246": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 88,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0252": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 87,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0262": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 85,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0263": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 54,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0267": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 59,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0268": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 72,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0269": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 75,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0273": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 88,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0274": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 87,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0275": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 74,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0277": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 96,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0279": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 93.8,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 93.8
+        },
+        {
+          "label": "Stedin",
+          "aandeel": 6.3
+        }
+      ],
+      "steekproefpunten": 80,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0281": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 68,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0285": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 75,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0289": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 80,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0293": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 64,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0294": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 90,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0296": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 70,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0297": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 63,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0299": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 66,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0301": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 52,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0302": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 89,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0303": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 87,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0307": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 95.1,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 95.1
+        },
+        {
+          "label": "Liander",
+          "aandeel": 4.9
+        }
+      ],
+      "steekproefpunten": 61,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0308": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 74,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0310": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 79,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0312": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 70,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0313": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 93,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0317": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 88,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0321": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 77,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0327": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 77,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0331": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 75,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0335": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 69,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0339": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 77,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0340": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 76,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0342": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 87,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0344": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 72,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0345": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": false,
+      "zekerheid": "VERDEELD",
+      "aandeel_grootste": 89.4,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 89.4
+        },
+        {
+          "label": "Liander",
+          "aandeel": 10.6
+        }
+      ],
+      "steekproefpunten": 94,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0351": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 50,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0352": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 75,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0353": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 60,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0355": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 59,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0356": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 111,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0358": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 45,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0361": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 64,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0362": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 85,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0363": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 75,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0373": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 73,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0375": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 62,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0376": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 136,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 24
+    },
+    "0377": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 65,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0383": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 88,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0384": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 61,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0385": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 63,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0388": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 97,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 24
+    },
+    "0392": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 78,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0394": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 67,
+      "punten_buiten_elk_gebied": 7,
+      "raster": 12
+    },
+    "0396": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 92,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0397": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 97.8,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 97.8
+        },
+        {
+          "label": "Liander",
+          "aandeel": 2.2
+        }
+      ],
+      "steekproefpunten": 89,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0399": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 102,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0400": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 101,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0402": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 97.1,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 97.1
+        },
+        {
+          "label": "Stedin",
+          "aandeel": 2.9
+        }
+      ],
+      "steekproefpunten": 70,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0405": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 71,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0406": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 62,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0415": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 111,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0417": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 90,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 90
+        },
+        {
+          "label": "Stedin",
+          "aandeel": 10
+        }
+      ],
+      "steekproefpunten": 70,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0420": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 73,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0431": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 92,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0432": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 88,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0437": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 66,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0439": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 68,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0441": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 85,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0448": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 60,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0450": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 82,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0451": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 52,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0453": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 61,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0473": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 74,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0479": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 81,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0482": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 61,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0484": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 99,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0489": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 105,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0498": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 84,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0502": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 61,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0503": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 93.5,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 93.5
+        },
+        {
+          "label": "Westland Infra",
+          "aandeel": 6.5
+        }
+      ],
+      "steekproefpunten": 77,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0505": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 70,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0512": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 85,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0513": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 79,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0518": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 63,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0523": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 66,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0531": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 67,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0532": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 101,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0534": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 79,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0537": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 82,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0542": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 63,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0546": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 78,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0547": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 82,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0553": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 79,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0556": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": false,
+      "zekerheid": "VERDEELD",
+      "aandeel_grootste": 86,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 86
+        },
+        {
+          "label": "Westland Infra",
+          "aandeel": 14
+        }
+      ],
+      "steekproefpunten": 57,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0569": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": false,
+      "zekerheid": "VERDEELD",
+      "aandeel_grootste": 83.8,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 83.8
+        },
+        {
+          "label": "Stedin",
+          "aandeel": 16.2
+        }
+      ],
+      "steekproefpunten": 68,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0575": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 61,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0579": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 59,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0589": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 76,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0590": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 94,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0597": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 75,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0599": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 54,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0603": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 83,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0606": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 85,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0610": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 102,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0613": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 103,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0622": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 86,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0626": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 64,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0627": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 70,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0629": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 97.5,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 97.5
+        },
+        {
+          "label": "Stedin",
+          "aandeel": 2.5
+        }
+      ],
+      "steekproefpunten": 79,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0632": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 84,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0637": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 78,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0638": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 98.7,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 98.7
+        },
+        {
+          "label": "Stedin",
+          "aandeel": 1.3
+        }
+      ],
+      "steekproefpunten": 79,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0642": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 77,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0654": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 98,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0664": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 93,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0668": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 90,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0677": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 77,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0678": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 83,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0687": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 84,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0703": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 49,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0715": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 81,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0716": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 71,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0717": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 45,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0718": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 69,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0736": {
+      "netbeheerder": "Stedin",
+      "netbeheerder_naam": "Stedin",
+      "website": "https://www.stedin.net/",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 97.1,
+      "verdeling": [
+        {
+          "label": "Stedin",
+          "aandeel": 97.1
+        },
+        {
+          "label": "Liander",
+          "aandeel": 2.9
+        }
+      ],
+      "steekproefpunten": 70,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0737": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 68,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0743": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 72,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0744": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 64,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0748": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 86,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0753": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 103,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0755": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 108,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0757": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 92,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0758": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 71,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0762": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 66,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0765": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 68,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0766": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 78,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0770": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 68,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0772": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 92,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0777": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 84,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0779": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 104,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0784": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 73,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0785": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 78,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0794": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 89,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0796": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 76,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0797": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 82,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0798": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 76,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0809": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 116,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0820": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 62,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0823": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 76,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0824": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 88,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0826": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 84,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0828": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 90,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0840": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 80,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0845": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 74,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0847": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 83,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0848": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 83,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0851": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 97,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0852": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 71,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0855": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 83,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0858": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 63,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0861": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 84,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0865": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 89,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0866": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 109,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0867": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 92,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0873": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 96,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0879": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 83,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0880": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 78,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0882": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 72,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0888": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 66,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0889": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 83,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0893": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 52,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0899": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 98,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0907": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 73,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0917": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 53,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0928": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 75,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0935": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 82,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0938": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 70,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0944": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": false,
+      "zekerheid": "OVERWEGEND",
+      "aandeel_grootste": 98.8,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 98.8
+        },
+        {
+          "label": "Liander",
+          "aandeel": 1.3
+        }
+      ],
+      "steekproefpunten": 80,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0946": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 75,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0957": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 80,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0965": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 72,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0971": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 64,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0981": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 80,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0983": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 64,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0984": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 84,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0986": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 81,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0988": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 78,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0994": {
+      "netbeheerder": "Enexis",
+      "netbeheerder_naam": "Enexis Netbeheer B.V.",
+      "website": "https://www.enexis.nl",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Enexis",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 77,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    },
+    "0995": {
+      "netbeheerder": "Liander",
+      "netbeheerder_naam": "Liander N.V",
+      "website": "https://www.liander.nl/regio",
+      "zeker": true,
+      "zekerheid": "EENDUIDIG",
+      "aandeel_grootste": 100,
+      "verdeling": [
+        {
+          "label": "Liander",
+          "aandeel": 100
+        }
+      ],
+      "steekproefpunten": 45,
+      "punten_buiten_elk_gebied": 0,
+      "raster": 12
+    }
+  }
+}

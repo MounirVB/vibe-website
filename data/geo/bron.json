@@ -1,0 +1,12 @@
+{
+  "_toelichting": "Gegenereerd door scripts/seo/haal-geo.mjs. Niet met de hand bijwerken — draai het script opnieuw.",
+  "bron": "PDOK Locatieserver v3_1 (bron: BZK Bestuurlijke Grenzen)",
+  "endpoint": "https://api.pdok.nl/bzk/locatieserver/search/v3_1/free",
+  "ophaaldatum": "2026-10-10",
+  "stabiele_sleutel": "CBS-gemeentecode (vier tekens, met voorloopnul)",
+  "aantal_gemeenten": 342,
+  "aantal_provincies": 12,
+  "numfound_bij_ophalen": 342,
+  "licentie": "PDOK/BZK — open data, bronvermelding verplicht. Zie https://www.pdok.nl/",
+  "waarschuwing": "Het gemeenteregister verandert bij herindelingen, doorgaans per 1 januari. Draai dit script opnieuw voor elke release; de poort stelt het aantal dan opnieuw vast in plaats van het aan te nemen."
+}

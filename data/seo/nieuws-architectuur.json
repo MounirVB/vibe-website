@@ -1,0 +1,73 @@
+{
+  "_toelichting": "GERESERVEERDE ARCHITECTUUR VOOR RELEASE 2 — News & Market Intelligence Engine. Dit bestand beschrijft het contract; er is in Release 1 BEWUST niets van geïmplementeerd. Er is geen generator, geen route op INDEX, geen sitemapregel en geen enkele geautomatiseerde publicatie. Wie Release 2 bouwt, begint hier.",
+  "_status": "GERESERVEERD, NIET GEÏMPLEMENTEERD",
+  "_vastgesteld": "2026-10-10",
+  "_release_1_bevat": "niets van dit contract behalve dit bestand en de routereservering",
+
+  "routereservering": {
+    "wortel": "nieuws",
+    "artikel": "nieuws/<slug>",
+    "waarom_nu_vastleggen": "Het padsegment 'nieuws' wordt hier geclaimd zodat geen latere oplossing, sector of gemeente dezelfde slug krijgt. De slugbotsingspoort in scripts/seo/bouw-routes.mjs kan er dan op toetsen.",
+    "staat_in_release_1": "PENDING — geen bestand, geen sitemapregel, geen interne link."
+  },
+
+  "artikelschema": {
+    "route": "nieuws/<slug>",
+    "type": "nieuws",
+    "titel": "string, 40-60 tekens",
+    "beschrijving": "string, 110-158 tekens",
+    "h1": "string",
+    "lead": "string",
+    "gepubliceerd": "ISO-datum. Verplicht en onveranderlijk na publicatie.",
+    "gewijzigd": "ISO-datum. Moet een ECHTE inhoudelijke wijziging markeren, niet een herbouw.",
+    "redactionele_staat": {
+      "_enum": ["CONCEPT", "TER_REDACTIE", "GOEDGEKEURD", "GEPUBLICEERD", "INGETROKKEN"],
+      "_regel": "Alleen GOEDGEKEURD mag door de publicatietoestandsmachine naar INDEX. Een artikel komt nooit automatisch op GOEDGEKEURD; daar hoort een mens aan te pas, net zoals data/seo/publicatiebesluit.json dat nu voor regio's regelt."
+    },
+    "goedgekeurd_door": "string — wie het heeft vrijgegeven. Leeg betekent niet vrijgegeven.",
+    "goedgekeurd_op": "ISO-datum",
+    "bronnen": [
+      {
+        "naam": "string",
+        "url": "string — de primaire bron, niet een artikel dat erover schrijft",
+        "datum": "ISO-datum waarop de bron is geraadpleegd",
+        "soort": { "_enum": ["WETGEVING", "TOEZICHTHOUDER", "NETBEHEERDER", "STATISTIEK", "MARKTPARTIJ", "EIGEN_MEETDATA"] }
+      }
+    ],
+    "claims": "zelfde vorm als in data/inhoud/SCHEMA.md: elk cijfer met bron_url en bron_datum",
+    "onderwerp_eigenaar": "route van de nationale pagina die dit onderwerp bezit, bv 'netcongestie'. Een nieuwsartikel bezit NOOIT zelf een commerciële zoekintentie; het leent die van zijn eigenaar en linkt ernaartoe.",
+    "oplossing_links": ["route"],
+    "regio_links": ["gemeentecode of provinciecode uit data/geo"],
+    "secties": "zelfde sectiesoorten als data/inhoud/SCHEMA.md"
+  },
+
+  "publicatiepoorten_voor_release_2": [
+    "Redactionele staat is GOEDGEKEURD, met een naam en een datum erbij.",
+    "Minstens één bron van soort WETGEVING, TOEZICHTHOUDER, NETBEHEERDER of STATISTIEK. Een marktpartij alleen is niet genoeg.",
+    "Elk cijfer in de tekst staat in `claims` met bron_url en bron_datum — poort 10 van audit.mjs dekt dit al af.",
+    "De onderwerp-eigenaar bestaat en staat op INDEX, zodat het artikel niet zelf een commerciële intentie claimt.",
+    "Een regio_link verwijst naar een bestaande gemeentecode of provinciecode uit data/geo; de geografische scope van elk feit wordt genoteerd zoals in data/bewijs.",
+    "De duplicaatpoort (11) geldt onverkort: een artikel dat 60 procent van zijn tekst met een ander artikel deelt, is geen tweede artikel."
+  ],
+
+  "canonieke_keuze": {
+    "regel": "Een nieuwsartikel is zelfverwijzend canoniek. Het mag NOOIT canonicaliseren naar zijn onderwerp-eigenaar, want dan is het geen artikel maar een duplicaat.",
+    "veroudering": "Een artikel met een status- of deadlineclaim veroudert. Het schema dwingt daarom een `bron_datum` af en de pagina hoort die datum zichtbaar te tonen, zoals /subsidies dat nu doet."
+  },
+
+  "wat_release_2_NIET_mag_doen": [
+    "Automatisch publiceren zonder menselijke goedkeuring.",
+    "Een artikel genereren uit een samenvatting van een ander artikel; dat maakt de site een tweede bron voor een getal dat hij niet heeft gemeten.",
+    "De bestaande commerciële pagina's laten kannibaliseren door een nieuwsartikel op dezelfde term.",
+    "Deadlines of budgetten van regelingen in een artikel zetten zonder zichtbare peildatum.",
+    "De capaciteitskaartdata van Netbeheer Nederland overnemen: daar zit geen open licentie op, alleen een disclaimer (gemeten 10 oktober 2026)."
+  ],
+
+  "herbruikbaar_uit_release_1": [
+    "scripts/seo/lib/sjabloon.mjs — paginaskelet, direct antwoord met bronregel, FAQ, verwante links",
+    "scripts/seo/lib/schema.mjs — voeg een NewsArticle- of Article-bouwer toe naast artikel()",
+    "scripts/seo/lib/links.mjs — de linkmotor filtert PENDING en meet weespagina's",
+    "scripts/seo/bouw-routes.mjs — de toestandsmachine; voeg een tak toe die de redactionele staat leest",
+    "scripts/seo/audit.mjs — de vijftien poorten gelden ongewijzigd voor een nieuwsartikel"
+  ]
+}

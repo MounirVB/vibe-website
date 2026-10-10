@@ -1,0 +1,230 @@
+{
+  "route": "sectoren/opslag-en-distributie",
+  "type": "sector",
+  "titel": "Energie voor distributiecentra en koelhuizen | Vibe Energy",
+  "beschrijving": "Groot dak, vlakke koellast en laadpieken op één aansluiting. Wat opslag, voorkoelen en sturing in een distributiecentrum doen, en waar de grens ligt.",
+  "og_titel": "Energie voor distributiecentra en koelhuizen",
+  "h1": "Een groot dak, een volle aansluiting en koeling die nooit stopt",
+  "lead": "Een distributiecentrum heeft het grootste dakvlak van het bedrijventerrein en tegelijk het minst flexibele verbruik. De koeling vraagt dag en nacht vermogen, de laders en het intern transport zetten er korte pieken bovenop, en het dak levert precies op de uren waarop het net de minste ruimte heeft.",
+  "data_pagina": "sectoren",
+  "kruimels": [{ "naam": "Sectoren", "route": "sectoren" }],
+  "kruimel_label": "Opslag en distributie",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Energie-infrastructuur voor distributiecentra, warehouses en koelhuizen",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Vraag een locatieanalyse aan" },
+    { "soort": "ghost", "anker": "#profiel", "label": "Begin bij het verbruiksprofiel" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat is het energievraagstuk van een distributiecentrum of koelhuis?",
+    "antwoord": "Een distributiecentrum, warehouse of koelhuis brengt twee tegengestelde eigenschappen samen op één aansluiting. Er is een groot dakoppervlak en dus veel opwekpotentieel, en er is een verbruik dat bestaat uit een vlakke, hoge koellast met korte pieken van laders, dockapparatuur en transportinstallaties erbovenop. Daardoor loopt het dak aan de invoedingskant vaak tegen een terugleverbeperking aan, terwijl de gelijktijdige piek aan de afnamekant tegen de grens van de aansluiting komt. De bijbehorende ingrepen: eigen opwek opslaan of direct wegzetten, koeling als thermische buffer gebruiken door voor te koelen, en het laden van intern transport als stuurbare last behandelen.",
+    "voorbehoud": "Dit antwoord zegt niets over de haalbaarheid op een specifieke locatie. Of het dak de panelen draagt is een constructieve vraag, en of voorkoelen mag bepaalt het product en niet de energierekening. Een vrieshuis met een vlakke hoge basislast heeft bovendien een vermogensprobleem dat met piekafvlakking niet op te lossen is."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "profiel",
+      "kop": "Twee profielen in één pand: een vlakke koellast en korte pieken",
+      "lead": "Het verbruik van een distributiecentrum is zelden één curve. Het zijn er twee, en ze komen elkaar op de aansluiting tegen.",
+      "alineas": [
+        "De koelinstallatie bepaalt de bodem. Compressoren en condensors draaien door, dag en nacht, en hun vermogen beweegt mee met de buitentemperatuur en met wat er door de deuren gaat. Dat levert een basislast op die hoog is en weinig vorm heeft: er zit geen nacht in waarin het verbruik naar nul zakt. Een vrieshuis legt die bodem nog hoger dan een koelhuis, omdat het temperatuurverschil met buiten groter is en de installatie permanent tegen warmte-inval werkt.",
+        "Daarbovenop komen de pieken, en die zijn kort en gelijktijdig. Laders van heftrucks en reachtrucks worden bij ploegwissel vrijwel allemaal tegelijk ingeprikt. Dockdeuren, dockshelters en hefbruggen vragen per stuk weinig, maar aan een rij docks die gelijk begint telt dat op. Een sorteerinstallatie of een transportbaan start op vol vermogen. En in de zomer vallen de zwaarste condensoruren samen met de drukste ordertijden.",
+        "De vorm van die twee samen bepaalt welke ingreep werkt. Een pand waar de piek ruim boven de basislast uitkomt heeft een gelijktijdigheidsprobleem, en dat is met sturing en opslag te verkleinen. Een pand waar de piek nauwelijks boven de basislast uitkomt heeft dat niet: daar is de koeling zelf het vraagstuk. Dat onderscheid is niet te zien in een jaarverbruik in kWh — dat middelt precies de informatie weg die het ontwerp bepaalt. Het staat in het kwartiersprofiel van de aansluiting."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Vijf grootheden die in een distributiecentrum door elkaar lopen",
+      "rijen": [
+        ["Dakoppervlak en constructieve reserve", "Het oppervlak zegt hoeveel panelen er passen. De reserve in de dakconstructie zegt hoeveel er mogen liggen. Dat zijn twee verschillende getallen, en de tweede is leidend."],
+        ["Basislast en piek", "De basislast is wat de koeling continu vraagt. De piek is wat erbovenop komt als laders, docks en transport gelijktijdig aanslaan. Piekafvlakking werkt op het tweede, niet op het eerste."],
+        ["Afnameruimte en invoedingsruimte", "In een voedingsgebied kunnen de ruimte voor afname en de ruimte voor invoeding onafhankelijk van elkaar vol zitten. Een locatie die mag afnemen, mag daarmee niet automatisch terugleveren."],
+        ["Thermische buffer en elektrische buffer", "Koude in een gevulde cel is opgeslagen energie, maar u kunt er alleen koeling uit halen. Een batterij levert elke elektrische last. De eerste buffer zit al in uw voorraad; de tweede moet u aanschaffen en is veel preciezer."],
+        ["Aantal laders en gelijktijdige vraag", "Het aantal laders maal hun vermogen is de theoretische bovengrens, niet de werkelijke vraag. Het verschil tussen die twee is de ruimte waarin load balancing werkt."]
+      ],
+      "noot": "Wie deze vijf door elkaar haalt, dimensioneert op het verkeerde getal: een dak op oppervlak in plaats van op draagkracht, of een batterij op jaarverbruik in plaats van op de vorm van de piek."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Waarom juist een groot dak tegen een terugleverbeperking aanloopt",
+      "lead": "Het dakvlak groeit mee met de hal. Het verbruik per vierkante meter doet dat niet.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Een logistieke hal is vooral ruimte: een groot dakvlak, veel hoogte en weinig apparaten per vierkante meter. Een vol gelegd dak kan op een heldere middag daarom meer leveren dan het pand op dat moment zelf gebruikt. Bij een koelhuis gaat dat niet anders: de last is hoog, maar hij stijgt niet mee met de zon, en in het weekend loopt het orderproces terug terwijl het dak doorgaat.",
+        "Wat er dan overblijft gaat het net op, en daar zit de beperking. Netbeheerders publiceren per voedingsgebied of er ruimte is voor afname en of er ruimte is voor invoeding; die twee staan los van elkaar. Zit de invoeding vol, dan krijgt u voor teruglevering een lager transportvermogen toegekend dan uw dak kan leveren, of een afspraak die de invoeding op bepaalde momenten begrenst. In beide gevallen regelt de omvormer af in precies de uren waarin uw dak het meest produceert: de top van de curve valt weg, niet de staart.",
+        "Daar zijn drie antwoorden op, en ze sluiten elkaar niet uit. Verbruik de opwek zelf op het moment dat hij er is, door in het middaguur te laden en voor te koelen. Sla het overschot op en zet het weg in de avond- en nachtlast van de koeling. Of leg het dak kleiner aan en blijf binnen de invoeding die is toegestaan. Welke combinatie het wordt volgt uit uw eigen middagverbruik en uw eigen invoedingsruimte. Het is een rekensom, geen principe.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op de postcode van uw pand</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Koeling is zelf een buffer — binnen de band van het product",
+      "lead": "Een gevulde koelcel slaat energie op in de vorm van koude. Dat is een buffer die er al staat.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Voorkoelen betekent: het setpoint een stukje verlagen op het moment dat er stroom over is, van het dak of uit een goedkoop uur, en de installatie daarna laten stilstaan op het moment dat de aansluiting vol zit. De temperatuur loopt dan langzaam op binnen de band die het product toestaat. U heeft daarvoor geen extra hardware nodig behalve meting en sturing, en u gebruikt massa die u al heeft: het product, de inrichting en de constructie van de cel.",
+        "Dat werkt het best in een gevulde cel met weinig deurbewegingen. Een cel vol diepgevroren product heeft veel massa en dus een lange nalooptijd; een halflege cel met veel lucht heeft die niet. De buffer varieert dus met uw voorraad, en dat is een ongemakkelijke eigenschap: hij is het kleinst in de periode waarin u hem misschien het hardst nodig heeft. Een cel die aan een druk dock hangt, lekt zijn buffer bovendien weg door de deur.",
+        "<h3>Wat voorkoelen kost</h3>",
+        "Een lager setpoint vergroot het temperatuurverschil met de omgeving, en daarmee de warmte-inval. Voorkoelen verlaagt dus uw piek in kW, maar verhoogt uw verbruik in kWh iets. Dat is een ruil en geen besparing op beide. Of die ruil gunstig uitpakt, hangt af van wat uw piek u kost en van wat die extra energie kost — en dat verschilt per contract en per locatie.",
+        "<h3>Waar het ophoudt</h3>",
+        "<ul><li>De temperatuurband is van het product, niet van het energiesysteem. Wat is toegestaan legt de opdrachtgever of de productspecificatie vast; daar wordt niet op gerekend.</li><li>Compressoren hebben minimale draai- en stilstandtijden. Een regelstrategie die vaker schakelt dan de installatie toelaat, kost levensduur.</li><li>Ontdooicycli zijn deels te verschuiven, maar niet eindeloos uit te stellen.</li><li>De koelregelaar moet een extern setpoint of een vrijgavesignaal aannemen. Veel bestaande installaties doen dat niet; dan is dit een aanpassing aan de koelinstallatie, en niet aan het energiesysteem.</li></ul>",
+        "Een thermische buffer is daarom zelden een vervanging van een batterij en vaak een aanvulling. Hij is goedkoop en beperkt: hij schuift koeling in de tijd en verder niets. Een batterij is duurder en neutraal: die levert elke last, ook de laadpiek en een startende transportbaan."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Heftruckladen is de makkelijkste stuurbare last die u heeft",
+      "lead": "Een truck die aan de lader staat heeft geen haast. Daar zit de ruimte.",
+      "alineas": [
+        "Intern transport laadt op vaste momenten: aan het eind van een ploeg, of tussendoor als de accu's lithium zijn. Dat laden is uitstelbaar binnen een deadline. Het voertuig moet vol zijn als de volgende ploeg begint; wanneer het precies oplaadt, maakt verder niemand uit. Een regelsysteem kan de laders daarom samen een budget geven en dat budget per moment bijstellen.",
+        "Het verschil tussen statisch en dynamisch verdelen is hier groot. Statisch verdeelt een vast budget over de laders: veilig, maar u reserveert vermogen dat vaak ongebruikt blijft. Dynamisch meet de actuele belasting van de aansluiting — koeling, docks, kantoor — en verdeelt wat er op dat moment over is. In een pand met een vlakke koellast en korte pieken is dat verschil precies het vermogen dat u anders had moeten bijcontracteren.",
+        "<p><strong>Rekenvoorbeeld.</strong> Tien laders van 11 kW is 110 kW als ze allemaal tegelijk vol trekken. Trekken ze gemiddeld de helft, dan is dat 55 kW. Het verschil tussen die twee getallen is geen besparing maar een risico-afweging: zonder sturing moet de aansluiting de 110 kW kunnen dragen, want de dag waarop het wél gebeurt bepaalt uw piek voor het jaar.</p>",
+        "Twee randvoorwaarden. Loodzuuraccu's laden volgens een vast laadprofiel en zijn in de eindfase slecht te onderbreken; wisselaccu's in een laadruimte geven meer vrijheid dan vaste laders aan de truck. En lithium opportunity charging valt samen met de pauzes, en dus met het middaguur — precies het moment waarop het dak levert en de invoeding knelt. Dan is laden geen probleem maar een afzetkanaal voor uw eigen opwek.",
+        "Elektrische trucks en bestelwagens aan het dock zijn een ander vraagstuk. Daar gelden hogere vermogens, kortere standtijden en een laadmoment dat door de rit wordt bepaald. Dat raakt dezelfde aansluiting, maar de dimensionering loopt anders; daarvoor is de pagina over transport en wagenparken bedoeld."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Draagt het dak de panelen? Dat is de eerste vraag, niet de laatste",
+      "lead": "Een groot dakvlak is niet hetzelfde als een beschikbaar dakvlak.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Een logistieke hal heeft meestal een lichte dakconstructie met grote overspanningen: stalen dakplaten op liggers, berekend op eigen gewicht, sneeuw en wind, en zelden met veel reserve. Een geballast montagesysteem voegt gewicht toe over het hele vlak. Of dat past blijkt uit een constructieve berekening op de oorspronkelijke tekeningen en berekeningen van het pand. Zijn die er niet, dan begint het met opmeten en inspecteren — en dat is werk dat vóór het ontwerp hoort, niet erna.",
+        "De randen en hoeken van een plat dak vragen de meeste ballast tegen windopname, en dat is juist waar de constructie het minst te verdelen heeft. Mechanisch bevestigen is dan het alternatief, maar dat betekent doorvoeringen in de dakbedekking. Bij een koel- of vrieshuis weegt dat zwaarder dan elders: in die dakopbouw zit een dampdichte laag, en elke doorvoering is een plek waar vocht de isolatie in kan trekken. Zo komt u via de bouwfysica weer terug bij gewicht.",
+        "Twee dingen die achteraf duur zijn als u ze vooraf niet vraagt. Ten eerste de resterende levensduur van de dakbedekking: panelen blijven veel langer liggen dan een dak dat aan het eind van zijn termijn is, en ze eraf en er weer op leggen kost geld. Ten tweede de ruimte die vrij moet blijven — sprinklerinstallatie, lichtkoepels, rookluiken, dakdoorvoeren van de koeltechniek en looppaden voor onderhoud. Wat daarvan overblijft is uw werkelijke dakvlak.",
+        "De uitkomst van die vragen is soms: minder panelen, een lichter systeem, mechanisch bevestigd in plaats van geballast, of eerst het dak en daarna de panelen. Dat is geen tegenvaller, maar een ontwerpkeuze die u beter vóór de investeringsbeslissing kent dan erna."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De eerlijke grens, en in deze sector is hij scherp.",
+      "alineas": [
+        "Een vrieshuis met een vlakke, hoge basislast heeft geen piekprobleem maar een vermogensprobleem. Piekafvlakking werkt alleen als er een piek boven een dal uitsteekt: de batterij levert tijdens de piek en laadt bij in het dal. Zit uw verbruik het grootste deel van het etmaal dicht tegen de grens van de aansluiting aan, dan is er geen dal om in bij te laden en geen piek om af te vlakken. Een batterij verschuift energie in de tijd; hij maakt geen energie, en hij verhoogt uw aansluitwaarde en uw gecontracteerd transportvermogen niet.",
+        "In dat geval liggen de routes elders. Een zwaardere aansluiting, met de wachttijd die daar in een congestiegebied bij hoort. Of de basislast zelf verlagen: isolatie, luchtgordijnen en snellere deuren bij de docks, condensorregeling, zuiniger compressoren, warmteterugwinning, en minder warmte-inval door een andere routing van inkomend product. Dat is koeltechniek en bouwfysica in plaats van energiesturing — maar het is wel de ingreep die hier het meeste doet.",
+        "Verder verdwijnt een terugleverbeperking niet door een batterij. De beperking blijft wat hij is; opslag maakt alleen een deel van het overschot alsnog bruikbaar. En een thermische buffer is geen noodstroom: hij houdt de temperatuur even vast, maar bij uitval van de aansluiting is dat een andere voorziening met andere eisen.",
+        "Niets hiervan staat vast zonder meting. Wij hebben het kwartiersprofiel van de aansluiting nodig, de aansluitwaarde en het gecontracteerd transportvermogen, de gegevens van de koelinstallatie en haar regelaar, de laadinfrastructuur voor intern transport en de constructieve gegevens van het dak. Daaruit volgt wat er kan, en of het de moeite is. Als het antwoord is dat verzwaren de enige route is, zeggen wij dat ook."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit op uw locatie op neerkomt",
+      "lead": "De vier situaties die in een distributiecentrum of koelhuis het vaakst de aanleiding zijn.",
+      "kaarten": [
+        { "kop": "Het dak mag niet vol terugleveren", "tekst": "De invoedingsruimte in uw voedingsgebied is kleiner dan wat uw dakvlak kan leveren, en de omvormer regelt af in de beste uren.", "route": "toepassingen/terugleverbeperking", "label": "Terugleverbeperking" },
+        { "kop": "Laden past niet naast de koeling", "tekst": "De laders voor intern transport vragen bij ploegwissel meer dan er naast de koellast nog over is op de aansluiting.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met een beperkte aansluiting" },
+        { "kop": "Eén korte piek bepaalt de rekening", "tekst": "Een paar minuten gelijktijdigheid per maand zet uw gecontracteerd transportvermogen vast voor het hele jaar.", "route": "toepassingen/bestaande-aansluiting-optimaliseren", "label": "Bestaande aansluiting optimaliseren" },
+        { "kop": "Uitbreiden past niet in het vermogen", "tekst": "Een extra koelcel, een sorteerinstallatie of een nieuwe hal past niet binnen het vermogen dat u mag afnemen.", "route": "toepassingen/netcongestie-bij-uitbreiding", "label": "Netcongestie bij uitbreiding" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat wij in deze sector wel en niet hebben gedaan",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Een distributiecentrum of vrieshuis staat niet in onze referentielijst. Dat zeggen wij liever dan dat wij een anonieme case opvoeren.",
+        "Wel staan er panden in waarin dezelfde onderdelen samenkomen die hier nodig zijn. Bij <a class=\"ve-link\" href=\"/project-ratio-16\">Ratio 16 in Duiven</a> werken zon op dak, batterijopslag en een laadplein achter één bestaande aansluiting, met sturing die bewaakt dat die aansluiting niet wordt overschreden. Aan de <a class=\"ve-link\" href=\"/project-hazenweg-61\">Hazenweg 61 in Hengelo</a> staan opslag, opwek, laden en noodstroom onder één energiemanagementsysteem, verbonden door een nieuwe hoofdverdeler.",
+        "De cijfers van die projecten staan op hun eigen pagina. Daar horen ze ook: ze gelden voor die locaties en niet voor de uwe."
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen uit distributiecentra en koelhuizen",
+  "faq": [
+    {
+      "vraag": "Kan ik het dak vol leggen als de netbeheerder mijn teruglevering beperkt?",
+      "antwoord": "Dat kan, maar dan regelt de omvormer af in de uren met de hoogste productie en loopt een deel van de opbrengst weg. De afweging is: minder panelen leggen, het overschot zelf verbruiken of opslaan, of de afregeling accepteren. Welke het gunstigst uitvalt volgt uit uw invoedingsruimte en uw eigen middagverbruik, niet uit een vuistregel."
+    },
+    {
+      "vraag": "Kan voorkoelen een batterij vervangen?",
+      "antwoord": "Zelden. Een thermische buffer schuift uitsluitend koeling in de tijd, wordt begrensd door de temperatuurband van het product en varieert met uw voorraad. Hij is goedkoop en daarom vaak de eerste stap, maar hij doet niets aan een laadpiek of aan een startende transportbaan."
+    },
+    {
+      "vraag": "Wat gaat voor: het paneelontwerp of de constructieve berekening?",
+      "antwoord": "Ze lopen samen op, maar de draagkracht van het dak is bepalend. Een ontwerp dat op oppervlak is gemaakt en daarna op draagkracht wordt gekort, is geen ontwerp meer. Vraag de constructieve gegevens en de resterende levensduur van de dakbedekking op voordat een aantal panelen in een businesscase staat."
+    },
+    {
+      "vraag": "Ons vrieshuis draait dag en nacht zwaar. Helpt een batterij dan?",
+      "antwoord": "Voor de piek mogelijk, voor de basislast niet. Piekafvlakking heeft een dal nodig om in bij te laden. Loopt uw verbruik het grootste deel van het etmaal dicht tegen de grens van de aansluiting aan, dan zit de ingreep in de koeltechniek, in de bouwfysica of in een zwaardere aansluiting. Dat zeggen wij dan ook."
+    },
+    {
+      "vraag": "Verhoogt een batterij onze aansluitwaarde?",
+      "antwoord": "Nee. Uw aansluitwaarde en uw gecontracteerd transportvermogen blijven ongewijzigd. Een batterij verandert alleen wat u binnen die grenzen kunt doen, door de piek af te vlakken en energie in de tijd te verschuiven."
+    },
+    {
+      "vraag": "Hoort het laden van elektrische trucks aan het dock hierbij?",
+      "antwoord": "Dat is een eigen vraagstuk. De vermogens zijn hoger, de standtijden korter en het laadmoment wordt door de rit bepaald. Het raakt dezelfde aansluiting, maar de dimensionering verloopt anders; daarvoor is de pagina over transport en wagenparken bedoeld."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" }
+      ]
+    },
+    {
+      "kop": "De techniek en de sturing",
+      "items": [
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis", "naam": "Kennisbank" },
+        { "route": "toepassingen/processen-sturen-met-ems", "naam": "Processen sturen met een EMS" },
+        { "route": "toepassingen/batterij-slim-inzetten", "naam": "Een batterij slim inzetten" }
+      ]
+    },
+    {
+      "kop": "Verwante situaties",
+      "items": [
+        { "route": "toepassingen/terugleverbeperking", "naam": "Terugleverbeperking" },
+        { "route": "toepassingen/laden-met-beperkte-aansluiting", "naam": "Laden met een beperkte aansluiting" },
+        { "route": "toepassingen/geen-extra-transportvermogen", "naam": "Geen extra transportvermogen" },
+        { "route": "toepassingen/bestaande-aansluiting-optimaliseren", "naam": "Bestaande aansluiting optimaliseren" },
+        { "route": "toepassingen/netcongestie-bij-uitbreiding", "naam": "Netcongestie bij uitbreiding" }
+      ]
+    },
+    {
+      "kop": "Aanverwante sectoren",
+      "items": [
+        { "route": "industrie-logistiek", "naam": "Logistiek" },
+        { "route": "sectoren/transport-en-wagenparken", "naam": "Transport en wagenparken" },
+        { "route": "sectoren/productie-en-industrie", "naam": "Productie en industrie" },
+        { "route": "sectoren/bedrijventerreinen", "naam": "Bedrijventerreinen" }
+      ]
+    },
+    {
+      "kop": "Bewijs en context",
+      "items": [
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "energy-hubs", "naam": "Energy Hubs" },
+        { "route": "subsidies", "naam": "Subsidies en regelingen" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Stuur het profiel, niet de plattegrond",
+    "tekst": "Met het kwartiersprofiel van uw aansluiting, de gegevens van de koelinstallatie en de constructieve gegevens van het dak rekenen wij door wat er binnen de bestaande aansluiting past: hoeveel dak, hoeveel opslag, hoeveel laadvermogen en wat voorkoelen hier oplevert. Inclusief de grens waar het ophoudt.",
+    "primair": { "route": "contact", "label": "Vraag een locatieanalyse aan" },
+    "secundair": { "route": "projecten", "label": "Bekijk gerealiseerde projecten" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren per voedingsgebied of er transportruimte is voor afname en of er transportruimte is voor invoeding; die twee statussen staan los van elkaar.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

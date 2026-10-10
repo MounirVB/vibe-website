@@ -1,0 +1,193 @@
+{
+  "route": "toepassingen/processen-sturen-met-ems",
+  "type": "toepassing",
+  "titel": "Bedrijfsprocessen sturen met een EMS | Vibe Energy",
+  "beschrijving": "Welke lasten een EMS kan begrenzen, verschuiven of uitschakelen, wat het systeem daarvoor nodig heeft en wie binnen uw organisatie de rangorde vaststelt.",
+  "og_titel": "Processen laten meebewegen met de beschikbare capaciteit",
+  "h1": "Uw processen laten meebewegen met de ruimte op de aansluiting",
+  "lead": "Sturen begint niet bij software. Het begint bij de vraag welke lasten mogen wachten en welke niet. Een EMS kan vermogen begrenzen, verbruik verschuiven en in het uiterste geval een groep uitschakelen — maar alleen volgens een rangorde die uw organisatie zelf heeft vastgesteld.",
+  "data_pagina": "toepassingen",
+  "kruimels": [{ "naam": "Toepassingen", "route": "toepassingen" }],
+  "kruimel_label": "Processen sturen met een EMS",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Bedrijfsprocessen sturen met een energiemanagementsysteem",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw lasten inventariseren" },
+    { "soort": "ghost", "anker": "#drie-knoppen", "label": "Begrenzen, verschuiven of uitschakelen" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Welke bedrijfsprocessen kunt u met een EMS sturen?",
+    "antwoord": "Een energiemanagementsysteem kan lasten sturen die vermogen kunnen inleveren of in de tijd kunnen opschuiven zonder dat het eindresultaat verandert: laadpunten, koel- en vriesinstallaties met thermische massa, warmtepompen en boilers, ventilatie en elektrische opslag. Dat gebeurt op drie manieren: begrenzen, waarbij de last doorloopt op lager vermogen; verschuiven, waarbij dezelfde energie op een ander moment wordt afgenomen; en uitschakelen, waarbij de last stopt. Procesapparatuur met kwaliteits-, hygiëne- of veiligheidseisen blijft buiten de regeling: die lasten krijgen voorrang in plaats van instructies.",
+    "voorbehoud": "Een EMS verhoogt de aansluitwaarde niet en creëert geen extra gecontracteerd transportvermogen. Het verdeelt wat er binnen die grens beschikbaar is. Welke lasten op uw locatie stuurbaar zijn, volgt uit de installatie en uit de eisen van het proces, niet uit de software."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "drie-knoppen",
+      "kop": "Begrenzen, verschuiven en uitschakelen zijn drie verschillende knoppen",
+      "lead": "Ze worden vaak op één hoop gegooid. In uw bedrijfsvoering voelen ze volstrekt anders.",
+      "alineas": [
+        "<h3>Begrenzen</h3>",
+        "De last blijft aan, maar op lager vermogen. Een laadpunt laadt langzamer, een ventilator draait op een lager toerental, een elektrische naverwarmer neemt minder op. Het werk gaat door, het duurt alleen langer. Dit is de mildste ingreep en meestal de eerste die een regeling inzet, omdat niemand hem merkt zolang de marge groot genoeg is. Begrenzen vraagt wel dat de last een regelbereik heeft: een apparaat dat alleen aan of uit kan, kunt u niet begrenzen.",
+        "<h3>Verschuiven</h3>",
+        "Dezelfde energie, een ander moment. Een koelcel die voorkoelt voordat de ochtendpiek begint, kan daarna een tijd stilstaan zonder dat de temperatuur de toegestane band verlaat. Een boiler die 's nachts opwarmt, hoeft dat niet midden op de dag te doen. Een bestelwagen die om zes uur 's ochtends vertrekt, hoeft om vijf uur 's middags niet vol te zijn. Verschuiven werkt alleen als er een buffer is: thermische massa, een voorraadtank, een batterij, of simpelweg tijd tot het moment waarop het resultaat nodig is.",
+        "<h3>Uitschakelen</h3>",
+        "De last stopt. Dit is geen regelstap maar een noodgreep, en hij hoort ook zo behandeld te worden: alleen voor lasten waarvan vooraf is vastgelegd dat ze mogen uitvallen, met een bekende hersteltijd. Een vriescel die u op het verkeerde moment uitzet, levert u niets op: de energie die u vermeed, komt er bij het terugkoelen alsnog in, en de piek verschuift mee naar dat moment. Zonder bekende hersteltijd weet u niet wanneer dat is.",
+        "Het verschil tussen deze drie bepaalt ook hoe een gesprek over sturing verloopt. Begrenzen en verschuiven zijn technische keuzes met een ondergrens. Uitschakelen is een afspraak tussen afdelingen."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Wat zich leent voor sturing, en met welke knop",
+      "rijen": [
+        ["Laadpunten", "Begrenzen en verschuiven. Het laadvermogen is over een breed bereik regelbaar en de deadline is de vertrektijd, niet het moment van inpluggen. Begrenzen gaat tot de ondergrens die het laadpunt toestaat, verschuiven tot die vertrektijd: hier zijn beide knoppen beschikbaar."],
+        ["Koeling en vries", "Verschuiven. Thermische massa is een buffer: binnen de toegestane temperatuurband mag de installatie eerder of later draaien. Die band komt van het product en van de hygiëne-eisen, niet van de regeling."],
+        ["Warmte: warmtepomp, boiler, elektrisch naverwarmen", "Begrenzen en verschuiven. Een watervoorraad of een gebouwmassa houdt warmte vast. Comforteisen en legionellabeheersing bepalen hoe groot de vrijheid is."],
+        ["Ventilatie", "Begrenzen. Toerental omlaag verlaagt het opgenomen vermogen meer dan evenredig, dus een kleine ingreep levert hier veel op. De ondergrens volgt uit de luchtkwaliteitseis van de ruimte."],
+        ["Elektrische opslag", "Alle drie, en als enige last ook de omgekeerde richting: een batterij kan vermogen léveren in plaats van vragen. Daarom is opslag de sluitpost van een regelstrategie: hij vangt op wat de andere lasten niet kunnen inleveren."],
+        ["Procesapparatuur met kwaliteits- of veiligheidseisen", "Niet sturen. Een oven die een temperatuurprofiel moet volgen, een machine midden in een cyclus, een compressor die de werkdruk voor gereedschap vasthoudt, een installatie die aan de brandveiligheid hangt: deze lasten krijgen voorrang en de rest beweegt om hen heen."]
+      ],
+      "noot": "Twee praktische grenzen. Een last die u niet meet, kunt u niet sturen — u weet dan niet of een instructie is opgevolgd. En een last met één knop, aan of uit, heeft maar één ingreep beschikbaar, hoe uitgebreid het EMS ook is."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat een EMS nodig heeft voordat het iets mag sturen",
+      "lead": "Drie voorwaarden. Ontbreekt er één, dan heeft u geen regeling maar een dashboard.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "<h3>1 · Meting op het juiste punt, in het juiste tempo</h3>",
+        "De regeling heeft de actuele belasting van de aansluiting nodig, en die moet sneller binnenkomen dan de piek die u wilt voorkomen. Kwartierwaarden zijn geschikt om te analyseren en te factureren; om te regelen zijn ze te laat, want het kwartier is voorbij voordat er iets gedaan is. Daarnaast is er meting nodig achter elke groep die u wilt sturen; zonder die meting stuurt het systeem blind.",
+        "<h3>2 · Een koppeling waar het systeem werkelijk aan kan draaien</h3>",
+        "Per last verschilt dat. Laadpunten worden aangestuurd via hun eigen laadprotocol of via de laadpuntcontroller. Gebouwinstallaties lopen meestal via het gebouwbeheersysteem; dat is dan de tussenlaag, en die hoort niet omzeild te worden. Industriële lasten hangen aan een veldbus of aan een vrijgavecontact in de schakelkast. Let op het verschil tussen lezen en schrijven: een koppeling die alleen uitlezen toestaat, geeft inzicht en geen sturing. In een aanbieding is dat onderscheid makkelijk te missen. Welke protocollen gangbaar zijn en wat de regeling doet als de verbinding wegvalt, staat in <a class=\"ve-link\" href=\"/kennis/ems-energiemanagementsysteem\">wat een EMS meet, regelt en beslist</a>; hier is alleen de vraag of er geschreven mag worden.",
+        "<h3>3 · Een vastgestelde rangorde</h3>",
+        "Het systeem moet weten wat er mag inleveren als het krap wordt, in welke volgorde, en tot welke ondergrens. Die rangorde verschilt per tijdvak: in de ochtendshift kan de productie voorrang hebben op het laadplein en 's avonds precies omgekeerd. Zonder die lijst valt een regeling terug op wie het hardst vraagt, en dat is zelden de last die u wilde ontzien.",
+        "Rekenvoorbeeld, geen meting: acht laadpunten van 22 kW vragen bij volledige gelijktijdigheid 176 kW. Begrenst u ze tot gemiddeld 11 kW, dan is dat 88 kW. Dezelfde auto's, dezelfde energie, een andere piek — en een laadsessie die langer duurt. Of die extra tijd past, is een planningsvraag, geen technische."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wie de rangorde bepaalt, en wie niet",
+      "lead": "Een rangorde legt vast welk bedrijfsonderdeel wacht. Dat is geen instelling in een menu.",
+      "alineas": [
+        "Niet de installateur, niet de leverancier van het regelsysteem en niet de adviseur. Wij kunnen uitrekenen wat elke keuze oplevert in vermogen en wat hij kost in doorlooptijd of comfort. Welke keuze acceptabel is, bepaalt u.",
+        "In de praktijk zitten er drie of vier partijen aan tafel. De operationele of productieleiding, omdat zij weet welke stap in het proces geen onderbreking verdraagt. Facilitair beheer, voor klimaat, warm water en verlichting. De transport- of vervoersplanning, omdat vertrektijden de deadlines van het laden zijn. En in een pand met meerdere gebruikers de eigenaar of de vereniging van eigenaars, omdat een rangorde tussen huurders een afspraak is en geen configuratie.",
+        "Leg het resultaat vast op papier, niet alleen in de instellingen. Een rangorde die uitsluitend in de software staat, is onvindbaar op het moment dat iemand zich afvraagt waarom de koeling vanmorgen later aansloeg. Een korte lijst volstaat: de stuurbare lasten, hun volgorde, de ondergrens per last, het tijdvak waarin die volgorde geldt, en de rol die hem mag wijzigen.",
+        "<ul><li><strong>Mag inleveren zonder overleg</strong> — tot welke ondergrens, en hoe lang.</li><li><strong>Mag verschuiven</strong> — binnen welk venster, en met welke deadline.</li><li><strong>Mag alleen met toestemming wijken</strong> — wie geeft die, en hoe snel is dat geregeld.</li><li><strong>Wijkt nooit</strong> — en krijgt dus voorrang als het krap wordt.</li></ul>",
+        "Deze vier categorieën zijn het hele ontwerp. Alles daarna is instellen en meten."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat sturing niet oplost",
+      "lead": "De eerlijke grens, inclusief de grens die niet technisch is.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Een EMS maakt geen capaciteit. Het verdeelt de capaciteit die er is. Ligt uw gemiddelde vraag over de dag al boven de grens van de aansluiting, dan schuift sturen het probleem alleen op: alle lasten wachten en niemand is klaar. Opslag lost dat geval ook niet op, want een batterij moet binnen diezelfde grens weer bijladen. Dan blijven er twee richtingen over: minder vraag over de dag, of meer transportvermogen — eigen opwek die een deel van de dagvraag dekt, of een zwaardere aansluiting. Sturen en opslag zijn de instrumenten voor het omgekeerde geval: een dagvraag die onder de grens blijft, met pieken die erboven uitkomen.",
+        "Sturing helpt ook niet als alle zware lasten tegelijk móéten draaien en geen van hen vrijheid heeft. Een locatie waar het grootste deel van het vermogen in één continu proces met een vaste cyclus zit, heeft weinig stuurbare marge. Dat is geen falen van de regeling, maar de uitkomst van een inventarisatie die u beter vóór de investering doet dan erna.",
+        "En dan de belangrijkste grens. <strong>Een EMS dat een proces mag stilzetten, is een organisatorisch besluit en geen technische instelling.</strong> De techniek kan het; juist daarom hoort die bevoegdheid expliciet te worden toegekend, met de ondergrenzen en de hersteltijd erbij. Wie dat overslaat, krijgt een regeling die technisch werkt en bedrijfsmatig onacceptabel is — en die daarna op handbediening wordt gezet, waarmee de investering stilvalt.",
+        "Een energieregeling hoort bovendien niet in de veiligheidsketen van een installatie. Beveiligingen, vergrendelingen en noodstop doen hun eigen werk, onafhankelijk van het EMS. Een regelsysteem dat iets afschakelt wat volgens de veiligheidsvoorschriften moest blijven draaien, is geen optimalisatie maar een incident."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Waar opwek, opslag en lasten al onder één regeling hangen",
+      "alineas": [
+        "Op <a class=\"ve-link\" href=\"/project-ratio-16\">Ratio 16 in Duiven</a> staan zonnepanelen, batterijopslag en een laadplein achter een aansluiting die niet is verzwaard. De sturing bepaalt daar welke last op welk moment vermogen krijgt: het laden beweegt mee met wat het pand en de opwek overlaten.",
+        "Op de <a class=\"ve-link\" href=\"/project-hazenweg-61\">Hazenweg 61 in Hengelo</a> komen opslag, het zonnedak, de laadpunten en de noodstroomvoorziening samen in één kantoorpand, met een nieuwe hoofdverdeler en één energiemanagementsysteem erover. Het EMS stuurt daar de opslag, de opwek en de laadpunten. De noodstroom komt van een aggregaat en staat juist buiten die regeling: dat is geen stuurbare last maar een voorziening die klaarstaat, en een energieregeling hoort er niet aan te draaien.",
+        "Wat beide locaties gemeen hebben, is dat de rangorde bij het ontwerp is vastgelegd en op de projectpagina staat: de regeling bewaakt de grens van de aansluiting, eigen opwek krijgt voorrang boven inkoop, en optimalisatie wijkt voor de bedrijfsvoering. Daarmee is de sturing niet af. De regelstrategie wordt na oplevering bijgesteld, want het verbruikspatroon van een pand verandert — er komt een huurder bij, een proces verschuift, een laadplek wordt vaker gebruikt. Wat vastligt is de volgorde, niet de instelling."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Naastgelegen vragen",
+      "lead": "Sturing raakt aan vier andere situaties. Elk met een eigen antwoord.",
+      "kaarten": [
+        { "kop": "Laden binnen een krappe aansluiting", "tekst": "De voertuigen moeten elektrisch, maar de aansluiting draagt de laadpunten niet gelijktijdig.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met een beperkte aansluiting" },
+        { "kop": "Eén piek bepaalt het jaar", "tekst": "Een paar minuten gelijktijdigheid bepaalt uw gecontracteerde vermogen voor de hele periode erna.", "route": "toepassingen/pieken-in-verbruik", "label": "Pieken in verbruik" },
+        { "kop": "Meer doen met wat er ligt", "tekst": "Voordat u iets bijplaatst: hoeveel ruimte zit er nog in de aansluiting die u al heeft.", "route": "toepassingen/bestaande-aansluiting-optimaliseren", "label": "Bestaande aansluiting optimaliseren" },
+        { "kop": "Dezelfde rangorde op meer locaties", "tekst": "Wat werkt op één pand, moet op tien panden ook te beheren zijn — met verschillen per netbeheerder en per gebruiker.", "route": "toepassingen/meerdere-locaties", "label": "Meerdere locaties" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over processen sturen",
+  "faq": [
+    {
+      "vraag": "Kan een EMS mijn productielijn stilzetten?",
+      "antwoord": "Alleen als uw organisatie dat vooraf expliciet heeft toegestaan, met een ondergrens en een bekende hersteltijd. Standaard hoort procesapparatuur met kwaliteits- of veiligheidseisen in de categorie die nooit wijkt. De techniek kan de last afschakelen; de bevoegdheid daartoe moet u toekennen."
+    },
+    {
+      "vraag": "Wat is het verschil met load balancing?",
+      "antwoord": "Load balancing verdeelt beschikbaar vermogen over laadpunten. Een EMS doet dat voor alle stuurbare lasten op de aansluiting en kent daarnaast opwek en opslag. Load balancing is dus een onderdeel van wat een EMS doet, niet een alternatief."
+    },
+    {
+      "vraag": "Heb ik een batterij nodig om processen te kunnen sturen?",
+      "antwoord": "Nee. Begrenzen en verschuiven werken zonder opslag, zolang de lasten zelf regelbereik of een buffer hebben. Opslag voegt iets toe wat geen enkele andere last kan: vermogen leveren in plaats van alleen minder vragen. Daarmee hoeven de overige lasten minder vaak in te leveren."
+    },
+    {
+      "vraag": "Waarom zijn kwartierwaarden niet genoeg om te regelen?",
+      "antwoord": "Omdat een kwartier voorbij is voordat de regeling kan ingrijpen. Kwartierwaarden zijn de juiste basis om pieken te analyseren en om een ontwerp te dimensioneren. Voor het regelen zelf is een meting nodig die de actuele belasting van de aansluiting veel sneller doorgeeft."
+    },
+    {
+      "vraag": "Mijn installaties heten 'smart'. Is dat genoeg?",
+      "antwoord": "Dat moet per installatie blijken. Vraag drie dingen na: is de last te meten, is de koppeling ook schrijfbaar of alleen uitleesbaar, en heeft de last een regelbereik of alleen aan en uit. Een installatie die alleen data stuurt, levert inzicht en geen sturing."
+    },
+    {
+      "vraag": "Wat levert sturing op mijn locatie op?",
+      "antwoord": "Dat volgt uit twee dingen: het kwartiersprofiel van uw aansluiting en de lijst van stuurbare lasten met hun ondergrenzen. Zonder die twee is elk getal een gok. Wij rekenen het door op uw eigen gegevens en zeggen het ook als de stuurbare marge te klein is."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De sturing en de systemen",
+      "items": [
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "microgrids", "naam": "Microgrids" },
+        { "route": "energy-hubs", "naam": "Energy Hubs" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Wat een EMS is" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/energieprestatie-meten", "naam": "Energieprestatie meten" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" }
+      ]
+    },
+    {
+      "kop": "Voor wie dit speelt",
+      "items": [
+        { "route": "sectoren/productie-en-industrie", "naam": "Productie en industrie" },
+        { "route": "sectoren/opslag-en-distributie", "naam": "Opslag en distributie" },
+        { "route": "industrie-logistiek", "naam": "Logistiek" },
+        { "route": "sectoren/bedrijventerreinen", "naam": "Bedrijventerreinen" }
+      ]
+    },
+    {
+      "kop": "Naastgelegen toepassingen",
+      "items": [
+        { "route": "toepassingen/pieken-in-verbruik", "naam": "Pieken in verbruik" },
+        { "route": "toepassingen/bestaande-aansluiting-optimaliseren", "naam": "Bestaande aansluiting optimaliseren" },
+        { "route": "toepassingen/laden-met-beperkte-aansluiting", "naam": "Laden met een beperkte aansluiting" },
+        { "route": "toepassingen/meerdere-locaties", "naam": "Meerdere locaties" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Begin met de lastenlijst, niet met de software",
+    "tekst": "Stuur het kwartiersprofiel van uw aansluiting en een overzicht van uw zware lasten. Wij brengen per last in kaart of hij te meten, te koppelen en te begrenzen is, hoeveel vermogen dat vrijmaakt en waar de ondergrens ligt. Komt er te weinig stuurbare marge uit, dan zeggen we dat voordat er iets geïnstalleerd wordt.",
+    "primair": { "route": "contact", "label": "Laat uw lasten inventariseren" },
+    "secundair": { "route": "vibe-control", "label": "Hoe de sturing beslist" }
+  },
+
+  "claims": []
+}

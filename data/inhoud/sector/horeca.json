@@ -1,0 +1,226 @@
+{
+  "route": "sectoren/horeca",
+  "type": "sector",
+  "titel": "Energie voor hotels en restaurants | Vibe Energy",
+  "beschrijving": "Twee keukenpieken per dag, klimaat dat per seizoen verschuift en gasten die laden tijdens de service. Hoe dat profiel binnen de bestaande aansluiting past.",
+  "og_titel": "Hotels en horeca: de dubbele keukenpiek",
+  "h1": "Twee keukenpieken per dag, en de gasten laden ertussendoor.",
+  "lead": "Horeca heeft geen vlak verbruik. De keuken start de lunch en de avondservice vrijwel in één keer op, het klimaat piekt per seizoen op een ander moment, en de laadpunten van de gasten vullen zich precies tijdens de drukte. Een paar kwartieren per week bepalen daardoor het vermogen waarvoor u het hele jaar betaalt.",
+  "data_pagina": "sectoren",
+  "kruimels": [{ "naam": "Sectoren", "route": "sectoren" }],
+  "kruimel_label": "Hotels en horeca",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Energie-infrastructuur voor hotels en horeca",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw keukenprofiel doorrekenen" },
+    { "soort": "ghost", "anker": "#profiel", "label": "Het keukenprofiel" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat is het energieprobleem van een hotel of restaurant?",
+    "antwoord": "Horeca heeft geen vlak verbruik maar twee scherpe pieken per dag: de keuken start de lunchservice en de avondservice vrijwel in één keer op. Daar komen klimaatinstallaties bij die per seizoen op een ander moment pieken, en laadpunten voor gasten die juist in de late middag worden ingestoken. Het transportvermogen dat het pand moet contracteren wordt daardoor bepaald door een paar kwartieren per week, terwijl de aansluiting de rest van de tijd ruim onder zijn grens blijft. Een gestuurde batterij vangt die kwartieren op, dynamische load balancing verschuift het laden naar de nacht, en eigen opwek verlaagt de netafname op de uren dat die er is.",
+    "voorbehoud": "Dit antwoord gaat over de vorm van de piek, niet over de hoogte van de vraag. Een keuken die van gas naar inductie gaat heeft meer elektrisch vermogen nodig; opslag en sturing maken dat niet ongedaan en verhogen de aansluitwaarde niet. Wat op een specifieke locatie mogelijk is, volgt uit het kwartiersprofiel van de aansluiting."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "profiel",
+      "kop": "Het keukenprofiel is het ontwerpuitgangspunt",
+      "lead": "Niet het jaarverbruik en niet het aantal kamers. De openingstijden van de keuken.",
+      "alineas": [
+        "Een horecakeuken bouwt zijn verbruik in minuten op. Voor de lunchservice gaan de bakplaat, de friteuse, de combisteamer en de salamander vrijwel gelijktijdig aan, omdat ze op temperatuur moeten zijn voordat de eerste bon binnenkomt. Aan het begin van de avondservice gebeurt hetzelfde. Tussen die twee pieken zakt het verbruik terug naar koeling, afzuiging en klimaat; na de avondservice komt er nog een derde, lagere piek als de doorschuifvaatwasser en de reiniging aan gaan.",
+        "Dat profiel is ongunstig voor een aansluiting en gunstig voor opslag. Ongunstig, omdat het transportvermogen dat u moet inkopen wordt bepaald door twee korte momenten per dag, terwijl de aansluiting de rest van de dag ver onder zijn grens blijft. Gunstig, omdat een piek die kort is en op een voorspelbaar tijdstip valt precies is wat een batterij kan opvangen: er zijn uren om bij te laden voordat hij weer nodig is.",
+        "Hoe hoog die piek komt, staat niet in uw jaarverbruik. Een hotel met een à-la-carterestaurant en een hotel met alleen ontbijt kunnen hetzelfde aantal kWh per jaar afnemen en een volstrekt verschillend piekvermogen hebben. Daarom begint de analyse bij het kwartiersprofiel van de aansluiting: pas daar is te zien hoe hoog de servicepieken komen, hoe lang ze boven een gekozen grens blijven en op welke dagen ze samenvallen met iets anders.",
+        "<p><em>Rekenvoorbeeld met willekeurige getallen, geen meting van een bestaande locatie:</em> staat het verbruik tijdens de avondservice twee uur lang 60 kW boven de grens die u wilt aanhouden, dan vraagt dat 60 kW vermogen en 60 × 2 = 120 kWh bruikbare capaciteit. Dezelfde 120 kWh helpt u niet als de piek in werkelijkheid 120 kW hoog is en één uur duurt, want dan komt de batterij qua vermogen tekort.</p>"
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Wat in een horecapand het piekvermogen bepaalt",
+      "rijen": [
+        ["Kookapparatuur", "Inductie, bakplaat, friteuse en combisteamer vragen hun nominale vermogen vooral tijdens het opwarmen. Het typeplaatje noemt per apparaat kW; wat telt is hoeveel ervan tegelijk opwarmt."],
+        ["Afwas", "Een doorschuif- of tunnelmachine verwarmt boilerwater en trekt in stoten. Die stoten vallen ná de service, als de rest van de keuken alweer afkoelt."],
+        ["Koeling van voorraad", "Koel- en vriescellen zijn basislast, vierentwintig uur per dag, en vragen in de zomer meer dan in de winter. Ze zijn zelden de piek, maar ze verhogen de bodem waar de piek bovenop komt."],
+        ["Klimaat", "Koeling van zaal en kamers piekt op warme middagen; een warmtepomp voor verwarming en tapwater piekt op koude ochtenden. Twee seizoenen, twee verschillende maatgevende momenten."],
+        ["Afzuiging", "Loopt de hele service door en is daarmee geen piek maar een plateau onder de keukenpiek."],
+        ["Laadpunten", "Het aantal punten maal het vermogen per punt is nooit de werkelijke gelijktijdige vraag. Zonder sturing is dat verschil wél wat de aansluiting moet kunnen dragen."],
+        ["Gelijktijdigheid", "De service bepaalt de gelijktijdigheid: een keuken start niet gespreid maar op een afgesproken tijd. Dat maakt de piek hoog, kort en voorspelbaar."]
+      ],
+      "noot": "Dit is een inventarisatielijst, geen rekenmodel. Een typeplaatje zegt wat een apparaat maximaal vraagt, niet wat het op uw drukste vrijdag gelijktijdig met de rest vraagt. Dat verschil komt alleen uit meting."
+    },
+    {
+      "soort": "tekst",
+      "id": "elektrificatie",
+      "kop": "Een keuken die van gas naar elektrisch gaat, vraagt meer vermogen",
+      "lead": "Hier gaat het niet meer om de vorm van de piek, maar om de hoogte ervan.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Elektrificatie van de keuken is in de horeca zelden alleen een duurzaamheidsafweging. Een nieuwe huurder wil inductie, een verbouwing maakt een gasleiding naar de kookeilanden onpraktisch, of de gasaansluiting verdwijnt bij een gebiedsontwikkeling. Wat er dan gebeurt wordt vaak onderschat: een vermogensvraag die op de gasmeter stond, verhuist naar de elektrische aansluiting.",
+        "Inductie zet energie efficiënter in de pan dan gas, dus het verbruik in kWh kan dalen. Het gevraagde vermogen in kW doet dat niet. Inductie heeft geen thermische traagheid: een zone vraagt vol vermogen zodra de kok hem opendraait en laat los als de pan op temperatuur is. Het profiel wordt daardoor niet vlakker maar scherper — hogere, kortere uitschieters, en veel meer ervan.",
+        "Een deel van die scherpte is te benutten. Net als bij laadpunten staan zelden alle kookzones gelijktijdig op vol vermogen. Veel inductieapparatuur kan onderling een vermogensbudget delen, en zware apparaten hebben een eigen begrenzing. Dat verlaagt het benodigde vermogen zonder dat de keuken er iets van merkt — zolang die begrenzing hoog genoeg staat om de service te halen.",
+        "<h3>Wat de elektrificatie wél verandert aan uw aansluiting</h3>",
+        "<ul><li><strong>De piek stijgt.</strong> En die piek bepaalt hoeveel transportvermogen u moet contracteren, niet uw jaarverbruik.</li><li><strong>De basislast stijgt mee</strong> als ook tapwater en verwarming elektrisch worden. Een warmtepomp draait uren achter elkaar, een kookzone minuten.</li><li><strong>De fasebalans verandert.</strong> Zware eenfasige apparatuur netjes over drie fasen verdelen is een ontwerpkeuze, niet iets dat zichzelf regelt.</li><li><strong>De gasaansluiting verdwijnt niet gratis.</strong> Afsluiten is een aparte stap met de netbeheerder, en zolang er nog op gas gekookt wordt is er ook geen elektrisch knelpunt om op te lossen.</li></ul>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "laden",
+      "kop": "Gastenladen valt op het verkeerde moment",
+      "lead": "De voorziening is niet het probleem. Het tijdstip is het probleem.",
+      "alineas": [
+        "Laadpunten zijn in de horeca een voorziening geworden: een hotelgast verwacht ze bij de kamer, een restaurantgast bij de ingang, en een zakelijke boeker vraagt ernaar vóór de reservering. Het ongeluk zit in het uur. Een hotelgast arriveert in de late middag en steekt de auto in, precies wanneer de keuken de avondservice opstart en het klimaat op een warme dag het hardst werkt. Drie vragen in hetzelfde kwartier.",
+        "Tegelijk zit daar de makkelijkste winst van het hele pand. Een auto bij een hotel staat een nacht aan de paal en heeft die hele nacht niet nodig om vol te worden. De energievraag per auto is nauwelijks te beïnvloeden; het moment waarop die energie wordt opgenomen volledig wel. Dynamische load balancing meet de actuele belasting van de aansluiting en verdeelt wat er over is: tijdens de service laden de auto's langzaam, na middernacht op vol vermogen. Een statische verdeling kan dat niet, want die reserveert een vast budget dat 's nachts ongebruikt blijft en tijdens de service te hoog staat.",
+        "Bij een restaurant zonder overnachting werkt het omgekeerd. Een gast blijft een paar uur en wil in die tijd merkbaar laden, dus daar is het vermogen per laadpunt wél relevant en valt de vraag onvermijdelijk midden in de service. De keuze is dan: minder punten met meer vermogen, meer punten met minder vermogen, of een batterij die het verschil levert. Welke van de drie het wordt, volgt uit het kwartiersprofiel en uit wat u de gast wilt beloven.",
+        "In beide gevallen geldt dezelfde rangorde. De laadinfrastructuur is de verbruiker die zich het makkelijkst laat begrenzen; de keuken is de verbruiker die dat het slechtst verdraagt. Die rangorde hoort in het regelsysteem te staan voordat de eerste laadpaal geplaatst wordt, niet erna."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "seizoen",
+      "kop": "Seizoen: de drukste week bepaalt het hele jaar",
+      "lead": "Bij verblijfsrecreatie en hotels buiten de stad komt er een jaarpatroon over het dagpatroon heen.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "De aansluiting van een seizoenslocatie wordt gedimensioneerd op de drukste week van het hoogseizoen. Dat vermogen betaalt u het hele jaar door, ook in de weken dat het pand half leeg staat of dicht is voor onderhoud. Voor een locatie met een scherp seizoen kan het verlagen van het gecontracteerd transportvermogen daarom een grotere post zijn dan het verlagen van het verbruik — en dat is pas mogelijk als de hoogste piek structureel is afgevlakt.",
+        "Het seizoen bepaalt ook welke piek maatgevend is. In de zomer is dat de combinatie van koeling, keuken en laden op een warme zaterdagmiddag. In de winter is het de warmtepomp op een koude ochtend, bij een veel lagere bezetting. Een batterij die op de zomerpiek is gedimensioneerd staat in januari grotendeels stil; een batterij die op de winterochtend is gedimensioneerd haalt de zomerzaterdag niet. Die keuze hoort expliciet gemaakt te worden, met de bezettingscijfers van de locatie ernaast.",
+        "Bij parken met losse accommodaties komt er een vraag bij die een stadshotel niet heeft: ligt er één aansluiting voor het hele terrein, of een meter per accommodatie? Dat bepaalt of de gelijktijdigheid van alle kookmomenten rond zes uur 's avonds op één punt landt of verdeeld is over tientallen kleine aansluitingen. Eén punt is technisch lastiger en financieel interessanter, omdat één gestuurd systeem dan het hele terrein bedient.",
+        "<p>Op recreatiepark <a class=\"ve-link\" href=\"/project-dormio-medemblik\">Dormio in Medemblik</a> was de bouwaansluiting zelf te klein voor de vraag op het terrein. Daar brengt Vibe Energy opwek, opslag en sturing samen achter die ene bouwaansluiting, zodat de avondvraag van de accommodaties niet één op één op het net landt.</p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "comfort",
+      "kop": "Het comfort van de gast is geen restpost",
+      "lead": "Wat niet begrensd mag worden, is in de horeca een randvoorwaarde en geen instelling.",
+      "alineas": [
+        "In een fabriek mag een proces een kwartier wachten als dat de piek halveert. In een hotel niet. Een gast die om zeven uur 's ochtends lauw water uit de kraan krijgt omdat de boiler in een optimalisatievenster stond, is een slechtere uitkomst dan een hogere energierekening. Hetzelfde geldt voor een zaal die niet op temperatuur is bij een bijeenkomst, en voor een keuken die tijdens de service op halve kracht moet koken.",
+        "Daarom begint het ontwerp van de sturing hier niet bij wat begrensd kán worden, maar bij wat onder geen enkele voorwaarde begrensd mag worden. Die lijst — tapwater, koeling van voorraad, klimaat in de gastruimtes, de keuken tijdens de service — is een harde randvoorwaarde van het systeem. Wat daarna overblijft als regelbaar vermogen is kleiner dan in de industrie of de logistiek. Dat is precies de reden dat opslag in de horeca vaak zwaarder weegt dan sturing alleen: de batterij levert het vermogen dat u niet van de gast kunt afnemen.",
+        "Een tweede randvoorwaarde is de plaatsing. Een batterij heeft ruimte nodig, een opstelplaats die bereikbaar is voor plaatsing en onderhoud, en een eigen beoordeling van de brandveiligheid wanneer er naast of boven de opstelling mensen slapen. In een binnenstadspand met de keuken in de kelder en zonder eigen buitenterrein is dat vaak de beperkende factor, en niet de techniek of de businesscase."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "grens",
+      "kop": "Wat dit niet oplost",
+      "lead": "De eerlijke grens van deze aanpak in de horeca.",
+      "alineas": [
+        "Een keuken die elektrificeert heeft meer vermogen nodig, niet alleen een vlakkere piek. Dat is de belangrijkste grens. Een batterij verschuift energie in de tijd en verlaagt de hoogte van een piek; hij verhoogt niet wat uw aansluiting kan leveren en hij creëert geen extra gecontracteerd transportvermogen. Komt de gemiddelde vraag van het pand na elektrificatie structureel boven de grens van de aansluiting, dan is opslag geen alternatief voor verzwaren. De route is dan: gefaseerd elektrificeren, verzwaring aanvragen, en in de tussentijd opvangen wat op te vangen is.",
+        "Een vol dak is in de horeca ook niet altijd beschikbaar. Een hotel met kamers onder het dak, een monumentaal pand of een binnenstadslocatie met schaduw van de belendende bebouwing levert veel minder eigen opwek per vierkante meter dan een bedrijfshal. Piekafvlakking werkt dan nog steeds, maar de businesscase leunt op de piek en op het prijsverschil tussen uren, niet op zelfverbruik van eigen zon.",
+        "En een plan dat ook nog uitbreiding bevat — extra kamers, een tweede keuken, een laadplein voor passanten — loopt alsnog tegen het voedingsgebied aan. Of er in uw gebied ruimte is voor afname of voor invoeding, staat per postcode op de Capaciteitskaart van Netbeheer Nederland. Een voedingsgebied is geen gemeente: het is een verzameling postcodes rond één onderstation, en die grenzen lopen dwars door gemeentegrenzen heen. Lees de kaart dus op de postcode van het pand en niet op de plaatsnaam, en houd er rekening mee dat een jaartal bij een geplande netuitbreiding een planning is en geen toezegging.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit op uw locatie op neerkomt",
+      "lead": "De vier situaties waarin een horecaplan op vermogen vastloopt, en één park dat zijn avondpiek achter één bouwaansluiting draagt.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "kaarten": [
+        { "kop": "Laden loopt tegen de aansluiting", "tekst": "De gasten vragen laadpunten, maar de aansluiting kan ze niet gelijktijdig dragen naast de keuken en het klimaat.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met een beperkte aansluiting" },
+        { "kop": "Twee kwartieren bepalen de rekening", "tekst": "De lunch- en de avondstart bepalen hoeveel transportvermogen u voor het hele jaar moet inkopen.", "route": "toepassingen/pieken-in-verbruik", "label": "Pieken in verbruik" },
+        { "kop": "Er komt geen vermogen bij", "tekst": "De netbeheerder kan geen extra transportvermogen toezeggen, terwijl de keuken elektrisch moet worden.", "route": "toepassingen/geen-extra-transportvermogen", "label": "Geen extra transportvermogen" },
+        { "kop": "Meer dan één vestiging", "tekst": "Een keten met tientallen locaties heeft per pand een ander profiel en wil één manier van meten en sturen.", "route": "toepassingen/meerdere-locaties", "label": "Meerdere locaties" },
+        { "kop": "Een park achter één bouwaansluiting", "tekst": "Recreatiepark Dormio in Medemblik: opwek, opslag en sturing samen achter de bouwaansluiting van het terrein.", "route": "project-dormio-medemblik", "label": "Dormio Medemblik" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen uit de horeca",
+  "faq": [
+    {
+      "vraag": "Kan ik mijn keuken elektrificeren zonder de aansluiting te verzwaren?",
+      "antwoord": "Soms. Dat hangt af van twee dingen: hoeveel vermogen de nieuwe apparatuur gelijktijdig vraagt, en hoeveel ruimte er tussen uw huidige pieken en de grens van de aansluiting zit. Vermogensbegrenzing op de apparatuur en opslag kunnen een deel van die stap opvangen. Stijgt de gemiddelde vraag van het pand boven wat de aansluiting kan leveren, dan is verzwaren onvermijdelijk."
+    },
+    {
+      "vraag": "Hoeveel laadpunten kan ik bij mijn hotel plaatsen?",
+      "antwoord": "Dat getal volgt niet uit het aantal kamers, maar uit wat er na de keuken, de koeling en het klimaat aan vermogen overblijft en uit hoe lang de auto's blijven staan. Met dynamische load balancing kunt u meer punten plaatsen dan de aansluiting op papier toelaat, omdat ze nooit allemaal gelijktijdig vol trekken. Hoeveel meer, volgt uit het kwartiersprofiel van uw aansluiting."
+    },
+    {
+      "vraag": "Merken gasten iets van energiesturing?",
+      "antwoord": "Dat hoort niet zo te zijn, en dat is een ontwerpkeuze en geen toeval. Tapwater, koeling van voorraad, het klimaat in de gastruimtes en de keuken tijdens de service staan vast; laden en opslag zijn de regelbare delen. Wordt die rangorde niet vooraf vastgelegd, dan belandt comfort als sluitpost in het systeem."
+    },
+    {
+      "vraag": "Wij zijn maar een paar maanden per jaar echt vol. Is opslag dan rendabel?",
+      "antwoord": "Dat is per locatie een rekenvraag. Een batterij die op de hoogseizoenpiek is gedimensioneerd staat buiten het seizoen grotendeels stil, wat de terugverdientijd rekt. Daar staat tegenover dat een lagere piek het hele jaar doorwerkt in uw gecontracteerd transportvermogen, en dat de batterij buiten het seizoen op het prijsverschil tussen uren kan draaien. Welke kant zwaarder weegt, blijkt uit het profiel en de bezetting."
+    },
+    {
+      "vraag": "Werkt dit ook als de keuken op gas blijft koken?",
+      "antwoord": "Dan is uw elektrische piek lager en zit het knelpunt meestal bij klimaat, koeling en laden in plaats van bij de keuken. Piekafvlakking en load balancing werken daar net zo goed. Houd er wel rekening mee dat een latere overstap naar inductie het profiel opnieuw verandert; het is goedkoper om die stap nu in de dimensionering mee te nemen dan later een tweede keer te bouwen."
+    },
+    {
+      "vraag": "Wat heeft u van ons nodig om te beginnen?",
+      "antwoord": "Het kwartiersprofiel van de aansluiting over minimaal een jaar, de aansluitwaarde en het gecontracteerd transportvermogen, een lijst van de keukenapparatuur met het vermogen van het typeplaatje, en uw plannen voor elektrificatie, laden en uitbreiding. Zonder het seizoenspatroon van de bezetting is dat profiel niet goed te lezen."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "laadplein", "naam": "Laadplein" },
+        { "route": "netcongestie", "naam": "Netcongestie" }
+      ]
+    },
+    {
+      "kop": "Verwante sectoren",
+      "items": [
+        { "route": "industrie-recreatie", "naam": "Recreatie en vakantieparken" },
+        { "route": "sectoren/retail", "naam": "Retail" },
+        { "route": "industrie-vastgoed", "naam": "Kantoren en vastgoed" },
+        { "route": "sectoren/parkeren", "naam": "Parkeren" },
+        { "route": "sectoren/zorgvastgoed", "naam": "Zorgvastgoed" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/laadinfrastructuur-dimensioneren", "naam": "Laadinfrastructuur dimensioneren" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Energiemanagementsysteem" }
+      ]
+    },
+    {
+      "kop": "Bewijs en regelingen",
+      "items": [
+        { "route": "project-dormio-medemblik", "naam": "Dormio Medemblik" },
+        { "route": "projecten", "naam": "Alle projecten" },
+        { "route": "subsidies", "naam": "Subsidies en regelingen" },
+        { "route": "energieadvies", "naam": "Energieadvies" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Begin bij het profiel van uw drukste vrijdag",
+    "tekst": "Stuur het kwartiersprofiel van uw aansluiting, uw aansluitwaarde en uw gecontracteerd transportvermogen, met de apparatuurlijst van de keuken en uw plannen voor laden en elektrificatie. Wij rekenen door welke piek maatgevend is, wat er binnen de bestaande aansluiting past en waar verzwaren de enige route is.",
+    "primair": { "route": "contact", "label": "Laat uw keukenprofiel doorrekenen" },
+    "secundair": { "route": "projecten", "label": "Bekijk gerealiseerde projecten" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare capaciteit voor afname en invoeding per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De jaartallen die de Capaciteitskaart bij geplande netuitbreidingen noemt, zijn planningen en geen toezegging.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — FAQ",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/faq/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

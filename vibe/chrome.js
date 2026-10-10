@@ -52,9 +52,11 @@
 
   /* ------------------------------------------------------------ navigatie */
   var OPLOSSINGEN = [
+    ['netcongestie',          'net',      'Netcongestie',      'Groeien terwijl de netbeheerder geen extra vermogen kan leveren'],
     ['systeem-energieopslag', 'accu',     'Energieopslag',     'Batterijopslag die capaciteit vrijspeelt op uw aansluiting'],
     ['systeem-zonnepanelen',  'zon',      'Zonne-energie',     'Opwek op dak, carport of veld, ontworpen op uw profiel'],
     ['systeem-laadpalen',     'laadpaal', 'Laadinfrastructuur','AC en DC laden binnen de bestaande aansluiting'],
+    ['laadplein',             'gebied',   'Laadplein',         'Meerdere laadpunten op een terrein, zonder de aansluiting te verzwaren'],
     ['vibe-control',          'hub',      'VIBE.CONTROL',      'De stuurlaag die alle assets als één systeem bedient'],
     ['microgrids',            'net',      'Microgrids',        'Losse assets verbonden tot één lokale energiecentrale'],
     ['energy-hubs',           'gebied',   'Energy Hubs',       'Capaciteit gedeeld over meerdere panden en aansluitingen']
@@ -65,13 +67,18 @@
     ['industrie-vastgoed',     'kantoor',      'Kantoren & vastgoed',     'Gebouwgebonden energie als exploitatie'],
     ['industrie-vve',          'woning',       "VvE's & wooncomplexen",   'Collectieve opwek en laden voor bewoners'],
     ['industrie-recreatie',    'recreatie',    'Recreatie',               'Parken, hotels en verblijfsaccommodatie'],
-    ['industrie-residentieel', 'portefeuille', 'Woningportefeuilles',     'Verhuur, beleggers en corporaties']
+    ['industrie-residentieel', 'portefeuille', 'Woningportefeuilles',     'Verhuur, beleggers en corporaties'],
+    ['sectoren',               'hub',          'Alle sectoren',           'Automotive, transport, productie, retail, zorg en meer']
   ];
 
   var BEDRIJF = [
-    ['over-ons',  'Over Vibe'],
-    ['projecten', 'Projecten'],
-    ['contact',   'Plan een gesprek']
+    ['over-ons',     'Over Vibe'],
+    ['projecten',    'Projecten'],
+    ['kennis',       'Kennisbank'],
+    ['toepassingen', 'Toepassingen'],
+    ['subsidies',    'Subsidies'],
+    ['regios',       "Regio's"],
+    ['contact',      'Plan een gesprek']
   ];
 
   /* De primaire boekingsactie. Eén bron voor header en mobiel menu, zodat
@@ -115,7 +122,7 @@
        De SVG's zijn de afgeronde horizontale master en worden ongewijzigd
        geladen; de weergavegrootte komt uit .ve-logo in vibe/vibe.css. */
     var bestand = variant === 'licht' ? 'vibe-energy-logo-light.svg' : 'vibe-energy-logo-dark.svg';
-    return '<img class="ve-logo" src="assets/' + bestand + '"' +
+    return '<img class="ve-logo" src="/assets/' + bestand + '"' +
            ' alt="' + (alt || '') + '"' + (alt ? '' : ' aria-hidden="true"') +
            ' decoding="async">';
   }
@@ -130,7 +137,7 @@
   /* welke rubriek is actief? uit data-pagina, anders uit de bestandsnaam */
   var hier = (location.pathname.split('/').pop() || 'index.html').replace(/\.html$/, '') || 'index';
   var pagina = document.body.getAttribute('data-pagina') || hier;
-  function actief(href) { return href.replace(/\.html$/, '') === pagina; }
+  function actief(href) { return href.replace(/^\//, '').replace(/\.html$/, '') === pagina; }
   function rubriekActief(lijst) {
     for (var i = 0; i < lijst.length; i++) { if (actief(lijst[i][0])) return true; }
     return false;
@@ -155,7 +162,7 @@
       '<div class="ve-drop" id="ve-drop-' + id + '">';
     for (var i = 0; i < lijst.length; i++) {
       var r = lijst[i];
-      h += '<a class="ve-drop__link" href="' + r[0] + '"' + (actief(r[0]) ? ' aria-current="page"' : '') + '>' +
+      h += '<a class="ve-drop__link" href="/' + r[0] + '"' + (actief(r[0]) ? ' aria-current="page"' : '') + '>' +
              '<span class="ve-drop__ic">' + ic(r[1]) + '</span>' +
              '<span><span class="ve-drop__t">' + r[2] + '</span>' +
              '<span class="ve-drop__d">' + r[3] + '</span></span>' +
@@ -174,9 +181,9 @@
           '<nav class="ve-nav" aria-label="Hoofdnavigatie">' +
             dropdown('opl', 'Oplossingen', OPLOSSINGEN) +
             dropdown('doe', 'Doelgroepen', DOELGROEPEN) +
-            '<div class="ve-nav__item"><a class="ve-nav__link" href="projecten.html"' +
+            '<div class="ve-nav__item"><a class="ve-nav__link" href="/projecten"' +
               (actief('projecten') ? ' aria-current="page"' : '') + '>Projecten</a></div>' +
-            '<div class="ve-nav__item"><a class="ve-nav__link" href="over-ons.html"' +
+            '<div class="ve-nav__item"><a class="ve-nav__link" href="/over-ons"' +
               (actief('over-ons') ? ' aria-current="page"' : '') + '>Over Vibe</a></div>' +
           '</nav>' +
           '<div class="ve-header__acties">' +
@@ -197,7 +204,7 @@
     function groep(titel, lijst, met) {
       var h = '<div class="ve-mobiel__groep"><p class="ve-mobiel__kop">' + esc(titel) + '</p>';
       for (var i = 0; i < lijst.length; i++) {
-        h += '<a class="ve-mobiel__link" href="' + lijst[i][0] + '">' + (met ? lijst[i][2] : lijst[i][1]) + '</a>';
+        h += '<a class="ve-mobiel__link" href="/' + lijst[i][0] + '">' + (met ? lijst[i][2] : lijst[i][1]) + '</a>';
       }
       return h + '</div>';
     }
@@ -214,7 +221,7 @@
   function kolom(titel, lijst, met) {
     var h = '<div><p class="ve-footer__kop">' + esc(titel) + '</p><ul class="ve-footer__lijst">';
     for (var i = 0; i < lijst.length; i++) {
-      h += '<li><a href="' + lijst[i][0] + '">' + (met ? lijst[i][2] : lijst[i][1]) + '</a></li>';
+      h += '<li><a href="/' + lijst[i][0] + '">' + (met ? lijst[i][2] : lijst[i][1]) + '</a></li>';
     }
     return h + '</ul></div>';
   }
@@ -238,15 +245,19 @@
           '<div>' +
             '<p class="ve-footer__kop">Vibe Energy</p>' +
             '<ul class="ve-footer__lijst">' +
-              '<li><a href="over-ons.html">Over Vibe</a></li>' +
-              '<li><a href="projecten.html">Projecten</a></li>' +
-              '<li><a href="contact.html">Plan een gesprek</a></li>' +
+              '<li><a href="/over-ons">Over Vibe</a></li>' +
+              '<li><a href="/projecten">Projecten</a></li>' +
+              '<li><a href="/kennis">Kennisbank</a></li>' +
+              '<li><a href="/toepassingen">Toepassingen</a></li>' +
+              '<li><a href="/subsidies">Subsidies</a></li>' +
+              '<li><a href="/regios">Regio\'s</a></li>' +
+              '<li><a href="/contact">Plan een gesprek</a></li>' +
             '</ul>' +
             '<p class="ve-footer__kop" style="margin-top:1.75rem">Juridisch</p>' +
             '<ul class="ve-footer__lijst">' +
-              '<li><a href="privacy.html">Privacyverklaring</a></li>' +
-              '<li><a href="algemene-voorwaarden.html">Algemene voorwaarden</a></li>' +
-              '<li><a href="cookiebeleid.html">Cookiebeleid</a></li>' +
+              '<li><a href="/privacy">Privacyverklaring</a></li>' +
+              '<li><a href="/algemene-voorwaarden">Algemene voorwaarden</a></li>' +
+              '<li><a href="/cookiebeleid">Cookiebeleid</a></li>' +
               '<li><button type="button" data-cookie-prefs style="background:none;border:0;padding:0;cursor:pointer;font:inherit;text-align:left;color:inherit">Cookie-instellingen</button></li>' +
             '</ul>' +
           '</div>' +
@@ -254,9 +265,9 @@
         '<div class="ve-footer__onder">' +
           '<span>&copy; ' + new Date().getFullYear() + ' ' + b.naam + ' &middot; KvK ' + b.kvk + ' &middot; btw ' + b.btw + '</span>' +
           '<nav aria-label="Juridisch">' +
-            '<a href="privacy.html">Privacy</a>' +
-            '<a href="algemene-voorwaarden.html">Voorwaarden</a>' +
-            '<a href="cookiebeleid.html">Cookies</a>' +
+            '<a href="/privacy">Privacy</a>' +
+            '<a href="/algemene-voorwaarden">Voorwaarden</a>' +
+            '<a href="/cookiebeleid">Cookies</a>' +
           '</nav>' +
         '</div>' +
       '</div>' +

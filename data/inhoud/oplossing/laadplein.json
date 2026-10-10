@@ -1,0 +1,264 @@
+{
+  "route": "laadplein",
+  "type": "oplossing",
+  "titel": "Laadplein realiseren of laten exploiteren | Vibe Energy",
+  "beschrijving": "Een laadplein met opslag en sturing binnen de aansluiting die er al ligt: dimensioneren op gelijktijdigheid, zelf realiseren of laten exploiteren.",
+  "og_titel": "Laadplein realiseren of laten exploiteren",
+  "h1": "Meer laadpunten op uw terrein, binnen dezelfde aansluiting.",
+  "lead": "Een laadplein is geen rij losse laadpalen. Het is één voeding met een gemeenschappelijke grenswaarde, een regelaar die alle punten tegelijk ziet en vaak opslag ertussen. Daardoor bepaalt niet het aantal punten wat de aansluiting moet kunnen dragen, maar de gelijktijdigheid.",
+  "data_pagina": "laadplein",
+  "kruimels": [],
+  "kruimel_label": "Laadplein",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Laadplein realiseren en exploiteren",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Vraag een laadpleinontwerp aan" },
+    { "soort": "ghost", "anker": "#dimensioneren", "label": "Hoe het wordt gedimensioneerd" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat is een laadplein en hoe groot moet de aansluiting zijn?",
+    "antwoord": "Een laadplein is een verzameling laadpunten op één terrein die achter één voeding hangen, met een regelaar die de totale afname binnen een vastgestelde grenswaarde houdt. De benodigde capaciteit volgt niet uit het aantal laadpunten maal hun vermogen, maar uit de gelijktijdigheid: hoeveel voertuigen er tegelijk staan, hoe lang ze stilstaan en hoeveel energie ze in dat venster moeten bijladen. Met dynamische load balancing en batterijopslag kan een laadplein binnen een bestaande aansluiting werken. Een laadplein kan door de terreineigenaar zelf worden gerealiseerd, of door een exploitant worden gefinancierd, gebouwd en beheerd.",
+    "voorbehoud": "Dit antwoord zegt niet dat sturing elke laadbehoefte binnen een bestaande aansluiting past. Is de energie die in één laadvenster moet worden bijgeladen groter dan wat de aansluiting in diezelfde tijd kan doorlaten, dan helpt alleen een langer venster, minder energievraag of zwaarder transportvermogen."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "wat-het-is",
+      "kop": "Een laadplein is geen rij losse laadpalen",
+      "lead": "Het verschil zit niet in het aantal punten, maar in wat ze met elkaar delen.",
+      "alineas": [
+        "Een losse laadpaal hangt aan een eigen groep in de bestaande verdeelinrichting. Hij kent zijn eigen zekering en niets anders. Wat het pand verder doet, ziet hij niet. Twee of drie palen gaan zo meestal nog wel. Daarna is de verdeler vol, of trekt de som van de groepen de afname over de grens op precies het verkeerde moment van de dag.",
+        "Een laadplein is een installatie met een eigen opbouw. Vanaf de hoofdverdeler loopt één voeding naar een laadverdeler op het terrein, met per paal een beveiligde afgaande groep. Op de hoofdaansluiting zit een meting die de actuele belasting van het hele pand doorgeeft. Een regelaar vergelijkt die meting met een vastgestelde grenswaarde en verdeelt het vermogen dat op dat moment over is over de punten die bezet zijn. Daarnaast hoort er een backoffice bij: autorisatie van gebruikers, tarieven, facturatie en toegang per groep.",
+        "<h3>Wat er fysiek bij hoort</h3>",
+        "<ul><li><strong>Kabeltracé</strong> — van de hoofdverdeler naar de laadverdeler, meestal ondergronds. De lengte en de ondergrond bepalen een flink deel van de aanlegkosten.</li><li><strong>Laadverdeler</strong> — per laadpunt een afgaande groep met eigen beveiliging, en ruimte om later uit te breiden.</li><li><strong>Meting op de hoofdaansluiting</strong> — zonder die meting kan de regelaar alleen een vast budget verdelen, geen actuele ruimte.</li><li><strong>Communicatie per paal</strong> — bekabeld of via het mobiele netwerk. Valt de verbinding weg, dan moet een paal terugvallen op een veilig minimum in plaats van op vol vermogen.</li><li><strong>Opslag en opwek, optioneel</strong> — een batterij en een zonnedak die onder dezelfde grenswaarde meedraaien in plaats van ernaast.</li></ul>",
+        "Dat is de kern: een laadplein heeft een gemeenschappelijke grens en iets dat die grens bewaakt. Een rij losse palen heeft dat niet. Die loopt tegen de aansluiting aan terwijl er elders op de dag ruimte onbenut blijft."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Laadplek, laadpunt, laadpaal: wat telt waarvoor",
+      "rijen": [
+        ["Laadplek", "Het parkeervak. Bepaalt de terreininrichting en of een kabel er fysiek bij kan. Zegt niets over vermogen."],
+        ["Laadpunt", "De stekker. Eén voertuig per punt. Dit is het getal waarop verkeerd wordt gedimensioneerd."],
+        ["Laadpaal", "De behuizing. Een paal met twee punten heeft meestal één maximum: twee voertuigen op een paal van 22 kW laden samen 22 kW, dus elk 11 kW."],
+        ["Gelijktijdig vermogen (kW)", "Wat er op dít moment over alle bezette punten samen wordt getrokken. Dit is wat de aansluiting moet dragen."],
+        ["Laadvenster", "De tijd dat een voertuig aan de paal staat. Hoe langer het venster, hoe minder vermogen er nodig is voor dezelfde energie."],
+        ["Energie per sessie (kWh)", "Wat er per voertuig moet worden bijgeladen. Samen met het laadvenster bepaalt dit het benodigde vermogen, en dus de batterij."],
+        ["Grenswaarde", "De bovengrens die de regelaar bewaakt op de hoofdaansluiting. Niet de aansluitwaarde zelf, maar de waarde die u kiest om eronder te blijven."]
+      ],
+      "noot": "Acht laadpunten is niet acht maal het paalvermogen. Wie op aantal punten maal vermogen rekent, vraagt een aansluiting aan die nooit volledig wordt gebruikt — en wacht daar in een congestiegebied voor niets op."
+    },
+    {
+      "soort": "tekst",
+      "id": "dimensioneren",
+      "kop": "Dimensioneren op gelijktijdigheid, niet op punten maal vermogen",
+      "lead": "Het aantal punten maal het paalvermogen is een bovengrens die in de praktijk niet voorkomt.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "De vraag bij een laadplein is niet hoeveel vermogen alle punten samen zouden kunnen trekken, maar hoeveel energie er in het beschikbare venster door de aansluiting moet. Daarvoor zijn vier gegevens nodig: het kwartiersprofiel van het pand, het laadvenster per voertuigtype, de energie die per voertuig per dag moet worden bijgeladen, en de hardheid van de vertrektijd.",
+        "Uit het kwartiersprofiel volgt wat er per kwartier nog over is onder de gekozen grenswaarde. Dat is zelden een vlakke lijn. Een pand met een ochtendpiek laat 's nachts veel meer ruimte dan om elf uur 's ochtends. Laden dat binnen de stilstand valt kost daarom weinig extra capaciteit; laden dat in de bedrijfspiek valt kost bijna alles. Een gelijktijdigheidsfactor is dus een uitkomst van die meting, geen aanname die u vooraf invult.",
+        "<h3>Rekenvoorbeeld — alleen rekenkunde, geen meting</h3>",
+        "Stel: acht laadpunten van 22 kW. Op papier is dat 8 × 22 = 176 kW. Stel verder dat er 's nachts vier bussen staan die elk 60 kWh moeten bijladen, samen 240 kWh, met twaalf uur stilstand. Dat is gemiddeld 240 / 12 = 20 kW. Het verschil tussen die 176 kW en die 20 kW is de ruimte waar sturing op werkt. De getallen hierboven zijn aannames om de rekenwijze te laten zien; wat uw laadplein vraagt volgt uit uw eigen profiel en laadritme.",
+        "<h3>Statisch of dynamisch verdelen</h3>",
+        "Statische load balancing verdeelt een vast budget over de punten. Dat is veilig, maar het laat de ruimte liggen die er buiten de bedrijfstijden wel is. Dynamische load balancing meet de actuele belasting van de aansluiting en verdeelt wat er op dat moment over is. Dat levert meer laadvermogen op dezelfde aansluiting, en vraagt in ruil een meting op de hoofdaansluiting en palen die zich laten regelen.",
+        "Blijft er na het verdelen een piek over die boven de grenswaarde uitkomt, dan komt opslag in beeld. De batterij wordt dan gedimensioneerd op die piek: de hoogte boven de grens geeft het vermogen in kW, de hoogte maal de duur geeft de bruikbare capaciteit in kWh. Bij een laadplein is die piek vaak kort en hoog — een aankomstmoment aan het eind van de middag — en dat vraagt een andere verhouding tussen kW en kWh dan een proceslast die urenlang doorloopt.",
+        "<p>Verder lezen: <a class=\"ve-link\" href=\"/kennis/laadinfrastructuur-dimensioneren\">laadinfrastructuur dimensioneren</a> en <a class=\"ve-link\" href=\"/kennis/load-balancing\">load balancing</a>.</p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Hoeveel u mag afnemen, bepaalt de netbeheerder",
+      "lead": "Binnen de bestaande aansluiting is het uw keuze. Erboven is het een aanvraag.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Een laadplein dat binnen uw bestaande aansluiting blijft, vraagt geen nieuwe toezegging van de netbeheerder. Een laadplein dat meer vermogen nodig heeft dan uw gecontracteerd transportvermogen toelaat, vraagt die toezegging wel. Of die er komt, hangt af van de ruimte in uw voedingsgebied: een verzameling postcodes rond één onderstation, die geen gemeentegrens volgt. Een congestiestatus per gemeente bestaat niet.",
+        "Netbeheerders publiceren per voedingsgebied of er ruimte is voor afname en voor invoeding op de Capaciteitskaart van Netbeheer Nederland. Zit het vol, dan is wachten op netverzwaring niet de enige route. In congestiegebieden kunnen netbeheerders alternatieve transportrechten aanbieden: transport alleen bij beschikbare ruimte, transport binnen vaste tijdvensters, een beperkt aantal uren per jaar waarin de netbeheerder mag beperken, en groepstransportovereenkomsten waarin netgebruikers onderling capaciteit delen. Vraag dus schriftelijk na wat er in uw voedingsgebied mogelijk is, en voor welke richting de beperking geldt — afname en invoeding worden apart beoordeeld.",
+        "Een laadplein leent zich daar beter voor dan een proceslast, omdat het laadvenster meestal langer is dan de laadtijd: beperkt de netbeheerder een aantal uren, dan kan de sturing die uren overslaan en de rest van de nacht gebruiken. Dat is wel een ontwerpeis en geen bijzaak — het vraagt een regelaar die een extern beperkingssignaal verwerkt en een laadplan met marge eromheen. Welke vragen u daarvoor bij uw netbeheerder neerlegt, staat op <a class=\"ve-link\" href=\"/toepassingen/geen-extra-transportvermogen\">geen extra transportvermogen</a>. En daarnaast blijft de vraag of het laadplein binnen de huidige grens kan. Dat volgt uit uw kwartiersprofiel en uw laadritme: laadvraag die in de stilstand valt en een bedrijfspiek die overdag valt, vragen niet dezelfde ruimte.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a></p>",
+        "Zo is het bij <a class=\"ve-link\" href=\"/project-ratio-16\">Ratio 16 in Duiven</a> gegaan: een zonnedak, batterijopslag en een laadplein staan daar onder één sturing, binnen het transportvermogen dat er al lag. De aansluiting is daarvoor niet gewijzigd. Wat er verder achter de meter mogelijk is als het net vol zit, staat op <a class=\"ve-link\" href=\"/netcongestie\">netcongestie</a>."
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" },
+        { "naam": "Alternatieve contractvormen voor gebruik van het elektriciteitsnet, Netbeheer Nederland", "url": "https://www.netbeheernederland.nl/artikelen/nieuws/netbeheerders-willen-alternatieve-contractvormen-voor-gebruik-van-het", "datum": "2023-08-08" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "zelf-realiseren",
+      "kop": "Vorm 1 · Zelf realiseren",
+      "lead": "U investeert, u bent eigenaar, en zowel de opbrengst als het risico zijn van u.",
+      "alineas": [
+        "Bij zelf realiseren koopt u de installatie: het tracé, de laadverdeler, de palen, de meting en de sturing, en eventueel de batterij. De installatie wordt uw eigendom en staat op uw balans. Vibe ontwerpt, bouwt en levert op. Daarna kunt u het beheer en de storingsdienst bij ons laten of zelf regelen.",
+        "Eigendom betekent zeggenschap. U bepaalt het laadtarief, wie er mag laden en met welke prioriteit, en u bepaalt of het laadplein wijkt of voorrang krijgt als de grenswaarde in zicht komt. De laadopbrengst komt bij u binnen, verminderd met de ingekochte stroom, de backofficekosten en het onderhoud. Komt er later een punt bij, dan hoeft u daarover met niemand te overleggen — mits de laadverdeler en het tracé bij de aanleg op die uitbreiding zijn voorbereid. Dat laatste is een ontwerpkeuze die achteraf duur is om te herstellen.",
+        "Eigendom betekent ook dat het risico van u is. Blijft de bezetting achter, dan draagt u de vaste kosten. Wordt het pand verkocht of vertrekt de huurder voor wie het laadplein is aangelegd, dan verhuist de installatie niet mee. En een laadplein is, net als de rest van de elektrische installatie, iets dat onderhouden, geïnspecteerd en bij storing binnen afzienbare tijd hersteld moet worden. Leg die reactietijd vast voordat het eerste voertuig laadt, niet erna.",
+        "<h3>Wanneer deze vorm past</h3>",
+        "<ul><li>U bent eigenaar-gebruiker van het pand en blijft er langere tijd.</li><li>De laadvraag komt vooral van uw eigen voertuigen of eigen medewerkers, zodat de bezetting voorspelbaar is.</li><li>U wilt het laadplein onder dezelfde sturing houden als uw opslag en uw zonnedak, met één grenswaarde en één aanspreekpunt.</li><li>Er is investeringsruimte, of een regeling die de investering ondersteunt — wat er in uw situatie geldt staat bij <a class=\"ve-link\" href=\"/subsidies\">subsidies en regelingen</a>.</li></ul>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "exploitatie",
+      "kop": "Vorm 2 · Laten exploiteren, zonder eigen investering",
+      "lead": "Een exploitant financiert, bouwt en beheert; u stelt terrein en een deel van uw capaciteit beschikbaar.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Exploitatie zonder eigen investering is mogelijk, per situatie beoordeeld. De exploitant financiert de installatie, laat hem bouwen, blijft eigenaar en draagt het onderhoud, de storingsdienst en de backoffice. U stelt het terrein en een deel van uw aansluitcapaciteit beschikbaar. Wat er voor u binnenkomt verschilt per constructie: een vergoeding per geladen kWh, een vast bedrag voor het gebruik van het terrein, of een lager laadtarief voor uw eigen voertuigen.",
+        "Dat de investering wegvalt maakt de afspraken niet eenvoudiger. Het verplaatst ze naar het contract. Wie stelt het laadtarief voor derden vast? Krijgt uw eigen vloot voorrang als het druk is? Welke grenswaarde mag het laadplein gebruiken, en wat gebeurt er als uw eigen verbruik groeit en die ruimte nodig heeft? Op dat laatste punt loopt het in de praktijk vast: u geeft een deel van de capaciteit van uw aansluiting voor de looptijd uit handen, en dat is precies de capaciteit die u later zelf nodig kunt hebben.",
+        "Daar komt het gebruiksrecht bij. Een installatie van een ander op uw grond vraagt een vastgelegd recht om daar te staan, met afspraken over de duur, over wat er gebeurt als u het pand verkoopt, en over wie de installatie aan het einde van de looptijd verwijdert of overneemt. Levert u stroom door aan derden, dan gaat het niet alleen om techniek maar ook om leveringsvoorwaarden en de administratie daarachter. Laat dat toetsen voordat u ondertekent.",
+        "<h3>Wanneer deze vorm past</h3>",
+        "<ul><li>Het laadplein is er vooral voor bezoekers, huurders of derden, en de bezetting bepaalt u niet zelf.</li><li>Er is geen investeringsruimte, of de investering staat elders in de begroting hoger.</li><li>U wilt beheer, storingsdienst en facturatie buiten de deur houden.</li><li>De looptijd die een exploitant nodig heeft past bij de periode dat u over het terrein beschikt.</li></ul>",
+        "Beide vormen leveren technisch hetzelfde laadplein op. Het ontwerp, de gelijktijdigheid en de grenswaarde veranderen er niet van. Wat verandert is wie betaalt, wie bezit en wie het risico draagt."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Wat in beide vormen op papier moet staan",
+      "rijen": [
+        ["Eigendom", "Zelf realiseren: de installatie is van u en staat op uw balans. Exploitatie: de installatie blijft van de exploitant, met een vastgelegd recht om op uw grond te staan."],
+        ["Onderhoud en storingen", "Zelf realiseren: u sluit een onderhoudscontract met een afgesproken reactietijd. Exploitatie: het hoort bij de exploitatie, maar die reactietijd hoort er net zo hard in te staan."],
+        ["Opbrengst", "Zelf realiseren: de laadopbrengst is van u, minus inkoop, backoffice en onderhoud. Exploitatie: u ontvangt een vergoeding of een tariefkorting; de laadopbrengst is van de exploitant."],
+        ["Capaciteit en voorrang", "In beide vormen: welke grenswaarde het laadplein mag gebruiken, en wie wijkt als uw eigen verbruik groeit."],
+        ["Tarief en toegang", "Wie het laadtarief vaststelt, wie er mag laden, en of uw eigen voertuigen voorrang krijgen op drukke momenten."],
+        ["Uitbreiding", "Of tracé, laadverdeler en sturing ruimte houden voor extra punten, en wie die uitbreiding dan betaalt."],
+        ["Einde van de looptijd", "Wie de installatie verwijdert of overneemt, tegen welke waarde, en in welke staat het terrein wordt opgeleverd."]
+      ],
+      "noot": "Deze zeven punten bepalen in de praktijk meer over de uitkomst dan de keuze tussen kopen en laten exploiteren."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Vergunning, terrein en veiligheid",
+      "lead": "Wat buiten de elektrotechniek valt, maar de planning wel bepaalt.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "<h3>Vergunning en melding</h3>",
+        "De laadpunten zelf zijn zelden het probleem. Wat een vergunningstraject in gang zet, zijn de bouwwerken eromheen: een overkapping, een fundering, een omkasting voor de batterij of een wijziging in de parkeerindeling. Of daar een omgevingsvergunning voor nodig is, hangt af van het terrein en van de gemeente. Dat wordt per locatie uitgezocht voordat het ontwerp vastligt. Wijzigt de aansluiting, dan loopt daarnaast een eigen aanvraag bij de netbeheerder, met een doorlooptijd die niet van ons afhangt — en die bepaalt dan de planning, niet de bouwtijd.",
+        "<h3>Terreininrichting</h3>",
+        "Een laadplein moet in de logistiek van het terrein passen, niet ernaast. Dat betekent laadpunten op een plek waar een bestelbus of een trekker met oplegger kan draaien zonder de kabel te raken, kabels die niet over een looppad of een rijlijn lopen, aanrijbeveiliging rond elke paal en rond de batterijopstelling, en vakken die bereikbaar blijven als het terrein vol staat. De kabellengte van een paal bepaalt of hij één of twee vakken kan bedienen. Dat is een ontwerpkeuze, niet iets om op de dag van plaatsing te ontdekken.",
+        "Het tracé van de hoofdverdeler naar de laadverdeler loopt meestal ondergronds. Waar dat tracé loopt, wat erboven ligt en of er geboord of opgebroken moet worden, bepaalt een flink deel van de kosten. Ook dat hoort in het ontwerp te worden vastgesteld en niet tijdens de uitvoering.",
+        "<h3>Veiligheid</h3>",
+        "Bij de laadinstallatie horen een eigen beveiliging per afgaande groep, aardlekbeveiliging per laadpunt, een duidelijke manier om spanningsvrij te schakelen en een inspectie bij inbedrijfstelling. Staat er opslag bij, dan komen daar de afstand tot het gebouw en tot de perceelgrens, de compartimentering, de detectie en de bereikbaarheid voor hulpdiensten bij. Die inrichting hoort bij het ontwerp en bij de vergunningsaanvraag, niet bij de plaatsing. Wie het beheer na oplevering ook doet, de installatie hoort zo ontworpen te zijn dat er bij te komen is: een paal of een beveiliging moet te wisselen zijn zonder het hele plein uit bedrijf te nemen."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat een laadplein niet oplost",
+      "lead": "De grens van sturing en opslag, zonder omtrekkende beweging.",
+      "alineas": [
+        "Sturing verplaatst laadvermogen binnen het venster dat er is. Is de totale energie die uw voertuigen in dat venster moeten bijladen groter dan wat de aansluiting in diezelfde tijd kan doorlaten, dan helpt geen enkele regelstrategie. Dan zijn er drie uitwegen: het laadvenster verlengen, de energievraag verlagen, of meer transportvermogen aanvragen — firm, of in een alternatieve contractvorm die alleen in bepaalde uren ruimte geeft. Een batterij is geen vierde uitweg. Hij moet zelf ook binnen die grens bijladen, dus over een etmaal gaat alle energie nog steeds door dezelfde aansluiting.",
+        "Een laadplein verhoogt uw aansluitwaarde niet en levert u geen extra gecontracteerd transportvermogen op. Opslag en sturing maken ruimte binnen wat er al is. Ze maken die grens niet groter.",
+        "Dynamisch verdelen betekent dat de laadsnelheid varieert. Voor een bus die 's nachts staat is dat onzichtbaar. Voor een voertuig dat tussen twee ritten in een half uur moet bijladen is het een operationeel risico. Dat lost u op in het laadplan en in de prioritering, niet in de hardware — en is de vertrektijd hard, dan moet het vermogen op dat moment echt beschikbaar zijn.",
+        "Onaangekondigd snelladen laat zich niet wegplannen. Wie op elk willekeurig moment hoog vermogen moet kunnen leveren aan iemand die niet is aangemeld, heeft dat vermogen nodig of moet het uit opslag halen die daar continu voor gereserveerd staat. Dat is een duurder ontwerp dan laden tijdens stilstand, en het hoort vooraf te worden uitgerekend in plaats van achteraf te worden ontdekt.",
+        "En exploitatie lost een zwakke businesscase niet op. Is er te weinig laadvraag, dan is er voor een exploitant niets te exploiteren en komt het laadplein er langs die route niet. Dat is geen onwil maar rekenwerk, en het wordt per situatie beoordeeld."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit in de praktijk op neerkomt",
+      "lead": "De situaties waarin een laadplein op capaciteit vastloopt.",
+      "kaarten": [
+        { "kop": "De aansluiting draagt de punten niet", "tekst": "Het aantal laadpunten dat u nodig heeft past niet binnen het vermogen dat u mag afnemen.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met een beperkte aansluiting" },
+        { "kop": "De bedrijfswagens gaan elektrisch", "tekst": "Een vloot die van diesel naar stroom gaat, verplaatst de energievraag naar uw eigen terrein en naar de nacht.", "route": "toepassingen/elektrificatie-bedrijfswagens", "label": "Elektrificatie bedrijfswagens" },
+        { "kop": "Extra transportvermogen is er niet", "tekst": "De netbeheerder kan geen verzwaring toezeggen, en het laadplein moet binnen de huidige grens passen.", "route": "toepassingen/geen-extra-transportvermogen", "label": "Geen extra transportvermogen" },
+        { "kop": "Meerdere locaties tegelijk", "tekst": "Verschillende panden met verschillende aansluitingen en profielen, en één laadbeleid erover.", "route": "toepassingen/meerdere-locaties", "label": "Meerdere locaties" },
+        { "kop": "Gerealiseerd: Ratio 16, Duiven", "tekst": "Zonnedak, batterijopslag en laadplein onder één sturing, binnen het transportvermogen dat er al lag.", "route": "project-ratio-16", "label": "Bekijk het project" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over een laadplein",
+  "faq": [
+    {
+      "vraag": "Hoeveel laadpunten passen er op mijn aansluiting?",
+      "antwoord": "Dat volgt uit de gelijktijdigheid, niet uit uw aansluitwaarde gedeeld door het paalvermogen. Met de kwartiersmeting van het pand, het laadvenster per voertuigtype en de energie per sessie is te berekenen hoeveel punten er binnen de bestaande grens passen en vanaf welk punt opslag nodig is."
+    },
+    {
+      "vraag": "Verhoogt een laadplein met batterij mijn aansluitwaarde?",
+      "antwoord": "Nee. Uw aansluitwaarde en uw gecontracteerd transportvermogen blijven ongewijzigd. Opslag en sturing maken ruimte binnen die grens door de piek af te vlakken en energie in de tijd te verschuiven."
+    },
+    {
+      "vraag": "Kan een laadplein zonder eigen investering?",
+      "antwoord": "Exploitatie is mogelijk, per situatie beoordeeld. De exploitant financiert, bouwt, beheert en blijft eigenaar; u stelt het terrein en een deel van uw aansluitcapaciteit beschikbaar. Welke constructie uitkomt hangt af van de laadvraag, de looptijd en wie er mag laden."
+    },
+    {
+      "vraag": "Kunnen bestaande laadpalen meedoen?",
+      "antwoord": "Vaak wel. Palen die zich via een open protocol laten regelen, zijn onder dezelfde grenswaarde te brengen zonder ze te vervangen. Palen die dat niet kunnen, blijven een vast budget vragen en beperken dus de ruimte die voor de rest overblijft."
+    },
+    {
+      "vraag": "Hebben wij een vergunning nodig?",
+      "antwoord": "Voor de laadpunten zelf meestal niet. Voor bouwwerken eromheen — een overkapping, een fundering, een omkasting voor de batterij — mogelijk wel, en dat hangt af van het terrein en van de gemeente. Wijzigt de aansluiting, dan loopt daarnaast een aanvraag bij de netbeheerder met een eigen doorlooptijd."
+    },
+    {
+      "vraag": "Waar begint zo'n traject?",
+      "antwoord": "Bij meten en bij uw laadritme. Wij hebben het kwartiersprofiel van de aansluiting nodig, de aansluitgegevens, en per voertuigtype het aantal, het laadvenster en de energie per dag. Daaruit volgt het aantal punten, het benodigde vermogen en of opslag nodig is."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/laadinfrastructuur-dimensioneren", "naam": "Laadinfrastructuur dimensioneren" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "energy-hubs", "naam": "Energy Hubs" }
+      ]
+    },
+    {
+      "kop": "Voor wie",
+      "items": [
+        { "route": "sectoren/transport-en-wagenparken", "naam": "Transport en wagenparken" },
+        { "route": "sectoren/automotive", "naam": "Automotive" },
+        { "route": "sectoren/parkeren", "naam": "Parkeren" },
+        { "route": "sectoren/retail", "naam": "Retail" },
+        { "route": "industrie-logistiek", "naam": "Logistiek" },
+        { "route": "industrie-vastgoed", "naam": "Kantoren en vastgoed" }
+      ]
+    },
+    {
+      "kop": "Capaciteit en bewijs",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "subsidies", "naam": "Subsidies en regelingen" },
+        { "route": "regios", "naam": "Regio's" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Begin bij het laadritme, niet bij het aantal palen",
+    "tekst": "Stuur ons het kwartiersprofiel van de aansluiting en per voertuigtype het aantal, het laadvenster en de energie per dag. Wij rekenen door hoeveel punten er binnen uw grens passen, vanaf waar opslag nodig is, en wat zelf realiseren of laten exploiteren in uw geval betekent.",
+    "primair": { "route": "contact", "label": "Vraag een laadpleinontwerp aan" },
+    "secundair": { "route": "projecten", "label": "Bekijk gerealiseerde projecten" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare capaciteit voor afname en invoeding per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Netbeheerders kunnen in congestiegebieden alternatieve transportrechten aanbieden: transport alleen bij beschikbare ruimte, transport binnen vaste tijdvensters, een beperkt aantal uren per jaar waarin de netbeheerder mag beperken, en groepstransportovereenkomsten waarin netgebruikers onderling capaciteit delen.",
+      "bron": "Netbeheerders willen alternatieve contractvormen voor gebruik van het elektriciteitsnet mogelijk maken, Netbeheer Nederland",
+      "bron_url": "https://www.netbeheernederland.nl/artikelen/nieuws/netbeheerders-willen-alternatieve-contractvormen-voor-gebruik-van-het",
+      "bron_datum": "2023-08-08"
+    }
+  ]
+}

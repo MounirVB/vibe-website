@@ -1,0 +1,398 @@
+{
+  "_toelichting": "De eigen, al gepubliceerde projecten gekoppeld aan een gemeentecode. Dit is het bewijs met hoge onderscheidende kracht: het geldt voor één gemeente. De familietoewijzing is afgeleid uit de componenten en metrieken die al op de projectpagina staan — er wordt niets toegevoegd wat daar niet staat.",
+  "bron": "scripts/projecten.json + data/geo/plaatsresolutie.json",
+  "bron_datum": "2026-10-10",
+  "scope": "PROJECTLOCATIE",
+  "_segmentregel": "families_zakelijk is leeg bij een residentieel project. Een zonneproject op een wooncomplex bewijst lokale aanwezigheid, maar geen zakelijke zonne-installatie; een familiepagina voor bedrijven mag daar niet op leunen.",
+  "projecten_totaal": 16,
+  "gemeenten_met_project": 11,
+  "sectoren_zonder_segment": [],
+  "ongekoppeld": [],
+  "per_gemeente": {
+    "0226": [
+      {
+        "slug": "project-ratio-16",
+        "route": "project-ratio-16",
+        "titel": "Ratio 16, Duiven",
+        "plaats": "Duiven",
+        "plaats_is_gemeente": true,
+        "sector": "Commercieel vastgoed",
+        "segment": "zakelijk",
+        "opgeleverd": "Juli 2024",
+        "status": "opgeleverd",
+        "families": [
+          "zakelijke-batterij",
+          "zonnepanelen-bedrijven",
+          "laadplein",
+          "ems",
+          "netcongestie"
+        ],
+        "families_zakelijk": [
+          "zakelijke-batterij",
+          "zonnepanelen-bedrijven",
+          "laadplein",
+          "ems",
+          "netcongestie"
+        ],
+        "familie_aanleiding": {
+          "zakelijke-batterij": "batterij",
+          "zonnepanelen-bedrijven": "zonnepane",
+          "laadplein": "laadplein",
+          "ems": "Capaciteitsregie",
+          "netcongestie": "Transportvermogen"
+        },
+        "assetlijst": "216 zonnepanelen | 157 kWh batterijopslag | 132 kW laadplein | Capaciteitsregie | 51 kW Transportvermogen, ongewijzigd | 216 Zonnepanelen, 430 Wp | 157 kWh Batterijopslag | 132 kW Laadplein, 12 plekken"
+      }
+    ],
+    "0363": [
+      {
+        "slug": "project-hedin-amsterdam",
+        "route": "project-hedin-amsterdam",
+        "titel": "Hedin Amsterdam",
+        "plaats": "Amsterdam",
+        "plaats_is_gemeente": true,
+        "sector": "Automotive",
+        "segment": "zakelijk",
+        "opgeleverd": "Maart 2026",
+        "status": "opgeleverd",
+        "families": [
+          "zakelijke-batterij",
+          "zonnepanelen-bedrijven",
+          "zakelijke-laadpalen",
+          "ems",
+          "netcongestie"
+        ],
+        "families_zakelijk": [
+          "zakelijke-batterij",
+          "zonnepanelen-bedrijven",
+          "zakelijke-laadpalen",
+          "ems",
+          "netcongestie"
+        ],
+        "familie_aanleiding": {
+          "zakelijke-batterij": "batterij",
+          "zonnepanelen-bedrijven": "Zonnepane",
+          "zakelijke-laadpalen": "laadplek",
+          "ems": "Realtime sturing",
+          "netcongestie": "Bestaande netaansluiting"
+        },
+        "assetlijst": "460 kWh batterijopslag | 20 laadplekken | Zonnepanelen | Realtime sturing | 215 kW Bestaande netaansluiting | 460 kWh Batterijopslag | 20 Laadplekken | 4 weken Realisatietijd"
+      }
+    ],
+    "0361": [
+      {
+        "slug": "project-hedin-alkmaar",
+        "route": "project-hedin-alkmaar",
+        "titel": "Hedin Alkmaar",
+        "plaats": "Alkmaar",
+        "plaats_is_gemeente": true,
+        "sector": "Automotive",
+        "segment": "zakelijk",
+        "opgeleverd": "Mei 2025",
+        "status": "opgeleverd",
+        "families": [
+          "zakelijke-batterij",
+          "ems"
+        ],
+        "families_zakelijk": [
+          "zakelijke-batterij",
+          "ems"
+        ],
+        "familie_aanleiding": {
+          "zakelijke-batterij": "energieopslag",
+          "ems": "Gestuurde inzet"
+        },
+        "assetlijst": "645 kWh energieopslag | Vier dagen installatie | Stabiele voorziening | Gestuurde inzet | 645 kWh Energieopslag, 300 kW | 4 dagen Installatietijd | Mei 2025 Opgeleverd"
+      }
+    ],
+    "0420": [
+      {
+        "slug": "project-dormio-medemblik",
+        "route": "project-dormio-medemblik",
+        "titel": "Dormio Medemblik",
+        "plaats": "Medemblik",
+        "plaats_is_gemeente": true,
+        "sector": "Recreatie",
+        "segment": "zakelijk",
+        "opgeleverd": "Oktober 2024",
+        "status": "In uitvoering",
+        "families": [
+          "zakelijke-batterij",
+          "zonnepanelen-bedrijven",
+          "ems",
+          "verduurzaming-bedrijfspanden"
+        ],
+        "families_zakelijk": [
+          "zakelijke-batterij",
+          "zonnepanelen-bedrijven",
+          "ems",
+          "verduurzaming-bedrijfspanden"
+        ],
+        "familie_aanleiding": {
+          "zakelijke-batterij": "batterij",
+          "zonnepanelen-bedrijven": "zonnepane",
+          "ems": "balanceren",
+          "verduurzaming-bedrijfspanden": "energielabel"
+        },
+        "assetlijst": "220 kWh batterijopslag | 229 zonnepanelen | Automatisch balanceren | Betere energielabels | 220 kWh Batterijopslag | 229 Zonnepanelen | +4 Energielabelstappen"
+      }
+    ],
+    "0439": [
+      {
+        "slug": "project-purmerend",
+        "route": "project-purmerend",
+        "titel": "Edisonweg 15, Purmerend",
+        "plaats": "Purmerend",
+        "plaats_is_gemeente": true,
+        "sector": "Bedrijfspand",
+        "segment": "zakelijk",
+        "opgeleverd": "2023",
+        "status": "opgeleverd",
+        "families": [
+          "zonnepanelen-bedrijven"
+        ],
+        "families_zakelijk": [
+          "zonnepanelen-bedrijven"
+        ],
+        "familie_aanleiding": {
+          "zonnepanelen-bedrijven": "zonnepane"
+        },
+        "assetlijst": "216 zonnepanelen | Twee omvormers | Scope 12 geïnspecteerd | 216 Zonnepanelen | 2 Omvormers | 2023 Scope 12-inspectie"
+      }
+    ],
+    "0268": [
+      {
+        "slug": "project-van-beethovenstraat",
+        "route": "project-van-beethovenstraat",
+        "titel": "Van Beethovenstraat, Nijmegen",
+        "plaats": "Nijmegen",
+        "plaats_is_gemeente": true,
+        "sector": "Wooncomplex",
+        "segment": "residentieel",
+        "opgeleverd": "Juni 2024",
+        "status": "opgeleverd",
+        "families": [
+          "zonnepanelen-bedrijven"
+        ],
+        "families_zakelijk": [],
+        "familie_aanleiding": {
+          "zonnepanelen-bedrijven": "zonnepane"
+        },
+        "assetlijst": "284 zonnepanelen | Enkele maanden | 284 Zonnepanelen | Juni 2024 Opgeleverd"
+      },
+      {
+        "slug": "project-burchtstraat",
+        "route": "project-burchtstraat",
+        "titel": "Burchtstraat, Nijmegen",
+        "plaats": "Nijmegen",
+        "plaats_is_gemeente": true,
+        "sector": "Wooncomplex",
+        "segment": "residentieel",
+        "opgeleverd": "Oktober 2024",
+        "status": "opgeleverd",
+        "families": [
+          "zonnepanelen-bedrijven"
+        ],
+        "families_zakelijk": [],
+        "familie_aanleiding": {
+          "zonnepanelen-bedrijven": "zonnepane"
+        },
+        "assetlijst": "190 zonnepanelen | 52 woningen | Inbedrijfname oktober 2024 | 52 Woningen | 190 Zonnepanelen, 480 Wp | Okt 2024 Inbedrijfname"
+      },
+      {
+        "slug": "project-kwakkenbergflat",
+        "route": "project-kwakkenbergflat",
+        "titel": "Kwakkenbergflat, Nijmegen",
+        "plaats": "Nijmegen",
+        "plaats_is_gemeente": true,
+        "sector": "Wooncomplex",
+        "segment": "residentieel",
+        "opgeleverd": "Maart 2024",
+        "status": "opgeleverd",
+        "families": [
+          "zonnepanelen-bedrijven"
+        ],
+        "families_zakelijk": [],
+        "familie_aanleiding": {
+          "zonnepanelen-bedrijven": "zonnepane"
+        },
+        "assetlijst": "56 zonnepanelen | Zes micro-omvormers | ValkPro+ onderconstructie | 56 Zonnepanelen, 450 Wp | 25,2 kWp Opgesteld vermogen | Mrt 2024 Opgeleverd"
+      },
+      {
+        "slug": "project-piersonstraat",
+        "route": "project-piersonstraat",
+        "titel": "Piersonstraat 75-77, Nijmegen",
+        "plaats": "Nijmegen",
+        "plaats_is_gemeente": true,
+        "sector": "Wooncomplex",
+        "segment": "residentieel",
+        "opgeleverd": "Juli 2025",
+        "status": "opgeleverd",
+        "families": [
+          "zonnepanelen-bedrijven"
+        ],
+        "families_zakelijk": [],
+        "familie_aanleiding": {
+          "zonnepanelen-bedrijven": "zonnepane"
+        },
+        "assetlijst": "70 zonnepanelen | Oost-westopstelling | Driefasig teruggeleverd | 70 Zonnepanelen, 480 Wp | 33,6 kWp Opgesteld vermogen | Juli 2025 Opgeleverd"
+      }
+    ],
+    "0202": [
+      {
+        "slug": "project-arnhem-60",
+        "route": "project-arnhem-60",
+        "titel": "Woningportefeuille Arnhem",
+        "plaats": "Arnhem",
+        "plaats_is_gemeente": true,
+        "sector": "Woningportefeuille",
+        "segment": "residentieel",
+        "opgeleverd": "2024",
+        "status": "opgeleverd",
+        "families": [
+          "zonnepanelen-bedrijven"
+        ],
+        "families_zakelijk": [],
+        "familie_aanleiding": {
+          "zonnepanelen-bedrijven": "zonnepane"
+        },
+        "assetlijst": "60 zonnepanelen | Per straat uitgevoerd | Aanpassing per woning | 60 Zonnepanelen, Keulse Slag en Lacomblestraat | 12 Woningen in die deelopdracht | 2024 Uitgevoerd"
+      },
+      {
+        "slug": "project-formupgrade",
+        "route": "project-formupgrade",
+        "titel": "Formupgrade, Arnhem",
+        "plaats": "Arnhem",
+        "plaats_is_gemeente": true,
+        "sector": "Bedrijfspand",
+        "segment": "zakelijk",
+        "opgeleverd": "Maart 2024",
+        "status": "opgeleverd",
+        "families": [
+          "zonnepanelen-bedrijven"
+        ],
+        "families_zakelijk": [
+          "zonnepanelen-bedrijven"
+        ],
+        "familie_aanleiding": {
+          "zonnepanelen-bedrijven": "zonnepane"
+        },
+        "assetlijst": "67 zonnepanelen | Eén omvormer | SCIOS Scope 12 | 67 Zonnepanelen, 450 Wp | 30 kWp Opgesteld vermogen | Mrt 2024 Opgeleverd"
+      }
+    ],
+    "0274": [
+      {
+        "slug": "project-ketsheuvel",
+        "route": "project-ketsheuvel",
+        "titel": "Ketsheuvel, Renkum",
+        "plaats": "Renkum",
+        "plaats_is_gemeente": true,
+        "sector": "Wooncomplex",
+        "segment": "residentieel",
+        "opgeleverd": "December 2024",
+        "status": "opgeleverd",
+        "families": [
+          "zonnepanelen-bedrijven"
+        ],
+        "families_zakelijk": [],
+        "familie_aanleiding": {
+          "zonnepanelen-bedrijven": "zonnepane"
+        },
+        "assetlijst": "160 zonnepanelen | Twee weken | 160 Zonnepanelen | Dec 2024 Opgeleverd"
+      },
+      {
+        "slug": "project-bart-crumstraat",
+        "route": "project-bart-crumstraat",
+        "titel": "Bart Crumstraat 20, Heelsum",
+        "plaats": "Heelsum",
+        "plaats_is_gemeente": false,
+        "sector": "Wooncomplex",
+        "segment": "residentieel",
+        "opgeleverd": "November 2024",
+        "status": "opgeleverd",
+        "families": [
+          "zonnepanelen-bedrijven"
+        ],
+        "families_zakelijk": [],
+        "familie_aanleiding": {
+          "zonnepanelen-bedrijven": "zonnepane"
+        },
+        "assetlijst": "15 zonnepanelen | Huawei 5 kW, driefasig | ValkPro+ onderconstructie | 15 Zonnepanelen, 450 Wp | 6,75 kWp Opgesteld vermogen | Nov 2024 Opgeleverd"
+      }
+    ],
+    "0275": [
+      {
+        "slug": "project-nieuw-schoonoord",
+        "route": "project-nieuw-schoonoord",
+        "titel": "Nieuw-Schoonoord, Velp",
+        "plaats": "Velp",
+        "plaats_is_gemeente": false,
+        "sector": "Woningportefeuille",
+        "segment": "residentieel",
+        "opgeleverd": "Maart 2025",
+        "status": "opgeleverd",
+        "families": [
+          "zonnepanelen-bedrijven"
+        ],
+        "families_zakelijk": [],
+        "familie_aanleiding": {
+          "zonnepanelen-bedrijven": "zonnepane"
+        },
+        "assetlijst": "300 zonnepanelen | Drie omvormers | Conformiteitsverklaring | 300 Zonnepanelen, 450 Wp | 3 Omvormers | Mrt 2025 Opgeleverd"
+      }
+    ],
+    "0855": [
+      {
+        "slug": "project-schouwburgring",
+        "route": "project-schouwburgring",
+        "titel": "Schouwburgring, Tilburg",
+        "plaats": "Tilburg",
+        "plaats_is_gemeente": true,
+        "sector": "Wooncomplex",
+        "segment": "residentieel",
+        "opgeleverd": "Januari 2024",
+        "status": "opgeleverd",
+        "families": [
+          "zonnepanelen-bedrijven"
+        ],
+        "families_zakelijk": [],
+        "familie_aanleiding": {
+          "zonnepanelen-bedrijven": "zonnepane"
+        },
+        "assetlijst": "534 zonnepanelen | Vier omvormers | Opgeleverd januari 2024 | 534 Zonnepanelen, 455 Wp | 242,97 kWp Opgesteld vermogen | Jan 2024 Opgeleverd"
+      }
+    ],
+    "0164": [
+      {
+        "slug": "project-hazenweg-61",
+        "route": "project-hazenweg-61",
+        "titel": "Hazenweg 61, Hengelo",
+        "plaats": "Hengelo",
+        "plaats_is_gemeente": true,
+        "sector": "Kantoorpand",
+        "segment": "zakelijk",
+        "opgeleverd": "2025",
+        "status": "opgeleverd",
+        "families": [
+          "zakelijke-batterij",
+          "zonnepanelen-bedrijven",
+          "zakelijke-laadpalen",
+          "ems"
+        ],
+        "families_zakelijk": [
+          "zakelijke-batterij",
+          "zonnepanelen-bedrijven",
+          "zakelijke-laadpalen",
+          "ems"
+        ],
+        "familie_aanleiding": {
+          "zakelijke-batterij": "batterij",
+          "zonnepanelen-bedrijven": "Zonnedak",
+          "zakelijke-laadpalen": "laadpunt",
+          "ems": "EMS"
+        },
+        "assetlijst": "Twee batterijsystemen | Zonnedak opnieuw gelegd | Vier laadpunten | Vibe EMS en noodstroom | 200 kW Omvormervermogen opslag | 4 Laadpunten, 2 × 22 kW | 36 kW Omvormer zonnedak | 2025 Gerealiseerd"
+      }
+    ]
+  }
+}

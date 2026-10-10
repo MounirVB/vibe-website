@@ -1,0 +1,13 @@
+{
+  "_toelichting": "Het redactionele besluit boven op het bewijsmodel. Zonder een regel in `vrijgegeven` promoveert een route NOOIT automatisch naar INDEX, ook niet als het bewijs toereikend is. Dit bestand is de plek waar een mens de verantwoordelijkheid neemt.",
+  "_versie": "1.0.0",
+  "_vastgesteld": "2026-10-10",
+
+  "vastgehouden": {
+    "reden": "Vastgehouden voor Release 1. Deze gemeenten halen de bewijspoort (een CBS-vestigingscijfer plus minstens één bedrijventerrein met naam en oppervlak), maar Vibe heeft er geen gerealiseerd project. In één release honderden structureel gelijkvormige gemeentepagina's publiceren naast de 34 pagina's die er nu staan, is precies het patroon dat als opgeschaalde inhoud geldt — en de opdracht verbiedt publiceren om een aantal te halen. De routes blijven in het register staan met hun bewijs, zodat vrijgave later een regel in dit bestand is en geen herbouw."
+  },
+
+  "vrijgegeven": {},
+
+  "_hoe_vrijgeven": "Zet de route als sleutel in `vrijgegeven` met als waarde de reden waarom deze gemeente nu wel een eigen pagina verdient. Draai daarna scripts/seo/bouw-routes.mjs, scripts/seo/genereer.mjs en scripts/seo/audit.mjs. De route gaat alleen door als hij ook de inhouds- en uniciteitspoort haalt."
+}

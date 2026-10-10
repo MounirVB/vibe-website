@@ -1,0 +1,280 @@
+{
+  "route": "toepassingen/pieken-in-verbruik",
+  "type": "toepassing",
+  "titel": "Pieken in verbruik en wat ze kosten | Vibe Energy",
+  "beschrijving": "Eén hoog kwartier bepaalt uw transportkosten en uw ruimte op de aansluiting. Hoe u die piek vindt in uw kwartiersprofiel en in welke volgorde u hem verlaagt.",
+  "og_titel": "Pieken in verbruik en wat ze kosten",
+  "h1": "Een korte piek bepaalt uw rekening en uw ruimte.",
+  "lead": "Uw netfactuur rekent niet alleen met wat u verbruikt, maar ook met hoe hard u op één moment trekt. Het hoogste kwartier van de maand zet die maatstaf. Een gelijktijdigheid van een paar minuten kan daarmee een kostenpost vastzetten die u de rest van het jaar meedraagt.",
+  "data_pagina": "toepassingen",
+  "kruimels": [{ "naam": "Toepassingen", "route": "toepassingen" }],
+  "kruimel_label": "Pieken in verbruik",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Piekverlaging op de netaansluiting",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw kwartiersprofiel doorrekenen" },
+    { "soort": "ghost", "anker": "#profiel", "label": "Uw eigen piek vinden" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Waarom kost een korte piek in het elektriciteitsverbruik een heel jaar geld?",
+    "antwoord": "Het transportdeel van een zakelijke netfactuur rekent niet alleen met energie (kWh) maar ook met vermogen (kW): met het gecontracteerde transportvermogen dat de aangeslotene zelf opgeeft, en met het hoogste vermogen dat die maand is gemeten. Dat gemeten maximum wordt bij een meetperiode van vijftien minuten of minder bepaald op basis van de waarde per klokkwartier. Eén kwartier waarin te veel tegelijk aanstaat zet dus de maatstaf voor een hele maand. En een overschrijding van het gecontracteerde vermogen geldt als een aanvraag tot verhoging: bij Liander gaat die verhoging in de zwaarste deelmarkten gelden voor het hele kalenderjaar van de overschrijding.",
+    "voorbehoud": "Deze uitleg gaat over afname op een grootverbruikaansluiting. Voor kleinverbruik en voor invoeding gelden andere tariefcomponenten. De precieze regels voor verhogen, verlagen en overschrijden staan per netbeheerder in het eigen tarievenblad en verschillen per deelmarkt; dit antwoord vervangt dat blad niet."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "de-piek",
+      "kop": "Hoe een kwartier uw hele jaar bepaalt",
+      "lead": "Het gecontracteerde transportvermogen is een opgave. Het gemeten maximum is een meting. Die twee samen maken een korte piek duur.",
+      "alineas": [
+        "Op een grootverbruikaansluiting — een elektriciteitsaansluiting groter dan 3 × 80 A; tot en met die doorlaatwaarde valt u onder kleinverbruik — betaalt u voor transport in meer dan één eenheid. Naast een vastrecht en een tarief per kWh staan er twee vermogensposten op de netfactuur: een tarief voor het gecontracteerde transportvermogen, en een tarief voor het maximum transportvermogen dat die maand is gemeten.",
+        "Die eerste post is geen meting. Het gecontracteerde transportvermogen is het vermogen dat u redelijkerwijs verwacht maximaal op enig moment in het jaar nodig te hebben. U geeft die waarde zelf op, en bij een aansluiting groter dan 3 × 80 A bent u verplicht dat te doen. Hoger dan de capaciteit van de aansluiting kan hij niet; netbeheerders rekenen bij die omrekening met een gebruikelijke arbeidsfactor — Stedin hanteert 0,85 voor afname en 1,00 voor teruglevering.",
+        "De tweede post is wél een meting, en daar zit de scherpte. Het maximaal afgenomen vermogen van een maand wordt bij een meetperiode van vijftien minuten of minder bepaald op basis van de waarde per klokkwartier. Niet het gemiddelde van de dag, niet de drukste week: het ene kwartier waarin het meeste tegelijk aanstond. Eén pers die aanloopt terwijl de koeling draait en er vier auto's laden, is genoeg om dat kwartier te zetten.",
+        "<h3>Waarom de rekening daarna niet zomaar zakt</h3>",
+        "Komt uw werkelijk gebruikte vermogen boven het gecontracteerde vermogen uit, dan vat de netbeheerder dat op als een aanvraag tot verhoging. Biedt het net ruimte, dan past Liander de overeenkomst normaal gesproken automatisch aan naar de waarde van de overschrijding. In de deelmarkten tussen-/middenspanning, hoog-/middenspanning en tussenspanning geldt dat nieuwe vermogen voor het hele kalenderjaar waarin de overschrijding zich voordeed.",
+        "Terugdraaien gaat niet snel. Verlagen van het gecontracteerde transportvermogen voor afname kan bij Liander in principe alleen als de waarde de afgelopen twaalf maanden niet naar boven is aangepast. Wie wél verlaagt en daarna binnen twaalf maanden de verlaagde waarde overschrijdt, krijgt de verhoging met terugwerkende kracht tot de datum van het verlagingsverzoek. Eén kwartier gelijktijdigheid zet zo een kostenpost vast die u maanden later nog betaalt.",
+        "In een congestiegebied werkt het anders, en ongunstiger: daar levert overschrijden u geen vermogen op. Is er een vooraankondiging van transportschaarste gedaan, dan kan het gecontracteerde transportvermogen in dat gebied niet worden verhoogd, ook niet bij overschrijding. De ACM heeft dat in 2025 in een codebesluit vastgelegd: aangeslotenen in congestiegebieden moeten een aanvraag doen, en bij Stedin komt die aanvraag op een wachtlijst die op volgorde wordt toegewezen. U houdt daar dus het risico van een piek, zonder de ruimte die er elders tegenover staat.",
+        "<p><a class=\"ve-link\" href=\"/netcongestie\">Wat netcongestie is en wat u er achter de meter aan doet</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Tarieven voor aansluiting en transport elektriciteit grootverbruik 2026, Liander", "url": "https://www.liander.nl/-/media/files/tarieven/grootzakelijk/tarieven-2026/tarieven-voor-aansluiting-en-transport-elektriciteit-2026_2.pdf", "datum": "2026-10-10" },
+        { "naam": "Elektriciteit Tarieven- en vergoedingsregeling (Grootverbruik) 2026, Stedin", "url": "https://www.stedin.net/-/media/project/online/files/tarieven/tarieven-2026/tarieven-en-vergoedingsregeling-2026_-elektriciteit_grootverbruik.pdf", "datum": "2026-10-10" },
+        { "naam": "Codebesluit gecontracteerd transportvermogen (GTV), ACM", "url": "https://www.acm.nl/nl/publicaties/codebesluit-gecontracteerd-transportvermogen-gtv", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Vijf vormen waarin een piek zich aandient",
+      "rijen": [
+        ["Inschakelpiek", "Een compressor, pers of pomp die aanloopt vraagt kort veel meer dan zijn nominale vermogen. Duur: seconden tot minuten. Verdwijnt deels in het kwartiergemiddelde, maar zet dat kwartier wél als er iets anders bij komt."],
+        ["Gelijktijdigheidspiek", "Verbruikers die elkaar toevallig raken: koeling, laadpunten, een productielijn, een ketel. Dit is de vorm die het vaakst de maandwaarde zet, en de vorm die het goedkoopst te beïnvloeden is."],
+        ["Vaste dagpiek", "Ploegwissel, openingstijd, de ochtendstart van het pand. Voorspelbaar, en daarom met planning of sturing te verschuiven zonder dat er iets aan het proces verandert."],
+        ["Seizoenspiek", "Een koude ochtend of een warme middag. Doet zich in een beperkt deel van het jaar voor en zet in díe maanden het gemeten maximum, ook als de rest van het jaar vlak is. Omdat het gemeten maximum per maand wordt afgerekend, kost zo'n maand het volle tarief, hoe laag het jaargemiddelde ook is. Zichtbaar in een profiel van twaalf maanden, niet in een profiel van een kwartaal."],
+        ["Geen piek, maar een niveau", "Een overschrijding die uren achter elkaar duurt. Technisch geen piek: de vraag ligt structureel boven de grens. Piekverlaging helpt hier niet — zie de grens onderaan deze pagina."]
+      ],
+      "noot": "Welke vorm u heeft, bepaalt welke ingreep werkt. De eerste vier zijn te verlagen met organiseren, sturen of opslag. De vijfde niet."
+    },
+    {
+      "soort": "tekst",
+      "id": "profiel",
+      "kop": "Uw eigen piek vinden in het kwartiersprofiel",
+      "lead": "Een jaartotaal in kWh kan uw piek niet laten zien; die is erin weggemiddeld.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Wat u nodig heeft, zijn de kwartierwaarden van uw aansluiting over minstens twaalf maanden. Ze komen uit de meetinrichting van uw aansluiting; uw meetverantwoordelijke of uw leverancier kan het bestand aanleveren. Vraag om de kwartierwaarden zelf, niet om een maand- of jaartotaal. Let daarbij op de eenheid: meetbestanden geven doorgaans kWh per kwartier, en dat is nog geen vermogen. Een kwartierwaarde van 1 kWh hoort bij een gemiddelde van 4 kW over dat kwartier, dus reken de reeks eerst om voordat u de hoogte van een piek beoordeelt. Zonder die resolutie en zonder die omrekening is elke dimensionering een gok.",
+        "Daarna doet u vier dingen met dat bestand.",
+        "<ul><li><strong>Sorteer aflopend.</strong> Het gemiddelde is niet interessant. De bovenste kwartieren zijn het, want één van hen zet de maandwaarde.</li><li><strong>Tel per maand.</strong> Het gemeten maximum wordt per maand afgerekend. U heeft dus twaalf maxima en niet één. Een vlak jaar met twee uitschieters levert twee dure maanden op.</li><li><strong>Kies een grens.</strong> Leg een lijn in het profiel: de waarde waaronder u wilt blijven. Alles boven die lijn is wat een ingreep moet wegnemen.</li><li><strong>Meet hoogte en duur.</strong> De hoogte boven de lijn is het vermogen in kW dat de ingreep moet leveren. Die hoogte maal de tijd dat de piek boven de lijn blijft, is de energie in kWh die ervoor nodig is.</li></ul>",
+        "<p><strong>Rekenvoorbeeld.</strong> U kiest een grens van 200 kW. Het profiel laat drie opeenvolgende kwartieren van 280 kW zien. De hoogte boven de lijn is dan 80 kW, de duur driekwart uur, en de benodigde energie 80 kW × 0,75 uur = 60 kWh. Die uitkomst geldt voor een piek die de hele tijd vlak op 280 kW blijft; loopt hij in die drie kwartieren op en weer af, dan is 60 kWh de bovengrens en ligt de werkelijke behoefte lager. Reken op het vlakke geval, dan koopt u niet te klein. Dit zijn rekengetallen, geen meting van een bestaande locatie.</p>",
+        "Die twee uitkomsten zijn niet uitwisselbaar, en daar gaat dimensionering het vaakst mis. Wie alleen op kWh rekent, koopt een systeem dat de piek niet haalt; wie alleen op kW rekent, koopt een systeem dat na een paar minuten leeg is. <a class=\"ve-link\" href=\"/kennis/kw-versus-kwh\">kW versus kWh</a> legt dat verschil uit, en <a class=\"ve-link\" href=\"/kennis/peak-shaving\">peak shaving</a> beschrijft de techniek achter de ingreep.",
+        "Let bij het lezen op twee dingen. Een profiel toont afname én invoeding, en een hoge invoedingspiek is in het transporttarief geen kostenpost — voor invoeding op het net rekent Liander geen transportkosten. Hij kan wel tot een terugleverbeperking leiden, en dat is een ander probleem met een andere oplossing. En controleer of het bestand een volledig jaar dekt: zonder winter en zomer in de reeks mist u precies de seizoenspiek die in die maanden het maximum zet."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "verlagen",
+      "kop": "Drie ingrepen, in volgorde van kosten",
+      "lead": "Wat u kunt organiseren hoeft u niet te sturen. Wat u kunt sturen hoeft u niet op te slaan.",
+      "alineas": [
+        "De verleiding is om bij opslag te beginnen, omdat dat de ingreep is die het meest oplevert per gesprek. Het is zelden de goedkoopste. Werk de volgorde af, want elke kilowatt die u in stap één wegneemt, hoeft u in stap drie niet te kopen.",
+        "<h3>1 · Gelijktijdigheid organiseren</h3>",
+        "De goedkoopste kilowatt is de kilowatt die u niet tegelijk vraagt. Zet de start van zware verbruikers uit elkaar in plaats van op hetzelfde kwartier. Laat de ketel, de compressor en de laadsessies niet samen aanlopen. Verschuif laden naar de standtijd van het voertuig in plaats van naar het moment van aankomst. Vergrendel in de besturing dat twee zware machines gelijktijdig inschakelen. Dit kost planning en soms een vergrendeling in de schakelkast — geen investering in vermogen.",
+        "De grens van deze stap: u kunt alleen verschuiven wat niet aan een vast moment vastzit. Een ploegwissel, een leveringsvenster of een proces met een vaste cyclus laat zich niet verzetten, en een laadsessie die bij vertrek klaar moet zijn ook niet.",
+        "<h3>2 · Sturen</h3>",
+        "Wat niet te verschuiven is, is vaak nog wel te begrenzen. Een energiemanagementsysteem meet de actuele belasting van de aansluiting en verdeelt wat er over is. Laadpunten laden langzamer als de rest van het pand vermogen vraagt en sneller als het stil is: dat is dynamische load balancing, tegenover een statische verdeling die elk punt een vast budget geeft en dus altijd ruimte onbenut laat. Koeling, warmtepompen en ventilatie zijn binnen hun comfortband enkele minuten te temperen zonder dat iemand het merkt. Een harde grenswaarde in het regelsysteem houdt de afname onder de waarde die u heeft gecontracteerd.",
+        "De grens van deze stap: sturen werkt alleen op verbruikers die begrenzing verdragen. Een productielijn die niet onderbroken mag worden blijft buiten de regeling, en daarmee blijft zijn piek staan. <a class=\"ve-link\" href=\"/vibe-control\">VIBE.CONTROL</a> is de laag die deze afweging per kwartier maakt en de bedrijfsvoering daarbij voorrang geeft boven optimalisatie.",
+        "<h3>3 · Opslag</h3>",
+        "Blijft er een piek over die u niet kunt verschuiven en niet mag begrenzen, dan levert een batterij het verschil. De afname op de aansluiting blijft op de gekozen grens staan, de batterij vult aan en laadt bij wanneer er ruimte is. Dit is de duurste van de drie en de enige die ook werkt op verbruikers die geen onderbreking dulden. Het vermogen van het systeem volgt uit de hoogte van uw pieken boven de grens, de capaciteit uit hun duur — niet uit uw jaarverbruik. <a class=\"ve-link\" href=\"/systeem-energieopslag\">Energieopslag</a> beschrijft het systeem, <a class=\"ve-link\" href=\"/kennis/batterij-dimensioneren\">batterij dimensioneren</a> de maatvoering.",
+        "Hoe die drie lagen in de praktijk samenvallen, is te zien bij <a class=\"ve-link\" href=\"/project-ratio-16\">Ratio 16 in Duiven</a>, waar zon, opslag en een laadplein binnen het bestaande transportvermogen zijn gebracht zonder dat de aansluiting veranderde, en bij <a class=\"ve-link\" href=\"/project-hedin-amsterdam\">Hedin Amsterdam</a>, waar laden en opslag op een bestaande aansluiting samenkomen."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "grens",
+      "kop": "De grens: een piek die uren duurt is geen piek",
+      "lead": "Bij gelijk vermogen groeit de benodigde capaciteit recht mee met de duur. Dat is het punt waarop deze aanpak ophoudt.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "<p><strong>Rekenvoorbeeld.</strong> 80 kW boven de grens kost één kwartier lang 20 kWh. Dezelfde 80 kW kost vier uur lang 320 kWh. Hetzelfde vermogen, zestien keer zoveel capaciteit. Rekengetallen, geen meting.</p>",
+        "Duurt uw overschrijding uren, dan heeft u geen piek maar een niveau: uw vraag ligt structureel boven de grens. Een batterij schuift energie in de tijd, hij maakt geen energie. Hij moet binnen dezelfde aansluiting ook weer bijladen, en dat bijladen vraagt zelf vermogen op een moment dat er ruimte voor moet zijn. Wie dag na dag uren moet overbruggen, koopt een systeem dat niet op tijd leeg én vol kan zijn. Dan is een zwaardere aansluiting de route, eventueel met een tijdelijke voorziening in de tussentijd.",
+        "Verder blijven drie dingen onveranderd staan, ook als uw piek daalt.",
+        "<ul><li><strong>Uw aansluitwaarde en uw gecontracteerde transportvermogen gaan niet omhoog.</strong> Opslag en sturing maken ruimte binnen wat er al ligt; ze creëren geen transportvermogen. Wilt u meer, dan is dat een aanvraag bij de netbeheerder en geen technische ingreep achter de meter.</li><li><strong>In een congestiegebied levert een lagere piek geen extra vermogen op.</strong> Verhoging kan daar niet, ook niet door te overschrijden. Een lagere piek voorkomt er wel dat u een grens raakt die u niet mag raken, en maakt groei binnen de bestaande ruimte mogelijk. Meer niet.</li><li><strong>Niet elke tariefcategorie kent een post voor het gemeten maximum.</strong> In het Liander-tarievenblad van 2026 heeft de deelmarkt laagspanning — gecontracteerd transportvermogen tot en met 50 kW — geen tarief voor kW max. maand; de zwaardere deelmarkten wel. Op zo'n aansluiting betaalt piekverlaging zich dus terug in ruimte op de aansluiting en in een lager gecontracteerd vermogen, niet in een lagere post voor kW max. maand.</li></ul>",
+        "Eén ding werkt wel de andere kant op. Uw opgegeven vermogen bepaalt ook in welke tariefcategorie u valt: Stedin deelt in 2026 in op tot en met 50 kW, op 51 tot en met 150 kW, en vanaf 151 kW in de middenspanningscategorieën. Een paar kilowatt extra contract kan u dus over een grens tillen waar een ander deel van het tarievenblad geldt. Dat is een reden om eerst de piek te verlagen en daarna over het contract te praten, niet omgekeerd.",
+        "En er is geen uitkomst die vooraf vaststaat. Of uw overschrijding een piek is of een niveau, en welke van de drie ingrepen uw geval dekt, blijkt uit het profiel. Dat is waar wij beginnen, en als verzwaren de enige route is zeggen we dat."
+      ],
+      "bronnen": [
+        { "naam": "Tarieven voor aansluiting en transport elektriciteit grootverbruik 2026, Liander", "url": "https://www.liander.nl/-/media/files/tarieven/grootzakelijk/tarieven-2026/tarieven-voor-aansluiting-en-transport-elektriciteit-2026_2.pdf", "datum": "2026-10-10" },
+        { "naam": "Elektriciteit Tarieven- en vergoedingsregeling (Grootverbruik) 2026, Stedin", "url": "https://www.stedin.net/-/media/project/online/files/tarieven/tarieven-2026/tarieven-en-vergoedingsregeling-2026_-elektriciteit_grootverbruik.pdf", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar een piek uw plannen raakt",
+      "lead": "Een te hoge kwartierwaarde komt zelden alleen. Dit zijn de vier aanpalende situaties waarin diezelfde waarde het knelpunt is, elk met een eigen vervolgvraag.",
+      "kaarten": [
+        { "kop": "Uitbreiden kan niet door", "tekst": "Een extra lijn, hal of koelcel past niet binnen het vermogen dat u mag afnemen.", "route": "toepassingen/netcongestie-bij-uitbreiding", "label": "Netcongestie bij uitbreiding" },
+        { "kop": "Laden tegen de grens", "tekst": "De laadpunten vragen gelijktijdig meer dan de aansluiting kan dragen.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met een beperkte aansluiting" },
+        { "kop": "Geen extra transportvermogen", "tekst": "De netbeheerder kan niets toezeggen en het plan staat stil op papier.", "route": "toepassingen/geen-extra-transportvermogen", "label": "Geen extra transportvermogen" },
+        { "kop": "Meer doen met wat er ligt", "tekst": "Niet verzwaren, maar de ruimte benutten die binnen de bestaande aansluiting nog over is.", "route": "toepassingen/bestaande-aansluiting-optimaliseren", "label": "Bestaande aansluiting optimaliseren" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over pieken in verbruik",
+  "faq": [
+    {
+      "vraag": "Hoe lang moet een piek duren om mee te tellen?",
+      "antwoord": "Het maximaal afgenomen vermogen van een maand wordt bij een meetperiode van vijftien minuten of minder bepaald op basis van de waarde per klokkwartier. Een stroomstoot van een paar seconden verdwijnt daardoor grotendeels in het gemiddelde van dat kwartier. Een gelijktijdigheid die het hele kwartier aanhoudt, telt volledig mee."
+    },
+    {
+      "vraag": "Zakt mijn gecontracteerde vermogen automatisch als mijn piek daalt?",
+      "antwoord": "Nee. Het gecontracteerde transportvermogen is een opgave en verandert niet uit zichzelf. Verlagen moet u aanvragen, en bij Liander kan dat voor afname in principe alleen als de waarde de afgelopen twaalf maanden niet naar boven is aangepast. Meet daarom eerst een periode met de nieuwe, lagere piek voordat u verlaagt."
+    },
+    {
+      "vraag": "Wat gebeurt er als ik mijn gecontracteerde vermogen één keer overschrijd?",
+      "antwoord": "Netbeheerders behandelen een overschrijding als een aanvraag tot verhoging. Biedt het net ruimte, dan past Liander de overeenkomst normaal gesproken automatisch aan naar de waarde van de overschrijding; in de deelmarkten tussen-/middenspanning, hoog-/middenspanning en tussenspanning geldt die nieuwe waarde voor het hele kalenderjaar van de overschrijding. In een gebied met een vooraankondiging van transportschaarste kan de verhoging niet worden doorgevoerd."
+    },
+    {
+      "vraag": "Heb ik een batterij nodig om mijn piek te verlagen?",
+      "antwoord": "Niet per definitie. Begin met gelijktijdigheid organiseren en met sturen; die twee kosten geen vermogen. Opslag is nodig voor de piek die overblijft omdat hij niet te verschuiven en niet te begrenzen is, en voor processen die geen onderbreking dulden."
+    },
+    {
+      "vraag": "Welke gegevens heeft u van mij nodig?",
+      "antwoord": "De kwartierwaarden van uw aansluiting over minstens twaalf maanden, uw aansluitcapaciteit en uw gecontracteerde transportvermogen voor afname. Daaruit volgt hoe hoog en hoe lang uw pieken zijn, en dus welke van de drie ingrepen in uw geval iets oplevert."
+    },
+    {
+      "vraag": "Is een hoge terugleverpiek ook een kostenpost?",
+      "antwoord": "In het transporttarief niet: voor invoeding op het net rekent Liander geen transportkosten. Een hoge invoedingspiek kan wel tot een terugleverbeperking leiden, waardoor een deel van de opbrengst van uw zonnedak wegvalt. Dat is een capaciteitsprobleem en geen tariefprobleem."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Energiemanagementsysteem" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "netcongestie", "naam": "Netcongestie" }
+      ]
+    },
+    {
+      "kop": "Verwante toepassingen",
+      "items": [
+        { "route": "toepassingen/bestaande-aansluiting-optimaliseren", "naam": "Bestaande aansluiting optimaliseren" },
+        { "route": "toepassingen/processen-sturen-met-ems", "naam": "Processen sturen met een EMS" },
+        { "route": "toepassingen/batterij-slim-inzetten", "naam": "Batterij slim inzetten" },
+        { "route": "toepassingen/terugleverbeperking", "naam": "Terugleverbeperking" }
+      ]
+    },
+    {
+      "kop": "Bewijs",
+      "items": [
+        { "route": "project-ratio-16", "naam": "Ratio 16, Duiven" },
+        { "route": "project-hedin-amsterdam", "naam": "Hedin Amsterdam" },
+        { "route": "projecten", "naam": "Alle projecten" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Stuur het profiel, niet de jaarnota",
+    "tekst": "Met de kwartierwaarden van uw aansluiting over twaalf maanden rekenen wij uit hoe hoog en hoe lang uw pieken zijn, wat organiseren en sturen al wegnemen, en welk vermogen en welke capaciteit er daarna nog nodig zijn. Blijkt uw overschrijding een niveau en geen piek, dan hoort u dat van ons.",
+    "primair": { "route": "contact", "label": "Laat uw kwartiersprofiel doorrekenen" },
+    "secundair": { "route": "kennis/peak-shaving", "label": "Lees hoe peak shaving werkt" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Een grootverbruikaansluiting elektriciteit begint boven 3 × 80 A; het transporttarief voor die aansluitingen bestaat uit een vastrecht, een tarief voor het gecontracteerde vermogen (kW contract), een tarief voor de afgenomen energie, een tarief voor het maximum transportvermogen dat die maand is gemeten (kW max. maand) en een tarief voor blindenergie.",
+      "bron": "Tarieven voor aansluiting en transport elektriciteit, grootverbruik 2026 (versie 2026.1.1), Liander",
+      "bron_url": "https://www.liander.nl/-/media/files/tarieven/grootzakelijk/tarieven-2026/tarieven-voor-aansluiting-en-transport-elektriciteit-2026_2.pdf",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "kW max. maand is het hoogste — op enig moment — afgenomen vermogen in een maand.",
+      "bron": "Tarieven voor aansluiting en transport elektriciteit, grootverbruik 2026, Liander — begrippen bij tabel transportdienst",
+      "bron_url": "https://www.liander.nl/-/media/files/tarieven/grootzakelijk/tarieven-2026/tarieven-voor-aansluiting-en-transport-elektriciteit-2026_2.pdf",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "kWmax is de werkelijk voorgekomen maximale belasting van het net op een aansluiting, die bij een meetperiode van 15 minuten of minder wordt bepaald op basis van de waarde per klokkwartier.",
+      "bron": "Elektriciteit Tarieven- en vergoedingsregeling (Grootverbruik) 2026, Stedin — begrippenlijst",
+      "bron_url": "https://www.stedin.net/-/media/project/online/files/tarieven/tarieven-2026/tarieven-en-vergoedingsregeling-2026_-elektriciteit_grootverbruik.pdf",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Het gecontracteerd transportvermogen is het vermogen dat een aangeslotene redelijkerwijs verwacht maximaal op enig moment in het jaar nodig te hebben; iedere verbruiker met een aansluiting groter dan 3 × 80 A is verplicht die waarde aan de netbeheerder op te geven.",
+      "bron": "Elektriciteit Tarieven- en vergoedingsregeling (Grootverbruik) 2026, Stedin — artikel 3 lid 2, noot 1",
+      "bron_url": "https://www.stedin.net/-/media/project/online/files/tarieven/tarieven-2026/tarieven-en-vergoedingsregeling-2026_-elektriciteit_grootverbruik.pdf",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Het gecontracteerd transportvermogen wordt begrensd door de capaciteit van de aansluiting, rekening houdend met een gebruikelijke arbeidsfactor (cos φ) van 0,85 voor afname en 1,00 voor teruglevering.",
+      "bron": "Elektriciteit Tarieven- en vergoedingsregeling (Grootverbruik) 2026, Stedin — artikel 5 lid 7",
+      "bron_url": "https://www.stedin.net/-/media/project/online/files/tarieven/tarieven-2026/tarieven-en-vergoedingsregeling-2026_-elektriciteit_grootverbruik.pdf",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Komt het daadwerkelijk gebruikte transportvermogen boven het gecontracteerde transportvermogen uit, dan beschouwt Liander die overschrijding als aanvraag tot verhoging en past de overeenkomst bij voldoende ruimte op het net normaal gesproken automatisch aan naar de waarde van de overschrijding.",
+      "bron": "Tarieven voor aansluiting en transport elektriciteit, grootverbruik 2026, Liander — wijzigen gecontracteerd transportvermogen",
+      "bron_url": "https://www.liander.nl/-/media/files/tarieven/grootzakelijk/tarieven-2026/tarieven-voor-aansluiting-en-transport-elektriciteit-2026_2.pdf",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "In de Liander-deelmarkten tussen-/middenspanning (TS/MS), hoog-/middenspanning (HS/MS) en tussenspanning (TS) geldt het na een overschrijding verhoogde vermogen voor het hele kalenderjaar waarin de overschrijding zich voordoet.",
+      "bron": "Tarieven voor aansluiting en transport elektriciteit, grootverbruik 2026, Liander — deelmarkten TS/MS, HS/MS en TS",
+      "bron_url": "https://www.liander.nl/-/media/files/tarieven/grootzakelijk/tarieven-2026/tarieven-voor-aansluiting-en-transport-elektriciteit-2026_2.pdf",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Verlagen van het gecontracteerde transportvermogen voor afname kan bij Liander in principe alleen als het de afgelopen 12 maanden niet naar boven is aangepast; wie verlaagt en binnen 12 maanden de verlaagde waarde overschrijdt, krijgt de verhoging met terugwerkende kracht per de datum van het verlagingsverzoek.",
+      "bron": "Tarieven voor aansluiting en transport elektriciteit, grootverbruik 2026, Liander — deelmarkten LS, trafo MS/LS en MS, gevallen a en c",
+      "bron_url": "https://www.liander.nl/-/media/files/tarieven/grootzakelijk/tarieven-2026/tarieven-voor-aansluiting-en-transport-elektriciteit-2026_2.pdf",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Is er een tekort aan beschikbare transportcapaciteit in een gebied en is een vooraankondiging gedaan als bedoeld in artikel 9.9 van de Netcode elektriciteit, dan kan het gecontracteerde transportvermogen in dat gebied niet worden verhoogd, ook niet bij overschrijding; een verzoek om verhoging wordt bij Stedin op een wachtlijst geplaatst en op volgorde toegewezen.",
+      "bron": "Elektriciteit Tarieven- en vergoedingsregeling (Grootverbruik) 2026, Stedin — artikel 5 lid 2",
+      "bron_url": "https://www.stedin.net/-/media/project/online/files/tarieven/tarieven-2026/tarieven-en-vergoedingsregeling-2026_-elektriciteit_grootverbruik.pdf",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De ACM heeft in 2025 bij codebesluit vastgelegd dat aangeslotenen in congestiegebieden hun gecontracteerd transportvermogen niet meer kunnen aanpassen door de overeengekomen waarde te overschrijden, maar daarvoor een aanvraag moeten doen.",
+      "bron": "Codebesluit gecontracteerd transportvermogen (GTV), Autoriteit Consument & Markt, publicatiedatum 25 april 2025",
+      "bron_url": "https://www.acm.nl/nl/publicaties/codebesluit-gecontracteerd-transportvermogen-gtv",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "In het Liander-tarievenblad 2026 kent de deelmarkt LS (gecontracteerd transportvermogen tot en met 50 kW) geen tarief voor kW max. maand; de deelmarkten MS/LS, MS, TS/MS, HS/MS en TS wel.",
+      "bron": "Tarieven voor aansluiting en transport elektriciteit, grootverbruik 2026, Liander — tabel variabele tarieven transportdienst",
+      "bron_url": "https://www.liander.nl/-/media/files/tarieven/grootzakelijk/tarieven-2026/tarieven-voor-aansluiting-en-transport-elektriciteit-2026_2.pdf",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Voor invoeding op het net en teruglevering van elektriciteit betaalt een grootverbruiker bij Liander geen transportkosten.",
+      "bron": "Tarieven voor aansluiting en transport elektriciteit, grootverbruik 2026, Liander — tarieven transportdienst",
+      "bron_url": "https://www.liander.nl/-/media/files/tarieven/grootzakelijk/tarieven-2026/tarieven-voor-aansluiting-en-transport-elektriciteit-2026_2.pdf",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Stedin hanteert in 2026 voor de indeling in tariefcategorieën de grenzen van gecontracteerd transportvermogen tot en met 50 kW (LS), 51 tot en met 150 kW (trafo MS/LS) en vanaf 151 kW (MS en hoger).",
+      "bron": "Elektriciteit Tarieven- en vergoedingsregeling (Grootverbruik) 2026, Stedin — artikel 3 lid 2",
+      "bron_url": "https://www.stedin.net/-/media/project/online/files/tarieven/tarieven-2026/tarieven-en-vergoedingsregeling-2026_-elektriciteit_grootverbruik.pdf",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

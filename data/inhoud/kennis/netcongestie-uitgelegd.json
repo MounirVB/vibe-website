@@ -1,0 +1,237 @@
+{
+  "route": "kennis/netcongestie-uitgelegd",
+  "type": "kennis",
+  "titel": "Netcongestie technisch uitgelegd | Vibe Energy",
+  "beschrijving": "Waar in het net de grens zit, wat een voedingsgebied is, waarom afname en invoeding apart worden beoordeeld en wat congestiemanagement betekent.",
+  "og_titel": "Netcongestie technisch uitgelegd",
+  "h1": "Netcongestie: waar in het net de grens werkelijk zit",
+  "lead": "Netcongestie is geen tekort aan elektriciteit maar een tekort aan transportcapaciteit, en dat tekort zit bijna nooit in uw eigen aansluiting. Deze uitleg loopt de keten af van het hoogspanningsnet tot de meterkast, en benoemt per schakel wat de grens bepaalt.",
+  "data_pagina": "kennis",
+  "kruimels": [{ "naam": "Kennisbank", "route": "kennis" }],
+  "kruimel_label": "Netcongestie uitgelegd",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw situatie beoordelen" },
+    { "soort": "ghost", "anker": "#keten", "label": "Direct naar de keten" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat is netcongestie technisch gezien?",
+    "antwoord": "Netcongestie is een tekort aan transportcapaciteit in een deel van het elektriciteitsnet: de stations en kabels die één gebied voeden kunnen op de drukste momenten niet al het gevraagde vermogen tegelijk vervoeren. Het is geen tekort aan elektriciteit. De grens ligt zelden in de aansluiting van een individueel bedrijf, maar bovenstrooms: in het transformatorvermogen van het onderstation dat het gebied voedt, in het aantal vrije afgaande velden van dat station of in de middenspanningskabels ernaartoe. Congestie wordt per voedingsgebied vastgesteld, en apart voor afname en voor invoeding.",
+    "voorbehoud": "Dit antwoord zegt niet of er in een bepaald gebied ruimte is. Die stand verschilt per voedingsgebied, per richting en per moment; de publieke weergave staat op de Capaciteitskaart van Netbeheer Nederland en de geldende stand komt van de netbeheerder zelf. Het antwoord zegt ook niets over wat een aangeslotene mag afnemen: dat volgt uit de aansluit- en de transportovereenkomst."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "keten",
+      "kop": "Van het hoogspanningsnet naar uw meterkast",
+      "lead": "De stroom die u afneemt legt altijd dezelfde route af, en elke schakel in die route heeft een eigen maximum.",
+      "alineas": [
+        "TenneT beheert het landelijke hoogspanningsnet dat productie, import en de zware industrie met elkaar verbindt. Op een onderstation wordt die hoogspanning getransformeerd naar middenspanning. Vanaf dat station lopen middenspanningskabels, meestal uitgevoerd als ring, naar distributiestations in wijken en op bedrijventerreinen en naar de eigen stations van grotere aangeslotenen. Daar wordt opnieuw getransformeerd, naar laagspanning. Pas daarna staat er spanning op een meterkast.",
+        "Welke regionale netbeheerder dat deel van de keten beheert, hangt af van uw postcode: Liander, Enexis, Stedin, Westland Infra, Coteq of Rendo. Zij beoordelen uw aanvraag, en zij bepalen of er transportcapaciteit beschikbaar is.",
+        "Het maximum van de keten is geen enkel getal maar een stapel grenzen. Het transformatorvermogen van het onderstation. Het aantal afgaande velden in dat station waarop nog een kabel kan worden aangesloten. De stroom die de middenspanningskabel kan dragen zonder te warm te worden, inclusief de reserve die nodig is om bij uitval de last van de andere kabelhelft over te nemen. En ten slotte uw eigen aansluitkabel en aansluitkast. De laagste schakel bepaalt wat er kan.",
+        "Hier begint de verwarring. Een bedrijf dat hoort dat er geen extra vermogen beschikbaar is, kijkt naar de eigen kabel en concludeert dat die het wel aankan. Dat is meestal ook waar. De grens ligt dan bovenstrooms, in een station dat u nooit ziet en dat tegelijk tientallen andere aangeslotenen voedt. Daarom is <em>de kabel ligt er al</em> geen argument: de netbeheerder beoordeelt niet uw kabel, maar de som van alles wat achter dat station hangt."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Waar in de keten de grens kan liggen",
+      "rijen": [
+        ["Hoogspanningsnet", "Het landelijke transportnet. Knelt het hier, dan raakt het een hele regio en is een netuitbreiding de enige route."],
+        ["Onderstation — transformatorvermogen", "De transformatoren die hoogspanning naar middenspanning brengen. Is dat vermogen vergeven, dan is er in het hele voedingsgebied geen ruimte meer, hoe ruim uw eigen aansluiting ook is."],
+        ["Onderstation — afgaande velden", "Een station heeft een beperkt aantal velden waarop middenspanningskabels kunnen worden aangesloten. Zijn die vol, dan is er geen ruimte meer, ook niet als er transformatorvermogen over is. Dat is een bouwkundige beperking, geen elektrische."],
+        ["Middenspanningskabel", "Begrensd door de stroom die de kabel kan dragen zonder te warm te worden. Kabels liggen vaak in ringen, zodat bij uitval de andere helft de last overneemt; die reservecapaciteit telt mee in de beoordeling en is dus niet vrij beschikbaar."],
+        ["Distributietransformator", "Het stationnetje in de straat dat laagspanning maakt. Bepalend voor kleinverbruik én voor grootverbruikaansluitingen die op laagspanning hangen. Wie rechtstreeks op middenspanning is aangesloten, met een eigen station, slaat deze schakel over."],
+        ["Uw aansluiting", "De aansluitkabel en de aansluitkast, vastgelegd in kVA of in ampère per fase — bijvoorbeeld 3 × 80 A. Dit is de enige schakel die u zelf in beeld heeft, en meestal niet de schakel die knelt."]
+      ],
+      "noot": "Een mededeling dat er geen capaciteit is, zegt niet wélke schakel knelt. Dat volgt uit het congestieonderzoek van de netbeheerder, en het bepaalt of een uitbreiding neerkomt op kabel trekken, op bouwen of op wachten."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Een voedingsgebied is geen gemeente",
+      "lead": "De grens van een congestiegebied is elektrisch bepaald: hij volgt de kabels, niet de plattegrond.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Netbeheerders stellen capaciteit vast per voedingsgebied. Een voedingsgebied is de gecombineerde verzameling postcodes van de aangeslotenen die door één station worden gevoed: een hoogspannings- of tussenspanningsstation dat naar middenspanning transformeert. Alle huishoudens en bedrijven die vanaf dat station stroom krijgen, vallen in hetzelfde gebied.",
+        "Daarom valt een voedingsgebied nooit samen met een gemeente. Eén gemeente wordt vrijwel altijd door meer dan één station gevoed, en één station voedt vaak postcodes in meerdere gemeenten. Twee bedrijven aan dezelfde straat kunnen aan verschillende stations hangen. Een congestiestatus per gemeente bestaat dus niet, en een uitspraak als <em>in deze gemeente is het net vol</em> is niet te controleren.",
+        "Wat u wel kunt controleren is uw postcode. Op de Capaciteitskaart van Netbeheer Nederland staat per voedingsgebied of er ruimte is voor afname en voor invoeding, of er een wachtrij van aanvragen geldt en welke netuitbreidingen gepland staan. De kaart werkt met een kleurcodering per gebied en per richting. Lees die stand als een momentopname: hij verschuift zodra er capaciteit wordt vergeven, en een genoemd jaartal voor een uitbreiding is een planning en geen toezegging.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — Definities", "url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Afnamecongestie en invoedingscongestie zijn twee problemen",
+      "lead": "Congestie bestaat in twee richtingen, en de netbeheerder beoordeelt ze apart.",
+      "alineas": [
+        "<h3>Afnamecongestie</h3>",
+        "Te veel aangeslotenen willen op hetzelfde moment vermogen uit het net halen. Dat knelt bij kou, in de ochtend en in de vooravond, en in gebieden waar veel elektrificatie samenkomt: warmtepompen, laadinfrastructuur, elektrische processen. Afnamecongestie raakt niet uw kabel maar het transportdeel van uw aanvraag: het vermogen dat u mag afnemen. Daarmee loopt alles vast wat daarvan afhangt — een nieuwe aansluiting, een zwaardere aansluiting en een verhoging van uw gecontracteerd transportvermogen — want zonder toegezegd transport doet extra koper niets.",
+        "<h3>Invoedingscongestie</h3>",
+        "Te veel aangeslotenen willen op hetzelfde moment vermogen het net op sturen. Dat knelt rond het midden van een heldere dag, wanneer zonnedaken en zonneparken in hetzelfde gebied gelijktijdig produceren terwijl de vraag ter plaatse laag is. Invoedingscongestie blokkeert een nieuwe of grotere invoedingsaanvraag en leidt vaak tot een terugleverbeperking in de transportovereenkomst.",
+        "Hetzelfde voedingsgebied kan dicht zitten voor afname en ruimte hebben voor invoeding, of omgekeerd. Dat is geen tegenspraak: het zijn twee verschillende belastingsituaties in hetzelfde net, op verschillende momenten van de dag en van het jaar. Voor een plan met zon, opslag én laden betekent het dat u beide statussen nodig heeft, want zo'n systeem beweegt in twee richtingen. Een batterij die laadt is afname; dezelfde batterij die ontlaadt naar het net is invoeding.",
+        "<p><a class=\"ve-link\" href=\"/kennis/transportvermogen-versus-aansluitwaarde\">Het verschil tussen aansluitwaarde en gecontracteerd transportvermogen</a></p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Congestiemanagement: wat er gebeurt voordat het net wordt verzwaard",
+      "lead": "Een netbeheerder die een gebied vol ziet lopen, moet eerst onderzoeken of er met flexibiliteit nog ruimte te vinden is.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "<h3>De vooraankondiging</h3>",
+        "Voordat dat onderzoek begint, publiceert de netbeheerder een vooraankondiging: de melding dat hij congestie verwacht in een omschreven gebied, met vermelding van de richting waar het om gaat. Een vooraankondiging is geen weigering en geen besluit. Het is het signaal dat aanvragen in dat gebied vanaf dat moment anders worden behandeld, en dat partijen zich kunnen melden die bereid zijn hun vermogen op de drukste momenten te verschuiven of terug te nemen.",
+        "<h3>Het congestieonderzoek</h3>",
+        "In het onderzoek bepaalt de netbeheerder hoe zwaar en hoe vaak het knelpunt optreedt, welke aangeslotenen in dat gebied flexibiliteit kunnen leveren, en of die flexibiliteit voldoende en betrouwbaar genoeg is om toch extra transportcapaciteit aan te kunnen bieden. De uitkomst wordt gepubliceerd: hoeveel ruimte er is, in welke richting, en of er een wachtrij geldt.",
+        "<h3>Wat dit voor een aangeslotene betekent</h3>",
+        "<ul><li>Uw transportverzoek komt in de wachtrij van dat voedingsgebied — of dat verzoek nu bij een nieuwe aansluiting hoort of bij een verhoging op een bestaande. Vraag uw netbeheerder wat uw positie is en waarop die is gebaseerd.</li><li>U kunt gevraagd worden flexibiliteit aan te bieden: vermogen dat u op de drukste momenten niet gebruikt. Dat vraagt een installatie die zich werkelijk laat begrenzen, en een meting die aantoont dat ze dat deed.</li><li>Krijgt u capaciteit op basis van congestiemanagement, dan hoort daar een beperking bij. Vraag wat die beperking in uren en in kW inhoudt voordat u een proces erop baseert.</li><li>Congestiemanagement vervangt geen netverzwaring. Het haalt ruimte uit het bestaande net; het bouwt geen capaciteit bij.</li></ul>",
+        "Welke procedures en contractvormen een netbeheerder hierbij mag toepassen, is landelijk vastgelegd in het codebesluit congestiemanagement van de Autoriteit Consument &amp; Markt. Dat besluit is het kader. Wat er in uw voedingsgebied werkelijk mogelijk is, zegt alleen uw eigen netbeheerder.",
+        "<p><a class=\"ve-link\" href=\"https://www.acm.nl/nl/publicaties/codebesluit-congestiemanagement\" rel=\"nofollow noopener\" target=\"_blank\">Codebesluit congestiemanagement, ACM</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Codebesluit congestiemanagement, Autoriteit Consument & Markt", "url": "https://www.acm.nl/nl/publicaties/codebesluit-congestiemanagement", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Waarom netverzwaring tijd kost",
+      "lead": "Een station uitbreiden of bijbouwen is geen installatieklus maar een bouwproject. Vier dingen bepalen de doorlooptijd, en ze lopen zelden parallel.",
+      "alineas": [
+        "<h3>Ruimte</h3>",
+        "Een vermogenstransformator en een schakelinstallatie hebben een perceel nodig, met veiligheidsafstanden en een aanrijroute die zwaar transport draagt. Op een volgebouwd bedrijventerrein of in een binnenstad is dat perceel er niet, en het verwerven ervan is een onderhandeling met een eigenaar die niets hoeft. Nieuwe kabeltracés moeten door straten die al vol liggen met riool, water, data en gas.",
+        "<h3>Vergunningen</h3>",
+        "Een stationslocatie vraagt doorgaans een wijziging van het omgevingsplan en een omgevingsvergunning. Een kabeltracé vraagt toestemming van elke weg- en waterbeheerder die het kruist. Bij die besluiten horen termijnen waarin belanghebbenden bezwaar kunnen maken en beroep kunnen instellen. Zulke termijnen zijn niet te versnellen door er meer mensen op te zetten.",
+        "<h3>Materiaal</h3>",
+        "Vermogenstransformatoren en middenspanningsschakelinstallaties worden per order gebouwd en niet uit voorraad geleverd. Netbeheerders bestellen ze daarom vooruit op basis van een prognose; een project dat buiten die prognose valt, sluit aan achter de reeks die al besteld is. Vraag bij een geplande uitbreiding dus niet alleen naar de bouwtijd, maar naar de leverdatum van de transformator en de schakelinstallatie — die datum zit vaak vóór de bouwtijd in de planning en is de datum die schuift.",
+        "<h3>Mensen</h3>",
+        "Dezelfde ontwerpers, monteurs en kabelploegen zijn nodig voor elk project in dezelfde regio, inclusief het reguliere onderhoud en het verhelpen van storingen. Capaciteit die naar een uitbreiding gaat, gaat niet naar een ander project in datzelfde gebied.",
+        "Daar komt bij dat het bestaande net moet blijven leveren tijdens de verbouwing. Een transformator vervangen of een veld bijbouwen vraagt dat een deel van het net spanningsloos wordt gemaakt. Dat kan alleen in geplande vensters, met een omschakeling die de rest van het gebied blijft voeden — en dus niet op het moment dat het de planning het beste past.",
+        "Hoe lang het geheel duurt, verschilt per project en per gebied. De Capaciteitskaart noemt per voedingsgebied welke uitbreiding gepland staat; dat is een planning en geen toezegging. Vraag de stand voor uw eigen aansluiting altijd bij uw netbeheerder op, en baseer een investeringsbesluit niet op een jaartal uit een kaart."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De eerlijke grens van deze uitleg, en van de maatregelen die eruit volgen.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Weten hoe netcongestie werkt, verandert de stand in uw gebied niet. Deze uitleg vertelt u niet of uw postcode ruimte heeft. Dat zegt alleen uw netbeheerder; de Capaciteitskaart geeft de publieke weergave daarvan.",
+        "Begrip verandert ook de grens zelf niet. Maatregelen achter de meter — opslag, eigen opwek, sturing — verlagen de piek die het net ziet en maken ruimte binnen wat er al is. Ze creëren geen extra gecontracteerd transportvermogen en verhogen uw aansluitwaarde niet. Wie structureel meer vermogen nodig heeft dan de aansluiting kan leveren, heeft een zwaardere aansluiting nodig, en dan is de wachtrij de route.",
+        "Congestie is bovendien niet de enige grens. Binnen uw eigen pand zitten een hoofdverdeler, zekeringen, kabels en soms een eigen transformator, elk met een maximum. Een voedingsgebied zonder beperking betekent dus niet dat uw installatie een extra laadplein of een nieuwe productielijn aankan. En een invoedingsbeperking die al in uw transportovereenkomst staat, vervalt niet automatisch zodra het gebied later ruimte krijgt.",
+        "Ten slotte gaat dit artikel alleen over elektriciteit. Gas en warmte hebben eigen netten, eigen beheerders en eigen beperkingen; die lopen niet mee in een elektrische congestiestatus."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Van uitleg naar ingreep",
+      "lead": "Welke pagina u verder helpt, hangt af van wat u met het begrip wilt doen.",
+      "kaarten": [
+        { "kop": "Netcongestie oplossen", "tekst": "Wat er achter de meter verandert wanneer de netbeheerder geen extra transportvermogen beschikbaar heeft.", "route": "netcongestie", "label": "Netcongestie" },
+        { "kop": "Twee grenzen, twee documenten", "tekst": "Aansluitwaarde staat in de aansluitovereenkomst, gecontracteerd transportvermogen in de transportovereenkomst. Congestie blokkeert de tweede.", "route": "kennis/transportvermogen-versus-aansluitwaarde", "label": "Transportvermogen en aansluitwaarde" },
+        { "kop": "De piek wegnemen", "tekst": "Hoe piekafvlakking werkt, waarop de grenswaarde wordt gekozen en wanneer het niet volstaat.", "route": "kennis/peak-shaving", "label": "Peak shaving" },
+        { "kop": "Groeien zonder extra vermogen", "tekst": "Het geval waarin uitbreiden moet terwijl er geen extra transportvermogen wordt toegezegd.", "route": "toepassingen/geen-extra-transportvermogen", "label": "Geen extra transportvermogen" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Veelgestelde vragen over netcongestie",
+  "faq": [
+    {
+      "vraag": "Is netcongestie een tekort aan elektriciteit?",
+      "antwoord": "Nee. Het is een tekort aan transportcapaciteit in een deel van het net. De stations en kabels die één gebied voeden kunnen op de drukste momenten niet al het gevraagde vermogen tegelijk vervoeren. Landelijk kan er tegelijk stroom over zijn."
+    },
+    {
+      "vraag": "Hoe weet ik of mijn postcode in een congestiegebied ligt?",
+      "antwoord": "Zoek uw postcode op de Capaciteitskaart van Netbeheer Nederland. Daar staat per voedingsgebied of er ruimte is voor afname en voor invoeding, of er een wachtrij geldt en welke netuitbreiding gepland staat. Vraag de geldende stand voor uw aansluiting daarna bij uw netbeheerder na."
+    },
+    {
+      "vraag": "Wat is een vooraankondiging congestiemanagement?",
+      "antwoord": "De openbare melding van een netbeheerder dat hij congestie verwacht in een omschreven gebied, met de richting waar het om gaat. Het is geen weigering en geen besluit, maar de aankondiging dat een congestieonderzoek volgt en dat aanvragen in dat gebied anders worden behandeld."
+    },
+    {
+      "vraag": "Kan mijn gebied vol zitten voor afname en toch ruimte hebben voor teruglevering?",
+      "antwoord": "Ja. Afname en invoeding zijn twee verschillende belastingsituaties, op verschillende momenten van de dag en van het jaar. Ze worden apart vastgesteld en kunnen dus een verschillende status hebben in hetzelfde voedingsgebied."
+    },
+    {
+      "vraag": "Krijg ik met een batterij extra transportvermogen?",
+      "antwoord": "Nee. Uw aansluitwaarde en uw gecontracteerd transportvermogen blijven ongewijzigd. Een batterij verlaagt de piek die het net ziet en verschuift energie in de tijd, waardoor u binnen de bestaande grens meer kunt doen. Capaciteit bijbouwen doet alleen de netbeheerder."
+    },
+    {
+      "vraag": "Waarom is een congestiestatus niet per gemeente te geven?",
+      "antwoord": "Omdat een voedingsgebied de verzameling postcodes rond één station is en die grens de kabels volgt. Eén gemeente valt vrijwel altijd onder meerdere stations, en één station voedt vaak postcodes in meerdere gemeenten."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Verder in de kennisbank",
+      "items": [
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/terugleverbeperking", "naam": "Terugleverbeperking" },
+        { "route": "kennis/energiehandel-en-flexibiliteit", "naam": "Energiehandel en flexibiliteit" }
+      ]
+    },
+    {
+      "kop": "Wanneer het uw plan blokkeert",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie oplossen" },
+        { "route": "toepassingen/geen-extra-transportvermogen", "naam": "Geen extra transportvermogen" },
+        { "route": "toepassingen/netcongestie-bij-uitbreiding", "naam": "Netcongestie bij uitbreiding" },
+        { "route": "toepassingen/laden-met-beperkte-aansluiting", "naam": "Laden met een beperkte aansluiting" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "energy-hubs", "naam": "Energy Hubs" }
+      ]
+    },
+    {
+      "kop": "Gerealiseerd",
+      "items": [
+        { "route": "project-ratio-16", "naam": "Ratio 16, Duiven" },
+        { "route": "project-hedin-amsterdam", "naam": "Hedin Amsterdam" },
+        { "route": "projecten", "naam": "Alle projecten" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Van begrip naar uw eigen situatie",
+    "tekst": "Stuur het kwartiersprofiel van uw aansluiting, uw aansluitwaarde en uw gecontracteerd transportvermogen. Dan weten we hoe hoog en hoe lang uw pieken zijn en wat de stand in uw voedingsgebied voor uw plan betekent. Op Ratio 16 in Duiven zijn zon, opslag en laden binnen de bestaande aansluiting gecombineerd, zonder die aansluiting te verzwaren.",
+    "primair": { "route": "contact", "label": "Laat uw situatie beoordelen" },
+    "secundair": { "route": "project-ratio-16", "label": "Ratio 16, Duiven" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Een voedingsgebied is de gecombineerde set postcodes van de aangesloten klanten die door één hoogspannings-/middenspannings- of tussenspannings-/middenspanningsstation worden bediend; het omvat alle huishoudens en bedrijven die vanaf dat station elektriciteit krijgen en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De Capaciteitskaart geeft per voedingsgebied met een kleurcodering de beschikbare transportcapaciteit voor afname en voor invoeding, plus de wachtrij van aanvragen en de geplande netuitbreidingen; de genoemde jaartallen zijn planningen en geen toezegging.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — Definities en FAQ",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/faq/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Het landelijke kader voor congestiemanagement, waaronder de procedures die netbeheerders bij transportschaarste volgen, is vastgelegd in het codebesluit congestiemanagement van de Autoriteit Consument & Markt.",
+      "bron": "Codebesluit congestiemanagement, Autoriteit Consument & Markt",
+      "bron_url": "https://www.acm.nl/nl/publicaties/codebesluit-congestiemanagement",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

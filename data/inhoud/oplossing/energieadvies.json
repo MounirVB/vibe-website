@@ -1,0 +1,232 @@
+{
+  "route": "energieadvies",
+  "type": "oplossing",
+  "titel": "Energieadvies en energiescan bedrijven | Vibe Energy",
+  "beschrijving": "Een energiescan meet het kwartiersprofiel, de aansluitwaarde en het transportvermogen. Daaruit volgt welke ingreep effect heeft, en in welke orde.",
+  "og_titel": "Energieadvies voor bedrijven: eerst meten, dan rekenen",
+  "h1": "Eerst meten. Daarna weten welke ingreep bij u iets doet.",
+  "lead": "De meeste energievragen beginnen met een plan dat niet past: een extra productielijn, een laadplein, een dak vol panelen. Welke ingreep dan helpt, volgt niet uit uw jaarverbruik maar uit het kwartiersprofiel van uw aansluiting. Een scan begint daarom bij meten, niet bij kiezen.",
+  "data_pagina": "energieadvies",
+  "kruimels": [],
+  "kruimel_label": "Energieadvies",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Energieadvies en energiescan voor bedrijven",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Vraag een energiescan aan" },
+    { "soort": "ghost", "anker": "#wat-we-meten", "label": "Wat er gemeten wordt" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat levert een energiescan voor een bedrijf op?",
+    "antwoord": "Een energiescan voor een bedrijfslocatie legt vier gegevens naast elkaar: het kwartiersprofiel van de aansluiting, de fysieke aansluitcapaciteit in kVA of ampère per fase, het gecontracteerde transportvermogen in kW, en de plannen die extra vermogen vragen, zoals laden, koeling of een productielijn. Daaruit volgt welke ingrepen de piek verlagen, in welke orde ze zinvol zijn en wat elk van hen aan het profiel verandert. Een jaarverbruik in kWh is daarvoor niet genoeg: dat getal middelt juist de pieken weg die bepalen of de aansluiting het houdt.",
+    "voorbehoud": "Een scan is geen ontwerp en geen keuring. Hij geeft de richting en de grens, niet de definitieve componentmaat of merkkeuze. En zonder meetdata van de locatie zelf is elke uitkomst een aanname, hoe gedetailleerd hij ook is opgeschreven."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "wat-we-meten",
+      "kop": "Waarom een jaarverbruik in kWh de verkeerde vraag beantwoordt",
+      "lead": "Het getal op uw jaarfactuur zegt hoeveel u heeft verbruikt. Het zegt niets over hoe hard.",
+      "alineas": [
+        "Een etmaal heeft 96 kwartieren (24 × 4). Op een grootverbruikaansluiting wordt per kwartier vastgelegd hoeveel energie er is afgenomen en teruggeleverd; het gemiddelde vermogen in dat kwartier volgt daaruit, want een kwartierwaarde in kWh maal vier geeft kW. Een jaartotaal in kWh is de som van al die kwartieren. Precies de informatie die een ontwerp bepaalt — hoe hoog de piek komt, hoe lang hij duurt, hoe vaak hij terugkomt en op welk tijdstip — zit niet in die som.",
+        "Dat verschil is niet academisch. Twee locaties met hetzelfde jaarverbruik kunnen een volstrekt ander probleem hebben: de een een vlak profiel dat nergens tegen een grens loopt, de ander een paar minuten gelijktijdigheid per dag waaraan het hele transportcontract hangt. De eerste heeft een inkoopvraag, de tweede een vermogensvraag. Dezelfde batterij is bij de een weggegooid geld en bij de ander het goedkoopste onderdeel van het plan.",
+        "Daarom vraagt een scan om meetdata en niet om een schatting. En daarom is de eerste vraag bij een aanvraag altijd of die data er al is, en niet welk systeem u overweegt."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Wat een scan van uw locatie nodig heeft",
+      "rijen": [
+        ["Kwartiersprofiel", "Afname en teruglevering per kwartier over een volledig jaar, zodat seizoen, werkweek en vakantieperiode erin zitten. Bij een grootverbruikaansluiting zijn die waarden doorgaans op te vragen bij uw netbeheerder of meetbedrijf."],
+        ["Fysieke aansluitcapaciteit", "Wat de kabel en de aansluitkast technisch dragen, uit de aansluitovereenkomst: kVA of ampère per fase, bijvoorbeeld 3 × 80 A. Dit is de harde bovengrens."],
+        ["Gecontracteerd transportvermogen", "Het vermogen in kW dat u met de netbeheerder bent overeengekomen te mogen afnemen, uit de transportovereenkomst. Dit is het getal waarvoor u betaalt en waarop een congestiebeperking aangrijpt. Het is niet hetzelfde als de aansluitwaarde."],
+        ["Dak en draagvermogen", "Dakvlak, oriëntatie, opbouw en restdraagvermogen, doorvoeren en obstakels, en de leeftijd van de dakbedekking. Een dak dat binnen enkele jaren vervangen moet worden, verandert de orde van de ingrepen."],
+        ["Laadbehoefte", "Niet het aantal laadpunten, maar het aantal voertuigen, de energie per voertuig per dag en de tijd dat ze stilstaan. Daaruit volgt de gelijktijdigheid, en die bepaalt het vermogen."],
+        ["Ruimte en infrastructuur", "Opstelplek voor een batterijkast en de afstand tot de hoofdverdeler, aanvoerroute voor plaatsing, vrije velden en meetpunten in de verdeler, en wat er al aan sturing en meting ligt."],
+        ["Plannen voor de komende jaren", "Uitbreiding, een extra lijn, extra koeling, een warmtepomp in plaats van een gasketel. Elektrificatie verhoogt de piek; dat hoort in de dimensionering en niet in een herontwerp een jaar later."]
+      ],
+      "noot": "Ontbreekt het kwartiersprofiel, dan is er nog geen scan mogelijk, alleen een inschatting. Dat zeggen wij dan ook zo."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat er uit een scan komt, en waarom de orde vastligt",
+      "lead": "Niet een lijst met wensen, maar een reeks ingrepen waarvan elke volgende op het profiel van de vorige is gerekend.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Een scan zet de ingrepen op een rij van goedkoop en organisatorisch naar duur en bouwkundig. Die orde is geen voorkeur maar rekenwerk: elke ingreep verandert het profiel waarop de volgende wordt gedimensioneerd. Wie eerst een batterij koopt en daarna de gelijktijdigheid aanpakt, heeft een batterij die te groot is voor de piek die dan nog over is.",
+        "<h3>1 · Gelijktijdigheid uit de bedrijfsvoering halen</h3>",
+        "Vaak zit de hoogste piek in een handvol momenten waarop alles tegelijk start. Verbruikers gespreid laten aanslaan, koeling voorkoelen buiten de piek, laadsessies verdelen over de standtijd: dat kost geen hardware en verlaagt de grens waarop al het volgende wordt gerekend. Een energiemanagementsysteem maakt dit herhaalbaar in plaats van afhankelijk van wie er die dag op de knop drukt.",
+        "<h3>2 · Begrenzen in plaats van uitbreiden</h3>",
+        "Load balancing verdeelt wat er over is. Statisch betekent een vast budget per groep; dynamisch betekent dat de actuele belasting van de aansluiting wordt gemeten en dat de ruimte die niet gebruikt wordt naar de laadpunten gaat. Dynamisch levert in de praktijk meer bruikbaar vermogen op, maar vraagt een meetpunt op de juiste plek in de verdeler.",
+        "<h3>3 · De contractzijde nalopen</h3>",
+        "Soms is er geen technisch probleem maar een contractueel probleem. Een gecontracteerd transportvermogen dat jaren geleden ruim is ingekocht en nooit is herzien, kost geld zonder iets te doen. Blijkt uit het profiel dat de piek structureel lager ligt, dan is verlagen een besparing op de netbeheerderskosten. Dat is geen uitbreiding en het verandert niets aan de fysieke aansluiting.",
+        "<h3>4 · Eigen opwek, als dak en profiel samenvallen</h3>",
+        "Een vol dak drukt de netafname alleen in de uren dat de opwek samenvalt met het verbruik in het pand. Verbruikt u vooral in de avond en de nacht, dan doet het dak weinig aan de piek en loopt u juist tegen de invoedingskant aan. Het restdraagvermogen van de constructie en de staat van de dakbedekking bepalen bovendien of het dakvlak nu al in aanmerking komt.",
+        "<h3>5 · Opslag, gedimensioneerd op de piek die overblijft</h3>",
+        "Pas hier hoort de batterij. De hoogte van de piek boven de gekozen grens geeft het vermogen in kW; die hoogte maal de duur geeft de bruikbare energie in kWh. Een rekenvoorbeeld, geen meetuitkomst: blijft het verbruik één kwartier lang 120 kW boven de grens, dan vraagt dat 120 kW vermogen en 120 × 0,25 = 30 kWh bruikbare capaciteit. Duurt dezelfde overschrijding twee uur, dan is het vermogen nog steeds 120 kW, maar de energie 240 kWh. Twee locaties met dezelfde piekhoogte kunnen dus een factor acht in capaciteit verschillen.",
+        "<h3>6 · Verzwaren of een andere locatie</h3>",
+        "Blijft de gemiddelde vraag over de dag boven de grens van de aansluiting, dan is er geen ingreep achter de meter die dat oplost. Dan is de route de netbeheerder, en levert de scan de onderbouwing die bij die aanvraag hoort."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Energiescan, netcongestieanalyse of businesscase: drie verschillende vragen",
+      "lead": "Ze gebruiken deels dezelfde data, maar ze beantwoorden niet dezelfde vraag. Vraag de verkeerde aan en u krijgt een rapport over iets wat u al wist.",
+      "alineas": [
+        "<h3>Energiescan — u weet nog niet wat u nodig heeft</h3>",
+        "De breedste van de drie. Ingang: het kwartiersprofiel, de aansluit- en transportgegevens, het dak en de plannen. Uitkomst: welke ingrepen op deze locatie effect hebben, in welke orde, en wat elk ervan aan de piek en aan het eigen verbruik verandert. De scan kiest nog geen componenten en noemt nog geen definitieve maat; hij sluit af met welke richting klopt en welke niet.",
+        "<h3>Netcongestieanalyse — u heeft een plan dat niet past</h3>",
+        "Hier is de vraag al scherp: een uitbreiding, een laadplein of een extra machine krijgt geen extra transportvermogen, of de netbeheerder heeft de aanvraag afgewezen. De analyse rekent door of dat specifieke plan binnen de bestaande aansluiting te realiseren is en met welke combinatie van sturen, opwekken en opslaan. Daar hoort ook de capaciteitssituatie in uw voedingsgebied bij.",
+        "<h3>Businesscase-aanvraag — de techniek staat, de vraag is financieel</h3>",
+        "Ingang: dezelfde meetdata, plus uw leveringscontract en contractvorm, de netbeheerderskosten en de keuze of u zelf investeert of niet. Uitkomst: een doorrekening met uw eigen tarieven in plaats van met marktgemiddelden, en inzicht in hoe gevoelig die uitkomst is voor aannames die niemand hard kan maken. De aannames die daarin het hardst doorwerken, zijn de spreiding tussen het hoogste en het laagste tarief op een dag, het aantal cycli dat u werkelijk haalt en de hoogte van de piek die u wegneemt. Hoe die rekensom is opgebouwd, staat bij <a class=\"ve-link\" href=\"/kennis/businesscase-batterij\">businesscase batterij</a>.",
+        "<p>Netbeheerders publiceren de beschikbare capaciteit per voedingsgebied op de Capaciteitskaart van Netbeheer Nederland. Een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens; een status voor een hele gemeente bestaat dus niet. De jaartallen die er bij geplande netuitbreidingen staan, zijn planningen en geen toezegging.</p>",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Welke wilt u wanneer",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "rijen": [
+        ["U heeft een hoge rekening en geen beeld waarom", "Energiescan. Begin bij het profiel; de oorzaak zit vaak in een paar kwartieren per maand."],
+        ["Een uitbreiding of nieuwbouw krijgt geen vermogen", "Netcongestieanalyse. De vraag is of dat plan binnen de bestaande grens past, niet welk systeem het mooiste is."],
+        ["De netbeheerder heeft de aanvraag afgewezen of op een wachtlijst gezet", "Netcongestieanalyse, met de capaciteitssituatie van uw voedingsgebied erbij."],
+        ["U wilt laadpunten plaatsen en twijfelt of de aansluiting dat draagt", "Netcongestieanalyse of een gerichte laadscan: hier bepaalt de gelijktijdigheid alles."],
+        ["Het ontwerp ligt er en de directie vraagt om een terugverdientijd", "Businesscase-aanvraag, met uw eigen contract en tarieven als ingang."],
+        ["U heeft alleen een jaarfactuur en geen kwartierdata", "Eerst data. Een scan zonder meetwaarden geeft een getal met een onzekerheid die groter is dan het verschil tussen de varianten."]
+      ],
+      "noot": "De drie sluiten elkaar niet uit. Een scan eindigt regelmatig in een netcongestieanalyse voor één concreet plan, en die weer in een businesscase voor één variant."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat een advies niet kan",
+      "lead": "De grens van deze dienst, voordat u ervoor betaalt.",
+      "alineas": [
+        "<strong>Zonder meetdata is elke uitkomst een aanname.</strong> Een rapport op basis van een jaarfactuur en een gesprek ziet net en degelijk uit, maar de piekhoogte erin is geraden. Dimensioneren op een geraden piek levert een systeem dat te klein is om de piek te halen of te groot om terug te verdienen. Ontbreekt het profiel, dan is de eerste stap het ophalen of meten ervan, niet het schrijven van een advies.",
+        "<strong>Een scan voorspelt geen prijzen.</strong> Leveringstarieven, netwerktarieven en de waarde van flexibiliteit bewegen, en niemand kent de stand over tien jaar. Een eerlijke doorrekening laat daarom niet één getal zien maar het bereik, en welke aanname de uitkomst het hardst beweegt. Wie u één exact rendement over de hele looptijd belooft, rekent met zekerheden die er niet zijn.",
+        "<strong>Niet elke locatie heeft een businesscase.</strong> Een vlak profiel zonder noemenswaardige pieken, een klein of te zwak dak, een pand dat u binnen enkele jaren verlaat, of een huurverhouding waarin investeren in de installatie niet geregeld is: dan is het antwoord nee. Dat is ook een uitkomst, en hij is goedkoper dan het alternatief.",
+        "<strong>Soms is verzwaren de enige route.</strong> Opslag verschuift energie in de tijd; opslag maakt geen energie. Ligt uw gemiddelde vraag over de dag boven wat de aansluiting kan leveren, dan helpt geen enkele ingreep achter de meter, en concluderen wij dat verzwaren de route is — met eventueel een tijdelijke voorziening voor de periode tot dat zover is. Een batterij creëert geen extra gecontracteerd transportvermogen en verhoogt uw aansluitwaarde niet.",
+        "<strong>Een scan is geen ontwerp en geen keuring.</strong> De definitieve componentkeuze, de beveiligingsberekening en de inpassing in de hoofdverdeler vragen een opname op locatie en een inspectie van dak en verdeler. Dat is een volgende stap, met andere stukken en andere verantwoordelijkheden."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Vier echte locaties, vier verschillende uitgangssituaties",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Elk van deze vier projecten begon met een andere vraag. De cijfers staan op de projectpagina's zelf, zodat ze bij de locatie blijven waar ze gemeten zijn.",
+        "<ul><li><strong>Ratio 16, Duiven</strong> — commercieel vastgoed waar verduurzaming én laadplekken binnen een beperkt transportvermogen moesten passen. <a class=\"ve-link\" href=\"/project-ratio-16\">Bekijk het project</a></li><li><strong>Hedin Amsterdam</strong> — een automotivelocatie waar de bestaande aansluiting de rem op de groei was. <a class=\"ve-link\" href=\"/project-hedin-amsterdam\">Bekijk het project</a></li><li><strong>Hazenweg 61, Hengelo</strong> — een kantoorpand in uitbreiding, met opslag, opwek, laden en noodstroom onder één energiemanagementsysteem. <a class=\"ve-link\" href=\"/project-hazenweg-61\">Bekijk het project</a></li><li><strong>Dormio Medemblik</strong> — een recreatiepark met een te kleine bouwaansluiting voor de vraag op het park. <a class=\"ve-link\" href=\"/project-dormio-medemblik\">Bekijk het project</a></li></ul>",
+        "Wat de vier gemeen hebben, is niet het systeem dat er staat. Het is dat de bestaande elektrische situatie van het pand — de aansluiting, de hoofdverdeler, het dak — bepaalde welke ingrepen mogelijk waren en in welke orde ze pasten."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "De vraag achter de aanvraag",
+      "lead": "De aanleidingen waarmee een scanaanvraag binnenkomt. Herkent u uw situatie, dan kunt u die direct meenemen in de aanvraag.",
+      "kaarten": [
+        { "kop": "Een uitbreiding die niet past", "tekst": "Een extra lijn, een hal of een koelhuis vraagt vermogen dat er op papier niet is.", "route": "toepassingen/netcongestie-bij-uitbreiding", "label": "Netcongestie bij uitbreiding" },
+        { "kop": "Pieken die de rekening bepalen", "tekst": "Eén hoog kwartier kan uw transportkosten voor langere tijd vastzetten; een scan wijst aan wanneer dat kwartier viel en wat er toen aanstond.", "route": "toepassingen/pieken-in-verbruik", "label": "Pieken in verbruik" },
+        { "kop": "Laden binnen wat er ligt", "tekst": "De bedrijfswagens moeten elektrisch, maar niet alle laadpunten kunnen gelijktijdig vol trekken.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met een beperkte aansluiting" },
+        { "kop": "De bestaande aansluiting beter gebruiken", "tekst": "Geen uitbreidingsplan, wel het vermoeden dat er ruimte onbenut blijft binnen de huidige grens.", "route": "toepassingen/bestaande-aansluiting-optimaliseren", "label": "Bestaande aansluiting optimaliseren" },
+        { "kop": "Meerdere locaties tegelijk", "tekst": "Een portefeuille waarvan u wilt weten welke locatie als eerste iets oplevert.", "route": "toepassingen/meerdere-locaties", "label": "Meerdere locaties" },
+        { "kop": "Processen aansturen", "tekst": "Verbruikers die niet op hetzelfde moment hoeven te draaien, maar dat nu wel doen.", "route": "toepassingen/processen-sturen-met-ems", "label": "Processen sturen met een EMS" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over energieadvies",
+  "faq": [
+    {
+      "vraag": "Wat heeft u van mij nodig om te beginnen?",
+      "antwoord": "Het kwartiersprofiel van de aansluiting over een volledig jaar, de aansluitovereenkomst met de aansluitwaarde in kVA of ampère per fase, de transportovereenkomst met het gecontracteerde transportvermogen in kW, en een beschrijving van wat u van plan bent. Heeft u zonnepanelen of laadpunten, dan ook de omvormer- en laadpuntgegevens."
+    },
+    {
+      "vraag": "Ik heb alleen een jaarfactuur. Kan dat ook?",
+      "antwoord": "Dan kunnen wij een richting aangeven, maar geen dimensionering. Bij een grootverbruikaansluiting zijn kwartierwaarden doorgaans op te vragen bij uw netbeheerder of meetbedrijf. Is er geen kwartiermeting, dan is een tijdelijke meting op de hoofdverdeler de weg; zonder meetwaarden blijft elk getal een aanname."
+    },
+    {
+      "vraag": "Komt er altijd een batterij uit een scan?",
+      "antwoord": "Nee. Een deel van de locaties komt uit op sturing en spreiding zonder extra hardware, een deel op een lager gecontracteerd transportvermogen, en een deel op de conclusie dat verzwaren de enige route is. Opslag hoort pas in beeld als de piek die daarna nog overblijft hem rechtvaardigt."
+    },
+    {
+      "vraag": "Wat is het verschil tussen een energiescan en een businesscase?",
+      "antwoord": "Een scan beantwoordt een technische vraag: welke ingrepen doen op deze locatie iets, en in welke orde. Een businesscase beantwoordt een financiële vraag over één gekozen variant, met uw eigen contract, tarieven en investeringsvorm als ingang. De scan komt eerst, omdat de businesscase anders over de verkeerde variant gaat."
+    },
+    {
+      "vraag": "Wat kost een energiescan?",
+      "antwoord": "Dat hangt af van de omvang van de locatie, het aantal aansluitingen en van wat er al gemeten en vastgelegd is. Wij noemen op deze site geen tarieven die we niet per situatie kunnen waarmaken; bij de aanvraag krijgt u een opgave voordat er werk begint."
+    },
+    {
+      "vraag": "Geldt een advies voor meerdere vestigingen tegelijk?",
+      "antwoord": "Alleen de aanpak, niet de uitkomst. Elke aansluiting heeft een eigen profiel, een eigen aansluitwaarde en een eigen voedingsgebied. Bij een portefeuille is de eerste vraag dus niet wat er moet gebeuren, maar welke locatie het grootste verschil oplevert per bestede euro."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De begrippen uit een scan",
+      "items": [
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/businesscase-batterij", "naam": "Businesscase batterij" },
+        { "route": "kennis/energieprestatie-meten", "naam": "Energieprestatie meten" }
+      ]
+    },
+    {
+      "kop": "Als het plan al vastloopt",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "kennis/netaansluiting-aanvragen", "naam": "Netaansluiting aanvragen" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/terugleverbeperking", "naam": "Terugleverbeperking" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" }
+      ]
+    },
+    {
+      "kop": "Verder kijken",
+      "items": [
+        { "route": "verduurzaming-bedrijfspanden", "naam": "Verduurzaming bedrijfspanden" },
+        { "route": "sectoren", "naam": "Sectoren" },
+        { "route": "subsidies", "naam": "Subsidies en regelingen" },
+        { "route": "projecten", "naam": "Projecten" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Stuur het profiel, dan rekenen wij",
+    "tekst": "Met het kwartiersprofiel van uw aansluiting, de aansluitwaarde en het gecontracteerde transportvermogen kunnen wij aan het werk. U krijgt terug welke ingrepen op uw locatie effect hebben, in welke orde, en waar de grens ligt. Is er geen businesscase, of is verzwaren de enige route, dan is dat de uitkomst die u van ons hoort.",
+    "primair": { "route": "contact", "label": "Vraag een energiescan aan" },
+    "secundair": { "route": "kennis", "label": "Lees eerst de kennisbank" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare capaciteit per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De op de Capaciteitskaart genoemde jaartallen voor geplande netuitbreidingen zijn planningen en geen toezegging.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — FAQ",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/faq/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

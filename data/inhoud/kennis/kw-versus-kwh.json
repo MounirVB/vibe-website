@@ -1,0 +1,121 @@
+{
+  "route": "kennis/kw-versus-kwh",
+  "type": "kennis",
+  "titel": "kW of kWh — het verschil uitgelegd | Vibe Energy",
+  "beschrijving": "kW is hoe hard, kWh is hoeveel. Dat ene verschil bepaalt of u een probleem met uw aansluiting heeft of met uw energierekening — en dus welke ingreep helpt.",
+  "og_titel": "kW of kWh: hoe hard versus hoeveel",
+  "h1": "kW of kWh? Het verschil tussen hoe hard en hoeveel",
+  "lead": "Bijna elke misrekening in een zakelijk energieplan begint hier. kW zegt hoe hard er op dit moment wordt getrokken; kWh zegt hoeveel er over een periode is verbruikt. Het eerste bepaalt of uw aansluiting het houdt, het tweede wat u betaalt.",
+  "data_pagina": "kennis",
+  "kruimels": [{ "naam": "Kennisbank", "route": "kennis" }],
+  "kruimel_label": "kW versus kWh",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw profiel doorrekenen" },
+    { "soort": "ghost", "anker": "#rekenen", "label": "Direct naar het rekenvoorbeeld" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat is het verschil tussen kW en kWh?",
+    "antwoord": "kW (kilowatt) is een eenheid van vermogen: hoeveel elektriciteit er op één moment wordt gevraagd of geleverd. kWh (kilowattuur) is een eenheid van energie: hoeveel elektriciteit er over een periode is verbruikt of geleverd. Eén kW gedurende één uur is één kWh. Vermogen bepaalt of een aansluiting, kabel of omvormer het aankan; energie bepaalt de hoeveelheid op de factuur. Bij een batterij staan daarom twee getallen: het vermogen in kW, dat zegt hoe hard hij kan laden en ontladen, en de capaciteit in kWh, die zegt hoe lang hij dat kan volhouden.",
+    "voorbehoud": "Deze uitleg gaat over actief vermogen. Op een zakelijke aansluiting wordt ook met kVA gerekend (schijnbaar vermogen) en kan blindvermogen meespelen; die begrippen zijn hier buiten beschouwing gelaten."
+  },
+
+  "secties": [
+    {
+      "soort": "specs",
+      "kop": "De twee eenheden naast elkaar",
+      "rijen": [
+        ["kW — vermogen", "Hoe hard. Een momentopname. Bepaalt of de aansluiting, de kabel, de omvormer en de zekering het houden. Dit is het getal waar netcongestie over gaat."],
+        ["kWh — energie", "Hoeveel. Een hoeveelheid over tijd. Bepaalt uw verbruik en daarmee het leveringsdeel van uw energierekening."],
+        ["De relatie", "vermogen × tijd = energie. 1 kW gedurende 1 uur = 1 kWh. 50 kW gedurende een kwartier = 12,5 kWh."],
+        ["Bij een batterij", "Het vermogen (kW) begrenst hoe hoog een piek is die hij kan wegnemen. De capaciteit (kWh) begrenst hoe lang hij dat kan."],
+        ["Bij zonnepanelen", "Het piekvermogen (kWp) is wat het dak onder ideale omstandigheden levert. De jaaropbrengst (kWh) is wat er werkelijk uit komt."]
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "rekenen",
+      "kop": "Waarom dit in de praktijk misgaat",
+      "lead": "Twee locaties met hetzelfde jaarverbruik kunnen een volstrekt ander probleem hebben.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Neem twee bedrijven die elk 200.000 kWh per jaar afnemen. Het eerste is een kantoor: het verbruik is vlak, verdeeld over werkdagen, met een piek van misschien 60 kW. Het tweede is een werkplaats met twee snelladers en een compressor die samen aanslaan: hetzelfde jaarverbruik, maar een piek van 250 kW gedurende enkele minuten.",
+        "Op de energierekening lijken die twee op elkaar. Voor de netbeheerder niet. Het tweede bedrijf heeft een vier keer zo zwaar gecontracteerd transportvermogen nodig voor een paar minuten per dag, en loopt daarmee als eerste tegen netcongestie aan. De oplossing voor dat bedrijf gaat niet over minder verbruiken, maar over die minuten.",
+        "Daarom begint elke serieuze analyse bij het <strong>kwartiersprofiel</strong>: de meetwaarden per kwartier die uw netbeheerder vastlegt. Een jaartotaal in kWh kan die pieken niet laten zien, want ze zijn erin weggemiddeld."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Een batterij kiezen: twee getallen, twee vragen",
+      "alineas": [
+        "Een batterijsysteem heeft altijd een vermogen en een capaciteit, en die verhouding is een ontwerpkeuze. Een systeem van 100 kW / 200 kWh kan twee uur op vol vermogen leveren. Een systeem van 50 kW / 200 kWh kan vier uur, maar vangt een piek van 80 kW niet op.",
+        "Welke verhouding u nodig heeft volgt uit de vorm van uw pieken, niet uit uw jaarverbruik. Een paar korte, hoge pieken vragen veel kW en weinig kWh. Een lange, gelijkmatige overschrijding in de ochtend vraagt het omgekeerde. Wie alleen op kWh dimensioneert, koopt een systeem dat de piek niet haalt; wie alleen op kW dimensioneert, koopt een systeem dat na tien minuten leeg is.",
+        "<h3>De twee vragen die het ontwerp bepalen</h3>",
+        "<ul><li><strong>Hoe hoog komt de piek boven de grens die u wilt aanhouden?</strong> Dat is het vermogen in kW.</li><li><strong>Hoe lang blijft hij daarboven?</strong> Dat maal het vermogen is de bruikbare capaciteit in kWh.</li></ul>",
+        "Bij die tweede vraag hoort nog een correctie: niet de hele nominale capaciteit van een batterij is bruikbaar, en de bruikbare capaciteit neemt over de levensduur af. Dat hoort in het ontwerp te zitten, niet in de verrassing achteraf."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Waar u welk getal tegenkomt",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "<ul><li><strong>Aansluitovereenkomst</strong> — kVA of ampère per fase. Dit is de fysieke grens.</li><li><strong>Transportovereenkomst</strong> — gecontracteerd transportvermogen in kW. Dit is de grens waarvoor u betaalt en die netcongestie blokkeert.</li><li><strong>Energierekening</strong> — kWh voor de levering, plus een vermogensafhankelijk deel voor het transport.</li><li><strong>Omvormerspecificatie</strong> — kW of kVA. Begrenst wat een zonnedak of batterij werkelijk kan afgeven, ongeacht het paneelvermogen.</li><li><strong>Paneelspecificatie</strong> — Wp per paneel, samen kWp voor het dak. Een piekwaarde onder testomstandigheden, geen opbrengst.</li><li><strong>Laadpunt</strong> — kW per punt. Het aantal punten maal het vermogen is zelden de werkelijke gelijktijdige vraag; daar zit de ruimte die load balancing benut.</li></ul>"
+      ]
+    }
+  ],
+
+  "faq_kop": "Veelgestelde vragen",
+  "faq": [
+    {
+      "vraag": "Is een batterij van 200 kWh groter dan een van 100 kW?",
+      "antwoord": "Die zijn niet vergelijkbaar: het zijn twee verschillende eigenschappen. 200 kWh is capaciteit, 100 kW is vermogen. Een volledige specificatie noemt er altijd twee, bijvoorbeeld 100 kW / 200 kWh."
+    },
+    {
+      "vraag": "Verlaagt een batterij mijn kWh-verbruik?",
+      "antwoord": "Nauwelijks, en dat is ook niet het doel. Een batterij verschuift energie in de tijd en verliest daarbij een deel aan rendement. Hij verlaagt uw piek in kW en kan eigen opwek bewaren die anders tegen een lage vergoeding het net op zou gaan."
+    },
+    {
+      "vraag": "Waarom vraagt u om een kwartiersprofiel?",
+      "antwoord": "Omdat alleen daaruit blijkt hoe hoog en hoe lang uw pieken zijn. Een jaarverbruik in kWh middelt precies de informatie weg die het ontwerp bepaalt."
+    },
+    {
+      "vraag": "Wat is kVA en waarom staat dat op mijn aansluiting?",
+      "antwoord": "kVA is schijnbaar vermogen: de combinatie van actief vermogen (kW) en blindvermogen. Aansluitingen en omvormers worden in kVA gespecificeerd omdat de kabel het totaal moet dragen. Bij een vermogensfactor van 1 zijn kW en kVA gelijk; in de praktijk ligt kW iets lager."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Verder in de kennisbank",
+      "items": [
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/batterijdegradatie", "naam": "Batterijdegradatie" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "netcongestie", "naam": "Netcongestie" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Wij rekenen liever met uw eigen cijfers",
+    "tekst": "Stuur het kwartiersprofiel van uw aansluiting. Daaruit volgt hoe hoog uw pieken zijn, hoe lang ze duren en welk vermogen en welke capaciteit u werkelijk nodig heeft.",
+    "primair": { "route": "contact", "label": "Laat uw profiel doorrekenen" },
+    "secundair": { "route": "kennis", "label": "Terug naar de kennisbank" }
+  },
+
+  "claims": []
+}

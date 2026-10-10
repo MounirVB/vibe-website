@@ -1,0 +1,240 @@
+{
+  "route": "sectoren/automotive",
+  "type": "sector",
+  "titel": "Energie-infrastructuur voor dealerbedrijven | Vibe Energy",
+  "beschrijving": "Showroom, werkplaats en een groeiende laadvraag op één aansluiting. Hoe dealerbedrijven voorraad, demo's en klanten laden binnen het vermogen dat er ligt.",
+  "og_titel": "Energie-infrastructuur voor dealerbedrijven",
+  "h1": "Uw aansluiting is ontworpen voor een showroom, niet voor een laadplein",
+  "lead": "Een dealerbedrijf had jarenlang een bescheiden elektriciteitsvraag: licht, klimaat en een werkplaats. Daar is laden bij gekomen — voor voorraadvoertuigen, demo-auto's, klantauto's en personeel. De aansluiting is daar nooit op ontworpen, en die ligt er nog steeds.",
+  "data_pagina": "sector",
+  "kruimels": [{ "naam": "Sectoren", "route": "sectoren" }],
+  "kruimel_label": "Automotive",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Vraag een laadanalyse aan" },
+    { "soort": "ghost", "anker": "#gelijktijdigheid", "label": "Waarom het aantal punten niet de vraag is" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat is het energieprobleem van een dealerbedrijf dat elektrisch gaat laden?",
+    "antwoord": "Bij een dealerbedrijf is het basisverbruik van showroom en werkplaats meestal bescheiden. Het knelpunt is de laadvraag die daar bovenop komt: voorraadvoertuigen die op een afgesproken laadniveau moeten staan, demo- en klantauto's die op een afgesproken tijdstip afleverklaar zijn, een snellader voor wachtende klanten en laadpunten voor personeel en bezoek. Die vraag valt grotendeels in dezelfde uren waarin de werkplaats draait. De aansluiting is gedimensioneerd op het oude verbruik, en in veel voedingsgebieden kan die niet op korte termijn worden verzwaard. De route is dan: de laadvraag sturen, de piek met opslag opvangen en eigen opwek inzetten binnen de aansluiting die er ligt.",
+    "voorbehoud": "Dit zegt niets over hoeveel laadpunten op een specifieke vestiging passen. Dat volgt uit het kwartiersprofiel, de aansluitwaarde en het gecontracteerde transportvermogen van die locatie. Opslag en sturing maken ruimte binnen die grenzen; ze verhogen de aansluitwaarde niet."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "probleem",
+      "kop": "Het verbruik is niet verdubbeld. De gelijktijdigheid wel.",
+      "lead": "Het oude profiel van een dealerbedrijf was vlak genoeg om jaren met dezelfde aansluiting te draaien.",
+      "alineas": [
+        "Showroom en werkplaats hebben een herkenbaar verbruikspatroon: verlichting en klimaat over de hele openingstijd, en daarbovenop de werkplaats met hefbruggen, een compressor en een uitlijnbank. Op locaties met schadeherstel komt daar een spuitcabine met droogoven bij, die kort en hard trekt. Dat profiel is voorspelbaar en past meestal ruim binnen de bestaande aansluiting.",
+        "Wat er nu bij komt is van een andere orde. Voorraadvoertuigen staan op het terrein en moeten op een werkbaar laadniveau blijven, ook als ze weken niet verkocht worden. Demo-auto's gaan de weg op en komen leeg terug. Klantauto's die in de werkplaats zijn geweest, worden afleverklaar opgeladen voordat de klant ze ophaalt. Personeel en bezoek laden tijdens kantooruren. En op een afleverdag staan er meerdere auto's met dezelfde deadline.",
+        "Elk van die vragen is afzonderlijk klein. Bij elkaar schuiven ze de piek van de vestiging omhoog in precies de uren waarin de werkplaats ook draait. Daar zit het knelpunt: niet in het jaarverbruik in kWh, maar in het gevraagde vermogen in kW op een dinsdagmiddag. Een aansluiting bezwijkt niet onder een jaartotaal, maar onder een kwartier."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Vijf laadvragen op één terrein, met vijf verschillende eisen",
+      "rijen": [
+        ["Voorraadvoertuigen", "Veel voertuigen, lange standtijd. Ze moeten op een afgesproken laadniveau staan, niet vol. Weinig vermogen per punt, maar veel punten, en het mag in de nacht. Dit is de vraag die zich het best laat sturen."],
+        ["Demo- en testauto's", "Onvoorspelbaar: ze vertrekken en komen terug zonder planning. Vragen vermogen op afroep en laten zich slecht in een nachtvenster persen."],
+        ["Afleverklaar maken", "Een deadline in plaats van een hoeveelheid. De auto moet vóór het afleveruur op niveau zijn. Hier is de beschikbare laadtijd de harde randvoorwaarde, en dus het vermogen."],
+        ["Klant die wacht", "Een snellader bij de entree of bij de werkplaatsbalie. Lage benutting over de dag, hoge piek op het moment dat hij gebruikt wordt — en dat moment is niet te plannen."],
+        ["Personeel en bezoek", "Lange standtijd, laag vermogen per punt, maar volledig overlappend met de werkplaatsuren. Dit is de vraag die bij het ontwerp het vaakst wordt vergeten."]
+      ],
+      "noot": "Wie deze vijf op één hoop gooit, ontwerpt op de som van alle vermogens en vraagt een aansluiting aan die nooit zo wordt gebruikt. Wie ze uit elkaar houdt, ziet dat alleen de derde en de vierde echt vermogen op een vast moment vragen — en dat de eerste bijna volledig verplaatsbaar is."
+    },
+    {
+      "soort": "tekst",
+      "id": "gelijktijdigheid",
+      "kop": "Het aantal laadpunten maal hun vermogen is niet de vraag — behalve op de afleverdag",
+      "lead": "De gebruikelijke rekensom overschat de vraag. Op één dag in de maand onderschat hij hem.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Op papier telt een laadplein eenvoudig op. Twaalf laadpunten van 22 kW is 264 kW; dat is een rekensom als voorbeeld, geen ontwerpvraag. Zo wordt het bijna nooit gevraagd. Niet alle punten zijn bezet, een bezet punt laadt niet per definitie op vol vermogen, en een voertuig dat bijna op niveau is neemt veel minder op dan zijn maximum. De werkelijke gelijktijdige vraag ligt daar structureel onder.",
+        "Daarop is dynamische load balancing gebouwd. Het systeem meet de actuele belasting van de aansluiting en verdeelt wat er over is over de actieve laadpunten. Statisch verdelen doet dat met een vast budget per punt en laat dus altijd ruimte onbenut. Dynamisch verdelen gebruikt ook de ruimte die de werkplaats of de klimaatinstallatie op dat moment niet nodig heeft. Daarmee kunnen er meer laadpunten staan dan de som van hun vermogens binnen de aansluiting toelaat. Niet omdat ze nooit allemaal tegelijk laden, maar omdat de regelaar het totaal begrenst: bij een vol bezet terrein laadt iedereen langzamer in plaats van dat de aansluiting wordt overschreden.",
+        "<h3>Waar die aanname bij een dealerbedrijf breekt</h3>",
+        "Gelijktijdigheid is een statistisch argument, en statistiek werkt bij veel onafhankelijke gebruikers. Een afleverdag is niet onafhankelijk. Dan staan er meerdere auto's met dezelfde deadline, en precies de spreiding waar het ontwerp op leunt is er niet. De begrenzing doet dan nog steeds haar werk — de aansluiting wordt niet overschreden — maar het gevolg is dat iedereen langzamer laadt, en dat is precies wat een afleveruur niet toestaat. Hetzelfde geldt aan het eind van een maand of een kwartaal, en op de ochtend waarop de voorraad nog niet op niveau is omdat het nachtvenster te kort was.",
+        "Een laadplein bij een dealerbedrijf moet daarom op twee situaties kloppen: op het gewone dagprofiel én op de dag waarop alles tegelijk moet. Dat tweede geval bepaalt of u met sturing alleen uitkomt, of dat er opslag bij moet. Wie alleen op het gemiddelde ontwerpt, komt er één keer per maand achter dat het niet past."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Laadcapaciteit is hier zelden een vrije keuze",
+      "lead": "Bij een dealerbedrijf komt de eis van buiten, met een datum eraan.",
+      "alineas": [
+        "Een dealerbedrijf werkt binnen afspraken met de importeur. Daarin staan vaak eisen aan de laadvoorziening op de vestiging: laadpunten die voor klanten beschikbaar moeten zijn, een laadniveau waarop voorraadvoertuigen moeten staan, en voorzieningen in de werkplaats om aan hoogvoltagesystemen te mogen werken. Wat er precies in staat verschilt per merk en wijzigt per jaar; dat leest u in uw eigen overeenkomst, niet hier.",
+        "Dat verandert de aard van het vraagstuk. Het is geen investering die u uitstelt tot de businesscase rond is, maar een voorwaarde met een termijn. En die termijn is afgesproken met een importeur, niet met een netbeheerder. Een netverzwaring volgt haar eigen doorlooptijd, en in een gebied met congestie is die doorlooptijd niet te onderhandelen.",
+        "Daarom begint het gesprek hier vaker bij \"wat kan er binnen de aansluiting die er ligt\" dan bij \"wat zou ideaal zijn\". Dat is geen noodgreep. Een bestaande aansluiting met opslag en sturing erachter levert laadcapaciteit op een afspreekbare datum; een verzwaringsaanvraag levert in eerste instantie een plek in de wachtrij.",
+        "Heeft u meerdere vestigingen, dan speelt dit per locatie opnieuw en met een andere uitkomst. Congestie geldt per voedingsgebied: een verzameling postcodes rond één onderstation, die geen gemeentegrens volgt. Twee vestigingen in dezelfde stad kunnen in verschillende voedingsgebieden liggen, met een verschillende status voor afname en voor invoeding. Een plan dat op groepsniveau wordt vastgesteld, moet per postcode worden getoetst."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Waar u de status per vestiging opzoekt",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "De zes regionale netbeheerders voor elektriciteit — Liander, Enexis, Stedin, Westland Infra, Coteq en Rendo — publiceren de beschikbare capaciteit per voedingsgebied op de Capaciteitskaart van Netbeheer Nederland. Daar ziet u per postcode of er ruimte is voor afname, of er ruimte is voor invoeding, en of er een wachtrij geldt.",
+        "Lees die kaart per vestiging en niet per gemeente. Een status voor een hele plaats bestaat niet, en een jaartal voor een geplande netuitbreiding is een planning en geen toezegging. Voor de aanvraag zelf blijft uw eigen netbeheerder de enige bron.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op de postcode van uw vestiging</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat er achter de meter wordt gebouwd",
+      "lead": "Drie lagen die elkaar nodig hebben. Alleen hardware plaatsen lost het niet op.",
+      "alineas": [
+        "<h3>1 · Prioriteit tussen de laadvragen</h3>",
+        "Niet elk laadpunt is even belangrijk. Een regelsysteem kan voorraadvoertuigen terugregelen of pauzeren zodra de aansluiting vol loopt, en een auto met een afleverdeadline voorrang geven. Dat is een instelling, geen extra hardware: dezelfde punten dragen op dinsdagochtend een andere verdeling dan op vrijdagmiddag. Zonder die laag moet het ontwerp van het slechtste geval uitgaan, en dan wordt alles onnodig zwaar.",
+        "<h3>2 · Opslag voor de piek die u niet kunt verschuiven</h3>",
+        "Afleveren en een wachtende klant zijn precies de twee vragen die zich niet laten uitstellen. Daar is opslag voor: de batterij levert het verschil tussen de vraag en de grens die u aanhoudt, en laadt bij in de uren dat het terrein stil is. De dimensionering volgt uit het kwartiersprofiel van de vestiging. Hoe hoog de piek boven de gekozen grens uitkomt bepaalt het vermogen in kW; hoe lang hij daarboven blijft, maal dat vermogen, bepaalt de bruikbare energie in kWh.",
+        "<h3>3 · Eigen opwek op het juiste moment</h3>",
+        "Een showroom met werkplaats heeft doorgaans dakvlak. Zon op dat dak valt samen met de dagvraag van personeel, bezoek en werkplaats, maar niet met het nachtvenster waarin de voorraad laadt. Met opslag ertussen schuift die opbrengst naar het moment dat u hem zelf nodig heeft, in plaats van terug te leveren — iets wat in een congestiegebied bovendien beperkt kan worden.",
+        "De drie lagen staan onder één regelaar. Die kent de grens van de aansluiting, de stand van de batterij, de opwek van het dak en de actieve laadsessies, en beslist per moment wie vermogen krijgt."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Twee vestigingen waar dit is gebouwd",
+      "lead": "Geen voorbeeldcase, maar twee locaties met naam en plaats.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Bij <strong>Hedin Amsterdam</strong> liep de ontwikkeling van de locatie vast op de beschikbare netcapaciteit. Netverzwaring was alleen op langere termijn in zicht. Met zonnepanelen, batterijopslag en sturing is er binnen de bestaande aansluiting ruimte gemaakt voor grootschalig laden, eigen opwek en reserve, zodat de vestiging kan groeien zonder op netuitbreiding te wachten.",
+        "Bij <strong>Hedin Alkmaar</strong> lag de vraag anders. De stroomvoorziening moest hoge vraag kunnen dragen zonder onderbrekingen, en de bestaande zonnepaneelinstallatie mocht het afgesproken terugleververmogen niet overschrijden. Daar is energieopslag op locatie geplaatst die in de daluren laadt en bij stijgende vraag levert, met sturing over de bestaande panelen.",
+        "<p>De installatiewaarden van beide projecten staan op de projectpagina's: <a class=\"ve-link\" href=\"/project-hedin-amsterdam\">Hedin Amsterdam</a> en <a class=\"ve-link\" href=\"/project-hedin-alkmaar\">Hedin Alkmaar</a>.</p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De eerlijke grens van deze aanpak bij een dealerbedrijf.",
+      "alineas": [
+        "Opslag en sturing verschuiven vermogen in de tijd. Ze maken geen energie en ze verhogen uw aansluitwaarde niet. Vraagt een vestiging over de hele dag gemiddeld meer dan de aansluiting kan leveren — bijvoorbeeld omdat er een wagenpark bij komt dat dag én nacht laadt — dan is een zwaardere aansluiting de enige route. De vraag is dan alleen nog hoe u de tussentijd overbrugt.",
+        "Uw gecontracteerd transportvermogen verandert hier ook niet door. Dat blijft wat er in de transportovereenkomst staat, tot u het zelf wijzigt. Het verschil is dat u er minder vaak tegenaan loopt, en dat u het na het afvlakken van de piek in sommige gevallen juist kunt verlagen.",
+        "Een snellader blijft een snellader. Willen twee klanten tegelijk op vol vermogen laden en laat uw grens dat niet toe, dan laadt er iemand langzamer. Dat is een keuze die u vooraf maakt, in het ontwerp of in de prioriteitsinstelling, en geen probleem dat techniek wegneemt.",
+        "Bestaande laadpunten zijn niet automatisch aan te sturen. Of dat kan, hangt af van het type en van het protocol dat het punt ondersteunt. Dat stellen wij per locatie vast voordat er een ontwerp op wordt gebouwd.",
+        "En niets hiervan is vooraf te berekenen zonder uw eigen gegevens. Wij hebben het kwartiersprofiel van de vestiging nodig, de aansluitwaarde, het gecontracteerde transportvermogen, en het aantal voertuigen met hun laadvenster en hun deadline. Komt daaruit dat verzwaren sneller of goedkoper is, dan zeggen we dat."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit op uw vestiging op neerkomt",
+      "lead": "De situaties waarin de laadvraag van een dealerbedrijf vastloopt op de aansluiting.",
+      "kaarten": [
+        { "kop": "Laden past niet binnen de aansluiting", "tekst": "De laadpunten die u nodig heeft kunnen niet gelijktijdig op vol vermogen draaien.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met een beperkte aansluiting" },
+        { "kop": "Geen extra transportvermogen", "tekst": "De netbeheerder kan uw aanvraag voor meer vermogen niet toezeggen.", "route": "toepassingen/geen-extra-transportvermogen", "label": "Geen extra transportvermogen" },
+        { "kop": "Het eigen wagenpark gaat elektrisch", "tekst": "Haalservice, bezorgauto's en bedrijfswagens moeten op hetzelfde terrein laden.", "route": "toepassingen/elektrificatie-bedrijfswagens", "label": "Elektrificatie van bedrijfswagens" },
+        { "kop": "Meerdere vestigingen", "tekst": "Elke locatie heeft een eigen aansluiting, een eigen profiel en een eigen voedingsgebied.", "route": "toepassingen/meerdere-locaties", "label": "Energiebeheer op meerdere locaties" },
+        { "kop": "Het laadplein zelf", "tekst": "Van vermogensverdeling en ontwerp tot plaatsing en exploitatie van het laadplein.", "route": "laadplein", "label": "Laadplein" },
+        { "kop": "Eerst rekenen, dan bouwen", "tekst": "Hoeveel punten, welk vermogen per punt en welke gelijktijdigheid u moet aanhouden.", "route": "kennis/laadinfrastructuur-dimensioneren", "label": "Laadinfrastructuur dimensioneren" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen van dealerbedrijven",
+  "faq": [
+    {
+      "vraag": "Hoeveel laadpunten passen er op onze vestiging?",
+      "antwoord": "Meer dan de som van de vermogens suggereert, en minder dan een leverancier belooft die alleen naar de aansluitwaarde kijkt. Het antwoord volgt uit het kwartiersprofiel van de vestiging, de aansluitwaarde, het gecontracteerde transportvermogen en de laadvensters van uw voertuigen. Met dynamische verdeling kunnen er punten bij zonder dat de aansluiting wordt overschreden; wat er bij kan, rekenen wij per locatie door."
+    },
+    {
+      "vraag": "Krijgen we met een batterij een zwaardere aansluiting?",
+      "antwoord": "Nee. Uw aansluitwaarde en uw gecontracteerd transportvermogen blijven ongewijzigd. Een batterij verandert alleen wat u binnen die grens kunt doen: hij vangt de piek op en verschuift energie in de tijd. Extra transportvermogen komt uitsluitend van de netbeheerder."
+    },
+    {
+      "vraag": "Moeten we dan geen netverzwaring aanvragen?",
+      "antwoord": "Die aanvraag blijft zinvol; u zet er een plek in de wachtrij mee vast. Alleen is het geen plan voor de komende maanden. Doe beide: vraag aan bij de netbeheerder, en maak intussen ruimte binnen de aansluiting die er ligt."
+    },
+    {
+      "vraag": "Hoe houden we voorraadvoertuigen op niveau zonder de piek te raken?",
+      "antwoord": "Door die laadvraag te behandelen als wat hij is: verplaatsbaar. Voorraadvoertuigen hebben een laadniveau nodig, geen laadtijdstip. Het regelsysteem laadt ze in de uren dat het terrein stil is, regelt ze terug zodra de aansluiting vol loopt en geeft voorrang aan een auto met een afleverdeadline."
+    },
+    {
+      "vraag": "Werkt dit ook zonder zonnepanelen op het dak?",
+      "antwoord": "Ja. Piekafvlakking en vermogensverdeling werken op uw verbruiksprofiel en hebben geen eigen opwek nodig. Een zonnedak maakt de businesscase vaak beter, omdat opslag dan ook eigen opwek bewaart, maar het is geen voorwaarde."
+    },
+    {
+      "vraag": "We hebben al laadpunten van een andere leverancier. Moeten die eruit?",
+      "antwoord": "Niet per definitie. Of bestaande punten in de verdeling mee kunnen, hangt af van het type en het protocol dat ze ondersteunen. Kan dat niet, dan is begrenzing op het niveau van de aansluiting een alternatief, met minder fijnmazige sturing. Dat stellen wij vast voordat er een ontwerp op wordt gebouwd."
+    },
+    {
+      "vraag": "Geldt de congestiestatus voor onze hele dealergroep?",
+      "antwoord": "Nee. Congestie wordt gepubliceerd per voedingsgebied: een verzameling postcodes rond één onderstation. Die grenzen volgen geen gemeentegrens, dus twee vestigingen in dezelfde stad kunnen een verschillende status hebben. Elke locatie wordt apart getoetst."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" }
+      ]
+    },
+    {
+      "kop": "De vraagstukken",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "laadplein", "naam": "Laadplein" },
+        { "route": "energieadvies", "naam": "Energieadvies" },
+        { "route": "toepassingen/laden-met-beperkte-aansluiting", "naam": "Laden met een beperkte aansluiting" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/laadinfrastructuur-dimensioneren", "naam": "Laadinfrastructuur dimensioneren" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/terugleverbeperking", "naam": "Terugleverbeperking" }
+      ]
+    },
+    {
+      "kop": "Verwante sectoren en bewijs",
+      "items": [
+        { "route": "sectoren/transport-en-wagenparken", "naam": "Transport en wagenparken" },
+        { "route": "sectoren/retail", "naam": "Retail" },
+        { "route": "sectoren/parkeren", "naam": "Parkeren" },
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "sectoren", "naam": "Alle sectoren" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Begin bij het profiel van de vestiging",
+    "tekst": "Stuur ons het kwartiersprofiel van de aansluiting, de aansluitwaarde, het gecontracteerde transportvermogen en het aantal voertuigen met hun laadvenster. Wij rekenen door hoeveel laadvermogen er binnen de bestaande aansluiting past, wat de afleverdag doet met die uitkomst en of er opslag nodig is. Bij meerdere vestigingen doen we dat per locatie.",
+    "primair": { "route": "contact", "label": "Vraag een laadanalyse aan" },
+    "secundair": { "route": "projecten", "label": "Bekijk gerealiseerde projecten" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare capaciteit voor afname en invoeding per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De op de Capaciteitskaart genoemde jaartallen voor netuitbreidingen zijn planningen en geen garantie.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — FAQ",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/faq/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Zes regionale netbeheerders verzorgen de elektriciteitsnetten in Nederland: Liander, Enexis, Stedin, Westland Infra, Coteq en Rendo.",
+      "bron": "Netbeheer Nederland — onze leden",
+      "bron_url": "https://www.netbeheernederland.nl/onze-leden",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

@@ -1,0 +1,194 @@
+{
+  "route": "sectoren/retail",
+  "type": "sector",
+  "titel": "Energie voor winkels en winkelcentra | Vibe Energy",
+  "beschrijving": "Koeling, verlichting en laadpunten op het parkeerterrein hangen aan één aansluiting. Wat er in winkels, winkelcentra en retailvastgoed speelt en wie beslist.",
+  "og_titel": "Energie voor winkels en winkelcentra",
+  "h1": "Koeling, licht en laden op één winkelaansluiting.",
+  "lead": "In retail bepaalt niet één zware machine het profiel, maar veel verbruikers die lang aan staan. De piek ontstaat op de randen van de dag en op het parkeerterrein, waar klanten laden op precies het drukste moment. Dat maakt de gelijktijdigheid het probleem, niet het jaarverbruik.",
+  "data_pagina": "sectoren",
+  "kruimels": [{ "naam": "Sectoren", "route": "sectoren" }],
+  "kruimel_label": "Retail",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Energie-infrastructuur voor winkels en winkelcentra",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Vraag een retailanalyse aan" },
+    { "soort": "ghost", "anker": "#profiel", "label": "Het retailprofiel" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat is het energieprobleem van een winkel of een winkelcentrum?",
+    "antwoord": "Het verbruik van een winkel bestaat grotendeels uit een vlakke basislast: verlichting en klimaat lopen tijdens de openingstijden door, en in food loopt de koeling ook 's nachts. Daarbovenop komen twee pieken die samenvallen met het drukste moment. De eerste is de start bij opening, wanneer licht, klimaat, bakapparatuur en koeling vrijwel tegelijk aanslaan. De tweede is het laden van klantauto's op het parkeerterrein, waarvan de vraag de bezoekersdrukte volgt. Het gecontracteerd transportvermogen van een winkelpand wordt daardoor bepaald door een korte gelijktijdigheid en niet door het jaarverbruik in kWh.",
+    "voorbehoud": "Dit antwoord gaat alleen over de techniek. Het zegt niets over de verdeling tussen huurder en verhuurder: bij een gehuurd pand of een gedeelde aansluiting in een winkelcentrum beslist de eigenaar over het dak, het terrein en de hoofdaansluiting, en dat bepaalt vaak meer dan het elektrisch ontwerp."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "profiel",
+      "kop": "Het retailprofiel: vlakke basislast, harde opening",
+      "lead": "Openingstijden bepalen de vorm van het profiel. De koeling trekt zich daar niets van aan.",
+      "alineas": [
+        "Een winkel verbruikt anders dan een fabriek. Er is zelden één zware machine die het profiel zet; er zijn veel kleine verbruikers die lang aan staan. Verlichting, klimaatinstallaties, kassa's en netwerk en — in food — koel- en vriesmeubels vormen samen een basislast die over de openingstijden vlak ligt. Daardoor is het jaarverbruik in kWh hoog en goed voorspelbaar, terwijl het gevraagde vermogen in kW het grootste deel van de dag onder de grens van de aansluiting blijft.",
+        "De pieken zitten op de randen van de dag. Bij opening gaan licht, klimaat en bakapparatuur binnen een kwartier tegelijk aan, en herstelt de koeling de temperatuur die in de nacht is opgelopen. Dat ene kwartier levert de hoogste meetwaarde, en bepaalt daarmee het vermogen dat u het hele jaar contracteert. Een zaterdag of een avondopenstelling schuift die piek in de tijd, maar verandert de vorm niet.",
+        "Bij een winkelcentrum komt er een tweede laag bij: de gemeenschappelijke voorzieningen. Passageverlichting, roltrappen, luchtbehandeling en de parkeergarage hangen vaak aan één aansluiting, naast de eigen aansluitingen van de individuele winkels. Welke last op welke meter staat, is op veel locaties geen technische maar een contractuele vraag. En die vraag bepaalt wie het probleem heeft en wie het mag oplossen."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Supermarkt of modewinkel: hetzelfde oppervlak, een ander profiel",
+      "rijen": [
+        ["Koeling (food)", "Koel- en vriesmeubels, de machinekamer en de warmteterugwinning lopen dag en nacht. Dit is energie (kWh) in een brede, vlakke band met weinig speelruimte in de tijd: de toegestane producttemperatuur stelt de grens, niet het energietarief."],
+        ["Verlichting (non-food)", "In een modewinkel, bouwmarkt of meubelzaak is verlichting een hoofdverbruiker. Hij staat aan zolang de winkel open is en is vrijwel volledig uit de openingstijden te voorspellen."],
+        ["Klimaat", "Koelen in de zomer, en bij een warmtepomp verwarmen in de winter. De zwaarste koellast valt op dezelfde uren als de hoogste bezoekersaantallen, en ook op de uren met de hoogste zonopbrengst."],
+        ["Bakkerij, horecahoek, kooktoestellen", "Korte, zware vermogenspieken bij het aanzetten. Ze bepalen vaak de hoogste meetwaarde van de dag, terwijl ze over de dag weinig energie kosten."],
+        ["Laadpunten op het terrein", "Vermogen (kW) dat buiten het winkelproces staat en toch op dezelfde aansluiting landt. De vraag volgt de bezoekersdrukte en is daarmee niet uw eigen planning."],
+        ["Nachtprofiel", "In food blijft de nacht relatief hoog door de koeling. In non-food zakt het verbruik terug naar beveiliging, netwerk en etalage. Dat verschil bepaalt wanneer een batterij kan bijladen zonder nieuwe piek te maken."]
+      ],
+      "noot": "Twee winkels met hetzelfde jaarverbruik kunnen dus een ander probleem hebben. Een supermarkt heeft veel kWh en een beperkte flexibiliteit; een modewinkel heeft een scherper omlijnd dagprofiel en meer te verschuiven. Wie op kWh dimensioneert, mist de gelijktijdigheid die het gecontracteerd transportvermogen bepaalt."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Het parkeerterrein bevat het probleem en de oplossing",
+      "lead": "Laadpunten voor klanten verhogen de piek op het drukste moment. Het vlak boven diezelfde plekken wekt op in precies die uren.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Laadpunten op een winkelparkeerterrein zijn een klantvoorziening, en dat maakt ze moeilijker te beheersen dan laadpunten voor een eigen vloot. U bepaalt niet wie er komt, hoe lang hij blijft staan of hoeveel voertuigen er tegelijk laden. De laadvraag volgt de bezoekersdrukte, dus hij valt samen met het moment dat de winkel zelf het meeste vermogen vraagt: de zaterdagmiddag, de vrijdagavond, de dagen voor een feestdag.",
+        "Rekenvoorbeeld, geen meting: acht laadpunten van 11 kW is op papier 88 kW extra vraag bovenop de winkel. Dynamische load balancing meet de actuele belasting van de aansluiting en verdeelt wat er over is, terwijl een statische verdeling een vast budget reserveert dat op stille uren onbenut blijft. Een batterij ertussen vangt daarnaast de gelijktijdigheid op, zodat laden ook tijdens de winkelpiek doorgaat. Hoe die sturing werkt staat op <a class=\"ve-link\" href=\"/systeem-laadpalen\">Laadinfrastructuur</a> en in de uitleg over <a class=\"ve-link\" href=\"/kennis/load-balancing\">load balancing</a>.",
+        "<h3>Hetzelfde terrein als opwekvlak</h3>",
+        "Boven de parkeerplaatsen ligt bruikbaar oppervlak. Een overkapping met zonnepanelen wekt op tijdens de openingstijden, dus op de uren dat de winkel verbruikt, en geeft tegelijk schaduw aan de geparkeerde auto's. Het is wel een bouwwerk en geen dakproject: fundering, constructie, een omgevingsvergunning, en bij een winkelcentrum de instemming van de eigenaar of de vereniging van eigenaren. Bij een bestaand winkeldak met beperkte restdraagkracht is de overkapping soms het enige vlak dat overblijft. Wat er op een dak en op een terrein past, staat op <a class=\"ve-link\" href=\"/systeem-zonnepanelen\">Zonne-energie</a>.",
+        "Opwek en laadvraag vallen daarbij niet automatisch samen. Een overkapping produceert het meest rond het middaguur; de laadvraag loopt door tot sluitingstijd en de koeling draait de nacht door. Opslag ertussen schuift die opwek naar de uren waarin u hem zelf gebruikt en verlaagt tegelijk de piek die het net ziet. Een gerealiseerd voorbeeld van die combinatie op een verhuurd bedrijfspand is <a class=\"ve-link\" href=\"/project-ratio-16\">Ratio 16 in Duiven</a>, waar zon, opslag en laadplekken voor de huurder binnen de bestaande aansluiting zijn gebracht."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Filiaalketens: één probleem, tientallen adressen",
+      "lead": "Hetzelfde winkelconcept, maar per adres een andere aansluiting, een andere netbeheerder en een andere grens.",
+      "alineas": [
+        "Een keten heeft een voordeel dat een losse winkel niet heeft: het verbruiksprofiel per formule is grotendeels hetzelfde. Dezelfde koelmeubels, dezelfde verlichting, dezelfde openingstijden. Een ontwerp dat op één vestiging klopt, is op de volgende vestiging een variant en geen nieuw project. Dat verkort de voorbereiding en maakt de businesscase per adres vergelijkbaar.",
+        "Wat per adres wél verschilt, is de buitenkant: de aansluitwaarde en het gecontracteerd transportvermogen, de netbeheerder — Liander, Enexis, Stedin, Westland Infra, Coteq of Rendo — en of er in dat voedingsgebied nog ruimte is voor afname en voor invoeding. Een congestiestatus bestaat niet per gemeente en al niet per keten: hij geldt per voedingsgebied, een verzameling postcodes rond één onderstation, waarvan de grenzen dwars door gemeentegrenzen lopen. De stand per postcode staat op de Capaciteitskaart van Netbeheer Nederland.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek per vestiging op postcode</a></p>",
+        "<h3>Wat centrale sturing hier oplost</h3>",
+        "<ul><li><strong>Eén grenswaarde per vestiging, centraal gezet.</strong> De laadpunten en de batterij houden zich op elk adres aan de grens van die aansluiting, zonder dat iemand ter plaatse iets instelt of terugzet.</li><li><strong>Vergelijkbaarheid.</strong> Vestigingen met hetzelfde formulepakket horen hetzelfde profiel te hebben. Wijkt er één af, dan is dat een signaal over de installatie en niet over het weer.</li><li><strong>Uitrolorde.</strong> U ziet waar de piek het hoogst is en waar de ruimte op het net het kleinst, en bepaalt daarmee welke adressen eerst gaan.</li></ul>",
+        "De sturing zelf staat op <a class=\"ve-link\" href=\"/vibe-control\">VIBE.CONTROL</a>; de aanpak over meerdere adressen staat op <a class=\"ve-link\" href=\"/toepassingen/meerdere-locaties\">meerdere locaties</a>.",
+        "Wat centrale sturing niet oplost, is alles wat buiten de techniek ligt. Een huurcontract dat binnen twee jaar afloopt, een pand dat in de verkoop staat, een dak dat het gewicht niet draagt, een terrein dat van de gemeente is. Die punten bepalen in de praktijk welke vestigingen afvallen — niet het elektrisch ontwerp."
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De grenzen die een retailproject vaker stoppen dan de techniek.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Bij een gehuurd winkelpand beslist de eigenaar. Het dak, de buitenruimte en de hoofdaansluiting zijn van de verhuurder; de huurder heeft het verbruik en de energierekening. Wie investeert, wie de opbrengst houdt en wat er bij het einde van de huur met de installatie gebeurt, staat in een bestaand huurcontract vrijwel nooit geregeld. Dat maakt dit eerst een vastgoedvraag met een technische bijlage, en niet omgekeerd. De kant van de eigenaar staat op <a class=\"ve-link\" href=\"/industrie-vastgoed\">kantoren en vastgoed</a>.",
+        "Bij een gedeelde aansluiting in een winkelcentrum komt daar bij dat er niet één verbruiker is. Een batterij die de piek van de gezamenlijke aansluiting afvlakt, verlaagt een kostenpost die via de servicekosten wordt doorverdeeld. Dan moeten de verdeelsleutel, het eigendom en het beheer eerst vastliggen, anders stuurt het systeem op een grens waar niemand verantwoordelijk voor is. Technisch is dat geen moeilijk project; bestuurlijk is het de langste stap.",
+        "Daarnaast gelden de grenzen van de techniek zelf. Een batterij verschuift energie in de tijd en verlaagt de piek. Hij creëert geen extra gecontracteerd transportvermogen en verhoogt uw aansluitwaarde niet. Ligt uw gemiddelde vraag over de dag boven de grens van de aansluiting, bijvoorbeeld bij een volledig geëlektrificeerd distributiepunt achter de winkel, dan is verzwaren de route en kan opslag alleen de tussentijd overbruggen.",
+        "En koeling is geen vrij verschuifbare last. Een koel- of vriesinstallatie kan beperkt voorlopen of nalopen binnen de toegestane producttemperatuur, maar dat is een smalle marge met een risico dat niet bij een energierekening hoort. In food zoeken wij de flexibiliteit daarom eerst bij de laadpunten, de klimaatinstallatie en de batterij, en pas daarna bij het koelproces."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit op uw adres op neerkomt",
+      "lead": "De vier situaties waarin een retailproject in de praktijk vastloopt.",
+      "kaarten": [
+        { "kop": "Eén kwartier bepaalt de rekening", "tekst": "De gelijktijdige start bij opening zet de hoogste meetwaarde, en daarmee uw gecontracteerde vermogen voor het hele jaar.", "route": "toepassingen/pieken-in-verbruik", "label": "Pieken in verbruik" },
+        { "kop": "Laden past niet binnen de aansluiting", "tekst": "De laadpunten voor bezoekers vragen vermogen op het moment dat de winkel het zelf nodig heeft.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met een beperkte aansluiting" },
+        { "kop": "De overkapping mag niet vol terugleveren", "tekst": "De netbeheerder beperkt de invoeding, waardoor een deel van de opbrengst boven het parkeerterrein wegvalt.", "route": "toepassingen/terugleverbeperking", "label": "Terugleverbeperking" },
+        { "kop": "Tientallen vestigingen, één standaard", "tekst": "Hetzelfde profiel op veel adressen, met per adres een andere aansluiting en een andere netbeheerder.", "route": "toepassingen/meerdere-locaties", "label": "Meerdere locaties" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over energie in retail",
+  "faq": [
+    {
+      "vraag": "Kan ik laadpunten voor klanten plaatsen als mijn aansluiting al vol zit?",
+      "antwoord": "Vaak wel, omdat laadpunten zelden allemaal tegelijk op vol vermogen trekken. Dynamische load balancing meet de actuele belasting van de aansluiting en geeft de laadpunten wat er op dat moment over is; een batterij vangt daarnaast de gelijktijdigheid op. Hoeveel punten er passen volgt uit het kwartiersprofiel van de winkel en uit de laadvraag die u wilt bedienen, niet uit het aantal parkeerplaatsen."
+    },
+    {
+      "vraag": "Hoort het zonnedak op de winkel of boven het parkeerterrein?",
+      "antwoord": "Dat bepaalt de constructie, niet de voorkeur. Een plat winkeldak is goedkoper te benutten, maar heeft vaak beperkte restdraagkracht en veel dakdoorvoeren. Een overkapping boven de parkeerplaatsen is een bouwwerk met fundering en een omgevingsvergunning, levert schaduw voor de auto's en komt in beeld als het dak niet toereikend is of niet van u is."
+    },
+    {
+      "vraag": "Wij huren de winkel. Kan dit dan nog?",
+      "antwoord": "Alleen in overleg met de eigenaar. Het dak, het terrein en de hoofdaansluiting zijn van de verhuurder, dus de afspraak over investering, opbrengst en wat er bij vertrek met de installatie gebeurt, komt eerst. Bij een gedeelde aansluiting in een winkelcentrum beslist de eigenaar of de vereniging van eigenaren."
+    },
+    {
+      "vraag": "Geldt netcongestie voor mijn hele winkelketen?",
+      "antwoord": "Nee. Beperkingen worden per voedingsgebied gepubliceerd: een verzameling postcodes rond één onderstation. Twee vestigingen in dezelfde stad kunnen in verschillende voedingsgebieden liggen en een andere stand hebben. De status hoort dus per adres te worden opgezocht, niet per keten en niet per gemeente."
+    },
+    {
+      "vraag": "Waar begint zo'n traject bij een winkel?",
+      "antwoord": "Bij het kwartiersprofiel van de aansluiting, de aansluitwaarde, het gecontracteerd transportvermogen en de openingstijden. Daaruit volgt hoe hoog en hoe lang de pieken zijn en waar ze vandaan komen. Bij een keten vragen wij die gegevens voor een paar representatieve vestigingen op, zodat het ontwerp per formule klopt voordat het over tientallen adressen gaat."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" }
+      ]
+    },
+    {
+      "kop": "Wat dit oplost",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "laadplein", "naam": "Laadplein" },
+        { "route": "toepassingen/meerdere-locaties", "naam": "Meerdere locaties" },
+        { "route": "toepassingen/pieken-in-verbruik", "naam": "Pieken in verbruik" },
+        { "route": "toepassingen/laden-met-beperkte-aansluiting", "naam": "Laden met een beperkte aansluiting" }
+      ]
+    },
+    {
+      "kop": "Verwante sectoren",
+      "items": [
+        { "route": "industrie-vastgoed", "naam": "Kantoren en vastgoed" },
+        { "route": "sectoren/parkeren", "naam": "Parkeren" },
+        { "route": "sectoren/horeca", "naam": "Horeca" },
+        { "route": "sectoren/automotive", "naam": "Automotive" },
+        { "route": "industrie-vve", "naam": "VvE's" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/laadinfrastructuur-dimensioneren", "naam": "Laadinfrastructuur dimensioneren" }
+      ]
+    },
+    {
+      "kop": "Bewijs en regelingen",
+      "items": [
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "subsidies", "naam": "Subsidies en regelingen" },
+        { "route": "regios", "naam": "Regio's" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Begin bij het kwartiersprofiel van de winkel",
+    "tekst": "Stuur ons het kwartiersprofiel van de aansluiting, de aansluitgegevens en de openingstijden. Wij rekenen door waar de piek vandaan komt, wat er binnen de bestaande aansluiting mogelijk is aan opwek, opslag en laadpunten, en welke vestigingen als eerste rendabel zijn. Hangt het op de verhuurder of op een gedeelde aansluiting, dan zeggen we dat voordat er een ontwerp ligt.",
+    "primair": { "route": "contact", "label": "Vraag een retailanalyse aan" },
+    "secundair": { "route": "projecten", "label": "Bekijk gerealiseerde projecten" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare capaciteit per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

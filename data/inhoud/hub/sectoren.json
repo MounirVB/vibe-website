@@ -1,0 +1,225 @@
+{
+  "route": "sectoren",
+  "type": "hub",
+  "titel": "Sectoren en hun energieprobleem | Vibe Energy",
+  "beschrijving": "Per sector het energieprobleem dat eronder zit: de vorm van het verbruiksprofiel, de gelijktijdigheid, en of er dak of terrein is. Kies uw sector.",
+  "og_titel": "Sectoren en het energieprobleem eronder",
+  "h1": "Elke sector loopt op een eigen manier tegen de aansluiting aan",
+  "lead": "Een sector bepaalt uw energieprobleem niet, maar hij voorspelt het wel. Drie eigenschappen van de locatie doen dat werk: de vorm van het verbruiksprofiel, de gelijktijdigheid van de installaties en de aanwezigheid van dak of terrein. Hieronder staat per sector welke van die drie het knelpunt maakt.",
+  "data_pagina": "sectoren",
+  "kruimels": [],
+  "kruimel_label": "Sectoren",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw profiel doorrekenen" },
+    { "soort": "ghost", "anker": "#drie-variabelen", "label": "De drie variabelen" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Welk energieprobleem hoort bij welke sector?",
+    "antwoord": "Het energieprobleem van een locatie volgt niet uit de bedrijfstak, maar uit drie eigenschappen die per bedrijfstak anders uitvallen. Eén: de vorm van het verbruiksprofiel — vlak met een hoge basislast, blokvormig in een smal venster, of een paar losse uitschieters. Twee: de gelijktijdigheid — welk deel van de installaties op hetzelfde moment vol vermogen vraagt. Drie: de beschikbare ruimte — dakoppervlak voor eigen opwek en terrein voor opslag of laadinfrastructuur. Een productielocatie en een recreatiepark kunnen hetzelfde jaarverbruik hebben en toch een tegengesteld knelpunt: de een een korte startpiek, de ander een seizoenspiek van enkele weken.",
+    "voorbehoud": "Een sectorindeling is een vertrekpunt, geen diagnose. Twee locaties in dezelfde sector kunnen een tegengesteld knelpunt hebben. Wat er bij u speelt blijkt uit het kwartiersprofiel van uw aansluiting, niet uit uw bedrijfstak."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "drie-variabelen",
+      "kop": "Drie variabelen bepalen het knelpunt, niet de bedrijfstak",
+      "lead": "Een sector is een handige ingang, maar hij verklaart niets. Dit zijn de eigenschappen die het werk doen, en ze zijn alle drie te meten voordat er iets gekocht wordt.",
+      "alineas": [
+        "<h3>1 · De vorm van het verbruiksprofiel</h3>",
+        "Zet de kwartierwaarden van een vol jaar achter elkaar en er ontstaat een vorm. Een vlak profiel met een hoge basislast — koeling, klimaat, ventilatie — knelt zelden op vermogen, maar kost dag en nacht energie. Een blokvormig profiel, waarbij de vraag in een paar uur omhoog gaat en daarna wegvalt, vraagt veel kWh in een smal venster. Een profiel met losse uitschieters heeft een lage basislast en een paar kwartieren die alles bepalen. Die drie vormen vragen een ander ontwerp: de eerste vooral opwek en besparing, de tweede capaciteit, de derde vermogen.",
+        "<h3>2 · De gelijktijdigheid</h3>",
+        "De som van alle aangesloten vermogens is bijna nooit de werkelijke vraag. Wat telt, is welk deel tegelijk aan staat. Hoe kleiner het aantal zware verbruikers, hoe harder de gelijktijdigheid doorslaat: twee snelladers en een compressor die samen aanslaan maken een hogere piek dan tientallen kleine verbruikers die elkaar afwisselen. Rekenvoorbeeld: tien laadpunten van 22 kW is op papier 220 kW, maar laden er nooit meer dan vier tegelijk op vol vermogen, dan is de vraag 88 kW. Dynamische load balancing verzilvert dat verschil, omdat hij de actuele belasting van de aansluiting meet en verdeelt wat er over is. Een statisch verdeeld vast budget doet dat niet.",
+        "<h3>3 · Dakoppervlak en terrein</h3>",
+        "Opwek en opslag hebben ruimte nodig, en die ruimte is sterk sectorgebonden. Een distributiehal heeft meer dak dan hij zelf kan verbruiken; een horecazaak in een binnenstad heeft nauwelijks dak boven een forse vraag. Hetzelfde geldt voor terrein: een batterij staat buiten in een eigen omkasting, op een bereikbare plek en bij voorkeur niet te ver van de hoofdverdeler, omdat kabellengte geld en verlies kost. Veel dak zonder eigen vraag verschuift het probleem van afname naar invoeding. Veel vraag zonder dak laat alleen sturing en opslag over.",
+        "<h3>En soms een vierde: wie de aansluiting bezit</h3>",
+        "Techniek is niet altijd de rem. Bij verhuurd vastgoed betaalt de eigenaar de aansluiting en bepaalt de huurder het verbruik. Bij een VvE hangt één aansluiting aan meerdere eigenaren en bepaalt de besluitvorming het tempo. Op een bedrijventerrein zit het knelpunt in het voedingsgebied en niet in één pand, dus moet er met de buren gerekend worden. Bij gebiedsontwikkeling moet het vermogen zijn aangevraagd voordat de eerste gebruiker bestaat. Dat zijn geen technische variabelen, maar ze bepalen wel welke ingreep haalbaar is."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Wat elke variabele bepaalt",
+      "rijen": [
+        ["Vlak profiel, hoge basislast", "Weinig vermogensprobleem, veel energie. Opwek en verbruik vallen deels samen; de winst zit in kWh en in het voorkomen van onnodige teruglevering."],
+        ["Blokvormig profiel", "De vraag zit in een smal venster. De dimensionering volgt de duur: de hoogte boven de gekozen grens maal de duur geeft de bruikbare kWh."],
+        ["Losse uitschieters", "Een paar kwartieren per maand bepalen welk gecontracteerd transportvermogen u nodig heeft. Hier weegt kW zwaarder dan kWh."],
+        ["Hoge gelijktijdigheid", "Weinig zware verbruikers die samen aanslaan. Begrenzen en spreiden levert hier het eerst iets op, nog vóór opslag."],
+        ["Veel dak, lage eigen vraag", "Het knelpunt verschuift naar invoeding. Een terugleverbeperking kost opbrengst; opslag en sturing houden de opwek op locatie."],
+        ["Weinig dak, hoge vraag", "Eigen opwek lost weinig op. Wat overblijft is piekafvlakking en sturing binnen de aansluiting die er al ligt."]
+      ],
+      "noot": "Deze zes gevallen komen in elke sector voor. Een sector maakt alleen de kans groter dat u in een bepaald geval zit — hij sluit de andere vijf niet uit."
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Sectoren waar de gelijktijdigheid het knelpunt maakt",
+      "lead": "Hier knelt niet het jaarverbruik, maar het aantal installaties dat op hetzelfde moment vol vermogen vraagt.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "kaarten": [
+        { "kop": "Automotive", "tekst": "Showroom, werkplaats en een voorraad elektrische auto's die bij aflevering en inruil vol moet. De laadvraag wordt bepaald door de verkoop en niet door een planning, en valt samen met de werkplaatspiek.", "route": "sectoren/automotive", "label": "Automotive" },
+        { "kop": "Transport en wagenparken", "tekst": "Bedrijfsauto's en bestelbussen staan tussen twee diensten op hetzelfde terrein. Elektrificatie zet die hele vloot in één laadblok, meestal 's nachts, wanneer het dak niets levert.", "route": "sectoren/transport-en-wagenparken", "label": "Transport en wagenparken" },
+        { "kop": "Parkeren", "tekst": "Veel plekken achter één aansluiting. Wat de vraag bepaalt is de bezetting en de standtijd per voertuig, niet het aantal laadpunten dat u plaatst.", "route": "sectoren/parkeren", "label": "Parkeren" },
+        { "kop": "Logistiek", "tekst": "Laadkades, koeling en intern materieel vullen de basislast al. Een snellader voor een vrachtwagen vraagt daar een veelvoud van een personenautolader bovenop, op het moment dat de trucks terug zijn.", "route": "industrie-logistiek", "label": "Logistiek" },
+        { "kop": "Woningportefeuilles", "tekst": "Veel kleine aansluitingen met hun piek in hetzelfde avonduur. Per woning is het dak klein, collectief groot — en de gelijktijdigheid zit in de straat, niet in de woning.", "route": "industrie-residentieel", "label": "Woningportefeuilles" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Sectoren waar de vorm van het profiel het knelpunt maakt",
+      "lead": "De vraag is hier voorspelbaar, maar hij komt in een vorm die slecht bij de aansluiting past.",
+      "kaarten": [
+        { "kop": "Productie en industrie", "tekst": "Procesinstallaties die aanslaan maken een korte, hoge piek. Eén startmoment kan het gecontracteerd transportvermogen voor het hele jaar bepalen, terwijl het gemiddelde verbruik ruim onder de grens blijft.", "route": "sectoren/productie-en-industrie", "label": "Productie en industrie" },
+        { "kop": "Horeca", "tekst": "De keukenpiek zit in de avonduren en in weinig vierkante meters dak. Elektrisch koken in plaats van gas legt die piek bovenop het verbruik dat er in datzelfde uur al was.", "route": "sectoren/horeca", "label": "Horeca" },
+        { "kop": "Recreatie", "tekst": "Een seizoensprofiel: enkele weken met volle bezetting, en een aansluiting die op de drukste avond is gedimensioneerd. De rest van het jaar staat dat vermogen stil.", "route": "industrie-recreatie", "label": "Recreatie" },
+        { "kop": "Zorgvastgoed", "tekst": "Naast de piek speelt hier de eis dat kritische installaties niet mogen wegvallen. Dat verandert de ontwerpkeuze: begrenzen mag niet alles raken, en de voorziening moet een storing overleven.", "route": "sectoren/zorgvastgoed", "label": "Zorgvastgoed" },
+        { "kop": "Retail", "tekst": "Koeling en klimaat maken een vlak profiel met een hoge basislast, onder een dak dat groter is dan de eigen vraag. Laadpunten voor klanten komen bovenop een aansluiting die op winkelgebruik is gedimensioneerd.", "route": "sectoren/retail", "label": "Retail" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Sectoren waar ruimte en eigendom de uitkomst bepalen",
+      "lead": "Hier is de techniek zelden het probleem. De vraag is waar het past en wie erover beslist.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "kaarten": [
+        { "kop": "Opslag en distributie", "tekst": "Meer dakoppervlak dan eigen verbruik. Het knelpunt verschuift naar invoeding: een terugleverbeperking kost opbrengst, terwijl koeling en heftruckladers juist op andere momenten vermogen vragen.", "route": "sectoren/opslag-en-distributie", "label": "Opslag en distributie" },
+        { "kop": "Bedrijventerreinen", "tekst": "Meerdere aansluitingen in hetzelfde voedingsgebied, die elk afzonderlijk om vermogen vragen. De ruimte die er nog is, zit tussen de panden en niet erbinnen.", "route": "sectoren/bedrijventerreinen", "label": "Bedrijventerreinen" },
+        { "kop": "Gebiedsontwikkeling", "tekst": "Het vermogen moet worden aangevraagd voordat de eerste gebruiker bestaat. Er is nog geen profiel, dus wordt er op aannames gedimensioneerd die later te ruim of te krap blijken.", "route": "sectoren/gebiedsontwikkeling", "label": "Gebiedsontwikkeling" },
+        { "kop": "Bouw", "tekst": "Tijdelijk vermogen op een plek zonder definitieve aansluiting, of een bouwaansluiting die te klein is voor elektrisch materieel. De behoefte verandert per bouwfase.", "route": "sectoren/bouw", "label": "Bouw" },
+        { "kop": "Kantoren en vastgoed", "tekst": "De eigenaar betaalt de aansluiting, de huurder bepaalt het verbruik. Laadvraag van huurders komt onaangekondigd, en kosten en baten liggen bij verschillende partijen.", "route": "industrie-vastgoed", "label": "Kantoren en vastgoed" },
+        { "kop": "VvE's", "tekst": "Eén aansluiting, meerdere eigenaren. Wat technisch kan wordt begrensd door de meterindeling en door wat de vergadering besluit, niet door het dakvlak.", "route": "industrie-vve", "label": "VvE's" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Welke gegevens dit beslisbaar maken",
+      "lead": "De sectorkeuze op deze pagina wijst een richting. De diagnose komt uit vijf gegevens die u al heeft.",
+      "alineas": [
+        "<ul><li><strong>Kwartiersprofiel van een vol jaar</strong> — de vorm, de hoogte en de duur van de pieken. Op te vragen bij uw meetbedrijf of netbeheerder.</li><li><strong>Aansluitovereenkomst</strong> — de fysieke aansluitcapaciteit in kVA of in ampère per fase. Dit is de harde grens van de kabel en de aansluitkast.</li><li><strong>Transportovereenkomst</strong> — het gecontracteerd transportvermogen in kW. Dit is de grens waarvoor u betaalt, en die bij netcongestie niet omhoog gaat.</li><li><strong>Wat erbij komt</strong> — laadpunten, een warmtepomp, een extra productielijn, een uitbreiding. Met het aantal en het vermogen per stuk, zodat de gelijktijdigheid te schatten is.</li><li><strong>Dak en terrein</strong> — beschikbaar dakvlak, de draagkracht ervan, en een plek buiten waar opslag kan staan.</li></ul>",
+        "Daarmee is per locatie te bepalen welke van de drie variabelen de rem is, en dus of de eerste ingreep sturing, opslag, opwek of een gesprek met de netbeheerder is. Dat onderscheid is belangrijker dan de sectorkeuze: sturing is het goedkoopst en het snelst, opslag vraagt ruimte en een investering, en verzwaren vraagt tijd die er in een congestiegebied vaak niet is.",
+        "Of er in uw voedingsgebied nog ruimte is, leest u op de Capaciteitskaart van Netbeheer Nederland. Die status geldt per postcode, niet per plaats en niet per sector. Welke regionale netbeheerder uw gebied bedient — Liander, Enexis, Stedin, Westland Infra, Coteq of Rendo — volgt uit uw adres en niet uit uw sector.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat een sectorindeling niet oplost",
+      "lead": "De eerlijke grens van deze pagina.",
+      "alineas": [
+        "Een sector voorspelt een kans, geen uitkomst. Twee distributiecentra op hetzelfde bedrijventerrein kunnen een tegengesteld knelpunt hebben, omdat het ene koelt en het andere niet. Wie op grond van een sectorpagina een systeem koopt, koopt op een gemiddelde dat op geen enkele locatie bestaat.",
+        "Ook verschuift het congestiebeeld niet met uw bedrijfstak. Beperkingen worden gepubliceerd per voedingsgebied: een verzameling postcodes rond één onderstation, met een grens die dwars door gemeentegrenzen loopt. Een branchegenoot een straat verderop kan onder een ander voedingsgebied vallen en dus een ander antwoord van de netbeheerder krijgen.",
+        "En achter de meter blijft de grens wat hij is. Opslag en sturing maken ruimte binnen de aansluitwaarde en binnen het gecontracteerd transportvermogen; ze verhogen die waarden niet. Komt uw <strong>gemiddelde</strong> vraag over de dag boven de grens van de aansluiting uit, dan helpt opslag niet en is een zwaardere aansluiting de enige route. Dan is het gesprek met de netbeheerder de eerste stap, niet de laatste.",
+        "Tot slot zegt een sector niets over de businesscase. Of opslag zich terugverdient hangt af van de hoogte en de duur van uw piek, van uw tariefstructuur en van de inzet die u toestaat — niet van de bedrijfstak waarin u werkt."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Dezelfde drie variabelen, vijf verschillende locaties",
+      "lead": "Vijf locaties uit de projectenlijst, elk met een ander knelpunt. De cijfers, de techniek en de status per locatie staan op de projectpagina.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "kaarten": [
+        { "kop": "Hedin Amsterdam", "tekst": "Automotive in Amsterdam: een nieuwbouwvestiging waarvan de laadvraag niet binnen de beschikbare netcapaciteit paste.", "route": "project-hedin-amsterdam", "label": "Bekijk het project" },
+        { "kop": "Ratio 16, Duiven", "tekst": "Commercieel vastgoed in Duiven: zon, opslag en laden toegevoegd zonder de aansluiting te verzwaren.", "route": "project-ratio-16", "label": "Bekijk het project" },
+        { "kop": "Dormio Medemblik", "tekst": "Recreatie in Medemblik: een seizoenspark achter één bouwaansluiting die te klein was voor de vraag op het park.", "route": "project-dormio-medemblik", "label": "Bekijk het project" },
+        { "kop": "Hazenweg 61, Hengelo", "tekst": "Kantoorpand in Hengelo: opslag, opwek, laden en noodstroom onder één energiemanagementsysteem gebracht.", "route": "project-hazenweg-61", "label": "Bekijk het project" },
+        { "kop": "Nieuw-Schoonoord, Velp", "tekst": "Woningportefeuille in Velp: een groot dakvlak in één traject benut in plaats van woning voor woning.", "route": "project-nieuw-schoonoord", "label": "Bekijk het project" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over de sectorindeling",
+  "faq": [
+    {
+      "vraag": "Mijn sector staat er niet bij. Wat nu?",
+      "antwoord": "De drie variabelen gelden ongeacht de bedrijfstak. Kies de sectorpagina waarvan de beschrijving het dichtst bij uw profiel ligt, of begin bij de situatie: netcongestie bij uitbreiding, laden met een beperkte aansluiting, of pieken in verbruik."
+    },
+    {
+      "vraag": "Krijgen twee panden in dezelfde sector hetzelfde advies?",
+      "antwoord": "Zelden. Koeling, een extra productielijn of een laadplein verandert de vorm van het profiel zo sterk dat twee panden in dezelfde bedrijfstak een andere ingreep nodig hebben. Daarom is het kwartiersprofiel leidend en de sector alleen een ingang."
+    },
+    {
+      "vraag": "Kan ik aan mijn sector zien of ik in een congestiegebied zit?",
+      "antwoord": "Nee. Congestie is een eigenschap van het voedingsgebied waarin uw aansluiting ligt, niet van uw bedrijfstak en niet van uw gemeente. De status hoort bij uw postcode en staat op de Capaciteitskaart van Netbeheer Nederland."
+    },
+    {
+      "vraag": "Waarom staan dak en terrein op één lijn met het verbruiksprofiel?",
+      "antwoord": "Omdat ruimte bepaalt welke ingrepen überhaupt mogelijk zijn. Zonder dakvlak valt eigen opwek af en blijven sturing en opslag over. Zonder bereikbare buitenruimte valt opslag af en blijft alleen sturing over. Dat beperkt de keuze eerder dan het budget."
+    },
+    {
+      "vraag": "Waar begint een traject?",
+      "antwoord": "Bij meten. Wij hebben het kwartiersprofiel van uw aansluiting nodig, uw aansluitwaarde, uw gecontracteerd transportvermogen en wat u wilt bijplaatsen. Daaruit volgt welke variabele de rem is en welke ingreep als eerste iets oplevert."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Begin bij uw situatie",
+      "items": [
+        { "route": "toepassingen", "naam": "Alle toepassingen" },
+        { "route": "toepassingen/netcongestie-bij-uitbreiding", "naam": "Netcongestie bij uitbreiding" },
+        { "route": "toepassingen/laden-met-beperkte-aansluiting", "naam": "Laden met een beperkte aansluiting" },
+        { "route": "toepassingen/pieken-in-verbruik", "naam": "Pieken in verbruik" },
+        { "route": "toepassingen/terugleverbeperking", "naam": "Terugleverbeperking" },
+        { "route": "toepassingen/meerdere-locaties", "naam": "Meerdere locaties" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "energy-hubs", "naam": "Energy Hubs" },
+        { "route": "microgrids", "naam": "Microgrids" }
+      ]
+    },
+    {
+      "kop": "De begrippen",
+      "items": [
+        { "route": "kennis", "naam": "Kennisbank" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" }
+      ]
+    },
+    {
+      "kop": "Oplossingen en bewijs",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "laadplein", "naam": "Laadplein" },
+        { "route": "energieadvies", "naam": "Energieadvies" },
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "regios", "naam": "Regio's" },
+        { "route": "subsidies", "naam": "Subsidies en regelingen" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Begin bij het profiel, niet bij de sector",
+    "tekst": "Stuur het kwartiersprofiel van uw aansluiting, uw aansluitgegevens en wat u wilt bijplaatsen. Wij bepalen welke van de drie variabelen bij u de rem is en wat de eerste ingreep oplevert. Is verzwaren de enige route, dan zeggen we dat ook.",
+    "primair": { "route": "contact", "label": "Laat uw profiel doorrekenen" },
+    "secundair": { "route": "projecten", "label": "Bekijk gerealiseerde projecten" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Beschikbare capaciteit wordt per voedingsgebied gepubliceerd: een verzameling postcodes rond één onderstation, met een grens die geen gemeentegrens volgt.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De op de Capaciteitskaart genoemde jaartallen voor netuitbreidingen zijn planningen en geen toezegging; een status hoort bij een postcode en niet bij een plaats.",
+      "bron": "Capaciteitskaart elektriciteit, Netbeheer Nederland — FAQ",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/faq/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

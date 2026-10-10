@@ -1,139 +1,387 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://vibeenergy.nl/</loc>
-    <priority>1.0</priority>
+    <loc>https://www.vibeenergy.nl/</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/systeem-energieopslag</loc>
-    <priority>0.9</priority>
+    <loc>https://www.vibeenergy.nl/algemene-voorwaarden</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/systeem-zonnepanelen</loc>
-    <priority>0.9</priority>
+    <loc>https://www.vibeenergy.nl/contact</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/systeem-laadpalen</loc>
-    <priority>0.9</priority>
+    <loc>https://www.vibeenergy.nl/cookiebeleid</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/vibe-control</loc>
-    <priority>0.9</priority>
+    <loc>https://www.vibeenergy.nl/energieadvies</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/microgrids</loc>
-    <priority>0.8</priority>
+    <loc>https://www.vibeenergy.nl/energy-hubs</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/energy-hubs</loc>
-    <priority>0.8</priority>
+    <loc>https://www.vibeenergy.nl/industrie-logistiek</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/industrie-logistiek</loc>
-    <priority>0.8</priority>
+    <loc>https://www.vibeenergy.nl/industrie-recreatie</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/industrie-vastgoed</loc>
-    <priority>0.8</priority>
+    <loc>https://www.vibeenergy.nl/industrie-residentieel</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/industrie-vve</loc>
-    <priority>0.8</priority>
+    <loc>https://www.vibeenergy.nl/industrie-vastgoed</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/industrie-recreatie</loc>
-    <priority>0.8</priority>
+    <loc>https://www.vibeenergy.nl/industrie-vve</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/industrie-residentieel</loc>
-    <priority>0.8</priority>
+    <loc>https://www.vibeenergy.nl/kennis</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/projecten</loc>
-    <priority>0.9</priority>
+    <loc>https://www.vibeenergy.nl/kennis/batterij-dimensioneren</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-ratio-16</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/batterijdegradatie</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-hedin-amsterdam</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/batterijveiligheid</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-hedin-alkmaar</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/businesscase-batterij</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-dormio-medemblik</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/ems-energiemanagementsysteem</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-purmerend</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/energiehandel-en-flexibiliteit</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-van-beethovenstraat</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/energieprestatie-meten</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-burchtstraat</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/kw-versus-kwh</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-arnhem-60</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/laadinfrastructuur-dimensioneren</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-ketsheuvel</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/load-balancing</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-nieuw-schoonoord</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/netaansluiting-aanvragen</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-schouwburgring</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/netcongestie-uitgelegd</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-formupgrade</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/normen-en-keuringen</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-kwakkenbergflat</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/peak-shaving</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-bart-crumstraat</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/subsidiemechanismen</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-piersonstraat</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/terugleverbeperking</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/project-hazenweg-61</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/kennis/transportvermogen-versus-aansluitwaarde</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/over-ons</loc>
-    <priority>0.7</priority>
+    <loc>https://www.vibeenergy.nl/laadplein</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/contact</loc>
-    <priority>0.9</priority>
+    <loc>https://www.vibeenergy.nl/microgrids</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/privacy</loc>
-    <priority>0.3</priority>
+    <loc>https://www.vibeenergy.nl/netcongestie</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/algemene-voorwaarden</loc>
-    <priority>0.3</priority>
+    <loc>https://www.vibeenergy.nl/over-ons</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
   <url>
-    <loc>https://vibeenergy.nl/cookiebeleid</loc>
-    <priority>0.3</priority>
+    <loc>https://www.vibeenergy.nl/privacy</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-arnhem-60</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-bart-crumstraat</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-burchtstraat</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-dormio-medemblik</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-formupgrade</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-hazenweg-61</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-hedin-alkmaar</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-hedin-amsterdam</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-ketsheuvel</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-kwakkenbergflat</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-nieuw-schoonoord</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-piersonstraat</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-purmerend</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-ratio-16</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-schouwburgring</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/project-van-beethovenstraat</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/projecten</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios/gelderland</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios/gelderland/arnhem</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios/gelderland/duiven</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios/gelderland/nijmegen</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios/gelderland/renkum</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios/gelderland/rheden</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios/noord-brabant</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios/noord-brabant/tilburg</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios/noord-holland</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios/noord-holland/alkmaar</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios/noord-holland/amsterdam</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios/noord-holland/medemblik</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios/noord-holland/purmerend</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios/overijssel</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/regios/overijssel/hengelo</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/sectoren</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/sectoren/automotive</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/sectoren/bedrijventerreinen</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/sectoren/bouw</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/sectoren/gebiedsontwikkeling</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/sectoren/horeca</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/sectoren/opslag-en-distributie</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/sectoren/parkeren</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/sectoren/productie-en-industrie</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/sectoren/retail</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/sectoren/transport-en-wagenparken</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/sectoren/zorgvastgoed</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/subsidies</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/systeem-energieopslag</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/systeem-laadpalen</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/systeem-zonnepanelen</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/toepassingen</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/toepassingen/batterij-slim-inzetten</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/toepassingen/bestaande-aansluiting-optimaliseren</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/toepassingen/elektrificatie-bedrijfswagens</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/toepassingen/geen-extra-transportvermogen</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/toepassingen/laden-met-beperkte-aansluiting</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/toepassingen/meerdere-locaties</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/toepassingen/netcongestie-bij-uitbreiding</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/toepassingen/pieken-in-verbruik</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/toepassingen/processen-sturen-met-ems</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/toepassingen/terugleverbeperking</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/verduurzaming-bedrijfspanden</loc>
+    <lastmod>2026-10-10</lastmod>
+  </url>
+  <url>
+    <loc>https://www.vibeenergy.nl/vibe-control</loc>
+    <lastmod>2026-10-10</lastmod>
   </url>
 </urlset>

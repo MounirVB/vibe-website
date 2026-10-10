@@ -1,0 +1,228 @@
+{
+  "route": "sectoren/parkeren",
+  "type": "sector",
+  "titel": "Parkeergarages en terreinen: laden en opslag | Vibe Energy",
+  "beschrijving": "Een parkeergarage is elektrisch ontworpen voor licht en ventilatie, niet voor laden. Hoe bezettingsduur, sturing en opslag bepalen hoeveel laadpunten passen.",
+  "og_titel": "Van parkeerplaats naar laadplaats, binnen de aansluiting",
+  "h1": "Een parkeerplaats wordt een laadplaats. De aansluiting weet dat nog niet.",
+  "lead": "Een parkeergarage is elektrisch aangelegd voor verlichting, ventilatie en een slagboom. Laden is een andere soort last: hoog, kort en bij iedereen tegelijk. Hoeveel laadpunten er passen, hangt niet af van het aantal parkeervakken maar van de bezettingsduur en van wat de aansluiting op het drukste kwartier nog overlaat.",
+  "data_pagina": "sectoren",
+  "kruimels": [{ "naam": "Sectoren", "route": "sectoren" }],
+  "kruimel_label": "Parkeren",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Laadinfrastructuur en energieopslag voor parkeerexploitanten",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Vraag een laadanalyse aan" },
+    { "soort": "ghost", "anker": "#bezettingsduur", "label": "Waarom bezettingsduur alles bepaalt" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Hoeveel laadpunten passen er in een bestaande parkeergarage of op een parkeerterrein?",
+    "antwoord": "Het aantal laadpunten dat in een parkeergarage of op een parkeerterrein past, volgt uit drie gegevens: het vermogen dat de aansluiting op het drukste moment nog vrij heeft, de gelijktijdigheid van de laadsessies, en de tijd dat een auto er staat. Bezettingsduur is daarbij de bepalende variabele, want dezelfde hoeveelheid energie in minder tijd vraagt meer vermogen: een kort bezochte binnenstadsgarage heeft per plek meer kW nodig dan een langparkeerterrein. Met dynamische load balancing, en waar nodig met opslag, passen er doorgaans meer punten dan de som van de laadvermogens toelaat. In een gesloten garage komt de brandveiligheid van laden daar als harde ontwerprandvoorwaarde bij.",
+    "voorbehoud": "Dit zegt niets over wat in uw garage is toegestaan. Of laden op een bepaald niveau van een gesloten garage kan, is een ontwerp- en vergunningsvraag per gebouw; sturing lost die vraag niet op. Opslag creëert bovendien geen extra gecontracteerd transportvermogen en verhoogt de aansluitwaarde niet — het verdeelt wat er al is."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "verschuiving",
+      "kop": "De businesscase verschuift van parkeerplaats naar laadplaats",
+      "lead": "Dezelfde vierkante meter levert twee opbrengsten in plaats van één, en vraagt een installatie die er niet ligt.",
+      "alineas": [
+        "Een parkeerplaats bracht decennialang één ding op: parkeergeld per uur of per maand. Bij een laadplaats komt daar een tweede stroom bij, en verandert ook de eerste. Bezoekers met een elektrische auto kiezen hun garage mede op de vraag of ze er kunnen laden, en abonnementhouders vragen om een vaste plek met een punt erbij. Voor een exploitant is dat geen techniekvraag maar een omzetvraag.",
+        "De elektrische kant van het gebouw is daar niet op gebouwd. De aansluiting van een bestaande garage is gedimensioneerd op verlichting, ventilatie, slagbomen, betaalautomaten, een lift en — bij een ondergrondse garage — pompen. Dat is een lage, gelijkmatige en goed voorspelbare last. Laden is het tegenovergestelde: hoog vermogen per punt, korte duur, en bij voorkeur op precies dezelfde uren als bij alle andere bezoekers.",
+        "Daarom begint een laadplan voor een garage nooit bij het aantal vakken. Het begint bij het kwartiersprofiel van de aansluiting en bij de in- en uitrijgegevens die u zelf al vastlegt. Die twee bestanden zeggen samen hoeveel vermogen er over is op het drukste kwartier, en hoe lang de auto's die u wilt laden er werkelijk staan. Zonder die twee is elk aantal laadpunten een aanname."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Waarvoor de aansluiting van een bestaande garage is ontworpen",
+      "rijen": [
+        ["Verlichting", "Continu, laag en voorspelbaar. Door ledvervanging is deze post op veel locaties kleiner geworden. Dat levert ruimte op, maar zelden genoeg voor een laadplein."],
+        ["Ventilatie", "In een gesloten garage de zwaarste vaste installatie. Gedimensioneerd op luchtverversing en op rook- en warmteafvoer bij brand. Een gegeven van het gebouw waar laden zich naar moet voegen, niet omgekeerd."],
+        ["Slagbomen, betaalautomaten, lift, pompen", "Klein in vermogen, groot in belang. Deze groep mag nooit uitvallen of terugvallen omdat laadpunten de aansluiting vol trekken. Een pomp in een ondergrondse garage is geen comfortfunctie."],
+        ["Laadpunten", "Hoog vermogen per punt, korte duur, sterke gelijktijdigheid. Het aantal punten maal het vermogen per punt is vrijwel nooit de werkelijke vraag — maar het is wel de waarde waarop zonder sturing wordt gerekend, en dus de reden dat een verzwaringsaanvraag te groot uitvalt."],
+        ["Gelijktijdigheid", "Het deel van de punten dat op hetzelfde moment vol trekt. In een garage is dit de bepalende onbekende, en die volgt uit uw bezoekpatroon en niet uit de techniek."]
+      ],
+      "noot": "De oorspronkelijke aansluitwaarde is bepaald door de gebouwinstallatie. Wie laden daar ongemeten bij optelt, komt uit op een verzwaring die vaak niet nodig is en in een congestiegebied vaak ook niet kan."
+    },
+    {
+      "soort": "tekst",
+      "id": "bezettingsduur",
+      "kop": "Bezettingsduur bepaalt het vermogen per plek",
+      "lead": "Dezelfde energie in minder tijd is meer vermogen. Dat ene gegeven scheidt een binnenstadsgarage van een P+R-terrein.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Een auto heeft per bezoek een bepaalde hoeveelheid energie nodig, uitgedrukt in kWh. Hoe lang hij staat, bepaalt met welk vermogen die kWh erin moet. <strong>Rekenvoorbeeld, geen meting:</strong> 30 kWh bijladen in tien uur vraagt gemiddeld 3 kW; dezelfde 30 kWh in anderhalf uur vraagt 20 kW. Het energieverbruik is gelijk, de belasting van uw aansluiting verschilt bijna zeven keer.",
+        "Daarmee valt de parkeermarkt in twee soorten uiteen. Bij <strong>langparkeren</strong> — P+R, werknemersparkeren, een hotelgarage, een terrein bij een luchthaven — staat een auto uren tot dagen. Daar kan het vermogen per plek laag blijven en is de spreiding over de nacht of de werkdag groot. Dynamische load balancing is in die situatie opvallend effectief: er is veel tijd om weinig vermogen over veel punten te verdelen, en een auto die een half uur stilstaat merkt er niets van.",
+        "Bij <strong>kort parkeren</strong> is het omgekeerd. Een binnenstadsgarage, een winkelcentrum, een ziekenhuis of een theater houdt een bezoeker een tot twee uur vast, en die bezoeker verwacht in die tijd merkbaar bij te laden. Dat vraagt een hoger vermogen per plek. De omloopsnelheid zorgt er bovendien voor dat dezelfde plek meerdere keren per dag energie vraagt. Tel daarbij op dat de bezoekpiek van een winkelcentrum samenvalt met de piek van zijn laadpunten, en de gelijktijdigheid is op haar hoogst precies wanneer het gebouw zelf ook het meeste vraagt.",
+        "Een garage met beide soorten gebruikers is in dit opzicht het gunstigst: abonnementhouders die lang staan, bezoekers die kort staan. De sturing kan dan het vermogen van de langstaanders terugnemen op het moment dat een kortparkeerder aankomt, en het later teruggeven. Niemand rijdt weg met te weinig energie en de aansluiting ziet één vlakke lijn in plaats van een reeks pieken. Welke verdeling u heeft, staat in uw eigen parkeerdata — niet in een landelijk gemiddelde."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Een gesloten garage en een open terrein zijn twee verschillende opgaven",
+      "lead": "Het verschil zit niet in de laadpunten, maar in wat het oppervlak kan en in waar een kabel mag lopen.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "<h3>De gesloten garage</h3>",
+        "Een inpandige of ondergrondse garage heeft geen dak dat de zon ziet. Eigen opwek valt daarmee weg als bron, tenzij er een open bovenste dek is of het pand erboven dakvlak vrij heeft. Wat overblijft, is de bestaande aansluiting beter benutten: de laadpunten begrenzen op wat de gebouwinstallatie overlaat, en waar het rendeert opslag bijplaatsen. Die opslag staat in de praktijk buiten — naast de inrit of op het terrein — en niet in de garage zelf. Dat is een veiligheidskeuze, en meteen een ruimtevraag op een locatie waar zelden ruimte over is.",
+        "Ook het binnenwerk kost meer dan verwacht. Kabelroutes lopen langs of door brandcompartimenten en die doorvoeren moeten weer brandwerend worden afgewerkt. De bestaande verdeelinrichting heeft zelden tien vrije groepen. De vrije hoogte boven de rijbaan bepaalt waar kabelgoten kunnen hangen en of een bestelbus er nog onderdoor kan. Op veel locaties is de grootste kostenpost niet het laadpunt, maar de weg ernaartoe.",
+        "<h3>Het open terrein</h3>",
+        "Op een open parkeerterrein verandert de opgave wezenlijk, want het oppervlak kan zelf opwekken. Een overkapping met zonnepanelen boven de parkeervakken produceert op de uren dat een bezoekersterrein het drukst is. Dat is een gunstiger samenval van opwek en verbruik dan een plat dak op een kantoor meestal haalt, en het betekent dat een deel van het laadvermogen rechtstreeks uit het eigen oppervlak komt in plaats van uit de aansluiting. Er is daarnaast ruimte voor een batterijopstelling, en de kabeltracés lopen door uw eigen bestrating.",
+        "Daar staan andere randvoorwaarden tegenover. Een overkapping is een bouwwerk: fundering, windbelasting, een vergunning, en een ingreep in de inrichting van het terrein die u aan uw bezoekers uitlegt. De omvormers van zo'n overkapping en de laadpunten hangen bovendien aan dezelfde aansluiting, dus ze vallen in één gelijktijdigheidsrekening. En wekt het terrein meer op dan er op dat moment wordt geladen, dan loopt u op het invoedingsdeel van de aansluiting tegen dezelfde grens aan — in een congestiegebied soms in de vorm van een terugleverbeperking."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "In een gesloten garage is brandveiligheid een ontwerprandvoorwaarde, geen bijlage",
+      "lead": "Waar de laadpunten komen, is in een gesloten garage eerst een veiligheidsvraag en pas daarna een elektrotechnische.",
+      "alineas": [
+        "Laden in een gesloten parkeergarage regelt u niet met een stekker. De plaats van de laadpunten raakt de vluchtroutes, de compartimentering, de rook- en warmteafvoer, de bereikbaarheid voor de brandweer en de vraag of een voertuig bij een incident nog te verplaatsen is. Dat zijn gebouwvragen. Ze worden per garage beoordeeld, met de gemeente en de regionale brandweer als gesprekspartners in de vergunning, en soms met vragen van de verzekeraar van de eigenaar erbij.",
+        "Een aantal keuzes volgt daar direct uit, en die horen in het plan te staan vóórdat er vermogen wordt gerekend:",
+        "<ul><li><strong>Zonering.</strong> Niet elk niveau en niet elke rij is even geschikt. Laden dicht bij de inrit of op een open bovenste dek is bouwkundig een ander gesprek dan laden op de onderste laag van een ondergrondse garage.</li><li><strong>Centraal afschakelen.</strong> Alle laadpunten in één handeling spanningsloos kunnen maken, zonder dat de ventilatie, de verlichting en de vluchtwegsignalering meegaan, is een ontwerpeis en geen extra optie.</li><li><strong>Detectie en opvolging.</strong> Wat er gebeurt als detectie aanslaat — laden stoppen, ventilatie opvoeren, melding naar de beheerder — hoort vooraf vastgelegd en getest te zijn, niet geïmproviseerd.</li><li><strong>Opstelling van de opslag.</strong> Een batterij hoort in deze situatie buiten de garage, op afstand van het gebouw en van de vluchtroutes, met eigen detectie en eigen afstanden.</li></ul>",
+        "Wij ontwerpen hierop volgens de geldende richtlijnen en verzorgen de vergunningsaanvraag die erbij hoort. Wat die richtlijnen in uw garage betekenen, hangt af van het bouwjaar, de indeling, de ventilatie en het gebruik. Een antwoord dat voor alle garages geldt, bestaat niet, en een leverancier die het zonder bezoek geeft, heeft het gebouw niet gezien."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Laden als exploitatiemodel: wie investeert, wie beheert, wie verdient",
+      "lead": "Een laadplek heeft twee opbrengsten en één vaste kostenpost die zich niets aantrekt van uw bezetting.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "De opbrengstkant is helder: het parkeertarief en de geleverde energie. De kostenkant heeft een post die in businesscases wordt onderschat. Netbeheerderskosten hangen aan uw aansluitwaarde en uw gecontracteerd transportvermogen, niet aan uw bezetting. Een laadplein dat ruim is uitgelegd en weinig wordt gebruikt, kost elke maand geld waar niemand voor laadt. Daarom is een laadplein dat meegroeit met de vraag bijna altijd verstandiger dan een laadplein dat in één keer op de eindambitie wordt gebouwd.",
+        "<h3>Drie modellen in de praktijk</h3>",
+        "<ul><li><strong>Zelf investeren en zelf exploiteren.</strong> U houdt de marge op de energie en de regie over het tarief, en u draagt de investering, het beheer en het bezettingsrisico.</li><li><strong>Concessie aan een laadexploitant.</strong> Een derde partij plaatst en beheert, u ontvangt een vergoeding per plek of per geleverde kWh. Eenvoudig, maar u geeft de tariefstelling uit handen en vaak ook de sturing — en juist die sturing bepaalt of uw aansluiting het houdt.</li><li><strong>Exploitatie door Vibe.</strong> Wij investeren, bouwen en beheren de installatie en u betaalt voor het gebruik. Of dat in uw situatie uitkomt, beoordelen we per locatie: het hangt af van uw profiel, uw bezetting en de looptijd die u wilt.</li></ul>",
+        "Welk model u ook kiest, één voorwaarde blijft gelijk: de sturing van de laadpunten en de grenswaarde van het gebouw moeten in één hand liggen. Zodra een externe partij het laadvermogen bepaalt terwijl u de aansluiting beheert, is er niemand die de grens bewaakt. Daar gaat het in de praktijk mis — niet in de businesscase, maar op de eerste drukke zaterdag.",
+        "Tariefstelling hoort bij het ontwerp en niet bij de marketing erna. Een kortparkeergarage die alleen per kWh afrekent, loopt vol met auto's die klaar zijn en blijven staan; een blokkeertarief na afloop van de sessie is daar het instrument tegen, en het houdt de doorstroom per laadpunt op peil. Een langparkeerterrein heeft dat probleem nauwelijks en kan juist met een laag vermogen per plek uit. Hetzelfde laadpunt verdient in die twee gevallen op een andere manier zijn geld."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "Niet elke garage is met sturing alleen op te lossen. Vier grenzen die wij vooraf benoemen.",
+      "alineas": [
+        "<strong>Sturing verdeelt vermogen; ze maakt het niet.</strong> Laat uw aansluiting structureel te weinig over voor de ambitie, dan verdeelt dynamische load balancing netjes een tekort. Elke auto laadt langzaam en de kortparkeerder rijdt weg met te weinig energie. Technisch is dat een geslaagd systeem, commercieel een mislukking. De eerlijke conclusie is dan: minder punten, een lager vermogen per punt, opslag erbij, of toch verzwaren.",
+        "<strong>Opslag heeft rust nodig.</strong> Een batterij vangt een piek op en laadt bij in een rustig venster. Een garage die van de ochtend tot de avond vol staat met korte bezoeken heeft dat venster nauwelijks. Daar is de overschrijding geen piek maar een plateau, en dan is opslag het verkeerde gereedschap. Of dat bij u zo is, blijkt uit het kwartiersprofiel en niet uit een vuistregel.",
+        "<strong>Brandveiligheid is geen rekenprobleem.</strong> Er zijn garages waar laden op een bepaald niveau niet acceptabel is. Geen enkele vorm van sturing verandert dat. De laadpunten verhuizen dan naar een plek die wel kan, of ze komen er niet.",
+        "<strong>Het bouwkundige werk blijft wat het is.</strong> Kabelroutes, een nieuwe verdeelinrichting, doorvoeren door compartimenten en het brandwerend herstellen daarvan zijn vaak het zwaarste deel van de begroting. Een voorstel dat alleen laadpunten en vermogens noemt, is geen plan.",
+        "Of verzwaren in uw gebied een route is, kunt u zelf nakijken. Netbeheerders publiceren de beschikbare capaciteit per voedingsgebied: een verzameling postcodes rond één onderstation, die geen gemeentegrens volgt. Een congestiestatus per gemeente bestaat dus niet, en twee garages in dezelfde stad kunnen een verschillend antwoord krijgen.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op de postcode van uw garage</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit op uw locatie op neerkomt",
+      "lead": "Zes vragen die bij een parkeerexploitatie steeds in deze volgorde langskomen.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "kaarten": [
+        { "kop": "Een laadplein ontwerpen", "tekst": "Van beschikbaar vermogen naar een indeling met punten, vermogens en een grenswaarde die de gebouwinstallatie respecteert.", "route": "laadplein", "label": "Laadplein" },
+        { "kop": "De laadinfrastructuur zelf", "tekst": "Palen, kabels, verdeling en de meet- en afrekenlaag erachter, inclusief het beheer na oplevering.", "route": "systeem-laadpalen", "label": "Laadinfrastructuur" },
+        { "kop": "Vermogen verdelen over punten", "tekst": "Statisch verdeelt een vast budget. Dynamisch meet de actuele belasting van de aansluiting en geeft weg wat er op dat moment over is.", "route": "kennis/load-balancing", "label": "Load balancing" },
+        { "kop": "Veiligheid van de opslag", "tekst": "Waarom een batterij bij een gesloten garage buiten staat, en welke afstanden, detectie en afschakeling daarbij horen.", "route": "kennis/batterijveiligheid", "label": "Batterijveiligheid" },
+        { "kop": "Laden met een beperkte aansluiting", "tekst": "De situatie waarin het aantal punten maal het vermogen per punt ver boven de aansluiting uitkomt.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met beperkte aansluiting" },
+        { "kop": "De garage hoort bij een pand", "tekst": "Eigenaar, huurder en beheerder moeten het eens zijn over investering en tarief voordat er een kabel ligt.", "route": "industrie-vastgoed", "label": "Kantoren en vastgoed" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Gerealiseerd, met naam en plaats",
+      "lead": "Twee locaties waar laden binnen een bestaande aansluiting is ingepast. De cijfers staan op de projectpagina zelf.",
+      "kaarten": [
+        { "kop": "Ratio 16, Duiven", "tekst": "Laadplekken bij een bedrijfspand, samen met zon en batterijopslag, door de sturing binnen het bestaande transportvermogen gehouden. Dat transportvermogen bleef ongewijzigd.", "route": "project-ratio-16", "label": "Bekijk het project" },
+        { "kop": "Hedin Amsterdam", "tekst": "Laadplekken en batterijopslag ingepast op een bestaande aansluiting, zonder die aansluiting te verzwaren.", "route": "project-hedin-amsterdam", "label": "Bekijk het project" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen van parkeerexploitanten",
+  "faq": [
+    {
+      "vraag": "Hoeveel laadpunten passen er in mijn garage?",
+      "antwoord": "Dat volgt uit drie gegevens en niet uit het aantal parkeervakken: het vermogen dat uw aansluiting op het drukste kwartier nog vrij heeft, de bezettingsduur van uw bezoekers en de gelijktijdigheid die daaruit volgt. Met dynamische load balancing passen er doorgaans meer punten dan de som van de laadvermogens toelaat, omdat ze nooit allemaal tegelijk vol trekken."
+    },
+    {
+      "vraag": "Mag ik laden in een ondergrondse parkeergarage?",
+      "antwoord": "Daar bestaat geen algemeen ja of nee. Het is een ontwerp- en vergunningsvraag per gebouw, waarin de vluchtroutes, de compartimentering, de rook- en warmteafvoer en de bereikbaarheid voor de brandweer meewegen. Gemeente en regionale brandweer zijn daarin gesprekspartner. Wij ontwerpen volgens de geldende richtlijnen en verzorgen de aanvraag, maar de uitkomst hangt af van uw garage."
+    },
+    {
+      "vraag": "Moet ik mijn aansluiting verzwaren voor een laadplein?",
+      "antwoord": "Niet per definitie. Eerst wordt gemeten wat de gebouwinstallatie overlaat; daarna wordt bepaald wat sturing en eventueel opslag daarbinnen mogelijk maken. Komt uw gemiddelde vraag over de dag boven wat de aansluiting kan leveren, dan is verzwaren wel de route. Of dat in uw voedingsgebied kan, staat op de Capaciteitskaart van Netbeheer Nederland."
+    },
+    {
+      "vraag": "Kan ik zonnepanelen combineren met een parkeervoorziening?",
+      "antwoord": "Op een open terrein wel, met een overkapping boven de parkeervakken. De opwek valt daar gunstig samen met de bezoekpiek. Het is wel een bouwwerk: fundering, windbelasting en een vergunning horen erbij. Bij een gesloten garage kan het alleen als er een open bovenste dek of beschikbaar dakvlak op het pand erboven is, en als de constructie het draagt."
+    },
+    {
+      "vraag": "Verdient een batterij zich in een parkeergarage terug?",
+      "antwoord": "Dat hangt af van de vorm van uw belasting. Een batterij vangt een piek op en laadt bij in een rustig venster. Heeft uw garage korte, hoge pieken, dan is dat venster er. Staat de garage de hele dag vol met korte bezoeken, dan is de overschrijding een plateau en helpt opslag weinig. Het kwartiersprofiel geeft het antwoord, een vuistregel niet."
+    },
+    {
+      "vraag": "Welke gegevens heeft u van mij nodig om te beginnen?",
+      "antwoord": "Het kwartiersprofiel van de aansluiting, uw aansluitwaarde en gecontracteerd transportvermogen, en een export van de in- en uitrijtijden uit uw parkeersysteem. Dat laatste bestand hebben andere sectoren niet en is hier juist het nuttigst: het laat zien hoe lang auto's werkelijk staan en dus welk vermogen per plek nodig is."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Laden, opslag en opwek",
+      "items": [
+        { "route": "laadplein", "naam": "Laadplein" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/laadinfrastructuur-dimensioneren", "naam": "Laadinfrastructuur dimensioneren" },
+        { "route": "kennis/batterijveiligheid", "naam": "Batterijveiligheid" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" }
+      ]
+    },
+    {
+      "kop": "Aangrenzende sectoren",
+      "items": [
+        { "route": "industrie-vastgoed", "naam": "Kantoren en vastgoed" },
+        { "route": "sectoren/retail", "naam": "Retail" },
+        { "route": "sectoren/automotive", "naam": "Automotive" },
+        { "route": "sectoren/zorgvastgoed", "naam": "Zorgvastgoed" },
+        { "route": "sectoren/gebiedsontwikkeling", "naam": "Gebiedsontwikkeling" }
+      ]
+    },
+    {
+      "kop": "Verder kijken",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "toepassingen/laden-met-beperkte-aansluiting", "naam": "Laden met beperkte aansluiting" },
+        { "route": "subsidies", "naam": "Subsidies en regelingen" },
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "sectoren", "naam": "Alle sectoren" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Twee bestanden, en u weet hoeveel punten er passen",
+    "tekst": "Stuur het kwartiersprofiel van de aansluiting, uw aansluit- en transportgegevens en een export van de in- en uitrijtijden. Daaruit volgt hoeveel vermogen er op het drukste kwartier over is, hoe lang uw bezoekers werkelijk staan en welk laadvermogen per plek daarbij hoort. Kan het niet binnen de bestaande aansluiting, dan zeggen we dat.",
+    "primair": { "route": "contact", "label": "Vraag een laadanalyse aan" },
+    "secundair": { "route": "laadplein", "label": "Hoe een laadplein wordt ontworpen" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare capaciteit per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

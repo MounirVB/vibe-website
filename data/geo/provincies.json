@@ -1,0 +1,105 @@
+{
+  "bron": "PDOK Locatieserver v3_1 (bron: BZK Bestuurlijke Grenzen)",
+  "ophaaldatum": "2026-10-10",
+  "aantal": 12,
+  "provincies": [
+    {
+      "provinciecode": "PV20",
+      "naam": "Groningen",
+      "afkorting": "GR",
+      "slug": "groningen",
+      "aliassen": [],
+      "aantal_gemeenten": 10
+    },
+    {
+      "provinciecode": "PV21",
+      "naam": "Fryslân",
+      "afkorting": "FR",
+      "slug": "fryslan",
+      "aliassen": [
+        "Friesland"
+      ],
+      "aantal_gemeenten": 18
+    },
+    {
+      "provinciecode": "PV22",
+      "naam": "Drenthe",
+      "afkorting": "DR",
+      "slug": "drenthe",
+      "aliassen": [],
+      "aantal_gemeenten": 12
+    },
+    {
+      "provinciecode": "PV23",
+      "naam": "Overijssel",
+      "afkorting": "OV",
+      "slug": "overijssel",
+      "aliassen": [],
+      "aantal_gemeenten": 25
+    },
+    {
+      "provinciecode": "PV24",
+      "naam": "Flevoland",
+      "afkorting": "FL",
+      "slug": "flevoland",
+      "aliassen": [],
+      "aantal_gemeenten": 6
+    },
+    {
+      "provinciecode": "PV25",
+      "naam": "Gelderland",
+      "afkorting": "GD",
+      "slug": "gelderland",
+      "aliassen": [],
+      "aantal_gemeenten": 51
+    },
+    {
+      "provinciecode": "PV26",
+      "naam": "Utrecht",
+      "afkorting": "UT",
+      "slug": "utrecht",
+      "aliassen": [],
+      "aantal_gemeenten": 26
+    },
+    {
+      "provinciecode": "PV27",
+      "naam": "Noord-Holland",
+      "afkorting": "NH",
+      "slug": "noord-holland",
+      "aliassen": [],
+      "aantal_gemeenten": 44
+    },
+    {
+      "provinciecode": "PV28",
+      "naam": "Zuid-Holland",
+      "afkorting": "ZH",
+      "slug": "zuid-holland",
+      "aliassen": [],
+      "aantal_gemeenten": 50
+    },
+    {
+      "provinciecode": "PV29",
+      "naam": "Zeeland",
+      "afkorting": "ZL",
+      "slug": "zeeland",
+      "aliassen": [],
+      "aantal_gemeenten": 13
+    },
+    {
+      "provinciecode": "PV30",
+      "naam": "Noord-Brabant",
+      "afkorting": "NB",
+      "slug": "noord-brabant",
+      "aliassen": [],
+      "aantal_gemeenten": 56
+    },
+    {
+      "provinciecode": "PV31",
+      "naam": "Limburg",
+      "afkorting": "LB",
+      "slug": "limburg",
+      "aliassen": [],
+      "aantal_gemeenten": 31
+    }
+  ]
+}

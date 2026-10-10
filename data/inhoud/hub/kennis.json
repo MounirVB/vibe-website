@@ -1,0 +1,204 @@
+{
+  "route": "kennis",
+  "type": "hub",
+  "titel": "Kennisbank zakelijke energie-infrastructuur | Vibe Energy",
+  "beschrijving": "Vaktechnische uitleg over kW en kWh, netcongestie, batterijopslag, sturing, laden, normen en subsidie. Zeventien artikelen, gegroepeerd per thema.",
+  "og_titel": "Kennisbank: de techniek achter uw aansluiting",
+  "h1": "Kennisbank: de begrippen, de grenzen en de rekenregels",
+  "lead": "Zakelijke energieprojecten lopen zelden vast op techniek. Ze lopen vast op verwarde eenheden, op een aansluiting die iets anders is dan een contract, en op een batterij die op het verkeerde getal is gedimensioneerd. Zeventien artikelen, per thema gegroepeerd, elk met één vraag als uitgangspunt.",
+  "data_pagina": "kennis",
+  "kruimels": [],
+  "kruimel_label": "Kennisbank",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw profiel doorrekenen" },
+    { "soort": "ghost", "anker": "#leesorde", "label": "Waar u het beste begint" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat staat er in de kennisbank van Vibe Energy?",
+    "antwoord": "De kennisbank van Vibe Energy bundelt vaktechnische uitleg over energie-infrastructuur achter de meter, verdeeld over zes thema's: grootheden en begrippen (kW, kWh, aansluitwaarde, gecontracteerd transportvermogen), het net (wat netcongestie is en hoe een aansluiting wordt aangevraagd of verzwaard), batterijopslag (dimensioneren, degradatie, veiligheid, peak shaving, businesscase), sturing (EMS, load balancing, prestatie meten, flexibiliteit), opwek en laden (terugleverbeperking, laadinfrastructuur dimensioneren) en de regels en het geld eromheen (keuringen en subsidiemechanismen). Elk artikel beantwoordt één vraag en benoemt waar de methode ophoudt te werken.",
+    "voorbehoud": "De kennisbank beschrijft methoden en begrippen, geen uitkomsten voor een specifieke locatie. Waar een artikel met een rendement, een terugverdientijd of een capaciteit rekent, staat dat er als gemarkeerd rekenvoorbeeld bij de rekenstap: de werkelijke uitkomst volgt uit het kwartiersprofiel van één aansluiting en is niet algemeen geldig."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "leesorde",
+      "kop": "Waar u begint, hangt af van de vraag die u heeft",
+      "lead": "Drie vragen komen het vaakst terug. Voor elk ervan is er een leesorde, en die orde is geen smaak.",
+      "alineas": [
+        "<ul><li><strong>Ik begrijp mijn eigen cijfers niet.</strong> Begin bij kW versus kWh, lees daarna transportvermogen en aansluitwaarde. Daarna weet u welk getal uw probleem beschrijft, en dus welke ingreep er überhaupt bij past.</li><li><strong>Ik overweeg een batterij.</strong> Lees eerst peak shaving, dan een batterij dimensioneren, dan de businesscase. In die orde, want de dimensionering volgt uit de grens die u kiest, en de businesscase volgt uit de dimensionering.</li><li><strong>Ik wil uitbreiden of meer laden.</strong> Begin bij netcongestie uitgelegd, dan load balancing, dan laadinfrastructuur dimensioneren. Pas daarna is de vraag hoeveel opslag u erbij nodig heeft.</li></ul>",
+        "Wie met de businesscase begint, rekent met een vermogen dat nog niet vaststaat. Wie met de batterij begint, kiest een grens die nog niet is onderbouwd. En wie met het aantal laadpunten begint, komt bij de netbeheerder uit met een aanvraag die niet nodig was.",
+        "De artikelen staan hieronder gegroepeerd per thema. Elke kaart noemt de vraag die dat artikel beantwoordt, zodat u niet hoeft te klikken om te weten of het over uw probleem gaat."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "id": "grootheden",
+      "kop": "Grootheden en begrippen",
+      "lead": "Twee eenheden en drie grenzen die op uw papieren door elkaar lopen. Hier gaan ze uit elkaar.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "kaarten": [
+        { "kop": "kW of kWh", "tekst": "Heb ik een probleem met mijn aansluiting of met mijn energierekening? Het verschil tussen hoe hard en hoeveel, en waarom twee locaties met hetzelfde jaarverbruik een volstrekt ander probleem kunnen hebben.", "route": "kennis/kw-versus-kwh", "label": "kW versus kWh" },
+        { "kop": "Transportvermogen en aansluitwaarde", "tekst": "Waarom staat er op mijn aansluitovereenkomst een ander getal dan op mijn transportovereenkomst? Welke van de twee netcongestie blokkeert, welke u betaalt en welke u soms kunt verlagen.", "route": "kennis/transportvermogen-versus-aansluitwaarde", "label": "Transportvermogen en aansluitwaarde" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Het net",
+      "lead": "Wat er buiten uw meterkast gebeurt, en welk deel daarvan u kunt beïnvloeden.",
+      "kaarten": [
+        { "kop": "Netcongestie uitgelegd", "tekst": "Waarom krijg ik geen extra vermogen terwijl er landelijk stroom over is? Congestie als transportprobleem per voedingsgebied, en waarom een postcode bepalend is en een gemeentegrens niets zegt.", "route": "kennis/netcongestie-uitgelegd", "label": "Netcongestie uitgelegd" },
+        { "kop": "Netaansluiting aanvragen of verzwaren", "tekst": "Hoe loopt een aanvraag, en wat gebeurt er als het gebied vol zit? De stappen, de wachtrij, het verschil tussen een aansluit- en een transportvraag, en wie waarvoor verantwoordelijk is.", "route": "kennis/netaansluiting-aanvragen", "label": "Netaansluiting aanvragen" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Batterijopslag",
+      "lead": "Van de grens die u kiest tot het systeem dat die grens haalt — en wat er in de jaren daarna met dat systeem gebeurt.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "kaarten": [
+        { "kop": "Een batterij dimensioneren", "tekst": "Hoeveel kW en hoeveel kWh heb ik nodig? Hoe het kwartiersprofiel de hoogte en de duur van de piek oplevert, en waarom een jaarverbruik in kWh die informatie juist wegmiddelt.", "route": "kennis/batterij-dimensioneren", "label": "Een batterij dimensioneren" },
+        { "kop": "Batterijdegradatie", "tekst": "Hoeveel bruikbare capaciteit blijft er over? Wat degradatie veroorzaakt, hoe cycli, laadsnelheid en temperatuur meewegen, en waarom dit in het ontwerp hoort en niet in de verrassing achteraf.", "route": "kennis/batterijdegradatie", "label": "Batterijdegradatie" },
+        { "kop": "Batterijveiligheid", "tekst": "Wat gebeurt er als het misgaat, en hoe wordt dat voorkomen? Opstelling en afstanden, detectie, compartimentering en de afspraken die u met de brandweer en de verzekeraar maakt.", "route": "kennis/batterijveiligheid", "label": "Batterijveiligheid" },
+        { "kop": "Peak shaving", "tekst": "Welke grens kies ik, en wat kost het om eronder te blijven? Hoe piekafvlakking werkt, hoe u de grens bepaalt en waarom een lagere grens niet automatisch beter is.", "route": "kennis/peak-shaving", "label": "Peak shaving" },
+        { "kop": "De businesscase van een batterij", "tekst": "Welke posten staan er werkelijk in de rekening? De waardestromen die meetellen, de kosten die mensen vergeten en de aannames waarop een businesscase omvalt.", "route": "kennis/businesscase-batterij", "label": "Businesscase batterij" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Sturing",
+      "lead": "Hardware vangt pieken op, maar alleen als iets besluit wanneer. Dit is dat iets.",
+      "kaarten": [
+        { "kop": "Wat een EMS doet", "tekst": "Wat beslist een energiemanagementsysteem precies, en op welk moment? Welke signalen erin gaan, welke grenzen het bewaakt en welke beslissingen het juist niet mag overnemen.", "route": "kennis/ems-energiemanagementsysteem", "label": "EMS uitgelegd" },
+        { "kop": "Load balancing", "tekst": "Hoe verdeel ik één aansluiting over meerdere verbruikers? Het verschil tussen statisch een vast budget verdelen en dynamisch meten wat er op dit moment over is.", "route": "kennis/load-balancing", "label": "Load balancing" },
+        { "kop": "Energieprestatie meten", "tekst": "Hoe weet ik of het werkt? Welke meetpunten u nodig heeft, welke basislijn, en waarom een vergelijking zonder weerjaar en bedrijfstijd geen bewijs is.", "route": "kennis/energieprestatie-meten", "label": "Energieprestatie meten" },
+        { "kop": "Energiehandel en flexibiliteit", "tekst": "Kan mijn batterij geld verdienen op de markt? Welke markten er zijn, wat een aggregator doet, en waarom handel en piekafvlakking om dezelfde capaciteit vechten.", "route": "kennis/energiehandel-en-flexibiliteit", "label": "Energiehandel en flexibiliteit" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Opwek en laden",
+      "lead": "De twee kanten van de aansluiting die het snelst tegen een grens aanlopen: invoeden en laden.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "kaarten": [
+        { "kop": "Terugleverbeperking", "tekst": "Waarom mag mijn zonnedak niet alles terugleveren? Wat een invoedingsbeperking is, hoe de omvormer wordt begrensd, wat u aan opbrengst verliest en wat opslag daaraan verandert.", "route": "kennis/terugleverbeperking", "label": "Terugleverbeperking" },
+        { "kop": "Laadinfrastructuur dimensioneren", "tekst": "Hoeveel laadpunten passen er achter mijn aansluiting? Waarom het aantal punten maal het vermogen zelden de werkelijke vraag is, en hoe u gelijktijdigheid bepaalt in plaats van hem te schatten.", "route": "kennis/laadinfrastructuur-dimensioneren", "label": "Laadinfrastructuur dimensioneren" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Regels en geld",
+      "lead": "Twee onderwerpen waar een plan op kan stranden nadat de techniek al klopte.",
+      "kaarten": [
+        { "kop": "Normen en keuringen", "tekst": "Welke keuringen en inspecties horen bij een installatie, en wanneer? Wie waarvoor verantwoordelijk is, wat er aan dossier hoort en wat een inspectie wel en niet aantoont.", "route": "kennis/normen-en-keuringen", "label": "Normen en keuringen" },
+        { "kop": "Hoe subsidiemechanismen werken", "tekst": "Waarom valt een aanvraag af? Het verschil tussen een exploitatiesubsidie, een investeringsaftrek en een tender, en waarom het moment van aanvragen vaak zwaarder weegt dan het bedrag.", "route": "kennis/subsidiemechanismen", "label": "Subsidiemechanismen" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Waar de getallen in deze artikelen vandaan komen",
+      "lead": "Deze kennisbank is bruikbaar als u niets bij ons koopt. Dat is een ontwerpkeuze, geen bijkomstigheid.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Elk getal in deze artikelen is van één van drie soorten, en u ziet in de tekst welke. Een rekenvoorbeeld staat er als voorbeeld bij — met de woorden \"in dit voorbeeld\" — en laat de rekenstap zien, niet uw uitkomst. Een getal uit een externe bron staat er met die bron en de datum waarop hij is gelezen. Een getal uit een gerealiseerde installatie staat op de projectpagina van dat project, met naam en plaats.",
+        "Wat u niet aantreft is een gemiddelde besparing die voor elke lezer zou gelden. Een percentage krijgt pas betekenis naast een basislijn, een meetperiode en een afgebakende locatie; ontbreekt één van die drie, dan is het decoratie en geen bewijs. Een kennisbank die bij elke alinea een eigen resultaat noemt, is dan ook geen kennisbank maar een brochure.",
+        "Wat er wel staat, is de methode. Welke grootheid u moet meten, welke rekenstap daarop volgt, welke aanname de uitkomst omgooit, en bij welke uitkomst u beter stopt. Die methode werkt ook als u met een andere partij bouwt. Ze werkt zelfs als u na het lezen besluit dat u niets bouwt — dat is dan ook een uitkomst, en wel de goedkoopste.",
+        "Waar bewijs hoort, verwijzen we naar een echt project met naam en plaats: Ratio 16 in Duiven, Hedin Amsterdam, de Hazenweg 61 in Hengelo. U ziet dan wat er is opgeleverd en bij wie, en u kunt het navragen. Wat u niet aantreft is een anonieme praktijkcase met ronde getallen zonder klant, locatie of datum.",
+        "Voor netgegevens geldt de bronregel sterker dan elders: de beschikbare capaciteit per voedingsgebied verandert, en die leest u niet bij ons maar op de Capaciteitskaart van Netbeheer Nederland, op uw eigen postcode.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat deze kennisbank niet is",
+      "lead": "De eerlijke grens van uitleg.",
+      "alineas": [
+        "Deze artikelen vervangen geen ontwerp. Ze leggen uit welke grootheden tellen en hoe ze samenhangen, maar een installatie wordt gedimensioneerd op meetdata van één aansluiting: het kwartiersprofiel, de aansluitwaarde, het gecontracteerde transportvermogen en de gelijktijdigheid van wat er al staat. Zonder die vier blijft elke uitkomst een orde van grootte, hoe goed u de theorie ook kent.",
+        "Ze vervangen ook geen netbeheerder. Of er in uw voedingsgebied ruimte is voor afname of voor invoeding, is geen kennisvraag: het is een stand van zaken die per postcode wordt gepubliceerd en die verandert. Hetzelfde geldt voor een subsidieregeling. Een artikel legt het mechanisme uit — hoe een tender werkt, waarom een aanvraagmoment telt — maar niet de voorwaarden van de openstelling van dit jaar. Lees die altijd bij de uitvoerende instantie zelf.",
+        "En uitleg lost geen fysieke grens op. Loopt uw gemiddelde vraag over de dag boven wat de aansluiting kan leveren, dan is verzwaren de enige route. Opslag en sturing verschuiven energie in de tijd en verlagen daarmee het vermogen dat u op het piekmoment van het net vraagt; ze maken geen energie bij, ze verhogen uw aansluitwaarde niet en ze leveren geen extra gecontracteerd transportvermogen op. Welke artikelen u ook leest, dat blijft zo.",
+        "Tot slot: dit is techniek, geen juridisch, fiscaal of verzekeringsadvies. Waar een artikel een regel of een keuring noemt, is dat om uit te leggen waarom die stap in het traject zit — niet om de toepassing ervan op uw situatie te beoordelen."
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over de kennisbank",
+  "faq": [
+    {
+      "vraag": "Moet ik klant zijn om hier iets aan te hebben?",
+      "antwoord": "Nee. De artikelen beschrijven methoden en begrippen die onafhankelijk zijn van wie de installatie bouwt. U kunt ze gebruiken om een voorstel van een andere partij te toetsen, of om te concluderen dat u voorlopig niets hoeft te doen."
+    },
+    {
+      "vraag": "Waarom staan er geen besparingspercentages in de artikelen?",
+      "antwoord": "Omdat een percentage zonder basislijn, meetperiode en locatie niets zegt. Twee panden met hetzelfde jaarverbruik kunnen een volstrekt verschillende piek hebben, en dus een verschillende uitkomst bij dezelfde ingreep. Waar een artikel wél met getallen rekent, is dat een gemarkeerd rekenvoorbeeld dat de rekenstap laat zien; komt een getal uit een externe bron, dan staat die bron erbij met de leesdatum."
+    },
+    {
+      "vraag": "In welke orde lees ik dit het beste?",
+      "antwoord": "Begin bij het thema dat uw vraag beschrijft, niet bij het eerste artikel. Weet u niet welk getal uw probleem beschrijft, dan is kW versus kWh de eerste stap. Overweegt u opslag, dan is dat peak shaving. Wilt u uitbreiden of laden, dan netcongestie uitgelegd."
+    },
+    {
+      "vraag": "Kan ik uit deze artikelen opmaken of mijn locatie netcongestie heeft?",
+      "antwoord": "Nee, dat is geen kennisvraag. Beperkingen worden per voedingsgebied gepubliceerd — een verzameling postcodes rond één onderstation, die geen gemeentegrens volgt. Zoek uw postcode op de Capaciteitskaart van Netbeheer Nederland; de artikelen leggen uit wat u daar ziet."
+    },
+    {
+      "vraag": "Hoe weet ik of een artikel nog actueel is?",
+      "antwoord": "Elk artikel vermeldt de datum van de laatste inhoudelijke wijziging. Externe gegevens staan er met bron en leesdatum bij, zodat u kunt nagaan of er sindsdien iets is veranderd. Regelingen en netstanden wijzigen het snelst; controleer die altijd bij de bron."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De systemen waar deze techniek in terechtkomt",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "energy-hubs", "naam": "Energy Hubs" },
+        { "route": "microgrids", "naam": "Microgrids" }
+      ]
+    },
+    {
+      "kop": "Van begrip naar een plan",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie oplossen" },
+        { "route": "laadplein", "naam": "Laadplein" },
+        { "route": "energieadvies", "naam": "Energieadvies" },
+        { "route": "verduurzaming-bedrijfspanden", "naam": "Verduurzaming bedrijfspanden" },
+        { "route": "subsidies", "naam": "Subsidies en regelingen" }
+      ]
+    },
+    {
+      "kop": "Per situatie en per sector",
+      "items": [
+        { "route": "toepassingen", "naam": "Toepassingen" },
+        { "route": "sectoren", "naam": "Sectoren" },
+        { "route": "regios", "naam": "Regio's" }
+      ]
+    },
+    {
+      "kop": "Bewijs",
+      "items": [
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "project-ratio-16", "naam": "Ratio 16, Duiven" },
+        { "route": "project-hedin-amsterdam", "naam": "Hedin Amsterdam" },
+        { "route": "project-hazenweg-61", "naam": "Hazenweg 61, Hengelo" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Van begrip naar een doorgerekend plan",
+    "tekst": "Weet u na het lezen welk getal uw probleem beschrijft, dan is de volgende stap meten. Stuur het kwartiersprofiel van uw aansluiting, de aansluitwaarde en het gecontracteerde transportvermogen. Daaruit volgt hoe hoog en hoe lang uw pieken zijn, wat er binnen de bestaande aansluiting past en waar de grens ligt. Is verzwaren de enige route, dan zeggen we dat ook.",
+    "primair": { "route": "contact", "label": "Laat uw profiel doorrekenen" },
+    "secundair": { "route": "projecten", "label": "Bekijk gerealiseerde projecten" }
+  },
+
+  "claims": []
+}

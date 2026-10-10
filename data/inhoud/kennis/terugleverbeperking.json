@@ -1,0 +1,203 @@
+{
+  "route": "kennis/terugleverbeperking",
+  "type": "kennis",
+  "titel": "Terugleverbeperking bij zakelijke opwek | Vibe Energy",
+  "beschrijving": "Een beperkt invoedingsrecht is iets anders dan een begrensde omvormer. Wat u werkelijk kwijtraakt volgt uit opwekprofiel, verbruiksprofiel en ontwerp.",
+  "og_titel": "Terugleverbeperking bij zakelijke opwek",
+  "h1": "Terugleverbeperking: wat u werkelijk kwijtraakt",
+  "lead": "Een terugleverbeperking komt in twee vormen: een afspraak die zegt hoeveel u mag invoeden, en een instelling die het afdwingt. Welke van de twee knelt, bepaalt wat eraan te doen is. En hoeveel opbrengst er werkelijk wegvalt, blijkt pas uit het opwekprofiel en het verbruiksprofiel naast elkaar.",
+  "data_pagina": "kennis",
+  "kruimels": [{ "naam": "Kennisbank", "route": "kennis" }],
+  "kruimel_label": "Terugleverbeperking",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw afregelverlies doorrekenen" },
+    { "soort": "ghost", "anker": "#twee-profielen", "label": "Direct naar het rekenvoorbeeld" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat is een terugleverbeperking en hoeveel opbrengst kost die?",
+    "antwoord": "Een terugleverbeperking is een grens op het vermogen dat een locatie het elektriciteitsnet op mag sturen. Die grens bestaat in twee vormen die vaak door elkaar lopen: een contractueel invoedingsrecht in kW, vastgelegd in de overeenkomst met de netbeheerder, en een technische begrenzing in de omvormer of de regelaar die dat recht afdwingt. Het opgestelde paneelvermogen in kWp mag boven die grens liggen; de beperking werkt op het vermogen dat op dat moment het net op gaat, niet op het aantal panelen. Hoeveel opbrengst er werkelijk wegvalt, volgt uit de overlap tussen opwekprofiel en verbruiksprofiel op de locatie.",
+    "voorbehoud": "Dit antwoord noemt geen percentage opbrengstverlies. Dat getal is geen eigenschap van een beperking maar van een locatie, en het volgt uit het kwartiersprofiel. Ook geldt: een technische begrenzing verhoogt geen invoedingsrecht, en opslag verhoogt geen aansluitwaarde en geen gecontracteerd transportvermogen."
+  },
+
+  "secties": [
+    {
+      "soort": "specs",
+      "kop": "Wat er precies begrensd wordt",
+      "rijen": [
+        ["Invoedingsrecht (kW)", "Het vermogen dat u volgens uw aansluit- en transportovereenkomst mag invoeden. Een afspraak met de netbeheerder, uitgedrukt in kW. Kan lager liggen dan wat u mag afnemen."],
+        ["Technische begrenzing (kW)", "De instelling in de omvormer, de PV-regelaar of het energiemanagementsysteem die afdwingt dat het invoedingsrecht niet wordt overschreden. Een apparaat, geen afspraak."],
+        ["Opgesteld paneelvermogen (kWp)", "Wat er aan panelen op het dak ligt, onder testomstandigheden. Hier staat geen grens op: het mag boven het invoedingsrecht en boven het omvormervermogen liggen."],
+        ["Statische begrenzing", "Een vast plafond, altijd actief, ongeacht wat het pand op dat moment verbruikt. Eenvoudig in te stellen, en daardoor duur: het rekent niet mee dat u zelf afneemt."],
+        ["Dynamische begrenzing", "Meet het werkelijke vermogen op het overdrachtspunt en laat de opwek toe die binnen de grens past. Eigen verbruik verruimt de grens niet — die blijft wat hij is — maar vergroot wel de opwek die zonder afregelen bruikbaar is."],
+        ["Curtailment", "Het daadwerkelijk afregelen van opwek die niet weg kan. Dat is het gevolg van een beperking, niet de beperking zelf."]
+      ],
+      "noot": "Een gesprek over teruglevering loopt vast zodra deze zes door elkaar gaan. Een te laag invoedingsrecht wijzigt u met de netbeheerder; een te conservatief ingestelde begrenzing wijzigt u in de installatie. Dat zijn twee verschillende trajecten met twee verschillende doorlooptijden."
+    },
+    {
+      "soort": "tekst",
+      "id": "twee-vormen",
+      "kop": "Een afspraak en een instelling zijn twee verschillende dingen",
+      "lead": "De eerste vraag bij elke terugleverbeperking: zit de grens in het contract of in het apparaat?",
+      "alineas": [
+        "Het invoedingsrecht staat in uw overeenkomst met de netbeheerder. Het geldt voor de aansluiting en verandert niet doordat u panelen bijplaatst of een grotere omvormer kiest. Wordt die grens overschreden, dan is dat een afwijking van de overeenkomst, ook als de installatie het technisch zou toelaten. Dit is het getal waar invoedingscongestie over gaat, en het is het enige getal dat u niet zelf kunt verzetten.",
+        "De technische begrenzing is een instelling, en die kan op twee plaatsen zitten. Dat verschil is groot. Zit de begrenzing in de omvormer zelf, dan begrenst hij wat de omvormer in totaal afgeeft — inclusief het deel dat u op dat moment zelf zou verbruiken. Zit de begrenzing op het overdrachtspunt, met een meting die de regelaar terugkoppelt, dan begrenst hij alleen wat er het net op gaat en blijft uw eigen verbruik volledig bediend. Dezelfde grens in kW, een heel ander verlies in kWh.",
+        "Ook de rolverdeling loopt uiteen. De netbeheerder stelt het recht vast. De installateur legt de instelling vast en meldt de installatie aan. Een energiemanagementsysteem handhaaft de grens continu op basis van de meting. Ontbreekt die terugkoppeling, dan moet de instelling veilig laag staan, want de regelaar weet niet wat het pand op dat moment afneemt. Dan laat u ruimte liggen die er fysiek wel is.",
+        "Er bestaat nog een derde variant: een beperking die u zelf kiest. Bijvoorbeeld om een bestaande omvormer, kabel of hoofdverdeler niet te hoeven vervangen, of om een aansluiting niet te laten verzwaren. Dat is een ontwerpkeuze en geen verplichting, maar hij rekent precies hetzelfde als een opgelegde beperking."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Invoedingscongestie is een ander probleem dan afnamecongestie",
+      "lead": "Twee transportproblemen, in tegengestelde richting en op een ander uur van de dag.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Bij afnamecongestie kan het net op de piekmomenten niet genoeg vermogen naar het gebied brengen. Bij invoedingscongestie kan het net het vermogen dat in het gebied wordt opgewekt niet afvoeren. Dat zijn verschillende grenzen in dezelfde keten, en ze knellen op verschillende momenten: de afnamepiek valt in het donker, met verwarming, koeling en laden tegelijk aan; de invoedingspiek valt op een koele, heldere dag rond het middaguur, als de zon hoog staat en de lokale vraag laag is.",
+        "Daarom kan een voedingsgebied ruimte hebben voor afname en vol zitten voor invoeding, of precies het omgekeerde. Netbeheerders publiceren beide richtingen apart op de Capaciteitskaart van Netbeheer Nederland. Let bij het lezen op de grens: een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens. Een invoedingsstatus geldt dus voor uw postcode, niet voor uw plaats.",
+        "Het praktische gevolg is dat maatregelen niet uitwisselbaar zijn. Verbruik naar het midden van de dag verschuiven verkleint een invoedingsprobleem en kan uw afnamepiek juist verhogen. Een batterij die 's nachts vol laadt om de ochtendpiek te dekken, heeft die middag geen ruimte meer voor het zonneoverschot. Welke van de twee voorrang krijgt, is een keuze in de regelstrategie, en die keuze hoort vóór de dimensionering te worden gemaakt — niet achteraf in de software.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — bekijk afname en invoeding per postcode</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "twee-profielen",
+      "kop": "Hoeveel u kwijtraakt, volgt uit twee profielen",
+      "lead": "Niet uit de hoogte van de grens, en niet uit het aantal panelen.",
+      "alineas": [
+        "De rekenregel is kort. Per kwartier geldt: wat het dak opwekt, min wat het pand op dat moment verbruikt, is wat u wilt invoeden. Ligt dat boven de grens, dan wordt het verschil afgeregeld. Dat afgeregelde vermogen maal de duur is het verlies in kWh. Alles wat u op hetzelfde moment zelf verbruikt, komt die grens nooit tegen.",
+        "Daarmee bepaalt de overlap tussen de twee profielen de uitkomst. Een koelhuis of een productielijn die door de middag heen op vol vermogen draait, heeft bij een strakke grens weinig te verliezen: de opwek verdwijnt in het pand. Een bedrijf dat in het weekend stilstaat, verliest zijn opbrengst juist op de zonnigste dagen van het jaar, want dan is er niets om de opwek aan kwijt te raken. Hetzelfde geldt per seizoen: wie in de zomer koelt, zit beter in de overlap dan wie in de winter verwarmt.",
+        "<h3>Rekenvoorbeeld, geen meting</h3>",
+        "Een dak met 300 kWp aan panelen achter een omvormer van 200 kW kan nooit meer dan 200 kW afgeven. Staat het invoedingsrecht op 100 kW en verbruikt het pand op dat moment 60 kW, dan kan de omvormer 160 kW kwijt: 100 kW naar het net en 60 kW in het pand. De resterende 40 kW wordt afgeregeld. Valt het verbruik terug naar nul, dan blijft alleen de 100 kW naar het net over en wordt 100 kW afgeregeld. Hetzelfde dak, hetzelfde weer, twee keer een ander verlies. Het verbruik maakt het verschil.",
+        "Daarom publiceren wij geen percentage opbrengstverlies bij een terugleverbeperking. Dat getal zegt niets zonder de locatie erbij: het volgt uit het kwartiersprofiel van de aansluiting, uit de oriëntatie en helling van het dak en uit de hoogte van de grens. Wat wij nodig hebben om het uit te rekenen is het kwartiersprofiel, het invoedingsrecht uit uw overeenkomst en het ontwerp of de huidige opstelling van het dak. Daaruit volgt per kwartier hoeveel er wordt afgeregeld, en dus wat een ingreep waard is."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Vier ingrepen die het afregelverlies verkleinen",
+      "lead": "Ze werken op verschillende delen van het probleem en sluiten elkaar niet uit.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "<h3>1 · Oost-west in plaats van zuid</h3>",
+        "Een opstelling op het zuiden geeft de hoogste top rond het middaguur. Precies die top komt het eerst boven een invoedingsgrens uit. Een oost-westopstelling spreidt dezelfde panelen over een bredere dagcurve: lager in het midden, hoger in de ochtend en de avond. Bij een harde grens wordt daarmee minder afgeregeld, en de opwek valt beter samen met een werkdag die om acht uur begint. De opstelling benut het platte dakvlak bovendien vollediger, omdat de rijen elkaar minder beschaduwen. Aan de Piersonstraat 75-77 in Nijmegen is het dak om die reden oost-west gelegd; op de <a class=\"ve-link\" href=\"/project-hazenweg-61\">Hazenweg 61 in Hengelo</a> is een bestaand zonnedak gedemonteerd en opnieuw op een oost-west onderconstructie gelegd.",
+        "<h3>2 · De omvormer kleiner kiezen dan het paneelvermogen</h3>",
+        "Een omvormer die lager is gedimensioneerd dan het opgestelde paneelvermogen kapt de hoogste uren af. Dat klinkt als verlies, maar bij een invoedingsbeperking gaat die top toch niet weg: hij zou alsnog worden afgeregeld. U betaalt dan voor omvormervermogen dat u nooit mag gebruiken. Welke verhouding past, volgt uit de grens en uit de dagcurve van het dak — niet uit een vuistregel. Let wel op de gevolgen voor de garantievoorwaarden en de belasting van de omvormer, en op het feit dat deze keuze de top ook afkapt op dagen waarop er wél ruimte is.",
+        "<h3>3 · Opslag ertussen zetten</h3>",
+        "Een batterij neemt het overschot op dat niet weg mag en geeft het af wanneer het pand erom vraagt of wanneer er weer invoedingsruimte is. Daarmee verschuift u opwek in de tijd in plaats van hem af te regelen. Twee randvoorwaarden. Er moet later op de dag werkelijk vraag zijn, anders staat de batterij vol en begint het afregelen opnieuw. En de batterij moet het overschot kunnen opnemen op het tempo waarin het ontstaat: dat is een eis aan het laadvermogen in kW, niet alleen aan de capaciteit in kWh. Bij Hedin Automotive in Alkmaar stuurt de regelaar de bestaande zonnepaneelinstallatie mee aan, zodat het terugleververmogen het afgesproken maximum niet overschrijdt.",
+        "<h3>4 · Stuurbare lasten naar de zon toe brengen</h3>",
+        "De goedkoopste kWh is de kWh die u niet hoeft in te voeden. Koeling die een graad voorkoelt, een warmtepomp die buffert, bedrijfswagens die midden op de dag laden in plaats van 's nachts, een batterij die dan bijlaadt: elk daarvan verschuift vraag naar het uur waarop de grens bindt. Dat vraagt een regelaar die de actuele invoeding kent en de lasten in de juiste volgorde vrijgeeft. Zonder die meting wordt het gokken, en gokken kost aan de andere kant van de dag een hogere afnamepiek."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De grens van deze aanpak, en het punt waarop een ander ontwerp beter is.",
+      "alineas": [
+        "Geen van deze ingrepen verhoogt uw invoedingsrecht. Dat blijft wat de netbeheerder heeft vastgelegd, tot u het samen met de netbeheerder wijzigt. Een omvormerinstelling, een batterij of een energiemanagementsysteem maakt alleen beter gebruik van de ruimte die er al is, en voorkomt dat u die ruimte overschrijdt. Een batterij verhoogt evenmin uw aansluitwaarde of uw gecontracteerd transportvermogen.",
+        "Belangrijker is de grens aan de andere kant. Bindt een beperking maar een paar uur per jaar, dan is het verlies een rekenfout in de marge en is elke ingreep onnodig. Bindt zij een groot deel van het jaar — bijvoorbeeld bij nul-invoeding, waarbij alles binnen het eigen verbruik moet blijven — dan verandert de vraag. De laatste rijen panelen leveren dan vooral vermogen op momenten waarop de grens al dicht zit. Die panelen, hun onderconstructie, hun kabels en hun aandeel in de omvormer leveren jaar na jaar niets op. Dan is minder panelen het betere ontwerp, en niet meer opslag.",
+        "Dat punt is uit te rekenen: per paneelveld volgt uit het profiel hoeveel van zijn opbrengst binnen de grens blijft. Een ontwerp dat dat negeert en het dak vol legt omdat het dak nu eenmaal groot is, verschuift het probleem naar de exploitatie. Wij rekenen die staffel liever vooraf door, ook als de uitkomst is dat er minder op het dak komt dan u had gedacht.",
+        "Tot slot: wat teruglevering oplevert, is een commerciële vraag en verandert met uw leveringscontract. Die vraag staat los van wat er technisch weg kan. Een beperking bepaalt hoeveel kWh het net op kan; uw contract bepaalt wat die kWh waard is. Pas als beide bekend zijn, is er een businesscase."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Verder in de techniek en het bewijs",
+      "lead": "Waar dit onderwerp aan vastzit, en waar het in de praktijk is uitgevoerd.",
+      "kaarten": [
+        { "kop": "Mijn dak mag niet vol terugleveren", "tekst": "De situatie zelf: wat er te doen is als de netbeheerder uw invoeding begrenst en een deel van de opbrengst wegvalt.", "route": "toepassingen/terugleverbeperking", "label": "Terugleverbeperking" },
+        { "kop": "Zonne-energie op het eigen dak", "tekst": "Ontwerp, opstelling en omvormerkeuze — de plek waar het afregelverlies grotendeels wordt bepaald.", "route": "systeem-zonnepanelen", "label": "Zonne-energie" },
+        { "kop": "Opslag achter de meter", "tekst": "Het overschot opnemen in plaats van afregelen, en het afgeven wanneer het pand erom vraagt.", "route": "systeem-energieopslag", "label": "Energieopslag" },
+        { "kop": "kW of kWh?", "tekst": "De grens staat in kW, het verlies in kWh. Wie die twee verwisselt, dimensioneert het verkeerde onderdeel.", "route": "kennis/kw-versus-kwh", "label": "kW versus kWh" },
+        { "kop": "Oost-west gelegd in Nijmegen", "tekst": "Piersonstraat 75-77: een plat dakvlak in oost-westopstelling, zodat het hele dak meedoet.", "route": "project-piersonstraat", "label": "Piersonstraat, Nijmegen" },
+        { "kop": "Teruglevering begrensd in Alkmaar", "tekst": "Hedin Automotive: de regelaar houdt het terugleververmogen van het bestaande zonnedak binnen het afgesproken maximum.", "route": "project-hedin-alkmaar", "label": "Hedin Alkmaar" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Veelgestelde vragen over terugleverbeperking",
+  "faq": [
+    {
+      "vraag": "Mag ik meer panelen leggen dan mijn invoedingsrecht toestaat?",
+      "antwoord": "Het invoedingsrecht begrenst het vermogen dat het net op gaat, niet het vermogen dat op uw dak ligt. Een dak met meer kWp dan de grens is daarom gebruikelijk, zeker als u een deel zelf verbruikt. De aanmelding van de installatie en de ingestelde begrenzing moeten wel kloppen met wat er werkelijk kan worden ingevoed; dat legt uw installateur vast. Of het verstandig is, is een aparte rekenvraag."
+    },
+    {
+      "vraag": "Wat is het verschil tussen een statische en een dynamische begrenzing?",
+      "antwoord": "Een statische begrenzing houdt een vast plafond aan, ongeacht uw verbruik. Een dynamische begrenzing meet het werkelijke vermogen op het overdrachtspunt en laat de opwek toe die binnen de grens past, zodat eigen verbruik de bruikbare opwek vergroot. De grens op de invoeding zelf blijft daarbij gelijk; wat verandert is hoeveel er onder die grens weg kan. Dynamisch haalt dus meer uit dezelfde grens, maar vraagt een meting en een regelaar die snel genoeg reageert."
+    },
+    {
+      "vraag": "Lost een batterij een terugleverbeperking op?",
+      "antwoord": "Een batterij verkleint het afregelverlies, maar verhoogt de grens niet. Hij neemt het overschot op en geeft het later af. Dat werkt zolang er later op de dag vraag is of weer invoedingsruimte, en zolang hij het overschot kan opnemen op het tempo waarin het ontstaat. Staat de batterij vol en is er geen vraag, dan wordt er opnieuw afgeregeld."
+    },
+    {
+      "vraag": "Verandert een terugleverbeperking mijn aansluitwaarde?",
+      "antwoord": "Nee. De fysieke aansluitcapaciteit en het gecontracteerd transportvermogen voor afname staan los van het invoedingsrecht. Een beperking op invoeding kan samengaan met voldoende ruimte voor afname, en omgekeerd. Het zijn drie verschillende afspraken op dezelfde aansluiting."
+    },
+    {
+      "vraag": "Waarom noemt u geen percentage opbrengstverlies?",
+      "antwoord": "Omdat dat percentage een eigenschap van een locatie is en niet van een beperking. Het volgt uit het kwartiersprofiel van het verbruik, de dagcurve van het dak en de hoogte van de grens. Wij rekenen het per locatie uit; een algemeen getal zou alleen maar vertrouwen wekken dat het niet verdient."
+    },
+    {
+      "vraag": "Geldt een invoedingsbeperking voor mijn hele gemeente?",
+      "antwoord": "Nee. Netbeheerders publiceren beschikbare capaciteit per voedingsgebied: een verzameling postcodes rond één onderstation. Die grenzen volgen geen gemeentegrens. Zoek de status op uw eigen postcode op de Capaciteitskaart van Netbeheer Nederland, en kijk daarbij naar de kaart voor invoeding en niet naar die voor afname."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Verder in de kennisbank",
+      "items": [
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/netcongestie-uitgelegd", "naam": "Netcongestie uitgelegd" },
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Het energiemanagementsysteem" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/energieprestatie-meten", "naam": "Energieprestatie meten" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "netcongestie", "naam": "Netcongestie" }
+      ]
+    },
+    {
+      "kop": "De situatie op uw locatie",
+      "items": [
+        { "route": "toepassingen/terugleverbeperking", "naam": "Terugleverbeperking" },
+        { "route": "toepassingen/batterij-slim-inzetten", "naam": "Een batterij slim inzetten" },
+        { "route": "toepassingen/bestaande-aansluiting-optimaliseren", "naam": "Bestaande aansluiting optimaliseren" },
+        { "route": "projecten", "naam": "Projecten" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Eerst rekenen, dan panelen",
+    "tekst": "Stuur het kwartiersprofiel van uw aansluiting, het invoedingsrecht uit uw overeenkomst en het ontwerp of de huidige opstelling van het dak. Wij rekenen per kwartier door hoeveel er bij uw grens wordt afgeregeld, wat een andere opstelling, een andere omvormerkeuze, opslag of gestuurd verbruik daarvan wegneemt, en vanaf welk paneelveld minder panelen het betere ontwerp is.",
+    "primair": { "route": "contact", "label": "Laat uw afregelverlies doorrekenen" },
+    "secundair": { "route": "kennis", "label": "Terug naar de kennisbank" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare capaciteit per voedingsgebied afzonderlijk voor afname en voor invoeding; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Definitie van voedingsgebied en van de gepubliceerde capaciteitsstatussen zoals Netbeheer Nederland die vastlegt.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

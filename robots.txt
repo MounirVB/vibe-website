@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://vibeenergy.nl/sitemap.xml
+# Sitemap op de host die zelf 200 geeft. De apex vibeenergy.nl stuurt met 301
+# door naar www; een sitemapverwijzing naar een doorverwijzing is onnodig.
+Sitemap: https://www.vibeenergy.nl/sitemap.xml

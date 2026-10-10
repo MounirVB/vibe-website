@@ -1,0 +1,197 @@
+{
+  "route": "toepassingen/bestaande-aansluiting-optimaliseren",
+  "type": "toepassing",
+  "titel": "Bestaande aansluiting optimaliseren | Vibe Energy",
+  "beschrijving": "Drie dingen begrenzen uw aansluiting: fysieke capaciteit, gecontracteerd transportvermogen en de interne verdeling. Elk vraagt een andere ingreep.",
+  "og_titel": "Meer uit de aansluiting halen die er al ligt",
+  "h1": "Meer uit de aansluiting halen die er al ligt",
+  "lead": "Als iemand zegt dat de aansluiting vol zit, kan dat drie verschillende dingen betekenen. De kabel kan niet meer dragen, het contract staat niet meer toe, of de verdeelinrichting in het pand krijgt het vermogen niet op de juiste plek. Dat zijn drie diagnoses met drie verschillende ingrepen, en twee ervan vragen geen netverzwaring.",
+  "data_pagina": "toepassingen",
+  "kruimels": [{ "naam": "Toepassingen", "route": "toepassingen" }],
+  "kruimel_label": "Bestaande aansluiting optimaliseren",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw aansluiting doorrekenen" },
+    { "soort": "ghost", "anker": "#drie-grenzen", "label": "De drie grenzen op een rij" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Hoe haalt u meer uit een bestaande netaansluiting?",
+    "antwoord": "Een bestaande netaansluiting wordt door drie dingen begrensd, en die vragen elk een andere ingreep. De fysieke aansluitcapaciteit is wat kabel, aansluitkast en beveiliging kunnen dragen, in kVA of ampère per fase; die verschuift alleen als de netbeheerder hardware vervangt. Het gecontracteerde transportvermogen is wat u met de netbeheerder bent overeengekomen te mogen afnemen, in kW; dat is een contractwaarde, en verlagen loopt via de netbeheerder. De interne verdeling is de hoofdverdeler, de beveiliging en de bekabeling; die bepaalt of het beschikbare vermogen terechtkomt waar de nieuwe verbruiker staat. Optimaliseren begint met vaststellen welke van de drie als eerste raakt.",
+    "voorbehoud": "Optimaliseren verandert de fysieke aansluitcapaciteit niet en creëert geen extra gecontracteerd transportvermogen. Komt de gemiddelde vraag over de dag structureel boven de grens van de aansluiting uit, dan is verzwaren de enige route en helpt geen enkele ingreep achter de meter."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "drie-grenzen",
+      "kop": "Drie grenzen die door elkaar worden gehaald",
+      "lead": "\"De aansluiting zit vol\" is geen diagnose. Het zijn drie mogelijke diagnoses.",
+      "alineas": [
+        "In vrijwel elk gesprek over een pand dat niet verder kan, valt dezelfde zin: er is geen vermogen meer. Vraag dan door naar het getal dat daarbij hoort. Soms komt er een waarde in ampère per fase uit de aansluitovereenkomst. Soms komt er een waarde in kW uit de transportovereenkomst. En soms komt er geen getal, maar de opmerking van de installateur dat de hoofdverdeler vol is. Dat zijn drie verschillende grenzen die niets met elkaar te maken hebben, behalve dat ze alle drie \"vol\" heten.",
+        "De <strong>fysieke aansluitcapaciteit</strong> is hardware. Kabel, aansluitkast, beveiliging en bij grotere afnemers de transformator bepalen wat er maximaal door kan. Die grens verschuift alleen als de netbeheerder iets vervangt. In een congestiegebied is dat precies wat niet op korte termijn gaat.",
+        "Het <strong>gecontracteerde transportvermogen</strong> is papier. Het is een afspraak over hoeveel u mag afnemen, en u betaalt ervoor ongeacht of u het opvraagt. Papier is in beginsel aanpasbaar — in een congestiegebied vaak niet omhoog, maar wel omlaag. Waarom dit een ander getal is dan de aansluitwaarde, staat uitgewerkt op <a class=\"ve-link\" href=\"/kennis/transportvermogen-versus-aansluitwaarde\">transportvermogen versus aansluitwaarde</a>.",
+        "De <strong>interne verdeling</strong> is uw eigen installatie, vanaf de meting tot de laatste afgaande groep. Daar gaat het niet over hoeveel vermogen het pand binnenkomt, maar over of het terechtkomt waar de nieuwe machine, de warmtepomp of het laadplein komt te staan.",
+        "Begin daarom niet met de vraag wat erbij moet, maar met de vraag welke van de drie als eerste raakt. Een pand met fysieke ruimte en een te krap contract vraagt een gesprek met de netbeheerder. Een pand met contractuele ruimte en een volle hoofdverdeler vraagt een installateur en een nieuw verdeelschema. Een pand waarvan de piek een paar keer per week drie kwartier boven de grens uitkomt, vraagt opslag en sturing. Wie de verkeerde partij aanspreekt, wacht op een antwoord dat nooit komt."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "De drie grenzen naast elkaar",
+      "rijen": [
+        ["Fysieke aansluitcapaciteit", "In kVA of in ampère per fase, bijvoorbeeld 3 × 80 A. Vastgelegd in de aansluitovereenkomst. Verandert alleen door een fysieke ingreep van de netbeheerder."],
+        ["Gecontracteerd transportvermogen", "In kW. Vastgelegd in de transportovereenkomst. Een contractwaarde, met een eigen wijzigingsprocedure en een eigen tariefgevolg."],
+        ["Interne verdeling", "Railvermogen van de hoofdverdeler, vrije velden, instelling van de beveiliging, kabeldoorsnede en kabellengte. Staat in het verdeel- en eendraadschema. Uw eigen installatie."],
+        ["Gelijktijdigheid", "Welk deel van de installaties op hetzelfde moment aan staat. Geen grens, maar een eigenschap van het gebruik — en meestal het goedkoopst te beïnvloeden."],
+        ["Wat géén van de drie verandert", "Opslag en sturing verschuiven energie in de tijd en verdelen het vermogen dat er is. Ze verhogen de aansluitwaarde niet en maken geen extra transportrecht."]
+      ],
+      "noot": "De eerste drie rijen hebben elk een eigen document en een eigen eigenaar: de netbeheerder, de transportovereenkomst en uw eigen installateur. De vierde rij staat in geen enkel document en is daarom het stuk dat het vaakst wordt overgeslagen."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Een gecontracteerd vermogen dat te hoog is ingekocht",
+      "lead": "Niet elke aansluiting is te krap. Een deel is te ruim, en daar betaalt u elke maand voor.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Gecontracteerd transportvermogen wordt vaak één keer vastgesteld en daarna nooit meer aangeraakt. De waarde komt uit een ontwerp van jaren terug, uit een marge die iemand destijds veilig vond, of uit een machine die er niet meer staat. Omdat een deel van het transporttarief aan die waarde hangt, betaalt u door voor vermogen dat nooit wordt opgevraagd.",
+        "Het kwartiersprofiel laat zien of dat bij u speelt. Daarin staat per kwartier het gemiddelde vermogen dat de aansluiting heeft afgenomen. Blijft de hoogste piek van het jaar ruim onder de gecontracteerde waarde, dan is er ruimte om die waarde te verlagen zonder dat er technisch iets verandert. Komt de piek er een paar keer per jaar kort bovenuit, dan is de vraag of juist die piek weg te nemen is — en pas daarna of verlagen kan.",
+        "<h3>Verlagen is een besparing, geen uitbreiding</h3>",
+        "Dat onderscheid wordt vaak omgekeerd verteld, dus hier staat het expliciet. Piekafvlakking maakt geen vermogen bij. Het verlaagt de hoogste waarde die uw aansluiting nog hoeft te halen, en daarmee de waarde die u hoeft te contracteren. Wat u daarmee wint is een lagere netrekening bij hetzelfde werk. Het is niet de ruimte om er een productielijn bij te zetten. Hoe die afvlakking technisch werkt en waar de grenswaarde wordt gekozen, staat op <a class=\"ve-link\" href=\"/kennis/peak-shaving\">de pagina over peak shaving</a>.",
+        "<h3>Verlaag niet tot op de gemeten piek</h3>",
+        "Verlagen heeft een keerzijde die u vooraf moet wegen. Teruggegeven transportvermogen is in een congestiegebied niet zomaar terug te krijgen: u sluit dan aan in dezelfde wachtrij als iedere andere aanvrager. Kies de nieuwe grens daarom niet op de hoogste meetwaarde van vorig jaar, maar op een niveau dat uw groeiplan van de komende jaren nog draagt. En reken door wat het kost om die grens met opslag en sturing te handhaven, want de batterij die de grens bewaakt is onderdeel van de businesscase, niet een losse post ernaast.",
+        "<h3>De netbeheerder mag het ook zelf doen</h3>",
+        "Sinds het codebesluit over niet-gebruikte transportrechten mag een netbeheerder onnodig aangehouden gecontracteerd transportvermogen verlagen en beschikbaar maken voor anderen. Dat mag alleen in congestiegebieden, alleen bij aangeslotenen op het midden-, hoog- of extrahoogspanningsnet, en alleen bij substantiële hoeveelheden. De netbeheerder moet daarover eerst overleg voeren en u krijgt de gelegenheid te onderbouwen dat u het vermogen nodig heeft of binnen een redelijke termijn nodig zult hebben. Wie zijn eigen kwartiersprofiel en zijn eigen uitbreidingsplan kent, voert dat gesprek met meetwaarden in plaats van met een aanname."
+      ],
+      "bronnen": [
+        { "naam": "Codebesluit niet gebruikte transportrechten (GOTORK), ACM", "url": "https://www.acm.nl/nl/publicaties/codebesluit-niet-gebruikte-transportrechten-gotork", "datum": "2024-04-18" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Soms is niet de aansluiting het knelpunt, maar de hoofdverdeler",
+      "lead": "Vermogen dat het pand binnenkomt en niet bij de verbruiker komt, is geen vermogen.",
+      "alineas": [
+        "Achter de meting begint uw eigen installatie, en die heeft eigen maxima. De hoofdverdeler heeft een railvermogen en een eindig aantal velden. De beveiligingen zijn ingesteld op de belasting van toen. De kabels naar de achterzijde van het pand hebben een doorsnede en een lengte, en bij een lange kabel is spanningsval eerder de begrenzing dan opwarming.",
+        "Dat levert een situatie op die van buiten op netcongestie lijkt en het niet is: er is contractueel ruimte en er is fysiek ruimte, maar er is geen veld vrij om een laadplein of een batterij op aan te sluiten, of de bestaande kabel naar die hoek van het terrein draagt het bijgeplaatste vermogen niet. De ingreep is dan geen batterij en geen aanvraag bij de netbeheerder, maar een uitbreiding of vervanging van de verdeelinrichting — en dat is werk dat binnen uw eigen planning valt.",
+        "<h3>Wat wij in de verdeelinrichting nakijken</h3>",
+        "<ul><li><strong>Railvermogen en vrije velden</strong> — of er fysiek iets bij kan en of het bordvermogen de bijplaatsing draagt.</li><li><strong>Instelling en selectiviteit van de beveiliging</strong> — of een nieuwe grote afgaande groep de bovenliggende beveiliging niet voortijdig laat afschakelen.</li><li><strong>Kabeldoorsnede en kabellengte</strong> — bij laadinfrastructuur achteraan een terrein is dit vaker de grens dan de aansluiting zelf.</li><li><strong>Plaats van de meting</strong> — een regelsysteem kan alleen begrenzen wat het meet. Zit de meting achter een onderverdeler, dan stuurt u op een deel van het pand en loopt de aansluiting alsnog vol.</li><li><strong>Onderverdelers en meerdere gebruikers</strong> — zitten er huurders achter één aansluiting, dan moet vastliggen wie welk deel mag opvragen voordat sturing iets kan afdwingen.</li></ul>",
+        "Op de <a class=\"ve-link\" href=\"/project-hazenweg-61\">Hazenweg 61 in Hengelo</a> hoorde dit bij het werk. Twee batterijsystemen, een opnieuw gelegd zonnedak, laadpunten en een noodstroomaggregaat staan er onder één energiemanagementsysteem, en een nieuwe hoofdverdeler verbindt dat geheel. Op <a class=\"ve-link\" href=\"/project-ratio-16\">Ratio 16 in Duiven</a> lag de opgave aan de andere kant: daar bleef het transportvermogen ongewijzigd en moest alles wat erbij kwam eronder passen.",
+        "Welke verbruiker op welk moment hoeveel mag opvragen, is daarna een regelvraag. Statische load balancing verdeelt een vast budget over de laadpunten; dynamische load balancing meet de actuele belasting van de aansluiting en verdeelt wat er op dat moment over is. Die keuze en de grenswaarden die erbij horen, lopen via <a class=\"ve-link\" href=\"/vibe-control\">VIBE.CONTROL</a>."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Waar optimaliseren ophoudt",
+      "lead": "De eerlijke grens van deze aanpak.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Optimaliseren werkt op pieken en op verdeling. Het werkt niet op een tekort dat de hele dag duurt. Komt de <strong>gemiddelde</strong> vraag over een werkdag boven de fysieke capaciteit van de aansluiting uit, dan is er geen grenswaarde te kiezen die het opvangt. Een batterij verschuift energie in de tijd; hij maakt geen energie en hij vergroot de kabel niet. Dan is verzwaren de route, met eventueel een tijdelijke voorziening voor de periode daartussen.",
+        "Twee dingen die achter de meter nooit veranderen, voor de duidelijkheid: uw <strong>aansluitwaarde</strong> blijft wat hij is, en u krijgt geen extra <strong>transportrecht</strong>. Wat verandert is hoe vaak u tegen die grenzen aanloopt en op welke waarde u ze nodig heeft.",
+        "En er is een rekenkundige ondergrens. Een rekenvoorbeeld: een piek van 100 kW boven uw grenswaarde die een half uur duurt, vraagt 100 kW omvormervermogen en ten minste 50 kWh bruikbare capaciteit. Duurt diezelfde piek vier uur, dan vraagt hij 400 kWh. Pieken die lang en hoog zijn tegelijk, lopen daarmee uit de businesscase — niet uit de techniek. Dat is geen ontwerpfout; dat is het punt waarop opslag ophoudt het goedkoopste antwoord te zijn.",
+        "Of uw gebied in congestie zit, is geen eigenschap van uw gemeente maar van uw voedingsgebied. De Capaciteitskaart definieert een voedingsgebied als de gecombineerde set postcodes van de aangesloten klanten die door één hoogspannings-/middenspannings- of tussenspannings-/middenspanningsstation worden bediend. Het is dus een netbegrip en geen bestuurlijk begrip: netbeheerders publiceren de stand per voedingsgebied, en u zoekt die stand op postcode op.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities", "url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat wij nodig hebben voordat er iets wordt voorgesteld",
+      "lead": "Vijf stukken, en dan is de diagnose een rekensom in plaats van een mening.",
+      "alineas": [
+        "<ul><li><strong>Het kwartiersprofiel</strong> van de aansluiting over minimaal een volledig jaar, afname en teruglevering. Hieruit volgen de hoogte, de duur en de frequentie van de pieken.</li><li><strong>De aansluitovereenkomst</strong> met de fysieke capaciteit in kVA of in ampère per fase.</li><li><strong>De transportovereenkomst</strong> met het gecontracteerde transportvermogen in kW, en de laatste netfactuur om te zien waar u nu op wordt afgerekend.</li><li><strong>Het verdeel- en eendraadschema</strong> van de hoofdverdeler, plus een foto van het bord. Hieruit volgt of er een veld vrij is en waar de meting zit.</li><li><strong>Uw uitbreidingsplan</strong> — welke verbruikers erbij komen, met welk vermogen, en wanneer ze naar verwachting tegelijk aan staan.</li></ul>",
+        "Dat laatste stuk is het stuk dat het vaakst ontbreekt en het meest bepaalt. De gelijktijdigheid die u verwacht, bepaalt of een bijplaatsing binnen de bestaande grenzen past. Een plan dat alleen de som van de naamplaatvermogens noemt, overdimensioneert bijna altijd.",
+        "Een traject dat breder is dan één aansluiting — meerdere panden, een portefeuille of een meerjarenplan — loopt via <a class=\"ve-link\" href=\"/energieadvies\">energieadvies</a>. Loopt u juist vast omdat de netbeheerder geen extra transportvermogen kan toezeggen, dan begint het bij <a class=\"ve-link\" href=\"/netcongestie\">netcongestie</a>."
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over het optimaliseren van een bestaande aansluiting",
+  "faq": [
+    {
+      "vraag": "Kan ik mijn gecontracteerd transportvermogen verlagen?",
+      "antwoord": "Dat is een wijziging in de transportovereenkomst, dus de netbeheerder bepaalt de procedure en de termijn. Technisch kan het zodra uw hoogste piek structureel onder de nieuwe waarde blijft. Weeg eerst uw groeiplan: in een congestiegebied is teruggegeven transportvermogen niet zonder meer terug te krijgen."
+    },
+    {
+      "vraag": "Levert piekafvlakking mij extra capaciteit op om uit te breiden?",
+      "antwoord": "Het levert ruimte op binnen de grens die er al ligt, niet erboven. Of die ruimte genoeg is voor uw uitbreiding, volgt uit twee dingen: hoeveel vermogen de nieuwe verbruikers vragen en hoe vaak ze gelijktijdig aan staan met de bestaande last."
+    },
+    {
+      "vraag": "Hoe weet ik of de hoofdverdeler het knelpunt is en niet de aansluiting?",
+      "antwoord": "Door de drie documenten naast elkaar te leggen. Zit uw gemeten piek onder de aansluitwaarde én onder het gecontracteerde vermogen, en lukt de bijplaatsing toch niet, dan zit de beperking in uw eigen installatie: geen vrij veld, te weinig railvermogen, of een kabel die het niet draagt."
+    },
+    {
+      "vraag": "Verhoogt een batterij mijn aansluitwaarde?",
+      "antwoord": "Nee. De aansluitwaarde en het gecontracteerde transportvermogen blijven ongewijzigd. Een batterij verandert alleen wat u binnen die grenzen kunt doen, door de piek af te vlakken en energie in de tijd te verschuiven."
+    },
+    {
+      "vraag": "Wat als er helemaal geen ruimte blijkt te zijn?",
+      "antwoord": "Dan zeggen we dat. Komt uw gemiddelde vraag boven de fysieke capaciteit van de aansluiting, dan is verzwaren de enige route en is opslag geen alternatief. Wat dan wel kan, is de periode tot die verzwaring overbruggen en de interne verdeling nu al gereedmaken."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/businesscase-batterij", "naam": "Businesscase van een batterij" }
+      ]
+    },
+    {
+      "kop": "Waar dit vandaan komt",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "energieadvies", "naam": "Energieadvies" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" }
+      ]
+    },
+    {
+      "kop": "Aangrenzende situaties",
+      "items": [
+        { "route": "toepassingen/pieken-in-verbruik", "naam": "Pieken in verbruik" },
+        { "route": "toepassingen/geen-extra-transportvermogen", "naam": "Geen extra transportvermogen" },
+        { "route": "toepassingen/laden-met-beperkte-aansluiting", "naam": "Laden met een beperkte aansluiting" },
+        { "route": "toepassingen/netcongestie-bij-uitbreiding", "naam": "Netcongestie bij uitbreiding" }
+      ]
+    },
+    {
+      "kop": "Bewijs",
+      "items": [
+        { "route": "project-hazenweg-61", "naam": "Hazenweg 61, Hengelo" },
+        { "route": "project-ratio-16", "naam": "Ratio 16, Duiven" },
+        { "route": "projecten", "naam": "Alle projecten" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Eerst vaststellen welke grens raakt",
+    "tekst": "Stuur het kwartiersprofiel van uw aansluiting, de aansluit- en transportovereenkomst en het verdeelschema van de hoofdverdeler. Wij stellen vast welke van de drie grenzen bij u het eerst raakt, wat er binnen de bestaande aansluiting mogelijk is en of uw gecontracteerde vermogen omlaag kan. Is verzwaren de enige route, dan zeggen we dat.",
+    "primair": { "route": "contact", "label": "Laat uw aansluiting doorrekenen" },
+    "secundair": { "route": "energieadvies", "label": "Over energieadvies" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Een netbeheerder mag onnodig aangehouden gecontracteerd transportvermogen verlagen en beschikbaar maken voor anderen; dat mag alleen in congestiegebieden, alleen bij aangeslotenen op het midden-, hoog- of extrahoogspanningsnet en alleen bij substantiële hoeveelheden, en de aangeslotene krijgt na overleg de gelegenheid te onderbouwen dat het vermogen nodig is of binnen een redelijke termijn nodig zal zijn.",
+      "bron": "Codebesluit niet gebruikte transportrechten (GOTORK), Autoriteit Consument & Markt",
+      "bron_url": "https://www.acm.nl/nl/publicaties/codebesluit-niet-gebruikte-transportrechten-gotork",
+      "bron_datum": "2024-04-18"
+    },
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare capaciteit per voedingsgebied; een voedingsgebied is op de Capaciteitskaart gedefinieerd als de gecombineerde set postcodes van de aangesloten klanten die worden bediend door één hoogspannings-/middenspannings- of tussenspannings-/middenspanningsstation.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

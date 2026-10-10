@@ -1,0 +1,237 @@
+{
+  "route": "sectoren/zorgvastgoed",
+  "type": "sector",
+  "titel": "Energie voor zorgvastgoed en zorginstellingen | Vibe Energy",
+  "beschrijving": "Een zorgpand heeft geen nachtdip. Wat dat betekent voor piekafvlakking, noodstroom, de scheiding van kritische groepen en laden bij thuiszorg.",
+  "og_titel": "Zorgvastgoed: een profiel dat nooit terugvalt",
+  "h1": "Zorgvastgoed: 24 uur belast, en een deel mag niet uitvallen",
+  "lead": "Een zorglocatie draait dag en nacht. Klimaat, luchtbehandeling en warm tapwater lopen ook 's nachts door, de bezetting zakt nauwelijks terug, en een deel van de installatie mag niet uitvallen. Dat maakt de ruimte om pieken af te vlakken kleiner dan in een kantoor, en elke ingreep zwaarder.",
+  "data_pagina": "sectoren",
+  "kruimels": [{ "naam": "Sectoren", "route": "sectoren" }],
+  "kruimel_label": "Zorgvastgoed",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Energie-infrastructuur voor zorgvastgoed",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw zorglocatie doorrekenen" },
+    { "soort": "ghost", "anker": "#profiel", "label": "Waarom een zorgprofiel afwijkt" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Waarom werkt energieopslag in zorgvastgoed anders dan in een kantoor?",
+    "antwoord": "Zorgvastgoed heeft een verbruiksprofiel zonder nachtdip en zonder weekendstop: klimaat, luchtbehandeling, warm tapwater en verlichting lopen door en de bezetting zakt 's nachts maar beperkt. Daardoor ligt de hoogste kwartierwaarde minder ver boven het etmaalgemiddelde dan in een kantoor, en is er per etmaal minder tijd waarin een batterij kan bijladen. Piekafvlakking werkt er wel, maar met minder diepte en met een scherpere dimensionering op het kwartiersprofiel. Daar komt bij dat een deel van de installatie niet mag uitvallen: de scheiding tussen kritische en niet-kritische groepen bepaalt wat een regelsysteem mag aanraken.",
+    "voorbehoud": "Een batterij die op piekafvlakking staat, is geen noodstroomvoorziening, en hij verhoogt uw aansluitwaarde of uw gecontracteerd transportvermogen niet. Wat op uw locatie haalbaar is, volgt uit het kwartiersprofiel van de aansluiting en uit de groepenindeling in de verdeler; zonder die twee is er geen uitspraak te doen."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "profiel",
+      "kop": "Een profiel zonder nachtdip geeft minder om af te vlakken",
+      "lead": "Het verschil met een kantoor zit niet in het jaarverbruik, maar in de vorm van de dag.",
+      "alineas": [
+        "In een kantoor valt de last na werktijd terug op verlichting, serverruimte en wat klimaat. Juist die uren maken piekafvlakking mogelijk: ze zijn het moment waarop een batterij bijlaadt, en ze maken het verschil tussen de hoogste kwartierwaarde en het etmaalgemiddelde groot. In een zorglocatie bestaan die uren nauwelijks. Verpleging, verlichting, warm tapwater, koeling van medicijn- en voedselopslag en luchtbehandeling lopen door, ook 's nachts en in het weekend.",
+        "Dat heeft twee gevolgen, en beide slaan op het ontwerp. Het eerste: de piek ligt dichter bij het gemiddelde. Er valt dus minder af te vlakken voordat u de grens raakt waaronder het gemiddelde zelf niet meer past — en opslag verschuift energie, hij maakt er geen bij.",
+        "Het tweede: de laadruimte is beperkt. Een batterij kan per etmaal niet meer opnemen dan zijn laadvermogen maal het aantal uren dat er ruimte onder de gekozen grens is. Rekenvoorbeeld: met vier uur laadruimte in plaats van veertien is niet de capaciteit in kWh de beperking, maar de tijd. Een systeem dat alleen op de hoogte van de piek is gedimensioneerd, heeft bij de tweede piek van dezelfde dag niet genoeg bijgeladen om die ook af te vlakken.",
+        "Ook de oorzaak van de piek verschuift. In een kantoor is dat meestal één gebeurtenis: de ochtendstart. In een zorgpand zit de hoogste waarde vaker in gelijktijdigheid die niet in de agenda staat — koelmachines die na een warme nacht samen aanslaan, een herstart van de luchtbehandeling na een korte onderbreking, de wasserij en de keuken die in hetzelfde kwartier vallen. Daarom begint het werk bij het kwartiersprofiel van de aansluiting, met de datum en het tijdstip van de hoogste waarden erbij. Zonder die tijdstippen weet u niet welke installatie u aan het afvlakken bent."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Wat in een zorgpand de hoogste kwartierwaarde maakt",
+      "rijen": [
+        ["Luchtbehandeling", "In behandel-, verblijfs- en opslagruimten volgt het ventilatiedebiet uit het gebruik van de ruimte, niet uit de energievraag. Ventilatoren draaien daarom continu, en hun vermogen volgt uit debiet en drukval — niet uit de bezetting op dat moment."],
+        ["Koeling en klimaat", "Koelmachines zijn een grote schakelbare last en tegelijk de minst vrije: de bandbreedte van de binnentemperatuur in een zorgruimte is smal. Afschakelen is er zelden toegestaan; binnen die bandbreedte iets verschuiven soms wel."],
+        ["Elektrificatie van warmte", "Gaat de ketel eruit en komt er een warmtepomp in, dan verhuist de winterpiek van gas naar elektriciteit. Dat is een vermogensvraag van uren, niet van minuten. Opslag die dat moet bijpassen is daarmee vooral een energievraag in kWh."],
+        ["Medische en technische apparatuur", "Beeldvorming, sterilisatie en bepaalde behandelapparatuur hebben korte, hoge inschakelpieken. In een kwartiersmeting zijn die grotendeels weggemiddeld, terwijl ze de groep, de kabel en de beveiliging wél belasten."],
+        ["Keuken, wasserij en liften", "Deze posten zijn tijdgebonden en vallen samen rond vaste momenten in de dag. Hier zit de gelijktijdigheid die wél te verschuiven is, zonder dat iemand er iets van merkt."],
+        ["Laden van voertuigen", "Thuiszorg- en ambulante vloten komen rond het einde van de dienst terug en laden dan allemaal. Zonder sturing komt die piek bovenop de avondlast van het pand."]
+      ],
+      "noot": "Het jaarverbruik in kWh wijst geen van deze posten aan. Welke post de hoogste kwartierwaarde maakt, blijkt pas uit meting per groep of per verdeelveld, met het tijdstip van die waarde erbij — en die uitkomst verschilt per locatie, ook tussen panden met hetzelfde jaarverbruik en dezelfde functie."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Kritisch en niet-kritisch zijn twee verschillende installaties",
+      "lead": "Deze scheiding bepaalt wat een regelsysteem mag aanraken. Hij hoort vóór de regelstrategie te staan, niet erna.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Een zorglocatie heeft groepen die niet mogen uitvallen en groepen die dat wel mogen. Welke groep waar valt, volgt uit het gebruik van de ruimte en uit de installatieverantwoordelijkheid van uw eigen organisatie — niet uit een energieplan. Daarom is die indeling het eerste wat op tafel moet.",
+        "<h3>Een batterij op piekafvlakking is geen noodstroom</h3>",
+        "Dit is het misverstand dat het vaakst terugkomt. Een batterijsysteem achter de meter werkt netparallel: het regelt mee met de aansluiting en valt bij een netstoring uit, tenzij de installatie expliciet op eilandbedrijf is ingericht, met de omschakeling, de aarding en de selectiviteit die daarbij horen. En zelfs dan blijft de vulling een variabele: een systeem dat op piekafvlakking staat, is aan het einde van de ochtendpiek juist leeg. Noodstroom vraagt gereserveerde energie, en die energie kunt u op datzelfde moment niet gebruiken om de piek af te vlakken. Dat is een ontwerpkeuze met een prijs, geen instelling in de software.",
+        "Omgekeerd geldt het ook: een aggregaat dekt uitval, maar het verlaagt uw piek niet en het doet niets met eigen opwek. De twee functies overlappen minder dan de woorden suggereren.",
+        "<h3>De verdeler bepaalt wat stuurbaar is</h3>",
+        "Een energiemanagementsysteem kan alleen begrenzen wat als apart veld of aparte groep te meten en te schakelen is. In bestaande zorgpanden loopt de indeling van de hoofdverdeler zelden gelijk met de scheiding die u wilt sturen: laadpunten hangen achter een groep die ook iets anders voedt, of een deel van de luchtbehandeling zit in hetzelfde veld als een kritische groep. Dan is aanpassing in de verdeling onderdeel van het werk, en niet het sluitstuk ervan.",
+        "Hoe dat samenkomt in een gebouw waar ook noodstroom staat, is te zien aan de Hazenweg 61 in Hengelo: opslag, een opnieuw gelegd zonnedak, laadpunten en een noodstroomaggregaat zijn daar onder één energiemanagementsysteem gebracht, met een nieuwe hoofdverdeler die het geheel verbindt. Dat is een kantoorpand en geen zorglocatie, maar de ordening — eerst de verdeling, dan de sturing — is dezelfde."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Thuiszorg en ambulante zorg laden anders dan een vrachtwagen",
+      "lead": "Veel kleine voertuigen met een lange standtijd, geen paar zware met een korte.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Een zorgorganisatie met wijkteams heeft een vloot van personenauto's en kleine bussen. Dat verandert de opgave: niet een paar snelladers met een hoog gelijktijdig vermogen, maar veel punten met een laag vermogen. Wie zo'n vloot op snelladers zet, koopt vermogen dat hij niet nodig heeft en een piek die hij niet wil.",
+        "De standtijd is de maat. Rekenvoorbeeld: een auto die acht uur op het terrein staat en 40 kWh moet bijladen, heeft gemiddeld 5 kW nodig. Diezelfde auto die tussen twee diensten maar twee uur stilstaat, heeft daarvoor 20 kW nodig. Bij wisseldiensten en avonddiensten is de standtijd dus de ontwerpvariabele, niet het aantal laadpunten.",
+        "Daar komt gelijktijdigheid bij. Wijkteams gaan vaak in hetzelfde halfuur de deur uit en komen in hetzelfde halfuur terug. Dynamische load balancing meet de actuele belasting van de aansluiting en verdeelt wat er over is over de aangesloten voertuigen. Statische verdeling deelt een vast budget en laat ruimte onbenut zodra het pand even minder vraagt. In een pand met een hoge maar wisselende basislast is dat verschil groot — groter dan in een kantoor, waar de basislast 's avonds toch al laag is.",
+        "Twee punten die in de zorg vaker spelen dan elders. Het terrein wordt ook gebruikt door bezoek, taxivervoer en soms ambulances, dus de plek van de laadpunten is eerst een logistieke vraag en pas daarna een elektrische. En een deel van de vloot laadt niet op locatie maar bij de medewerker thuis; dat verlaagt uw piek op de locatie, maar het is verder een administratieve en fiscale kwestie en geen netkwestie."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Installeren in een pand waar gewoond en behandeld wordt",
+      "lead": "Fasering is hier geen planningsvoorkeur. Het is een ontwerpeis.",
+      "alineas": [
+        "Een zorglocatie gaat niet dicht. Er is geen bouwvakantie, geen weekend waarin het pand leeg staat en meestal geen ruimte om een afdeling tijdelijk elders onder te brengen. Alles wat elders in één doorloop gebeurt, wordt hier opgedeeld in vensters die de zorgorganisatie zelf kiest.",
+        "<h3>Wat dat concreet betekent</h3>",
+        "<ul><li><strong>Spanningsloos werken in de hoofdverdeler</strong> vraagt een afgesproken venster, veld voor veld, en vaak een tijdelijke voorziening voor de duur van de omschakeling.</li><li><strong>Aanvoer en hijswerk</strong> gaan langs ruimten waar gewoond en behandeld wordt: vaste werktijden, beperkte geluidsmomenten en een route die buiten het gebied van de bewoners blijft.</li><li><strong>De opstelplaats</strong> van een batterij ligt buiten, op afstand van de gevel en van vluchtroutes, met een aanrijroute voor plaatsing. Op een zorgterrein concurreert die plek met parkeren dat vaak al vol is. Dat is een knelpunt vroeg in het ontwerp, niet laat.</li><li><strong>Inbedrijfstelling en keuring</strong> hebben elk een eigen moment waarop er geschakeld wordt. Dat zijn dus meerdere vensters, niet één.</li></ul>",
+        "In de praktijk levert dat een vaste volgorde op: eerst meten en de verdeling in kaart brengen, dan de verdeler en de infrastructuur, dan de opslag, dan het laden. Elke fase levert iets op dat zelfstandig werkt, zodat uitloop in een latere fase de locatie niet stil zet. Dat is langzamer dan alles in één keer, en het is precies waarom een pand dat in gebruik blijft het kan dragen."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Subsidie hangt af van uw rechtsvorm, niet van uw gebouw",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Voor maatschappelijk vastgoed, waaronder zorgvastgoed, bestaat de Subsidieregeling duurzaam maatschappelijk vastgoed (DUMAVA). Die regeling heeft één uitsluiting die in de zorg geregeld over het hoofd wordt gezien: u komt er niet voor in aanmerking als u inkomstenbelasting of vennootschapsbelasting moet betalen. Twee zorgorganisaties in vergelijkbare panden kunnen dus op verschillende regelingen uitkomen, alleen door hun fiscale positie. Zoek dat uit voordat u een plan op een regeling bouwt.",
+        "De volgorde is net zo bindend. U laat eerst een verduurzamingsadvies opstellen en vraagt daarna aan; dat advies mag bij de aanvraag niet ouder zijn dan 48 maanden. En u vraagt aan voordat u de aannemer opdracht geeft of met de werkzaamheden begint. Wie die volgorde omdraait, is te laat, ongeacht de kwaliteit van het plan.",
+        "Welke regelingen er verder zijn en wat ze dekken, staat op de subsidiepagina. Bedragen en percentages noemen wij hier niet: die verschillen per openstelling en per categorie, en een verlopen getal op deze pagina is erger dan geen getal."
+      ],
+      "bronnen": [
+        { "naam": "Subsidieregeling duurzaam maatschappelijk vastgoed (DUMAVA), RVO", "url": "https://www.rvo.nl/subsidies-financiering/dumava", "datum": "2026-10-10" },
+        { "naam": "DUMAVA — voorwaarden, RVO", "url": "https://www.rvo.nl/subsidies-financiering/dumava/voorwaarden", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De grens van deze aanpak in een pand dat nooit terugvalt.",
+      "alineas": [
+        "Een 24-uursprofiel heeft minder marge, en dat werkt beide kanten op. Ligt uw gemiddelde vraag over het etmaal al tegen de grens van de aansluiting, dan helpt opslag niet: een batterij verschuift energie in de tijd en maakt er geen bij. Bij een zorglocatie staat die situatie dichterbij dan bij een kantoor met dezelfde aansluiting. Dan is verzwaren de route, met de wachttijd die daarbij hoort.",
+        "Er verandert ook niets aan uw aansluitwaarde of aan uw gecontracteerd transportvermogen. Opslag en sturing veranderen wat u binnen die grenzen kunt doen, niet waar de grenzen liggen. Of er in uw voedingsgebied ruimte is voor meer afname of voor invoeding, staat per postcode op de Capaciteitskaart van Netbeheer Nederland. Een status geldt daar voor een voedingsgebied rond een onderstation — een verzameling postcodes — en niet voor een gemeente.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a></p>",
+        "En sturing is geen vervanging van een installatie-eis. Waar het ventilatiedebiet of de temperatuur vastligt door het gebruik van de ruimte, is dat geen regelknop, en een energiemanagementsysteem hoort die groep dan niet in zijn bereik te hebben. Wat er in een zorgpand overblijft om te sturen, is kleiner dan in een distributiecentrum: laden, warmtapwaterbuffering, keuken en wasserij, en klimaat alleen binnen de bandbreedte die uw organisatie zelf toestaat. Dat is genoeg om de piek te beïnvloeden, mits het op de juiste groepen zit.",
+        "Wat deze pagina niet kan zeggen, is wat het bij u oplevert. Dat volgt uit uw kwartiersprofiel, uw groepenindeling en uw eisen aan leveringszekerheid. Levert het te weinig op, dan zeggen wij dat ook."
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit in de praktijk op neerkomt",
+      "lead": "De vragen waarmee zorgorganisaties binnenkomen.",
+      "kaarten": [
+        { "kop": "De piek bepaalt de rekening", "tekst": "Een paar kwartieren gelijktijdigheid zetten het gecontracteerde vermogen vast waarvoor u het hele jaar betaalt.", "route": "toepassingen/pieken-in-verbruik", "label": "Pieken in verbruik" },
+        { "kop": "De vloot moet elektrisch", "tekst": "Wijkteams en ambulant vervoer over naar elektrisch, terwijl het pand de aansluiting al grotendeels vult.", "route": "toepassingen/elektrificatie-bedrijfswagens", "label": "Elektrificatie van bedrijfswagens" },
+        { "kop": "Laden binnen wat er is", "tekst": "Laadpunten op het terrein zonder dat de aansluiting wordt verzwaard, met sturing op de actuele belasting.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met een beperkte aansluiting" },
+        { "kop": "Meerdere zorglocaties", "tekst": "Eén organisatie, meerdere panden met elk een eigen profiel en aansluiting. Waar begint u, en waarmee juist niet.", "route": "toepassingen/meerdere-locaties", "label": "Meerdere locaties" },
+        { "kop": "Eerst de bestaande aansluiting", "tekst": "Voordat er iets bij komt: wat zit er al in uw huidige aansluiting dat u niet benut.", "route": "toepassingen/bestaande-aansluiting-optimaliseren", "label": "Bestaande aansluiting optimaliseren" },
+        { "kop": "Het pand verduurzamen", "tekst": "Label, installatie en energievraag van het zorgvastgoed zelf, naast de elektrische infrastructuur.", "route": "verduurzaming-bedrijfspanden", "label": "Verduurzaming bedrijfspanden" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen uit de zorg",
+  "faq": [
+    {
+      "vraag": "Kan onze batterij als noodstroom dienen?",
+      "antwoord": "Niet zonder meer. Een batterij achter de meter werkt netparallel en valt bij een netstoring uit, tenzij de installatie expliciet op eilandbedrijf is ingericht. Daarbij moet energie gereserveerd blijven voor die rol, en die energie kunt u niet tegelijk inzetten voor piekafvlakking. Het is een ontwerpkeuze met gevolgen voor de opbrengst, geen extra functie."
+    },
+    {
+      "vraag": "Waarom levert piekafvlakking bij ons minder op dan bij een kantoor?",
+      "antwoord": "Omdat uw profiel geen nachtdip heeft. De hoogste kwartierwaarde ligt dichter bij het etmaalgemiddelde, dus er valt minder af te vlakken, en er zijn minder uren per etmaal waarin de batterij kan bijladen. Hoeveel er dan nog te halen is, volgt uit de hoogte en de duur van uw pieken, niet uit uw jaarverbruik."
+    },
+    {
+      "vraag": "Moeten we de luchtbehandeling afschakelen om vermogen te sparen?",
+      "antwoord": "Nee. Waar het ventilatiedebiet volgt uit het gebruik van de ruimte, is dat geen regelknop en hoort die groep niet in het bereik van het regelsysteem te zitten. Wat wel te sturen is: laden, warmtapwaterbuffering, keuken en wasserij, en klimaat binnen de bandbreedte die uw organisatie toestaat."
+    },
+    {
+      "vraag": "Komen wij in aanmerking voor DUMAVA?",
+      "antwoord": "DUMAVA is bedoeld voor maatschappelijk vastgoed, waaronder zorgvastgoed, maar u komt er niet voor in aanmerking als u inkomstenbelasting of vennootschapsbelasting moet betalen. Dat hangt dus af van uw rechtsvorm en fiscale positie, niet van het gebouw. Let ook op de volgorde: eerst een verduurzamingsadvies, en aanvragen voordat u opdracht geeft."
+    },
+    {
+      "vraag": "Kan het werk doorgaan terwijl de locatie in gebruik is?",
+      "antwoord": "Ja, maar in fasen en in vensters die u zelf kiest. Werk in de hoofdverdeler vraagt spanningsloos schakelen, veld voor veld, soms met een tijdelijke voorziening. Aanvoer, hijswerk en inbedrijfstelling worden daar met vaste werktijden en vaste routes op aangepast."
+    },
+    {
+      "vraag": "Wat hebben jullie van ons nodig om te beginnen?",
+      "antwoord": "Het kwartiersprofiel van de aansluiting, uw aansluitwaarde en gecontracteerd transportvermogen, een overzicht van de groepen in de hoofdverdeler met de aanduiding welke kritisch zijn, en de omvang en het dagritme van de vloot. Daarmee is te bepalen wat er binnen de bestaande aansluiting past."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Wat een EMS doet" },
+        { "route": "kennis/batterijveiligheid", "naam": "Brandveiligheid van opslag" }
+      ]
+    },
+    {
+      "kop": "Verwante sectoren en vastgoed",
+      "items": [
+        { "route": "industrie-vastgoed", "naam": "Kantoren en vastgoed" },
+        { "route": "industrie-vve", "naam": "VvE en wooncomplexen" },
+        { "route": "sectoren/parkeren", "naam": "Parkeren" },
+        { "route": "sectoren", "naam": "Alle sectoren" }
+      ]
+    },
+    {
+      "kop": "Bewijs en regelingen",
+      "items": [
+        { "route": "project-hazenweg-61", "naam": "Hazenweg 61, Hengelo" },
+        { "route": "projecten", "naam": "Alle projecten" },
+        { "route": "subsidies", "naam": "Subsidies en regelingen" },
+        { "route": "energieadvies", "naam": "Energieadvies" },
+        { "route": "netcongestie", "naam": "Netcongestie" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Begin bij het profiel en de verdeler",
+    "tekst": "Stuur het kwartiersprofiel van de aansluiting en een overzicht van de groepen in uw hoofdverdeler, met de aanduiding welke kritisch zijn. Daaruit volgt hoe hoog en hoe lang uw pieken zijn, wat er binnen de bestaande aansluiting past en welke fasering het pand in gebruik houdt.",
+    "primair": { "route": "contact", "label": "Laat uw zorglocatie doorrekenen" },
+    "secundair": { "route": "projecten", "label": "Bekijk gerealiseerde projecten" }
+  },
+
+  "claims": [
+    {
+      "tekst": "DUMAVA is bedoeld voor maatschappelijk vastgoed, waaronder zorgvastgoed; organisaties die inkomstenbelasting of vennootschapsbelasting moeten betalen komen niet in aanmerking.",
+      "bron": "Subsidieregeling duurzaam maatschappelijk vastgoed (DUMAVA), RVO",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/dumava",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Voor DUMAVA laat u eerst een verduurzamingsadvies opstellen; dat advies mag bij de aanvraag niet ouder zijn dan 48 maanden.",
+      "bron": "DUMAVA — voorwaarden, RVO",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/dumava/voorwaarden",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "DUMAVA wordt aangevraagd voordat u een contract met een aannemer aangaat of met de verduurzamingsactiviteiten begint.",
+      "bron": "DUMAVA — voorwaarden, RVO",
+      "bron_url": "https://www.rvo.nl/subsidies-financiering/dumava/voorwaarden",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Beschikbare capaciteit wordt gepubliceerd per voedingsgebied: de gecombineerde set postcodes van klanten die door één onderstation of schakelinstallatie worden bediend. Dat volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

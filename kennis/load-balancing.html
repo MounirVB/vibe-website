@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<script src="/_consent.js"></script>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KM2V7VQ3');</script>
+<script src="/_clarity.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Load balancing: statisch of dynamisch | Vibe Energy</title>
+<meta name="description" content="Statisch load balancing verdeelt een vast budget, dynamisch meet de aansluiting en verdeelt wat over is. Plus verdeelstrategie, ondergrens en fasebalans.">
+<!--SEO-FOUNDATION-->
+<link rel="canonical" href="https://www.vibeenergy.nl/kennis/load-balancing">
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/svg+xml" href="/assets/vibe-mark.svg">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Vibe Energy">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Load balancing: statisch of dynamisch">
+<meta property="og:description" content="Statisch load balancing verdeelt een vast budget, dynamisch meet de aansluiting en verdeelt wat over is. Plus verdeelstrategie, ondergrens en fasebalans.">
+<meta property="og:url" content="https://www.vibeenergy.nl/kennis/load-balancing">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Load balancing: statisch of dynamisch">
+<meta name="twitter:description" content="Statisch load balancing verdeelt een vast budget, dynamisch meet de aansluiting en verdeelt wat over is. Plus verdeelstrategie, ondergrens en fasebalans.">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.vibeenergy.nl/#org","name":"Vibe Energy","legalName":"Vibe Energy B.V.","url":"https://www.vibeenergy.nl/","logo":"https://www.vibeenergy.nl/assets/vibe-energy-logo-dark.svg","email":"info@vibeenergy.nl","telephone":"+31850600489","vatID":"NL865924910B01","address":{"@type":"PostalAddress","streetAddress":"Utrechtseweg 310 B46","postalCode":"6812 AR","addressLocality":"Arnhem","addressCountry":"NL"},"areaServed":{"@type":"Country","name":"Nederland"}},{"@type":"WebSite","@id":"https://www.vibeenergy.nl/#website","url":"https://www.vibeenergy.nl/","name":"Vibe Energy","publisher":{"@id":"https://www.vibeenergy.nl/#org"},"inLanguage":"nl-NL"},{"@type":"WebPage","@id":"https://www.vibeenergy.nl/kennis/load-balancing#webpage","url":"https://www.vibeenergy.nl/kennis/load-balancing","name":"Load balancing: statisch of dynamisch","description":"Statisch load balancing verdeelt een vast budget, dynamisch meet de aansluiting en verdeelt wat over is. Plus verdeelstrategie, ondergrens en fasebalans.","isPartOf":{"@id":"https://www.vibeenergy.nl/#website"},"inLanguage":"nl-NL","breadcrumb":{"@id":"https://www.vibeenergy.nl/kennis/load-balancing#kruimels"},"dateModified":"2026-10-10"},{"@type":"BreadcrumbList","@id":"https://www.vibeenergy.nl/kennis/load-balancing#kruimels","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.vibeenergy.nl/"},{"@type":"ListItem","position":2,"name":"Kennisbank","item":"https://www.vibeenergy.nl/kennis"},{"@type":"ListItem","position":3,"name":"Load balancing","item":"https://www.vibeenergy.nl/kennis/load-balancing"}]},{"@type":"TechArticle","@id":"https://www.vibeenergy.nl/kennis/load-balancing#artikel","headline":"Load balancing: statisch of dynamisch","description":"Statisch load balancing verdeelt een vast budget, dynamisch meet de aansluiting en verdeelt wat over is. Plus verdeelstrategie, ondergrens en fasebalans.","datePublished":"2026-10-10","dateModified":"2026-10-10","author":{"@id":"https://www.vibeenergy.nl/#org"},"publisher":{"@id":"https://www.vibeenergy.nl/#org"},"inLanguage":"nl-NL","isPartOf":{"@id":"https://www.vibeenergy.nl/#website"}},{"@type":"FAQPage","@id":"https://www.vibeenergy.nl/kennis/load-balancing#faq","mainEntity":[{"@type":"Question","name":"Krijg ik met load balancing meer vermogen op mijn aansluiting?","acceptedAnswer":{"@type":"Answer","text":"Nee. Load balancing verdeelt het vermogen dat er binnen uw aansluitwaarde en uw gecontracteerd transportvermogen beschikbaar is. Beide blijven ongewijzigd. Het voordeel zit elders: u kunt meer laadpunten plaatsen dan de aansluiting bij gelijktijdig vol vermogen zou dragen, omdat de verdeling voorkomt dat ze allemaal tegelijk vol trekken."}},{"@type":"Question","name":"Kan ik later van statisch naar dynamisch overstappen?","acceptedAnswer":{"@type":"Answer","text":"Vaak wel, en het is meestal geen zaak van de laadpunten maar van de meting en de verbinding. Er moet een stroommeting per fase komen op het punt dat u wilt beschermen, met richtingsinformatie, en een verbinding naar de controller. Of uw laadcontroller een externe meting kan verwerken, bepaalt of het een instelling is of een uitbreiding."}},{"@type":"Question","name":"Waarom laadt mijn auto soms langzamer dan de laadpaal kan?","acceptedAnswer":{"@type":"Answer","text":"Er zijn drie mogelijke oorzaken. De verdeling geeft op dat moment minder vermogen omdat het gebouw of een andere sessie ruimte gebruikt. Het voertuig zelf neemt minder aan, bijvoorbeeld omdat het eenfasig laadt of omdat de accu bijna vol of te koud is. Of de laadkabel begrenst de stroom. Alleen de eerste oorzaak heeft met load balancing te maken."}},{"@type":"Question","name":"Waarom pauzeert het systeem een sessie in plaats van heel langzaam te laden?","acceptedAnswer":{"@type":"Answer","text":"Omdat een voertuig onder een bepaald vermogen vooral zijn eigen systemen voedt: boordlader, koeling en schakelaars. Dan loopt de sessie wel, maar komt er bijna niets in de tractieaccu, terwijl de plek bezet is. Pauzeren en daarna van beurt wisselen levert per uur meer geladen energie op."}},{"@type":"Question","name":"Wat gebeurt er als de meting uitvalt?","acceptedAnswer":{"@type":"Answer","text":"Dat hangt af van de instelling, en daarom hoort die instelling in het ontwerp. Een controller zonder meetwaarde moet terugvallen op een veilig statisch budget. Valt hij terug op zijn maximum, dan kan de aansluiting worden overschreden; valt hij terug op nul, dan staat het laden stil. Test dit scenario bij oplevering, niet pas bij de eerste storing."}},{"@type":"Question","name":"Is load balancing hetzelfde als een energiemanagementsysteem?","acceptedAnswer":{"@type":"Answer","text":"Nee. Load balancing verdeelt vermogen over laadpunten binnen een grens. Een energiemanagementsysteem beslist daarnaast over opslag, opwek en andere verbruikers, en kan de grens voor het laden zelf aanpassen op basis van prijs, opwek of de laadtoestand van een batterij. Load balancing is daarmee een laag onder het EMS."}}]}]}</script>
+<!--/SEO-FOUNDATION-->
+<meta name="theme-color" content="#0052FF">
+<link rel="preload" href="/assets/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/vibe/tokens.css">
+<link rel="stylesheet" href="/vibe/vibe.css">
+<script src="/vibe/chrome.js" defer></script>
+</head>
+
+<body data-pagina="kennis">
+
+<noscript data-chrome-fallback>
+  <nav aria-label="Hoofdnavigatie">
+    <a href="/">Home</a> &middot;
+    <a href="/netcongestie">Netcongestie</a> &middot;
+    <a href="/systeem-energieopslag">Energieopslag</a> &middot;
+    <a href="/systeem-zonnepanelen">Zonne-energie</a> &middot;
+    <a href="/systeem-laadpalen">Laadinfrastructuur</a> &middot;
+    <a href="/laadplein">Laadplein</a> &middot;
+    <a href="/vibe-control">VIBE.CONTROL</a> &middot;
+    <a href="/microgrids">Microgrids</a> &middot;
+    <a href="/energy-hubs">Energy Hubs</a> &middot;
+    <a href="/sectoren">Sectoren</a> &middot;
+    <a href="/toepassingen">Toepassingen</a> &middot;
+    <a href="/kennis">Kennisbank</a> &middot;
+    <a href="/subsidies">Subsidies</a> &middot;
+    <a href="/regios">Regio's</a> &middot;
+    <a href="/projecten">Projecten</a> &middot;
+    <a href="/over-ons">Over Vibe</a> &middot;
+    <a href="/contact">Plan een gesprek</a> &middot;
+    <a href="/privacy">Privacyverklaring</a> &middot;
+    <a href="/algemene-voorwaarden">Algemene voorwaarden</a> &middot;
+    <a href="/cookiebeleid">Cookiebeleid</a>
+  </nav>
+</noscript>
+
+<main id="hoofdinhoud">
+  <section class="ve-sec ve-sec--flush-t" style="padding-top:var(--ve-s-xl)">
+    <div class="ve-wrap">
+    <nav class="ve-kruimels" aria-label="Kruimelpad">
+      <ol><li><a href="/kennis">Kennisbank</a></li><li><span aria-current="page">Load balancing</span></li></ol>
+    </nav>
+      <h1 class="ve-display" style="max-width:52rem;margin-top:var(--ve-s-lg)">Load balancing: een vast budget, of de ruimte die er werkelijk is</h1>
+      <p class="ve-lead ve-measure-wide" style="margin-top:var(--ve-s-lg)">Load balancing verdeelt het vermogen van één aansluiting over meerdere laadpunten. Het verschil tussen statisch en dynamisch zit in één ding: verdeelt het systeem een budget dat iemand heeft ingesteld, of de ruimte die op dit moment werkelijk over is. Dat verschil bepaalt niet hoeveel laadpunten er passen, maar hoeveel vermogen ze per uur krijgen.</p>
+      <div class="ve-row" style="margin-top:var(--ve-s-xl)">
+        <a class="ve-btn ve-btn--primair ve-btn--lg" href="/contact">Laat uw laadplein doorrekenen<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></a>
+        <a class="ve-btn ve-btn--ghost ve-btn--lg" href="#meting">Waar de meting moet zitten</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="ve-sec ve-sec--tight ve-sec--paper ve-sec--line-y">
+    <div class="ve-wrap">
+      <div class="ve-kaart ve-kaart--ruim ve-measure-wide" data-direct-antwoord>
+        <h2 class="ve-h4">Wat is het verschil tussen statisch en dynamisch load balancing?</h2>
+        <p class="ve-body" style="margin-top:var(--ve-s-md)">Load balancing verdeelt het beschikbare vermogen van één aansluiting over meerdere laadpunten. Statisch load balancing werkt met een vast vermogensbudget dat bij installatie wordt ingesteld en daarna niet meer verandert; dat budget moet laag genoeg zijn om ook het drukste moment van het gebouw te overleven, en staat de rest van de dag onbenut. Dynamisch load balancing meet de werkelijke belasting van de aansluiting en geeft de laadpunten alleen de ruimte die op dat moment over is; buiten de bedrijfsuren komt daardoor een veel groter deel van de aansluiting vrij. Beide vormen verdelen schaarste binnen een grens die al vastligt.</p>
+        <p class="ve-small" style="margin-top:var(--ve-s-md)">Load balancing bepaalt alleen hoe vermogen binnen uw aansluitwaarde en uw gecontracteerd transportvermogen wordt verdeeld. Het verhoogt geen van beide. Het zegt ook niets over de hoeveelheid energie die een voertuigpark per nacht nodig heeft; dat is een dimensioneringsvraag en geen verdeelvraag.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="ve-sec ve-sec--lg ve-sec--sunken ve-sec--line-y">
+    <div class="ve-wrap">
+      <div class="ve-spec ve-measure-wide">
+        <div class="ve-spec__kop"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-meter"/></svg><h2 class="ve-h4">Statisch en dynamisch naast elkaar</h2></div>
+        <dl>
+          <dt class="ve-small">Statisch load balancing</dt>
+          <dd class="ve-body">Een vast vermogensbudget wordt over de actieve laadsessies verdeeld. Het budget wordt bij inbedrijfstelling ingesteld en beweegt niet mee met het gebouw.</dd>
+          <dt class="ve-small">Dynamisch load balancing</dt>
+          <dd class="ve-body">Een meting op de aansluiting geeft door hoeveel er op dit moment wordt afgenomen. Het laadbudget is het verschil tussen de ingestelde grens en die actuele afname, en verandert dus continu.</dd>
+          <dt class="ve-small">Wat het budget begrenst</dt>
+          <dd class="ve-body">Statisch: de ruimte die het gebouw op zijn drukste moment overlaat. Dynamisch: de ruimte die er nú is, inclusief de ruimte die eigen opwek maakt.</dd>
+          <dt class="ve-small">Wat u ervoor nodig heeft</dt>
+          <dd class="ve-body">Statisch: een instelling in de laadcontroller, verder niets. Dynamisch: een stroommeting per fase op het punt dat u wilt beschermen, een verbinding naar de controller en een regellus die snel genoeg reageert.</dd>
+          <dt class="ve-small">Waar het misgaat</dt>
+          <dd class="ve-body">Statisch budget te laag: laadpunten staan stil terwijl de aansluiting leeg is. Statisch budget te hoog: de grens wordt overschreden op het moment dat het gebouw óók piekt. Dynamisch zonder terugvalwaarde: valt de meting weg, dan weet de controller niet meer waar de ruimte ophoudt.</dd>
+        </dl>
+        <p class="ve-small" style="margin-top:var(--ve-s-md)">De keuze is geen kwestie van beter of slechter, maar van wat u wilt beschermen en hoeveel laadpunten u op dezelfde aansluiting wilt zetten. Statisch is een instelling; dynamisch is een regelkring en vraagt dus onderhoud, uitlezing en een faalgedrag dat vooraf is bepaald.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="ve-sec ve-sec--lg " id="statisch-dynamisch">
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">Een vast budget kost altijd de ruimte van het drukste kwartier</h2>
+        <p class="ve-lead">Bij statisch balanceren bepaalt het slechtste moment van het jaar wat er de rest van het jaar overblijft.</p>
+      </div>
+      <div class="ve-prose">
+        <p>Een statisch budget moet veilig zijn op het moment dat het gebouw het meest vraagt. Hoe vaak dat moment zich voordoet, blijkt uit het kwartiersprofiel van de aansluiting; het budget geldt intussen op alle andere dagen net zo. Wie de laadpunten een vast deel van de aansluiting geeft, reserveert dus permanent de piekvraag van het gebouw, ook om drie uur 's nachts als er in het pand niets staat te draaien.</p>
+        <p>Dynamisch balanceren draait die logica om. De controller kent de ingestelde grens en de actuele afname, en geeft de laadpunten het verschil. Overdag, met de productie aan en de koeling op vol, is dat verschil klein. In de avond en de nacht is het bijna de hele aansluiting. Precies dan staan de bedrijfswagens aan de laadpunten. Dat is de reden dat dynamisch balanceren op een depot vaak meer oplevert dan een zwaardere laadpaal.</p>
+        <h3>Rekenvoorbeeld</h3>
+        <p>Dit is algemene rekenkunde, geen meting van een bestaande locatie. Neem een aansluiting van 3 × 80 A. Het gebouw gebruikt op zijn drukste moment een deel daarvan en op een stille nacht vrijwel niets. Een statisch budget dat op dat drukste moment veilig is, blijft de hele nacht even groot. Een dynamisch budget groeit die nacht door tot de ingestelde grens minus de kleine restlast van het pand. Het aantal laadpunten dat u kunt plaatsen verandert in beide gevallen niet; wat verandert is hoe snel ze samen kunnen laden.</p>
+        <p>Daar zit ook de koppeling met opslag en opwek. Een batterij die de piek van het gebouw afvlakt, maakt het verschil tussen grens en afname structureel groter, en dus het laadbudget groter. Zon op het dak doet hetzelfde zolang de opwek en het laden samenvallen. In alle gevallen blijft de grens zelf staan: balanceren gebruikt de ruimte, het maakt hem niet.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="ve-sec ve-sec--lg ve-sec--paper ve-sec--line-y" id="meting">
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">Waar de meting moet zitten om dynamisch te kunnen werken</h2>
+        <p class="ve-lead">Een dynamische verdeling is niet beter dan de meting waarop hij rust.</p>
+      </div>
+      <div class="ve-prose">
+        <p>De meting hoort op het punt dat u wilt beschermen: direct achter de hoofdbeveiliging van de aansluiting, waar alles langskomt. Dus de gebouwlast, de omvormer van het zonnedak, de batterij en de laadpunten. Zit de meting verder stroomafwaarts, bijvoorbeeld in een onderverdeler, dan ziet de controller een deel van de belasting niet en beschermt hij een grens die hij niet kent.</p>
+        <p>Daarna komt de vraag of de meting de laadpunten zelf meeneemt. Dat bepaalt de rekenregel. Ziet de meting de laadstroom óók, dan is het budget de grens min de totale afname plus wat de laadpunten nu al nemen — een gesloten lus, die gedempt moet worden ingesteld om niet te gaan slingeren. Zit de meting op een tak die de laadpunten uitsluit, dan is het budget een rechtstreekse aftrekking. Wie die twee conventies door elkaar haalt, bouwt een installatie die ofwel pompt ofwel de grens overschrijdt.</p>
+        <h3>Richting en fase, niet een totaal</h3>
+        <p>De meting moet per fase werken en de richting kennen. Met eigen opwek kan de stroom omkeren: op een zonnige middag gaat er vermogen het net op. Een meting die alleen de grootte kent en niet het teken, leest teruglevering als afname en knijpt de laadpunten dicht op het moment dat er juist het meeste ruimte is. Die fout komt pas aan het licht wanneer opwek en laden op hetzelfde moment actief zijn: niet bij de inbedrijfstelling in de ochtend, maar op de eerste zonnige middag erna.</p>
+        <p>Dan de snelheid en het faalgedrag. De regellus moet sneller zijn dan de grens die hij beschermt. Een hoofdbeveiliging verdraagt een korte overschrijding; de afname op een grootverbruikaansluiting wordt per kwartier vastgelegd, dus voor de gemeten piek telt het gemiddelde over vijftien minuten. Valt het meetsignaal weg — een kabelbreuk, een netwerkstoring, een modem dat opnieuw opstart — dan moet de controller terugvallen op een veilig statisch budget, niet op het maximum en niet op nul. Die terugvalwaarde hoort in het ontwerp te staan en getest te zijn bij oplevering.</p>
+        <p>De meting en de regellus zijn de onderste laag. Wie daarboven ook wil beslissen wanneer de batterij laadt, hoe de eigen opwek wordt ingezet of welke processen wijken voor het laden, zit in het domein van een energiemanagementsysteem. Load balancing beschermt één grens; het EMS bepaalt welke grens op welk moment zinvol is. Wat die bovenliggende laag precies beslist, staat op de kennisbankpagina over het energiemanagementsysteem.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="ve-sec ve-sec--lg ">
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">Verdeelstrategieën: wie krijgt het vermogen dat er is</h2>
+        <p class="ve-lead">Het budget bepaalt hoeveel er te verdelen is. De strategie bepaalt wie het krijgt.</p>
+      </div>
+      <div class="ve-prose">
+        <h3>Gelijk verdelen</h3>
+        <p>Het budget wordt gedeeld door het aantal actieve sessies, begrensd door de ondergrens per laadpunt en door wat het voertuig zelf maximaal aanneemt. Voorspelbaar en uitlegbaar: niemand wordt voorgetrokken. Het nadeel verschijnt bij drukte. Komen er veel auto's bij, dan laadt iedereen langzamer en kan het gebeuren dat niemand op tijd klaar is. Voor een bezoekersparkeerplaats is dat vaak acceptabel, voor een bestelwagenpark dat om zes uur weg moet niet.</p>
+        <h3>First come, first served</h3>
+        <p>De eerste sessie krijgt wat hij vraagt, de volgende krijgt wat er overblijft, en de laatste krijgt soms niets. Voor wie vroeg is, is dit de snelste strategie en de enige met een voorspelbare laadtijd. Voor wie laat is, is het de onzekerste. Dit werkt goed waar de aankomsttijd samenhangt met de urgentie, bijvoorbeeld een depot waar voertuigen in ploegen binnenkomen en de eerste ook het eerst weer uitrijdt.</p>
+        <h3>Prioriteit per voertuig of sessie</h3>
+        <p>Sessies krijgen een klasse en de klassen krijgen in volgorde vermogen: servicebussen voor bezoekers, een wagen die om zes uur vertrekt voor een leaseauto die er de hele dag staat. Hiervoor moet het systeem weten wie er laadt, via een laadkaart, een token of de achterliggende administratie. Zonder die identificatie is er geen prioriteit, alleen een volgorde.</p>
+        <p>Wat elke strategie voor de gebruiker betekent, is het eigenlijke keuzecriterium. Gelijk verdelen geeft iedereen een onvoorspelbare maar nooit nul snelheid. First come, first served geeft de eerste gebruikers een voorspelbare laadtijd en de laatste geen enkele zekerheid. Prioriteit geeft één groep een harde toezegging en maakt de rest expliciet ondergeschikt. Kies op basis van wat de locatie moet garanderen, leg het vast in het laadbeleid en vertel het de gebruikers — want dit is precies wat zij aan de laadpaal merken.</p>
+        <p>Een strategie is overigens geen vermogen. Ligt de som van de vraag structureel boven het budget, dan bepaalt elke strategie alleen nog wie wacht.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="ve-sec ve-sec--lg ve-sec--sunken ve-sec--line-y">
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">De ondergrens: pauzeren is beter dan heel langzaam laden</h2>
+        <p class="ve-lead">Onder een bepaalde stroom komt er bijna niets meer in de accu, terwijl de plek wel bezet is.</p>
+      </div>
+      <div class="ve-prose">
+        <p>Een laadpunt kan niet oneindig ver terugregelen. De laadstandaard kent een onderste stap in de stroom die een laadpunt mag aanbieden; daaronder kan het geen geldige opdracht meer geven en stopt het voertuig de sessie. Maar het probleem begint al boven die ondergrens. Een ladend voertuig houdt zijn eigen systemen aan: de boordlader, de koeling, de hoogspanningsschakelaars en soms de accuconditionering. Die last is er ongeacht hoe hard er geladen wordt. Zakt het aangeboden vermogen tot in de buurt van die eigen last, dan gaat vrijwel alles wat binnenkomt naar het voertuig zelf en nauwelijks nog naar de tractieaccu.</p>
+        <p>Rekenvoorbeeld, algemene rekenkunde: het vermogen van een driefasige laadsessie is ruwweg drie keer de fasespanning maal de stroom per fase. Teruggeregeld naar een derde van de nominale stroom blijft daar ongeveer een derde van over, op drie fasen nog altijd een bruikbaar vermogen. Laadt het voertuig eenfasig, dan valt daar nog eens een factor drie af, en op de onderste stap van zo'n eenfasige sessie komt het aangeboden vermogen in de buurt van wat het voertuig zelf verbruikt. Dáár staat de teller vrijwel stil terwijl de plek bezet blijft — niet bij elke teruggeregelde sessie.</p>
+        <p>Daarom knijpt een goed ingerichte verdeling niet door tot nul. Hij pauzeert sessies en geeft de overblijvende sessies een bruikbare stroom, en wisselt daarna van beurt als de sessies tijd hebben. Een gepauzeerde sessie houdt zijn plaats in de rij en levert zijn vermogen af aan een voertuig dat er wél iets mee doet. Een eenfasige sessie op de laagste stap doet het omgekeerde: hij houdt een plek en een stuk budget bezet terwijl er nauwelijks energie in de accu komt.</p>
+        <p>Bij pauzeren hoort één praktische waarschuwing. Niet elk voertuig hervat betrouwbaar. Sommige modellen vragen een nieuwe handshake, andere vallen in slaap en moeten worden gewekt. Dat is de reden om in blokken te pauzeren en te wisselen, en niet bij elke meetwaarde te schakelen. Een verdeling die elke paar seconden start en stopt, levert minder energie dan een verdeling die een kwartier rust houdt.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="ve-sec ve-sec--lg ">
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">Fasebalans: de grens ligt op de zwaarst belaste fase</h2>
+        <p class="ve-lead">Een driefasige aansluiting wordt per fase beveiligd. Een gemiddelde zegt dus niets.</p>
+      </div>
+      <div class="ve-prose">
+        <p>De beveiliging kijkt naar elke fase afzonderlijk. De grens van de aansluiting is daarmee de zwaarst belaste fase, niet het totaal gedeeld door drie. Dat maakt de verdeling over L1, L2 en L3 een ontwerpkeuze bij de installatie en geen detail voor later.</p>
+        <p>Rekenvoorbeeld: drie eenfasige laadpunten die alle drie op L1 zijn aangesloten, belasten één fase met de som van hun stroom terwijl L2 en L3 niets doen. De beveiliging op L1 valt dan uit terwijl twee derde van de aansluiting ongebruikt is. Dezelfde drie laadpunten, verdeeld over de drie fasen, halen hetzelfde totaal zonder die uitval.</p>
+        <p>Daar komt bij dat de gebouwlast zelf vaak al scheef is. Een eenfasige lichtgroep, een lift, een keuken of een compressor hangt aan één fase. De meting voor dynamisch balanceren moet dat zien, dus per fase meten en niet één totaal doorgeven. Een controller die een totaal krijgt, verdeelt ruimte die op geen enkele fase bestaat.</p>
+        <p>Het ontwerp kan ook in bedrijf scheef raken. Een deel van de voertuigen laadt eenfasig, omdat de boordlader of de laadkabel niet meer toelaat; welke fase die sessie dan gebruikt, volgt uit de fasering van het laadpunt. Een installatie die op papier symmetrisch is verdeeld, kan daardoor een avond lang op één fase hangen. Een verdeling die per fase rekent, kan daarop reageren door op de belaste fase terug te regelen en op de andere ruimte te geven. Een verdeling die op een totaal rekent, merkt het niet.</p>
+        <p>Welke fase waar hoort, hoeveel punten er komen en of eenfasig of driefasig het uitgangspunt is, zijn keuzes die bij het ontwerp van de laadinfrastructuur horen en niet bij de instelling van de verdeling. Een balancer kan een scheve verdeling verzachten; hij kan hem niet ongedaan maken. De kennisbankpagina over het dimensioneren van laadinfrastructuur behandelt die ontwerpkant.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="ve-sec ve-sec--lg ">
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">Wat load balancing niet oplost</h2>
+        <p class="ve-lead">De eerlijke grens: balanceren verdeelt schaarste, het maakt geen capaciteit.</p>
+      </div>
+      <div class="ve-prose">
+        <p>De hoeveelheid energie die per nacht door een aansluiting past, is de grens maal de beschikbare uren. Een verdeling verandert daar niets aan. Hij bepaalt alleen wie de energie krijgt en in welke volgorde. Heeft uw wagenpark per nacht meer kWh nodig dan er in de beschikbare uren onder de grens door kan, dan helpt geen enkele strategie. Dan zijn er vier richtingen: meer uren (eerder aansluiten, later vertrekken), minder kWh (ritindeling, kleinere laadvensters per voertuig), meer ruimte onder de grens (gebouwpiek verlagen, opslag, eigen opwek) of een zwaardere aansluiting.</p>
+        <p>Ook verandert balanceren niets aan uw <strong>aansluitwaarde</strong> of aan uw <strong>gecontracteerd transportvermogen</strong>. Het zorgt ervoor dat u eronder blijft. Dat is waardevol, want de afname wordt per kwartier vastgelegd: één gelijktijdige piek van een kwartier bepaalt de gemeten piekwaarde van die periode. Wat een overschrijding van uw contractwaarde kost en hoe uw netbeheerder die verwerkt, staat in uw transportovereenkomst en op zijn tarievenblad, niet in een vuistregel. Een uitbreiding van de grens is het in geen geval.</p>
+        <p>En een verdeling beschermt alleen wat hij meet en stuurt. Een belasting achter een onderverdeler die niet in de meting zit, of een laadpunt van een andere leverancier dat niet in de regelkring hangt, valt buiten het systeem. Dan is de bescherming een aanname. Bij een gemengd laadplein is de vraag dus niet alleen welke strategie u kiest, maar of alle punten werkelijk onder één regelaar hangen.</p>
+        <p>Tot slot: dynamisch balanceren vraagt onderhoud. Een meting die verloopt, een netwerkverbinding die wegvalt of een firmware-update die de terugvalwaarde reset, maakt het verschil tussen een beschermde aansluiting en een beveiliging die op een avond uitvalt. Dat hoort in het beheer te zitten, niet in de verrassing achteraf.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="ve-sec ve-sec--lg ">
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">Waar dit in de praktijk langskomt</h2>
+        <p class="ve-lead">De plekken waar de verdeling van vermogen de uitkomst bepaalt.</p>
+      </div>
+      <div class="ve-cols ve-cols--gap-xl">
+        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/laden-met-beperkte-aansluiting">
+          <h3 class="ve-h4">Laden met een beperkte aansluiting</h3>
+          <p class="ve-body" style="margin-top:.4rem">De bedrijfswagens moeten elektrisch, maar de aansluiting kan de laadpunten niet gelijktijdig op vol vermogen dragen.</p>
+          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Laden met een beperkte aansluiting</span>
+        </a>
+        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/laadplein">
+          <h3 class="ve-h4">Een laadplein op één aansluiting</h3>
+          <p class="ve-body" style="margin-top:.4rem">Meerdere laadpunten, één grens en een verdeling die moet werken terwijl het pand ook draait.</p>
+          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Laadplein</span>
+        </a>
+        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/systeem-laadpalen">
+          <h3 class="ve-h4">De laadinfrastructuur zelf</h3>
+          <p class="ve-body" style="margin-top:.4rem">Aantal punten, vermogen per punt, fasekeuze en de regelaar die ze samenbrengt.</p>
+          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Laadinfrastructuur</span>
+        </a>
+        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/project-ratio-16">
+          <h3 class="ve-h4">Een gerealiseerd voorbeeld</h3>
+          <p class="ve-body" style="margin-top:.4rem">Op Ratio 16 in Duiven draaien zon, opslag en een laadplein samen achter de bestaande aansluiting; de sturing houdt het geheel binnen die grens.</p>
+          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Ratio 16, Duiven</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="ve-sec ve-sec--lg" id="vragen">
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">Veelgestelde vragen over load balancing</h2>
+      </div>
+      <div class="ve-faq">
+        <details>
+          <summary>Krijg ik met load balancing meer vermogen op mijn aansluiting?<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-caret"/></svg></summary>
+          <p>Nee. Load balancing verdeelt het vermogen dat er binnen uw aansluitwaarde en uw gecontracteerd transportvermogen beschikbaar is. Beide blijven ongewijzigd. Het voordeel zit elders: u kunt meer laadpunten plaatsen dan de aansluiting bij gelijktijdig vol vermogen zou dragen, omdat de verdeling voorkomt dat ze allemaal tegelijk vol trekken.</p>
+        </details>
+        <details>
+          <summary>Kan ik later van statisch naar dynamisch overstappen?<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-caret"/></svg></summary>
+          <p>Vaak wel, en het is meestal geen zaak van de laadpunten maar van de meting en de verbinding. Er moet een stroommeting per fase komen op het punt dat u wilt beschermen, met richtingsinformatie, en een verbinding naar de controller. Of uw laadcontroller een externe meting kan verwerken, bepaalt of het een instelling is of een uitbreiding.</p>
+        </details>
+        <details>
+          <summary>Waarom laadt mijn auto soms langzamer dan de laadpaal kan?<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-caret"/></svg></summary>
+          <p>Er zijn drie mogelijke oorzaken. De verdeling geeft op dat moment minder vermogen omdat het gebouw of een andere sessie ruimte gebruikt. Het voertuig zelf neemt minder aan, bijvoorbeeld omdat het eenfasig laadt of omdat de accu bijna vol of te koud is. Of de laadkabel begrenst de stroom. Alleen de eerste oorzaak heeft met load balancing te maken.</p>
+        </details>
+        <details>
+          <summary>Waarom pauzeert het systeem een sessie in plaats van heel langzaam te laden?<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-caret"/></svg></summary>
+          <p>Omdat een voertuig onder een bepaald vermogen vooral zijn eigen systemen voedt: boordlader, koeling en schakelaars. Dan loopt de sessie wel, maar komt er bijna niets in de tractieaccu, terwijl de plek bezet is. Pauzeren en daarna van beurt wisselen levert per uur meer geladen energie op.</p>
+        </details>
+        <details>
+          <summary>Wat gebeurt er als de meting uitvalt?<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-caret"/></svg></summary>
+          <p>Dat hangt af van de instelling, en daarom hoort die instelling in het ontwerp. Een controller zonder meetwaarde moet terugvallen op een veilig statisch budget. Valt hij terug op zijn maximum, dan kan de aansluiting worden overschreden; valt hij terug op nul, dan staat het laden stil. Test dit scenario bij oplevering, niet pas bij de eerste storing.</p>
+        </details>
+        <details>
+          <summary>Is load balancing hetzelfde als een energiemanagementsysteem?<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-caret"/></svg></summary>
+          <p>Nee. Load balancing verdeelt vermogen over laadpunten binnen een grens. Een energiemanagementsysteem beslist daarnaast over opslag, opwek en andere verbruikers, en kan de grens voor het laden zelf aanpassen op basis van prijs, opwek of de laadtoestand van een batterij. Load balancing is daarmee een laag onder het EMS.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="ve-sec ve-sec--lg ve-sec--paper ve-sec--line-t" id="verwant">
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">Verder lezen</h2>
+      </div>
+      <div class="ve-cols ve-cols--gap-xl">
+        <div>
+          <p class="ve-footer__kop">Verder in de kennisbank</p>
+          <ul class="ve-footer__lijst">
+            <li><a href="/kennis/laadinfrastructuur-dimensioneren">Laadinfrastructuur dimensioneren</a></li>
+            <li><a href="/kennis/ems-energiemanagementsysteem">Wat een EMS doet</a></li>
+            <li><a href="/kennis/kw-versus-kwh">kW versus kWh</a></li>
+            <li><a href="/kennis/transportvermogen-versus-aansluitwaarde">Transportvermogen en aansluitwaarde</a></li>
+            <li><a href="/kennis/peak-shaving">Peak shaving</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="ve-footer__kop">De systemen en toepassingen</p>
+          <ul class="ve-footer__lijst">
+            <li><a href="/systeem-laadpalen">Laadinfrastructuur</a></li>
+            <li><a href="/laadplein">Laadplein</a></li>
+            <li><a href="/vibe-control">VIBE.CONTROL</a></li>
+            <li><a href="/toepassingen/laden-met-beperkte-aansluiting">Laden met een beperkte aansluiting</a></li>
+            <li><a href="/toepassingen/elektrificatie-bedrijfswagens">Elektrificatie van bedrijfswagens</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="ve-footer__kop">Gerealiseerd</p>
+          <ul class="ve-footer__lijst">
+            <li><a href="/project-ratio-16">Ratio 16, Duiven</a></li>
+            <li><a href="/project-hazenweg-61">Hazenweg 61, Hengelo</a></li>
+            <li><a href="/projecten">Alle projecten</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ve-sec ve-sec--xl">
+    <div class="ve-wrap">
+      <div class="ve-slot ve-slot--dark">
+        <div class="ve-slot__inhoud">
+          <h2 class="ve-h2">De verdeling volgt uit de meting</h2>
+          <p class="ve-lead" style="margin-top:var(--ve-s-md)">Stuur het kwartiersprofiel van uw aansluiting, uw aansluitwaarde en het aantal laadpunten dat u wilt plaatsen. Daaruit volgt hoeveel ruimte er per moment is, of een statisch budget volstaat en welke verdeelstrategie past bij wat uw locatie moet garanderen.</p>
+          <div class="ve-row" style="margin-top:var(--ve-s-xl)">
+            <a class="ve-btn ve-btn--primair ve-btn--lg" href="/contact">Laat uw laadplein doorrekenen<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></a>
+            <a class="ve-btn ve-btn--ghost-dark ve-btn--lg" href="/kennis">Terug naar de kennisbank</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div data-chrome-footer></div>
+
+</body>
+</html>

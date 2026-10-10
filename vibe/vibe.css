@@ -1136,3 +1136,25 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
 }
 .ve-puls{animation:ve-puls 2.4s var(--ve-ease) infinite}
 @keyframes ve-puls{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* ---- kruimelpad (SEO/GEO-fundament) ----
+   Het kruimelpad staat als echte HTML in <main> en niet in de chrome, omdat
+   de chrome uit JavaScript komt. Bing en de meeste AI-crawlers voeren geen
+   JavaScript uit; de hiërarchie moet dus in de opmaak zelf staan. De vorm is
+   bewust stil: één regel kleine tekst boven de H1, geen kader, geen kleur. */
+.ve-kruimels{font-size:var(--ve-body-sm-size);line-height:var(--ve-body-sm-lh);color:var(--ve-text-muted)}
+.ve-kruimels ol{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin:0;padding:0;list-style:none}
+.ve-kruimels li{display:flex;align-items:center;gap:.5rem}
+.ve-kruimels li + li::before{content:'/';color:var(--ve-line)}
+.ve-kruimels a{color:var(--ve-text-muted);text-decoration:none}
+.ve-kruimels a:hover{color:var(--ve-text)}
+.ve-kruimels [aria-current='page']{color:var(--ve-text)}
+
+/* ---- regioraster ----
+   Gemeentelijsten op een provinciehub. Een platte opsomming van vijftig namen
+   leest als een linkfarm; dit raster houdt het scanbaar en laat zien welke
+   gemeenten een eigen pagina hebben en welke niet. */
+.ve-regios{display:grid;gap:.35rem .75rem;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));margin:0;padding:0;list-style:none}
+.ve-regios li{font-size:var(--ve-body-sm-size);line-height:1.5}
+.ve-regios a{color:var(--ve-action-ink);font-weight:var(--ve-w-sub)}
+.ve-regios span{color:var(--ve-text-muted)}

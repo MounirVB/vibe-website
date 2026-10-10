@@ -1,0 +1,261 @@
+{
+  "route": "toepassingen",
+  "type": "hub",
+  "titel": "Toepassingen: welk probleem heeft u? | Vibe Energy",
+  "beschrijving": "Begin bij uw knelpunt, niet bij een product. Gaat het over vermogen, over energie of over gelijktijdigheid? Die drie leiden naar andere ingrepen.",
+  "og_titel": "Toepassingen: welk probleem heeft u?",
+  "h1": "Welk probleem heeft u? Vermogen, energie of gelijktijdigheid.",
+  "lead": "De meeste bezoekers weten precies wat er misgaat, maar niet welk systeem daarbij hoort. Dat hoeft ook niet. Eén onderscheid bepaalt bijna de hele keuze: gaat uw knelpunt over vermogen, over energie of over gelijktijdigheid. Hieronder staat per probleem waar het thuishoort.",
+  "data_pagina": "toepassingen",
+  "kruimels": [],
+  "kruimel_label": "Toepassingen",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw knelpunt doorrekenen" },
+    { "soort": "ghost", "anker": "#drie-vragen", "label": "De drie soorten knelpunt" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Hoe weet ik welke energietoepassing bij mijn probleem hoort?",
+    "antwoord": "Welke ingreep achter de meter helpt, volgt uit het soort knelpunt. Bij een vermogensprobleem houdt de aansluiting het niet: de gevraagde kW gaat boven wat gecontracteerd of fysiek beschikbaar is, en de ingreep is de piek opvangen met opslag of begrenzen met een regelsysteem. Bij een energieprobleem houdt de aansluiting het wel, maar is de hoeveelheid kWh of het moment van afname te duur; de ingreep is zelf opwekken en in de tijd verschuiven. Bij een gelijktijdigheidsprobleem past elke installatie los binnen de aansluiting en de som niet; de ingreep is verdelen en voorrang bepalen. Het kwartiersprofiel van de aansluiting wijst uit welke van de drie overheerst.",
+    "voorbehoud": "Deze indeling kiest de richting, niet het ontwerp. Welk vermogen en welke capaciteit nodig zijn, en of de businesscase sluit, volgt pas uit de meetdata van de locatie. Veel locaties hebben twee van de drie tegelijk."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "drie-vragen",
+      "kop": "Eén onderscheid bepaalt bijna alles",
+      "lead": "Vermogen, energie en gelijktijdigheid lijken op elkaar en vragen volstrekt andere ingrepen.",
+      "alineas": [
+        "Bijna elk gesprek over energie achter de meter begint met een symptoom: een afgewezen aanvraag, een rekening die oploopt, een beveiliging die eruit klapt, een zonnedak dat wordt afgeknepen. Het symptoom zegt nog niet wat er moet gebeuren. Het soort knelpunt doet dat wel.",
+        "<h3>Vermogen · de aansluiting houdt het niet</h3>",
+        "Vermogen is hoe hard er op dít moment wordt getrokken, in kW. Loopt u hiertegenaan, dan is de grens hard: de fysieke aansluitcapaciteit of het gecontracteerd transportvermogen laat het niet toe, en geen enkele hoeveelheid zuinigheid verandert dat ene moment. De ingreep is de piek opvangen of begrenzen. Opslag levert het verschil zolang u boven de grens zit; een regelsysteem knijpt stuurbare verbruikers af zolang het krap is. Herkenbaar aan een afgewezen of in de wachtrij geplaatste aanvraag, of aan een piek in het kwartiersprofiel die boven uw gecontracteerde waarde uitkomt.",
+        "<h3>Energie · de rekening of de gemiste opbrengst loopt op</h3>",
+        "Energie is hoeveel er over een periode door de meter gaat, in kWh. Hier knelt niet de aansluiting maar het moment. U neemt af op dure uren, u levert terug op uren waarop daar weinig voor wordt betaald, of uw invoeding wordt begrensd en dan gaat opbrengst verloren die nergens heen kan. De ingreep is verschuiven en zelf opwekken: energie bewaren tot u hem nodig heeft, en inkoop en teruglevering per uur sturen in plaats van per dag. Herkenbaar aan een aansluiting die het ruim houdt, en toch een rekening die niet zakt.",
+        "<h3>Gelijktijdigheid · alles staat tegelijk aan</h3>",
+        "Gelijktijdigheid is welk deel van uw installaties op hetzelfde moment aan staat. Hier hoeft er geen kilowatt bij: de ingreep zit in de volgorde waarin verbruikers aan mogen. Elke installatie past los binnen de aansluiting; de som niet. De ingreep is verdelen in plaats van bijbouwen. Statische load balancing verdeelt een vast budget over de verbruikers; dynamische load balancing meet de actuele belasting van de aansluiting en geeft weg wat er op dat moment over is. Een energiemanagementsysteem bepaalt daarbij de voorrang. Herkenbaar aan een piek die maar enkele minuten duurt en samenvalt met het starten van meerdere machines of laders.",
+        "Deze drie sluiten elkaar niet uit. In de praktijk is het vaak een vermogensprobleem met een gelijktijdigheidsoorzaak, of een energieprobleem dat pas zichtbaar wordt zodra de piek is weggenomen. Wat telt is welke van de drie de ingreep bepaalt, want daar hangen de kosten van af."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "De drie naast elkaar, en wat er níét werkt",
+      "rijen": [
+        ["Vermogensprobleem (kW)", "Een uitbreiding, een machine of een laadplein vraagt meer kW dan gecontracteerd of fysiek beschikbaar is. Zichtbaar als een afgewezen aanvraag of als een piek boven uw gecontracteerde waarde."],
+        ["Energieprobleem (kWh)", "De aansluiting houdt het, maar de afname staat op de verkeerde uren of de eigen opwek levert te weinig op. Zichtbaar op de factuur, niet op de beveiliging."],
+        ["Gelijktijdigheidsprobleem", "Elke installatie past los, samen niet. Zichtbaar als een piek van enkele minuten die samenvalt met het aanslaan van meerdere verbruikers."],
+        ["Wat de ingreep bepaalt", "Vermogen vraagt opvangen of begrenzen: opslag en sturing. Energie vraagt verschuiven en zelf opwekken. Gelijktijdigheid vraagt verdelen: dynamische load balancing en een EMS dat de voorrang bepaalt."],
+        ["Wat de verkeerde ingreep doet", "Een zwaardere aansluiting verlaagt geen rekening. Minder kWh verbruiken verlaagt geen piek. Een batterij die op jaarverbruik is gedimensioneerd heeft het vermogen niet om de piek te pakken, en een batterij die alleen op piekvermogen is gedimensioneerd heeft de capaciteit niet om de piek uit te zitten."]
+      ],
+      "noot": "Veel locaties hebben er twee van. Welke overheerst, blijkt uit het kwartiersprofiel: de hoogte van de piek boven de grens die u wilt aanhouden, de duur ervan en hoe vaak hij voorkomt."
+    },
+    {
+      "soort": "kaarten",
+      "id": "vermogen",
+      "kop": "Het knelpunt zit in het vermogen",
+      "lead": "De aansluiting of het gecontracteerde transportvermogen is de harde grens. De ingreep gaat over opvangen en begrenzen.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "kaarten": [
+        {
+          "kop": "“Wij willen uitbreiden en het net zegt nee”",
+          "tekst": "Een extra productielijn, een koelcel of een nieuwe hal past niet binnen het vermogen dat u mag afnemen, en verzwaren kan in uw voedingsgebied niet op korte termijn.",
+          "route": "toepassingen/netcongestie-bij-uitbreiding",
+          "label": "Netcongestie bij uitbreiding"
+        },
+        {
+          "kop": "“Wij krijgen geen extra transportvermogen”",
+          "tekst": "De aanvraag voor meer gecontracteerd transportvermogen is afgewezen of in de wachtrij geplaatst. De vraag is dan wat er binnen de huidige waarde nog in zit.",
+          "route": "toepassingen/geen-extra-transportvermogen",
+          "label": "Geen extra transportvermogen"
+        },
+        {
+          "kop": "“Wij willen eerst weten wat er in onze aansluiting zit”",
+          "tekst": "Er is geen acuut knelpunt, maar u betaalt voor vermogen dat u zelden gebruikt en wilt weten hoeveel ruimte er onder uw piek nog vrij is voordat u iets bijplaatst.",
+          "route": "toepassingen/bestaande-aansluiting-optimaliseren",
+          "label": "Bestaande aansluiting optimaliseren"
+        }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "id": "gelijktijdigheid",
+      "kop": "Het knelpunt zit in de gelijktijdigheid",
+      "lead": "Los past alles. De ingreep gaat over verdelen en voorrang, niet over meer vermogen inkopen.",
+      "kaarten": [
+        {
+          "kop": "“Eén korte piek bepaalt onze hele rekening”",
+          "tekst": "Enkele minuten waarin compressor, koeling en lader samen aanslaan zetten uw gecontracteerde vermogen voor de rest van het jaar vast.",
+          "route": "toepassingen/pieken-in-verbruik",
+          "label": "Pieken in verbruik"
+        },
+        {
+          "kop": "“Onze aansluiting kan de laadpunten niet gelijktijdig dragen”",
+          "tekst": "Op papier is het aantal laadpunten maal het laadvermogen hoger dan de aansluiting. In de praktijk laadt zelden alles tegelijk op vol vermogen; daar zit de ruimte.",
+          "route": "toepassingen/laden-met-beperkte-aansluiting",
+          "label": "Laden met een beperkte aansluiting"
+        },
+        {
+          "kop": "“Het wagenpark gaat elektrisch en wij weten niet wat dat vraagt”",
+          "tekst": "Bestelbussen die 's nachts op het terrein staan hebben een ander laadprofiel dan personenauto's die tussendoor kort bijladen. Dat verschil bepaalt het vermogen én het laadschema.",
+          "route": "toepassingen/elektrificatie-bedrijfswagens",
+          "label": "Elektrificatie van bedrijfswagens"
+        },
+        {
+          "kop": "“Onze processen moeten meebewegen, niet alleen de batterij”",
+          "tekst": "Koeling, warmtepompen, persluchtcompressoren en laadpunten zijn stuurbaar. De vraag is wie bepaalt welke verbruiker wijkt als het krap wordt, en met welke voorrang.",
+          "route": "toepassingen/processen-sturen-met-ems",
+          "label": "Processen sturen met een EMS"
+        }
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "id": "energie",
+      "kop": "Het knelpunt zit in de energie",
+      "lead": "De aansluiting houdt het. Wat weglekt is opbrengst of geld, en de ingreep gaat over het moment.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "kaarten": [
+        {
+          "kop": "“Ons dak mag niet alles terugleveren”",
+          "tekst": "De netbeheerder begrenst de invoeding. De beperking staat in kW, maar wat u kwijt bent is kWh: opbrengst die niet het net op kan en nergens anders heen gaat.",
+          "route": "toepassingen/terugleverbeperking",
+          "label": "Terugleverbeperking"
+        },
+        {
+          "kop": "“Wij hebben een batterij en halen er te weinig uit”",
+          "tekst": "Een batterij kan meer dan piekafvlakking. Welke inzet voorgaat — eigen verbruik, inkoopsturing, flexibiliteit — is een keuze in de sturing, niet in de hardware.",
+          "route": "toepassingen/batterij-slim-inzetten",
+          "label": "Batterij slim inzetten"
+        },
+        {
+          "kop": "“Wij hebben meer panden dan budget”",
+          "tekst": "Bij een portefeuille is de eerste vraag niet wát er moet gebeuren maar wáár. Dat volgt uit het profiel per locatie, niet uit het dakoppervlak of het jaarverbruik.",
+          "route": "toepassingen/meerdere-locaties",
+          "label": "Meerdere locaties"
+        }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "vaststellen",
+      "kop": "Hoe u zelf vaststelt welke van de drie het is",
+      "lead": "Drie documenten en één meetbestand geven het antwoord. U heeft ze allemaal al.",
+      "alineas": [
+        "<ul><li><strong>Aansluitovereenkomst</strong> — de fysieke aansluitcapaciteit, in kVA of in ampère per fase. Dit is de bovengrens van de kabel en de aansluitkast.</li><li><strong>Transportovereenkomst</strong> — het gecontracteerd transportvermogen in kW. Hier betaalt u voor, ook in de maanden dat u het niet gebruikt. Dit is het getal dat netcongestie blokkeert.</li><li><strong>Kwartiersprofiel</strong> — de gemeten afname per kwartier, op te vragen bij uw netbeheerder of leverancier. Een jaartotaal in kWh is geen vervanging: daarin zijn precies de pieken weggemiddeld die het ontwerp bepalen.</li><li><strong>Uw postcode</strong> — nodig om op te zoeken of er in uw voedingsgebied nog ruimte is voor afname en voor invoeding.</li></ul>",
+        "Uit het kwartiersprofiel volgt de hele richting. Kies een grens die u niet wilt overschrijden en lees af hoe vaak u erboven komt, hoe hoog en hoe lang. De hoogte boven die grens is het vermogen dat opslag of sturing moet opvangen; de hoogte maal de duur is de bruikbare capaciteit. <em>Rekenvoorbeeld, geen meetwaarde van een locatie:</em> zit uw afname drie kwartier per dag 100 kW boven de grens, dan gaat het om 100 kW vermogen en 75 kWh bruikbare capaciteit. Zit u diezelfde 100 kW zes uur per dag boven de grens, dan is het vermogen gelijk en de capaciteit achtmaal zo groot — en dat is het verschil tussen een haalbare en een onhaalbare businesscase.",
+        "Is er geen piek maar een vlakke, te hoge belasting over de hele dag, dan is dat geen vermogens- of gelijktijdigheidsprobleem meer. Dan ligt uw gemiddelde vraag boven de grens en is verzwaren of verplaatsen van productie de enige echte route.",
+        "Of er in uw voedingsgebied ruimte is, staat op de Capaciteitskaart van Netbeheer Nederland, op postcode. Een voedingsgebied is géén gemeente: het is een verzameling postcodes rond één onderstation en de grenzen volgen geen gemeentegrens. Eén gemeente kan daardoor onder meer dan één voedingsgebied vallen, en één voedingsgebied kan over meer dan één gemeente lopen. Een congestiestatus per gemeente bestaat dus niet.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "grens",
+      "kop": "Waar deze indeling ophoudt",
+      "lead": "Een indeling kiest de richting. Hij zegt niet of het uitkomt, en hij vervangt geen meting.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Een vermogensprobleem is niet altijd achter de meter op te lossen. Ligt uw <strong>gemiddelde</strong> vraag over de dag boven de grens van uw aansluiting, dan helpt opslag niet: een batterij verschuift energie in de tijd, hij maakt geen energie. Dan is een zwaardere aansluiting de route, eventueel met een tijdelijke voorziening voor de periode daartussen.",
+        "Er verandert ook niets aan uw gecontracteerd transportvermogen of aan uw aansluitwaarde. Opslag en sturing maken ruimte binnen wat er al ligt; ze creëren geen extra transportvermogen en verhogen de aansluitwaarde niet. In sommige gevallen kunt u uw gecontracteerde waarde juist <em>verlagen</em> omdat de piek is afgevlakt — dat is een besparing op de netbeheerderskosten, geen uitbreiding.",
+        "Een gelijktijdigheidsingreep heeft een ondergrens: als er niets stuurbaar is, valt er niets te verdelen. Een pand met één grote, continu draaiende verbruiker en geen opslag geeft een regelsysteem geen vrijheidsgraden. En een energie-ingreep die louter op prijsverschil leunt, leunt op een markt die kan veranderen; wie daarop alleen rekent, rekent op iets dat niet vastligt.",
+        "Tot slot: geen van deze tien situaties is vooraf en zonder meting op te lossen. De pagina's eronder leggen uit wat er technisch kan en waar de randvoorwaarden zitten. Wat er bij u uitkomt, blijkt uit uw eigen profiel.",
+        "<h3>Wat u hier niet vindt</h3>",
+        "<ul><li>Hoe de systemen zelf werken — dat staat bij <a class=\"ve-link\" href=\"/systeem-energieopslag\">energieopslag</a>, <a class=\"ve-link\" href=\"/systeem-zonnepanelen\">zonne-energie</a>, <a class=\"ve-link\" href=\"/systeem-laadpalen\">laadinfrastructuur</a> en <a class=\"ve-link\" href=\"/vibe-control\">VIBE.CONTROL</a>.</li><li>Wat er in uw branche gebruikelijk is en wat daar meestal knelt — dat staat onder <a class=\"ve-link\" href=\"/sectoren\">sectoren</a>.</li><li>De begrippen zelf, uitgelegd zonder verkoop — dat staat in de <a class=\"ve-link\" href=\"/kennis\">kennisbank</a>.</li><li>Welke regelingen er zijn en waarvoor ze gelden — dat staat bij <a class=\"ve-link\" href=\"/subsidies\">subsidies</a>.</li></ul>",
+        "Wilt u eerst zien hoe zoiets er in het echt uitkomt: op <a class=\"ve-link\" href=\"/project-ratio-16\">Ratio 16 in Duiven</a> moesten zon, opslag en laden samen binnen de bestaande aansluiting passen. Bij <a class=\"ve-link\" href=\"/project-hedin-amsterdam\">Hedin in Amsterdam</a> kon verzwaren alleen op lange termijn, dus moest de ruimte om te groeien uit opslag en sturing komen. Aan de <a class=\"ve-link\" href=\"/project-hazenweg-61\">Hazenweg 61 in Hengelo</a> staan opslag, opwek, laden en noodstroom onder één sturing. En op <a class=\"ve-link\" href=\"/project-dormio-medemblik\">Dormio in Medemblik</a> hing alles achter één bouwaansluiting. De cijfers per project staan op de projectpagina's."
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over het kiezen van een toepassing",
+  "faq": [
+    {
+      "vraag": "Ik weet niet of mijn probleem over vermogen of over energie gaat. Waar begin ik?",
+      "antwoord": "Bij de vraag of iets ooit is uitgevallen of geweigerd. Is er een aanvraag afgewezen, een beveiliging aangesproken of een uitbreiding stilgezet, dan gaat het over vermogen. Loopt alles door en knelt alleen de factuur, dan gaat het over energie. Weet u het niet, dan wijst het kwartiersprofiel het uit: daarin ziet u of er pieken boven uw gecontracteerde waarde staan."
+    },
+    {
+      "vraag": "Kan ik meerdere toepassingen combineren?",
+      "antwoord": "Dat is eerder regel dan uitzondering. Piekafvlakking, eigen verbruik verhogen en laadondersteuning kunnen uit dezelfde batterij komen, maar ze vragen op hetzelfde moment iets anders van diezelfde capaciteit. Daarom hoort de voorrang in de sturing vast te liggen en niet in de hardware."
+    },
+    {
+      "vraag": "Krijg ik met een batterij meer transportvermogen?",
+      "antwoord": "Nee. Uw aansluitwaarde en uw gecontracteerd transportvermogen blijven ongewijzigd. Een batterij verandert alleen wat u binnen die grens kunt doen, door de piek af te vlakken en energie in de tijd te verschuiven."
+    },
+    {
+      "vraag": "Mijn gemeente staat op de capaciteitskaart als vol. Geldt dat voor mijn pand?",
+      "antwoord": "Niet per definitie. Beperkingen worden gepubliceerd per voedingsgebied: een verzameling postcodes rond één onderstation. Die grenzen volgen geen gemeentegrens, dus binnen één gemeente kan het beeld per postcode verschillen. Zoek daarom altijd op de postcode van het pand, niet op de gemeentenaam."
+    },
+    {
+      "vraag": "Wat is het verschil tussen deze toepassingen en uw systemen?",
+      "antwoord": "Een toepassing is een probleem; een systeem is het middel. Deze pagina sorteert op het probleem, zodat u niet hoeft te weten of u een batterij, een regelsysteem of alleen een andere instelling nodig heeft. De systeempagina's beschrijven de techniek zelf."
+    },
+    {
+      "vraag": "Wat heeft u van mij nodig om te beginnen?",
+      "antwoord": "Het kwartiersprofiel van de aansluiting, uw aansluitwaarde, uw gecontracteerd transportvermogen en de postcode. Daaruit volgt hoe hoog en hoe lang uw pieken zijn, welke van de drie knelpunten overheerst en of er binnen de bestaande aansluiting ruimte te maken is."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De systemen achter deze toepassingen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "energy-hubs", "naam": "Energy Hubs" },
+        { "route": "microgrids", "naam": "Microgrids" }
+      ]
+    },
+    {
+      "kop": "De begrippen van deze pagina",
+      "items": [
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Energiemanagementsysteem" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" }
+      ]
+    },
+    {
+      "kop": "Andere ingangen",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "laadplein", "naam": "Laadplein" },
+        { "route": "energieadvies", "naam": "Energieadvies" },
+        { "route": "verduurzaming-bedrijfspanden", "naam": "Verduurzaming bedrijfspanden" },
+        { "route": "sectoren", "naam": "Sectoren" },
+        { "route": "kennis", "naam": "Kennisbank" }
+      ]
+    },
+    {
+      "kop": "Bewijs, geld en regio",
+      "items": [
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "subsidies", "naam": "Subsidies en regelingen" },
+        { "route": "regios", "naam": "Regio's" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Stuur het profiel, niet de vraag",
+    "tekst": "Wij lezen uw kwartiersprofiel en uw aansluitgegevens en zeggen welke van de drie knelpunten bij u overheerst, welke ingreep daarbij hoort en waar de grens ligt. Als verzwaren de enige route is, zeggen we dat ook.",
+    "primair": { "route": "contact", "label": "Laat uw knelpunt doorrekenen" },
+    "secundair": { "route": "projecten", "label": "Bekijk gerealiseerde projecten" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren beschikbare capaciteit voor afname en invoeding per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

@@ -1,0 +1,213 @@
+{
+  "route": "toepassingen/geen-extra-transportvermogen",
+  "type": "toepassing",
+  "titel": "Geen extra transportvermogen beschikbaar | Vibe Energy",
+  "beschrijving": "In de wachtrij voor extra transportvermogen? Wat een wachtrij betekent, wat u bij de netbeheerder kunt opvragen en wat binnen uw aansluiting al kan.",
+  "og_titel": "In de wachtrij voor extra transportvermogen",
+  "h1": "Geen extra transportvermogen. De wachtrij is een feit, stilstand niet.",
+  "lead": "Een wachtrij bij de netbeheerder is geen datum en geen toezegging. Hij zegt dat er in uw voedingsgebied nu geen ruimte is om extra transportvermogen vast te leggen. Wat er wél kan, gaat over de grens die er al ligt: hoe hoog uw piek is, hoe lang hij duurt en wat ervan weg te nemen valt.",
+  "data_pagina": "toepassingen",
+  "kruimels": [{ "naam": "Toepassingen", "route": "toepassingen" }],
+  "kruimel_label": "Geen extra transportvermogen",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Ruimte maken binnen de bestaande aansluiting tijdens een wachtrij",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw aansluiting doorrekenen" },
+    { "soort": "ghost", "anker": "#wachtrij", "label": "Wat een wachtrij precies is" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat betekent het als er geen extra transportvermogen beschikbaar is?",
+    "antwoord": "Als de netbeheerder meldt dat er geen extra transportvermogen beschikbaar is, staat uw transportverzoek in de wachtrij voor het voedingsgebied waarin uw aansluiting valt. Het verzoek blijft geldig, maar er is geen vermogen dat kan worden toegezegd en geen datum waarop dat verandert. De wachtrij geldt per voedingsgebied en per richting: afname en invoeding worden apart beoordeeld. In congestiegebieden gebruiken netbeheerders sinds 1 januari 2026 een prioriteringskader in plaats van alleen de volgorde van aanmelding; voorrang gaat niet automatisch, maar op bewijsstukken.",
+    "voorbehoud": "Dit antwoord zegt niet hoe lang u wacht. Een wachttijd volgt niet uit de wachtrij zelf maar uit de netuitbreiding in uw gebied, en de jaartallen die daarvoor worden gepubliceerd zijn planningen. Of een ingreep achter de meter in uw geval genoeg is, blijkt pas uit het kwartiersprofiel van de aansluiting."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "wachtrij",
+      "kop": "Een wachtrij is een plek in een rij, geen afspraak over een datum",
+      "lead": "Wat er feitelijk gebeurt nadat de netbeheerder laat weten dat er geen ruimte is.",
+      "alineas": [
+        "Een netbeheerder heeft een wettelijke taak om transport aan te bieden. Kan hij dat in een gebied niet, dan verdwijnt uw verzoek niet: het wordt geregistreerd en komt in de rij te staan, met het vermogen dat u heeft aangevraagd. Wat u niet krijgt, is een toezegging en een datum. Dat verschil is belangrijk, omdat een plek in de rij geen reservering is van vermogen dat later vrijkomt.",
+        "De rij hoort bij een voedingsgebied, niet bij uw bedrijf en niet bij uw gemeente. En hij is richtingsgebonden: afname en invoeding worden apart beoordeeld. Het komt voor dat u voor afname in de rij staat terwijl invoeding in hetzelfde gebied nog kan, of precies omgekeerd. Vraag daarom altijd na voor welke richting de beperking geldt. Dat bepaalt of uw knelpunt bij de laadpunten en de machines zit of bij het zonnedak.",
+        "In congestiegebieden is de volgorde sinds 1 januari 2026 niet meer alleen de volgorde van aanmelding. Netbeheerders moeten daar een prioriteringskader toepassen. Partijen die het net ontlasten staan daarin bovenaan; daarna komen veiligheidsfuncties zoals acute zorg, defensie en waterbeheer, en vervolgens basisbehoeften zoals wonen, onderwijs, telecom en openbaar vervoer. Voorrang krijgt u niet automatisch: u moet bij de netbeheerder met bewijsstukken aantonen dat u in een categorie valt.",
+        "Praktisch betekent dat twee dingen. Uw dossier doet werk — een compleet, schriftelijk en goed gedateerd transportverzoek staat sterker dan een reeks telefoontjes. En uw eigen aansluitgegevens zijn het eerste dat u controleert. Dat kost niets en levert soms ruimte op die al in het contract zat."
+      ],
+      "bronnen": [
+        { "naam": "Codebesluit prioriteringsruimte transportverzoeken 2025, ACM", "url": "https://www.acm.nl/nl/publicaties/codebesluit-prioriteringsruimte-transportverzoeken-2025", "datum": "2025-12-12" }
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Twee verschillende aanvragen, twee verschillende antwoorden",
+      "rijen": [
+        ["Een zwaardere aansluiting aanvragen", "Een verzoek om de fysieke aansluiting te vergroten: een dikkere kabel, een andere aansluitkast, soms een eigen transformator. Vastgelegd in de aansluitovereenkomst, uitgedrukt in kVA of in ampère per fase. Hier gaat de schop in de grond, en hier betaalt u aansluitkosten."],
+        ["Meer gecontracteerd transportvermogen aanvragen", "Een verzoek om meer kW te mogen afnemen of invoeden binnen de aansluiting die er al ligt. Vastgelegd in de transportovereenkomst. Hier hoeft niemand te graven — en juist dit verzoek is wat netcongestie blokkeert."],
+        ["Vaak gaan ze samen", "Wie zwaarder wil aansluiten, heeft doorgaans ook meer transportvermogen nodig. De netbeheerder beoordeelt dan beide onderdelen. Het transportdeel is in een congestiegebied meestal het deel dat wacht, ook als het grondwerk op zichzelf uitvoerbaar is."],
+        ["De aansluiting is groot genoeg, het contract niet", "Komt voor bij panden waar eerder een zwaardere installatie stond. Dan is er geen bouwkundig werk nodig en gaat het verzoek alleen over kW. Het blijft een transportverzoek en dus dezelfde wachtrij, maar de voorbereiding is korter en het dossier eenvoudiger."],
+        ["Het plafond kan ook achter de meter liggen", "Het gecontracteerde transportvermogen gaat nooit boven de aansluitcapaciteit; de netbeheerder contracteert niet meer dan de aansluiting mag dragen. Maar uw eigen hoofdverdeler, voedingskabel of groepenkast kan lager uitkomen dan die aansluitcapaciteit. Dan zit het knelpunt in uw eigen installatie en is een installatieaanpassing de ingreep — geen transportverzoek, en dus ook geen wachtrij."]
+      ],
+      "noot": "Welke van de twee u nodig heeft, staat in uw eigen overeenkomsten: de aansluitcapaciteit in kVA of ampère per fase, het gecontracteerde transportvermogen in kW. Vraag beide op voordat u iets aanvraagt. Het begrippenonderscheid staat uitgewerkt bij <a class=\"ve-link\" href=\"/kennis/transportvermogen-versus-aansluitwaarde\">transportvermogen en aansluitwaarde</a>."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat u bij de netbeheerder kunt opvragen",
+      "lead": "Een wachtrij is pas navolgbaar als u ernaar vraagt. Dit is de lijst die het gesprek concreet maakt.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "<ul><li><strong>De ontvangstdatum van uw complete transportverzoek.</strong> Niet de datum van uw eerste contact, maar de datum waarop het verzoek compleet was. Die hoort u schriftelijk te hebben.</li><li><strong>Voor welke richting de beperking geldt.</strong> Afname, invoeding of beide — en voor welk vermogen precies.</li><li><strong>De uitkomst van het congestieonderzoek voor uw voedingsgebied.</strong> Daarin staat of er nog ruimte is, hoe groot die is en of er al een wachtrij loopt.</li><li><strong>Of u in een prioriteringscategorie kunt vallen, en welke bewijsstukken daarvoor nodig zijn.</strong> Dit is de enige route waarmee uw positie verandert zonder dat het net verandert.</li><li><strong>Of er een alternatieve contractvorm mogelijk is.</strong> In congestiegebieden kunnen netbeheerders alternatieve transportrechten aanbieden: transport alleen wanneer er ruimte is, transport binnen vaste tijdvensters, een contract met een maximum aantal uren waarop de netbeheerder mag beperken, of een groepsovereenkomst waarin aangeslotenen onderling capaciteit delen.</li><li><strong>Welke netuitbreiding gepland staat en met welk jaartal.</strong> Vraag ook wat het jaartal betekent: het is een planning, geen toezegging.</li><li><strong>Uw huidige aansluitcapaciteit en uw gecontracteerde transportvermogen.</strong> Twee verschillende getallen in twee verschillende overeenkomsten. Staat het contract lager dan de aansluiting kan dragen, dan is verhogen nog steeds een transportverzoek, maar zonder grondwerk.</li><li><strong>De kwartierwaarden van uw aansluiting over een volledig jaar.</strong> Zonder die meetreeks is elk ontwerp een aanname en elke businesscase een schatting.</li></ul>",
+        "Wat u krijgt en hoe snel, verschilt per netbeheerder: Liander, Enexis, Stedin, Westland Infra, Coteq en Rendo voeren elk hun eigen proces. Stel uw vragen schriftelijk, in één bericht, en vraag om een schriftelijk antwoord. Dat levert tegelijk het dossier op dat u nodig heeft als u later een beroep op prioritering of op een alternatieve contractvorm wilt doen."
+      ],
+      "bronnen": [
+        { "naam": "Netbeheerders willen alternatieve contractvormen voor gebruik van het elektriciteitsnet mogelijk maken, Netbeheer Nederland", "url": "https://www.netbeheernederland.nl/artikelen/nieuws/netbeheerders-willen-alternatieve-contractvormen-voor-gebruik-van-het", "datum": "2023-08-08" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat u in de tussentijd binnen de bestaande grens kunt doen",
+      "lead": "Drie stappen, in deze volgorde. De eerste kost alleen tijd.",
+      "alineas": [
+        "<h3>1 · De echte grens vaststellen</h3>",
+        "Leg het kwartiersprofiel van uw aansluiting naast uw gecontracteerde transportvermogen en uw aansluitcapaciteit. Dan ziet u drie dingen die een jaarverbruik nooit laat zien: hoe hoog uw pieken komen, hoe lang ze duren en hoe vaak ze voorkomen. Pas daarna is te zeggen of u een probleem met gelijktijdigheid heeft of met uw gemiddelde. Dat zijn twee verschillende problemen met twee verschillende uitkomsten, en alleen het eerste is achter de meter op te lossen.",
+        "<h3>2 · Gelijktijdigheid wegnemen</h3>",
+        "Een deel van elke piek bestaat uit installaties die alleen bij toeval tegelijk aan staan. Een regelsysteem dat de actuele belasting van de aansluiting meet en verdeelt wat er over is, haalt die gelijktijdigheid eruit. Bij laadpunten is het verschil tussen statisch en dynamisch verdelen groot: statisch knipt een vast budget op in vaste delen, dynamisch gebruikt de ruimte die het pand op dat moment niet nodig heeft. Processen in de tijd verschuiven hoort in dezelfde stap — koelen, laden en opwarmen hebben zelden allemaal hetzelfde tijdvenster nodig.",
+        "<h3>3 · De resterende piek opvangen met opslag</h3>",
+        "Blijft er een piek over boven de grens die u wilt aanhouden, dan kan een batterij die opvangen en bijladen wanneer er ruimte is. Het benodigde vermogen volgt uit de hoogte van de piek boven die grens; de benodigde capaciteit uit die hoogte maal de duur. Als rekenvoorbeeld, niet als uitkomst voor uw locatie: een overschrijding van 60 kW die anderhalf uur duurt, vraagt 60 kW vermogen en ongeveer 90 kWh bruikbare capaciteit. Uw eigen profiel levert andere getallen op, en dat is precies waarom het profiel het ontwerp bepaalt.",
+        "Geen van deze drie stappen verhoogt uw gecontracteerde transportvermogen, en geen van de drie verschuift uw plaats in de rij. Eén ding doen ze wel: wie met deze ingrepen het net ontlast, kan in de prioriteringscategorie van congestieverzachters vallen — de categorie die in het prioriteringskader bovenaan staat. Of dat in uw geval opgaat, beoordeelt de netbeheerder op de bewijsstukken die u aanlevert, niet wij.",
+        "En soms is de uitkomst dat u minder nodig heeft dan u heeft aangevraagd. Een kleiner transportverzoek past soms nog binnen de ruimte die er is. Dat is een vraag aan uw netbeheerder, geen uitkomst die wij kunnen toezeggen.",
+        "<p>Dat dit meer is dan een redenering, staat op twee projectpagina's. Bij <a class=\"ve-link\" href=\"/project-ratio-16\">Ratio 16 in Duiven</a> kwamen eigen opwek, opslag en een laadplein samen onder een aansluiting die ongewijzigd bleef. Bij <a class=\"ve-link\" href=\"/project-hedin-amsterdam\">Hedin in Amsterdam</a> was netverzwaring alleen op lange termijn mogelijk; de locatie kreeg ruimte om te groeien binnen de aansluiting die er al lag.</p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "De stand van uw voedingsgebied staat op de Capaciteitskaart",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Netbeheerders publiceren per voedingsgebied op de Capaciteitskaart van Netbeheer Nederland of er ruimte is voor afname en voor invoeding, of er een wachtrij is en welke netuitbreidingen gepland staan. Zoek op uw postcode, niet op uw plaatsnaam: een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens. Een congestiestatus voor een hele gemeente bestaat dus niet.",
+        "Lees die kaart als iemand die al in de rij staat, en let op drie dingen. Uw eigen verzoek staat er niet op — de kaart beschrijft het gebied, niet uw dossier. De stand voor afname kan verschillen van die voor invoeding, dus kijk naar de richting die uw plan nodig heeft. En het jaartal bij een netuitbreiding is een planning en geen toezegging; de kaart zegt dat zelf ook. Gebruik de kaart om uw gesprek met de netbeheerder voorbereid in te gaan, niet om uw planning op te hangen.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op uw postcode</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "Wachten blijft soms de enige route. Dan hoort u dat van ons.",
+      "alineas": [
+        "Opslag en sturing verschuiven energie in de tijd en verlagen daarmee het vermogen dat u op het hoogste moment vraagt. Ze maken geen energie bij. Ligt uw gemiddelde vraag over een werkdag boven wat de aansluiting kan leveren, dan is er geen ingreep achter de meter die dat verandert. Een elektrische oven, een grote warmtepompinstallatie of een productielijn die uren achter elkaar op vol vermogen draait, vraagt een zwaardere aansluiting. Dan is wachten de route, en helpt alleen een tijdelijke voorziening in de tussentijd.",
+        "Bij zo'n tijdelijke voorziening is één ding beslissend. Een tijdelijke batterij laadt uit dezelfde aansluiting en helpt dus alleen als uw gemiddelde onder de grens blijft en het probleem in de piek zit. Ligt uw gemiddelde erboven, dan moet de energie van buiten komen: een aggregaat, met brandstofkosten, geluid, emissies en bij langer gebruik een vergunningvraag, of een tijdelijke extra aansluiting als die in het gebied wél te krijgen is. Dat is dan een afweging over kosten en bedrijfszekerheid, niet langer een energievraagstuk.",
+        "Ook de wachtrij zelf blijft buiten ons bereik. Vibe Energy heeft geen invloed op uw plaats in de rij, geen afspraak met een netbeheerder die daar iets aan verandert en geen manier om een netuitbreiding te versnellen. Wat wij doen, is vaststellen hoeveel ruimte er binnen uw bestaande aansluiting zit en wat dat voor uw plannen betekent. Soms is dat genoeg om door te kunnen. Soms is het antwoord dat u moet wachten — en dan zeggen we dat, voordat u iets koopt."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit op uw locatie op neerkomt",
+      "lead": "Vier plannen die een wachtrij stillegt, elk met een eigen vervolgvraag.",
+      "kaarten": [
+        { "kop": "De uitbreiding ligt stil", "tekst": "Een extra hal, een productielijn of een koelhuis past niet binnen het vermogen dat u nu mag afnemen.", "route": "toepassingen/netcongestie-bij-uitbreiding", "label": "Netcongestie bij uitbreiding" },
+        { "kop": "De laadpunten passen niet", "tekst": "De bedrijfswagens moeten elektrisch, maar de aansluiting kan de laadpunten niet gelijktijdig dragen.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met een beperkte aansluiting" },
+        { "kop": "Eén korte piek bepaalt de rekening", "tekst": "Een paar minuten gelijktijdigheid bepaalt welk transportvermogen u het hele jaar contracteert.", "route": "toepassingen/pieken-in-verbruik", "label": "Pieken in verbruik" },
+        { "kop": "Het hele plaatje achter de meter", "tekst": "Opslag, opwek en sturing als één systeem binnen de aansluiting die er al ligt.", "route": "netcongestie", "label": "Netcongestie oplossen" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over de wachtrij en het transportvermogen",
+  "faq": [
+    {
+      "vraag": "Hoe lang sta ik in de wachtrij voor extra transportvermogen?",
+      "antwoord": "Dat is geen vast getal en het hangt niet van uw aanvraag af, maar van de netuitbreiding in uw voedingsgebied. De Capaciteitskaart van Netbeheer Nederland noemt per gebied of er een wachtrij is en welke uitbreidingen gepland staan; die jaartallen zijn planningen en geen toezeggingen. Vraag uw netbeheerder altijd om de stand voor uw eigen aansluiting, schriftelijk."
+    },
+    {
+      "vraag": "Wat is het verschil tussen een zwaardere aansluiting aanvragen en meer transportvermogen aanvragen?",
+      "antwoord": "Een zwaardere aansluiting is een fysieke ingreep: een andere kabel, aansluitkast of transformator, vastgelegd in de aansluitovereenkomst in kVA of ampère per fase. Meer transportvermogen is contractueel: meer kW mogen afnemen of invoeden binnen de aansluiting die er al ligt, vastgelegd in de transportovereenkomst. Netcongestie blokkeert het tweede. Vaak heeft u beide nodig, en wacht het transportdeel."
+    },
+    {
+      "vraag": "Verandert een batterij mijn plaats in de wachtrij?",
+      "antwoord": "Niet op zichzelf, en uw gecontracteerde transportvermogen gaat er ook niet van omhoog. Wel geldt dat partijen die het net ontlasten in het prioriteringskader de hoogste categorie vormen. Of uw situatie daaronder valt, beoordeelt de netbeheerder aan de hand van bewijsstukken die u aanlevert."
+    },
+    {
+      "vraag": "Kan ik een contract krijgen zonder vaste transportcapaciteit?",
+      "antwoord": "In congestiegebieden kunnen netbeheerders alternatieve transportrechten aanbieden, bijvoorbeeld transport alleen wanneer er ruimte is, transport binnen vaste tijdvensters, een maximum aantal uren waarop de netbeheerder mag beperken, of een groepsovereenkomst waarin aangeslotenen capaciteit delen. Of het in uw gebied en voor uw profiel kan, moet u bij uw netbeheerder navragen. Zo'n contract vraagt wel dat u uw verbruik werkelijk kunt sturen."
+    },
+    {
+      "vraag": "Kan ik voorrang krijgen omdat mijn bedrijf belangrijk is?",
+      "antwoord": "Voorrang gaat niet op belang zoals u dat zelf weegt, maar op categorieën: partijen die het net ontlasten, veiligheidsfuncties zoals acute zorg, defensie en waterbeheer, en basisbehoeften zoals wonen, onderwijs, telecom en openbaar vervoer. U krijgt het niet automatisch; u moet het bij de netbeheerder met bewijsstukken aantonen."
+    },
+    {
+      "vraag": "Staat mijn gemeente in congestie?",
+      "antwoord": "Een congestiestatus bestaat niet per gemeente. Beperkingen worden gepubliceerd per voedingsgebied: een verzameling postcodes rond één onderstation. Zo'n gebied volgt geen gemeentegrens, dus één gemeente kan onder meerdere voedingsgebieden vallen en één voedingsgebied kan over meerdere gemeenten liggen. Zoek daarom op uw postcode en op de richting die u nodig heeft."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/netcongestie-uitgelegd", "naam": "Netcongestie uitgelegd" },
+        { "route": "kennis/energieprestatie-meten", "naam": "Energieprestatie meten" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "energy-hubs", "naam": "Energy Hubs" }
+      ]
+    },
+    {
+      "kop": "Verder kijken",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "toepassingen", "naam": "Alle toepassingen" },
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "regios", "naam": "Regio's" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Eerst meten, dan pas aanvragen of wachten",
+    "tekst": "Stuur ons het kwartiersprofiel van uw aansluiting, uw aansluitcapaciteit en uw gecontracteerde transportvermogen. Wij rekenen uit hoeveel ruimte er binnen die grens zit, wat ervoor nodig is en of uw plannen daarbinnen passen. Past het niet, dan zeggen we dat verzwaren of wachten de route is.",
+    "primair": { "route": "contact", "label": "Laat uw aansluiting doorrekenen" },
+    "secundair": { "route": "netcongestie", "label": "Netcongestie oplossen achter de meter" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders zijn vanaf 1 januari 2026 verplicht om in congestiegebieden het prioriteringskader te gebruiken, in afwijking van de volgorde van aanmelding. Drie categorieën kunnen voorrang krijgen: congestieverzachters, veiligheidsfuncties (acute zorg, defensie, waterbeheer) en basisbehoeften (wonen, onderwijs, telecom, openbaar vervoer). Aanvragers krijgen niet automatisch voorrang en moeten dat met bewijsstukken aantonen.",
+      "bron": "Codebesluit prioriteringsruimte transportverzoeken 2025, ACM",
+      "bron_url": "https://www.acm.nl/nl/publicaties/codebesluit-prioriteringsruimte-transportverzoeken-2025",
+      "bron_datum": "2025-12-12"
+    },
+    {
+      "tekst": "Netbeheerders kunnen in congestiegebieden alternatieve transportrechten aanbieden: transport alleen bij beschikbare ruimte, transport binnen vaste tijdvensters, een beperkt aantal uren per jaar waarin de netbeheerder mag beperken, en groepstransportovereenkomsten waarin netgebruikers onderling capaciteit delen.",
+      "bron": "Netbeheerders willen alternatieve contractvormen voor gebruik van het elektriciteitsnet mogelijk maken, Netbeheer Nederland",
+      "bron_url": "https://www.netbeheernederland.nl/artikelen/nieuws/netbeheerders-willen-alternatieve-contractvormen-voor-gebruik-van-het",
+      "bron_datum": "2023-08-08"
+    },
+    {
+      "tekst": "Netbeheerders publiceren beschikbare capaciteit per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De op de Capaciteitskaart genoemde jaartallen voor netuitbreidingen zijn planningen en geen garantie.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — FAQ",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/faq/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

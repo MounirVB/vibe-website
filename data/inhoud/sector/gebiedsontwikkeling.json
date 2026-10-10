@@ -1,0 +1,221 @@
+{
+  "route": "sectoren/gebiedsontwikkeling",
+  "type": "sector",
+  "titel": "Gebiedsontwikkeling en nieuwbouw | Vibe Energy",
+  "beschrijving": "Bij nieuwbouw wordt de aansluiting aangevraagd voordat de huurder bekend is. Hoe u capaciteit vroeg vastlegt en op een lagere aansluiting ontwerpt.",
+  "og_titel": "Netcapaciteit bij nieuwbouw en gebiedsontwikkeling",
+  "h1": "Bij nieuwbouw is de aansluiting het eerste ontwerpbesluit.",
+  "lead": "Bij nieuwbouw van bedrijfsvastgoed moet de aansluiting worden aangevraagd voordat de gebruiker bekend is. In een congestiegebied is dat geen formaliteit, maar het grootste planningsrisico in het project: valt de toezegging weg of komt zij later, dan schuift de hele oplevering mee.",
+  "data_pagina": "sectoren",
+  "kruimels": [{ "naam": "Sectoren", "route": "sectoren" }],
+  "kruimel_label": "Gebiedsontwikkeling",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Capaciteitsontwerp voor projectontwikkeling en nieuwbouw",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw plan op capaciteit toetsen" },
+    { "soort": "ghost", "anker": "#planningsrisico", "label": "Waarom dit een planningspost is" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Hoe regelt een ontwikkelaar netcapaciteit voor nieuwbouw van bedrijfsvastgoed?",
+    "antwoord": "Bij nieuwbouw van bedrijfsvastgoed wordt de aanvraag voor aansluiting en transportvermogen gedaan in een stadium waarin de gebruiker nog niet bekend is. Het gevraagde vermogen is dan een aanname, en in een congestiegebied kan de netbeheerder die aanvraag niet of pas later toezeggen. Daarom hoort aansluitcapaciteit bij de planning en niet bij de installatie. De aanvraag gaat zo vroeg mogelijk de deur uit, het ontwerp houdt ruimte en een kabeltracé vrij voor opslag, omvormers en een regelsysteem, en het gevraagde vermogen wordt gekozen op de gelijktijdige vraag die met sturing haalbaar is, in plaats van op de som van alle aansluitwaarden in het gebouw.",
+    "voorbehoud": "Dit antwoord zegt niet dat een voorziening achter de meter een aansluiting vervangt. Opslag en sturing bepalen wat er binnen een aansluiting past; zij leveren geen aansluiting die de netbeheerder niet kan geven, en zij verhogen geen aansluitwaarde en geen gecontracteerd transportvermogen."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "planningsrisico",
+      "kop": "Aansluitcapaciteit is een planningsrisico, geen installatiedetail",
+      "lead": "In het bouwproces komt elektra laat aan de orde. In een congestiegebied is dat te laat.",
+      "alineas": [
+        "Bij een bestaand pand is het energievraagstuk een optimalisatie: er is een aansluiting, er is een meetprofiel, en daaruit volgt wat er kan. Bij nieuwbouw bestaat geen van die drie. De aansluiting moet worden aangevraagd, het verbruiksprofiel is een aanname, en de partij die het pand gaat gebruiken is meestal nog niet in beeld. Toch moet het gevraagde vermogen op papier staan voordat de rest van het ontwerp erop wacht.",
+        "Daarmee is de aanvraag een planningspost. Komt er geen toezegging, dan verschuift niet de installatie maar de oplevering. Een distributiecentrum zonder laadcapaciteit is niet te verhuren aan een vervoerder. Een bedrijfsunit zonder vermogen voor een werkplaats of een koelcel staat leeg. Het verlies van dat uitstel valt bij de ontwikkelaar en bij de belegger, niet bij de installateur die het laatst aan tafel komt.",
+        "De eerste vraag is dus niet welk systeem erin komt, maar hoeveel vermogen in dít voedingsgebied realistisch beschikbaar is en wanneer. Een voedingsgebied is een verzameling postcodes rond één onderstation. De grenzen volgen geen gemeentegrens en vrijwel elke gemeente valt onder meer dan één gebied. Een congestiestatus voor \"de gemeente\" bestaat niet: die status hoort bij de postcode van het perceel, en kan voor afname en voor invoeding verschillen.",
+        "Netbeheerders publiceren de beschikbare capaciteit per voedingsgebied op de Capaciteitskaart van Netbeheer Nederland. Welke netbeheerder het gebied bedient volgt uit het adres: Liander, Enexis, Stedin, Westland Infra, Coteq of Rendo. Let bij het lezen op dat een genoemd jaartal voor een netuitbreiding een planning is en geen toezegging; op een planning kunt u geen huurovereenkomst baseren.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op de postcode van het perceel</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Wat er in welke fase vast moet liggen",
+      "rijen": [
+        ["Locatiekeuze", "De beschikbare capaciteit op de postcode van het perceel, voor afname én voor invoeding. Dit hoort bij de haalbaarheid van de locatie, naast bestemming, ontsluiting en bodem."],
+        ["Initiatief en vlekkenplan", "Het gevraagde vermogen in kW, en de onderverdeling: één hoofdaansluiting met tussenmeting per unit, of een eigen aansluiting per unit. Die keuze bepaalt later wie wat mag sturen en is nauwelijks terug te draaien."],
+        ["Voorlopig ontwerp", "Ruimtereservering: een opstelplaats buiten of een technische ruimte binnen, met toegang voor aanvoer en plaatsing, ventilatie en opstelafstand tot pand en perceelgrens. Plus het tracé naar de hoofdverdeler."],
+        ["Definitief ontwerp", "Het maatgevende lastprofiel per kwartier, inclusief de gelijktijdigheid tussen units. Hieruit volgt de bovengrens waarop het regelsysteem stuurt, en daarmee het vermogen en de capaciteit van de opslag."],
+        ["Bestek en uitvoering", "Loze leidingen, doorvoeren, kabelgoten en vrije velden in de verdelers voor onderdelen die bij oplevering nog niet worden geplaatst. Dit is het goedkoopste moment om die ruimte te maken."],
+        ["Oplevering en verhuur", "Wie eigenaar is van de voorziening, wie hem exploiteert, wie de kosten draagt, welke meetinrichting dat onderbouwt en hoe het beschikbare vermogen per unit in de huurovereenkomst staat."]
+      ],
+      "noot": "Hoe later de capaciteitsvraag aan de orde komt, hoe minder keuzes er nog zijn. Na het definitieve ontwerp valt er alleen nog te sturen binnen wat er al ligt."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Ontwerpen op een lagere aansluiting, met opslag en sturing als uitgangspunt",
+      "lead": "Niet een installatie die er later bij komt, maar een aanname die aan de voorkant anders wordt.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "<h3>1 · Het gevraagde vermogen volgt uit gelijktijdigheid, niet uit optelling</h3>",
+        "De gebruikelijke route is: tel de aansluitwaarden van alle geplande installaties op, zet er een marge bovenop en vraag dat aan. Dat getal komt in de werkelijkheid vrijwel nooit voor, omdat niet alles tegelijk aan staat. Een bruikbare aanname begint bij de vraag welke lasten elkaar daadwerkelijk overlappen: laden in de vroege ochtend, koeling in de middag, een werkplaats tijdens kantooruren, verwarming op winterochtenden. Wat overblijft is een lagere piek en daarmee een kleinere aanvraag, en een kleinere aanvraag heeft in een congestiegebied een andere kans dan de optelsom.",
+        "<h3>2 · De bovengrens wordt ontwerpuitgangspunt</h3>",
+        "Een regelsysteem bewaakt een bovengrens: het meet de actuele belasting van de aansluiting en verdeelt wat er over is. Bij nieuwbouw kunt u die bovengrens vooraf kiezen en het gebouw erop ontwerpen, in plaats van hem achteraf op te leggen aan installaties die er al hangen. Laadpunten lopen dan dynamisch mee met wat de aansluiting toelaat, en opslag vangt de gelijktijdigheid op die daarboven uitkomt. Het opgetelde vermogen van alle laadpunten mag daarbij boven die bovengrens liggen; wat eronder moet blijven, is het vermogen dat zij op hetzelfde moment vragen. Het verschil tussen opgeteld en gelijktijdig vermogen is precies de ruimte waarin dit werkt.",
+        "<h3>3 · Ruimte en tracé zijn de echte beperking, niet de techniek</h3>",
+        "Batterijkasten staan buiten of in een eigen ruimte, met opstelafstand, een vrije route voor aanvoer en vervanging, en een kabeltracé naar de hoofdverdeler. Een vloer of fundering moet het gewicht dragen. Dat is in een voorlopig ontwerp bijna kosteloos in te passen en in een opgeleverd pand een verbouwing. Wie bij oplevering nog géén opslag plaatst maar de plek, de fundering, de doorvoeren en de velden in de verdeler wél reserveert, houdt de route open zonder nu te investeren.",
+        "<h3>4 · De gebruiker is onbekend — ontwerp op bandbreedte, niet op één profiel</h3>",
+        "Een unit die aan een vervoerder wordt verhuurd heeft een ander profiel dan dezelfde unit met een assemblagelijn of een datakamer. U weet niet welke het wordt. Wat u wél kunt vastleggen is de bandbreedte: welk vermogen is per unit gegarandeerd, hoe wordt er verdeeld als twee units tegelijk meer vragen, en welke uitbreiding is mogelijk zonder nieuwe aanvraag. Dat is informatie die in de verhuur iets waard is, omdat een huurder het anders zelf moet uitzoeken en dan uitgaat van het slechtste geval.",
+        "<p>Bij <a class=\"ve-link\" href=\"/project-hedin-amsterdam\">Hedin Amsterdam</a> ging het om een nieuwbouwlocatie die niet binnen de beschikbare netcapaciteit paste en waar netverzwaring alleen op lange termijn mogelijk was; met opslag, opwek en sturing is er binnen de bestaande aansluiting ruimte gemaakt voor grootschalig laden. Bij <a class=\"ve-link\" href=\"/project-hazenweg-61\">Hazenweg 61 in Hengelo</a> werd een kantoorpand uitgebreid en moest de elektrische infrastructuur de nieuwe installaties aankunnen; daar kwam een nieuwe hoofdverdeler die opslag, opwek, laden en noodstroom onder één regelsysteem brengt.</p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wie investeert, en wie heeft er voordeel van?",
+      "lead": "Bij verhuur liggen de kosten en de baten bij verschillende partijen. Dat is een contractvraag, niet een techniekvraag.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "De ontwikkelaar of de belegger betaalt de voorziening. De huurder betaalt de energierekening en de netbeheerderskosten, en profiteert dus van de lagere piek. Zolang die splitsing niet is geregeld, wordt opslag in een huurpand zelden gebouwd — niet omdat het technisch niet werkt, maar omdat de partij die betaalt het voordeel niet ziet.",
+        "<h3>Drie routes die in de praktijk gebruikt worden</h3>",
+        "<ul><li><strong>In het pand, in de huur.</strong> De voorziening is onderdeel van het gebouw en het beschikbare vermogen per unit is onderdeel van wat u verhuurt. De investering loopt mee in de huurprijs en in de waardering van het object.</li><li><strong>Via de servicekosten.</strong> De voorziening is collectief en de kosten worden verdeeld met een sleutel die op tussenmeting per unit is gebaseerd. Zonder die meting is er geen verdeelsleutel die standhoudt.</li><li><strong>Exploitatie door een derde.</strong> Een andere partij investeert en exploiteert; eigenaar en gebruiker nemen capaciteit af als dienst. De eigenaar legt dan wel een recht op de ruimte en het tracé vast.</li></ul>",
+        "Welke route past, hangt af van de huurperiode, van wie het object op termijn in bezit heeft en van de vraag of de voorziening bij verkoop meegaat. Die vragen horen in het ontwerpstadium thuis, omdat ze bepalen wie de meetinrichting, de verdeler en de ruimte in eigendom krijgt. Technisch is het één installatie; contractueel kan het drie verschillende dingen zijn, en dat verschil is na oplevering duur te herstellen.",
+        "<p>Een verhuurd bedrijfspand waarin dit is uitgevoerd, is <a class=\"ve-link\" href=\"/project-ratio-16\">Ratio 16 in Duiven</a>: eigen opwek, opslag en laadplekken voor de huurder, ondergebracht binnen de bestaande aansluiting zonder die te verzwaren.</p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Collectieve voorzieningen voor meerdere units",
+      "lead": "Het voordeel van een gebied of een bedrijvenpark zit in het verschil tussen de profielen.",
+      "alineas": [
+        "Units in hetzelfde gebouw of op hetzelfde terrein pieken zelden op hetzelfde moment. Een kantoordeel piekt op werkdagen rond het middaguur, een werkplaats in de ochtend, een laadplein in de avond of de nacht. Wie alle units hun eigen aansluiting en hun eigen maximum geeft, koopt elk van die pieken afzonderlijk in. Wie ze achter één gestuurde infrastructuur brengt, koopt de som van wat er werkelijk tegelijk gebeurt. Dat verschil is de hele winst, en het valt niet te becijferen voordat de profielen per unit bekend zijn.",
+        "Technisch betekent dit: één hoofdaansluiting, tussenmeting per unit, een verdeelstrategie met harde prioriteiten en een opslag- en opwekvoorziening die collectief is. Op gebiedsniveau heet die vorm een energy hub, met meerdere eigenaren achter één net- of transportkoppeling. Dat vraagt afspraken die een gewoon huurcontract niet bevat: wie bepaalt de prioriteit bij schaarste, wie draagt het onderhoud, wat gebeurt er als één partij vertrekt, en wie is aanspreekpunt voor de netbeheerder.",
+        "Wat voor een ontwikkelaar het verschil maakt, is dat die afspraken vóór de verkoop of de verhuur op papier staan. Een collectieve voorziening die achteraf aan alle eigenaren afzonderlijk moet worden verkocht, komt er niet. Dezelfde voorziening die in de leveringsvoorwaarden en in de erfpacht- of koopakte zit, hoeft niet opnieuw bevochten te worden.",
+        "<p>Bij een bedrijvenpark met bestaande eigenaren is de route anders dan bij nieuwbouw op een leeg kavel. Daar heeft iedere eigenaar al een eigen aansluiting en een eigen contract, moet elke deelnemer afzonderlijk instemmen en loopt de verdeling via parkmanagement in plaats van via de koop- of huurovereenkomst. Die situatie staat beschreven bij <a class=\"ve-link\" href=\"/sectoren/bedrijventerreinen\">bedrijventerreinen en parkmanagement</a>.</p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De grens van deze aanpak, zonder omhaal.",
+      "alineas": [
+        "<strong>Een voorziening achter de meter vervangt geen aansluiting die er niet is.</strong> Opslag, opwek en sturing werken binnen een aansluiting: zij verlagen de piek die het net ziet en verschuiven energie in de tijd. Is er geen aansluiting en geeft de netbeheerder er geen, dan is er niets om binnen te blijven. Een gebouw dat alleen op een eigen installatie zou moeten draaien, is een eilandbedrijf met heel andere eisen aan redundantie, brandstof en onderhoud, en dat is bij gewoon bedrijfsvastgoed zelden een serieus plan.",
+        "<strong>Een batterij verandert ook hier geen papier.</strong> De aansluitwaarde en het gecontracteerd transportvermogen blijven wat is toegezegd. Wat verandert is dat u een lágere waarde kunt aanvragen en daar toch mee uitkomt. Dat is een andere handeling dan het verhogen van een waarde, en het blijft afhankelijk van wat de netbeheerder toezegt.",
+        "<strong>Een structureel te hoge gemiddelde vraag is niet weg te sturen.</strong> Ligt het gemiddelde verbruik over de dag boven de grens, dan schuift opslag alleen het probleem rond. Dan is een zwaardere aansluiting de enige route, en dan is de vraag wanneer die er komt en wat er in de tussentijd mogelijk is — eventueel met een tijdelijke voorziening of met een gefaseerde ingebruikname van units.",
+        "<strong>En er is geen uitspraak zonder profiel.</strong> Bij nieuwbouw is dat profiel een aanname, en een aanname is geen meting. Wij rekenen met de aanname die u onderbouwt, benoemen waar die onzeker is en ontwerpen de voorziening zo dat een afwijking later met sturing op te vangen is in plaats van met een nieuwe aanvraag."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit in een plan concreet knelt",
+      "lead": "Vier situaties waarin een ontwikkelproject op capaciteit vastloopt, met de pagina die er dieper op ingaat.",
+      "kaarten": [
+        { "kop": "De aanvraag wordt niet toegezegd", "tekst": "Het gevraagde transportvermogen is in dit voedingsgebied niet beschikbaar, of pas op termijn. Het ontwerp moet dan uitgaan van wat er wél is.", "route": "toepassingen/geen-extra-transportvermogen", "label": "Geen extra transportvermogen" },
+        { "kop": "Laadcapaciteit past niet in de aanvraag", "tekst": "Het laadplein dat de huurder vraagt, kan de aansluiting niet gelijktijdig dragen. Sturing en opslag bepalen hoeveel punten er passen.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met een beperkte aansluiting" },
+        { "kop": "Het dak mag niet vol terugleveren", "tekst": "Invoeding is in dit gebied beperkt, waardoor een deel van de opbrengst van het zonnedak wegvalt en de businesscase van het plan verandert.", "route": "toepassingen/terugleverbeperking", "label": "Terugleverbeperking" },
+        { "kop": "Eén portefeuille, meerdere locaties", "tekst": "Elke locatie heeft een eigen voedingsgebied, een eigen netbeheerder en een eigen status. Een uniforme standaard loopt daarop vast.", "route": "toepassingen/meerdere-locaties", "label": "Meerdere locaties" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen van ontwikkelaars en beleggers",
+  "faq": [
+    {
+      "vraag": "Kan ik capaciteit aanvragen voordat ik weet wie de gebruiker wordt?",
+      "antwoord": "De aanvraag gaat over een adres en een gevraagd vermogen, niet over een gebruiker. Wat u mist is het verbruiksprofiel waarmee u dat vermogen onderbouwt. Werk dan met een bandbreedte en leg vast welke aannames erin zitten. Vraag uw netbeheerder expliciet hoe er wordt omgegaan met een wijziging van het gevraagde vermogen in een later stadium; dat verschilt per netbeheerder en per fase van de aanvraag."
+    },
+    {
+      "vraag": "Vervangt een batterij de netaansluiting?",
+      "antwoord": "Nee. Een batterij werkt binnen een aansluiting: hij verlaagt de piek die het net ziet en verschuift energie in de tijd. Hij verhoogt de aansluitwaarde niet, hij creëert geen gecontracteerd transportvermogen en hij vervangt geen aansluiting die er niet is. Wat hij wel doet, is het mogelijk maken een lagere aansluiting aan te vragen en daar toch mee uit te komen."
+    },
+    {
+      "vraag": "Eén aansluiting voor het hele gebouw, of een eigen aansluiting per unit?",
+      "antwoord": "Eén hoofdaansluiting met tussenmeting per unit maakt collectieve opslag, sturing en gedeelde opwek mogelijk, en benut het verschil tussen de profielen van de units. Een eigen aansluiting per unit is administratief eenvoudiger en maakt een unit zelfstandig verkoopbaar, maar koopt elke piek afzonderlijk in. Wat in uw geval kan en mag, hangt af van de netbeheerder en van de eigendoms- en meetverhoudingen. Stel die vraag voor het definitieve ontwerp, niet erna."
+    },
+    {
+      "vraag": "Wat doe ik als de netbeheerder het gevraagde vermogen niet kan toezeggen?",
+      "antwoord": "Dan draait de vraag om: niet hoeveel u nodig denkt te hebben, maar wat er binnen het beschikbare vermogen te realiseren valt. Dat vraagt een lastprofiel, een keuze voor een bovengrens, en een ontwerp waarin opslag en sturing die grens bewaken. Soms is het antwoord een gefaseerde ingebruikname van units. Soms is het wachten op netuitbreiding de enige route; dan zeggen wij dat ook."
+    },
+    {
+      "vraag": "Hoe laat in het proces is het nog zinvol?",
+      "antwoord": "Tot aan het bestek valt er veel te winnen, omdat ruimte, fundering, doorvoeren en verdelervelden dan nog in het ontwerp passen. Na oplevering kan het nog, maar dan is het een verbouwing en zijn de contractuele verhoudingen met huurders al vastgelegd. De keuze tussen één aansluiting of een aansluiting per unit is de enige die echt vroeg valt en later niet meer."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De vraag achter het plan",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie" },
+        { "route": "energy-hubs", "naam": "Energy Hubs" },
+        { "route": "laadplein", "naam": "Laadplein" },
+        { "route": "energieadvies", "naam": "Energieadvies" },
+        { "route": "verduurzaming-bedrijfspanden", "naam": "Verduurzaming bedrijfspanden" }
+      ]
+    },
+    {
+      "kop": "De systemen in het ontwerp",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "microgrids", "naam": "Microgrids" }
+      ]
+    },
+    {
+      "kop": "Verwante sectoren",
+      "items": [
+        { "route": "sectoren/bedrijventerreinen", "naam": "Bedrijventerreinen" },
+        { "route": "industrie-vastgoed", "naam": "Kantoren en vastgoed" },
+        { "route": "sectoren/opslag-en-distributie", "naam": "Opslag en distributie" },
+        { "route": "sectoren/parkeren", "naam": "Parkeren" },
+        { "route": "sectoren/bouw", "naam": "Bouw en bouwplaats" },
+        { "route": "sectoren/automotive", "naam": "Automotive" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis", "naam": "Kennisbank" }
+      ]
+    },
+    {
+      "kop": "Bewijs en regelingen",
+      "items": [
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "subsidies", "naam": "Subsidies en regelingen" },
+        { "route": "regios", "naam": "Regio's" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Laat de capaciteitsvraag beoordelen voordat het ontwerp vastligt",
+    "tekst": "Stuur ons het adres of de kavel, het programma per unit en de fase waarin het plan zit. Wij toetsen wat er in dit voedingsgebied beschikbaar is, welk vermogen u op basis van gelijktijdigheid werkelijk nodig heeft en welke ruimte en tracés u nu moet reserveren. Blijkt netverzwaring de enige route, dan is dat de uitkomst.",
+    "primair": { "route": "contact", "label": "Laat uw plan op capaciteit toetsen" },
+    "secundair": { "route": "projecten", "label": "Bekijk gerealiseerde projecten" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare capaciteit per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens. Voor afname en voor invoeding gelden afzonderlijke statussen.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De op de Capaciteitskaart genoemde jaartallen voor netuitbreidingen zijn planningen en geen garantie.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — FAQ",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/faq/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Zes regionale netbeheerders verzorgen de elektriciteitsnetten in Nederland: Liander, Enexis, Stedin, Westland Infra, Coteq en Rendo.",
+      "bron": "Netbeheer Nederland — onze leden",
+      "bron_url": "https://www.netbeheernederland.nl/onze-leden",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

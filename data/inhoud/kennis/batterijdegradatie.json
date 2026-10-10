@@ -1,0 +1,193 @@
+{
+  "route": "kennis/batterijdegradatie",
+  "type": "kennis",
+  "titel": "Batterijdegradatie en levensduur | Vibe Energy",
+  "beschrijving": "Wat een zakelijke batterij laat verouderen, hoe state of health wordt vastgesteld en waarom u capaciteit overdimensioneert voor het einde van de looptijd.",
+  "og_titel": "Batterijdegradatie: wat een opslagsysteem laat verouderen",
+  "h1": "Batterijdegradatie: waarom het inzetprofiel de levensduur bepaalt",
+  "lead": "Een opslagsysteem verliest bruikbare capaciteit en vermogen, en het tempo daarvan hangt aan hoe u het gebruikt. Wie de bruikbare capaciteit aan het einde van de looptijd niet in het ontwerp meeneemt, koopt een systeem dat zijn taak alleen in het eerste jaar haalt.",
+  "data_pagina": "kennis",
+  "kruimels": [{ "naam": "Kennisbank", "route": "kennis" }],
+  "kruimel_label": "Batterijdegradatie",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat uw inzetprofiel doorrekenen" },
+    { "soort": "ghost", "anker": "#twee-klokken", "label": "Begin bij de twee verouderingssporen" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat bepaalt de levensduur van een zakelijke batterij?",
+    "antwoord": "Een lithiumbatterij voor zakelijke opslag veroudert langs twee sporen. Cyclische degradatie hangt aan de doorzet: hoeveel energie er in en uit gaat, hoe diep per keer en bij welk laad- en ontlaadvermogen. Kalenderdegradatie loopt door terwijl het systeem stilstaat en wordt vooral bepaald door de celtemperatuur en door de laadtoestand waarop de batterij staat te wachten. Diepe ontlading, een hoge C-rate, een hoge celtemperatuur en lang vol staan versnellen het verlies. State of health drukt uit hoeveel bruikbare capaciteit er over is ten opzichte van de nulmeting bij oplevering. End of life is geen natuurkundig moment maar een drempel die in het contract staat, met een meetmethode erbij.",
+    "voorbehoud": "Dit antwoord noemt geen degradatiepercentage per jaar en geen garantietermijn. Die waarden verschillen per fabrikant, per celchemie en per contract, en gelden alleen voor een vastgelegd inzetprofiel. State of health zegt daarnaast niets over de veiligheid of de staat van de installatie."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "twee-klokken",
+      "kop": "Twee klokken lopen tegelijk: gebruik en tijd",
+      "lead": "Een batterij veroudert door wat u ermee doet, en daarnaast doordat de tijd verstrijkt.",
+      "alineas": [
+        "Degradatie is het langzame verlies van twee dingen: bruikbare capaciteit in kWh en beschikbaar vermogen in kW. Er zijn twee sporen die daar los van elkaar aan werken. Cyclische degradatie hangt aan doorzet: elke keer dat er energie in en uit de cel gaat, verandert er iets aan de elektroden en aan de laag die zich op het anode-oppervlak vormt. Kalenderdegradatie loopt door terwijl het systeem niets doet; de chemie in de cel reageert langzaam verder, ook bij stilstand.",
+        "Voor een zakelijk opslagsysteem zijn dat twee rekenlijnen naast elkaar. Een batterij die elke werkdag een piek wegneemt, veroudert vooral cyclisch. Een batterij die als reserve of voor noodstroom klaarstaat en zelden iets doet, veroudert vooral op de kalender — ook in een jaar waarin er bijna geen kWh door de cellen is gegaan. Welk spoor bij u bepalend is, volgt uit de regelstrategie en niet uit het datablad.",
+        "Daarom is \"hoe lang gaat zo'n batterij mee\" geen vraag met één antwoord. Dezelfde cellen kunnen in twee panden na dezelfde periode een verschillende restcapaciteit hebben, omdat het ene systeem twee keer per dag een volledige doorzet maakt en het andere drie keer per week een paar kWh verschuift.",
+        "Doorzet wordt doorgaans uitgedrukt in volledige equivalente cycli: de totale energie die door het systeem is gegaan, gedeeld door de bruikbare capaciteit. Twee halve ontladingen tellen dan als één cyclus. Dat is een rekenkundige omrekening en geen natuurkundige gelijkstelling: twee ondiepe halve cycli belasten een cel doorgaans minder dan één diepe hele. Die nuance is precies waar een regelstrategie op kan ingrijpen."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Welke bedrijfsvoering de veroudering versnelt",
+      "rijen": [
+        ["Diepe ontlading", "Het laatste stuk van de ontlading en het laatste stuk van de lading belasten de cel het zwaarst. Een regelstrategie die het werkvenster meer in het midden houdt, spaart de cel maar levert minder bruikbare kWh per cyclus. Dat is een ontwerpafweging, geen instelling die u er later gratis bij krijgt."],
+        ["Hoog laad- en ontlaadvermogen (C-rate)", "De C-rate is vermogen gedeeld door capaciteit. Een systeem van 200 kWh dat op 100 kW werkt, zit op 0,5 C; op 200 kW is dat 1 C. Hoe hoger de C-rate, hoe meer warmte en spanningsval in de cel en hoe sneller de veroudering. Veel kWh achter weinig kW veroudert bij gelijke doorzet rustiger dan het omgekeerde."],
+        ["Hoge celtemperatuur", "Vrijwel elke chemische nevenreactie in een cel versnelt bij hogere temperatuur. Temperatuur werkt daarmee op beide sporen tegelijk: op de kalenderdegradatie en op de cyclische degradatie. Hij versterkt bovendien de andere factoren uit deze lijst, want een hoge C-rate maakt zelf warmte."],
+        ["Lang volledig geladen staan", "Een cel die weken aan de bovenkant van zijn spanningsvenster staat, veroudert sneller dan een cel die op een lagere laadtoestand wacht. Voor reserve- en noodstroomfuncties is dat een reëel conflict: de functie vraagt een volle batterij, de levensduur vraagt het tegendeel."],
+        ["Stilstand zonder beheer", "Een systeem dat maandenlang uit staat, veroudert op de kalender door en kan door het eigen verbruik van de elektronica te diep weglopen. Opslag die buiten bedrijf is, hoort een beheerde laadtoestand te houden."]
+      ],
+      "noot": "Deze vijf werken op elkaar in. Een hoge C-rate maakt warmte, warmte versnelt de kalenderdegradatie, en een krap gedimensioneerd systeem moet per cyclus dieper en harder werken dan een ruim gedimensioneerd systeem met dezelfde taak."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Temperatuurbeheersing hoort bij het systeem, niet erbij",
+      "lead": "Thermisch beheer staat in offertes vaak onder de accessoires. Het bepaalt mede de levensduur.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Laden en ontladen maakt warmte in de cel, en die warmte moet eruit. Lukt dat niet, dan loopt de celtemperatuur op en versnelt alles uit de vorige sectie. Thermisch beheer is daarom geen comfortvoorziening maar een onderdeel van het ontwerp, net als de omvormer en de netkoppeling.",
+        "Het werkt twee kanten op. Koelen, zodat de cellen bij hoge doorzet en op warme dagen binnen hun venster blijven. En verwarmen, want bij vorst mag een lithiumcel niet op vol vermogen worden geladen: gebeurt dat toch, dan slaat er metallisch lithium neer op de anode, en dat is onomkeerbaar. Een systeem in buitenopstelling heeft dus beide nodig, plus een regelaar die weet dat hij moet wachten tot de modules op temperatuur zijn.",
+        "De tweede eis is gelijkmatigheid. Niet de gemiddelde temperatuur bepaalt de veroudering, maar de warmste module. Zit er een verschil tussen modules, of tussen de boven- en onderkant van een rek, dan verouderen ze ongelijk — en een string is zo oud als zijn zwakste module. Daar gaan luchtstroom, onderlinge afstand, plaatsing en bij een vrije buitenopstelling ook de zonbelasting op de kast over.",
+        "Koeling kost zelf vermogen en energie. Dat hoort in twee berekeningen terug te komen. In de businesscase, als bedrijfsmiddel met een eigen verbruik. En in de capaciteitsberekening, want koeling die juist op het warmste moment aanslaat, trekt vermogen op dezelfde aansluiting die u aan het ontlasten bent.",
+        "<p>Bij <a class=\"ve-link\" href=\"/project-hedin-alkmaar\">Hedin Alkmaar</a> staat de opslag buiten op het terrein en wordt er in de daluren geladen en ontladen wanneer de vraag stijgt. Dat ritme en die opstelling bepalen samen de thermische belasting van de cellen — het laad- en ontlaadpatroon is dus niet alleen een kwestie van opbrengst, maar ook van veroudering.</p>"
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "state-of-health",
+      "kop": "State of health: wat het betekent en hoe het wordt vastgesteld",
+      "alineas": [
+        "State of health (SoH) is een verhouding: de capaciteit die het systeem nu bruikbaar levert, gedeeld door de capaciteit die het bij aanvang bruikbaar leverde. Een SoH onder de honderd procent betekent dus niet dat er iets kapot is. Het betekent dat de bruikbare kWh is gekrompen ten opzichte van de nulmeting.",
+        "Naast capaciteitsverlies staat een tweede vorm: vermogensverlies. De inwendige weerstand van een cel loopt op met de leeftijd. Het systeem kan dan nog een behoorlijke hoeveelheid kWh bergen, maar haalt het nominale laad- of ontlaadvermogen niet meer onder alle omstandigheden, of alleen nog kort voordat de temperatuur- of spanningsgrens ingrijpt. Voor een <a class=\"ve-link\" href=\"/kennis/peak-shaving\">piekafvlakkingstaak</a> is dat de ernstiger vorm van veroudering, want daar is kW de bindende grens en niet kWh.",
+        "<h3>Twee manieren om SoH vast te stellen</h3>",
+        "<ul><li><strong>De schatting van het batterijmanagementsysteem.</strong> Die draait continu mee en is gebaseerd op modellen, op spanningsgedrag en op de gemeten doorzet. Hij kost niets en is indicatief, maar het is een schatting — twee leveranciers kunnen voor hetzelfde systeem een ander getal rapporteren omdat hun model anders rekent.</li><li><strong>Een capaciteitstest.</strong> Het systeem wordt onder vastgelegde voorwaarden volledig geladen en ontladen, en er wordt gemeten wat er daadwerkelijk uit komt. Dit is de bindende methode, en hij kost een dag of een nacht waarin het systeem zijn eigenlijke werk niet doet.</li></ul>",
+        "Een capaciteitstest is alleen vergelijkbaar als de voorwaarden gelijk zijn aan de nulmeting: dezelfde celtemperatuur, hetzelfde laad- en ontlaadvermogen, hetzelfde spanningsvenster, en gemeten op hetzelfde punt — op de cellen of achter de omvormer, want daar zit het omzettingsverlies tussen. Wordt de nulmeting bij oplevering niet vastgelegd, dan is elke latere discussie over SoH een woordenwisseling zonder referentie. Leg die nulmeting dus vast, met de voorwaarden erbij, en bewaar hem bij het opleverdossier.",
+        "Wat SoH niet is: een veiligheidsindicator. Een cel met minder restcapaciteit is niet onveilig, en een hoge restcapaciteit maakt een installatie niet veilig. Veiligheid is een eigen beoordeling, met een eigen ritme en eigen maatregelen."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "End of life is een afspraak, geen moment",
+      "lead": "Een opslagsysteem valt niet op een dag om. Er wordt een grens afgesproken.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "De bruikbare capaciteit zakt geleidelijk. Wanneer een systeem \"op\" is, wordt daarom niet door de natuurkunde bepaald maar in een contract: onder welke restcapaciteit, vastgesteld met welke meetmethode, geldt het systeem als versleten. Dat is wat end of life in de praktijk betekent, en het is de reden dat twee aanbiedingen met dezelfde celchemie een heel andere belofte kunnen inhouden.",
+        "<h3>Wat er in die definitie hoort te staan</h3>",
+        "<ul><li><strong>De drempel.</strong> Welke restcapaciteit geldt als einde, en gemeten over welk deel van het systeem — per module, per string of over het geheel.</li><li><strong>De meetmethode.</strong> BMS-schatting of capaciteitstest, en onder welke temperatuur, C-rate en spanningsgrenzen.</li><li><strong>Wie meet, en op wiens kosten.</strong> Met een termijn waarbinnen gemeten wordt nadat u erom vraagt.</li><li><strong>Wat er dan gebeurt.</strong> Modules bijplaatsen, modules vervangen of het systeem afvoeren — en wie de afvoer en het eventuele hergebruik regelt.</li><li><strong>De voorwaarden om de afspraak geldig te houden.</strong> Doorzet per jaar, temperatuurgrenzen, laad- en ontlaadvermogen, de laadtoestand bij stilstand, onderhoud, en de beschikbaarheid van meetdata.</li></ul>",
+        "Dat laatste punt raakt de bedrijfsvoering direct. Een regelstrategie die meer waarde uit de batterij haalt door ook op de markt te handelen, verhoogt de doorzet en kan daarmee tegen de voorwaarden aanlopen. Dat is geen reden om het niet te doen; het is een reden om de grenzen vooraf te kennen en ze in de <a class=\"ve-link\" href=\"/vibe-control\">regelaar</a> vast te zetten, zodat een handelsstrategie de afspraak niet ongemerkt ondermijnt.",
+        "Praktisch gevolg aan de andere kant: boven de drempel werkt het systeem gewoon door, en eronder is het niet stuk. Het haalt de taak waarvoor het gedimensioneerd is dan alleen niet meer volledig. Of dat erg is, hangt af van hoeveel marge er in het ontwerp zat — en daarmee zijn we terug bij de dimensionering."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "overdimensioneren",
+      "kop": "Dimensioneren op de laatste dag van de looptijd, niet op de eerste",
+      "alineas": [
+        "De capaciteit die uw taak vraagt, moet beschikbaar zijn op het slechtste moment van de looptijd. Dat moment is het einde, niet het begin. Een ontwerp dat precies past op dag één, past de rest van de looptijd niet.",
+        "Tussen het getal op de kast en wat u werkelijk kunt inzetten, zitten drie stappen. Van de nominale capaciteit is maar een deel vrijgegeven om te gebruiken, omdat het werkvenster aan de boven- en onderkant een marge laat staan. Van dat venster gaat het omzettingsrendement af: wat u erin stopt, komt er niet volledig uit. En wat dan overblijft, krimpt over de jaren. Wie met de nominale capaciteit rekent, komt dus op drie plekken tekort.",
+        "De praktische route is daarom: reken de taak uit op het kwartiersprofiel — de hoogte van de piek boven de gekozen grens geeft het benodigde vermogen in kW, die hoogte maal de duur geeft de benodigde kWh — en zet die uitkomst naast de bruikbare capaciteit aan het <em>einde</em> van de looptijd. Hoeveel u moet overdimensioneren volgt uit de restcapaciteit die uw leverancier voor úw inzetprofiel onderbouwt. Dat getal verschilt per fabrikant, per celchemie en per contract, en wij publiceren er geen vuistregel voor.",
+        "Er is een alternatief voor alles vooraf kopen: modulair bijplaatsen. Houd ruimte, kabelwerk, omvormervermogen en een regelaar die extra modules aankan, en vul later aan. Dat is niet per definitie goedkoper — een latere uitbreiding mengt nieuwe met oudere modules, en dat vraagt aandacht in de besturing en soms een eigen omvormer — maar het verschuift investering naar het moment dat u de capaciteit echt nodig heeft. Welke van de twee past, is een rekenvraag: zet de extra investering van dag één af tegen de kosten en het risico van een uitbreiding later.",
+        "In beide gevallen geldt dat u wilt kunnen zien wat er gebeurt. Doorzet, celtemperaturen, het gebruikte werkvenster en de ontwikkeling van de restcapaciteit zijn de grootheden die aantonen of het systeem binnen zijn voorwaarden draait. Zonder die meetreeks is de discussie aan het einde van de looptijd niet te voeren."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Wat dit niet oplost",
+      "lead": "De eerlijke grens van alles wat hierboven staat.",
+      "alineas": [
+        "Degradatie is niet te vermijden, alleen te vertragen. Elke maatregel uit dit artikel kost iets: een nauwer werkvenster kost bruikbare kWh, een lagere C-rate kost piekvermogen, actieve koeling kost energie en onderhoud, en een lagere laadtoestand bij stilstand kost beschikbaarheid. Een batterij die zachter wordt behandeld dan zijn taak verdraagt, haalt die taak niet.",
+        "Voorzichtig gebruik repareert ook geen verkeerd ontwerp. Een systeem dat op dag één te klein is voor de piek, wordt niet groter door rustiger te laden. En een systeem dat veel te ruim is gekocht om degradatie voor te blijven, laat jarenlang kapitaal stilstaan zonder dat er een kWh meer door gaat.",
+        "Dit artikel noemt bewust geen percentage per jaar en geen garantietermijn. Die waarden zijn fabrikant- en contractgebonden en gelden alleen bij een vastgelegd inzetprofiel; een getal van een website geldt niet voor uw systeem. Vraag de degradatiecurve en de garantievoorwaarden op bij de leverancier, en vraag erbij onder welke doorzet, temperatuur en C-rate die curve is bepaald. Is dat niet te leveren, dan is de curve geen toezegging.",
+        "En degradatie zegt niets over brandveiligheid, over de staat van de behuizing en bekabeling of over de regels voor opstelling en afstand. Dat is een aparte beoordeling, die ook een systeem met een hoge restcapaciteit nodig heeft."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit in het ontwerp terugkomt",
+      "lead": "Degradatie is geen los onderwerp; het verandert drie andere berekeningen.",
+      "kaarten": [
+        { "kop": "De maat van het systeem", "tekst": "Vermogen uit de hoogte van de piek, capaciteit uit hoogte maal duur — en daar bovenop de marge die het systeem nodig heeft om die taak aan het einde van de looptijd nog te halen.", "route": "kennis/batterij-dimensioneren", "label": "Een batterij dimensioneren" },
+        { "kop": "De businesscase", "tekst": "Minder bruikbare kWh in de latere jaren, plus het eigen verbruik van de koeling, plus een eventuele vervanging of uitbreiding binnen de looptijd.", "route": "kennis/businesscase-batterij", "label": "Businesscase van een batterij" },
+        { "kop": "Veiligheid en opstelling", "tekst": "Thermisch beheer, opstelling en bewaking zijn een eigen beoordeling. Restcapaciteit en veiligheid zijn twee verschillende vragen.", "route": "kennis/batterijveiligheid", "label": "Batterijveiligheid" },
+        { "kop": "Het systeem in de praktijk", "tekst": "Hoe batterijmodules, omvormers, netkoppeling, beveiliging en sturing bij ons als één installatie worden ontworpen en geplaatst.", "route": "systeem-energieopslag", "label": "Energieopslag" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over degradatie en levensduur",
+  "faq": [
+    {
+      "vraag": "Hoe lang gaat een zakelijke batterij mee?",
+      "antwoord": "Dat hangt af van het inzetprofiel en niet van het type cel alleen. Doorzet, ontladingsdiepte, laad- en ontlaadvermogen, celtemperatuur en de laadtoestand bij stilstand bepalen samen het tempo. Vraag de leverancier om een degradatiecurve voor úw profiel, met de voorwaarden waaronder die curve is bepaald. Een algemeen getal zegt niets over uw systeem."
+    },
+    {
+      "vraag": "Wat betekent state of health precies?",
+      "antwoord": "De bruikbare capaciteit nu, gedeeld door de bruikbare capaciteit bij de nulmeting. Het is een capaciteitsmaat. Vermogensverlies door een oplopende inwendige weerstand is een tweede vorm van veroudering die daar niet in zit, en die bij piekafvlakking vaak eerder knelt."
+    },
+    {
+      "vraag": "Is een batterij na het bereiken van end of life onbruikbaar?",
+      "antwoord": "Nee. End of life is een contractuele drempel, geen defect. Onder die drempel werkt het systeem door, maar het haalt de taak waarvoor het is gedimensioneerd niet meer volledig. Wat er dan gebeurt — modules bijplaatsen, vervangen of afvoeren — hoort in dezelfde afspraak te staan als de drempel zelf."
+    },
+    {
+      "vraag": "Is het verstandig de batterij te sparen?",
+      "antwoord": "Alleen tot het punt waarop het sparen meer opbrengst kost dan het aan levensduur oplevert. Een nauwer werkvenster en een lagere C-rate verlengen de levensduur en verlagen tegelijk de waarde die het systeem per jaar levert. Die afweging hoort in de businesscase en vervolgens in de instellingen van de regelaar, niet in losse handmatige keuzes."
+    },
+    {
+      "vraag": "Waarom staat er koeling en verwarming in het voorstel?",
+      "antwoord": "Omdat celtemperatuur zowel de cyclische als de kalenderdegradatie opdrijft, en omdat een lithiumcel bij vorst niet op vol vermogen geladen mag worden. Thermisch beheer is daarmee een onderdeel van het systeem. Het heeft wel een eigen verbruik, en dat hoort in de businesscase en in de capaciteitsberekening terug te komen."
+    },
+    {
+      "vraag": "Wat moet er bij oplevering worden vastgelegd?",
+      "antwoord": "De nulmeting van de bruikbare capaciteit, met de voorwaarden waaronder die is gemeten: celtemperatuur, laad- en ontlaadvermogen, spanningsvenster en het meetpunt. Zonder die referentie is een latere capaciteitstest niet vergelijkbaar en is elke discussie over restcapaciteit ongefundeerd."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "Verder in de kennisbank",
+      "items": [
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/businesscase-batterij", "naam": "Businesscase van een batterij" },
+        { "route": "kennis/batterijveiligheid", "naam": "Batterijveiligheid" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/energieprestatie-meten", "naam": "Energieprestatie meten" }
+      ]
+    },
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "kennis/ems-energiemanagementsysteem", "naam": "Energiemanagementsysteem" },
+        { "route": "netcongestie", "naam": "Netcongestie" }
+      ]
+    },
+    {
+      "kop": "Gerealiseerd",
+      "items": [
+        { "route": "project-hedin-alkmaar", "naam": "Hedin Alkmaar" },
+        { "route": "project-hazenweg-61", "naam": "Hazenweg 61, Hengelo" },
+        { "route": "projecten", "naam": "Alle projecten" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Een levensduur die bij uw gebruik hoort",
+    "tekst": "Stuur het kwartiersprofiel van uw aansluiting en vertel welke taak de batterij moet doen. Wij rekenen uit welk vermogen en welke capaciteit nodig zijn, en welke marge dat vraagt voor het einde van de looptijd. Daar horen de degradatievoorwaarden van de leverancier bij, met de meetmethode erbij.",
+    "primair": { "route": "contact", "label": "Laat uw inzetprofiel doorrekenen" },
+    "secundair": { "route": "kennis", "label": "Terug naar de kennisbank" }
+  },
+
+  "claims": []
+}

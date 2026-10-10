@@ -1,0 +1,5143 @@
+{
+  "bron": "PDOK Locatieserver v3_1 (bron: BZK Bestuurlijke Grenzen)",
+  "ophaaldatum": "2026-10-10",
+  "aantal": 342,
+  "gemeenten": [
+    {
+      "gemeentecode": "0014",
+      "naam": "Groningen",
+      "naam_officieel": "Groningen",
+      "slug": "groningen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV20",
+      "provincie": "Groningen",
+      "provincie_slug": "groningen",
+      "centroide": {
+        "lon": 6.62063474,
+        "lat": 53.21859225
+      }
+    },
+    {
+      "gemeentecode": "0034",
+      "naam": "Almere",
+      "naam_officieel": "Almere",
+      "slug": "almere",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV24",
+      "provincie": "Flevoland",
+      "provincie_slug": "flevoland",
+      "centroide": {
+        "lon": 5.20565106,
+        "lat": 52.40247126
+      }
+    },
+    {
+      "gemeentecode": "0037",
+      "naam": "Stadskanaal",
+      "naam_officieel": "Stadskanaal",
+      "slug": "stadskanaal",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV20",
+      "provincie": "Groningen",
+      "provincie_slug": "groningen",
+      "centroide": {
+        "lon": 7.01032824,
+        "lat": 53.00215291
+      }
+    },
+    {
+      "gemeentecode": "0047",
+      "naam": "Veendam",
+      "naam_officieel": "Veendam",
+      "slug": "veendam",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV20",
+      "provincie": "Groningen",
+      "provincie_slug": "groningen",
+      "centroide": {
+        "lon": 6.88009225,
+        "lat": 53.08898498
+      }
+    },
+    {
+      "gemeentecode": "0050",
+      "naam": "Zeewolde",
+      "naam_officieel": "Zeewolde",
+      "slug": "zeewolde",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV24",
+      "provincie": "Flevoland",
+      "provincie_slug": "flevoland",
+      "centroide": {
+        "lon": 5.45524194,
+        "lat": 52.34436139
+      }
+    },
+    {
+      "gemeentecode": "0059",
+      "naam": "Achtkarspelen",
+      "naam_officieel": "Achtkarspelen",
+      "slug": "achtkarspelen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 6.14313445,
+        "lat": 53.2166695
+      }
+    },
+    {
+      "gemeentecode": "0060",
+      "naam": "Ameland",
+      "naam_officieel": "Ameland",
+      "slug": "ameland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 5.76137119,
+        "lat": 53.43072793
+      }
+    },
+    {
+      "gemeentecode": "0072",
+      "naam": "Harlingen",
+      "naam_officieel": "Harlingen",
+      "slug": "harlingen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 5.26759609,
+        "lat": 53.14309469
+      }
+    },
+    {
+      "gemeentecode": "0074",
+      "naam": "Heerenveen",
+      "naam_officieel": "Heerenveen",
+      "slug": "heerenveen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 5.97800174,
+        "lat": 52.99599109
+      }
+    },
+    {
+      "gemeentecode": "0080",
+      "naam": "Leeuwarden",
+      "naam_officieel": "Leeuwarden",
+      "slug": "leeuwarden",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 5.79791707,
+        "lat": 53.17002104
+      }
+    },
+    {
+      "gemeentecode": "0085",
+      "naam": "Ooststellingwerf",
+      "naam_officieel": "Ooststellingwerf",
+      "slug": "ooststellingwerf",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 6.28296848,
+        "lat": 52.98236914
+      }
+    },
+    {
+      "gemeentecode": "0086",
+      "naam": "Opsterland",
+      "naam_officieel": "Opsterland",
+      "slug": "opsterland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 6.1127567,
+        "lat": 53.04915044
+      }
+    },
+    {
+      "gemeentecode": "0088",
+      "naam": "Schiermonnikoog",
+      "naam_officieel": "Schiermonnikoog",
+      "slug": "schiermonnikoog",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 6.22231667,
+        "lat": 53.4744383
+      }
+    },
+    {
+      "gemeentecode": "0090",
+      "naam": "Smallingerland",
+      "naam_officieel": "Smallingerland",
+      "slug": "smallingerland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 6.03892973,
+        "lat": 53.1134227
+      }
+    },
+    {
+      "gemeentecode": "0093",
+      "naam": "Terschelling",
+      "naam_officieel": "Terschelling",
+      "slug": "terschelling",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 5.37477634,
+        "lat": 53.33985123
+      }
+    },
+    {
+      "gemeentecode": "0096",
+      "naam": "Vlieland",
+      "naam_officieel": "Vlieland",
+      "slug": "vlieland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 5.03464993,
+        "lat": 53.21969428
+      }
+    },
+    {
+      "gemeentecode": "0098",
+      "naam": "Weststellingwerf",
+      "naam_officieel": "Weststellingwerf",
+      "slug": "weststellingwerf",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 6.01768869,
+        "lat": 52.87576261
+      }
+    },
+    {
+      "gemeentecode": "0106",
+      "naam": "Assen",
+      "naam_officieel": "Assen",
+      "slug": "assen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV22",
+      "provincie": "Drenthe",
+      "provincie_slug": "drenthe",
+      "centroide": {
+        "lon": 6.55246624,
+        "lat": 53.00127298
+      }
+    },
+    {
+      "gemeentecode": "0109",
+      "naam": "Coevorden",
+      "naam_officieel": "Coevorden",
+      "slug": "coevorden",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV22",
+      "provincie": "Drenthe",
+      "provincie_slug": "drenthe",
+      "centroide": {
+        "lon": 6.73591162,
+        "lat": 52.74025547
+      }
+    },
+    {
+      "gemeentecode": "0114",
+      "naam": "Emmen",
+      "naam_officieel": "Emmen",
+      "slug": "emmen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV22",
+      "provincie": "Drenthe",
+      "provincie_slug": "drenthe",
+      "centroide": {
+        "lon": 6.96196045,
+        "lat": 52.74965272
+      }
+    },
+    {
+      "gemeentecode": "0118",
+      "naam": "Hoogeveen",
+      "naam_officieel": "Hoogeveen",
+      "slug": "hoogeveen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV22",
+      "provincie": "Drenthe",
+      "provincie_slug": "drenthe",
+      "centroide": {
+        "lon": 6.51359302,
+        "lat": 52.72309409
+      }
+    },
+    {
+      "gemeentecode": "0119",
+      "naam": "Meppel",
+      "naam_officieel": "Meppel",
+      "slug": "meppel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV22",
+      "provincie": "Drenthe",
+      "provincie_slug": "drenthe",
+      "centroide": {
+        "lon": 6.19384026,
+        "lat": 52.71593088
+      }
+    },
+    {
+      "gemeentecode": "0141",
+      "naam": "Almelo",
+      "naam_officieel": "Almelo",
+      "slug": "almelo",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.65819554,
+        "lat": 52.34789061
+      }
+    },
+    {
+      "gemeentecode": "0147",
+      "naam": "Borne",
+      "naam_officieel": "Borne",
+      "slug": "borne",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.7435643,
+        "lat": 52.31233067
+      }
+    },
+    {
+      "gemeentecode": "0148",
+      "naam": "Dalfsen",
+      "naam_officieel": "Dalfsen",
+      "slug": "dalfsen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.27666931,
+        "lat": 52.51472783
+      }
+    },
+    {
+      "gemeentecode": "0150",
+      "naam": "Deventer",
+      "naam_officieel": "Deventer",
+      "slug": "deventer",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.23580956,
+        "lat": 52.26823599
+      }
+    },
+    {
+      "gemeentecode": "0153",
+      "naam": "Enschede",
+      "naam_officieel": "Enschede",
+      "slug": "enschede",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.8777881,
+        "lat": 52.22080698
+      }
+    },
+    {
+      "gemeentecode": "0158",
+      "naam": "Haaksbergen",
+      "naam_officieel": "Haaksbergen",
+      "slug": "haaksbergen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.75586451,
+        "lat": 52.15550341
+      }
+    },
+    {
+      "gemeentecode": "0160",
+      "naam": "Hardenberg",
+      "naam_officieel": "Hardenberg",
+      "slug": "hardenberg",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.57413563,
+        "lat": 52.58564096
+      }
+    },
+    {
+      "gemeentecode": "0163",
+      "naam": "Hellendoorn",
+      "naam_officieel": "Hellendoorn",
+      "slug": "hellendoorn",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.45086008,
+        "lat": 52.38636752
+      }
+    },
+    {
+      "gemeentecode": "0164",
+      "naam": "Hengelo",
+      "naam_officieel": "Hengelo (O)",
+      "slug": "hengelo",
+      "slug_afwijkt_reden": "Het register schrijft 'Hengelo (O)'. De haakjes horen bij de registratie, niet bij de plaatsnaam. Er is geen tweede gemeente Hengelo, dus de slug blijft eenduidig.",
+      "aliassen": [
+        "Hengelo (Overijssel)"
+      ],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.77819416,
+        "lat": 52.25490615
+      }
+    },
+    {
+      "gemeentecode": "0166",
+      "naam": "Kampen",
+      "naam_officieel": "Kampen",
+      "slug": "kampen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 5.92332641,
+        "lat": 52.55835835
+      }
+    },
+    {
+      "gemeentecode": "0168",
+      "naam": "Losser",
+      "naam_officieel": "Losser",
+      "slug": "losser",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 7.00274789,
+        "lat": 52.3028096
+      }
+    },
+    {
+      "gemeentecode": "0171",
+      "naam": "Noordoostpolder",
+      "naam_officieel": "Noordoostpolder",
+      "slug": "noordoostpolder",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV24",
+      "provincie": "Flevoland",
+      "provincie_slug": "flevoland",
+      "centroide": {
+        "lon": 5.72979141,
+        "lat": 52.71600419
+      }
+    },
+    {
+      "gemeentecode": "0173",
+      "naam": "Oldenzaal",
+      "naam_officieel": "Oldenzaal",
+      "slug": "oldenzaal",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.91104324,
+        "lat": 52.30772581
+      }
+    },
+    {
+      "gemeentecode": "0175",
+      "naam": "Ommen",
+      "naam_officieel": "Ommen",
+      "slug": "ommen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.43476189,
+        "lat": 52.51612993
+      }
+    },
+    {
+      "gemeentecode": "0177",
+      "naam": "Raalte",
+      "naam_officieel": "Raalte",
+      "slug": "raalte",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.27904954,
+        "lat": 52.38782664
+      }
+    },
+    {
+      "gemeentecode": "0180",
+      "naam": "Staphorst",
+      "naam_officieel": "Staphorst",
+      "slug": "staphorst",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.20708156,
+        "lat": 52.63350692
+      }
+    },
+    {
+      "gemeentecode": "0183",
+      "naam": "Tubbergen",
+      "naam_officieel": "Tubbergen",
+      "slug": "tubbergen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.77667127,
+        "lat": 52.4105818
+      }
+    },
+    {
+      "gemeentecode": "0184",
+      "naam": "Urk",
+      "naam_officieel": "Urk",
+      "slug": "urk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV24",
+      "provincie": "Flevoland",
+      "provincie_slug": "flevoland",
+      "centroide": {
+        "lon": 5.4815978,
+        "lat": 52.69314676
+      }
+    },
+    {
+      "gemeentecode": "0189",
+      "naam": "Wierden",
+      "naam_officieel": "Wierden",
+      "slug": "wierden",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.56063185,
+        "lat": 52.34443901
+      }
+    },
+    {
+      "gemeentecode": "0193",
+      "naam": "Zwolle",
+      "naam_officieel": "Zwolle",
+      "slug": "zwolle",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.11836361,
+        "lat": 52.51868565
+      }
+    },
+    {
+      "gemeentecode": "0197",
+      "naam": "Aalten",
+      "naam_officieel": "Aalten",
+      "slug": "aalten",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.56058823,
+        "lat": 51.92174151
+      }
+    },
+    {
+      "gemeentecode": "0200",
+      "naam": "Apeldoorn",
+      "naam_officieel": "Apeldoorn",
+      "slug": "apeldoorn",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.92190912,
+        "lat": 52.18985812
+      }
+    },
+    {
+      "gemeentecode": "0202",
+      "naam": "Arnhem",
+      "naam_officieel": "Arnhem",
+      "slug": "arnhem",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.89259249,
+        "lat": 52.00113721
+      }
+    },
+    {
+      "gemeentecode": "0203",
+      "naam": "Barneveld",
+      "naam_officieel": "Barneveld",
+      "slug": "barneveld",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.64185428,
+        "lat": 52.16829943
+      }
+    },
+    {
+      "gemeentecode": "0209",
+      "naam": "Beuningen",
+      "naam_officieel": "Beuningen",
+      "slug": "beuningen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.74027556,
+        "lat": 51.86281538
+      }
+    },
+    {
+      "gemeentecode": "0213",
+      "naam": "Brummen",
+      "naam_officieel": "Brummen",
+      "slug": "brummen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.11851047,
+        "lat": 52.10897694
+      }
+    },
+    {
+      "gemeentecode": "0214",
+      "naam": "Buren",
+      "naam_officieel": "Buren",
+      "slug": "buren",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.40362739,
+        "lat": 51.93833635
+      }
+    },
+    {
+      "gemeentecode": "0216",
+      "naam": "Culemborg",
+      "naam_officieel": "Culemborg",
+      "slug": "culemborg",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.21038034,
+        "lat": 51.94577786
+      }
+    },
+    {
+      "gemeentecode": "0221",
+      "naam": "Doesburg",
+      "naam_officieel": "Doesburg",
+      "slug": "doesburg",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.14690009,
+        "lat": 52.01867192
+      }
+    },
+    {
+      "gemeentecode": "0222",
+      "naam": "Doetinchem",
+      "naam_officieel": "Doetinchem",
+      "slug": "doetinchem",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.28670209,
+        "lat": 51.96078705
+      }
+    },
+    {
+      "gemeentecode": "0225",
+      "naam": "Druten",
+      "naam_officieel": "Druten",
+      "slug": "druten",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.61214772,
+        "lat": 51.87501197
+      }
+    },
+    {
+      "gemeentecode": "0226",
+      "naam": "Duiven",
+      "naam_officieel": "Duiven",
+      "slug": "duiven",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.01817144,
+        "lat": 51.94654847
+      }
+    },
+    {
+      "gemeentecode": "0228",
+      "naam": "Ede",
+      "naam_officieel": "Ede",
+      "slug": "ede",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.72799921,
+        "lat": 52.0764302
+      }
+    },
+    {
+      "gemeentecode": "0230",
+      "naam": "Elburg",
+      "naam_officieel": "Elburg",
+      "slug": "elburg",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.84903486,
+        "lat": 52.4132395
+      }
+    },
+    {
+      "gemeentecode": "0232",
+      "naam": "Epe",
+      "naam_officieel": "Epe",
+      "slug": "epe",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.95496795,
+        "lat": 52.32551004
+      }
+    },
+    {
+      "gemeentecode": "0233",
+      "naam": "Ermelo",
+      "naam_officieel": "Ermelo",
+      "slug": "ermelo",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.66616371,
+        "lat": 52.2882477
+      }
+    },
+    {
+      "gemeentecode": "0243",
+      "naam": "Harderwijk",
+      "naam_officieel": "Harderwijk",
+      "slug": "harderwijk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.64415173,
+        "lat": 52.34132254
+      }
+    },
+    {
+      "gemeentecode": "0244",
+      "naam": "Hattem",
+      "naam_officieel": "Hattem",
+      "slug": "hattem",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.05326318,
+        "lat": 52.47477964
+      }
+    },
+    {
+      "gemeentecode": "0246",
+      "naam": "Heerde",
+      "naam_officieel": "Heerde",
+      "slug": "heerde",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.05032967,
+        "lat": 52.4060583
+      }
+    },
+    {
+      "gemeentecode": "0252",
+      "naam": "Heumen",
+      "naam_officieel": "Heumen",
+      "slug": "heumen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.81848239,
+        "lat": 51.77788922
+      }
+    },
+    {
+      "gemeentecode": "0262",
+      "naam": "Lochem",
+      "naam_officieel": "Lochem",
+      "slug": "lochem",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.34685481,
+        "lat": 52.17948247
+      }
+    },
+    {
+      "gemeentecode": "0263",
+      "naam": "Maasdriel",
+      "naam_officieel": "Maasdriel",
+      "slug": "maasdriel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.29692443,
+        "lat": 51.77625082
+      }
+    },
+    {
+      "gemeentecode": "0267",
+      "naam": "Nijkerk",
+      "naam_officieel": "Nijkerk",
+      "slug": "nijkerk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.48436285,
+        "lat": 52.21212636
+      }
+    },
+    {
+      "gemeentecode": "0268",
+      "naam": "Nijmegen",
+      "naam_officieel": "Nijmegen",
+      "slug": "nijmegen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.83679287,
+        "lat": 51.83850928
+      }
+    },
+    {
+      "gemeentecode": "0269",
+      "naam": "Oldebroek",
+      "naam_officieel": "Oldebroek",
+      "slug": "oldebroek",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.93714281,
+        "lat": 52.45694092
+      }
+    },
+    {
+      "gemeentecode": "0273",
+      "naam": "Putten",
+      "naam_officieel": "Putten",
+      "slug": "putten",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.5826715,
+        "lat": 52.24390009
+      }
+    },
+    {
+      "gemeentecode": "0274",
+      "naam": "Renkum",
+      "naam_officieel": "Renkum",
+      "slug": "renkum",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.78484538,
+        "lat": 51.9896193
+      }
+    },
+    {
+      "gemeentecode": "0275",
+      "naam": "Rheden",
+      "naam_officieel": "Rheden",
+      "slug": "rheden",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.05125602,
+        "lat": 52.03354786
+      }
+    },
+    {
+      "gemeentecode": "0277",
+      "naam": "Rozendaal",
+      "naam_officieel": "Rozendaal",
+      "slug": "rozendaal",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.96789298,
+        "lat": 52.04253753
+      }
+    },
+    {
+      "gemeentecode": "0279",
+      "naam": "Scherpenzeel",
+      "naam_officieel": "Scherpenzeel",
+      "slug": "scherpenzeel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.50049086,
+        "lat": 52.08932339
+      }
+    },
+    {
+      "gemeentecode": "0281",
+      "naam": "Tiel",
+      "naam_officieel": "Tiel",
+      "slug": "tiel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.40686009,
+        "lat": 51.88508236
+      }
+    },
+    {
+      "gemeentecode": "0285",
+      "naam": "Voorst",
+      "naam_officieel": "Voorst",
+      "slug": "voorst",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.09911646,
+        "lat": 52.22556774
+      }
+    },
+    {
+      "gemeentecode": "0289",
+      "naam": "Wageningen",
+      "naam_officieel": "Wageningen",
+      "slug": "wageningen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.66351011,
+        "lat": 51.97347594
+      }
+    },
+    {
+      "gemeentecode": "0293",
+      "naam": "Westervoort",
+      "naam_officieel": "Westervoort",
+      "slug": "westervoort",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.97071826,
+        "lat": 51.95751823
+      }
+    },
+    {
+      "gemeentecode": "0294",
+      "naam": "Winterswijk",
+      "naam_officieel": "Winterswijk",
+      "slug": "winterswijk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.72586167,
+        "lat": 51.96985392
+      }
+    },
+    {
+      "gemeentecode": "0296",
+      "naam": "Wijchen",
+      "naam_officieel": "Wijchen",
+      "slug": "wijchen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.70191338,
+        "lat": 51.81673503
+      }
+    },
+    {
+      "gemeentecode": "0297",
+      "naam": "Zaltbommel",
+      "naam_officieel": "Zaltbommel",
+      "slug": "zaltbommel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.1584405,
+        "lat": 51.7922907
+      }
+    },
+    {
+      "gemeentecode": "0299",
+      "naam": "Zevenaar",
+      "naam_officieel": "Zevenaar",
+      "slug": "zevenaar",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.08523451,
+        "lat": 51.9241029
+      }
+    },
+    {
+      "gemeentecode": "0301",
+      "naam": "Zutphen",
+      "naam_officieel": "Zutphen",
+      "slug": "zutphen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.23395013,
+        "lat": 52.13634665
+      }
+    },
+    {
+      "gemeentecode": "0302",
+      "naam": "Nunspeet",
+      "naam_officieel": "Nunspeet",
+      "slug": "nunspeet",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.78624642,
+        "lat": 52.33925119
+      }
+    },
+    {
+      "gemeentecode": "0303",
+      "naam": "Dronten",
+      "naam_officieel": "Dronten",
+      "slug": "dronten",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV24",
+      "provincie": "Flevoland",
+      "provincie_slug": "flevoland",
+      "centroide": {
+        "lon": 5.69535334,
+        "lat": 52.51000993
+      }
+    },
+    {
+      "gemeentecode": "0307",
+      "naam": "Amersfoort",
+      "naam_officieel": "Amersfoort",
+      "slug": "amersfoort",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.38469621,
+        "lat": 52.17364981
+      }
+    },
+    {
+      "gemeentecode": "0308",
+      "naam": "Baarn",
+      "naam_officieel": "Baarn",
+      "slug": "baarn",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.26414159,
+        "lat": 52.20383396
+      }
+    },
+    {
+      "gemeentecode": "0310",
+      "naam": "De Bilt",
+      "naam_officieel": "De Bilt",
+      "slug": "de-bilt",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.17431243,
+        "lat": 52.1417326
+      }
+    },
+    {
+      "gemeentecode": "0312",
+      "naam": "Bunnik",
+      "naam_officieel": "Bunnik",
+      "slug": "bunnik",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.21694392,
+        "lat": 52.04091567
+      }
+    },
+    {
+      "gemeentecode": "0313",
+      "naam": "Bunschoten",
+      "naam_officieel": "Bunschoten",
+      "slug": "bunschoten",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.35812068,
+        "lat": 52.24230627
+      }
+    },
+    {
+      "gemeentecode": "0317",
+      "naam": "Eemnes",
+      "naam_officieel": "Eemnes",
+      "slug": "eemnes",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.28267822,
+        "lat": 52.25189397
+      }
+    },
+    {
+      "gemeentecode": "0321",
+      "naam": "Houten",
+      "naam_officieel": "Houten",
+      "slug": "houten",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.18171526,
+        "lat": 52.00409513
+      }
+    },
+    {
+      "gemeentecode": "0327",
+      "naam": "Leusden",
+      "naam_officieel": "Leusden",
+      "slug": "leusden",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.41644531,
+        "lat": 52.12222391
+      }
+    },
+    {
+      "gemeentecode": "0331",
+      "naam": "Lopik",
+      "naam_officieel": "Lopik",
+      "slug": "lopik",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 4.94552285,
+        "lat": 51.98535812
+      }
+    },
+    {
+      "gemeentecode": "0335",
+      "naam": "Montfoort",
+      "naam_officieel": "Montfoort",
+      "slug": "montfoort",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 4.94404799,
+        "lat": 52.04770843
+      }
+    },
+    {
+      "gemeentecode": "0339",
+      "naam": "Renswoude",
+      "naam_officieel": "Renswoude",
+      "slug": "renswoude",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.53416273,
+        "lat": 52.06894743
+      }
+    },
+    {
+      "gemeentecode": "0340",
+      "naam": "Rhenen",
+      "naam_officieel": "Rhenen",
+      "slug": "rhenen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.56052991,
+        "lat": 51.9807674
+      }
+    },
+    {
+      "gemeentecode": "0342",
+      "naam": "Soest",
+      "naam_officieel": "Soest",
+      "slug": "soest",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.29628873,
+        "lat": 52.15619081
+      }
+    },
+    {
+      "gemeentecode": "0344",
+      "naam": "Utrecht",
+      "naam_officieel": "Utrecht",
+      "slug": "utrecht",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.0747543,
+        "lat": 52.09113798
+      }
+    },
+    {
+      "gemeentecode": "0345",
+      "naam": "Veenendaal",
+      "naam_officieel": "Veenendaal",
+      "slug": "veenendaal",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.55565707,
+        "lat": 52.02367797
+      }
+    },
+    {
+      "gemeentecode": "0351",
+      "naam": "Woudenberg",
+      "naam_officieel": "Woudenberg",
+      "slug": "woudenberg",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.42663916,
+        "lat": 52.08115655
+      }
+    },
+    {
+      "gemeentecode": "0352",
+      "naam": "Wijk bij Duurstede",
+      "naam_officieel": "Wijk bij Duurstede",
+      "slug": "wijk-bij-duurstede",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.32525398,
+        "lat": 51.98920124
+      }
+    },
+    {
+      "gemeentecode": "0353",
+      "naam": "IJsselstein",
+      "naam_officieel": "IJsselstein",
+      "slug": "ijsselstein",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.02879098,
+        "lat": 52.02771247
+      }
+    },
+    {
+      "gemeentecode": "0355",
+      "naam": "Zeist",
+      "naam_officieel": "Zeist",
+      "slug": "zeist",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.25518558,
+        "lat": 52.10196522
+      }
+    },
+    {
+      "gemeentecode": "0356",
+      "naam": "Nieuwegein",
+      "naam_officieel": "Nieuwegein",
+      "slug": "nieuwegein",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.09467157,
+        "lat": 52.03081752
+      }
+    },
+    {
+      "gemeentecode": "0358",
+      "naam": "Aalsmeer",
+      "naam_officieel": "Aalsmeer",
+      "slug": "aalsmeer",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.75502264,
+        "lat": 52.25769678
+      }
+    },
+    {
+      "gemeentecode": "0361",
+      "naam": "Alkmaar",
+      "naam_officieel": "Alkmaar",
+      "slug": "alkmaar",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.80330755,
+        "lat": 52.60179151
+      }
+    },
+    {
+      "gemeentecode": "0362",
+      "naam": "Amstelveen",
+      "naam_officieel": "Amstelveen",
+      "slug": "amstelveen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.85148663,
+        "lat": 52.28926595
+      }
+    },
+    {
+      "gemeentecode": "0363",
+      "naam": "Amsterdam",
+      "naam_officieel": "Amsterdam",
+      "slug": "amsterdam",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.91978668,
+        "lat": 52.36648685
+      }
+    },
+    {
+      "gemeentecode": "0373",
+      "naam": "Bergen (NH)",
+      "naam_officieel": "Bergen (NH)",
+      "slug": "bergen-nh",
+      "slug_afwijkt_reden": "Er bestaan twee gemeenten Bergen. Ze staan in verschillende provincies en botsen dus niet in het pad, maar het achtervoegsel voorkomt verwarring in titels en breadcrumbs.",
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.66138652,
+        "lat": 52.6631744
+      }
+    },
+    {
+      "gemeentecode": "0375",
+      "naam": "Beverwijk",
+      "naam_officieel": "Beverwijk",
+      "slug": "beverwijk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.64910613,
+        "lat": 52.48480822
+      }
+    },
+    {
+      "gemeentecode": "0376",
+      "naam": "Blaricum",
+      "naam_officieel": "Blaricum",
+      "slug": "blaricum",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 5.27423136,
+        "lat": 52.28295893
+      }
+    },
+    {
+      "gemeentecode": "0377",
+      "naam": "Bloemendaal",
+      "naam_officieel": "Bloemendaal",
+      "slug": "bloemendaal",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.58153531,
+        "lat": 52.38592744
+      }
+    },
+    {
+      "gemeentecode": "0383",
+      "naam": "Castricum",
+      "naam_officieel": "Castricum",
+      "slug": "castricum",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.67539409,
+        "lat": 52.55668977
+      }
+    },
+    {
+      "gemeentecode": "0384",
+      "naam": "Diemen",
+      "naam_officieel": "Diemen",
+      "slug": "diemen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.99049646,
+        "lat": 52.33733243
+      }
+    },
+    {
+      "gemeentecode": "0385",
+      "naam": "Edam-Volendam",
+      "naam_officieel": "Edam-Volendam",
+      "slug": "edam-volendam",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 5.03119916,
+        "lat": 52.54383226
+      }
+    },
+    {
+      "gemeentecode": "0388",
+      "naam": "Enkhuizen",
+      "naam_officieel": "Enkhuizen",
+      "slug": "enkhuizen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 5.30336767,
+        "lat": 52.75519161
+      }
+    },
+    {
+      "gemeentecode": "0392",
+      "naam": "Haarlem",
+      "naam_officieel": "Haarlem",
+      "slug": "haarlem",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.64753006,
+        "lat": 52.38341678
+      }
+    },
+    {
+      "gemeentecode": "0394",
+      "naam": "Haarlemmermeer",
+      "naam_officieel": "Haarlemmermeer",
+      "slug": "haarlemmermeer",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.68645603,
+        "lat": 52.30807947
+      }
+    },
+    {
+      "gemeentecode": "0396",
+      "naam": "Heemskerk",
+      "naam_officieel": "Heemskerk",
+      "slug": "heemskerk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.64044923,
+        "lat": 52.51249252
+      }
+    },
+    {
+      "gemeentecode": "0397",
+      "naam": "Heemstede",
+      "naam_officieel": "Heemstede",
+      "slug": "heemstede",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.61536029,
+        "lat": 52.34477975
+      }
+    },
+    {
+      "gemeentecode": "0399",
+      "naam": "Heiloo",
+      "naam_officieel": "Heiloo",
+      "slug": "heiloo",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.70857318,
+        "lat": 52.59985334
+      }
+    },
+    {
+      "gemeentecode": "0400",
+      "naam": "Den Helder",
+      "naam_officieel": "Den Helder",
+      "slug": "den-helder",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.78522541,
+        "lat": 52.93997585
+      }
+    },
+    {
+      "gemeentecode": "0402",
+      "naam": "Hilversum",
+      "naam_officieel": "Hilversum",
+      "slug": "hilversum",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 5.16803652,
+        "lat": 52.22310922
+      }
+    },
+    {
+      "gemeentecode": "0405",
+      "naam": "Hoorn",
+      "naam_officieel": "Hoorn",
+      "slug": "hoorn",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 5.07192464,
+        "lat": 52.62993233
+      }
+    },
+    {
+      "gemeentecode": "0406",
+      "naam": "Huizen",
+      "naam_officieel": "Huizen",
+      "slug": "huizen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 5.2420639,
+        "lat": 52.2986469
+      }
+    },
+    {
+      "gemeentecode": "0415",
+      "naam": "Landsmeer",
+      "naam_officieel": "Landsmeer",
+      "slug": "landsmeer",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.92455555,
+        "lat": 52.45058311
+      }
+    },
+    {
+      "gemeentecode": "0417",
+      "naam": "Laren",
+      "naam_officieel": "Laren",
+      "slug": "laren",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 5.2170741,
+        "lat": 52.24718046
+      }
+    },
+    {
+      "gemeentecode": "0420",
+      "naam": "Medemblik",
+      "naam_officieel": "Medemblik",
+      "slug": "medemblik",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 5.14403891,
+        "lat": 52.7701836
+      }
+    },
+    {
+      "gemeentecode": "0431",
+      "naam": "Oostzaan",
+      "naam_officieel": "Oostzaan",
+      "slug": "oostzaan",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.87610965,
+        "lat": 52.45196353
+      }
+    },
+    {
+      "gemeentecode": "0432",
+      "naam": "Opmeer",
+      "naam_officieel": "Opmeer",
+      "slug": "opmeer",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.95347368,
+        "lat": 52.7152802
+      }
+    },
+    {
+      "gemeentecode": "0437",
+      "naam": "Ouder-Amstel",
+      "naam_officieel": "Ouder-Amstel",
+      "slug": "ouder-amstel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.91351553,
+        "lat": 52.28937604
+      }
+    },
+    {
+      "gemeentecode": "0439",
+      "naam": "Purmerend",
+      "naam_officieel": "Purmerend",
+      "slug": "purmerend",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.93068585,
+        "lat": 52.54358285
+      }
+    },
+    {
+      "gemeentecode": "0441",
+      "naam": "Schagen",
+      "naam_officieel": "Schagen",
+      "slug": "schagen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.74221741,
+        "lat": 52.78732555
+      }
+    },
+    {
+      "gemeentecode": "0448",
+      "naam": "Texel",
+      "naam_officieel": "Texel",
+      "slug": "texel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.87378888,
+        "lat": 53.07911777
+      }
+    },
+    {
+      "gemeentecode": "0450",
+      "naam": "Uitgeest",
+      "naam_officieel": "Uitgeest",
+      "slug": "uitgeest",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.7286079,
+        "lat": 52.52342808
+      }
+    },
+    {
+      "gemeentecode": "0451",
+      "naam": "Uithoorn",
+      "naam_officieel": "Uithoorn",
+      "slug": "uithoorn",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.79084592,
+        "lat": 52.23690856
+      }
+    },
+    {
+      "gemeentecode": "0453",
+      "naam": "Velsen",
+      "naam_officieel": "Velsen",
+      "slug": "velsen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.61352167,
+        "lat": 52.4529386
+      }
+    },
+    {
+      "gemeentecode": "0473",
+      "naam": "Zandvoort",
+      "naam_officieel": "Zandvoort",
+      "slug": "zandvoort",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.53573696,
+        "lat": 52.35998559
+      }
+    },
+    {
+      "gemeentecode": "0479",
+      "naam": "Zaanstad",
+      "naam_officieel": "Zaanstad",
+      "slug": "zaanstad",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.7730126,
+        "lat": 52.46290889
+      }
+    },
+    {
+      "gemeentecode": "0482",
+      "naam": "Alblasserdam",
+      "naam_officieel": "Alblasserdam",
+      "slug": "alblasserdam",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.6657289,
+        "lat": 51.86465403
+      }
+    },
+    {
+      "gemeentecode": "0484",
+      "naam": "Alphen aan den Rijn",
+      "naam_officieel": "Alphen aan den Rijn",
+      "slug": "alphen-aan-den-rijn",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.64095971,
+        "lat": 52.11332171
+      }
+    },
+    {
+      "gemeentecode": "0489",
+      "naam": "Barendrecht",
+      "naam_officieel": "Barendrecht",
+      "slug": "barendrecht",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.52543794,
+        "lat": 51.85106556
+      }
+    },
+    {
+      "gemeentecode": "0498",
+      "naam": "Drechterland",
+      "naam_officieel": "Drechterland",
+      "slug": "drechterland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 5.17323066,
+        "lat": 52.65713565
+      }
+    },
+    {
+      "gemeentecode": "0502",
+      "naam": "Capelle aan den IJssel",
+      "naam_officieel": "Capelle aan den IJssel",
+      "slug": "capelle-aan-den-ijssel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.5801377,
+        "lat": 51.934929
+      }
+    },
+    {
+      "gemeentecode": "0503",
+      "naam": "Delft",
+      "naam_officieel": "Delft",
+      "slug": "delft",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.36310563,
+        "lat": 51.99845672
+      }
+    },
+    {
+      "gemeentecode": "0505",
+      "naam": "Dordrecht",
+      "naam_officieel": "Dordrecht",
+      "slug": "dordrecht",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.7088743,
+        "lat": 51.7815073
+      }
+    },
+    {
+      "gemeentecode": "0512",
+      "naam": "Gorinchem",
+      "naam_officieel": "Gorinchem",
+      "slug": "gorinchem",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.97708275,
+        "lat": 51.83846017
+      }
+    },
+    {
+      "gemeentecode": "0513",
+      "naam": "Gouda",
+      "naam_officieel": "Gouda",
+      "slug": "gouda",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.70620369,
+        "lat": 52.0153015
+      }
+    },
+    {
+      "gemeentecode": "0518",
+      "naam": "Den Haag",
+      "naam_officieel": "'s-Gravenhage",
+      "slug": "den-haag",
+      "slug_afwijkt_reden": "De officiële naam is 's-Gravenhage, maar de gemeente zelf, het publiek en de zoekvraag gebruiken Den Haag. De officiële naam blijft in naam_officieel staan.",
+      "aliassen": [
+        "'s-Gravenhage"
+      ],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.29300083,
+        "lat": 52.07207292
+      }
+    },
+    {
+      "gemeentecode": "0523",
+      "naam": "Hardinxveld-Giessendam",
+      "naam_officieel": "Hardinxveld-Giessendam",
+      "slug": "hardinxveld-giessendam",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.85242411,
+        "lat": 51.83261469
+      }
+    },
+    {
+      "gemeentecode": "0531",
+      "naam": "Hendrik-Ido-Ambacht",
+      "naam_officieel": "Hendrik-Ido-Ambacht",
+      "slug": "hendrik-ido-ambacht",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.63879045,
+        "lat": 51.84179458
+      }
+    },
+    {
+      "gemeentecode": "0532",
+      "naam": "Stede Broec",
+      "naam_officieel": "Stede Broec",
+      "slug": "stede-broec",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 5.22685099,
+        "lat": 52.70006845
+      }
+    },
+    {
+      "gemeentecode": "0534",
+      "naam": "Hillegom",
+      "naam_officieel": "Hillegom",
+      "slug": "hillegom",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.57695285,
+        "lat": 52.29677242
+      }
+    },
+    {
+      "gemeentecode": "0537",
+      "naam": "Katwijk",
+      "naam_officieel": "Katwijk",
+      "slug": "katwijk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.41629104,
+        "lat": 52.19230128
+      }
+    },
+    {
+      "gemeentecode": "0542",
+      "naam": "Krimpen aan den IJssel",
+      "naam_officieel": "Krimpen aan den IJssel",
+      "slug": "krimpen-aan-den-ijssel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.6021019,
+        "lat": 51.91469698
+      }
+    },
+    {
+      "gemeentecode": "0546",
+      "naam": "Leiden",
+      "naam_officieel": "Leiden",
+      "slug": "leiden",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.48511551,
+        "lat": 52.15498245
+      }
+    },
+    {
+      "gemeentecode": "0547",
+      "naam": "Leiderdorp",
+      "naam_officieel": "Leiderdorp",
+      "slug": "leiderdorp",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.54201231,
+        "lat": 52.15665179
+      }
+    },
+    {
+      "gemeentecode": "0553",
+      "naam": "Lisse",
+      "naam_officieel": "Lisse",
+      "slug": "lisse",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.54583719,
+        "lat": 52.25555166
+      }
+    },
+    {
+      "gemeentecode": "0556",
+      "naam": "Maassluis",
+      "naam_officieel": "Maassluis",
+      "slug": "maassluis",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.24886654,
+        "lat": 51.92519893
+      }
+    },
+    {
+      "gemeentecode": "0569",
+      "naam": "Nieuwkoop",
+      "naam_officieel": "Nieuwkoop",
+      "slug": "nieuwkoop",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.77946913,
+        "lat": 52.17078647
+      }
+    },
+    {
+      "gemeentecode": "0575",
+      "naam": "Noordwijk",
+      "naam_officieel": "Noordwijk",
+      "slug": "noordwijk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.47618959,
+        "lat": 52.27114511
+      }
+    },
+    {
+      "gemeentecode": "0579",
+      "naam": "Oegstgeest",
+      "naam_officieel": "Oegstgeest",
+      "slug": "oegstgeest",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.47121053,
+        "lat": 52.18555271
+      }
+    },
+    {
+      "gemeentecode": "0589",
+      "naam": "Oudewater",
+      "naam_officieel": "Oudewater",
+      "slug": "oudewater",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 4.86423913,
+        "lat": 52.027455
+      }
+    },
+    {
+      "gemeentecode": "0590",
+      "naam": "Papendrecht",
+      "naam_officieel": "Papendrecht",
+      "slug": "papendrecht",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.703344,
+        "lat": 51.83323777
+      }
+    },
+    {
+      "gemeentecode": "0597",
+      "naam": "Ridderkerk",
+      "naam_officieel": "Ridderkerk",
+      "slug": "ridderkerk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.59610831,
+        "lat": 51.86879441
+      }
+    },
+    {
+      "gemeentecode": "0599",
+      "naam": "Rotterdam",
+      "naam_officieel": "Rotterdam",
+      "slug": "rotterdam",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.27687952,
+        "lat": 51.93101775
+      }
+    },
+    {
+      "gemeentecode": "0603",
+      "naam": "Rijswijk",
+      "naam_officieel": "Rijswijk",
+      "slug": "rijswijk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.32603246,
+        "lat": 52.03619628
+      }
+    },
+    {
+      "gemeentecode": "0606",
+      "naam": "Schiedam",
+      "naam_officieel": "Schiedam",
+      "slug": "schiedam",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.38526221,
+        "lat": 51.92675598
+      }
+    },
+    {
+      "gemeentecode": "0610",
+      "naam": "Sliedrecht",
+      "naam_officieel": "Sliedrecht",
+      "slug": "sliedrecht",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.7729476,
+        "lat": 51.83068699
+      }
+    },
+    {
+      "gemeentecode": "0613",
+      "naam": "Albrandswaard",
+      "naam_officieel": "Albrandswaard",
+      "slug": "albrandswaard",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.43571499,
+        "lat": 51.85204293
+      }
+    },
+    {
+      "gemeentecode": "0622",
+      "naam": "Vlaardingen",
+      "naam_officieel": "Vlaardingen",
+      "slug": "vlaardingen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.32785888,
+        "lat": 51.91738748
+      }
+    },
+    {
+      "gemeentecode": "0626",
+      "naam": "Voorschoten",
+      "naam_officieel": "Voorschoten",
+      "slug": "voorschoten",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.43862798,
+        "lat": 52.12482218
+      }
+    },
+    {
+      "gemeentecode": "0627",
+      "naam": "Waddinxveen",
+      "naam_officieel": "Waddinxveen",
+      "slug": "waddinxveen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.64070725,
+        "lat": 52.0423941
+      }
+    },
+    {
+      "gemeentecode": "0629",
+      "naam": "Wassenaar",
+      "naam_officieel": "Wassenaar",
+      "slug": "wassenaar",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.36705193,
+        "lat": 52.14106114
+      }
+    },
+    {
+      "gemeentecode": "0632",
+      "naam": "Woerden",
+      "naam_officieel": "Woerden",
+      "slug": "woerden",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 4.89889927,
+        "lat": 52.10693981
+      }
+    },
+    {
+      "gemeentecode": "0637",
+      "naam": "Zoetermeer",
+      "naam_officieel": "Zoetermeer",
+      "slug": "zoetermeer",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.48977382,
+        "lat": 52.06091036
+      }
+    },
+    {
+      "gemeentecode": "0638",
+      "naam": "Zoeterwoude",
+      "naam_officieel": "Zoeterwoude",
+      "slug": "zoeterwoude",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.51383216,
+        "lat": 52.11480172
+      }
+    },
+    {
+      "gemeentecode": "0642",
+      "naam": "Zwijndrecht",
+      "naam_officieel": "Zwijndrecht",
+      "slug": "zwijndrecht",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.6058021,
+        "lat": 51.82184389
+      }
+    },
+    {
+      "gemeentecode": "0654",
+      "naam": "Borsele",
+      "naam_officieel": "Borsele",
+      "slug": "borsele",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV29",
+      "provincie": "Zeeland",
+      "provincie_slug": "zeeland",
+      "centroide": {
+        "lon": 3.82504756,
+        "lat": 51.43204576
+      }
+    },
+    {
+      "gemeentecode": "0664",
+      "naam": "Goes",
+      "naam_officieel": "Goes",
+      "slug": "goes",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV29",
+      "provincie": "Zeeland",
+      "provincie_slug": "zeeland",
+      "centroide": {
+        "lon": 3.84439137,
+        "lat": 51.51710719
+      }
+    },
+    {
+      "gemeentecode": "0668",
+      "naam": "West Maas en Waal",
+      "naam_officieel": "West Maas en Waal",
+      "slug": "west-maas-en-waal",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.49659321,
+        "lat": 51.85162949
+      }
+    },
+    {
+      "gemeentecode": "0677",
+      "naam": "Hulst",
+      "naam_officieel": "Hulst",
+      "slug": "hulst",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV29",
+      "provincie": "Zeeland",
+      "provincie_slug": "zeeland",
+      "centroide": {
+        "lon": 4.06497303,
+        "lat": 51.33324925
+      }
+    },
+    {
+      "gemeentecode": "0678",
+      "naam": "Kapelle",
+      "naam_officieel": "Kapelle",
+      "slug": "kapelle",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV29",
+      "provincie": "Zeeland",
+      "provincie_slug": "zeeland",
+      "centroide": {
+        "lon": 3.97045109,
+        "lat": 51.49498012
+      }
+    },
+    {
+      "gemeentecode": "0687",
+      "naam": "Middelburg",
+      "naam_officieel": "Middelburg",
+      "slug": "middelburg",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV29",
+      "provincie": "Zeeland",
+      "provincie_slug": "zeeland",
+      "centroide": {
+        "lon": 3.65083605,
+        "lat": 51.50315836
+      }
+    },
+    {
+      "gemeentecode": "0703",
+      "naam": "Reimerswaal",
+      "naam_officieel": "Reimerswaal",
+      "slug": "reimerswaal",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV29",
+      "provincie": "Zeeland",
+      "provincie_slug": "zeeland",
+      "centroide": {
+        "lon": 4.12082762,
+        "lat": 51.44147312
+      }
+    },
+    {
+      "gemeentecode": "0715",
+      "naam": "Terneuzen",
+      "naam_officieel": "Terneuzen",
+      "slug": "terneuzen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV29",
+      "provincie": "Zeeland",
+      "provincie_slug": "zeeland",
+      "centroide": {
+        "lon": 3.83623576,
+        "lat": 51.30164475
+      }
+    },
+    {
+      "gemeentecode": "0716",
+      "naam": "Tholen",
+      "naam_officieel": "Tholen",
+      "slug": "tholen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV29",
+      "provincie": "Zeeland",
+      "provincie_slug": "zeeland",
+      "centroide": {
+        "lon": 4.10635358,
+        "lat": 51.57039186
+      }
+    },
+    {
+      "gemeentecode": "0717",
+      "naam": "Veere",
+      "naam_officieel": "Veere",
+      "slug": "veere",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV29",
+      "provincie": "Zeeland",
+      "provincie_slug": "zeeland",
+      "centroide": {
+        "lon": 3.58463765,
+        "lat": 51.56259998
+      }
+    },
+    {
+      "gemeentecode": "0718",
+      "naam": "Vlissingen",
+      "naam_officieel": "Vlissingen",
+      "slug": "vlissingen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV29",
+      "provincie": "Zeeland",
+      "provincie_slug": "zeeland",
+      "centroide": {
+        "lon": 3.4810497,
+        "lat": 51.46533058
+      }
+    },
+    {
+      "gemeentecode": "0736",
+      "naam": "De Ronde Venen",
+      "naam_officieel": "De Ronde Venen",
+      "slug": "de-ronde-venen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 4.91728366,
+        "lat": 52.22633474
+      }
+    },
+    {
+      "gemeentecode": "0737",
+      "naam": "Tytsjerksteradiel",
+      "naam_officieel": "Tytsjerksteradiel",
+      "slug": "tytsjerksteradiel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 5.96271652,
+        "lat": 53.19986427
+      }
+    },
+    {
+      "gemeentecode": "0743",
+      "naam": "Asten",
+      "naam_officieel": "Asten",
+      "slug": "asten",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.7792343,
+        "lat": 51.3864068
+      }
+    },
+    {
+      "gemeentecode": "0744",
+      "naam": "Baarle-Nassau",
+      "naam_officieel": "Baarle-Nassau",
+      "slug": "baarle-nassau",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.89314533,
+        "lat": 51.43901683
+      }
+    },
+    {
+      "gemeentecode": "0748",
+      "naam": "Bergen op Zoom",
+      "naam_officieel": "Bergen op Zoom",
+      "slug": "bergen-op-zoom",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.28830357,
+        "lat": 51.50345837
+      }
+    },
+    {
+      "gemeentecode": "0753",
+      "naam": "Best",
+      "naam_officieel": "Best",
+      "slug": "best",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.39652742,
+        "lat": 51.5141149
+      }
+    },
+    {
+      "gemeentecode": "0755",
+      "naam": "Boekel",
+      "naam_officieel": "Boekel",
+      "slug": "boekel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.69372689,
+        "lat": 51.60667446
+      }
+    },
+    {
+      "gemeentecode": "0757",
+      "naam": "Boxtel",
+      "naam_officieel": "Boxtel",
+      "slug": "boxtel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.32404125,
+        "lat": 51.58115372
+      }
+    },
+    {
+      "gemeentecode": "0758",
+      "naam": "Breda",
+      "naam_officieel": "Breda",
+      "slug": "breda",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.76144146,
+        "lat": 51.5851205
+      }
+    },
+    {
+      "gemeentecode": "0762",
+      "naam": "Deurne",
+      "naam_officieel": "Deurne",
+      "slug": "deurne",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.82697627,
+        "lat": 51.43622051
+      }
+    },
+    {
+      "gemeentecode": "0765",
+      "naam": "Pekela",
+      "naam_officieel": "Pekela",
+      "slug": "pekela",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV20",
+      "provincie": "Groningen",
+      "provincie_slug": "groningen",
+      "centroide": {
+        "lon": 6.9729452,
+        "lat": 53.07058761
+      }
+    },
+    {
+      "gemeentecode": "0766",
+      "naam": "Dongen",
+      "naam_officieel": "Dongen",
+      "slug": "dongen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.95544944,
+        "lat": 51.6358844
+      }
+    },
+    {
+      "gemeentecode": "0770",
+      "naam": "Eersel",
+      "naam_officieel": "Eersel",
+      "slug": "eersel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.31461765,
+        "lat": 51.39649044
+      }
+    },
+    {
+      "gemeentecode": "0772",
+      "naam": "Eindhoven",
+      "naam_officieel": "Eindhoven",
+      "slug": "eindhoven",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.45853529,
+        "lat": 51.45016177
+      }
+    },
+    {
+      "gemeentecode": "0777",
+      "naam": "Etten-Leur",
+      "naam_officieel": "Etten-Leur",
+      "slug": "etten-leur",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.64496614,
+        "lat": 51.57831509
+      }
+    },
+    {
+      "gemeentecode": "0779",
+      "naam": "Geertruidenberg",
+      "naam_officieel": "Geertruidenberg",
+      "slug": "geertruidenberg",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.8815833,
+        "lat": 51.6971436
+      }
+    },
+    {
+      "gemeentecode": "0784",
+      "naam": "Gilze en Rijen",
+      "naam_officieel": "Gilze en Rijen",
+      "slug": "gilze-en-rijen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.91857499,
+        "lat": 51.55958578
+      }
+    },
+    {
+      "gemeentecode": "0785",
+      "naam": "Goirle",
+      "naam_officieel": "Goirle",
+      "slug": "goirle",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.03307,
+        "lat": 51.51227457
+      }
+    },
+    {
+      "gemeentecode": "0794",
+      "naam": "Helmond",
+      "naam_officieel": "Helmond",
+      "slug": "helmond",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.6569698,
+        "lat": 51.47615123
+      }
+    },
+    {
+      "gemeentecode": "0796",
+      "naam": "'s-Hertogenbosch",
+      "naam_officieel": "'s-Hertogenbosch",
+      "slug": "s-hertogenbosch",
+      "slug_afwijkt_reden": "Officiële naam aangehouden; 'Den Bosch' is een alias in de inhoud, niet in het pad, omdat de officiële vorm ook veel gezocht wordt en de slug anders niet herleidbaar is.",
+      "aliassen": [
+        "Den Bosch"
+      ],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.35192613,
+        "lat": 51.71680934
+      }
+    },
+    {
+      "gemeentecode": "0797",
+      "naam": "Heusden",
+      "naam_officieel": "Heusden",
+      "slug": "heusden",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.16019081,
+        "lat": 51.69676199
+      }
+    },
+    {
+      "gemeentecode": "0798",
+      "naam": "Hilvarenbeek",
+      "naam_officieel": "Hilvarenbeek",
+      "slug": "hilvarenbeek",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.14545605,
+        "lat": 51.47952464
+      }
+    },
+    {
+      "gemeentecode": "0809",
+      "naam": "Loon op Zand",
+      "naam_officieel": "Loon op Zand",
+      "slug": "loon-op-zand",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.04754005,
+        "lat": 51.64056952
+      }
+    },
+    {
+      "gemeentecode": "0820",
+      "naam": "Nuenen, Gerwen en Nederwetten",
+      "naam_officieel": "Nuenen, Gerwen en Nederwetten",
+      "slug": "nuenen-gerwen-en-nederwetten",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.54946413,
+        "lat": 51.47860189
+      }
+    },
+    {
+      "gemeentecode": "0823",
+      "naam": "Oirschot",
+      "naam_officieel": "Oirschot",
+      "slug": "oirschot",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.28978042,
+        "lat": 51.49261399
+      }
+    },
+    {
+      "gemeentecode": "0824",
+      "naam": "Oisterwijk",
+      "naam_officieel": "Oisterwijk",
+      "slug": "oisterwijk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.20448126,
+        "lat": 51.56246603
+      }
+    },
+    {
+      "gemeentecode": "0826",
+      "naam": "Oosterhout",
+      "naam_officieel": "Oosterhout",
+      "slug": "oosterhout",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.86406798,
+        "lat": 51.6377738
+      }
+    },
+    {
+      "gemeentecode": "0828",
+      "naam": "Oss",
+      "naam_officieel": "Oss",
+      "slug": "oss",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.5263989,
+        "lat": 51.78157119
+      }
+    },
+    {
+      "gemeentecode": "0840",
+      "naam": "Rucphen",
+      "naam_officieel": "Rucphen",
+      "slug": "rucphen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.55856248,
+        "lat": 51.52267275
+      }
+    },
+    {
+      "gemeentecode": "0845",
+      "naam": "Sint-Michielsgestel",
+      "naam_officieel": "Sint-Michielsgestel",
+      "slug": "sint-michielsgestel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.37812154,
+        "lat": 51.65706848
+      }
+    },
+    {
+      "gemeentecode": "0847",
+      "naam": "Someren",
+      "naam_officieel": "Someren",
+      "slug": "someren",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.69142591,
+        "lat": 51.37872919
+      }
+    },
+    {
+      "gemeentecode": "0848",
+      "naam": "Son en Breugel",
+      "naam_officieel": "Son en Breugel",
+      "slug": "son-en-breugel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.48246519,
+        "lat": 51.51637576
+      }
+    },
+    {
+      "gemeentecode": "0851",
+      "naam": "Steenbergen",
+      "naam_officieel": "Steenbergen",
+      "slug": "steenbergen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.32362694,
+        "lat": 51.59988855
+      }
+    },
+    {
+      "gemeentecode": "0852",
+      "naam": "Waterland",
+      "naam_officieel": "Waterland",
+      "slug": "waterland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 5.06324683,
+        "lat": 52.44896399
+      }
+    },
+    {
+      "gemeentecode": "0855",
+      "naam": "Tilburg",
+      "naam_officieel": "Tilburg",
+      "slug": "tilburg",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.07736986,
+        "lat": 51.58342354
+      }
+    },
+    {
+      "gemeentecode": "0858",
+      "naam": "Valkenswaard",
+      "naam_officieel": "Valkenswaard",
+      "slug": "valkenswaard",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.44922705,
+        "lat": 51.32375174
+      }
+    },
+    {
+      "gemeentecode": "0861",
+      "naam": "Veldhoven",
+      "naam_officieel": "Veldhoven",
+      "slug": "veldhoven",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.38321431,
+        "lat": 51.41185654
+      }
+    },
+    {
+      "gemeentecode": "0865",
+      "naam": "Vught",
+      "naam_officieel": "Vught",
+      "slug": "vught",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.24260833,
+        "lat": 51.65035998
+      }
+    },
+    {
+      "gemeentecode": "0866",
+      "naam": "Waalre",
+      "naam_officieel": "Waalre",
+      "slug": "waalre",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.46487011,
+        "lat": 51.38729181
+      }
+    },
+    {
+      "gemeentecode": "0867",
+      "naam": "Waalwijk",
+      "naam_officieel": "Waalwijk",
+      "slug": "waalwijk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.01182154,
+        "lat": 51.69232009
+      }
+    },
+    {
+      "gemeentecode": "0873",
+      "naam": "Woensdrecht",
+      "naam_officieel": "Woensdrecht",
+      "slug": "woensdrecht",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.34227065,
+        "lat": 51.40828991
+      }
+    },
+    {
+      "gemeentecode": "0879",
+      "naam": "Zundert",
+      "naam_officieel": "Zundert",
+      "slug": "zundert",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.64261844,
+        "lat": 51.47979899
+      }
+    },
+    {
+      "gemeentecode": "0880",
+      "naam": "Wormerland",
+      "naam_officieel": "Wormerland",
+      "slug": "wormerland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.85512991,
+        "lat": 52.5020004
+      }
+    },
+    {
+      "gemeentecode": "0882",
+      "naam": "Landgraaf",
+      "naam_officieel": "Landgraaf",
+      "slug": "landgraaf",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 6.03298576,
+        "lat": 50.90642908
+      }
+    },
+    {
+      "gemeentecode": "0888",
+      "naam": "Beek",
+      "naam_officieel": "Beek",
+      "slug": "beek",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.80913168,
+        "lat": 50.93086355
+      }
+    },
+    {
+      "gemeentecode": "0889",
+      "naam": "Beesel",
+      "naam_officieel": "Beesel",
+      "slug": "beesel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 6.06895713,
+        "lat": 51.26916625
+      }
+    },
+    {
+      "gemeentecode": "0893",
+      "naam": "Bergen (L)",
+      "naam_officieel": "Bergen (L)",
+      "slug": "bergen-l",
+      "slug_afwijkt_reden": "Zie 0373.",
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 6.08938186,
+        "lat": 51.59190802
+      }
+    },
+    {
+      "gemeentecode": "0899",
+      "naam": "Brunssum",
+      "naam_officieel": "Brunssum",
+      "slug": "brunssum",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.97800086,
+        "lat": 50.94294215
+      }
+    },
+    {
+      "gemeentecode": "0907",
+      "naam": "Gennep",
+      "naam_officieel": "Gennep",
+      "slug": "gennep",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.98710598,
+        "lat": 51.69927475
+      }
+    },
+    {
+      "gemeentecode": "0917",
+      "naam": "Heerlen",
+      "naam_officieel": "Heerlen",
+      "slug": "heerlen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.96943384,
+        "lat": 50.89332342
+      }
+    },
+    {
+      "gemeentecode": "0928",
+      "naam": "Kerkrade",
+      "naam_officieel": "Kerkrade",
+      "slug": "kerkrade",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 6.05097354,
+        "lat": 50.87182571
+      }
+    },
+    {
+      "gemeentecode": "0935",
+      "naam": "Maastricht",
+      "naam_officieel": "Maastricht",
+      "slug": "maastricht",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.6995303,
+        "lat": 50.85296715
+      }
+    },
+    {
+      "gemeentecode": "0938",
+      "naam": "Meerssen",
+      "naam_officieel": "Meerssen",
+      "slug": "meerssen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.75632227,
+        "lat": 50.90131431
+      }
+    },
+    {
+      "gemeentecode": "0944",
+      "naam": "Mook en Middelaar",
+      "naam_officieel": "Mook en Middelaar",
+      "slug": "mook-en-middelaar",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.89966499,
+        "lat": 51.74736551
+      }
+    },
+    {
+      "gemeentecode": "0946",
+      "naam": "Nederweert",
+      "naam_officieel": "Nederweert",
+      "slug": "nederweert",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.7733212,
+        "lat": 51.29435762
+      }
+    },
+    {
+      "gemeentecode": "0957",
+      "naam": "Roermond",
+      "naam_officieel": "Roermond",
+      "slug": "roermond",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 6.01147665,
+        "lat": 51.20119012
+      }
+    },
+    {
+      "gemeentecode": "0965",
+      "naam": "Simpelveld",
+      "naam_officieel": "Simpelveld",
+      "slug": "simpelveld",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.98664482,
+        "lat": 50.82880409
+      }
+    },
+    {
+      "gemeentecode": "0971",
+      "naam": "Stein",
+      "naam_officieel": "Stein",
+      "slug": "stein",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.76366653,
+        "lat": 50.9689919
+      }
+    },
+    {
+      "gemeentecode": "0981",
+      "naam": "Vaals",
+      "naam_officieel": "Vaals",
+      "slug": "vaals",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.97584744,
+        "lat": 50.77433492
+      }
+    },
+    {
+      "gemeentecode": "0983",
+      "naam": "Venlo",
+      "naam_officieel": "Venlo",
+      "slug": "venlo",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 6.15911182,
+        "lat": 51.39095482
+      }
+    },
+    {
+      "gemeentecode": "0984",
+      "naam": "Venray",
+      "naam_officieel": "Venray",
+      "slug": "venray",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.96288433,
+        "lat": 51.51536765
+      }
+    },
+    {
+      "gemeentecode": "0986",
+      "naam": "Voerendaal",
+      "naam_officieel": "Voerendaal",
+      "slug": "voerendaal",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.9164942,
+        "lat": 50.86936538
+      }
+    },
+    {
+      "gemeentecode": "0988",
+      "naam": "Weert",
+      "naam_officieel": "Weert",
+      "slug": "weert",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.69169608,
+        "lat": 51.23360506
+      }
+    },
+    {
+      "gemeentecode": "0994",
+      "naam": "Valkenburg aan de Geul",
+      "naam_officieel": "Valkenburg aan de Geul",
+      "slug": "valkenburg-aan-de-geul",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.82387069,
+        "lat": 50.86071063
+      }
+    },
+    {
+      "gemeentecode": "0995",
+      "naam": "Lelystad",
+      "naam_officieel": "Lelystad",
+      "slug": "lelystad",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV24",
+      "provincie": "Flevoland",
+      "provincie_slug": "flevoland",
+      "centroide": {
+        "lon": 5.37476449,
+        "lat": 52.54272549
+      }
+    },
+    {
+      "gemeentecode": "1507",
+      "naam": "Horst aan de Maas",
+      "naam_officieel": "Horst aan de Maas",
+      "slug": "horst-aan-de-maas",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 6.04163949,
+        "lat": 51.4448658
+      }
+    },
+    {
+      "gemeentecode": "1509",
+      "naam": "Oude IJsselstreek",
+      "naam_officieel": "Oude IJsselstreek",
+      "slug": "oude-ijsselstreek",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.40949596,
+        "lat": 51.90782484
+      }
+    },
+    {
+      "gemeentecode": "1525",
+      "naam": "Teylingen",
+      "naam_officieel": "Teylingen",
+      "slug": "teylingen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.5119006,
+        "lat": 52.21399746
+      }
+    },
+    {
+      "gemeentecode": "1581",
+      "naam": "Utrechtse Heuvelrug",
+      "naam_officieel": "Utrechtse Heuvelrug",
+      "slug": "utrechtse-heuvelrug",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.38832134,
+        "lat": 52.03471452
+      }
+    },
+    {
+      "gemeentecode": "1586",
+      "naam": "Oost Gelre",
+      "naam_officieel": "Oost Gelre",
+      "slug": "oost-gelre",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.57573452,
+        "lat": 52.00983656
+      }
+    },
+    {
+      "gemeentecode": "1598",
+      "naam": "Koggenland",
+      "naam_officieel": "Koggenland",
+      "slug": "koggenland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.94882942,
+        "lat": 52.64445487
+      }
+    },
+    {
+      "gemeentecode": "1621",
+      "naam": "Lansingerland",
+      "naam_officieel": "Lansingerland",
+      "slug": "lansingerland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.50610722,
+        "lat": 52.00400827
+      }
+    },
+    {
+      "gemeentecode": "1640",
+      "naam": "Leudal",
+      "naam_officieel": "Leudal",
+      "slug": "leudal",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.88481708,
+        "lat": 51.23944287
+      }
+    },
+    {
+      "gemeentecode": "1641",
+      "naam": "Maasgouw",
+      "naam_officieel": "Maasgouw",
+      "slug": "maasgouw",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.88238537,
+        "lat": 51.16157134
+      }
+    },
+    {
+      "gemeentecode": "1652",
+      "naam": "Gemert-Bakel",
+      "naam_officieel": "Gemert-Bakel",
+      "slug": "gemert-bakel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.75429063,
+        "lat": 51.5407484
+      }
+    },
+    {
+      "gemeentecode": "1655",
+      "naam": "Halderberge",
+      "naam_officieel": "Halderberge",
+      "slug": "halderberge",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.5231143,
+        "lat": 51.59054023
+      }
+    },
+    {
+      "gemeentecode": "1658",
+      "naam": "Heeze-Leende",
+      "naam_officieel": "Heeze-Leende",
+      "slug": "heeze-leende",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.56723844,
+        "lat": 51.36086348
+      }
+    },
+    {
+      "gemeentecode": "1659",
+      "naam": "Laarbeek",
+      "naam_officieel": "Laarbeek",
+      "slug": "laarbeek",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.61177235,
+        "lat": 51.53092236
+      }
+    },
+    {
+      "gemeentecode": "1667",
+      "naam": "Reusel-De Mierden",
+      "naam_officieel": "Reusel-De Mierden",
+      "slug": "reusel-de-mierden",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.14775308,
+        "lat": 51.37825533
+      }
+    },
+    {
+      "gemeentecode": "1669",
+      "naam": "Roerdalen",
+      "naam_officieel": "Roerdalen",
+      "slug": "roerdalen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 6.04109003,
+        "lat": 51.14569774
+      }
+    },
+    {
+      "gemeentecode": "1674",
+      "naam": "Roosendaal",
+      "naam_officieel": "Roosendaal",
+      "slug": "roosendaal",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.42451062,
+        "lat": 51.51319146
+      }
+    },
+    {
+      "gemeentecode": "1676",
+      "naam": "Schouwen-Duiveland",
+      "naam_officieel": "Schouwen-Duiveland",
+      "slug": "schouwen-duiveland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV29",
+      "provincie": "Zeeland",
+      "provincie_slug": "zeeland",
+      "centroide": {
+        "lon": 3.88283783,
+        "lat": 51.68217471
+      }
+    },
+    {
+      "gemeentecode": "1680",
+      "naam": "Aa en Hunze",
+      "naam_officieel": "Aa en Hunze",
+      "slug": "aa-en-hunze",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV22",
+      "provincie": "Drenthe",
+      "provincie_slug": "drenthe",
+      "centroide": {
+        "lon": 6.72726218,
+        "lat": 52.99299743
+      }
+    },
+    {
+      "gemeentecode": "1681",
+      "naam": "Borger-Odoorn",
+      "naam_officieel": "Borger-Odoorn",
+      "slug": "borger-odoorn",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV22",
+      "provincie": "Drenthe",
+      "provincie_slug": "drenthe",
+      "centroide": {
+        "lon": 6.87198236,
+        "lat": 52.90588184
+      }
+    },
+    {
+      "gemeentecode": "1690",
+      "naam": "De Wolden",
+      "naam_officieel": "De Wolden",
+      "slug": "de-wolden",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV22",
+      "provincie": "Drenthe",
+      "provincie_slug": "drenthe",
+      "centroide": {
+        "lon": 6.37349554,
+        "lat": 52.70166684
+      }
+    },
+    {
+      "gemeentecode": "1695",
+      "naam": "Noord-Beveland",
+      "naam_officieel": "Noord-Beveland",
+      "slug": "noord-beveland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV29",
+      "provincie": "Zeeland",
+      "provincie_slug": "zeeland",
+      "centroide": {
+        "lon": 3.79644089,
+        "lat": 51.57324444
+      }
+    },
+    {
+      "gemeentecode": "1696",
+      "naam": "Wijdemeren",
+      "naam_officieel": "Wijdemeren",
+      "slug": "wijdemeren",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 5.08484039,
+        "lat": 52.22617925
+      }
+    },
+    {
+      "gemeentecode": "1699",
+      "naam": "Noordenveld",
+      "naam_officieel": "Noordenveld",
+      "slug": "noordenveld",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV22",
+      "provincie": "Drenthe",
+      "provincie_slug": "drenthe",
+      "centroide": {
+        "lon": 6.44030741,
+        "lat": 53.09562481
+      }
+    },
+    {
+      "gemeentecode": "1700",
+      "naam": "Twenterand",
+      "naam_officieel": "Twenterand",
+      "slug": "twenterand",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.59808108,
+        "lat": 52.44788923
+      }
+    },
+    {
+      "gemeentecode": "1701",
+      "naam": "Westerveld",
+      "naam_officieel": "Westerveld",
+      "slug": "westerveld",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV22",
+      "provincie": "Drenthe",
+      "provincie_slug": "drenthe",
+      "centroide": {
+        "lon": 6.29552663,
+        "lat": 52.83819246
+      }
+    },
+    {
+      "gemeentecode": "1705",
+      "naam": "Lingewaard",
+      "naam_officieel": "Lingewaard",
+      "slug": "lingewaard",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.94222835,
+        "lat": 51.90153125
+      }
+    },
+    {
+      "gemeentecode": "1706",
+      "naam": "Cranendonck",
+      "naam_officieel": "Cranendonck",
+      "slug": "cranendonck",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.59617882,
+        "lat": 51.28627898
+      }
+    },
+    {
+      "gemeentecode": "1708",
+      "naam": "Steenwijkerland",
+      "naam_officieel": "Steenwijkerland",
+      "slug": "steenwijkerland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.02999074,
+        "lat": 52.75554514
+      }
+    },
+    {
+      "gemeentecode": "1709",
+      "naam": "Moerdijk",
+      "naam_officieel": "Moerdijk",
+      "slug": "moerdijk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.53547659,
+        "lat": 51.66257589
+      }
+    },
+    {
+      "gemeentecode": "1711",
+      "naam": "Echt-Susteren",
+      "naam_officieel": "Echt-Susteren",
+      "slug": "echt-susteren",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.90820095,
+        "lat": 51.08504222
+      }
+    },
+    {
+      "gemeentecode": "1714",
+      "naam": "Sluis",
+      "naam_officieel": "Sluis",
+      "slug": "sluis",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV29",
+      "provincie": "Zeeland",
+      "provincie_slug": "zeeland",
+      "centroide": {
+        "lon": 3.52310338,
+        "lat": 51.33341393
+      }
+    },
+    {
+      "gemeentecode": "1719",
+      "naam": "Drimmelen",
+      "naam_officieel": "Drimmelen",
+      "slug": "drimmelen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.75875212,
+        "lat": 51.70014961
+      }
+    },
+    {
+      "gemeentecode": "1721",
+      "naam": "Bernheze",
+      "naam_officieel": "Bernheze",
+      "slug": "bernheze",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.52066946,
+        "lat": 51.68468756
+      }
+    },
+    {
+      "gemeentecode": "1723",
+      "naam": "Alphen-Chaam",
+      "naam_officieel": "Alphen-Chaam",
+      "slug": "alphen-chaam",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.88736051,
+        "lat": 51.50138141
+      }
+    },
+    {
+      "gemeentecode": "1724",
+      "naam": "Bergeijk",
+      "naam_officieel": "Bergeijk",
+      "slug": "bergeijk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.34000155,
+        "lat": 51.31014121
+      }
+    },
+    {
+      "gemeentecode": "1728",
+      "naam": "Bladel",
+      "naam_officieel": "Bladel",
+      "slug": "bladel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.23873501,
+        "lat": 51.3722883
+      }
+    },
+    {
+      "gemeentecode": "1729",
+      "naam": "Gulpen-Wittem",
+      "naam_officieel": "Gulpen-Wittem",
+      "slug": "gulpen-wittem",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.90014363,
+        "lat": 50.8023435
+      }
+    },
+    {
+      "gemeentecode": "1730",
+      "naam": "Tynaarlo",
+      "naam_officieel": "Tynaarlo",
+      "slug": "tynaarlo",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV22",
+      "provincie": "Drenthe",
+      "provincie_slug": "drenthe",
+      "centroide": {
+        "lon": 6.60437143,
+        "lat": 53.09710817
+      }
+    },
+    {
+      "gemeentecode": "1731",
+      "naam": "Midden-Drenthe",
+      "naam_officieel": "Midden-Drenthe",
+      "slug": "midden-drenthe",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV22",
+      "provincie": "Drenthe",
+      "provincie_slug": "drenthe",
+      "centroide": {
+        "lon": 6.54275983,
+        "lat": 52.86735934
+      }
+    },
+    {
+      "gemeentecode": "1734",
+      "naam": "Overbetuwe",
+      "naam_officieel": "Overbetuwe",
+      "slug": "overbetuwe",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.77833014,
+        "lat": 51.92430329
+      }
+    },
+    {
+      "gemeentecode": "1735",
+      "naam": "Hof van Twente",
+      "naam_officieel": "Hof van Twente",
+      "slug": "hof-van-twente",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.58995897,
+        "lat": 52.2364413
+      }
+    },
+    {
+      "gemeentecode": "1740",
+      "naam": "Neder-Betuwe",
+      "naam_officieel": "Neder-Betuwe",
+      "slug": "neder-betuwe",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.58686712,
+        "lat": 51.91588378
+      }
+    },
+    {
+      "gemeentecode": "1742",
+      "naam": "Rijssen-Holten",
+      "naam_officieel": "Rijssen-Holten",
+      "slug": "rijssen-holten",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.43396864,
+        "lat": 52.29142979
+      }
+    },
+    {
+      "gemeentecode": "1771",
+      "naam": "Geldrop-Mierlo",
+      "naam_officieel": "Geldrop-Mierlo",
+      "slug": "geldrop-mierlo",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.58756033,
+        "lat": 51.43127471
+      }
+    },
+    {
+      "gemeentecode": "1773",
+      "naam": "Olst-Wijhe",
+      "naam_officieel": "Olst-Wijhe",
+      "slug": "olst-wijhe",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.15334559,
+        "lat": 52.36678235
+      }
+    },
+    {
+      "gemeentecode": "1774",
+      "naam": "Dinkelland",
+      "naam_officieel": "Dinkelland",
+      "slug": "dinkelland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.914139,
+        "lat": 52.3730105
+      }
+    },
+    {
+      "gemeentecode": "1783",
+      "naam": "Westland",
+      "naam_officieel": "Westland",
+      "slug": "westland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.21106411,
+        "lat": 52.00069805
+      }
+    },
+    {
+      "gemeentecode": "1842",
+      "naam": "Midden-Delfland",
+      "naam_officieel": "Midden-Delfland",
+      "slug": "midden-delfland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.30614282,
+        "lat": 51.96475322
+      }
+    },
+    {
+      "gemeentecode": "1859",
+      "naam": "Berkelland",
+      "naam_officieel": "Berkelland",
+      "slug": "berkelland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.57072545,
+        "lat": 52.10092416
+      }
+    },
+    {
+      "gemeentecode": "1876",
+      "naam": "Bronckhorst",
+      "naam_officieel": "Bronckhorst",
+      "slug": "bronckhorst",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.30295508,
+        "lat": 52.04523166
+      }
+    },
+    {
+      "gemeentecode": "1883",
+      "naam": "Sittard-Geleen",
+      "naam_officieel": "Sittard-Geleen",
+      "slug": "sittard-geleen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.82820441,
+        "lat": 51.00485878
+      }
+    },
+    {
+      "gemeentecode": "1884",
+      "naam": "Kaag en Braassem",
+      "naam_officieel": "Kaag en Braassem",
+      "slug": "kaag-en-braassem",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.629194,
+        "lat": 52.19258136
+      }
+    },
+    {
+      "gemeentecode": "1891",
+      "naam": "Dantumadiel",
+      "naam_officieel": "Dantumadiel",
+      "slug": "dantumadiel",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 5.98452117,
+        "lat": 53.28004562
+      }
+    },
+    {
+      "gemeentecode": "1892",
+      "naam": "Zuidplas",
+      "naam_officieel": "Zuidplas",
+      "slug": "zuidplas",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.60707151,
+        "lat": 51.99887742
+      }
+    },
+    {
+      "gemeentecode": "1894",
+      "naam": "Peel en Maas",
+      "naam_officieel": "Peel en Maas",
+      "slug": "peel-en-maas",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.99484977,
+        "lat": 51.33630217
+      }
+    },
+    {
+      "gemeentecode": "1895",
+      "naam": "Oldambt",
+      "naam_officieel": "Oldambt",
+      "slug": "oldambt",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV20",
+      "provincie": "Groningen",
+      "provincie_slug": "groningen",
+      "centroide": {
+        "lon": 7.07466754,
+        "lat": 53.212347
+      }
+    },
+    {
+      "gemeentecode": "1896",
+      "naam": "Zwartewaterland",
+      "naam_officieel": "Zwartewaterland",
+      "slug": "zwartewaterland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV23",
+      "provincie": "Overijssel",
+      "provincie_slug": "overijssel",
+      "centroide": {
+        "lon": 6.06371396,
+        "lat": 52.60275257
+      }
+    },
+    {
+      "gemeentecode": "1900",
+      "naam": "Súdwest-Fryslân",
+      "naam_officieel": "Súdwest-Fryslân",
+      "slug": "sudwest-fryslan",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 5.46127185,
+        "lat": 52.9978609
+      }
+    },
+    {
+      "gemeentecode": "1901",
+      "naam": "Bodegraven-Reeuwijk",
+      "naam_officieel": "Bodegraven-Reeuwijk",
+      "slug": "bodegraven-reeuwijk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.76609101,
+        "lat": 52.06541281
+      }
+    },
+    {
+      "gemeentecode": "1903",
+      "naam": "Eijsden-Margraten",
+      "naam_officieel": "Eijsden-Margraten",
+      "slug": "eijsden-margraten",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.77368729,
+        "lat": 50.80106242
+      }
+    },
+    {
+      "gemeentecode": "1904",
+      "naam": "Stichtse Vecht",
+      "naam_officieel": "Stichtse Vecht",
+      "slug": "stichtse-vecht",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.01258714,
+        "lat": 52.17694825
+      }
+    },
+    {
+      "gemeentecode": "1911",
+      "naam": "Hollands Kroon",
+      "naam_officieel": "Hollands Kroon",
+      "slug": "hollands-kroon",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.99274391,
+        "lat": 52.88571599
+      }
+    },
+    {
+      "gemeentecode": "1916",
+      "naam": "Leidschendam-Voorburg",
+      "naam_officieel": "Leidschendam-Voorburg",
+      "slug": "leidschendam-voorburg",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.42229318,
+        "lat": 52.09032988
+      }
+    },
+    {
+      "gemeentecode": "1924",
+      "naam": "Goeree-Overflakkee",
+      "naam_officieel": "Goeree-Overflakkee",
+      "slug": "goeree-overflakkee",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.09998865,
+        "lat": 51.75226813
+      }
+    },
+    {
+      "gemeentecode": "1926",
+      "naam": "Pijnacker-Nootdorp",
+      "naam_officieel": "Pijnacker-Nootdorp",
+      "slug": "pijnacker-nootdorp",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.4219536,
+        "lat": 52.01752998
+      }
+    },
+    {
+      "gemeentecode": "1930",
+      "naam": "Nissewaard",
+      "naam_officieel": "Nissewaard",
+      "slug": "nissewaard",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.28205443,
+        "lat": 51.83171434
+      }
+    },
+    {
+      "gemeentecode": "1931",
+      "naam": "Krimpenerwaard",
+      "naam_officieel": "Krimpenerwaard",
+      "slug": "krimpenerwaard",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.73718196,
+        "lat": 51.95238959
+      }
+    },
+    {
+      "gemeentecode": "1940",
+      "naam": "De Fryske Marren",
+      "naam_officieel": "De Fryske Marren",
+      "slug": "de-fryske-marren",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 5.67065467,
+        "lat": 52.89202769
+      }
+    },
+    {
+      "gemeentecode": "1942",
+      "naam": "Gooise Meren",
+      "naam_officieel": "Gooise Meren",
+      "slug": "gooise-meren",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 5.12326429,
+        "lat": 52.31805224
+      }
+    },
+    {
+      "gemeentecode": "1945",
+      "naam": "Berg en Dal",
+      "naam_officieel": "Berg en Dal",
+      "slug": "berg-en-dal",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.94981026,
+        "lat": 51.81994929
+      }
+    },
+    {
+      "gemeentecode": "1948",
+      "naam": "Meierijstad",
+      "naam_officieel": "Meierijstad",
+      "slug": "meierijstad",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.50639749,
+        "lat": 51.59223673
+      }
+    },
+    {
+      "gemeentecode": "1949",
+      "naam": "Waadhoeke",
+      "naam_officieel": "Waadhoeke",
+      "slug": "waadhoeke",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 5.61310845,
+        "lat": 53.23138389
+      }
+    },
+    {
+      "gemeentecode": "1950",
+      "naam": "Westerwolde",
+      "naam_officieel": "Westerwolde",
+      "slug": "westerwolde",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV20",
+      "provincie": "Groningen",
+      "provincie_slug": "groningen",
+      "centroide": {
+        "lon": 7.12018572,
+        "lat": 53.01400111
+      }
+    },
+    {
+      "gemeentecode": "1952",
+      "naam": "Midden-Groningen",
+      "naam_officieel": "Midden-Groningen",
+      "slug": "midden-groningen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV20",
+      "provincie": "Groningen",
+      "provincie_slug": "groningen",
+      "centroide": {
+        "lon": 6.80744467,
+        "lat": 53.19533337
+      }
+    },
+    {
+      "gemeentecode": "1954",
+      "naam": "Beekdaelen",
+      "naam_officieel": "Beekdaelen",
+      "slug": "beekdaelen",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV31",
+      "provincie": "Limburg",
+      "provincie_slug": "limburg",
+      "centroide": {
+        "lon": 5.89712107,
+        "lat": 50.93672588
+      }
+    },
+    {
+      "gemeentecode": "1955",
+      "naam": "Montferland",
+      "naam_officieel": "Montferland",
+      "slug": "montferland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 6.21377868,
+        "lat": 51.91689332
+      }
+    },
+    {
+      "gemeentecode": "1959",
+      "naam": "Altena",
+      "naam_officieel": "Altena",
+      "slug": "altena",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 4.94593141,
+        "lat": 51.76566264
+      }
+    },
+    {
+      "gemeentecode": "1960",
+      "naam": "West Betuwe",
+      "naam_officieel": "West Betuwe",
+      "slug": "west-betuwe",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV25",
+      "provincie": "Gelderland",
+      "provincie_slug": "gelderland",
+      "centroide": {
+        "lon": 5.20935055,
+        "lat": 51.86160154
+      }
+    },
+    {
+      "gemeentecode": "1961",
+      "naam": "Vijfheerenlanden",
+      "naam_officieel": "Vijfheerenlanden",
+      "slug": "vijfheerenlanden",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV26",
+      "provincie": "Utrecht",
+      "provincie_slug": "utrecht",
+      "centroide": {
+        "lon": 5.05675527,
+        "lat": 51.93598384
+      }
+    },
+    {
+      "gemeentecode": "1963",
+      "naam": "Hoeksche Waard",
+      "naam_officieel": "Hoeksche Waard",
+      "slug": "hoeksche-waard",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.44870502,
+        "lat": 51.76456719
+      }
+    },
+    {
+      "gemeentecode": "1966",
+      "naam": "Het Hogeland",
+      "naam_officieel": "Het Hogeland",
+      "slug": "het-hogeland",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV20",
+      "provincie": "Groningen",
+      "provincie_slug": "groningen",
+      "centroide": {
+        "lon": 6.53801174,
+        "lat": 53.42818599
+      }
+    },
+    {
+      "gemeentecode": "1969",
+      "naam": "Westerkwartier",
+      "naam_officieel": "Westerkwartier",
+      "slug": "westerkwartier",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV20",
+      "provincie": "Groningen",
+      "provincie_slug": "groningen",
+      "centroide": {
+        "lon": 6.33802917,
+        "lat": 53.21850623
+      }
+    },
+    {
+      "gemeentecode": "1970",
+      "naam": "Noardeast-Fryslân",
+      "naam_officieel": "Noardeast-Fryslân",
+      "slug": "noardeast-fryslan",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV21",
+      "provincie": "Fryslân",
+      "provincie_slug": "fryslan",
+      "centroide": {
+        "lon": 6.00414185,
+        "lat": 53.35193015
+      }
+    },
+    {
+      "gemeentecode": "1978",
+      "naam": "Molenlanden",
+      "naam_officieel": "Molenlanden",
+      "slug": "molenlanden",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.8451901,
+        "lat": 51.88467125
+      }
+    },
+    {
+      "gemeentecode": "1979",
+      "naam": "Eemsdelta",
+      "naam_officieel": "Eemsdelta",
+      "slug": "eemsdelta",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV20",
+      "provincie": "Groningen",
+      "provincie_slug": "groningen",
+      "centroide": {
+        "lon": 6.87576115,
+        "lat": 53.33383985
+      }
+    },
+    {
+      "gemeentecode": "1980",
+      "naam": "Dijk en Waard",
+      "naam_officieel": "Dijk en Waard",
+      "slug": "dijk-en-waard",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV27",
+      "provincie": "Noord-Holland",
+      "provincie_slug": "noord-holland",
+      "centroide": {
+        "lon": 4.82234626,
+        "lat": 52.68215105
+      }
+    },
+    {
+      "gemeentecode": "1982",
+      "naam": "Land van Cuijk",
+      "naam_officieel": "Land van Cuijk",
+      "slug": "land-van-cuijk",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.85913205,
+        "lat": 51.65548544
+      }
+    },
+    {
+      "gemeentecode": "1991",
+      "naam": "Maashorst",
+      "naam_officieel": "Maashorst",
+      "slug": "maashorst",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV30",
+      "provincie": "Noord-Brabant",
+      "provincie_slug": "noord-brabant",
+      "centroide": {
+        "lon": 5.65548228,
+        "lat": 51.68677198
+      }
+    },
+    {
+      "gemeentecode": "1992",
+      "naam": "Voorne aan Zee",
+      "naam_officieel": "Voorne aan Zee",
+      "slug": "voorne-aan-zee",
+      "slug_afwijkt_reden": null,
+      "aliassen": [],
+      "provinciecode": "PV28",
+      "provincie": "Zuid-Holland",
+      "provincie_slug": "zuid-holland",
+      "centroide": {
+        "lon": 4.10548031,
+        "lat": 51.87201337
+      }
+    }
+  ]
+}

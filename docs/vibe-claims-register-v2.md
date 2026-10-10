@@ -104,3 +104,27 @@ telefonisch bereikbaar op werkdagen 08:30–17:30, exploitatie mogelijk zonder e
 - **Geen bedrijfsbrede totalen** (aantal projecten, MWp, uptime, CO₂, aantal klanten).
   `over-ons.html` legde die regel zelf al vast: *"Cijfers worden niet ingevuld zolang ze niet
   kloppen."* Die sectie blijft leeg tot de meting er is.
+
+---
+
+## 7. Naschrift 10 oktober 2026 — wat sinds v2 is veranderd
+
+Vastgesteld tijdens de SEO/GEO-release, door de projectdata opnieuw te meten.
+
+**De 645 kWh-tegenspraak bestaat niet meer.** Rubriek 1 schrapte dit getal omdat dezelfde
+energiecapaciteit aan twee projecten werd toegekend. Gemeten in `scripts/projecten.json` op
+10 oktober 2026: `645` komt nog op precies één project voor (`project-hedin-alkmaar`, met
+300 kW) en `157` op precies één ander (`project-ratio-16`). De dubbeltoekenning is hersteld in
+commit `e2faa3b` ("corrigeer de bestaande cases"). Het getal staat dus niet langer met zichzelf
+in strijd.
+
+De redactionele keuze om op overzichts- en oplossingspagina's **alleen vermogens** te tillen
+blijft staan; die was niet alleen op het conflict gebaseerd. Nieuw gegenereerde pagina's nemen
+daarom géén projectcijfers over: ze noemen het project met naam, plaats, sector en jaar en
+linken door naar de projectpagina, waar het getal bij zijn bron staat.
+
+**De poort kent dit register.** `scripts/seo/audit.mjs`, poort 10, zoekt letterlijk naar de
+getallen uit rubriek 1 en naar bedrijfsbrede totalen, certificeringen, normnummers en
+keurmerken. Een nieuwe pagina die er een bevat, blokkeert de release; een bestaande pagina die
+hem al droeg wordt gemeld met de aantekening dat hij er al stond. Op 10 oktober 2026 was dat
+laatste één bevinding: de 645 kWh op `project-hedin-alkmaar.html`.

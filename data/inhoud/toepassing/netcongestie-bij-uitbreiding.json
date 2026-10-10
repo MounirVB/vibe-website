@@ -1,0 +1,211 @@
+{
+  "route": "toepassingen/netcongestie-bij-uitbreiding",
+  "type": "toepassing",
+  "titel": "Netcongestie bij bedrijfsuitbreiding | Vibe Energy",
+  "beschrijving": "De netbeheerder levert geen extra transportvermogen voor uw uitbreiding. Zo brengt u de nieuwe en de bestaande piek samen onder de grens die er al ligt.",
+  "og_titel": "Uitbreiden terwijl het net geen ruimte geeft",
+  "h1": "De uitbreiding is getekend. Het net geeft geen extra vermogen.",
+  "lead": "Een extra hal, een tweede productielijn, een koelcel of een laadplein voor de bedrijfswagens: het plan staat vast, maar de netbeheerder kan het transportvermogen niet toezeggen. Dan verschuift de vraag. Niet hoeveel vermogen u erbij krijgt, maar of de nieuwe belasting past onder de grens die er al ligt.",
+  "data_pagina": "toepassingen",
+  "kruimels": [{ "naam": "Toepassingen", "route": "toepassingen" }],
+  "kruimel_label": "Netcongestie bij uitbreiding",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Uitbreiden binnen de bestaande netaansluiting",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Laat de uitbreiding doorrekenen" },
+    { "soort": "ghost", "anker": "#route", "label": "Hoe de gezamenlijke piek wordt bepaald" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Wat kunt u doen als de netbeheerder geen extra transportvermogen levert voor een uitbreiding?",
+    "antwoord": "Als een netbeheerder geen extra transportvermogen kan toezeggen, is de uitbreiding daarmee niet onmogelijk. De vraag verschuift van hoeveel vermogen er bij komt naar of de nieuwe belasting past binnen de grens die er al ligt. Dat blijkt uit het kwartiersprofiel van de bestaande aansluiting naast de specificatie van de nieuwe belasting: hoe hoog de gezamenlijke piek wordt, op welke momenten die valt en hoe lang hij duurt. Blijft er over het etmaal een dal over waarin de aansluiting ruimte heeft, dan kan sturing de nieuwe belasting begrenzen en kan batterijopslag het verschil leveren op de momenten dat beide belastingen samen boven de grens uitkomen.",
+    "voorbehoud": "Dit zegt niets over de aansluitwaarde of het gecontracteerd transportvermogen: die blijven ongewijzigd tot u ze zelf wijzigt. Het zegt ook niets over de doorlooptijd van netverzwaring in uw voedingsgebied of over de investering; die volgen uit de opgave van uw netbeheerder en uit de meting op uw eigen aansluiting."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "wat-u-merkt",
+      "kop": "Wat u merkt: de aanvraag gaat niet door",
+      "lead": "De afwijzing komt in drie vormen, en ze vragen niet allemaal hetzelfde van u.",
+      "alineas": [
+        "U vraagt bij de netbeheerder meer transportvermogen aan voor de uitbreiding en krijgt een van drie antwoorden. Het verzoek wordt afgewezen omdat er in uw gebied geen transportcapaciteit vrij is. Het verzoek wordt in een wachtrij gezet, zonder datum. Of er komt een toezegging met een jaartal dat niet bij uw bouwplanning past. In alle drie de gevallen staat de uitbreiding stil zolang u op het net wacht.",
+        "Vraag dan schriftelijk door, want de vervolgvraag verschilt per antwoord. Welke grens is bereikt: die van uw eigen aansluiting en kabel, of die van het net erboven? Staat u in een wachtrij, en is uw plaats daarin vastgelegd? Loopt er een congestieonderzoek voor uw voedingsgebied? En is de genoemde datum een planning of een toezegging? Dat onderscheid bepaalt of wachten u iets oplevert.",
+        "Eén vraag beantwoordt de netbeheerder niet voor u: hoeveel ruimte zit er nog in de aansluiting die u al heeft. Een aansluiting wordt gedimensioneerd op de piek en niet op het gemiddelde. Buiten de piekmomenten blijft er dus ruimte onbenut. Hoeveel dat is en op welke uren, staat in het kwartiersprofiel van uw eigen meter. Of het genoeg is voor wat u erbij zet, is geen juridische vraag maar een meetvraag."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "De oorzaak zit niet in uw pand",
+      "lead": "Een afwijzing voelt als een eigenschap van uw gebouw. Transportcapaciteit is dat niet.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "Transportcapaciteit is een eigenschap van het voedingsgebied: de kabels, de middenspanningsring en het onderstation waarop uw aansluiting hangt, samen met alle andere afnemers daarachter. Vragen die afnemers op hetzelfde moment meer vermogen dan die keten kan vervoeren, dan is er geen transportcapaciteit vrij om te verdelen. Ook niet als uw eigen kabel en uw eigen hoofdverdeler nog ruimte hebben.",
+        "Dat heeft twee gevolgen. Het eerste: de beperking geldt voor een verzameling postcodes rond één onderstation, niet voor uw plaats en niet voor uw gemeente. Voedingsgebieden lopen dwars door gemeentegrenzen heen, en één bedrijventerrein kan over twee gebieden verdeeld zijn. Een pand een paar straten verderop kan dus wel ruimte krijgen, en een congestiestatus voor een hele gemeente bestaat niet.",
+        "Het tweede: er is geen tekort aan energie. Er is een tekort aan vervoer op het moment dat iedereen tegelijk vraagt. Precies dat moment is het enige waar u zelf aan kunt draaien, en het is ook het enige dat u hoeft te verplaatsen.",
+        "Of er in uw gebied ruimte is voor afname, voor invoeding, of voor geen van beide, staat per postcode op de Capaciteitskaart van Netbeheer Nederland. Daar ziet u ook of er een wachtrij is en welke netuitbreidingen gepland staan. Lees die jaartallen als planning, niet als toezegging; de kaart zegt dat zelf ook.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op de postcode van uw locatie</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "route",
+      "kop": "De route: één gezamenlijke piek in plaats van twee losse",
+      "lead": "De nieuwe en de bestaande belasting worden samen beoordeeld, en hun pieken tellen alleen op waar ze samenvallen.",
+      "alineas": [
+        "Uw bestaande belasting heeft een profiel: kwartierwaarden over het hele jaar, met een beperkt aantal momenten waarop het hoog zit en veel uren waarop het laag zit. De nieuwe belasting heeft dat profiel nog niet, want hij staat er nog niet. Die moet u opbouwen uit de specificaties: het opgenomen vermogen per machine, lader of compressor, de bedrijfstijd per dag, het aantal keren aanlopen, en het deel dat werkelijk gelijktijdig aan staat.",
+        "Daarna telt u die twee profielen bij elkaar op, kwartier voor kwartier. Dat is iets anders dan de maximale vermogens optellen. Twee belastingen van elk 60 kW maken samen geen piek van 120 kW als ze nooit tegelijk aan staan — dit is een rekenvoorbeeld, geen uitkomst van uw locatie. Wie op de som van de typeplaatjes dimensioneert, vraagt structureel te veel aan en krijgt een afwijzing voor vermogen dat hij nooit zou gebruiken. Wie de gelijktijdigheid onderschat, loopt na ingebruikname tegen de beveiliging aan.",
+        "<h3>1 · Verschuiven in de tijd</h3>",
+        "De goedkoopste ingreep kost geen hardware. Laat de nieuwe belasting buiten het bestaande piekvenster vallen: laden in de nacht in plaats van bij terugkomst, een batchproces na de ochtendpiek, voorkoelen voordat de productie start. Dat werkt alleen als de nieuwe belasting die vrijheid heeft: een proces dat niet aan een vast tijdstip hangt wel, laden met vaste vertrektijden niet.",
+        "<h3>2 · Begrenzen met sturing</h3>",
+        "Wat niet te verschuiven is, kan begrensd worden. Een energiemanagementsysteem meet de actuele belasting van de aansluiting en geeft vrij wat er over is: laadpunten laden langzamer als de productie piekt, en sneller als de hal leeg is. Dat is dynamische load balancing. Een statisch budget moet op de slechtst denkbare gelijktijdigheid worden ingesteld en laat de rest van de dag ruimte onbenut; een dynamisch budget volgt de meting en geeft die ruimte wel vrij.",
+        "<h3>3 · Het verschil leveren met opslag</h3>",
+        "Blijft er een overschrijding over, dan levert een batterij het verschil op die momenten en laadt hij bij in de dalen. De dimensionering volgt uit de vorm van die overschrijding: de hoogte boven de gekozen grens geeft het vermogen in kW, en die hoogte maal de duur geeft de bruikbare energie in kWh. Een overschrijding van 40 kW die twee uur duurt vraagt dus ongeveer 80 kWh aan bruikbare capaciteit — opnieuw een rekenvoorbeeld.",
+        "Let op wat hier wel en niet gebeurt. De batterij maakt ruimte binnen de grens die er al ligt. Hij creëert geen extra gecontracteerd transportvermogen en verhoogt uw aansluitwaarde niet. Wat verandert, is wat u binnen diezelfde grens kunt aanzetten."
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "Wat er nodig is om een uitbreiding door te rekenen",
+      "rijen": [
+        ["Kwartiersprofiel bestaande aansluiting", "De kwartierwaarden van uw eigen meter over een vol kalenderjaar, voor afname en voor invoeding. Dit is de basislijn waar de uitbreiding bovenop komt."],
+        ["Aansluitovereenkomst", "De fysieke aansluitcapaciteit in kVA of in ampère per fase, bijvoorbeeld 3 × 80 A. Dit is de harde grens van kabel en aansluitkast."],
+        ["Transportovereenkomst", "Het gecontracteerd transportvermogen in kW. Dit is de waarde waarvoor u betaalt en de waarde die bij uitbreiding geblokkeerd wordt."],
+        ["De brief van de netbeheerder", "De afwijzing of de wachtrijbevestiging, met de reden en het voedingsgebied. Daaruit blijkt of de grens bij uw aansluiting of bij het net erboven ligt."],
+        ["Specificatie van de nieuwe belasting", "Per installatie: opgenomen vermogen, bedrijfstijd, aantal starts, aanloopstroom en of hij regelbaar is. Voor laden: het aantal punten, het vermogen per punt en de vertrektijden."],
+        ["Gelijktijdigheid", "Welk deel van oud en nieuw werkelijk samen aan staat, en op welk moment van de dag. Dit bepaalt de gezamenlijke piek en daarmee het hele ontwerp."],
+        ["Bestaande opwek", "Opgesteld vermogen op het dak, het omvormervermogen en een eventuele terugleverbeperking. Opwek verlaagt de netafname alleen op de momenten dat hij met het verbruik samenvalt."],
+        ["Ruimte en infrastructuur", "Waar een batterijkast en omvormers kunnen staan, het kabeltracé naar de hoofdverdeler, en de resterende ruimte in die verdeler."],
+        ["Planning", "Het moment van ingebruikname en de fasering van de bouw. Tijdens de bouw is de belasting anders dan daarna, en soms is dat de krapste fase."]
+      ],
+      "noot": "Ontbreekt het kwartiersprofiel, dan vraagt u het op bij uw netbeheerder of uw meetbedrijf: het is uw eigen meetdata. Een jaarverbruik in kWh is geen vervanging, want daarin zijn precies de pieken weggemiddeld die het ontwerp bepalen."
+    },
+    {
+      "soort": "tekst",
+      "kop": "Het moment waarop u dit uitzoekt bepaalt de kosten",
+      "lead": "Een uitbreiding is het enige moment waarop de infrastructuur toch al open ligt.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "In de ontwerpfase is dit grotendeels een tekenkwestie. Een opstelplaats met voldoende afstand tot de gevel, een mantelbuis onder de nieuwe vloer, een hoofdverdeler met velden die nog vrij zijn, een dakconstructie die later panelen draagt, en een meterruimte waar een omvormer bij kan. Wie dat meeneemt, houdt de optie open zonder er iets voor te doen.",
+        "Na oplevering kost elk van die punten sloopwerk. Een kabeltracé door een afgewerkte vloer, een tweede hoofdverdeler omdat de eerste vol zit, een opstelplaats die niet meer past binnen de brandveiligheidsafstanden van het nieuwe gebouw. De techniek is dan nog hetzelfde, de rekening niet.",
+        "Er is nog een reden om vroeg te meten. Het bestaande kwartiersprofiel is uw basislijn, en die bestaat alleen zolang de uitbreiding er nog niet is. Meet u pas na ingebruikname, dan zitten oud en nieuw door elkaar en is niet meer te scheiden welke piek waar vandaan komt. Begin dus met het profiel van nu, ook als de uitbreiding nog een paar seizoenen weg is.",
+        "Dit loopt los van uw aanvraag bij de netbeheerder. Die twee sporen sluiten elkaar niet uit: u kunt binnen de bestaande grens bouwen en tegelijk uw plaats in de wachtrij houden voor de groei daarna."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "niet-kan",
+      "kop": "Wanneer dit niet kan",
+      "lead": "Er is één grens, en die is vooraf te berekenen.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "Een batterij levert alleen vermogen dat hij eerder heeft opgenomen, en dat opnemen gaat over dezelfde aansluiting. Er moet dus een dal overblijven. Komt het <strong>gemiddelde</strong> verbruik over het etmaal na uitbreiding boven de grens van de aansluiting uit, dan is er geen uur meer waarin de batterij kan bijladen. Dan houdt deze aanpak op, hoe groot u het systeem ook maakt.",
+        "Dat is precies het geval bij een uitbreiding die continu vermogen vraagt. Een koelhuis dat dag en nacht draait. Een elektrische oven in drieploegendienst. Een overstap van gas naar elektrische proceswarmte over de volle productietijd. U verhoogt dan niet uw piek maar uw basislast, en daarvoor is verzwaring of een andere locatie de route — eventueel met een tijdelijke voorziening tot die er is.",
+        "Twee dingen die deze aanpak ook niet doet. Uw <strong>gecontracteerd transportvermogen</strong> verandert niet: het blijft wat het is tot u het zelf wijzigt. En uw <strong>aansluitwaarde</strong> verandert niet: de kabel, de aansluitkast en de beveiliging blijven de fysieke bovengrens. Als die fysieke grens het knelpunt is en niet het net erboven, dan is dit een ander probleem met een andere oplossing, en dan wijst het antwoord van de netbeheerder dat ook uit.",
+        "Tot slot: geen conclusie zonder meting. Of de uitbreiding past, en met welk vermogen en welke capaciteit, blijkt uit het gezamenlijke profiel. Als verzwaren de enige route is, zeggen we dat."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Vier projecten waar dezelfde vraag op tafel lag",
+      "lead": "Een bedrijfspand, een nieuwbouwvestiging, een kantoorpand in uitbreiding en een recreatiepark. Wat er per locatie is gebouwd, staat op de projectpagina.",
+      "kaarten": [
+        { "kop": "Ratio 16, Duiven", "tekst": "Een bedrijfspand met ernstige netcongestie, waar zon, opslag en laadplekken zijn toegevoegd zonder de aansluiting te verzwaren.", "route": "project-ratio-16", "label": "Bekijk het project" },
+        { "kop": "Hedin Amsterdam", "tekst": "Een nieuwbouwlocatie die niet binnen de beschikbare netcapaciteit te realiseren was. Met opslag en sturing kwam er alsnog ruimte voor grootschalig laden.", "route": "project-hedin-amsterdam", "label": "Bekijk het project" },
+        { "kop": "Hazenweg 61, Hengelo", "tekst": "Een kantoorpand in uitbreiding: opslag, opwek, laden en noodstroom onder één energiemanagementsysteem, met een nieuwe hoofdverdeler als knooppunt.", "route": "project-hazenweg-61", "label": "Bekijk het project" },
+        { "kop": "Dormio Medemblik", "tekst": "Een recreatiepark met een bouwaansluiting die te klein was voor de vraag op het terrein. Opwek en opslag zijn achter diezelfde bouwaansluiting gebundeld om de avondpiek te dragen.", "route": "project-dormio-medemblik", "label": "Bekijk het project" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over uitbreiden in een congestiegebied",
+  "faq": [
+    {
+      "vraag": "Moet ik mijn aanvraag voor extra transportvermogen intrekken?",
+      "antwoord": "Dat hoeft niet. Binnen de bestaande grens bouwen en in de wachtrij blijven staan sluiten elkaar niet uit; de eerste route gaat over de uitbreiding die nu op tafel ligt, de tweede houdt ruimte open voor de groei daarna. De voorwaarden en de plaats in de rij verschillen per netbeheerder, dus leg dat schriftelijk vast voordat u iets intrekt."
+    },
+    {
+      "vraag": "Kan de nieuwe belasting worden doorgerekend voordat hij er staat?",
+      "antwoord": "Ja, maar niet uit de typeplaatjes alleen. Nodig zijn het opgenomen vermogen per installatie, de bedrijfstijd, het aantal starts en een onderbouwde aanname over gelijktijdigheid. Daaruit volgt een profiel met een marge. Na ingebruikname wordt opnieuw gemeten, want pas een meting op de aansluiting laat zien wat de gelijktijdigheid werkelijk is."
+    },
+    {
+      "vraag": "Geldt de afwijzing ook voor teruglevering van mijn zonnepanelen?",
+      "antwoord": "Niet automatisch. Afname en invoeding zijn twee verschillende beperkingen op hetzelfde net. Een voedingsgebied kan vol zitten voor invoeding en nog ruimte hebben voor afname, of omgekeerd. De Capaciteitskaart toont beide apart, en uw netbeheerder beoordeelt ze ook apart."
+    },
+    {
+      "vraag": "Helpt het om de uitbreiding op een tweede aansluiting te zetten?",
+      "antwoord": "Als omweg om congestie niet. Een tweede aansluiting op hetzelfde perceel vraagt transportcapaciteit uit hetzelfde voedingsgebied, dus de netbeheerder beoordeelt dezelfde schaarste. Bovendien krijgt u een tweede set vaste kosten en een profiel dat niet meer met het eerste kan worden verrekend."
+    },
+    {
+      "vraag": "De uitbreiding komt pas later. Wanneer moet ik dit uitzoeken?",
+      "antwoord": "In de ontwerpfase. Opstelplaats, kabeltracé, ruimte in de hoofdverdeler en dakconstructie zijn dan nog tekenwerk en later sloopwerk. En het kwartiersprofiel van vóór de uitbreiding is uw basislijn; die kunt u na ingebruikname niet meer meten."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De route verder",
+      "items": [
+        { "route": "netcongestie", "naam": "Netcongestie oplossen" },
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "energy-hubs", "naam": "Energy Hubs" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/transportvermogen-versus-aansluitwaarde", "naam": "Transportvermogen en aansluitwaarde" },
+        { "route": "kennis/netaansluiting-aanvragen", "naam": "Netaansluiting aanvragen" },
+        { "route": "kennis/peak-shaving", "naam": "Peak shaving" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" }
+      ]
+    },
+    {
+      "kop": "Verwante situaties",
+      "items": [
+        { "route": "toepassingen/geen-extra-transportvermogen", "naam": "Geen extra transportvermogen" },
+        { "route": "toepassingen/pieken-in-verbruik", "naam": "Pieken in verbruik" },
+        { "route": "toepassingen/laden-met-beperkte-aansluiting", "naam": "Laden met een beperkte aansluiting" },
+        { "route": "toepassingen/terugleverbeperking", "naam": "Terugleverbeperking" }
+      ]
+    },
+    {
+      "kop": "Voor wie",
+      "items": [
+        { "route": "sectoren/productie-en-industrie", "naam": "Productie en industrie" },
+        { "route": "sectoren/opslag-en-distributie", "naam": "Opslag en distributie" },
+        { "route": "sectoren/bedrijventerreinen", "naam": "Bedrijventerreinen" },
+        { "route": "industrie-logistiek", "naam": "Logistiek" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Begin bij het profiel, niet bij de aanvraag",
+    "tekst": "Stuur het kwartiersprofiel van uw aansluiting, de aansluit- en transportovereenkomst en de specificatie van wat erbij komt. Wij leggen de twee profielen over elkaar, rekenen de gezamenlijke piek door en geven aan welk vermogen en welke capaciteit nodig zijn — of dat verzwaren de enige route is.",
+    "primair": { "route": "contact", "label": "Laat de uitbreiding doorrekenen" },
+    "secundair": { "route": "netcongestie", "label": "Alles over netcongestie" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare capaciteit voor afname en invoeding per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "De op de Capaciteitskaart genoemde jaartallen voor netuitbreidingen zijn planningen en geen garantie.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — FAQ",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/faq/",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

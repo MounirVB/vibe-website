@@ -1,0 +1,242 @@
+{
+  "route": "sectoren/bouw",
+  "type": "sector",
+  "titel": "Tijdelijke stroom op de bouwplaats | Vibe Energy",
+  "beschrijving": "Een bouwplaats vraagt weken tot maanden vermogen zonder definitieve aansluiting. Wat de tijdelijke voorziening bepaalt: piekvermogen en kWh per werkdag.",
+  "og_titel": "Bouwplaatsen: vermogen voordat de aansluiting er ligt",
+  "h1": "De bouwplaats vraagt vermogen voordat er een aansluiting ligt.",
+  "lead": "Een bouwproject heeft weken tot maanden elektriciteit nodig op een plek waar de definitieve aansluiting nog niet ligt. Tegelijk elektrificeert het materieel. Dat maakt de bouwvoorziening een eigen ontwerpvraag: hoeveel kW op de piek, en hoeveel kWh per werkdag.",
+  "data_pagina": "sectoren",
+  "kruimels": [{ "naam": "Sectoren", "route": "sectoren" }],
+  "kruimel_label": "Bouw",
+  "gepubliceerd": "2026-10-10",
+  "gewijzigd": "2026-10-10",
+  "dienst_naam": "Energieadvies voor bouwplaatsen en tijdelijke voorzieningen",
+
+  "acties": [
+    { "soort": "primair", "route": "contact", "label": "Leg uw bouwvoorziening voor" },
+    { "soort": "ghost", "anker": "#grens", "label": "Wat mobiele opslag niet dekt" }
+  ],
+
+  "direct_antwoord": {
+    "vraag": "Hoe komt een bouwplaats aan vermogen als er nog geen definitieve aansluiting is?",
+    "antwoord": "Een bouwplaats heeft weken tot maanden elektrisch vermogen nodig op een plek waar de definitieve aansluiting nog niet ligt. Daarvoor bestaan drie routes: een tijdelijke bouwaansluiting van de netbeheerder, een aggregaat, of mobiele batterijopslag die de piek van het materieel opvangt en wordt bijgeladen uit een lichtere aansluiting. Welke route past, volgt uit twee getallen: het hoogste gelijktijdige vermogen van het materieel in kW, en de energie die een werkdag vraagt in kWh. In een gebied zonder transportcapaciteit is de tijdelijke aansluiting geen zekerheid, want ook een bouwaansluiting vraagt transportcapaciteit op hetzelfde net als een vaste aansluiting.",
+    "voorbehoud": "Dit antwoord gaat over de voorziening tijdens de bouw, niet over de definitieve aansluiting van het opgeleverde gebouw. Dat is een aparte aanvraag met een eigen aansluitwaarde en een eigen doorlooptijd. Opslag verschuift energie in de tijd en verhoogt de aansluitwaarde van de bouwkast niet."
+  },
+
+  "secties": [
+    {
+      "soort": "tekst",
+      "id": "bouwaansluiting",
+      "kop": "De bouwaansluiting, en waarom die in een congestiegebied knelt",
+      "lead": "De energievraag van een bouwproject verloopt in fasen, en de aansluiting komt als laatste.",
+      "alineas": [
+        "Een bouwproject vraagt elektriciteit in een vaste volgorde, en bijna nooit op het moment dat de kabel er al ligt. Grondwerk en fundering komen vóór de netaansluiting. Tijdens de ruwbouw doen de kraan, de bouwlift, de betonpomp en het handgereedschap het werk; dat profiel bestaat uit korte, hoge pieken met veel stilstand ertussen. In de afbouw veranderen de getallen van vorm: bouwdrogers, vorstbeveiliging en tijdelijke verlichting vragen weken achtereen een vrij constante basislast. Dat is een ander probleem dan een hijsbeweging van twintig seconden.",
+        "Voor die tussenperiode bestaat de bouwaansluiting: een tijdelijke aansluiting die de netbeheerder op het terrein plaatst, met een eigen aansluitwaarde in ampère per fase. De aanvraag loopt via mijnaansluiting.nl, waar de postcode bepaalt welke van de zes regionale netbeheerders — Liander, Enexis, Stedin, Westland Infra, Coteq of Rendo — het werk doet. Na de bouw wordt die kast verwijderd of omgezet naar een vaste aansluiting.",
+        "In een congestiegebied zit daar de kink. Een tijdelijke aansluiting vraagt transportcapaciteit op precies hetzelfde net als een permanente; dat de kast er maar een half jaar staat, verandert niets aan het vermogen dat er in dat half jaar door moet. Is er in het voedingsgebied geen ruimte voor afname, dan is <em>tijdelijk</em> geen reden waarom die ruimte er wél zou zijn. En een bouwplanning schuift niet mee met een wachtrij: de datum waarop de kraan komt, staat in het contract en de huur van dat materieel loopt.",
+        "Of er ruimte is, is een vraag per postcode en niet per plaats. Een voedingsgebied is een verzameling postcodes rond één onderstation, en die grenzen lopen dwars door gemeentegrenzen heen. Een bouwlocatie aan de rand van een gemeente kan daardoor onder een ander regime vallen dan het bedrijfsterrein twee kilometer verderop.",
+        "<p><a class=\"ve-link\" href=\"https://capaciteitskaart.netbeheernederland.nl/\" rel=\"nofollow noopener\" target=\"_blank\">Capaciteitskaart elektriciteitsnet — zoek op de postcode van het bouwterrein</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland", "url": "https://capaciteitskaart.netbeheernederland.nl/", "datum": "2026-10-10" },
+        { "naam": "Netbeheer Nederland — onze leden", "url": "https://www.netbeheernederland.nl/onze-leden", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "specs",
+      "kop": "De getallen die een bouwvoorziening bepalen",
+      "rijen": [
+        ["Piekvermogen van het materieel (kW)", "Het hoogste vermogen dat gelijktijdig wordt gevraagd: hijsen, pompen, zagen en laden door elkaar. Dit bepaalt of de voorziening het houdt, en dus de aansluitwaarde of het omvormervermogen. Niet het dagverbruik."],
+        ["Energie per werkdag (kWh)", "Het vermogen van elk werktuig maal de uren dat het werkelijk draait. Dit bepaalt hoeveel kWh er per dag beschikbaar moet zijn, hoeveel brandstof er wordt verstookt, of hoe vaak een mobiele unit moet worden bijgeladen."],
+        ["Gelijktijdigheid", "De som van alle naamplaatjes op de bouwplaats is nooit het piekvermogen. Hijsen, drogen, zagen en laden vallen zelden op dezelfde seconde samen. Hier zit meestal de grootste rekenfout, in beide richtingen."],
+        ["De fase waarin het project zit", "Grondwerk, ruwbouw en afbouw hebben elk een ander profiel. De hoogste piek valt vaak in de ruwbouw, de hoogste basislast in de afbouw. Een voorziening die op één fase is gedimensioneerd, knelt in de andere."],
+        ["Aansluitwaarde van de bouwkast (A per fase)", "De fysieke grens van de tijdelijke voorziening, bijvoorbeeld 3 × 63 A of 3 × 80 A. Dit is wat er door de kast mag, niet wat er wordt verbruikt."],
+        ["De definitieve aansluiting van het gebouw", "Een eigen aanvraag, een eigen aansluitwaarde, een eigen doorlooptijd. Hoort in het ontwerp thuis, niet in de opleveringsweek."]
+      ],
+      "noot": "kW bepaalt of de voorziening het houdt; kWh bepaalt hoe lang. Een bouwplaats die op één van die twee is gedimensioneerd, staat stil op de ander."
+    },
+    {
+      "soort": "tekst",
+      "id": "aggregaat",
+      "kop": "Aggregaat, net of opslag — wat de keuze bepaalt",
+      "lead": "Drie routes met een verschillende grens, en in de praktijk vaak een combinatie.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "alineas": [
+        "<h3>Wat een aggregaat wel en niet doet</h3>",
+        "Een aggregaat levert continu vermogen zolang er brandstof is, en is onafhankelijk van het net. Dat is precies waarom het op de bouwplaats de standaard werd. De keerzijde is het bedrijfspunt: een aggregaat wordt gekozen op de hoogste piek en draait daardoor het grootste deel van de dag op een fractie van zijn nominale vermogen, met het rendement en de uitstoot die daarbij horen.",
+        "Dat laatste is geen smaakvraag meer. Opdrachtgevers die het Convenant Schoon en Emissieloos Bouwen hebben ondertekend, passen bij de aanbesteding van bouw-, onderhouds- en sloopprojecten minimaal de emissie-eisen van het basisniveau toe. Voor het materieel op de bouwplaats betekent dat dat de keuze tussen diesel en elektrisch in het bestek staat, niet in de uitvoering.",
+        "<h3>Wat opslag toevoegt</h3>",
+        "Batterijopslag maakt een lichte aansluiting toereikend voor zwaar materieel, doordat de piek uit de batterij komt en de aansluiting alleen het gemiddelde hoeft te leveren. De batterij laadt bij tijdens de stilstand tussen twee hijsbewegingen, in de pauze en 's nachts. Hetzelfde principe werkt achter een aggregaat: de generator draait dan op zijn eigen optimum in plaats van de piek te volgen, en kan uit tijdens de uren dat de batterij de last alleen aankan.",
+        "<h3>Rekenvoorbeeld, geen meting</h3>",
+        "Een bouwkast van 3 × 63 A komt bij 400 V neer op ongeveer 44 kVA. kVA is schijnbaar vermogen; bij arbeidsfactor 1 is dat ongeveer 44 kW en in de praktijk iets minder. Vraagt het materieel op de piek 90 kW gedurende twintig minuten, dan is het tekort ruim 46 kW en vraagt dat ongeveer 15 kWh uit opslag (46 kW × een derde uur). Herhaalt zo'n piek zich tien keer per werkdag, dan gaat er circa 150 kWh door de batterij heen — bij een gemiddelde belasting die de kast ruim aankan. Dit is rekenkunde ter illustratie, geen uitkomst van een locatie.",
+        "Omgekeerd werkt het net zo goed als controle: komt uit die berekening dat het gemiddelde boven de aansluitwaarde uitkomt, dan is opslag niet de ingreep en is een zwaardere voorziening dat wel.",
+        "Welke uitvoering bij een project past — een opstelling naast de keet, een verplaatsbare unit, een zwaardere tijdelijke aansluiting of een combinatie met een aggregaat — hangt af van de fasering, de opstelruimte en wat er in het voedingsgebied beschikbaar is. Dat is een gesprek over uw materieellijst en uw planning, geen keuze uit een catalogus."
+      ],
+      "bronnen": [
+        { "naam": "Convenant Schoon en Emissieloos Bouwen (SEB), Staatscourant 2023, 31167", "url": "https://zoek.officielebekendmakingen.nl/stcrt-2023-31167.html", "datum": "2023-11-23" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "Laadlogistiek voor elektrisch materieel",
+      "lead": "Elektrisch materieel verplaatst de energievraag niet, het verplaatst het moment waarop die vraag komt.",
+      "alineas": [
+        "Een accugraafmachine, een elektrische minikraan, een shovel of een bedrijfsbus moet terug naar een laadpunt binnen het ritme van de werkdag. Daarmee verschuift de vraag van brandstoflogistiek naar laadlogistiek, en dat zijn twee verschillende ontwerpopgaven. Brandstof vul je bij als het past; een accu vul je bij in een venster dat het werk vrijlaat.",
+        "<h3>Twee laadregimes, twee uitkomsten</h3>",
+        "<ul><li><strong>Laden buiten werktijd.</strong> Een lang venster van tien of twaalf uur vraagt weinig vermogen voor veel kWh. Dit is het goedkoopste regime, maar het veronderstelt dat het materieel 's nachts op de bouwplaats staat en dat de voorziening dan onder spanning blijft.</li><li><strong>Bijladen tussen de ritten.</strong> Een machine die in de pauze een halfuur moet bijladen, vraagt hoog vermogen in een kort venster. Dit regime bepaalt de piek van de hele bouwplaats, en valt bovendien samen met het moment dat het andere materieel weer aanslaat.</li></ul>",
+        "Welke kant het opgaat, volgt uit drie dingen: hoeveel machines er zijn, hoeveel kWh elke machine per werkdag omzet, en in welk venster die kWh terug naar binnen moet. Twee machines met hetzelfde dagverbruik vragen een volstrekt andere voorziening als de ene 's nachts laadt en de andere in de lunchpauze.",
+        "Op een bouwplaats is dynamische load balancing bijna altijd de ingreep die ruimte vrijmaakt. Statische verdeling geeft elk laadpunt een vast budget en laat alles onbenut wat de kraan op dat moment niet gebruikt. Dynamische verdeling meet de actuele belasting van de bouwkast en verdeelt wat er over is: als de kraan hijst, laden de machines langzamer, en zodra de hijsbeweging klaar is, trekken ze weer op. Zo passen er meer laadpunten achter de kast dan de naamplaatjes toelaten, zonder dat de hoofdzekering ooit de beslissing neemt.",
+        "De derde route is het laadpunt niet op de bouwplaats zetten. Materieel dat op de eigen werf of in het depot wordt geladen en geladen wordt aangevoerd, schuift de energievraag naar een locatie waar al een aansluiting ligt en waar het laadvenster beter is te plannen. Dat kost transportbewegingen en vraagt om een vaste wisselregel per machine, maar het haalt de piek van de bouwplaats af."
+      ]
+    },
+    {
+      "soort": "tekst",
+      "kop": "De bouwvoorziening en de definitieve aansluiting zijn twee trajecten",
+      "lead": "Twee aanvragen, twee doorlooptijden, vaak twee verschillende contractpartijen.",
+      "variant": "ve-sec--sunken ve-sec--line-y",
+      "alineas": [
+        "De bouwaansluiting dient de bouwtijd. De definitieve aansluiting dient het gebouw. Dat zijn gescheiden aanvragen bij dezelfde netbeheerder, meestal met een andere aanvrager — de aannemer tegenover de eigenaar of ontwikkelaar — en met een andere aansluitwaarde. Volgens ACM ConsuWijzer moet de netbeheerder zowel de bouwaansluiting als de omzetting naar een vaste aansluiting binnen een redelijke termijn geven; daar hoort geen vast aantal weken bij, en de aanvraag hoort dus ruim voor de benodigde datum te liggen.",
+        "Na afronding van het project wordt de bouwaansluiting verwijderd of omgezet naar een vaste aansluiting. Let daarbij op de capaciteit: die van een bouwaansluiting is vaak zwaarder dan de vaste aansluiting nodig heeft, zodat het omzetten gepaard gaat met een aanpassing van de aansluitwaarde. De omgekeerde situatie komt net zo vaak voor en is lastiger: een gebouw met laadpunten in de parkeerkelder, warmtepompen en een keuken heeft een zwaardere aansluiting nodig dan de bouwkast ooit had.",
+        "Dat is de reden om de aansluitwaarde van het opgeleverde gebouw in de ontwerpfase te bepalen en niet in de opleveringsweek. Een gebouw kan bouwkundig klaar zijn en toch niet in gebruik, omdat de aansluiting er niet is. De bouwaansluiting vangt dat niet op: die heeft een andere waarde, staat op een andere plek en gaat weg.",
+        "Hoe dat eruitziet als de netcapaciteit de bepalende factor is, staat op de projectpagina's. Bij <a class=\"ve-link\" href=\"/project-hedin-amsterdam\">Hedin Amsterdam</a> was een nieuwbouwlocatie niet binnen de beschikbare netcapaciteit te realiseren. Bij <a class=\"ve-link\" href=\"/project-dormio-medemblik\">Dormio Medemblik</a> was de bouwaansluiting zelf te klein voor de vraag op het park. Bij <a class=\"ve-link\" href=\"/project-hazenweg-61\">Hazenweg 61 in Hengelo</a> werd een pand uitgebreid en moest de elektrische infrastructuur de nieuwe installaties aankunnen.",
+        "<p><a class=\"ve-link\" href=\"/kennis/netaansluiting-aanvragen\">Hoe een netaansluiting aanvragen of verzwaren werkt</a></p>"
+      ],
+      "bronnen": [
+        { "naam": "Bouwaansluiting en tijdelijke aansluiting, ACM ConsuWijzer", "url": "https://consument.acm.nl/elektriciteit-en-gas/mijn-energie-aansluiting/kosten-bouwaansluiting-tijdelijke-aansluiting", "datum": "2026-10-10" },
+        { "naam": "Nieuwe bouwaansluiting, Enexis Netbeheer", "url": "https://www.enexis.nl/aansluitingen/nieuwe-aansluiting/nieuwe-bouwaansluiting", "datum": "2026-10-10" }
+      ]
+    },
+    {
+      "soort": "tekst",
+      "id": "grens",
+      "kop": "Wat dit niet oplost",
+      "lead": "De eerlijke grens van een tijdelijke voorziening met opslag.",
+      "alineas": [
+        "Mobiele opslag dekt een piek en een beperkt dagverbruik. Continu hoog vermogen niet. Een bouwkuip die weken wordt bemalen, elektrische betonverwarming, een breker die uren achtereen doorloopt of een heistelling die niet van de last af komt: daar gaat niet de piek omhoog maar het gemiddelde. Een batterij verschuift energie in de tijd, hij maakt geen energie. Zodra de gemiddelde vraag over de werkdag boven de grens van de voorziening uitkomt, helpt opslag niet meer en is een zwaardere aansluiting of een continue bron de enige route.",
+        "Opslag verandert ook niets aan de aansluitwaarde van de bouwkast en geeft geen extra gecontracteerd transportvermogen. Die waarden blijven wat de netbeheerder heeft vastgelegd. Wat verandert, is wat er binnen die grens past.",
+        "En opslag moet zelf worden bijgeladen. Is er geen aansluiting en geen opwek op de bouwplaats, dan komt de energie van elders: uit een aggregaat, of per geladen unit aan- en afgevoerd. Dat is logistiek, en logistiek heeft een eigen grens in rijtijden, kraanuren en opstelruimte. Elke fasewissel die de opstelplaats verplaatst, is opnieuw werk.",
+        "Tot slot lost dit de wachtrij van de netbeheerder niet op. Een bouwvoorziening overbrugt de bouwtijd; ze overbrugt niet de wachttijd voor de aansluiting van het gebouw dat er komt te staan. Staat uw voedingsgebied op slot voor afname, dan is dat ook na de oplevering zo, en hoort de energievraag van het eindgebouw op dat gegeven te worden ontworpen."
+      ]
+    },
+    {
+      "soort": "kaarten",
+      "kop": "Waar dit op een bouwplaats concreet wordt",
+      "lead": "De vier situaties die een planning het vaakst raken.",
+      "variant": "ve-sec--paper ve-sec--line-y",
+      "kaarten": [
+        { "kop": "Geen transportvermogen voor de bouwkast", "tekst": "De netbeheerder kan de gevraagde tijdelijke aansluiting niet op tijd of niet op die waarde toezeggen.", "route": "toepassingen/geen-extra-transportvermogen", "label": "Geen extra transportvermogen" },
+        { "kop": "Het materieel moet laden", "tekst": "Elektrische machines en bedrijfswagens vragen een laadvenster dat niet binnen de aansluitwaarde past.", "route": "toepassingen/laden-met-beperkte-aansluiting", "label": "Laden met een beperkte aansluiting" },
+        { "kop": "Korte, hoge pieken", "tekst": "Hijsen, pompen en zagen bepalen de piek, terwijl het gemiddelde verbruik laag blijft.", "route": "toepassingen/pieken-in-verbruik", "label": "Pieken in verbruik" },
+        { "kop": "Meerdere bouwplaatsen tegelijk", "tekst": "Materieel en voorzieningen rouleren over projecten, elk in een ander voedingsgebied en een andere fase.", "route": "toepassingen/meerdere-locaties", "label": "Meerdere locaties" }
+      ]
+    }
+  ],
+
+  "faq_kop": "Vragen over stroom op de bouwplaats",
+  "faq": [
+    {
+      "vraag": "Kan batterijopslag een aggregaat op de bouwplaats vervangen?",
+      "antwoord": "Voor de piek vaak wel, voor continu vermogen niet. Opslag levert hoog vermogen kortdurend en moet daarna worden bijgeladen. Is het gemiddelde verbruik over de werkdag laag en de piek hoog, dan kan opslag achter een lichte aansluiting het werk doen. Blijft de vraag uren achtereen hoog, dan is er een continue bron nodig en komt de combinatie van een aggregaat op zijn eigen bedrijfspunt met opslag voor de pieken in beeld."
+    },
+    {
+      "vraag": "Vraagt een tijdelijke bouwaansluiting ook transportcapaciteit?",
+      "antwoord": "Ja. Een bouwaansluiting loopt over hetzelfde net als een vaste aansluiting en vraagt dus transportcapaciteit in hetzelfde voedingsgebied. Dat de kast tijdelijk is, zegt niets over de ruimte op het net. Of er ruimte is, is een vraag per postcode; de Capaciteitskaart van Netbeheer Nederland geeft die stand per voedingsgebied."
+    },
+    {
+      "vraag": "Wat gebeurt er met de bouwaansluiting na oplevering?",
+      "antwoord": "Die wordt verwijderd of omgezet naar een vaste aansluiting. Let daarbij op de capaciteit: die van een bouwaansluiting is vaak zwaarder dan de vaste aansluiting nodig heeft, zodat bij het omzetten ook de aansluitwaarde wordt aangepast. De omzetting is een aparte aanvraag en heeft een eigen doorlooptijd."
+    },
+    {
+      "vraag": "Is netcongestie een eigenschap van de gemeente waar wij bouwen?",
+      "antwoord": "Nee. Beperkingen gelden per voedingsgebied: een verzameling postcodes rond één onderstation. Die grenzen volgen geen gemeentegrens, en vrijwel elke gemeente valt onder meer dan één voedingsgebied. Gebruik dus de postcode van het bouwterrein, niet de plaatsnaam."
+    },
+    {
+      "vraag": "Wat is er nodig om een bouwvoorziening te kunnen beoordelen?",
+      "antwoord": "Een materieellijst met het vermogen per werktuig en de verwachte bedrijfsuren per dag, de fasering met de begin- en einddata, de aansluitwaarde van de beoogde of toegezegde bouwkast, en de postcode van het terrein. Daaruit volgen de piek in kW en de energie per werkdag in kWh, en dus welke voorziening past."
+    },
+    {
+      "vraag": "Geldt dit ook voor een bouwplaats zonder enige aansluiting?",
+      "antwoord": "Dan komt alle energie uit brandstof of wordt ze geladen aangevoerd. Opslag kan in dat geval de looptijd van een aggregaat sterk terugbrengen door de pieken over te nemen, maar vervangt de energiebron niet. De afweging gaat dan over draaiuren, aanvoerbewegingen en opstelruimte."
+    }
+  ],
+
+  "verwant": [
+    {
+      "kop": "De systemen",
+      "items": [
+        { "route": "systeem-energieopslag", "naam": "Energieopslag" },
+        { "route": "systeem-laadpalen", "naam": "Laadinfrastructuur" },
+        { "route": "systeem-zonnepanelen", "naam": "Zonne-energie" },
+        { "route": "vibe-control", "naam": "VIBE.CONTROL" },
+        { "route": "netcongestie", "naam": "Netcongestie" }
+      ]
+    },
+    {
+      "kop": "De techniek uitgelegd",
+      "items": [
+        { "route": "kennis/netaansluiting-aanvragen", "naam": "Netaansluiting aanvragen" },
+        { "route": "kennis/kw-versus-kwh", "naam": "kW versus kWh" },
+        { "route": "kennis/batterij-dimensioneren", "naam": "Een batterij dimensioneren" },
+        { "route": "kennis/load-balancing", "naam": "Load balancing" },
+        { "route": "kennis/laadinfrastructuur-dimensioneren", "naam": "Laadinfrastructuur dimensioneren" }
+      ]
+    },
+    {
+      "kop": "Verwante sectoren",
+      "items": [
+        { "route": "sectoren/gebiedsontwikkeling", "naam": "Projectontwikkeling en nieuwbouw" },
+        { "route": "sectoren/bedrijventerreinen", "naam": "Bedrijventerreinen" },
+        { "route": "sectoren/transport-en-wagenparken", "naam": "Transport en wagenparken" },
+        { "route": "verduurzaming-bedrijfspanden", "naam": "Verduurzaming bedrijfspanden" }
+      ]
+    },
+    {
+      "kop": "Bewijs en regio",
+      "items": [
+        { "route": "projecten", "naam": "Projecten" },
+        { "route": "regios", "naam": "Regio's" },
+        { "route": "subsidies", "naam": "Subsidies en regelingen" }
+      ]
+    }
+  ],
+
+  "conversie": {
+    "kop": "Reken de bouwvoorziening door voordat het materieel er staat",
+    "tekst": "Stuur de materieellijst met vermogens en bedrijfsuren, de fasering en de aansluitwaarde van de bouwkast, met de postcode van het terrein. Wij rekenen de piek en het dagverbruik door en geven aan wat binnen die voorziening past en waar de grens ligt. Is een zwaardere tijdelijke aansluiting de enige route, dan zeggen we dat.",
+    "primair": { "route": "contact", "label": "Leg uw bouwvoorziening voor" },
+    "secundair": { "route": "netcongestie", "label": "Netcongestie achter de meter" }
+  },
+
+  "claims": [
+    {
+      "tekst": "Zes regionale netbeheerders verzorgen de elektriciteitsnetten in Nederland: Liander, Enexis, Stedin, Westland Infra, Coteq en Rendo.",
+      "bron": "Netbeheer Nederland — onze leden",
+      "bron_url": "https://www.netbeheernederland.nl/onze-leden",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Netbeheerders publiceren de beschikbare transportcapaciteit per voedingsgebied; een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens.",
+      "bron": "Capaciteitskaart elektriciteitsnet, Netbeheer Nederland — pagina Definities",
+      "bron_url": "https://capaciteitskaart.netbeheernederland.nl/info/definities/",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Opdrachtgevers die het Convenant Schoon en Emissieloos Bouwen hebben ondertekend, passen bij de aanbesteding van bouw-, onderhouds- en sloopprojecten minimaal de emissie-eisen van het basisniveau toe.",
+      "bron": "Convenant Schoon en Emissieloos Bouwen (SEB), artikel 2 — Staatscourant 2023, 31167, gepubliceerd 23 november 2023",
+      "bron_url": "https://zoek.officielebekendmakingen.nl/stcrt-2023-31167.html",
+      "bron_datum": "2023-11-23"
+    },
+    {
+      "tekst": "ACM ConsuWijzer beschrijft de bouwaansluiting als een tijdelijke aansluiting die de netbeheerder op uw grond plaatst, aan te vragen via mijnaansluiting.nl, en stelt dat de netbeheerder zowel die aansluiting als de omzetting naar een vaste aansluiting binnen een redelijke termijn moet geven.",
+      "bron": "Kosten bouwaansluiting en tijdelijke aansluiting, ACM ConsuWijzer",
+      "bron_url": "https://consument.acm.nl/elektriciteit-en-gas/mijn-energie-aansluiting/kosten-bouwaansluiting-tijdelijke-aansluiting",
+      "bron_datum": "2026-10-10"
+    },
+    {
+      "tekst": "Na afronding van het project wordt de bouwaansluiting verwijderd of omgezet naar een vaste aansluiting; de capaciteit van de bouwaansluiting is in veel gevallen zwaarder dan de vaste aansluiting nodig heeft.",
+      "bron": "Nieuwe bouwaansluiting, Enexis Netbeheer",
+      "bron_url": "https://www.enexis.nl/aansluitingen/nieuwe-aansluiting/nieuwe-bouwaansluiting",
+      "bron_datum": "2026-10-10"
+    }
+  ]
+}

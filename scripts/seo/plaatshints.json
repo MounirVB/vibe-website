@@ -1,0 +1,14 @@
+{
+  "_toelichting": "Adreshints om een plaatsnaam uit scripts/projecten.json eenduidig naar één gemeente op te lossen. Elke hint is een adres dat LETTERLIJK in de projectdata staat (titel of lead) — geen aanname. Zonder hint blijft een dubbele plaatsnaam AMBIGU en levert hij geen lokaal bewijs op.",
+  "_gemeten_ambiguiteit": {
+    "Velp": "PDOK geeft twee woonplaatsen Velp: 0275 Rheden (Gelderland) en 1982 Land van Cuijk (Noord-Brabant).",
+    "Hengelo": "PDOK geeft Hengelo in 0164 Hengelo (O) (Overijssel) en Hengelo (Gld) in 1876 Bronckhorst (Gelderland)."
+  },
+  "hints": {
+    "Velp": "Nieuw-Schoonoord",
+    "Hengelo": "Hazenweg 61",
+    "Heelsum": "Bart Crumstraat 20",
+    "Purmerend": "Edisonweg 15",
+    "Duiven": "Ratio 16"
+  }
+}

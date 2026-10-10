@@ -1,0 +1,218 @@
+{
+  "_toelichting": "De oplossingsfamilies van het regionale SEO-systeem, met per familie één canonieke nationale eigenaar en een expliciet besluit of de familie regionaal zinvol is. Het veld lokaal_zinvol stuurt de routegeneratie: NEE betekent dat de kandidaatroutes wel in het register bestaan maar permanent PENDING blijven, met de reden erbij.",
+  "_versie": "1.0.0",
+  "_vastgesteld": "2026-10-10",
+  "_beslisregel": "Twee families mogen niet naast elkaar bestaan als hun lokale pagina's bijna identiek zouden zijn. In dat geval wordt één familie de canonieke eigenaar en staat de samenvoeging met reden in consolidaties.",
+
+  "familieroutes_publiceren": {
+    "besluit": "NEE",
+    "vastgesteld": "2026-10-10",
+    "reden": "GEMETEN, niet aangenomen. De routes /regios/<provincie>/<gemeente>/<familie> en /regios/<provincie>/<familie> zijn gebouwd, gegenereerd en door poort 11 van scripts/seo/audit.mjs gehaald. Uitkomst: binnen één gemeente delen de vier familiepagina's 84 tot 88 procent van hun vijfwoordreeksen (jaccard 0,71 tot 0,77); op provincieniveau 78 tot 81 procent (jaccard 0,61 tot 0,66). De oorzaak is structureel en niet met herschrijven op te lossen: het lokale bewijs dat wij hebben is per GEMEENTE (vestigingen, bedrijventerreinen, netbeheerder, projecten), niet per combinatie van gemeente en familie. Vier pagina's die dezelfde lokale feiten herhalen en alleen in de kop en één alinea verschillen, zijn tekstvariatie en geen inhoud. De opdracht verbiedt dat expliciet.",
+    "wat_hiervoor_in_de_plaats_komt": "De gemeentehub draagt het lokale bewijs één keer en noemt welke oplossingen daar zijn aangetoond, met een link naar de nationale oplossingspagina. Zo staat elk lokaal feit op precies één plek.",
+    "voorwaarde_voor_vrijgave": "Familiespecifiek lokaal bewijs dat de zusterpagina's NIET delen. Bijvoorbeeld: per gemeente de laadpuntdichtheid, de teruglevercapaciteit per voedingsgebied, of een tweede gerealiseerd project in dezelfde gemeente met een andere familie. Zet dit besluit dan op JA en laat poort 11 opnieuw beslissen.",
+    "aanvullend_marktbewijs": "Onafhankelijk hiervan wees het intentie-onderzoek van 10 oktober 2026 dezelfde kant op: de aanbieder die wel twaalf provinciale netcongestiepagina's onderhoudt (kiwatt.nl) geeft 404 op de provinciale variant voor zakelijke batterij, en een laadpaalaanbieder met werkende stadspagina's voor Arnhem, Nijmegen en Utrecht geeft 404 voor Apeldoorn, Ede, Tiel en Doetinchem. Alleen netcongestie heeft aantoonbaar een landelijk uitgerold lokaal veld."
+  },
+
+  "families": [
+    {
+      "slug": "zakelijke-batterij",
+      "naam": "Zakelijke batterij",
+      "naam_lang": "Zakelijke batterij en energieopslag",
+      "nationale_eigenaar": "systeem-energieopslag",
+      "zoektermen": ["zakelijke batterij", "bedrijfsbatterij", "zakelijke energieopslag", "batterijopslag bedrijven", "energieopslag bedrijf", "batterij bedrijfspand"],
+      "lokaal_zinvol": "JA",
+      "regionale_niveaus": ["provincie", "gemeente"],
+      "reden": "Een batterij is een fysieke installatie op een locatie en de aanschaf is een lokale opdracht. Zoekers combineren de term met een plaatsnaam om een leverancier in de buurt te vinden.",
+      "kennis": ["kw-versus-kwh", "batterij-dimensioneren", "batterijdegradatie", "batterijveiligheid"],
+      "sectoren": ["industrie-logistiek", "industrie-vastgoed", "industrie-recreatie"]
+    },
+    {
+      "slug": "netcongestie",
+      "naam": "Netcongestie",
+      "naam_lang": "Netcongestie en transportvermogen",
+      "nationale_eigenaar": "netcongestie",
+      "zoektermen": ["netcongestie", "netcongestie oplossen", "geen transportvermogen", "wachtlijst netbeheerder", "aansluiting verzwaren duurt lang", "vermogen uitbreiden zonder netverzwaring"],
+      "lokaal_zinvol": "JA",
+      "regionale_niveaus": ["provincie", "gemeente"],
+      "reden": "Netcongestie is van alle families het meest plaatsgebonden: of er transportruimte is, verschilt per voedingsgebied. De zoekvraag is daarom vrijwel altijd lokaal. Let op de grens: een congestiestatus geldt per voedingsgebied, niet per gemeente.",
+      "kennis": ["netcongestie-uitgelegd", "transportvermogen-versus-aansluitwaarde", "peak-shaving", "netaansluiting-aanvragen"],
+      "sectoren": ["industrie-logistiek", "industrie-vastgoed"]
+    },
+    {
+      "slug": "zonnepanelen-bedrijven",
+      "naam": "Zonnepanelen voor bedrijven",
+      "naam_lang": "Zakelijke zonnepanelen",
+      "nationale_eigenaar": "systeem-zonnepanelen",
+      "zoektermen": ["zonnepanelen bedrijf", "zakelijke zonnepanelen", "zonnepanelen bedrijfsdak", "zonnepanelen bedrijfshal", "pv bedrijfspand"],
+      "lokaal_zinvol": "JA",
+      "regionale_niveaus": ["provincie", "gemeente"],
+      "reden": "Dakwerk is per definitie plaatsgebonden en de markt is sterk regionaal. Dit is de familie waar Vibe ook feitelijk het meeste gerealiseerde werk per gemeente heeft.",
+      "kennis": ["terugleverbeperking", "kw-versus-kwh", "energieprestatie-meten"],
+      "sectoren": ["industrie-vastgoed", "industrie-vve", "industrie-residentieel"]
+    },
+    {
+      "slug": "zakelijke-laadpalen",
+      "naam": "Zakelijke laadpalen",
+      "naam_lang": "Laadinfrastructuur voor bedrijven",
+      "nationale_eigenaar": "systeem-laadpalen",
+      "zoektermen": ["zakelijke laadpalen", "laadpalen bedrijf", "laadinfrastructuur bedrijfsterrein", "laadpunten personeel", "laadpalen bedrijfswagens"],
+      "lokaal_zinvol": "JA",
+      "regionale_niveaus": ["provincie", "gemeente"],
+      "reden": "Laadpunten worden op een adres geplaatst en de beschikbare aansluitcapaciteit is lokaal. Zoekers zoeken een installateur in de regio.",
+      "kennis": ["laadinfrastructuur-dimensioneren", "load-balancing", "transportvermogen-versus-aansluitwaarde"],
+      "sectoren": ["industrie-logistiek", "industrie-vastgoed", "industrie-recreatie"]
+    },
+    {
+      "slug": "laadplein",
+      "naam": "Laadplein",
+      "naam_lang": "Laadplein realiseren en exploiteren",
+      "nationale_eigenaar": "laadplein",
+      "zoektermen": ["laadplein realiseren", "laadplein exploiteren", "laadplein aanleggen", "laadplein bedrijfsterrein", "laadplein zonder netverzwaring"],
+      "lokaal_zinvol": "JA",
+      "regionale_niveaus": ["provincie", "gemeente"],
+      "reden": "Een laadplein is een locatieproject met een vergunning, een aansluiting en een terrein. De zoekvraag is lokaal.",
+      "kennis": ["laadinfrastructuur-dimensioneren", "load-balancing", "netaansluiting-aanvragen"],
+      "sectoren": ["industrie-logistiek", "industrie-recreatie", "industrie-vastgoed"]
+    },
+    {
+      "slug": "ems",
+      "naam": "Energiemanagementsysteem",
+      "naam_lang": "EMS en slim energiebeheer",
+      "nationale_eigenaar": "vibe-control",
+      "zoektermen": ["energiemanagementsysteem", "ems bedrijf", "slim energiebeheer", "energiebeheer meerdere locaties", "dynamic load balancing"],
+      "lokaal_zinvol": "NEE",
+      "regionale_niveaus": [],
+      "reden": "Een EMS is software en regeltechniek; de keuze is niet plaatsgebonden en er is geen aanwijzing van een lokale modifier-intentie. 'EMS Arnhem' is geen zoekvraag die een eigen pagina rechtvaardigt. De kandidaatroutes blijven in het register staan maar permanent PENDING.",
+      "kennis": ["ems-energiemanagementsysteem", "load-balancing", "energieprestatie-meten"],
+      "sectoren": ["industrie-vastgoed", "industrie-logistiek"]
+    },
+    {
+      "slug": "peak-shaving",
+      "naam": "Peak shaving",
+      "naam_lang": "Peak shaving en piekreductie",
+      "nationale_eigenaar": "kennis/peak-shaving",
+      "zoektermen": ["peak shaving", "piekbelasting verlagen", "gecontracteerd vermogen verlagen", "piekreductie batterij"],
+      "lokaal_zinvol": "NEE",
+      "regionale_niveaus": [],
+      "reden": "Vakterm met een informationele intentie. Wie zoekt wil weten wat het is en of het bij hem past, niet wie het in zijn gemeente doet. De commerciële vervolgvraag loopt via de batterijpagina. Regionaal samengevoegd met zakelijke-batterij.",
+      "kennis": ["peak-shaving", "kw-versus-kwh", "batterij-dimensioneren"],
+      "sectoren": ["industrie-logistiek"]
+    },
+    {
+      "slug": "energieadvies",
+      "naam": "Energieadvies voor bedrijven",
+      "naam_lang": "Energieadvies en energiescan",
+      "nationale_eigenaar": "energieadvies",
+      "zoektermen": ["energieadvies bedrijven", "energiescan bedrijf", "energieonderzoek bedrijfspand", "businesscase energieopslag"],
+      "lokaal_zinvol": "TWIJFEL",
+      "regionale_niveaus": ["provincie"],
+      "reden": "Advies is een dienst die op afstand begint en op locatie wordt uitgevoerd. Een provinciepagina is verdedigbaar omdat regionale regelingen en netbeheerders meewegen in het advies; een gemeentepagina per gemeente zou geen eigen inhoud hebben.",
+      "kennis": ["energieprestatie-meten", "businesscase-batterij", "kw-versus-kwh"],
+      "sectoren": ["industrie-vastgoed", "industrie-logistiek"]
+    },
+    {
+      "slug": "verduurzaming-bedrijfspanden",
+      "naam": "Verduurzaming bedrijfspanden",
+      "naam_lang": "Verduurzaming van bedrijfsvastgoed",
+      "nationale_eigenaar": "verduurzaming-bedrijfspanden",
+      "zoektermen": ["verduurzaming bedrijfspand", "energielabel bedrijfspand verbeteren", "paris proof vastgoed", "verduurzaming bedrijfsvastgoed"],
+      "lokaal_zinvol": "TWIJFEL",
+      "regionale_niveaus": ["provincie"],
+      "reden": "De drijvende kracht is landelijke en Europese regelgeving, niet de gemeente. Provinciale subsidieregelingen maken een provinciepagina zinvol; per gemeente ontbreekt eigen inhoud.",
+      "kennis": ["energieprestatie-meten", "terugleverbeperking"],
+      "sectoren": ["industrie-vastgoed", "industrie-vve", "industrie-residentieel"]
+    },
+    {
+      "slug": "energiecentrale-achter-de-meter",
+      "naam": "Energiecentrale achter de meter",
+      "naam_lang": "Lokale energiecentrale achter de meter",
+      "nationale_eigenaar": "microgrids",
+      "zoektermen": ["energiecentrale achter de meter", "microgrid bedrijf", "eigen energiecentrale", "lokale energievoorziening bedrijfsterrein"],
+      "lokaal_zinvol": "NEE",
+      "regionale_niveaus": [],
+      "reden": "De term heeft nauwelijks zelfstandig zoekvolume en dekt dezelfde intentie als microgrids en energy hubs, die beide al een geïndexeerde pagina hebben. Een regionale variant zou kannibaliseren op netcongestie.",
+      "kennis": ["netcongestie-uitgelegd", "ems-energiemanagementsysteem"],
+      "sectoren": ["industrie-logistiek", "industrie-vastgoed"]
+    },
+    {
+      "slug": "energieopslag",
+      "naam": "Energieopslag",
+      "nationale_eigenaar": "systeem-energieopslag",
+      "zoektermen": ["energieopslag", "opslag elektriciteit bedrijf"],
+      "lokaal_zinvol": "NEE",
+      "regionale_niveaus": [],
+      "reden": "Samengevoegd met zakelijke-batterij. Zie consolidaties.",
+      "samengevoegd_in": "zakelijke-batterij",
+      "kennis": [],
+      "sectoren": []
+    },
+    {
+      "slug": "laadplein-exploiteren",
+      "naam": "Laadplein exploiteren",
+      "nationale_eigenaar": "laadplein",
+      "zoektermen": ["laadplein exploiteren", "laadplein zonder investering"],
+      "lokaal_zinvol": "NEE",
+      "regionale_niveaus": [],
+      "reden": "Samengevoegd met laadplein. Zie consolidaties.",
+      "samengevoegd_in": "laadplein",
+      "kennis": [],
+      "sectoren": []
+    }
+  ],
+
+  "consolidaties": [
+    {
+      "samengevoegd": ["zakelijke batterij", "bedrijfsbatterij", "zakelijke energieopslag", "energieopslag"],
+      "naar": "zakelijke-batterij",
+      "reden": "Vier termen voor één aankoop. Een lokale pagina voor 'energieopslag Arnhem' en één voor 'zakelijke batterij Arnhem' zouden woordelijk hetzelfde moeten zeggen: dezelfde installatie, hetzelfde bewijs, dezelfde CTA. De opdracht waarschuwt hier expliciet voor. Eén canonieke eigenaar, de andere termen staan als synoniem in de kop en de tekst."
+    },
+    {
+      "samengevoegd": ["laadplein realiseren", "laadplein exploiteren"],
+      "naar": "laadplein",
+      "reden": "Realiseren en exploiteren zijn twee financieringsvormen van hetzelfde project, niet twee zoekintenties met een eigen antwoord. Ze staan als twee secties op één pagina; splitsen zou twee pagina's geven die elkaar om dezelfde zoekvraag beconcurreren."
+    },
+    {
+      "samengevoegd": ["energiecentrale achter de meter"],
+      "naar": "microgrids",
+      "reden": "De bestaande, geïndexeerde pagina /microgrids beschrijft precies dit: losse assets verbonden tot één lokale energiecentrale. Een nieuwe pagina op de letterlijke term zou dezelfde intentie pakken en het bestaande resultaat verdringen."
+    },
+    {
+      "samengevoegd": ["vermogensuitbreiding zonder netverzwaring"],
+      "naar": "netcongestie",
+      "reden": "Dit is de oplossingskant van dezelfde vraag die 'netcongestie' stelt. Als aparte pagina zou hij de probleempagina kannibaliseren; hij staat nu als sectie op /netcongestie."
+    },
+    {
+      "samengevoegd": ["slim energiebeheer", "dynamic load balancing", "energieprestatie en monitoring", "energiehandel en flexibiliteit"],
+      "naar": "vibe-control",
+      "reden": "Vier termen die alle vier een eigenschap van de stuurlaag beschrijven. /vibe-control is de bestaande commerciële eigenaar; de vakinhoud per term komt in de kennisbank, waar de intentie informationeel is. Zo heeft elke intentie één eigenaar en concurreren de commerciële pagina's niet met elkaar."
+    },
+    {
+      "samengevoegd": ["peak shaving"],
+      "naar": "kennis/peak-shaving",
+      "reden": "Informationele intentie met een commerciële staart. De uitleg hoort in de kennisbank; de aankoop loopt via /systeem-energieopslag. Een eigen commerciële pagina zou de batterijpagina kannibaliseren zonder een eigen zoekvraag te bedienen."
+    }
+  ],
+
+  "afgewezen_regionaal": [
+    {
+      "familie": "ems",
+      "reden": "Geen aanwijzing voor lokale modifier-intentie bij een softwarematige keuze. 342 gemeentepagina's zouden alleen de gemeentenaam verschillen."
+    },
+    {
+      "familie": "peak-shaving",
+      "reden": "Vakterm, informationele intentie. Regionaal samengevoegd met zakelijke-batterij."
+    },
+    {
+      "familie": "energiecentrale-achter-de-meter",
+      "reden": "Nauwelijks zelfstandige zoekvraag; dekt dezelfde intentie als microgrids."
+    },
+    {
+      "familie": "verduurzaming-bedrijfspanden",
+      "reden": "Alleen provinciaal. De regelgeving die dit aanjaagt is landelijk; per gemeente is er geen eigen inhoud."
+    },
+    {
+      "familie": "energieadvies",
+      "reden": "Alleen provinciaal. Een dienst zonder plaatsgebonden uitvoeringsverschil tussen buurgemeenten."
+    }
+  ]
+}
