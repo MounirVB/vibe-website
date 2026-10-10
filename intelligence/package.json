@@ -37,7 +37,8 @@
     "backup": "node src/cli/backup.ts",
     "restoretest": "node src/cli/restoretest.ts",
     "ai": "node src/cli/ai.ts",
-    "gezondheid": "node src/cli/gezondheid.ts"
+    "gezondheid": "node src/cli/gezondheid.ts",
+    "benchmark": "node src/cli/benchmark.ts"
   },
   "dependencies": {
     "express": "^4.21.2",

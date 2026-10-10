@@ -576,6 +576,137 @@ try {
     }
   }
 
+  /* ---------------- 27-32. productiesimulatie en faalgevallen ---------------- */
+
+  /* 27 — de infrastructuurketen: back-up, integriteit, restore */
+  {
+    const backup = draai("npm", ["run", "backup"], APP);
+    const integriteit = draai("npm", ["run", "backup", "--", "--controleer"], APP);
+    const restore = draai("npm", ["run", "restoretest"], APP);
+    const m = /geslaagd (\d+)\s+mislukt (\d+)/.exec(restore.uit);
+    const restoreOk = restore.ok && m !== null && Number(m[2]) === 0;
+    meld(
+      27,
+      "Back-up, integriteitscontrole en een ECHTE restore in een geisoleerde database",
+      backup.ok && integriteit.ok && restoreOk ? "PASS" : "FAIL",
+      m
+        ? `back-up ok, integriteit ok, restore ${m[1]} toetsen geslaagd en ${m[2]} mislukt`
+        : "de restoretest gaf geen samenvatting",
+      restoreOk ? [] : [restore.uit.split("\n").slice(-6).join(" | ")],
+    );
+  }
+
+  /* 28 — de gezondheidsmonitor meet, en zegt niet groen bij een gat */
+  {
+    const g = draai("npm", ["run", "gezondheid", "--", "--json"], APP);
+    let signalen: { niveau: string; naam: string }[] = [];
+    let eindoordeel = "onbekend";
+    try {
+      const j = JSON.parse(g.uit.slice(g.uit.indexOf("{"))) as {
+        eindoordeel: string;
+        signalen: { niveau: string; naam: string }[];
+      };
+      signalen = j.signalen;
+      eindoordeel = j.eindoordeel;
+    } catch {
+      /* laat signalen leeg */
+    }
+    const fout = signalen.filter((s) => s.niveau === "FOUT");
+    const nietGemeten = signalen.filter((s) => s.niveau === "NIET GEMETEN");
+    meld(
+      28,
+      "Gezondheidsmonitor: geen enkel FOUT-signaal, en een gat heet NIET GEMETEN",
+      signalen.length >= 15 && fout.length === 0 ? "PASS" : "FAIL",
+      `${signalen.length} signalen, ${fout.length} FOUT, ${nietGemeten.length} NIET GEMETEN, eindoordeel ${eindoordeel}`,
+      [...fout.map((s) => `FOUT: ${s.naam}`), ...nietGemeten.map((s) => `niet gemeten: ${s.naam}`)].slice(0, 3),
+    );
+  }
+
+  /* 29 — de CI-poort draait lokaal, met een verse database */
+  if (SNEL) {
+    meld(29, "De CI-poort draait met een verse wegwerpdatabase", "NIET GEDRAAID", "--snel: deze stap duurt minuten");
+  } else {
+    const ci = draai("bash", [join(APP, "ops", "ci-lokaal.sh")], SITE);
+    const m = /STAPPEN\s+(\d+)\s+PASS (\d+)\s+FAIL (\d+)/.exec(ci.uit);
+    meld(
+      29,
+      "De CI-poort draait met een verse wegwerpdatabase, niet alleen op papier",
+      ci.ok && m !== null && Number(m[3]) === 0 ? "PASS" : "FAIL",
+      m ? `${m[1]} stappen, ${m[2]} PASS, ${m[3]} FAIL` : "geen samenvatting",
+      ci.ok ? [] : [ci.uit.split("\n").filter((r) => r.includes("FAIL")).slice(0, 3).join(" | ")],
+    );
+  }
+
+  /* 30 — het publicatiecontract en de geheimenscan als poort */
+  {
+    const contract = draai("node", [join(APP, "ops", "publicatiecontract.mjs")], SITE);
+    const geheimen = draai("node", [join(APP, "ops", "geheimenscan.mjs")], SITE);
+    meld(
+      30,
+      "Publicatiecontract en geheimenscan staan groen",
+      contract.ok && geheimen.ok ? "PASS" : "FAIL",
+      `contract ${contract.ok ? "PASS" : "FAIL"}, geheimenscan ${geheimen.ok ? "PASS" : "FAIL"}`,
+      contract.ok && geheimen.ok
+        ? []
+        : [...contract.uit.split("\n").filter((r) => r.includes("FAIL")).slice(0, 2),
+           ...geheimen.uit.split("\n").filter((r) => r.includes("FAIL")).slice(0, 2)],
+    );
+  }
+
+  /* 31 — de website blijft staan als de intelligencelaag weg is */
+  {
+    /* De harde eis uit §4. Te bewijzen zonder iets uit te zetten: de
+       statische service heeft geen enkele verwijzing naar de
+       intelligencelaag, geen database en geen INTEL_-variabele. */
+    const siteBestanden = draai(
+      "git",
+      ["ls-files", "--", "*.html", "vibe/", "railpack.json"],
+      SITE,
+    );
+    const lijst = siteBestanden.uit.trim().split("\n").filter(Boolean);
+    const verdacht = draai(
+      "grep",
+      ["-rl", "-E", "INTEL_|intelligence|4320|vibe-intel", ...lijst.slice(0, 400)],
+      SITE,
+    );
+    const treffers = verdacht.uit.trim() ? verdacht.uit.trim().split("\n") : [];
+    const railpack = readFileSync(join(SITE, "railpack.json"), "utf8");
+    meld(
+      31,
+      "De website is onafhankelijk: geen verwijzing naar de intelligencelaag, geen database",
+      treffers.length === 0 && railpack.includes("staticfile") ? "PASS" : "FAIL",
+      `${lijst.length} sitebestanden gecontroleerd, ${treffers.length} met een verwijzing; ` +
+        `railpack provider staticfile: ${railpack.includes("staticfile") ? "ja" : "NEE"}`,
+      treffers.slice(0, 3),
+    );
+  }
+
+  /* 32 — de live site antwoordt nu, onafhankelijk van dit platform */
+  if (SNEL) {
+    meld(32, "De live site antwoordt onafhankelijk van het intelligenceplatform", "NIET GEDRAAID", "--snel");
+  } else {
+    try {
+      const r = await fetch("https://www.vibeenergy.nl/", {
+        headers: { "user-agent": config.userAgent },
+        redirect: "manual",
+      });
+      const server = r.headers.get("server");
+      meld(
+        32,
+        "De live site antwoordt onafhankelijk van het intelligenceplatform",
+        r.ok ? "PASS" : "FAIL",
+        `HTTP ${r.status}, server '${server}'; dit platform draait niet in productie en de site staat`,
+      );
+    } catch (e) {
+      meld(
+        32,
+        "De live site antwoordt onafhankelijk van het intelligenceplatform",
+        "NIET GEDRAAID",
+        `netwerkfout: ${e instanceof Error ? e.message : String(e)}`,
+      );
+    }
+  }
+
   /* ---------------- 20. sitemap- en canonicalpariteit met live ---------------- */
   if (SNEL) {
     meld(20, "Sitemap- en canonicalpariteit tussen de branch en de live site", "NIET GEDRAAID", "--snel: dit scenario doet een netwerkverzoek");
