@@ -427,6 +427,32 @@ export const BRONNEN: readonly Bron[] = [
   },
   {
     ...STANDAARD,
+    /* UITGEZET OP 12 OKTOBER 2026 — GEMETEN, NIET GEGOKT.
+       ----------------------------------------------------------------
+       Deze bron gaf in productie HTTP 500 en de monitoring meldde dat
+       terecht als FOUT. Het nameten gaf een scherper beeld:
+
+         https://www.rvo.nl/sitemap.xml
+           met onze user-agent      -> HTTP 500
+           met 'Mozilla/5.0'        -> HTTP 200   (zelfde moment)
+         https://www.rvo.nl/robots.txt -> HTTP 200, en declareert
+           'Sitemap: https://www.rvo.nl/sitemap.xml'
+
+       Dus: geen toestemmingsprobleem. robots.txt NODIGT uit om die
+       sitemap te lezen, en de 500 hangt aan de user-agent. Dat is
+       vrijwel zeker botbescherming of een serverfout aan hun kant.
+
+       WAT WE NIET DOEN: onze user-agent vermommen. Een 200 halen door
+       ons voor te doen als browser is het omzeilen van een
+       toegangscontrole, en par. 17 verbiedt dat expliciet. Dat het zou
+       wérken is geen argument.
+
+       WAT WE WEL DOEN: de geautoriseerde route gebruiken die er al is.
+       `rvo-opendata-artikelen` (https://www.rvo.nl/api/v1/opendata/articles)
+       geeft met ONZE user-agent HTTP 200 met 50 artikelen, en dekt
+       subsidie, regelgeving, zonne-energie en vastgoedverduurzaming —
+       een superset van de twee onderwerpen van deze sitemapbron. Deze
+       bron is daarmee overbodig, niet onmisbaar. */
     sleutel: "rvo-subsidie-sitemap",
     uitgever: "Rijksdienst voor Ondernemend Nederland",
     uitgeverSoort: "rijksoverheid",
@@ -454,8 +480,9 @@ export const BRONNEN: readonly Bron[] = [
     ophaalintervalMinuten: 1440,
     maxItemsPerOphaling: 400,
     maxBytes: 16_777_216,
-    actief: true,
-    inactiefReden: null,
+    actief: false,
+    inactiefReden:
+      "HTTP 500 op de gedeclareerde sitemap bij onze user-agent, HTTP 200 bij een browser-user-agent op hetzelfde moment (gemeten 2026-10-12). robots.txt staat lezen expliciet toe, dus dit is geen toestemmingsprobleem maar botbescherming of een serverfout bij RVO. De user-agent vermommen zou een toegangscontrole omzeilen en is daarom niet gedaan. De geautoriseerde route rvo-opendata-artikelen dekt dezelfde onderwerpen en meer, en werkt wel.",
     bewaren: "url en lastmod van subsidiepagina's, als verloopdetector voor subsidieclaims.",
     config: {},
     notities:
