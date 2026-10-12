@@ -1,4 +1,22 @@
 {
   "$schema": "https://schema.railpack.com",
-  "provider": "staticfile"
+  "provider": "staticfile",
+  "exclude": [
+    ".github",
+    ".github/**",
+    ".gitignore",
+    "api",
+    "api/**",
+    "data",
+    "data/**",
+    "docs",
+    "docs/**",
+    "intelligence",
+    "intelligence/**",
+    "package-lock.json",
+    "package.json",
+    "railpack.json",
+    "scripts",
+    "scripts/**"
+  ]
 }

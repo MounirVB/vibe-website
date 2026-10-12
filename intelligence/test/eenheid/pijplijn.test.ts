@@ -3,6 +3,7 @@
    ============================================================ */
 
 import { strict as assert } from "node:assert";
+import { createHmac } from "node:crypto";
 import { test } from "node:test";
 import { herkenOnderwerpen, isProcedureel, gebeurtenisSoortVan } from "../../src/pijplijn/onderwerpen.ts";
 import { extraheerUitspraken, splitsZinnen, VERTROUWEN_PLAFOND, herzieningstermijnDagen } from "../../src/pijplijn/uitspraken.ts";
@@ -510,25 +511,70 @@ test("wachtwoord: zonder hash kan er niet ingelogd worden", async () => {
   assert.equal(await controleerWachtwoord("wat dan ook", null), false);
 });
 
+test("wachtwoord: een hash met een LEEG sleuteldeel faalt dicht, niet open", async () => {
+  /* Dit was een echte faal-open. Zes delen, begint met 'scrypt', dus de
+     vormtoets slaagde; het sleuteldeel was nul bytes, scrypt met keylen 0
+     geeft een lege buffer, en timingSafeEqual(leeg, leeg) is true. Elk
+     wachtwoord slaagde dus tegen zo'n hash. */
+  const kapot = `scrypt$16384$8$1$${"ab".repeat(16)}$`;
+  assert.equal(await controleerWachtwoord("het ene wachtwoord", kapot), false);
+  assert.equal(await controleerWachtwoord("een heel ander wachtwoord", kapot), false);
+});
+
+test("wachtwoord: een afgekapt sleuteldeel faalt dicht", async () => {
+  const echt = await maakWachtwoordHash("een geldig wachtwoord");
+  const delen = echt.split("$");
+  const afgekapt = [...delen.slice(0, 5), (delen[5] ?? "").slice(0, 32)].join("$");
+  assert.equal(await controleerWachtwoord("een geldig wachtwoord", afgekapt), false);
+});
+
+test("wachtwoord: een te kort zout en onzinnige kosten falen dicht", async () => {
+  const sleutel = "cd".repeat(64);
+  assert.equal(await controleerWachtwoord("x", `scrypt$16384$8$1$00$${sleutel}`), false);
+  assert.equal(await controleerWachtwoord("x", `scrypt$1$8$1$${"ab".repeat(16)}$${sleutel}`), false);
+  assert.equal(await controleerWachtwoord("x", `scrypt$16384$0$1$${"ab".repeat(16)}$${sleutel}`), false);
+});
+
+test("wachtwoord: een echte hash blijft werken en weigert het verkeerde wachtwoord", async () => {
+  const h = await maakWachtwoordHash("twaalf tekens minimaal");
+  assert.equal(await controleerWachtwoord("twaalf tekens minimaal", h), true);
+  assert.equal(await controleerWachtwoord("twaalf tekens minimaa", h), false);
+});
+
 test("sessie: een geldig cookie is leesbaar", () => {
   process.env["INTEL_SESSIE_GEHEIM"] = "x".repeat(40);
-  const cookie = maakSessieCookie(7, 3);
+  const cookie = maakSessieCookie(7, 3, 5);
   const s = leesSessieCookie(cookie);
   assert.equal(s?.gebruikerId, 7);
   assert.equal(s?.organisatieId, 3);
+  assert.equal(s?.sessieEpoch, 5);
+});
+
+test("sessie: een cookie ZONDER epoch wordt geweigerd", () => {
+  // Een koekje van voor migratie 0015. Het mag niet als 'epoch 1' worden
+  // gelezen, want dan glipt het door een intrekking heen.
+  process.env["INTEL_SESSIE_GEHEIM"] = "x".repeat(40);
+  const lading = Buffer.from(
+    JSON.stringify({ g: 7, o: 3, v: Date.now() + 60_000 }),
+    "utf8",
+  ).toString("base64url");
+  const sig = createHmac("sha256", Buffer.from("x".repeat(40), "utf8"))
+    .update(lading)
+    .digest("base64url");
+  assert.equal(leesSessieCookie(`${lading}.${sig}`), null);
 });
 
 test("sessie: een gemanipuleerd cookie wordt geweigerd", () => {
   process.env["INTEL_SESSIE_GEHEIM"] = "x".repeat(40);
-  const cookie = maakSessieCookie(7, 3);
+  const cookie = maakSessieCookie(7, 3, 1);
   const punt = cookie.lastIndexOf(".");
-  const basis = Buffer.from(JSON.stringify({ g: 99, o: 1, v: Date.now() + 1000 })).toString("base64url");
+  const basis = Buffer.from(JSON.stringify({ g: 99, o: 1, v: Date.now() + 1000, e: 1 })).toString("base64url");
   assert.equal(leesSessieCookie(`${basis}.${cookie.slice(punt + 1)}`), null);
 });
 
 test("sessie: een ander geheim maakt het cookie ongeldig", () => {
   process.env["INTEL_SESSIE_GEHEIM"] = "a".repeat(40);
-  const cookie = maakSessieCookie(1, 1);
+  const cookie = maakSessieCookie(1, 1, 1);
   process.env["INTEL_SESSIE_GEHEIM"] = "b".repeat(40);
   assert.equal(leesSessieCookie(cookie), null);
 });

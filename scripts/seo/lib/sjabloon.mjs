@@ -221,11 +221,22 @@ ${o.inhoud}
     `naLead` is een optioneel blok direct onder de lead — gebruikt door het
     nieuwskanaal voor de zichtbare publicatiedatum. Zonder die parameter is de
     uitvoer byte-identiek aan daarvoor. */
+/* WAAROM h1 WEL door esc() GAAT EN lead NIET
+   De H1 is platte tekst. Hij komt bij nieuwsberichten uit een
+   inhoudsversie in de database, en die tekst is niet door een redacteur
+   als HTML bedoeld; zonder esc() is `<h1>${h1}</h1>` de enige
+   onontsnapte tekstsink op elke pagina. Gemeten op 12 oktober 2026:
+   geen enkele bestaande H1 bevat opmaak, `&` of een quote, dus deze
+   toevoeging laat de uitvoer byte-identiek.
+   De lead is WEL bedoeld als HTML: veiligeInline() in
+   intelligence/src/site/nieuwsregister.ts zet daar met opzet
+   <strong>, <em> en <a> in terug, en escapet de rest. Die functie is de
+   poort voor de lead; esc() hier zou zijn uitvoer zichtbaar stuk maken. */
 export function opening({ kruimels, kruimelLabel, h1, lead, acties, naLead }) {
   return `  <section class="ve-sec ve-sec--flush-t" style="padding-top:var(--ve-s-xl)">
     <div class="ve-wrap">
     ${kruimelsHtml(kruimels || [], kruimelLabel)}
-      <h1 class="ve-display" style="max-width:52rem;margin-top:var(--ve-s-lg)">${h1}</h1>
+      <h1 class="ve-display" style="max-width:52rem;margin-top:var(--ve-s-lg)">${esc(h1)}</h1>
       <p class="ve-lead ve-measure-wide" style="margin-top:var(--ve-s-lg)">${lead}</p>${
     naLead ? `\n      ${naLead}` : ''
   }${

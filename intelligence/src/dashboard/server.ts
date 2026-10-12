@@ -13,7 +13,12 @@
    steeds alleen zijn eigen organisatie.
    ============================================================ */
 
-import express, { type Request, type Response, type NextFunction } from "express";
+import express, {
+  type Request,
+  type RequestHandler,
+  type Response,
+  type NextFunction,
+} from "express";
 import { configLezen } from "../kern/config.ts";
 import {
   maakPool,
@@ -154,6 +159,26 @@ export function maakApp(pool: Pool): express.Express {
     return undefined;
   }
 
+  /**
+   * Stuurt een afgewezen belofte uit een async handler naar `foutvanger`.
+   *
+   * EXPRESS 4 DOET DIT NIET ZELF. Gemeten met de express uit deze
+   * worktree (4.22.3): een async handler die gooit levert GEEN antwoord
+   * — het verzoek blijft hangen tot de time-out — de foutafhandelaar
+   * wordt NIET geraakt, en er komt een unhandledRejection. Het vangnet
+   * onderaan dit bestand logt die wel, maar het verzoek is dan al stil
+   * gesneuveld en bij een strikte procesinstelling valt het dashboard om.
+   *
+   * Express 5 routeert rejections wél, maar die stap is een migratie met
+   * eigen gedragsverschillen; deze wrapper is drie regels en dekt het
+   * volledig.
+   */
+  const async_ =
+    <R extends Request>(fn: (req: R, res: Response, next: NextFunction) => Promise<unknown>): RequestHandler =>
+    (req, res, next) => {
+      Promise.resolve(fn(req as R, res, next)).catch(next);
+    };
+
   /** Haalt de gebruiker erbij, of stuurt naar de inlogpagina. */
   async function vereistInlog(req: MetGebruiker, res: Response, next: NextFunction) {
     const sessie = leesSessieCookie(leesCookie(req));
@@ -164,7 +189,7 @@ export function maakApp(pool: Pool): express.Express {
     const gebruiker = await metOrganisatie(
       pool,
       { organisatieId: sessie.organisatieId, gebruikerId: sessie.gebruikerId },
-      (c) => leesGebruiker(c, sessie.gebruikerId),
+      (c) => leesGebruiker(c, sessie.gebruikerId, sessie.sessieEpoch),
     );
     if (!gebruiker) {
       res.setHeader("set-cookie", `${COOKIE}=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict${cookieSecure()}`);
@@ -245,7 +270,7 @@ export function maakApp(pool: Pool): express.Express {
     );
   });
 
-  app.post("/inloggen", async (req: MetCorrelatie, res) => {
+  app.post("/inloggen", async_(async (req: MetCorrelatie, res) => {
     const email = String(req.body?.email ?? "").trim();
     const wachtwoord = String(req.body?.wachtwoord ?? "");
     const config = configLezen();
@@ -312,7 +337,13 @@ export function maakApp(pool: Pool): express.Express {
       zoekGebruikerOpEmail(c, email),
     ).catch(() => null);
 
-    const ok = kandidaat ? await controleerWachtwoord(wachtwoord, kandidaat.wachtwoord_hash) : false;
+    /* ONVOORWAARDELIJK, ook als het account niet bestaat.
+       `kandidaat ? await controleerWachtwoord(...) : false` sloeg scrypt
+       over zodra het e-mailadres onbekend was. Het antwoord was identiek,
+       maar de responstijd niet: 0,003 ms tegen 23 ms. Dat verschil is een
+       antwoord op de vraag "bestaat dit adres". controleerWachtwoord()
+       doet bij hash null nu hetzelfde werk en geeft false. */
+    const ok = await controleerWachtwoord(wachtwoord, kandidaat?.wachtwoord_hash ?? null);
     if (!ok || !kandidaat) {
       const na = inlogSlot.misluktePoging(accountSleutel);
       log.waarschuwing("inlogpoging mislukt", {
@@ -362,10 +393,10 @@ export function maakApp(pool: Pool): express.Express {
 
     res.setHeader(
       "set-cookie",
-      `${COOKIE}=${maakSessieCookie(kandidaat.id, kandidaat.organisatie_id)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=28800${cookieSecure()}`,
+      `${COOKIE}=${maakSessieCookie(kandidaat.id, kandidaat.organisatie_id, kandidaat.sessie_epoch)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=28800${cookieSecure()}`,
     );
     res.redirect("/");
-  });
+  }));
 
   app.get("/uitloggen", (_req, res) => {
     res.setHeader("set-cookie", `${COOKIE}=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict${cookieSecure()}`);
@@ -397,7 +428,7 @@ export function maakApp(pool: Pool): express.Express {
     });
   });
 
-  app.get("/gereed", async (req: MetCorrelatie, res) => {
+  app.get("/gereed", async_(async (req: MetCorrelatie, res) => {
     const begin = performance.now();
     try {
       await Promise.race([
@@ -420,11 +451,11 @@ export function maakApp(pool: Pool): express.Express {
         duur_ms: Math.round(performance.now() - begin),
       });
     }
-  });
+  }));
 
   // ---------------- overzicht ----------------
 
-  app.get("/", vereistInlog, async (req: MetGebruiker, res) => {
+  app.get("/", async_(vereistInlog), vereistRecht("inhoud.lezen"), async_(async (req: MetGebruiker, res) => {
     const d = await alsGebruiker(req, async (c) => ({
       bronnen: await eenRij<{ totaal: number; gezond: number; stuk: number }>(
         c,
@@ -550,11 +581,11 @@ ${tabel(
 `,
       }),
     );
-  });
+  }));
 
   // ---------------- market radar ----------------
 
-  app.get("/radar", vereistInlog, async (req: MetGebruiker, res) => {
+  app.get("/radar", async_(vereistInlog), vereistRecht("inhoud.lezen"), async_(async (req: MetGebruiker, res) => {
     const d = await alsGebruiker(req, async (c) => ({
       bronnen: await rijen<{
         sleutel: string;
@@ -655,11 +686,11 @@ ${tabel(
 `,
       }),
     );
-  });
+  }));
 
   // ---------------- content studio ----------------
 
-  app.get("/studio", vereistInlog, vereistRecht("inhoud.lezen"), async (req: MetGebruiker, res) => {
+  app.get("/studio", async_(vereistInlog), vereistRecht("inhoud.lezen"), async_(async (req: MetGebruiker, res) => {
     const d = await alsGebruiker(req, async (c) => ({
       versies: await rijen<{
         id: number;
@@ -769,11 +800,11 @@ ${tabel(
 `,
       }),
     );
-  });
+  }));
 
   // ---------------- regio ----------------
 
-  app.get("/regio", vereistInlog, vereistRecht("inhoud.lezen"), async (req: MetGebruiker, res) => {
+  app.get("/regio", async_(vereistInlog), vereistRecht("inhoud.lezen"), async_(async (req: MetGebruiker, res) => {
     const d = await alsGebruiker(req, async (c) => ({
       geo: await rijen<{ soort: string; n: number }>(
         c,
@@ -846,11 +877,11 @@ ${tabel(
 `,
       }),
     );
-  });
+  }));
 
   // ---------------- commerciële signalen ----------------
 
-  app.get("/signalen", vereistInlog, vereistRecht("signaal.lezen"), async (req: MetGebruiker, res) => {
+  app.get("/signalen", async_(vereistInlog), vereistRecht("signaal.lezen"), async_(async (req: MetGebruiker, res) => {
     const d = await alsGebruiker(req, (c) =>
       rijen<{
         id: number;
@@ -906,11 +937,11 @@ ${tabel(
 `,
       }),
     );
-  });
+  }));
 
   // ---------------- distributie ----------------
 
-  app.get("/distributie", vereistInlog, vereistRecht("distributie.concept"), async (req: MetGebruiker, res) => {
+  app.get("/distributie", async_(vereistInlog), vereistRecht("distributie.concept"), async_(async (req: MetGebruiker, res) => {
     const d = await alsGebruiker(req, (c) =>
       rijen<{
         id: number;
@@ -957,11 +988,11 @@ ${tabel(
 `,
       }),
     );
-  });
+  }));
 
   // ---------------- prestaties ----------------
 
-  app.get("/prestaties", vereistInlog, vereistRecht("inhoud.lezen"), async (req: MetGebruiker, res) => {
+  app.get("/prestaties", async_(vereistInlog), vereistRecht("inhoud.lezen"), async_(async (req: MetGebruiker, res) => {
     const koppelingen = koppelingStatussen();
     const funnel = await funnelBeeld(pool, req.gebruiker?.organisatieId ?? 0);
     const d = await alsGebruiker(req, async (c) => ({
@@ -1049,11 +1080,11 @@ ${tabel(
 `,
       }),
     );
-  });
+  }));
 
   // ---------------- instellingen ----------------
 
-  app.get("/instellingen", vereistInlog, vereistRecht("beleid.beheren"), async (req: MetGebruiker, res) => {
+  app.get("/instellingen", async_(vereistInlog), vereistRecht("beleid.beheren"), async_(async (req: MetGebruiker, res) => {
     const d = await alsGebruiker(req, async (c) => ({
       invarianten: await rijen<{ soort: string; onderwerp: string; bevinding: string }>(
         c,
@@ -1180,7 +1211,7 @@ ${tabel(
 `,
       }),
     );
-  });
+  }));
 
   app.use((req, res) => {
     res.status(404).send(
@@ -1234,14 +1265,39 @@ export function isLoopback(bind: string): boolean {
  * weigert het dashboard te starten in plaats van stil onversleuteld
  * sessiekoekjes over een publiek adres te sturen.
  */
-export function startWeigering(config: {
-  omgeving: string;
-  dashboardBind: string;
-  dashboardAchterTlsProxy: boolean;
-  dashboardSessieGeheimAanwezig: boolean;
-}): string | null {
+export function startWeigering(
+  config: {
+    omgeving: string;
+    dashboardBind: string;
+    dashboardAchterTlsProxy: boolean;
+    dashboardSessieGeheimAanwezig: boolean;
+  },
+  /**
+   * Is INTEL_OMGEVING EXPLICIET gezet? Standaard uit de omgeving gelezen,
+   * als parameter zodat een toets het kan nabootsen.
+   */
+  omgevingExpliciet: boolean = (process.env["INTEL_OMGEVING"] ?? "") !== "",
+): string | null {
   if (!config.dashboardSessieGeheimAanwezig) {
     return "INTEL_SESSIE_GEHEIM ontbreekt of is korter dan 32 tekens; het dashboard start niet zonder sessiegeheim";
+  }
+  /* DRIE BESCHERMINGEN HANGEN AAN INTEL_OMGEVING, EN DIE VIEL STIL TERUG.
+     configLezen() leest INTEL_OMGEVING met 'ontwikkel' als standaard.
+     Ontbreekt de variabele in een productiedeploy, dan gebeurt er drie
+     keer iets onzichtbaars: het sessiekoekje verliest `; Secure`, de
+     HSTS-header blijft weg, en de weigering hieronder vuurt niet meer —
+     want die eist `omgeving === "productie"`.
+     Een ontbrekende variabele mag niet de ONVEILIGE kant kiezen. Bindt
+     het dashboard op een niet-loopbackadres, dan is dat precies het
+     geval waarin het uitmaakt, dus dan eisen we de verklaring. Op de
+     loopback blijft de standaard bruikbaar en blijft ontwikkelen simpel. */
+  if (!omgevingExpliciet && !isLoopback(config.dashboardBind)) {
+    return (
+      `weigering: het dashboard bindt op '${config.dashboardBind}' terwijl INTEL_OMGEVING niet is ` +
+      "gezet. De standaard is 'ontwikkel', en die zet geen Secure op het sessiekoekje, geen HSTS " +
+      "en schakelt de TLS-weigering hieronder uit. Zet INTEL_OMGEVING expliciet op ontwikkel, test " +
+      "of productie, zodat een ontbrekende variabele niet de onveilige kant kiest."
+    );
   }
   if (
     config.omgeving === "productie" &&

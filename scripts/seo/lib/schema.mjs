@@ -191,6 +191,21 @@ export function gebied(paginaUrl, { naam, soort, code, ouderNaam, centroide }) {
   return g;
 }
 
+/* De JSON-LD belandt tussen <script type="application/ld+json"> en
+   </script>. JSON.stringify maakt geldige JSON, maar een titel die
+   `</script>` bevat sluit daarmee het scriptblok af en alles erna is
+   gewone HTML — een injectie die geen enkele JSON-controle ziet.
+   `<\/` is binnen een JSON-string gelijk aan `</`, dus de betekenis
+   verandert niet en de parser leest hetzelfde. U+2028 en U+2029 zijn
+   geldige JSON maar ongeldige JavaScript-stringtekens; die ook maar
+   meteen, want dit blok wordt door een scriptparser gelezen. */
 export function graaf(knopen) {
-  return JSON.stringify({ '@context': 'https://schema.org', '@graph': knopen.filter(Boolean) });
+  return JSON.stringify({ '@context': 'https://schema.org', '@graph': knopen.filter(Boolean) })
+    .replace(/<\//g, '<\\/')
+    /* Deze twee met een \u-escape IN de regex en niet als letterlijk
+       teken: U+2028 en U+2029 zijn in JavaScript regelafsluiters, dus
+       een letterlijke vorm breekt de regexliteral zelf open. Precies
+       de reden dat ze hier ontsnapt moeten worden. */
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
 }

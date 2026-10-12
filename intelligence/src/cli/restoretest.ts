@@ -51,7 +51,7 @@ import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import pg from "pg";
 import { laadEnvBestand, APP_WORTEL } from "../kern/config.ts";
-import { vindPgGereedschap, type BackupManifest } from "../ops/backup.ts";
+import { KRITIEKE_TABELLEN, vindPgGereedschap, type BackupManifest } from "../ops/backup.ts";
 
 const uitvoeren = promisify(execFile);
 laadEnvBestand();
@@ -230,16 +230,44 @@ try {
      --no-owner gemaakt, maar RLS-policies en grants verwijzen bij naam
      naar rollen; die moeten dus eerst bestaan. Dit is precies de stap
      die een restoreprocedure zonder test mist. */
-  for (const rol of ["vibe_intel_app", "vibe_intel_lezer", "vibe_intel_onderhoud"]) {
-    await uitvoeren(gereedschap.psql, [
-      doelUrl,
-      "-v",
-      "ON_ERROR_STOP=1",
-      "-c",
-      `do $$ begin if not exists (select 1 from pg_roles where rolname = '${rol}') then create role ${rol} nologin; end if; end $$;`,
+  /* EEN ROL IS CLUSTERBREED, GEEN DATABASEOBJECT.
+     In de Docker-vorm is dat onschuldig: de hele server wordt daarna
+     weggegooid. Bij `--doel-url` staat de server er NA de test nog, en
+     dat is de productieserver. Rollen die wij daar aanmaken blijven dan
+     achter — buiten de wegwerpdatabase, dus buiten de isolatie die dit
+     bestand belooft.
+     Daarom: bij een bestaande server maken we NIETS aan. De rollen horen
+     daar al te bestaan, want de migraties hebben ze gezet. Ontbreken ze,
+     dan is dat een echte bevinding over die server en geen reden om er
+     stilletjes iets bij te zetten. */
+  if (NAAR_BESTAANDE_SERVER) {
+    const { stdout } = await uitvoeren(gereedschap.psql, [
+      doelUrl, "-At", "-c",
+      `select rolname from pg_roles where rolname in ('vibe_intel_app','vibe_intel_lezer','vibe_intel_onderhoud') order by 1`,
     ]);
+    const aanwezig = stdout.split("\n").map((r) => r.trim()).filter(Boolean);
+    const ontbreekt = ["vibe_intel_app", "vibe_intel_lezer", "vibe_intel_onderhoud"]
+      .filter((r) => !aanwezig.includes(r));
+    if (ontbreekt.length) {
+      throw new Error(
+        `de doelserver mist applicatierol(len) ${ontbreekt.join(", ")}. ` +
+          `Deze test maakt op een BESTAANDE server geen rollen aan, want een rol is ` +
+          `clusterbreed en zou na de test achterblijven. Draai eerst de migraties.`,
+      );
+    }
+    console.log(`  applicatierollen bestaan al op de doelserver (${aanwezig.length}); niets aangemaakt`);
+  } else {
+    for (const rol of ["vibe_intel_app", "vibe_intel_lezer", "vibe_intel_onderhoud"]) {
+      await uitvoeren(gereedschap.psql, [
+        doelUrl,
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-c",
+        `do $$ begin if not exists (select 1 from pg_roles where rolname = '${rol}') then create role ${rol} nologin; end if; end $$;`,
+      ]);
+    }
+    console.log("  applicatierollen aangemaakt in de wegwerpcontainer (de dump draagt geen rollen)");
   }
-  console.log("  applicatierollen aangemaakt (de dump draagt geen rollen)");
 
   const { stderr: restoreFout } = await uitvoeren(
     gereedschap.pgRestore,
@@ -267,14 +295,38 @@ try {
       `${mig?.n} teruggezet tegen ${manifest.migraties} in het manifest`,
     );
 
+    /* De tabelnaam komt uit een manifestBESTAND op schijf en gaat in een
+       identifierpositie, waar een parameter niet kan. Zonder de toets
+       hieronder is dat SQL-injectie: `--dump <pad>` bepaalt welk manifest
+       gelezen wordt, en node-pg stuurt een query ZONDER parameters via het
+       simple protocol, dat meerdere statements achter een puntkomma
+       uitvoert. Een manifest met de sleutel
+       `intel.x; drop table intel.taken; --` zou dus draaien.
+
+       Daarom niet alleen een vormtoets maar een WITTE LIJST: de naam moet
+       in KRITIEKE_TABELLEN staan, de constante die maakBackup() ook
+       gebruikt om het manifest te vullen. Een manifest dat iets anders
+       noemt, is per definitie niet door onze back-up geschreven. */
+    const toegestaneTabellen = new Set<string>(KRITIEKE_TABELLEN);
     let tellingenOk = true;
+    const geweigerd: string[] = [];
     for (const [tabel, verwacht] of Object.entries(manifest.tellingen)) {
-      const r = await een<{ n: number }>(`select count(*)::int as n from ${tabel}`);
+      if (!toegestaneTabellen.has(tabel) || !/^intel\.[a-z_]+$/.test(tabel)) {
+        geweigerd.push(tabel);
+        tellingenOk = false;
+        console.log(`    GEWEIGERD ${tabel} — staat niet in KRITIEKE_TABELLEN`);
+        continue;
+      }
+      const r = await een<{ n: number }>(`select count(*)::int as n from ${tabel} where true`);
       const ok = r?.n === verwacht;
       if (!ok) tellingenOk = false;
       console.log(`    ${ok ? "ok  " : "MIS "} ${tabel.padEnd(32)} ${r?.n} / ${verwacht}`);
     }
-    toets("elke kritieke tabel heeft exact de rijtelling uit het manifest", tellingenOk);
+    toets(
+      "elke kritieke tabel heeft exact de rijtelling uit het manifest",
+      tellingenOk,
+      geweigerd.length ? `${geweigerd.length} tabelnaam/namen geweigerd: ${geweigerd.join(", ")}` : "",
+    );
 
     /* Goedkeuringen MET hun context, niet alleen de rij. */
     const g = await een<{ totaal: number; met_naam: number; met_afdruk: number }>(
@@ -454,7 +506,16 @@ try {
     /* Major 0: een `drop database` stelt geen eisen aan de clientversie,
        anders dan een dump. Elke psql in PATH is hier goed genoeg. */
     const g = await vindPgGereedschap(0).catch(() => null);
-    if (g) {
+    if (!g) {
+      /* Zonder else-tak bleef de wegwerpdatabase hier STIL achter op de
+         productieserver: geen melding, geen exitcode. Een opruiming die
+         kan overslaan zonder dat iemand het ziet, is geen opruiming. */
+      console.error("");
+      console.error(`LET OP: geen psql gevonden, dus ${WEGWERP_DB} is NIET gedropt.`);
+      console.error(`Hij staat op de doelserver uit INTEL_RESTORETEST_DOEL_URL.`);
+      console.error(`Verwijder hem met de hand: drop database ${WEGWERP_DB};`);
+      process.exitCode = 1;
+    } else {
       await uitvoeren(g.psql, [beheer, "-c", `drop database if exists ${WEGWERP_DB} with (force)`])
         .then(() => {
           console.log("");

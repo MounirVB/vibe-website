@@ -523,6 +523,22 @@ writeFileSync(
     {
       _toelichting:
         'Gegenereerd door scripts/seo/bouw-routes.mjs. Niet met de hand bijwerken. PENDING betekent: geen bestand, geen sitemapregel, geen canonical, geen interne link.',
+      /* LET OP BIJ HET DRAAIEN VAN DE KETEN: deze datum is de WANDKLOK.
+         Draai je de keten op een latere dag dan de dag waarop de uitvoer
+         is gecommit, dan wijzigen `dateModified` in de JSON-LD en
+         `lastmod` in de sitemap van elke route — gemeten op 12 oktober
+         2026: 18 bestanden, uitsluitend in het datumveld. `git status` is
+         dan niet leeg en de reproduceerbaarheidspoort in
+         .github/workflows/poort.yml faalt om een reden die niets met de
+         generator te maken heeft.
+         Daarom pint die werkstroom ROUTES_DATUM (en SITEMAP_DATUM,
+         GEO_OPHAALDATUM, BEWIJS_OPHAALDATUM) op de waarde die hier al in
+         routes.json staat. Doe dat lokaal ook als je alleen wilt
+         CONTROLEREN of de keten reproduceert:
+           ROUTES_DATUM=$(node -p "require('./data/seo/routes.json')._gegenereerd") \
+           SITEMAP_DATUM=$ROUTES_DATUM node scripts/seo/bouw.mjs --offline
+         Wil je de datums juist wél verversen, draai dan zonder pin en
+         commit de uitvoer mee. */
       _gegenereerd: process.env.ROUTES_DATUM || new Date().toISOString().slice(0, 10),
       samenvatting,
       routes: routes.sort((a, b) => a.route.localeCompare(b.route)),
