@@ -444,14 +444,32 @@ try {
       const kop = await fetch(`${basis}/inloggen`);
       const headers = ["x-robots-tag", "x-frame-options", "content-security-policy", "x-content-type-options"];
       const ontbreekt = headers.filter((h) => !kop.headers.get(h));
+
+      /* DE INLOGPAGINA MAG GEEN OPERATORGEREEDSCHAP NOEMEN.
+         Er stond letterlijk "Zet er een met `npm run wachtwoord`" op een
+         pagina die vanaf internet bereikbaar is. Dat was drie keer
+         verkeerd: het commando vraagt databasetoegang en is dus
+         onbruikbaar voor de lezer, het is niet meer de bedoelde route
+         (dat is een eenmalige activatiesleutel via /instellen), en het
+         vertelt een aanvaller welk gereedschap er achter de deur staat.
+         Deze toets houdt die tekst weg. */
+      const inlogHtml = await kop.text();
+      const verbodenOpInlog = ["npm run", "npm ", "wachtwoord-CLI", "psql", "INTEL_"].filter((v) =>
+        inlogHtml.includes(v),
+      );
+
       meld(
         17,
-        "Dashboard zonder sessie: geen inhoud, wel een omleiding naar inloggen",
-        open.status === 302 && open.headers.get("location") === "/inloggen" && ontbreekt.length === 0
+        "Dashboard zonder sessie: omleiding, beveiligingsheaders, en geen operatorgereedschap op de inlogpagina",
+        open.status === 302 &&
+          open.headers.get("location") === "/inloggen" &&
+          ontbreekt.length === 0 &&
+          verbodenOpInlog.length === 0
           ? "PASS"
           : "FAIL",
-        `GET / gaf ${open.status} naar ${open.headers.get("location")}; beveiligingsheaders ontbrekend: ${ontbreekt.length}`,
-        ontbreekt,
+        `GET / gaf ${open.status} naar ${open.headers.get("location")}; headers ontbrekend: ${ontbreekt.length}; ` +
+          `verboden vermeldingen op de inlogpagina: ${verbodenOpInlog.length}`,
+        [...ontbreekt, ...verbodenOpInlog.map((v) => `inlogpagina noemt '${v}'`)],
       );
 
       /* Inloggen zoals een browser het doet: eerst het formulier halen

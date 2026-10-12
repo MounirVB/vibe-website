@@ -263,8 +263,9 @@ export function maakApp(pool: Pool): express.Express {
              <input id="wachtwoord" name="wachtwoord" type="password" autocomplete="current-password" required>
              <button type="submit">Inloggen</button>
              <p class="klein" style="margin-top:14px">
-               Gebruikers worden zonder wachtwoord aangemaakt. Zet er een met
-               <code>npm run wachtwoord</code> voordat u hier kunt inloggen.
+               Nog geen wachtwoord? Accounts worden zonder wachtwoord aangemaakt.
+               U krijgt een eenmalige activatielink waarmee u er zelf een kiest.
+               Vraag die op bij de beheerder; dit formulier kan er geen maken.
              </p>
            </form>`,
       }),
