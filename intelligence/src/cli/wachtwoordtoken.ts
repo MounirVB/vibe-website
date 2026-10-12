@@ -4,6 +4,7 @@
    ------------------------------------------------------------
      npm run wachtwoordtoken -- --email <adres>
      npm run wachtwoordtoken -- --email <adres> --uren 4
+     INTEL_INSTELSLEUTEL=<geheim> npm run wachtwoordtoken -- --email <adres>
 
    WAAROM DIT BESTAAT NAAST `npm run wachtwoord`
 
@@ -25,6 +26,13 @@
 
    DE SLEUTEL WORDT ÉÉN KEER GEPRINT en nergens bewaard; de database
    bevat alleen zijn sha256. Kwijt is kwijt — dan maak je een nieuwe.
+
+   DRAAI JE DIT OP EEN PLATFORM DAT DE UITVOER BEWAART, geef de sleutel
+   dan mee via INTEL_INSTELSLEUTEL. De CLI print hem dan NIET. Railway
+   bewaart de uitvoer van een pre-deploy of een eenmalige taak als
+   deployment-log, en een geldige sleutel in zo'n archief overleeft zijn
+   nut — precies de reden dat `npm run wachtwoord` zijn geheim ook uit de
+   commandoregel heeft gehaald.
    ============================================================ */
 
 import { laadEnvBestand, configLezen } from "../kern/config.ts";
@@ -58,10 +66,12 @@ async function main(): Promise<number> {
   const organisatieId = await huidigeOrganisatie(pool);
   const config = configLezen();
 
+  const meegegeven = (process.env["INTEL_INSTELSLEUTEL"] ?? "").trim() || undefined;
   const uit = await metOrganisatie(pool, { organisatieId }, (c) =>
     maakInstelsleutel(c, organisatieId, email, {
       geldigMs: uren * 3600_000,
       uitgegevenDoor: "operator-cli",
+      ...(meegegeven ? { sleutel: meegegeven } : {}),
     }),
   );
 
@@ -69,11 +79,23 @@ async function main(): Promise<number> {
   process.stdout.write("\n");
   process.stdout.write(`INSTELSLEUTEL VOOR ${email}\n`);
   process.stdout.write("\n");
-  process.stdout.write(`  sleutel      ${uit.sleutel}\n`);
+  if (meegegeven) {
+    /* NIET printen: de sleutel kwam van buiten en de aanroeper heeft
+       hem al. Alleen de vorm, zodat je kunt zien dat de juiste is
+       gebruikt. */
+    process.stdout.write(
+      `  sleutel      meegegeven via INTEL_INSTELSLEUTEL (${uit.sleutel.length} tekens, niet geprint)\n`,
+    );
+  } else {
+    process.stdout.write(`  sleutel      ${uit.sleutel}\n`);
+  }
   process.stdout.write(`  geldig tot   ${uit.verlooptOp} (${uren} uur)\n`);
   process.stdout.write("\n");
   process.stdout.write("  Wissel hem in op het dashboard:\n");
-  process.stdout.write(`    /instellen?sleutel=${uit.sleutel}\n`);
+  process.stdout.write(
+    meegegeven ? "    /instellen?sleutel=<de sleutel die u hebt meegegeven>\n"
+               : `    /instellen?sleutel=${uit.sleutel}\n`,
+  );
   process.stdout.write("\n");
   process.stdout.write("  Het oude wachtwoord is NU ongeldig en lopende sessies zijn ingetrokken.\n");
   process.stdout.write("  Deze sleutel is eenmalig en wordt nergens bewaard; alleen zijn hash.\n");
