@@ -40,6 +40,11 @@ const hier = dirname(fileURLToPath(import.meta.url));
 const wortel = resolve(hier, '..', '..');
 const lees = (...p) => JSON.parse(readFileSync(resolve(wortel, ...p), 'utf8'));
 const DROOG = process.argv.includes('--droog');
+/** Waarde van --<naam> <waarde>, of undefined. */
+function argv(naam) {
+  const i = process.argv.indexOf(`--${naam}`);
+  return i === -1 ? undefined : process.argv[i + 1];
+}
 
 const reg = lees('data', 'seo', 'routes.json');
 const tak = lees('data', 'bewijs', 'bedrijfstakken.json');
@@ -69,10 +74,46 @@ const vorig = JSON.parse(readFileSync(besluitPad, 'utf8'));
 const projGeo = lees('data', 'bewijs', 'projecten-geo.json').per_gemeente;
 const vest = lees('data', 'bewijs', 'vestigingen.json').per_gemeente;
 
+/* ------------------------------------------------------- GEFASEERD UITROLLEN
+
+   Een statische site wordt in één artefact uitgerold; Railway kan geen
+   deelverzameling serveren. De knop die hier WEL bestaat is dit besluit:
+   zet er minder gemeenten in en er staan minder pagina's live.
+
+   Daarmee is een gefaseerde uitrol echt mogelijk, en elke tussenstand is
+   een CORRECTE site: de provinciepagina toont de gemeenten zonder pagina
+   als platte tekst in plaats van als link, de sitemap bevat precies wat er
+   staat, en er ontstaat geen enkele link naar een niet-bestaande pagina.
+
+   --fase <naam> beperkt tot de provincies van die fase. Zonder vlag: alles.
+   De fasen zijn op OMVANG gekozen, niet op alfabet: fase 1 is klein genoeg
+   om de deployketen te toetsen met een beperkte blast radius. */
+const FASEN = {
+  1: {
+    toelichting: 'Twee kleine provincies plus alle provinciehubs. Toetst de deployketen op beperkte schaal.',
+    provincies: ['drenthe', 'flevoland'],
+  },
+  2: {
+    toelichting: 'De resterende provincies, nadat fase 1 live is geverifieerd.',
+    provincies: null, // null = alle overige
+  },
+};
+const faseArg = argv('fase');
+const fase = faseArg ? FASEN[faseArg] : null;
+if (faseArg && !fase) {
+  console.error(`onbekende fase '${faseArg}'; beschikbaar: ${Object.keys(FASEN).join(', ')}`);
+  process.exit(1);
+}
+const faseFilter = (g) => {
+  if (!fase || !fase.provincies) return true;
+  return fase.provincies.includes(g.provincie_slug);
+};
+
 const kandidaten = geo.gemeenten
   .filter((g) => !(projGeo[g.gemeentecode] || []).length)
   .filter((g) => (terr.per_gemeente[g.gemeentecode] || []).some((t) => t.naam && (t.ha_netto ?? t.ha_bruto)))
   .filter((g) => typeof vest[g.gemeentecode] === 'number')
+  .filter(faseFilter)
   .map((g) => ({
     route: `regios/${g.provincie_slug}/${g.slug}`,
     gemeentecode: g.gemeentecode,
@@ -144,6 +185,7 @@ const uit = {
   _versie: '2.0.0',
   _vastgesteld: '2026-10-12',
   _release: 'Release 3.1 — regionale uitbreiding op bedrijfstakbewijs',
+  _fase: faseArg ? `${faseArg} — ${fase.toelichting}` : 'volledig (geen --fase opgegeven)',
   vastgehouden: {
     reden:
       'Vastgehouden zolang er niet genoeg onderscheidend lokaal bewijs is. Een gemeente zonder bedrijventerrein ' +

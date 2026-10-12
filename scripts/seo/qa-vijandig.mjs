@@ -93,6 +93,29 @@ function poortFaalt(uit, n) {
   return re.test(uit);
 }
 
+/* GEEN HARDGECODEERDE GEMEENTEPADEN IN DE SCENARIO'S.
+
+   Eerst stond hier letterlijk 'regios/fryslan/leeuwarden'. Dat werkt zolang
+   de hele inventaris live staat, maar bij een GEFASEERDE uitrol is Fryslân er
+   nog niet en viel het scenario om met ENOENT — niet omdat de poort faalde,
+   maar omdat de harnas naar een bestand greep dat er niet was. Een vijandige
+   test die zichzelf breekt bewijst niets.
+
+   Deze twee helpers kiezen hun slachtoffer uit het register van de KOPIE, dus
+   altijd een route die in díe situatie echt bestaat. */
+function gepubliceerdeGemeenten(map, n = 1) {
+  const reg = lees(map, 'data', 'seo', 'routes.json');
+  const r = reg.routes.filter((x) => x.subsoort === 'gemeente' && x.staat === 'INDEX').map((x) => x.route);
+  if (r.length < n) throw new Error(`minder dan ${n} gepubliceerde gemeenten in deze situatie`);
+  return r.slice(0, n);
+}
+function eenPendingGemeente(map) {
+  const reg = lees(map, 'data', 'seo', 'routes.json');
+  const r = reg.routes.find((x) => x.subsoort === 'gemeente' && x.staat === 'PENDING');
+  if (!r) throw new Error('geen enkele gemeente op PENDING; scenario niet uitvoerbaar');
+  return r.route;
+}
+
 /* ========================================================== de scenario's */
 const SCENARIOS = [
   {
@@ -102,8 +125,8 @@ const SCENARIOS = [
       'een indexeerbare pagina die in geen enkel register staat.',
     poort: 1,
     breek(map) {
-      /* Schiermonnikoog staat bewust op PENDING. Geef hem een bestand. */
-      schrijf(map, 'regios/fryslan/schiermonnikoog.html', '<!doctype html><html lang="nl"><body><main><h1>Spook</h1></main></body></html>');
+      const pending = eenPendingGemeente(map);
+      schrijf(map, `${pending}.html`, '<!doctype html><html lang="nl"><body><main><h1>Spook</h1></main></body></html>');
     },
   },
   {
@@ -127,10 +150,16 @@ const SCENARIOS = [
     poort: 3,
     naKeten: true,
     breek(map) {
-      /* Sloop de bewijsalinea uit één gegenereerde pagina, NA de keten. */
-      const p = resolve(map, 'regios/drenthe/aa-en-hunze.html');
+      /* Sloop de bewijsalinea uit een gegenereerde pagina, NA de keten: haal
+         de naam van het grootste bedrijventerrein weg. */
+      const [route] = gepubliceerdeGemeenten(map, 1);
+      const reg = lees(map, 'data', 'seo', 'routes.json');
+      const code = reg.routes.find((r) => r.route === route).gemeentecode;
+      const terr = lees(map, 'data', 'bewijs', 'bedrijventerreinen.json').per_gemeente[code] || [];
+      const naam = terr.find((t) => t.naam && (t.ha_netto ?? t.ha_bruto)).naam;
+      const p = resolve(map, `${route}.html`);
       const s = readFileSync(p, 'utf8');
-      writeFileSync(p, s.replace(/Bloemakkers/g, 'Weggepoetst').replace(/3\.430/g, '9.999'));
+      writeFileSync(p, s.split(naam).join('Weggepoetst'));
     },
   },
   {
@@ -139,9 +168,10 @@ const SCENARIOS = [
     poort: 5,
     naKeten: true,
     breek(map) {
-      const p = resolve(map, 'regios/drenthe/assen.html');
+      const [a, b] = gepubliceerdeGemeenten(map, 2);
+      const p = resolve(map, `${b}.html`);
       const s = readFileSync(p, 'utf8');
-      writeFileSync(p, s.replace(/regios\/drenthe\/assen/g, 'regios/drenthe/aa-en-hunze'));
+      writeFileSync(p, s.split(b).join(a));
     },
   },
   {
@@ -150,9 +180,11 @@ const SCENARIOS = [
     poort: 7,
     naKeten: true,
     breek(map) {
-      const p = resolve(map, 'regios/fryslan/leeuwarden.html');
+      const [route] = gepubliceerdeGemeenten(map, 1);
+      const pending = eenPendingGemeente(map);
+      const p = resolve(map, `${route}.html`);
       const s = readFileSync(p, 'utf8');
-      writeFileSync(p, s.replace('</main>', '<p><a href="/regios/fryslan/schiermonnikoog">Schiermonnikoog</a></p></main>'));
+      writeFileSync(p, s.replace('</main>', `<p><a href="/${pending}">dode link</a></p></main>`));
     },
   },
   {
@@ -163,7 +195,8 @@ const SCENARIOS = [
     poort: 10,
     naKeten: true,
     breek(map) {
-      const p = resolve(map, 'regios/drenthe/emmen.html');
+      const [route] = gepubliceerdeGemeenten(map, 1);
+      const p = resolve(map, `${route}.html`);
       const s = readFileSync(p, 'utf8');
       writeFileSync(p, s.replace('</main>', '<p>Wij realiseerden 47 projecten met 98% uptime.</p></main>'));
     },
@@ -176,8 +209,9 @@ const SCENARIOS = [
     poort: 11,
     naKeten: true,
     breek(map) {
-      const bron = readFileSync(resolve(map, 'regios/drenthe/assen.html'), 'utf8');
-      const doel = resolve(map, 'regios/drenthe/meppel.html');
+      const [a, b] = gepubliceerdeGemeenten(map, 2);
+      const bron = readFileSync(resolve(map, `${a}.html`), 'utf8');
+      const doel = resolve(map, `${b}.html`);
       const s = readFileSync(doel, 'utf8');
       /* Neem de hoofdtekst van Assen over, houd de kop van Meppel: dat is
          precies het patroon 'zelfde sjabloon, andere plaatsnaam'. */
@@ -191,13 +225,17 @@ const SCENARIOS = [
     poort: 12,
     naKeten: true,
     breek(map) {
-      const p = resolve(map, 'regios/drenthe/hoogeveen.html');
+      const [a, b] = gepubliceerdeGemeenten(map, 2);
+      const bron = readFileSync(resolve(map, `${a}.html`), 'utf8');
+      const titelA = (bron.match(/<title>([^<]*)<\/title>/) || [])[1];
+      const h1A = (bron.match(/<h1[^>]*>([^<]*)<\/h1>/) || [])[1];
+      const p = resolve(map, `${b}.html`);
       const s = readFileSync(p, 'utf8');
       writeFileSync(
         p,
         s
-          .replace(/<title>[^<]*<\/title>/, '<title>Zakelijke energie in Assen | Vibe Energy</title>')
-          .replace(/<h1([^>]*)>[^<]*<\/h1>/, '<h1$1>Energie-infrastructuur voor bedrijven in Assen</h1>')
+          .replace(/<title>[^<]*<\/title>/, `<title>${titelA}</title>`)
+          .replace(/<h1([^>]*)>[^<]*<\/h1>/, `<h1$1>${h1A}</h1>`)
       );
     },
   },
@@ -209,8 +247,19 @@ const SCENARIOS = [
     poort: null,
     eigenToets: true,
     breek(map) {
+      /* Kies een gemeente die ECHT op INDEX staat. Een willekeurige sleutel
+         uit het bewijsbestand kan een gemeente zijn die (nog) niet is
+         vrijgegeven — bij een gefaseerde uitrol is dat zelfs waarschijnlijk,
+         en dan genereert de keten geen pagina en toetst dit scenario niets.
+         Gemeten: onder fase 1 viel het scenario daardoor om op "de pagina is
+         niet gegenereerd". */
       const t = lees(map, 'data', 'bewijs', 'bedrijventerreinen.json');
-      const code = Object.keys(t.per_gemeente)[0];
+      const reg = lees(map, 'data', 'seo', 'routes.json');
+      const kandidaat = reg.routes.find(
+        (r) => r.subsoort === 'gemeente' && r.staat === 'INDEX' && (t.per_gemeente[r.gemeentecode] || []).length
+      );
+      if (!kandidaat) throw new Error('geen gemeente op INDEX met een bedrijventerrein; scenario niet uitvoerbaar');
+      const code = kandidaat.gemeentecode;
       t.per_gemeente[code][0].naam = '<script>alert(1)</script><img src=x onerror=alert(2)>';
       schrijf(map, 'data/bewijs/bedrijventerreinen.json', t);
       return { code };

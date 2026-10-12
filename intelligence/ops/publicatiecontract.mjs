@@ -147,27 +147,27 @@ const hub = routes.find((r) => r.route === "nieuws");
      promoveren van regioroutes is precies wat deze poort moet
      tegenhouden.
 
-     BASISLIJN BIJGESTELD IN RELEASE 3.1: 4587 -> 4253.
-     (4603 regioroutes minus 350 op INDEX. Let op: het totaal aan PENDING in
-     routes.json is 4254 — dat is er één meer, want de nationale nieuwshub
-     staat ook op PENDING en telt hier niet mee.)
-     Deze poort heeft zijn werk gedaan — hij viel om op precies de
-     promotie die deze release doorvoert, en dat is de bedoeling van een
-     tijdbomdraad. Het getal verzetten is daarom NIET genoeg: wie alleen
-     een cijfer bijwerkt, zet de draad door en merkt de volgende keer
-     niets. Daarom staat er nu een TWEEDE toets onder die niet op een
-     getal leunt maar op de verantwoording zelf: elke regionale
-     INDEX-route moet een gerealiseerd project hebben OF een regel in
-     publicatiebesluit.json. Zo blijft stil promoveren onmogelijk, ook
-     als iemand de basislijn weer bijstelt. */
-  const BASISLIJN_REGIO_PENDING = 4253;
+     HET VASTE GETAL IS VERVANGEN — EN DAT IS EEN VERSCHERPING.
+
+     De basislijn stond op 4587 en viel om op de promotie van Release 3.1.
+     Dat was zijn werk. Maar een VAST getal heeft twee gebreken:
+
+     1. Het bijstellen is het enige wat nodig is om hem te passeren. Wie het
+        cijfer bijwerkt zet de draad door en merkt de volgende keer niets.
+     2. Het verbiedt een gefaseerde uitrol. Elke fase verandert het aantal,
+        dus elke fase zou het getal moeten bijwerken — en dan toetst het
+        niets meer.
+
+     De vervanging leunt niet op een getal maar op het BESLUITBESTAND: het
+     aantal regionale INDEX-routes moet exact gelijk zijn aan wat er is
+     verantwoord. Dat is zelfonderhoudend, het laat elke fase door, en het
+     blijft precies die ene fout tegenhouden waarvoor de draad er hing: een
+     route die op INDEX komt zonder door publicatiebesluit.json te gaan.
+
+     Het aantal staat nog steeds in de meting, zodat een reviewer in de
+     CI-uitvoer ziet hoeveel pagina's een PR publiceert. */
   const regioPending = routes.filter((r) => r.soort === "regio" && r.staat === "PENDING").length;
   const regioIndex = routes.filter((r) => r.soort === "regio" && r.staat === "INDEX").length;
-  toets(
-    "de regionale PENDING-routes zijn niet stil gepromoveerd",
-    regioPending === BASISLIJN_REGIO_PENDING,
-    `${regioPending} PENDING (basislijn ${BASISLIJN_REGIO_PENDING}), ${regioIndex} op INDEX`,
-  );
 
   /* De toets die niet op een getal leunt. */
   const besluitPad = resolve(WORTEL, "data", "seo", "publicatiebesluit.json");
@@ -197,12 +197,27 @@ const hub = routes.find((r) => r.route === "nieuws");
       onverantwoord.push(r.route);
     }
   }
+  const vrijgegevenAantal = Object.keys(besluit.vrijgegeven || {}).length;
   toets(
-    "elke regionale INDEX-route is verantwoord (eigen project of een regel in publicatiebesluit.json)",
+    "geen regionale route op INDEX zonder verantwoording (eigen project of een regel in publicatiebesluit.json)",
     onverantwoord.length === 0,
     onverantwoord.length
       ? `${onverantwoord.length} zonder verantwoording: ${onverantwoord.slice(0, 5).join(", ")}`
-      : `${regioIndex} regionale INDEX-routes, allemaal verantwoord`,
+      : `${regioIndex} op INDEX · ${regioPending} PENDING · ${vrijgegevenAantal} regel(s) in publicatiebesluit.json`,
+  );
+
+  /* Andersom óók: een regel in het besluit die niet tot een INDEX-route
+     heeft geleid, betekent dat de vrijgave stil is mislukt — bijvoorbeeld
+     omdat de route niet meer bestaat na een gemeentelijke herindeling.
+     Dan staat er een belofte in het besluit die de site niet nakomt. */
+  const register = new Map(routes.map((r) => [r.route, r]));
+  const nietGeland = Object.keys(besluit.vrijgegeven || {}).filter((r) => register.get(r)?.staat !== "INDEX");
+  toets(
+    "elke regel in publicatiebesluit.json heeft ook echt een pagina opgeleverd",
+    nietGeland.length === 0,
+    nietGeland.length
+      ? `${nietGeland.length} vrijgegeven zonder INDEX-route: ${nietGeland.slice(0, 5).join(", ")}`
+      : `${vrijgegevenAantal} vrijgegeven route(s), allemaal op INDEX`,
   );
 }
 

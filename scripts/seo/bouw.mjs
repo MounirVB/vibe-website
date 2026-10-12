@@ -7,14 +7,16 @@
      2 haal-bewijs         netwerk; heeft data/geo nodig
      3 haal-bedrijfstakken netwerk; heeft data/geo nodig
      4 haal-netbeheerder   netwerk; heeft data/geo nodig
-     5 vrijgeven-r31       leidt het publicatiebesluit af uit het bewijs
-     6 bouw-routes         heeft data/geo + data/bewijs + data/inhoud nodig
-     7 genereer            heeft data/seo/routes.json nodig; schrijft de HTML
-     8 herstel-bestaand    werkt op de bestaande HTML; moet NA genereer, omdat
+     5 bouw-routes         heeft data/geo + data/bewijs + data/inhoud nodig
+     6 genereer            heeft data/seo/routes.json nodig; schrijft de HTML
+     7 herstel-bestaand    werkt op de bestaande HTML; moet NA genereer, omdat
                            hij het manifest gebruikt om gegenereerde bestanden
                            over te slaan
-     9 sitemap             heeft het register EN de bestanden nodig
-    10 audit               toetst de uitkomst
+     8 sitemap             heeft het register EN de bestanden nodig
+     9 audit               toetst de uitkomst
+
+   NIET in deze keten: scripts/seo/vrijgeven-r31.mjs. Dat is een redactioneel
+   besluit en geen bouwstap; zie de toelichting bij `stappen` hieronder.
 
    De drie ophaalstappen zijn traag en vragen netwerk. Sla ze over met
    --offline als data/geo en data/bewijs al staan.
@@ -35,9 +37,20 @@ const stappen = [
      gemeenteregister nodig om CBS-rijen van opgeheven gemeenten te negeren. */
   { naam: 'haal-bedrijfstakken', netwerk: true },
   { naam: 'haal-netbeheerder', netwerk: true },
-  /* Release 3.1: het publicatiebesluit volgt uit het bewijs en moet dus NA de
-     ophaalstappen en VOOR bouw-routes draaien. Hij is idempotent. */
-  { naam: 'vrijgeven-r31', netwerk: false },
+  /* vrijgeven-r31.mjs staat BEWUST NIET in deze keten.
+
+     Hij stond er eerst wel, en dat was fout. Het publicatiebesluit is geen
+     bouwstap maar een REDACTIONELE HANDELING — publicatiebesluit.json zegt
+     zelf: "dit is de plek waar een mens de verantwoordelijkheid neemt". Een
+     keten die dat bestand bij elke run opnieuw schrijft, publiceert stil elke
+     gemeente die sinds de vorige run genoeg bewijs heeft gekregen. Precies wat
+     de toestandsmachine moet tegenhouden.
+
+     Het maakte gefaseerd uitrollen bovendien onmogelijk: `--fase 1` zette 18
+     gemeenten in het besluit en de eerstvolgende ketenrun zette er weer 326 in.
+
+     Draai hem dus met opzet, en commit de uitkomst:
+       node scripts/seo/vrijgeven-r31.mjs [--fase 1] [--droog] */
   { naam: 'bouw-routes', netwerk: false },
   { naam: 'genereer', netwerk: false },
   { naam: 'herstel-bestaand', netwerk: false },
