@@ -186,6 +186,24 @@ function alsPaginaBron(p: KennisPagina): PaginaBron {
 }
 
 /** Hoe vaak noemt de pagina dit onderwerp? Nul is een signaal. */
+/**
+ * Een getal leesbaar maken.
+ *
+ * `200000000000 euro` is geen tekst die een mens leest, en al helemaal
+ * geen tekst die op een pagina hoort. Dit is voor het BEWIJS dat de
+ * reviewer ziet; de voorgestelde paginatekst draagt geen kale getallen
+ * (zie de controle `verwoordbaarheid`).
+ */
+export function leesbaarBedrag(waarde: number, eenheid: string | null): string {
+  const e = (eenheid ?? "").toUpperCase();
+  const teken = e === "EUR" ? "\u20ac " : "";
+  const staart = e === "EUR" ? "" : eenheid ? ` ${eenheid}` : "";
+  if (Math.abs(waarde) >= 1_000_000_000) return `${teken}${waarde / 1_000_000_000} miljard${staart}`;
+  if (Math.abs(waarde) >= 1_000_000) return `${teken}${waarde / 1_000_000} miljoen${staart}`;
+  if (Math.abs(waarde) >= 1_000) return `${teken}${waarde.toLocaleString("nl-NL")}${staart}`;
+  return `${teken}${waarde}${staart}`;
+}
+
 function noemtHoeVaak(bron: PaginaBron | null, termen: readonly string[]): number {
   if (!bron || termen.length === 0) return 0;
   const alles = `${bron.titel ?? ""} ${bron.h1 ?? ""} ${bron.sectiekoppen.join(" ")} ${bron.tekst}`.toLowerCase();
@@ -586,35 +604,55 @@ export async function bouwVoorstel(
       `mag_citeren van de bron: ${bronMagCiteren}`,
       ...harde.map(
         (u) =>
-          `${Number(u.waarde_numeriek)}${u.eenheid ?? ""} — soort '${u.soort}', ` +
+          `${leesbaarBedrag(Number(u.waarde_numeriek), u.eenheid)} — soort '${u.soort}', ` +
           `onderwerp '${u.onderwerp ?? "onbekend"}'; bronzin ${u.tekst ? "aanwezig" : "ONTBREEKT"}`,
       ),
     ];
     if (harde.length === 0) {
       return { naam: "verwoordbaarheid", oordeel: "FAIL", reden: "er is geen feit om te verwoorden", bewijs };
     }
-    /* Een percentage of kaal cijfer zonder meeteenheid-in-woorden is niet
-       te verwoorden zonder de bronzin. Een bedrag met een schaal is dat
-       wel, want 'EUR 457.488' is zelf al een volledige uitspraak. */
-    const onverwoordbaar = harde.filter(
-      (u) => (u.eenheid ?? "") === "%" || u.soort === "cijfer",
-    );
-    if (onverwoordbaar.length > 0 && !magCiteren) {
+    /* ELK GETAL HEEFT EEN ONDERWERP NODIG, OOK EEN BEDRAG.
+       De eerste versie van deze controle liet bedragen door omdat
+       'EUR 457.488' zelf al een volledige uitspraak lijkt. Dat is het
+       niet. In productie leverde dat deze voorgestelde alinea op:
+
+         "Per 2025-11-24 is vastgelegd: 200000000000 euro, 125000000 euro."
+
+       De waarden waren inmiddels correct geschaald, en de zin was nog
+       steeds onbruikbaar: 200 miljard WAARVOOR? De bronzin zegt het
+       ("Tot 2040 investeren de netbeheerders meer dan EUR 200 miljard in
+       het elektriciteitsnet"), de bewaarde uitspraak niet.
+
+       `onderwerp` draagt een clustersleutel ('netcongestie'), niet een
+       omschrijving van de grootheid. Er is dus GEEN veld dat zegt wat
+       het getal meet. Deze controle zoekt dat veld, vindt het niet, en
+       weigert — en zodra een toekomstige migratie zo'n omschrijving
+       toevoegt, gaat hij vanzelf over. */
+    const metOmschrijving = harde.filter((u) => {
+      /* Een grootheid is pas benoemd als er iets staat dat géén
+         clustersleutel is. `onderwerp` is dat wel, dus die telt niet. */
+      const beschrijft = (u.soort ?? "").trim();
+      return beschrijft !== "" && beschrijft !== "cijfer" && beschrijft !== "prijs";
+    });
+    const zonderOmschrijving = harde.length - metOmschrijving.length;
+
+    if (zonderOmschrijving > 0 && !magCiteren) {
       return {
         naam: "verwoordbaarheid",
         oordeel: "FAIL",
         reden:
-          `${onverwoordbaar.length} van de ${harde.length} feiten is een kaal getal of percentage. ` +
-          `Waar het over gaat staat alleen in de bronzin, en deze bron staat citeren niet toe ` +
-          `(mag_citeren=false). Een zin verzinnen zou een bewering toevoegen die de bron niet doet; ` +
-          `een mens moet de formulering maken.`,
+          `${zonderOmschrijving} van de ${harde.length} feiten is een getal zonder benoemde ` +
+          `grootheid: soort '${harde[0]?.soort}' en onderwerp '${harde[0]?.onderwerp ?? "?"}' ` +
+          `zeggen niet WAT er gemeten is. Dat staat alleen in de bronzin, en deze bron staat ` +
+          `citeren niet toe (mag_citeren=false). Een zin verzinnen zou een bewering toevoegen ` +
+          `die de bron niet doet; een mens moet de formulering maken.`,
         bewijs,
       };
     }
     return {
       naam: "verwoordbaarheid",
       oordeel: "PASS",
-      reden: `alle ${harde.length} feiten zijn uit eigen velden te verwoorden`,
+      reden: `alle ${harde.length} feiten hebben een benoemde grootheid`,
       bewijs,
     };
   })();
@@ -645,7 +683,7 @@ export async function bouwVoorstel(
 
   /* ---------- De voorgestelde wijziging ---------- */
   const waarden = harde
-    .map((u) => `${Number(u.waarde_numeriek)}${u.eenheid === "EUR" ? " euro" : (u.eenheid ?? "")}`)
+    .map((u) => leesbaarBedrag(Number(u.waarde_numeriek), u.eenheid))
     .filter((v, i, a) => a.indexOf(v) === i);
   const sectieKop = bron?.sectiekoppen.find((kop) => /kost|tarief|geld|prijs/i.test(kop)) ?? null;
   const feitVerwoordbaar =
