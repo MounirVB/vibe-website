@@ -142,13 +142,27 @@ export async function leesInstelsleutel(
     token_hash: string;
   }>(
     c,
+    /* DE ORDENING IS GEEN DETAIL. Eén hash kan meer dan één rij hebben:
+       geeft een operator twee keer dezelfde sleutel uit — bijvoorbeeld
+       omdat een eenmalige taak opnieuw draaide — dan stempelt
+       maakInstelsleutel() de vorige af en zet een nieuwe rij. De hash is
+       dan gelijk en er staan meerdere rijen.
+       Zonder `order by` koos deze query een willekeurige rij, en in
+       productie was dat een AFGESTEMPELDE: de pagina meldde 'gebruikt'
+       terwijl er een geldige sleutel openstond. Gevonden door de live
+       verificatie na de uitrol, niet door een toets — daarom staat die
+       toets er nu ook.
+       De open rij gaat voor; is er geen open rij, dan de nieuwste
+       gebruikte, zodat 'gebruikt' nog steeds als reden terugkomt. */
     `select t.id, t.gebruiker_id, g.email,
             (t.verloopt_op <= now())        as verlopen,
             (t.gebruikt_op is not null)     as gebruikt,
             t.token_hash
        from intel.wachtwoord_tokens t
        join intel.gebruikers g on g.id = t.gebruiker_id
-      where t.token_hash = $1`,
+      where t.token_hash = $1
+      order by (t.gebruikt_op is null) desc, t.id desc
+      limit 1`,
     [hashVan(sleutel)],
   );
   if (!r) return { ok: false, reden: "onbekend" };
