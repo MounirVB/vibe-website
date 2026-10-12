@@ -15,6 +15,7 @@
     "worker": "node src/cli/worker.ts",
     "planner": "node src/cli/planner.ts",
     "paginascan": "node src/cli/paginascan.ts",
+    "sitekennis": "node src/cli/sitekennis.ts",
     "geo": "node src/cli/geo.ts",
     "analytics": "node src/cli/analytics.ts",
     "dashboard": "node src/cli/dashboard.ts",

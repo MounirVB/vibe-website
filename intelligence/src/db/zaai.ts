@@ -14,6 +14,8 @@
    horen het coderegister te volgen.
    ============================================================ */
 
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import type pg from "pg";
 import { configLezen, KOPPELING_ENV, ontbrekendeEnv } from "../kern/config.ts";
 import {
@@ -25,8 +27,10 @@ import {
   type Pool,
 } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
+import { IntelFout } from "../kern/fouten.ts";
 import { BRONNEN } from "../bronnen/register.ts";
-import { leesLiveSitemap, scanSite, type ScanUitkomst } from "../site/paginascan.ts";
+import { leesLiveSitemap, scanSite, type GescandePagina, type ScanUitkomst } from "../site/paginascan.ts";
+import { leesSitekennis, type SitekennisBestand } from "../site/sitekennis.ts";
 import { haalOp } from "../bronnen/http.ts";
 import {
   leesRouteregister,
@@ -223,7 +227,59 @@ export async function zaai(pool: Pool, opties: { siteWortel?: string } = {}): Pr
     return nieuw.id;
   });
 
-  const scan = await scanSite(siteWortel);
+  /* ------------------------------------------------------------------
+     DE SITE LEREN KENNEN — artefact eerst, scan als die er niet is
+     ------------------------------------------------------------------
+     In de productiecontainer bestaat de website niet: rootDirectory is
+     `intelligence`, dus /app/kennis en sitemap.xml ontbreken. scanSite()
+     gaf daar nul pagina's, en nul pagina's zag eruit als "de site heeft
+     geen pagina's" in plaats van als "ik kan de site niet zien". Gevolg:
+     clusters zonder canonieke pagina en NEW_ARTICLE voor onderwerpen die
+     al een pagina hebben.
+
+     Daarom: het gecommitte artefact is de eerste bron. Is de website er
+     wel (lokaal, CI), dan wordt de echte scan gebruikt en is het artefact
+     een controle. Is er geen van beide, dan FAALT DIT DICHT. */
+  const artefact = await leesSitekennis(resolve(dirname(fileURLToPath(import.meta.url)), "..", ".."));
+  const echteScan = await scanSite(siteWortel).catch(() => null);
+  const scanHeeftPaginas = (echteScan?.paginas.length ?? 0) > 0;
+
+  if (!scanHeeftPaginas && !artefact.ok) {
+    throw new IntelFout(
+      "configuratie",
+      `de website is niet te zien EN het sitekennis-artefact is onbruikbaar. ` +
+        `Scan op '${siteWortel}' gaf ${echteScan?.paginas.length ?? 0} pagina's; ` +
+        `artefact: ${artefact.fout.bericht}`,
+    );
+  }
+
+  const scan: ScanUitkomst = scanHeeftPaginas
+    ? echteScan!
+    : scanUitArtefact((artefact as { ok: true; kennis: SitekennisBestand }).kennis);
+
+  log.info("sitekennis", {
+    bron: scanHeeftPaginas ? "sitescan" : "artefact",
+    paginas: scan.paginas.length,
+    artefactGeldig: artefact.ok,
+    artefactPaginas: artefact.ok ? artefact.kennis.aantalPaginas : 0,
+    artefactFout: artefact.ok ? null : artefact.fout.soort,
+  });
+
+  /* Beide bronnen aanwezig? Dan hoort het artefact de site te beschrijven.
+     Wijkt hij af, dan is hij verouderd en dat is een waarschuwing waard —
+     maar niet fataal, want de echte scan is dan de betere bron. */
+  if (scanHeeftPaginas && artefact.ok) {
+    const gepubliceerd = echteScan!.paginas.filter(
+      (x) => x.indexeerbaar && !x.isRedirectStub && x.inSitemap,
+    ).length;
+    if (gepubliceerd !== artefact.kennis.aantalPaginas) {
+      log.waarschuwing("het sitekennis-artefact loopt achter op de website", {
+        artefact: artefact.kennis.aantalPaginas,
+        werkelijk: gepubliceerd,
+        herstel: "npm run sitekennis",
+      });
+    }
+  }
 
   // De live sitemap erbij, want de repository loopt achter op productie.
   const liveHost = new URL(config.siteBasisUrl).host;
@@ -333,6 +389,42 @@ async function zaaiPaginas(
   );
 
   return geschreven;
+}
+
+/**
+ * Maakt van het artefact een ScanUitkomst, zodat alles erachter
+ * onveranderd blijft werken.
+ *
+ * Het artefact bevat UITSLUITEND gepubliceerde canonieke pagina's, dus
+ * indexeerbaar=true, isRedirectStub=false en inSitemap=true zijn hier
+ * geen aannames maar eigenschappen die bij het bouwen zijn afgedwongen
+ * en bij het lezen zijn gevalideerd.
+ */
+function scanUitArtefact(kennis: SitekennisBestand): ScanUitkomst {
+  const paginas: GescandePagina[] = kennis.paginas.map((p) => ({
+    bestandsnaam: `${p.route === "/" ? "index" : p.route.replace(/^\//, "")}.html`,
+    pad: p.route,
+    soort: p.soort as GescandePagina["soort"],
+    titel: p.titel,
+    metaOmschrijving: null,
+    canoniek: p.canoniekeUrl,
+    robots: null,
+    indexeerbaar: true,
+    isRedirectStub: false,
+    heeftOgImage: false,
+    heeftJsonLd: false,
+    heeftSeoMarkers: false,
+    dataPagina: null,
+    heeftChrome: false,
+    woorden: p.woorden,
+    inSitemap: true,
+  }));
+  return {
+    paginas,
+    sitemapPaden: new Set(paginas.map((p) => p.pad)),
+    sitemapZonderBestand: [],
+    indexeerbaarZonderSitemap: [],
+  };
 }
 
 async function zaaiClusters(
