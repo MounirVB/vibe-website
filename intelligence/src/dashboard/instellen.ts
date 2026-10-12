@@ -52,7 +52,23 @@ export async function maakInstelsleutel(
   c: pg.PoolClient,
   organisatieId: number,
   email: string,
-  opties: { geldigMs?: number; uitgegevenDoor?: string; ongeldigMaakWachtwoord?: boolean } = {},
+  opties: {
+    geldigMs?: number;
+    uitgegevenDoor?: string;
+    ongeldigMaakWachtwoord?: boolean;
+    /**
+     * Een sleutel die de AANROEPER al heeft gekozen.
+     *
+     * Bestaat om dezelfde reden als `INTEL_WACHTWOORD` bij de
+     * wachtwoord-CLI: npm echoot zijn commandoregel en een platform als
+     * Railway bewaart die uitvoer als deployment-log. Laat je deze
+     * functie de sleutel genereren en print de CLI hem, dan staat een
+     * geldige sleutel in een logarchief dat hem overleeft.
+     * Door hem buiten de container te kiezen en alleen de hash te laten
+     * opslaan, komt hij nergens in een log terecht.
+     */
+    sleutel?: string;
+  } = {},
 ): Promise<{ sleutel: string; gebruikerId: number; verlooptOp: string }> {
   const g = await eenRij<{ id: number }>(
     c,
@@ -61,7 +77,12 @@ export async function maakInstelsleutel(
   );
   if (!g) throw new IntelFout("configuratie", `geen actieve gebruiker met e-mail ${email}`);
 
-  const sleutel = randomBytes(32).toString("base64url");
+  /* Een door de aanroeper gekozen sleutel moet wel genoeg entropie
+     hebben; anders is hij te raden en is de hele stroom waardeloos. */
+  if (opties.sleutel !== undefined && opties.sleutel.length < 32) {
+    throw new IntelFout("configuratie", "een meegegeven instelsleutel moet minstens 32 tekens zijn");
+  }
+  const sleutel = opties.sleutel ?? randomBytes(32).toString("base64url");
   const geldigMs = opties.geldigMs ?? SLEUTEL_GELDIG_MS;
 
   /* Een eventuele vorige ONGEBRUIKTE sleutel vervalt. De partiële
