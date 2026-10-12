@@ -145,8 +145,22 @@ const hub = routes.find((r) => r.route === "nieuws");
   /* De getallen uit de vastgestelde basislijn. Een PR die hier
      verandering in brengt moet dat expliciet verantwoorden; stil
      promoveren van regioroutes is precies wat deze poort moet
-     tegenhouden. */
-  const BASISLIJN_REGIO_PENDING = 4587;
+     tegenhouden.
+
+     BASISLIJN BIJGESTELD IN RELEASE 3.1: 4587 -> 4253.
+     (4603 regioroutes minus 350 op INDEX. Let op: het totaal aan PENDING in
+     routes.json is 4254 — dat is er één meer, want de nationale nieuwshub
+     staat ook op PENDING en telt hier niet mee.)
+     Deze poort heeft zijn werk gedaan — hij viel om op precies de
+     promotie die deze release doorvoert, en dat is de bedoeling van een
+     tijdbomdraad. Het getal verzetten is daarom NIET genoeg: wie alleen
+     een cijfer bijwerkt, zet de draad door en merkt de volgende keer
+     niets. Daarom staat er nu een TWEEDE toets onder die niet op een
+     getal leunt maar op de verantwoording zelf: elke regionale
+     INDEX-route moet een gerealiseerd project hebben OF een regel in
+     publicatiebesluit.json. Zo blijft stil promoveren onmogelijk, ook
+     als iemand de basislijn weer bijstelt. */
+  const BASISLIJN_REGIO_PENDING = 4253;
   const regioPending = routes.filter((r) => r.soort === "regio" && r.staat === "PENDING").length;
   const regioIndex = routes.filter((r) => r.soort === "regio" && r.staat === "INDEX").length;
   toets(
@@ -154,13 +168,64 @@ const hub = routes.find((r) => r.route === "nieuws");
     regioPending === BASISLIJN_REGIO_PENDING,
     `${regioPending} PENDING (basislijn ${BASISLIJN_REGIO_PENDING}), ${regioIndex} op INDEX`,
   );
+
+  /* De toets die niet op een getal leunt. */
+  const besluitPad = resolve(WORTEL, "data", "seo", "publicatiebesluit.json");
+  const besluit = existsSync(besluitPad) ? JSON.parse(readFileSync(besluitPad, "utf8")) : { vrijgegeven: {} };
+  const projGeoPad = resolve(WORTEL, "data", "bewijs", "projecten-geo.json");
+  const projGeo = existsSync(projGeoPad) ? JSON.parse(readFileSync(projGeoPad, "utf8")).per_gemeente : {};
+  const gemeentenPad = resolve(WORTEL, "data", "geo", "gemeenten.json");
+  const gemeenten = existsSync(gemeentenPad) ? JSON.parse(readFileSync(gemeentenPad, "utf8")).gemeenten : [];
+  const provHeeftWerk = new Set(
+    gemeenten.filter((g) => (projGeo[g.gemeentecode] || []).length).map((g) => g.provinciecode),
+  );
+
+  const onverantwoord = [];
+  for (const r of routes.filter((x) => x.soort === "regio" && x.staat === "INDEX")) {
+    if (r.subsoort === "wortel") continue;
+    if (r.subsoort === "gemeente") {
+      const heeftProject = (projGeo[r.gemeentecode] || []).length > 0;
+      if (!heeftProject && !besluit.vrijgegeven?.[r.route]) onverantwoord.push(r.route);
+    } else if (r.subsoort === "provincie") {
+      /* Een provinciehub mag op eigen werk of als ouder van een
+         vrijgegeven gemeente; beide zijn verantwoord. */
+      const kinderen = routes.some(
+        (x) => x.subsoort === "gemeente" && x.provinciecode === r.provinciecode && x.staat === "INDEX",
+      );
+      if (!provHeeftWerk.has(r.provinciecode) && !kinderen) onverantwoord.push(r.route);
+    } else if (!besluit.vrijgegeven?.[r.route]) {
+      onverantwoord.push(r.route);
+    }
+  }
+  toets(
+    "elke regionale INDEX-route is verantwoord (eigen project of een regel in publicatiebesluit.json)",
+    onverantwoord.length === 0,
+    onverantwoord.length
+      ? `${onverantwoord.length} zonder verantwoording: ${onverantwoord.slice(0, 5).join(", ")}`
+      : `${regioIndex} regionale INDEX-routes, allemaal verantwoord`,
+  );
 }
 
 /* ---------------- 5. sitemappariteit ---------------- */
 {
+  /* Sinds Release 3.1 is sitemap.xml een sitemapINDEX: de URL's staan in
+     deelbestanden en in de index staan alleen verwijzingen. Deze poort las
+     alleen de index en zag dus 2 regels tegenover 430 routes — terecht
+     rood. Hij loopt de index nu af. */
   const sitemapPad = resolve(WORTEL, "sitemap.xml");
   const xml = existsSync(sitemapPad) ? readFileSync(sitemapPad, "utf8") : "";
-  const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  const haalLocs = (s) => [...s.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  let locs = [];
+  if (/<sitemapindex\b/.test(xml)) {
+    for (const d of haalLocs(xml)) {
+      const naam = d.replace(/^https?:\/\/[^/]+\//, "");
+      const p = resolve(WORTEL, naam);
+      if (!existsSync(p)) continue;
+      locs.push(...haalLocs(readFileSync(p, "utf8")));
+    }
+  } else {
+    locs = haalLocs(xml);
+  }
   const uitRegister = new Set(
     index.map((r) => (r.route === "" ? "https://www.vibeenergy.nl/" : `https://www.vibeenergy.nl/${r.route}`)),
   );
