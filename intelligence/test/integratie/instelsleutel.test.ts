@@ -205,6 +205,54 @@ describe("instelsleutels", () => {
     assert.ok(na.sessie_epoch > voor.sessie_epoch, "de epoch hoort op te schuiven");
   });
 
+  test("dezelfde sleutel twee keer uitgeven laat de NIEUWSTE bruikbaar", async () => {
+    /* DEZE TOETS BESTAAT OMDAT DE BUG IN PRODUCTIE ZAT.
+       Geeft een operator twee keer DEZELFDE sleutel uit — bijvoorbeeld
+       omdat een eenmalige taak opnieuw draaide — dan staan er meerdere
+       rijen met dezelfde hash: de oude afgestempeld, de nieuwe open.
+       leesInstelsleutel() had geen `order by` en koos een willekeurige
+       rij; in productie was dat de afgestempelde, waarna /instellen
+       meldde dat de sleutel niet meer werkte terwijl hij geldig was. */
+    const eigen = "a".repeat(20) + "ZelfGekozenSleutelMetGenoegLengte";
+    await metOrganisatie(eigenaar, { organisatieId }, (c) =>
+      maakInstelsleutel(c, organisatieId, EMAIL, { sleutel: eigen }),
+    );
+    await metOrganisatie(eigenaar, { organisatieId }, (c) =>
+      maakInstelsleutel(c, organisatieId, EMAIL, { sleutel: eigen }),
+    );
+
+    /* Tellen via de gebruiker en niet via de hash: de hash in SQL
+       berekenen zou pgcrypto vragen, en die extensie hoort niet bij de
+       voorwaarden van dit schema. */
+    const aantal = await metOrganisatie(eigenaar, { organisatieId }, (c) =>
+      rijen<{ n: number }>(
+        c,
+        "select count(*)::int as n from intel.wachtwoord_tokens where gebruiker_id = $1",
+        [gebruikerId],
+      ),
+    );
+    assert.ok((aantal[0]?.n ?? 0) >= 2, "er horen meerdere rijen te staan");
+
+    const stand = await metOrganisatie(eigenaar, { organisatieId }, (c) =>
+      leesInstelsleutel(c, eigen),
+    );
+    assert.equal(stand.ok, true, "de OPEN rij hoort gekozen te worden, niet een afgestempelde");
+
+    /* En inwisselen moet dan ook echt werken. */
+    const uit = await metOrganisatie(eigenaar, { organisatieId }, (c) =>
+      wisselInstelsleutelIn(c, eigen, "nog weer een keurig wachtwoord"),
+    );
+    assert.equal(uit.ok, true);
+
+    /* Daarna is er geen open rij meer, en dan is 'gebruikt' het juiste
+       antwoord in plaats van 'onbekend'. */
+    const na = await metOrganisatie(eigenaar, { organisatieId }, (c) =>
+      leesInstelsleutel(c, eigen),
+    );
+    assert.equal(na.ok, false);
+    assert.equal(na.ok === false && na.reden, "gebruikt");
+  });
+
   test("de APPLICATIEROL mag geen sleutel uitgeven", async () => {
     /* Uitgeven is een operatorhandeling. Kon het dashboard het zelf,
        dan was een gat in de dashboardcode een weg naar elk account. */
