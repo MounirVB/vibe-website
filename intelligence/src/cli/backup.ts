@@ -15,7 +15,7 @@
 
 import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { laadEnvBestand, configLezen, APP_WORTEL } from "../kern/config.ts";
 import { eenRij, maakPool, rijen, sluitAllePools, zonderOrganisatie } from "../kern/db.ts";
 import {
@@ -24,6 +24,7 @@ import {
   maakBackup,
   type BackupManifest,
 } from "../ops/backup.ts";
+import { gcsConfigUitOmgeving, lijstGcs, uploadNaarGcs } from "../ops/gcsopslag.ts";
 
 laadEnvBestand();
 const config = configLezen();
@@ -36,6 +37,9 @@ const waarde = (n: string) => {
 
 const DOELMAP = resolve(waarde("map") ?? join(APP_WORTEL, "backups"));
 const RETENTIE = Number(waarde("retentie") ?? 30);
+
+/* Blijft de back-up alleen lokaal staan? Dan is er geen retentie. */
+let geenExterneKopie = false;
 
 async function nieuwsteDump(): Promise<string | null> {
   if (!existsSync(DOELMAP)) return null;
@@ -145,8 +149,61 @@ try {
       console.log(`  retentie ${RETENTIE} dagen: ${uit.opgeruimd.length} oude back-up(s) verwijderd`);
       for (const o of uit.opgeruimd) console.log(`    · ${o}`);
     }
+
+    /* ---------------- externe kopie ---------------- */
     console.log("");
-    console.log("  Een back-up is pas bewezen na `npm run restoretest`.");
+    console.log("  EXTERNE OPSLAG");
+    const gcs = gcsConfigUitOmgeving();
+    if (!gcs) {
+      /* GEEN FOUT, WEL EEN GAT. De lokale map is op Railway een
+         containerschijf en die is weg bij de volgende deploy. Zonder
+         credential blijft dit dus een back-up zonder bewaartermijn, en
+         dat hoort zichtbaar te zijn in plaats van stil goed te lijken. */
+      console.log("    NIET GECONFIGUREERD — INTEL_GCS_BUCKET en/of INTEL_GCS_SLEUTEL ontbreken.");
+      console.log("    De back-up staat alleen lokaal. Op een ephemere schijf is dat GEEN retentie.");
+      geenExterneKopie = true;
+    } else {
+      const dumpNaam = basename(uit.dumpPad);
+      const manifestNaam = `${dumpNaam}.manifest.json`;
+      const dumpBytes = await readFile(uit.dumpPad);
+      const manifestBytes = await readFile(`${uit.dumpPad}.manifest.json`);
+
+      const o1 = await uploadNaarGcs(gcs, dumpNaam, dumpBytes, "application/octet-stream");
+      const o2 = await uploadNaarGcs(gcs, manifestNaam, manifestBytes, "application/json");
+
+      console.log(`    bucket           gs://${gcs.bucket}`);
+      console.log(`    object           ${dumpNaam} (generatie ${o1.generatie})`);
+      console.log(`    bytes            ${o1.bytes}`);
+      console.log(`    sha256 heen/terug ${o1.sha256}`);
+      console.log(`    manifest         ${manifestNaam} (${o2.bytes} bytes)`);
+
+      /* De som uit het manifest MOET gelijk zijn aan wat er in de bucket
+         staat. Anders is er onderweg iets veranderd en is de kopie geen
+         kopie. */
+      if (o1.sha256 !== uit.manifest.sha256) {
+        console.log("");
+        console.log(`    FOUT: sha256 in de bucket (${o1.sha256}) wijkt af van het manifest`);
+        console.log(`          (${uit.manifest.sha256}).`);
+        process.exitCode = 1;
+      } else {
+        console.log("    integriteit      PASS — de som in de bucket is die van het manifest");
+      }
+
+      const inBucket = await lijstGcs(gcs, "vibe-intel-");
+      const dumps = inBucket.filter((o) => o.naam.endsWith(".dump"));
+      console.log(`    in de bucket     ${dumps.length} dump(s), oudste ${dumps[0]?.gemaaktOp.slice(0, 10) ?? "geen"}`);
+      console.log("    retentie         levensduurbeleid van de bucket: 35 dagen, versies 7 dagen");
+      console.log("    verwijderrecht   de dienstaccount heeft er GEEN; opruimen doet de bucket zelf");
+    }
+
+    console.log("");
+    if (geenExterneKopie) {
+      console.log("  Een back-up is pas bewezen na `npm run restoretest`, en pas BEWAARD");
+      console.log("  als hij buiten deze machine staat. Dat laatste is nu niet het geval.");
+    } else {
+      console.log("  Een back-up is pas bewezen na `npm run restoretest`.");
+      console.log("  Voor het bewijs uit de EXTERNE kopie: `npm run restoretest -- --uit-gcs`.");
+    }
   }
 } finally {
   await sluitAllePools();

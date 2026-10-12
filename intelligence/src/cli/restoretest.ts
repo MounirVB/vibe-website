@@ -7,6 +7,8 @@
      npm run restoretest -- --doel-url <beheer-url>
                                          restore naar een WEGWERPDATABASE
                                          op een bestaande server
+     npm run restoretest -- --uit-gcs    haal de nieuwste dump UIT DE
+                                         bucket en zet DIE terug
 
    DIT IS HET ENIGE BEWIJS DAT EEN BACK-UP WERKT.
    Een geslaagde `pg_dump` bewijst dat er een bestand is. Een geslaagde
@@ -45,13 +47,15 @@
    ============================================================ */
 
 import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import { readdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import pg from "pg";
 import { laadEnvBestand, APP_WORTEL } from "../kern/config.ts";
 import { KRITIEKE_TABELLEN, vindPgGereedschap, type BackupManifest } from "../ops/backup.ts";
+import { downloadUitGcs, gcsConfigUitOmgeving, lijstGcs } from "../ops/gcsopslag.ts";
 
 const uitvoeren = promisify(execFile);
 laadEnvBestand();
@@ -124,10 +128,54 @@ async function containerLeeft(): Promise<boolean> {
 
 let containerGestart = false;
 let wegwerpDbGemaakt = false;
+/* Pad van een uit de bucket gehaalde dump; wordt na de test opgeruimd. */
+let uitGcsGehaald: string | null = null;
 
 try {
   /* ---------------- de back-up kiezen ---------------- */
   let dumpPad = waarde("dump") ? resolve(waarde("dump")!) : null;
+
+  /* `--uit-gcs` haalt de nieuwste dump UIT DE BUCKET en zet die terug.
+     Dat is een wezenlijk ander bewijs dan de lokale vorm: het toetst de
+     hele keten waar het op aankomt — dump, upload, retentie, OPHALEN en
+     restore — in plaats van alleen het deel dat op deze schijf staat.
+     Een archief dat je niet kunt terughalen is geen back-up. */
+  if (heeft("uit-gcs")) {
+    if (dumpPad) throw new Error("--dump en --uit-gcs sluiten elkaar uit");
+    const gcs = gcsConfigUitOmgeving();
+    if (!gcs) {
+      throw new Error(
+        "--uit-gcs vraagt INTEL_GCS_BUCKET en INTEL_GCS_SLEUTEL; zonder credential is er geen externe kopie om te toetsen",
+      );
+    }
+    const inBucket = (await lijstGcs(gcs, "vibe-intel-")).filter((o) => o.naam.endsWith(".dump"));
+    const nieuwste = inBucket[inBucket.length - 1];
+    if (!nieuwste) throw new Error(`geen .dump in gs://${gcs.bucket}. Draai eerst 'npm run backup'.`);
+
+    await mkdir(DOELMAP, { recursive: true });
+    const lokaal = join(DOELMAP, `uit-gcs-${nieuwste.naam}`);
+    const dumpBytes = await downloadUitGcs(gcs, nieuwste.naam);
+    const manifestBytes = await downloadUitGcs(gcs, `${nieuwste.naam}.manifest.json`);
+    await writeFile(lokaal, dumpBytes);
+    await writeFile(`${lokaal}.manifest.json`, manifestBytes);
+
+    /* De som uit het MEEGEHAALDE manifest tegen de MEEGEHAALDE bytes.
+       Dit is de controle die bewijst dat de bucket geen stille bitrot of
+       halve upload bevat. */
+    const mani = JSON.parse(manifestBytes.toString("utf8")) as BackupManifest;
+    const som = createHash("sha256").update(dumpBytes).digest("hex");
+    if (som !== mani.sha256) {
+      throw new Error(
+        `de dump uit gs://${gcs.bucket} klopt niet met zijn manifest: ${som} tegen ${mani.sha256}`,
+      );
+    }
+    console.log("");
+    console.log(`uit gs://${gcs.bucket} gehaald: ${nieuwste.naam}`);
+    console.log(`  bytes ${dumpBytes.byteLength}, sha256 ${som} — klopt met het manifest`);
+    uitGcsGehaald = lokaal;
+    dumpPad = lokaal;
+  }
+
   if (!dumpPad) {
     if (!existsSync(DOELMAP)) throw new Error(`geen back-upmap: ${DOELMAP}. Draai eerst 'npm run backup'.`);
     const d = (await readdir(DOELMAP)).filter((b) => b.endsWith(".dump")).sort();
@@ -531,5 +579,14 @@ try {
   } else if (wegwerpDbGemaakt) {
     console.log("");
     console.log(`wegwerpdatabase ${WEGWERP_DB} blijft staan (--houd)`);
+  }
+
+  if (uitGcsGehaald && !heeft("houd")) {
+    /* De meegehaalde kopie hoort niet te blijven liggen: hij bevat
+       goedkeuringen, gebruikers en het auditspoor, en de map staat
+       bewust in .gitignore maar is geen archief. */
+    await rm(uitGcsGehaald, { force: true });
+    await rm(`${uitGcsGehaald}.manifest.json`, { force: true });
+    console.log(`de uit de bucket gehaalde kopie is weer verwijderd`);
   }
 }

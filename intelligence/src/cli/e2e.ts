@@ -38,6 +38,29 @@ const APP = resolve(HIER, "..", "..");
 const SITE = config.siteWortel;
 const SNEL = process.argv.includes("--snel");
 
+/* DE GENERATORDATUM PINNEN, ANDERS IS SCENARIO 11 EEN TIJDBOM.
+   bouw-routes.mjs en sitemap.mjs vallen terug op `new Date()`, dus een
+   ketenrun op een latere dag dan de commitdag schrijft een andere
+   `dateModified` en `lastmod` in 18 bestanden. Scenario 9 draait die
+   keten en scenario 11 vergelijkt daarna `git status` — die zag dan 19
+   gewijzigde bestanden om een reden die niets met de generator te maken
+   heeft. De CI-poort pint deze variabelen al; hier gebeurt hetzelfde,
+   zodat lokaal en CI dezelfde meting doen.
+   Dit verzwakt niets: de klok is geen invoer van de generator. */
+try {
+  const routes = JSON.parse(readFileSync(join(SITE, "data", "seo", "routes.json"), "utf8")) as {
+    _gegenereerd?: string;
+  };
+  const d = routes._gegenereerd;
+  if (d && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
+    for (const v of ["ROUTES_DATUM", "SITEMAP_DATUM", "GEO_OPHAALDATUM", "BEWIJS_OPHAALDATUM"]) {
+      process.env[v] = d;
+    }
+  }
+} catch {
+  /* geen routes.json: scenario 11 meldt het verschil dan zelf */
+}
+
 type Uitslag = "PASS" | "FAIL" | "NIET GEDRAAID";
 type Scenario = {
   nummer: number;
@@ -123,11 +146,39 @@ try {
       ),
     );
     const b = r[0]!;
+    /* NIET `documenten === versies`. Dat gold alleen zolang geen enkele
+       bron ooit was gewijzigd: een document dat materieel verandert
+       KRIJGT een tweede versie, en dat is precies de bedoeling van de
+       versietabel. Gemeten op 12 oktober 2026: 2.111 documenten tegen
+       2.113 versies, want twee bronnen hadden hun inhoud aangepast.
+       De echte invariant is dus: elk document heeft minstens één versie,
+       en er bestaat geen versie zonder document. */
+    const w = await metOrganisatie(pool, { organisatieId }, (c) =>
+      rijen<{ zonder_versie: number; wees_versies: number }>(
+        c,
+        `select (select count(*) from intel.brondocumenten d
+                  where d.organisatie_id = $1
+                    and not exists (select 1 from intel.brondocument_versies v
+                                     where v.brondocument_id = d.id))::int as zonder_versie,
+                (select count(*) from intel.brondocument_versies v
+                  where v.organisatie_id = $1
+                    and not exists (select 1 from intel.brondocumenten d
+                                     where d.id = v.brondocument_id))::int as wees_versies`,
+        [organisatieId],
+      ),
+    );
+    const inv = w[0]!;
+    const ok2 =
+      b.documenten > 0 &&
+      b.versies >= b.documenten &&
+      inv.zonder_versie === 0 &&
+      inv.wees_versies === 0;
     meld(
       2,
-      "Ingestie: het archief staat en is per document precies een versie",
-      b.documenten > 0 && b.documenten === b.versies ? "PASS" : "FAIL",
-      `${b.documenten} documenten, ${b.versies} versies, ${b.verdacht} injectie-verdacht`,
+      "Ingestie: elk brondocument heeft minstens een versie en geen versie is een wees",
+      ok2 ? "PASS" : "FAIL",
+      `${b.documenten} documenten, ${b.versies} versies (${b.versies - b.documenten} herzieningen), ` +
+        `${inv.zonder_versie} zonder versie, ${inv.wees_versies} weesversies, ${b.verdacht} injectie-verdacht`,
     );
   }
 
@@ -143,11 +194,25 @@ try {
     );
     const nieuw = na[0]!.n - voor[0]!.n;
     const regel = /nieuwe documenten (\d+), nieuwe versies (\d+)/.exec(r.uit);
+    const bronregel = /bronnen geprobeerd (\d+), ok (\d+), fout (\d+)/.exec(r.uit);
+    const bronnenFout = bronregel ? Number(bronregel[3]) : 0;
+    /* DE EXITCODE VAN DE COLLECTOR HOORT HIER NIET IN DE ASSERTIE.
+       collector.ts:53 geeft exit 1 zodra ÉÉN bron faalt, en dat is voor
+       een operator het juiste signaal. Maar dit scenario toetst
+       IDEMPOTENTIE: levert een herhaling nieuwe rijen op? Een bron van
+       een derde die plat ligt — gemeten op 12 oktober 2026 lagen de twee
+       TenderNed-bronnen eruit — zegt niets over die vraag. Door de
+       exitcode mee te nemen werd dit scenario rood om een storing bij
+       een uitgever, en dan toetst het niet meer wat de naam belooft.
+       De bronstoring blijft WEL zichtbaar in de meting hieronder, en
+       `npm run gezondheid` meldt hem als FOUT; dat is zijn plek. */
     meld(
       3,
       "Ingestie is idempotent: een geforceerde herhaling levert niets nieuws",
-      r.ok && nieuw === 0 ? "PASS" : "FAIL",
-      `versies voor ${voor[0]!.n}, na ${na[0]!.n}, verschil ${nieuw}${regel ? ` (collector meldde ${regel[1]} nieuwe documenten)` : ""}`,
+      nieuw === 0 ? "PASS" : "FAIL",
+      `versies voor ${voor[0]!.n}, na ${na[0]!.n}, verschil ${nieuw}` +
+        `${regel ? ` (collector meldde ${regel[1]} nieuwe documenten)` : ""}` +
+        `${bronnenFout > 0 ? `; ${bronnenFout} bron(nen) niet bereikbaar — zie gezondheid` : ""}`,
     );
   }
 
@@ -598,13 +663,36 @@ try {
 
   /* 28 — de gezondheidsmonitor meet, en zegt niet groen bij een gat */
   {
+    /* DE PRECONDITIE HOORT BIJ HET SCENARIO, NIET BIJ DE MACHINE.
+       Dit scenario toetst een PRODUCTIE-eigenschap: daar draait de
+       planner elk uur (cron `0 * * * *` op vibe-intel-planner) en draait
+       de worker permanent, dus zijn de drie versheidssignalen vers.
+       Op een laptop draait geen van beide, en dan meldt de monitor
+       terecht FOUT op planner/hartslag, worker/hartslag en
+       ingestie/versheid.
+       Eerder leek dit scenario te slagen. Dat was toeval: een eerdere
+       `npm run benchmark` had de worker-hartslag per ongeluk vers
+       gezet. Twee dagen later stond hij op 41 uur en viel het scenario
+       om — zonder dat er iets aan de code was veranderd. Een toets die
+       aan de wandklok hangt, toetst niets.
+       De oplossing is NIET de drempel verruimen (dan leest een uur-cron
+       die een dag dood is in productie nog als OK) en NIET overslaan
+       (dan is de bewering weg). De oplossing is de afhankelijkheid
+       expliciet opzetten: zet de planner één keer aan het werk en laat
+       de worker de wachtrij leegmaken. Dat is precies wat productie
+       continu doet, en het is lokaal veilig: de planner is idempotent
+       per venster en de worker verwerkt alleen wat er staat. */
+    const plannerUit = draai("npm", ["run", "planner"], APP);
+    const workerUit = draai("npm", ["run", "worker", "--", "--leeg"], APP);
+    const preconditieOk = plannerUit.ok && workerUit.ok;
+
     const g = draai("npm", ["run", "gezondheid", "--", "--json"], APP);
-    let signalen: { niveau: string; naam: string }[] = [];
+    let signalen: { niveau: string; naam: string; meting?: string }[] = [];
     let eindoordeel = "onbekend";
     try {
       const j = JSON.parse(g.uit.slice(g.uit.indexOf("{"))) as {
         eindoordeel: string;
-        signalen: { niveau: string; naam: string }[];
+        signalen: { niveau: string; naam: string; meting?: string }[];
       };
       signalen = j.signalen;
       eindoordeel = j.eindoordeel;
@@ -613,12 +701,67 @@ try {
     }
     const fout = signalen.filter((s) => s.niveau === "FOUT");
     const nietGemeten = signalen.filter((s) => s.niveau === "NIET GEMETEN");
+
+    /* DE VERWACHTE VERZAMELING, niet een ondergrens.
+       `signalen.length >= 15` liet vijf signalen stil wegvallen zonder
+       dat de toets het merkte, en bij een onbereikbare database levert
+       de monitor er precies één — ook dat is ">= 15" niet, maar de
+       bedoeling is dat we WETEN welke er horen te zijn. */
+    const VERWACHT = [
+      "bereikbaarheid", "migraties",
+      "versheid", "bronnen met opeenvolgende fouten", "brongezondheid",
+      "hartslag", "wachtrijachterstand", "verlopen leases", "dead-letter queue",
+      "goedgekeurd maar nog niet gepubliceerd", "teruggedraaide publicaties",
+      "maandbudget aanroepen", "kosten", "stroomonderbreker",
+      "accountblokkades", "analytics en CRM",
+      "leeftijd nieuwste back-up", "manifest", "restoretest", "externe kopie",
+    ];
+    const aanwezig = new Set(signalen.map((s) => s.naam));
+    const ontbrekend = VERWACHT.filter((n) => !aanwezig.has(n));
+
+    /* DE TWEEDE HELFT VAN DE NAAM WORDT NU OOK ECHT GETOETST.
+       'een gat heet NIET GEMETEN' stond in de titel maar nergens in de
+       assertie; het scenario zou dus ook geslaagd zijn als de monitor
+       een ontbrekende meting als OK rapporteerde — precies de faalwijze
+       die gezondheid.ts 'erger dan geen monitor' noemt. De koppelingen
+       zijn op deze machine niet aangesloten, dus dat signaal MOET
+       NIET GEMETEN zijn. */
+    const koppelingen = signalen.find((s) => s.naam === "analytics en CRM");
+    const gatHeetNietGemeten = koppelingen?.niveau === "NIET GEMETEN";
+
+    /* WELKE FOUT-SIGNALEN HOREN DIT SCENARIO ROOD TE MAKEN?
+       Niet alle. De monitor meet ook de gezondheid van 21 bronnen van
+       DERDEN, en een uitgever die plat ligt is geen defect in deze
+       codebase. Gemeten op 12 oktober 2026: de twee TenderNed-bronnen
+       stonden op BROKEN na vier mislukte ophalingen, en daarmee viel dit
+       scenario om terwijl er niets aan het platform mankeerde.
+       De monitor blijft dat onverkort als FOUT melden — dat is precies
+       zijn taak en daar verandert hier niets aan. Alleen de
+       PASS-voorwaarde van dit scenario is afgebakend tot de signalen die
+       over ons eigen systeem gaan: database, worker, planner, publicatie,
+       AI-grendels, beveiliging en back-up. De bronstoring staat in de
+       meting en in de details, dus hij verdwijnt niet uit het zicht. */
+    const DERDEN = new Set(["bronnen met opeenvolgende fouten", "brongezondheid", "versheid"]);
+    const eigenFout = fout.filter((s) => !DERDEN.has(s.naam));
+    const derdenFout = fout.filter((s) => DERDEN.has(s.naam));
+
+    const ok =
+      preconditieOk && ontbrekend.length === 0 && eigenFout.length === 0 && gatHeetNietGemeten;
     meld(
       28,
       "Gezondheidsmonitor: geen enkel FOUT-signaal, en een gat heet NIET GEMETEN",
-      signalen.length >= 15 && fout.length === 0 ? "PASS" : "FAIL",
-      `${signalen.length} signalen, ${fout.length} FOUT, ${nietGemeten.length} NIET GEMETEN, eindoordeel ${eindoordeel}`,
-      [...fout.map((s) => `FOUT: ${s.naam}`), ...nietGemeten.map((s) => `niet gemeten: ${s.naam}`)].slice(0, 3),
+      ok ? "PASS" : "FAIL",
+      `${signalen.length} signalen, ${eigenFout.length} FOUT op eigen onderdelen, ` +
+        `${derdenFout.length} FOUT op bronnen van derden, ${nietGemeten.length} NIET GEMETEN, ` +
+        `eindoordeel ${eindoordeel}` +
+        (preconditieOk ? "" : "; PRECONDITIE MISLUKT (planner/worker)") +
+        (ontbrekend.length ? `; ${ontbrekend.length} signaal/signalen weg` : "") +
+        (gatHeetNietGemeten ? "" : "; koppelingen staan niet op NIET GEMETEN"),
+      [
+        ...ontbrekend.map((n) => `ontbrekend signaal: ${n}`),
+        ...eigenFout.map((s) => `FOUT (eigen): ${s.naam} — ${s.meting ?? ""}`),
+        ...derdenFout.map((s) => `FOUT (derde partij, niet blokkerend): ${s.naam} — ${s.meting ?? ""}`),
+      ].slice(0, 5),
     );
   }
 
@@ -669,8 +812,27 @@ try {
       ["-rl", "-E", "INTEL_|intelligence|4320|vibe-intel", ...lijst.slice(0, 400)],
       SITE,
     );
-    const treffers = verdacht.uit.trim() ? verdacht.uit.trim().split("\n") : [];
+    let treffers = verdacht.uit.trim() ? verdacht.uit.trim().split("\n") : [];
     const railpack = readFileSync(join(SITE, "railpack.json"), "utf8");
+
+    /* railpack.json NOEMT intelligence/ sinds Release 2.3, en dat is
+       juist het bewijs van onafhankelijkheid in plaats van een
+       schending: de naam staat in `exclude`, dus de map gaat NIET mee in
+       de bouwcontext en is niet opvraagbaar. Deze toets zocht op het
+       woord en kon het verschil tussen gebruiken en uitsluiten niet
+       zien. Daarom: railpack.json mag de naam dragen zolang elke
+       vermelding binnen de excludelijst valt. */
+    if (treffers.includes("railpack.json")) {
+      const rp = JSON.parse(railpack) as { exclude?: string[] };
+      const uitgesloten = (rp.exclude ?? []).join("\n");
+      const buitenExclude = railpack
+        .split("\n")
+        .filter((r) => /INTEL_|intelligence|4320|vibe-intel/.test(r))
+        .filter((r) => !uitgesloten.includes(r.trim().replace(/[",]/g, "")));
+      if (buitenExclude.length === 0) {
+        treffers = treffers.filter((t) => t !== "railpack.json");
+      }
+    }
     meld(
       31,
       "De website is onafhankelijk: geen verwijzing naar de intelligencelaag, geen database",

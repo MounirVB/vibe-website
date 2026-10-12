@@ -62,12 +62,22 @@ const VENSTER = NU.toISOString().slice(0, 13);
 /* De keten in de juiste orde. De prioriteit bepaalt welke taak een
    worker eerst pakt: ophalen voedt clusteren, clusteren voedt
    beoordelen, en zo verder. Een lager getal gaat voor. */
-const PLAN: { soort: string; prioriteit: number; toelichting: string }[] = [
+const PLAN: { soort: string; prioriteit: number; toelichting: string; dagelijks?: true }[] = [
   { soort: "ophalen", prioriteit: 10, toelichting: "alle actieve bronnen; de collector respecteert zelf elk bronninterval" },
   { soort: "clusteren", prioriteit: 20, toelichting: "nieuwe bronversies naar gebeurtenissen en uitspraken" },
   { soort: "beoordelen", prioriteit: 30, toelichting: "de besluitmotor over nieuwe gebeurtenissen" },
   { soort: "regio", prioriteit: 40, toelichting: "gebieden binden en regiovoorstellen maken" },
   { soort: "signaleren", prioriteit: 50, toelichting: "commerciele signalen uit SALES_SIGNAL-kandidaten" },
+  /* DAGELIJKS, NIET PER UUR. De idempotentiesleutel van deze taak draagt
+     alleen de DATUM, dus de eerste plannerrun van een dag maakt hem aan
+     en de 23 runs daarna slaan hem over — precies hetzelfde mechanisme
+     dat een dubbele plannerrun al onschadelijk maakt, nu met een grover
+     venster. Een uurlijkse back-up van een database die één keer per uur
+     een handvol rijen bijschrijft is verspilling; een dagelijkse haalt
+     de RPO van 24 uur die het runbook vastlegt.
+     Prioriteit 90: de back-up gaat ná de keten, zodat hij de staat van
+     die dag meeneemt in plaats van die van gisteren. */
+  { soort: "backup", prioriteit: 90, dagelijks: true, toelichting: "logische back-up plus externe kopie in de bucket" },
 ];
 
 const pool = maakPool();
@@ -103,7 +113,10 @@ try {
     console.log(`Dat is bedoeld gedrag: de planner mag dubbel draaien.`);
   } else {
     for (const p of PLAN) {
-      const sleutel = `${p.soort}:${VENSTER}`;
+      /* Een dagelijkse taak krijgt de DATUM als venster; de uurlijkse de
+         datum met het uur erbij. De sleutel bepaalt dus de frequentie. */
+      const venster = p.dagelijks ? VENSTER.slice(0, 10) : VENSTER;
+      const sleutel = `${p.soort}:${venster}`;
       if (DROOG) {
         console.log(`  ZOU PLANNEN  ${p.soort.padEnd(12)} sleutel ${sleutel}`);
         aangemaakt += 1;
@@ -114,7 +127,7 @@ try {
           soort: p.soort,
           idempotentieSleutel: sleutel,
           prioriteit: p.prioriteit,
-          payload: { venster: VENSTER, toelichting: p.toelichting },
+          payload: { venster, toelichting: p.toelichting },
         }),
       );
       if (uit.nieuw) {
