@@ -9,8 +9,13 @@
    Drie dingen die hier bewust zo zijn:
 
    1. GEEN WACHTWOORD = GEEN TOEGANG. Gebruikers worden gezaaid zonder
-      hash. Inloggen is dan onmogelijk tot iemand `npm run wachtwoord`
-      draait. Een standaardwachtwoord is erger dan geen wachtwoord.
+      hash. Inloggen is dan onmogelijk tot de HOUDER van het account er
+      zelf een zet via een eenmalige activatiesleutel (/instellen; zie
+      instellen.ts). Een standaardwachtwoord is erger dan geen
+      wachtwoord.
+      `npm run wachtwoord` bestaat nog als noodweg voor een operator met
+      databasetoegang, maar is niet de normale route: daarbij kent
+      iemand anders dan de eigenaar het geheim.
    2. RECHTEN KOMEN UIT DE DATABASE. Niet uit de sessie. Een rol die
       na het inloggen wordt ingetrokken werkt bij het volgende verzoek
       niet meer, want de rechten worden per verzoek opnieuw gelezen.
