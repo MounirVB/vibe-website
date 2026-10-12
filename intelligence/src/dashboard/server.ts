@@ -50,6 +50,7 @@ import {
   zoekGebruikerOpEmail,
   type Gebruiker,
 } from "./auth.ts";
+import { leesInstelsleutel, wisselInstelsleutelIn } from "./instellen.ts";
 import {
   esc,
   getalOfOnbekend,
@@ -402,6 +403,142 @@ export function maakApp(pool: Pool): express.Express {
     res.setHeader("set-cookie", `${COOKIE}=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict${cookieSecure()}`);
     res.redirect("/inloggen");
   });
+
+  /* ------------------------------------------------------------------
+     /instellen — de houder van een eenmalige sleutel kiest zelf een
+     wachtwoord. Zie src/dashboard/instellen.ts voor waarom dit bestaat.
+
+     DEZE ROUTE IS ONGEAUTHENTICEERD, EN DAT MOET OOK: wie hier komt
+     heeft per definitie nog geen wachtwoord. De sleutel is de
+     autorisatie. Daarom staan er drie grendels op:
+       · dezelfde tempolimiet per IP als op het inlogformulier;
+       · dezelfde CSRF-dubbelesubmit op de POST;
+       · en een afwijzing die NIET verklapt waarom de sleutel niet
+         werkt, zodat niemand kan leren of een sleutel bestond.
+     ------------------------------------------------------------------ */
+
+  const instelPagina = (melding: string, sleutel: string, csrf: string, fout = false): string =>
+    `<!doctype html><html lang="nl"><head><meta charset="utf-8">` +
+    `<meta name="viewport" content="width=device-width,initial-scale=1">` +
+    `<meta name="robots" content="noindex, nofollow"><title>Wachtwoord instellen</title>` +
+    `<style>body{font:15px/1.6 system-ui,sans-serif;max-width:30rem;margin:4rem auto;padding:0 1rem}` +
+    `label{display:block;margin:1rem 0 .25rem}input{width:100%;padding:.6rem;font:inherit}` +
+    `button{margin-top:1.25rem;padding:.6rem 1.2rem;font:inherit}` +
+    `.fout{color:#b42318}.uitleg{color:#5b6b76}</style></head><body>` +
+    `<h1>Wachtwoord instellen</h1>` +
+    `<p class="${fout ? "fout" : "uitleg"}">${esc(melding)}</p>` +
+    (sleutel
+      ? `<form method="post" action="/instellen">` +
+        `<input type="hidden" name="${CSRF_VELD}" value="${esc(csrf)}">` +
+        `<input type="hidden" name="sleutel" value="${esc(sleutel)}">` +
+        `<label for="w1">Nieuw wachtwoord (minimaal 12 tekens)</label>` +
+        `<input id="w1" name="wachtwoord" type="password" autocomplete="new-password" required minlength="12">` +
+        `<label for="w2">Nog een keer</label>` +
+        `<input id="w2" name="wachtwoord2" type="password" autocomplete="new-password" required minlength="12">` +
+        `<button type="submit">Instellen</button></form>`
+      : `<p><a href="/inloggen">Naar inloggen</a></p>`) +
+    `</body></html>\n`;
+
+  app.get("/instellen", async_(async (req: MetCorrelatie, res) => {
+    const begrenzing = inlogBegrenzer.sta(`ip:${req.ip ?? "onbekend"}`);
+    if (!begrenzing.toegestaan) {
+      weiger(res, 429, "Te veel verzoeken. Probeer het over een minuut opnieuw.");
+      return;
+    }
+    const config = configLezen();
+    const sleutel = typeof req.query["sleutel"] === "string" ? req.query["sleutel"] : "";
+    const csrf = maakCsrfToken(sessieGeheim());
+    res.setHeader(
+      "set-cookie",
+      `${CSRF_KOEKJE}=${csrf}; Path=/; HttpOnly; SameSite=Strict; Max-Age=1800${cookieSecure()}`,
+    );
+
+    if (!sleutel) {
+      res.type("text/html; charset=utf-8").send(
+        instelPagina("Deze pagina werkt alleen met een instelsleutel in de link.", "", csrf, true),
+      );
+      return;
+    }
+    const stand = await metOrganisatie(pool, { organisatieId: await eersteOrganisatie(pool, config.organisatieSleutel) }, (c) =>
+      leesInstelsleutel(c, sleutel),
+    ).catch((): Awaited<ReturnType<typeof leesInstelsleutel>> => ({ ok: false, reden: "onbekend" }));
+
+    if (!stand.ok) {
+      log.waarschuwing("instelsleutel geweigerd", { verzoek_id: req.correlatieId, reden: stand.reden });
+      /* EEN REDEN DIE NIETS VERKLAPT. Onbekend, verlopen en gebruikt
+         geven hetzelfde antwoord: anders is deze pagina een orakel dat
+         vertelt of een sleutel ooit heeft bestaan. */
+      res.status(400).type("text/html; charset=utf-8").send(
+        instelPagina("Deze instelsleutel werkt niet (meer). Vraag een nieuwe aan.", "", csrf, true),
+      );
+      return;
+    }
+    res.type("text/html; charset=utf-8").send(
+      instelPagina(`Kies een wachtwoord voor ${stand.email}.`, sleutel, csrf),
+    );
+  }));
+
+  app.post("/instellen", async_(async (req: MetCorrelatie, res) => {
+    const begrenzing = inlogBegrenzer.sta(`ip:${req.ip ?? "onbekend"}`);
+    if (!begrenzing.toegestaan) {
+      weiger(res, 429, "Te veel verzoeken. Probeer het over een minuut opnieuw.");
+      return;
+    }
+    const body = (req.body ?? {}) as Record<string, unknown>;
+    if (!csrfPaarGeldig(leesKoekje(req, CSRF_KOEKJE), body[CSRF_VELD], sessieGeheim())) {
+      weiger(res, 403, "De beveiligingscontrole van het formulier is mislukt. Open de link opnieuw.");
+      return;
+    }
+    const sleutel = typeof body["sleutel"] === "string" ? body["sleutel"] : "";
+    const w1 = typeof body["wachtwoord"] === "string" ? body["wachtwoord"] : "";
+    const w2 = typeof body["wachtwoord2"] === "string" ? body["wachtwoord2"] : "";
+    const csrf = maakCsrfToken(sessieGeheim());
+
+    if (w1 !== w2) {
+      res.status(400).type("text/html; charset=utf-8").send(
+        instelPagina("De twee wachtwoorden zijn niet gelijk.", sleutel, csrf, true),
+      );
+      return;
+    }
+
+    const organisatieId = await eersteOrganisatie(pool, configLezen().organisatieSleutel);
+    /* Als EIGENAAR: wachtwoord_hash en sessie_epoch staan sinds migratie
+       0015 buiten bereik van de applicatierol, en dat blijft zo. Deze
+       ene handeling heeft dat recht nodig en krijgt een eigen pool.
+       Dat is geen pool PER VERZOEK: maakPool() memoiseert op
+       (url, rol, max) in poolRegister, dus elk verzoek krijgt dezelfde
+       twee verbindingen terug. */
+    const eigenaar = maakPool({ rol: null, max: 2 });
+    const uit = await metOrganisatie(eigenaar, { organisatieId }, (c) =>
+      wisselInstelsleutelIn(c, sleutel, w1),
+    ).catch((e: unknown): Awaited<ReturnType<typeof wisselInstelsleutelIn>> => ({
+      ok: false,
+      reden: e instanceof Error ? e.message : "onbekend",
+    }));
+
+    if (!uit.ok) {
+      const kort =
+        uit.reden && /minimaal 12/.test(uit.reden)
+          ? "Het wachtwoord moet minimaal 12 tekens zijn."
+          : "Deze instelsleutel werkt niet (meer). Vraag een nieuwe aan.";
+      res.status(400).type("text/html; charset=utf-8").send(instelPagina(kort, sleutel, csrf, true));
+      return;
+    }
+
+    await metOrganisatie(pool, { organisatieId }, (c) =>
+      c.query(
+        `insert into intel.audit_gebeurtenissen
+           (organisatie_id, soort, actor_soort, actor_naam, motivatie)
+         values ($1, 'wachtwoord_ingesteld', 'mens', $2, 'via eenmalige instelsleutel')`,
+        [organisatieId, `gebruiker ${uit.gebruikerId}`],
+      ),
+    ).catch(() => undefined);
+
+    log.info("wachtwoord ingesteld via sleutel", { verzoek_id: req.correlatieId, gebruiker: uit.gebruikerId });
+    res.type("text/html; charset=utf-8").send(
+      instelPagina("Het wachtwoord is ingesteld. U kunt nu inloggen.", "", csrf),
+    );
+  }));
 
   /* ---------------- gezondheid en gereedheid ----------------
      Twee endpoints met een ANDERE betekenis, en dat verschil is geen
