@@ -418,6 +418,27 @@ export function maakApp(pool: Pool): express.Express {
          werkt, zodat niemand kan leren of een sleutel bestond.
      ------------------------------------------------------------------ */
 
+  /**
+   * Zet het CSRF-koekje dat bij een vers getekend formuliertoken hoort.
+   *
+   * MOET BIJ ELKE RENDER VAN /instellen MEE. De dubbele-submitcontrole
+   * eist dat het veld in het formulier en het koekje aan elkaar gelijk
+   * zijn. Rendert een foutpagina een NIEUW token zonder het koekje bij
+   * te werken, dan botsen die twee bij de volgende poging en antwoordt
+   * de server 403 — ook als de gebruiker daarna alles goed doet.
+   *
+   * Gemeten op de productieflow: wie zijn wachtwoord twee keer
+   * verschillend typte, kreeg bij de tweede poging 403 en kon alleen
+   * verder door de activatielink opnieuw te openen. Eén typefout was
+   * dus een doodlopende weg.
+   */
+  const zetCsrfKoekje = (res: Response, csrf: string): void => {
+    res.setHeader(
+      "set-cookie",
+      `${CSRF_KOEKJE}=${csrf}; Path=/; HttpOnly; SameSite=Strict; Max-Age=1800${cookieSecure()}`,
+    );
+  };
+
   const instelPagina = (melding: string, sleutel: string, csrf: string, fout = false): string =>
     `<!doctype html><html lang="nl"><head><meta charset="utf-8">` +
     `<meta name="viewport" content="width=device-width,initial-scale=1">` +
@@ -449,10 +470,7 @@ export function maakApp(pool: Pool): express.Express {
     const config = configLezen();
     const sleutel = typeof req.query["sleutel"] === "string" ? req.query["sleutel"] : "";
     const csrf = maakCsrfToken(sessieGeheim());
-    res.setHeader(
-      "set-cookie",
-      `${CSRF_KOEKJE}=${csrf}; Path=/; HttpOnly; SameSite=Strict; Max-Age=1800${cookieSecure()}`,
-    );
+    zetCsrfKoekje(res, csrf);
 
     if (!sleutel) {
       res.type("text/html; charset=utf-8").send(
@@ -496,6 +514,7 @@ export function maakApp(pool: Pool): express.Express {
     const csrf = maakCsrfToken(sessieGeheim());
 
     if (w1 !== w2) {
+      zetCsrfKoekje(res, csrf);
       res.status(400).type("text/html; charset=utf-8").send(
         instelPagina("De twee wachtwoorden zijn niet gelijk.", sleutel, csrf, true),
       );
@@ -522,6 +541,7 @@ export function maakApp(pool: Pool): express.Express {
         uit.reden && /minimaal 12/.test(uit.reden)
           ? "Het wachtwoord moet minimaal 12 tekens zijn."
           : "Deze instelsleutel werkt niet (meer). Vraag een nieuwe aan.";
+      zetCsrfKoekje(res, csrf);
       res.status(400).type("text/html; charset=utf-8").send(instelPagina(kort, sleutel, csrf, true));
       return;
     }
@@ -536,6 +556,7 @@ export function maakApp(pool: Pool): express.Express {
     ).catch(() => undefined);
 
     log.info("wachtwoord ingesteld via sleutel", { verzoek_id: req.correlatieId, gebruiker: uit.gebruikerId });
+    zetCsrfKoekje(res, csrf);
     res.type("text/html; charset=utf-8").send(
       instelPagina("Het wachtwoord is ingesteld. U kunt nu inloggen.", "", csrf),
     );

@@ -559,6 +559,101 @@ try {
         );
       }
 
+      /* ---------------- 21b. de activatieflow, zoals een browser hem loopt ----------------
+         Dit scenario bestaat omdat de flow in productie op één punt
+         doodliep: de foutpagina van POST /instellen rendert een VERS
+         CSRF-token, maar werkte het koekje niet bij. Wie zijn wachtwoord
+         twee keer verschillend typte, kreeg bij de tweede poging 403 en
+         kon alleen verder door de activatielink opnieuw te openen.
+         Eén typefout was dus een doodlopende weg — en dat is precies het
+         soort fout dat geen enkele eenheidstoets ziet, want hij zit in
+         het samenspel van twee antwoorden. */
+      {
+        const eigenaarPool = maakPool({ rol: null, max: 2 });
+        const { maakInstelsleutel } = await import("../dashboard/instellen.ts");
+        const nieuwWachtwoord = `e2e-instelflow-${process.pid}-wachtwoord`;
+
+        const uitgifte = await metOrganisatie(eigenaarPool, { organisatieId }, (c) =>
+          maakInstelsleutel(c, organisatieId, "redactie@vibeenergy.nl", { geldigMs: 600_000 }),
+        ).catch(() => null);
+
+        if (!uitgifte) {
+          meld(33, "Activatieflow: sleutel, typefout, herstel, instellen en inloggen",
+            "NIET GEDRAAID", "kon geen instelsleutel uitgeven in deze database");
+        } else {
+          const stappen: string[] = [];
+          const lees = (h: string) => /name="_csrf" value="([^"]+)"/.exec(h)?.[1] ?? "";
+          const koekjeUit = (r: Response) =>
+            /vibe_intel_csrf=[^;]+/.exec(r.headers.get("set-cookie") ?? "")?.[0] ?? "";
+
+          /* 1 — het formulier halen */
+          const g1 = await fetch(`${basis}/instellen?sleutel=${encodeURIComponent(uitgifte.sleutel)}`);
+          const h1 = await g1.text();
+          const k1 = koekjeUit(g1);
+          const t1 = lees(h1);
+          if (g1.status !== 200 || !h1.includes('name="wachtwoord"')) stappen.push(`formulier gaf ${g1.status}`);
+          if (!k1 || !t1) stappen.push("geen csrf-koekje of -token op het formulier");
+
+          /* 2 — een TYPEFOUT: twee verschillende wachtwoorden */
+          const p2 = await fetch(`${basis}/instellen`, {
+            method: "POST",
+            headers: { "content-type": "application/x-www-form-urlencoded", cookie: k1 },
+            body: new URLSearchParams({
+              _csrf: t1, sleutel: uitgifte.sleutel,
+              wachtwoord: nieuwWachtwoord, wachtwoord2: `${nieuwWachtwoord}-anders`,
+            }).toString(),
+          });
+          const h2 = await p2.text();
+          const k2 = koekjeUit(p2) || k1;
+          const t2 = lees(h2);
+          if (p2.status !== 400) stappen.push(`typefout gaf ${p2.status} in plaats van 400`);
+          if (!koekjeUit(p2)) stappen.push("de foutpagina zet GEEN nieuw csrf-koekje");
+
+          /* 3 — herstellen met het token en koekje VAN DIE FOUTPAGINA.
+                 Dit is de stap die eerder 403 gaf. */
+          const p3 = await fetch(`${basis}/instellen`, {
+            method: "POST",
+            headers: { "content-type": "application/x-www-form-urlencoded", cookie: k2 },
+            body: new URLSearchParams({
+              _csrf: t2, sleutel: uitgifte.sleutel,
+              wachtwoord: nieuwWachtwoord, wachtwoord2: nieuwWachtwoord,
+            }).toString(),
+          });
+          const h3 = await p3.text();
+          if (p3.status !== 200 || !h3.includes("ingesteld")) {
+            stappen.push(`herstel na typefout gaf ${p3.status}${p3.status === 403 ? " (csrf-koekje liep niet mee)" : ""}`);
+          }
+
+          /* 4 — de sleutel is eenmalig */
+          const g4 = await fetch(`${basis}/instellen?sleutel=${encodeURIComponent(uitgifte.sleutel)}`);
+          if (g4.status !== 400) stappen.push(`gebruikte sleutel gaf ${g4.status} in plaats van 400`);
+
+          /* 5 — inloggen met het zelfgekozen wachtwoord */
+          const sessie = await logIn("redactie@vibeenergy.nl", nieuwWachtwoord);
+          if (!sessie) stappen.push("inloggen met het zelf ingestelde wachtwoord mislukte");
+
+          meld(
+            33,
+            "Activatieflow: sleutel, typefout, herstel, instellen en inloggen",
+            stappen.length === 0 ? "PASS" : "FAIL",
+            stappen.length === 0
+              ? "formulier 200, typefout 400 met vers koekje, herstel 200, sleutel daarna 400, inloggen gelukt"
+              : `${stappen.length} probleem(en)`,
+            stappen,
+          );
+
+          /* De e2e-gebruiker houdt zijn vaste fixturewachtwoord, zodat
+             scenario 18 en 19 blijven werken. */
+          await metOrganisatie(eigenaarPool, { organisatieId }, async (c) => {
+            const { maakWachtwoordHash } = await import("../dashboard/auth.ts");
+            await c.query(
+              "update intel.gebruikers set wachtwoord_hash = $2 where lower(email) = lower($1) and organisatie_id = $3",
+              ["redactie@vibeenergy.nl", await maakWachtwoordHash("e2e-redactie-wachtwoord-2026"), organisatieId],
+            );
+          });
+        }
+      }
+
       /* ---------------- 22. tempolimiet per IP ---------------- */
       {
         /* Twaalf pogingen met een GELDIG token maar fout wachtwoord op
