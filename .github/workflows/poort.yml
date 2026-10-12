@@ -31,6 +31,7 @@ on:
     branches:
       - "feat/**"
       - "fix/**"
+      - "seo/**"
   workflow_dispatch:
 
 # Minimale rechten. Een werkstroom die alleen test hoeft niets te
@@ -65,35 +66,43 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: De generatordatum pinnen op de gecommitte waarde
-        # ZONDER DEZE STAP IS DE POORT HIERONDER EEN TIJDBOM.
-        # bouw-routes.mjs:526 en sitemap.mjs:31 vallen terug op
-        # `new Date()`. De gecommitte uitvoer draagt dus de datum van de
-        # dag waarop hij gegenereerd is, en een ketenrun op een LATERE dag
-        # schrijft een andere `dateModified` en `lastmod` — waarna
-        # `git status` niet leeg is en de poort faalt om een reden die
-        # niets met de generator te maken heeft. Gemeten op 12 oktober
-        # 2026: 18 bestanden wijzigden, uitsluitend in het datumveld.
+      - name: Generatorketen draaien (offline)
+        # DE DATUMPIN IS WEG, EN DAT IS EEN VERSCHERPING.
         #
-        # Dit verzwakt de poort niet. De klok is geen invoer van de
-        # generator; de gecommitte data is dat wel. Door de datum uit de
-        # gecommitte uitvoer te halen toetst de poort nog steeds precies
-        # wat hij hoort te toetsen: wijzigt de data, dan wijzigt de
-        # uitvoer en loopt het verschil op.
+        # Tot Release 3.1 zette deze werkstroom hier ROUTES_DATUM,
+        # SITEMAP_DATUM, GEO_OPHAALDATUM en BEWIJS_OPHAALDATUM op de
+        # waarde die al in routes.json stond. Dat moest wel: de generator
+        # viel terug op `new Date()`, dus een run op een latere dag
+        # schreef een andere `dateModified` en `lastmod` en liet de poort
+        # hieronder vallen om een reden die niets met de generator te
+        # maken had.
+        #
+        # Die pin maakte de poort groen door de klok vast te zetten, niet
+        # doordat de bouw reproduceerbaar was. Nu bepaalt de INHOUD de
+        # datum — per route via scripts/seo/lib/vingerafdruk.mjs en voor
+        # het register via de routeset-hash in bouw-routes.mjs — en kan
+        # de pin weg. De stap hieronder toetst dat ook echt.
+        run: node scripts/seo/bouw.mjs --offline
+
+      - name: De bouw mag NIET aan de klok hangen
+        # Draait de hele keten nog een keer, maar dan alsof het achttien
+        # maanden later is. Komt er ook maar één byte verschil uit, dan
+        # zit er weer een wandklok in de generator en krijgt de hele site
+        # bij elke run een valse wijzigingsdatum mee — op 430 pagina's is
+        # dat een signaal aan Google dat alles elke dag verandert.
         run: |
           set -euo pipefail
-          D="$(node -p "require('./data/seo/routes.json')._gegenereerd")"
-          case "$D" in
-            [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;;
-            *) echo "::error::onverwachte _gegenereerd uit routes.json: '$D'"; exit 1 ;;
-          esac
-          echo "generatordatum gepind op $D"
-          for v in ROUTES_DATUM SITEMAP_DATUM GEO_OPHAALDATUM BEWIJS_OPHAALDATUM; do
-            echo "$v=$D" >> "$GITHUB_ENV"
-          done
-
-      - name: Generatorketen draaien (offline)
-        run: node scripts/seo/bouw.mjs --offline
+          voor="$(git status --porcelain -- . ':(exclude)intelligence')"
+          ROUTES_DATUM=2028-04-12 SITEMAP_DATUM=2028-04-12 \
+          GEO_OPHAALDATUM=2028-04-12 BEWIJS_OPHAALDATUM=2028-04-12 \
+            node scripts/seo/bouw.mjs --offline >/dev/null
+          na="$(git status --porcelain -- . ':(exclude)intelligence')"
+          if [ "$voor" != "$na" ]; then
+            echo "::error::Een bouw met een andere datum gaf andere uitvoer. De generator hangt aan de klok."
+            git diff --stat -- . ':(exclude)intelligence'
+            exit 1
+          fi
+          echo "Een bouw met een datum 18 maanden vooruit geeft byte-identieke uitvoer."
 
       - name: De generator moet REPRODUCEERBAAR zijn
         # Dit is de scherpste poort van Release 1: de gegenereerde HTML
@@ -113,6 +122,14 @@ jobs:
 
       - name: QA nieuwskanaal
         run: node scripts/seo/qa-nieuws.mjs
+
+      - name: Vijandige QA — breekt elke poort als je hem breekt?
+        # Zestien groene poorten bewijzen niets zolang niemand heeft
+        # geprobeerd ze rood te krijgen. Dit script injecteert per
+        # scenario één echt defect in een kopie van de werkboom en eist
+        # dat de juiste poort FAALT. Een scenario dat groen blijft is
+        # hier een fout.
+        run: node scripts/seo/qa-vijandig.mjs
 
       - name: Publiek artefact — de allowlist van de webroot
         # De statische host serveerde tot 12 oktober 2026 de HELE

@@ -115,10 +115,40 @@ for (const a of ['/sitemap.xml', '/robots.txt', '/vibe/vibe.css', '/vibe/tokens.
   else tel('asset 200');
 }
 
-/* De sitemap moet exact de INDEX-set bevatten, ook via HTTP opgehaald. */
+/* De sitemap moet exact de INDEX-set bevatten, ook via HTTP opgehaald.
+
+   Release 3.1: /sitemap.xml is een sitemapINDEX. Elk deelbestand moet dus óók
+   via HTTP 200 geven — een index die naar een 404 wijst is erger dan geen
+   index, want Search Console meldt dan een fout op de hele indiening. Daarom
+   worden de deelbestanden hier echt opgehaald en niet van schijf gelezen. */
 const sm = await haal('/sitemap.xml');
-const locs = [...sm.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+let locs = [];
+if (/<sitemapindex\b/.test(sm.body)) {
+  const delen = [...sm.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  tel('sitemapindex 200');
+  for (const d of delen) {
+    const pad = d.replace(/^https?:\/\/[^/]+/, '');
+    const r = await haal(pad);
+    if (r.status !== 200) { fouten.push(`sitemapdeel ${pad}: status ${r.status}, verwacht 200`); continue; }
+    if (!/<urlset\b/.test(r.body)) { fouten.push(`sitemapdeel ${pad} is geen urlset`); continue; }
+    tel('sitemapdeel 200');
+    locs.push(...[...r.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]));
+  }
+} else {
+  locs = [...sm.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+}
 if (locs.length !== indexRoutes.length) fouten.push(`sitemap via HTTP heeft ${locs.length} regels, register heeft ${indexRoutes.length} INDEX-routes`);
+/* Elke URL in de sitemap moet ook echt 200 geven. Een sitemapregel naar een
+   404 kost crawlbudget en meldt zich in Search Console als fout. Steekproef
+   over de eerste, de laatste en elke 37e, zodat dit geen tweede volledige
+   crawl wordt bovenop de 430 hierboven. */
+const sitemapSteekproef = locs.filter((_, i) => i === 0 || i === locs.length - 1 || i % 37 === 0);
+for (const l of sitemapSteekproef) {
+  const pad = l.replace(/^https?:\/\/[^/]+/, '') || '/';
+  const r = await haal(pad);
+  if (r.status !== 200) fouten.push(`sitemap-URL ${pad}: status ${r.status}, verwacht 200`);
+  else tel('sitemap-URL steekproef 200');
+}
 
 /* ---------------------------------------------------------------- rapport */
 console.log(`HTTP-QA tegen ${BASIS}`);

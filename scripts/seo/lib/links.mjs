@@ -91,6 +91,36 @@ export const NAAM = {
   'industrie-vve': "VvE's en wooncomplexen",
   'industrie-recreatie': 'Recreatie',
   'industrie-residentieel': 'Woningportefeuilles',
+
+  /* De sector- en toepassingspagina's dragen een redactionele H1 ("Twee
+     keukenpieken per dag, en de gasten laden ertussendoor") en die is geen
+     ankertekst. Daarom staat hier een korte naam per route. Zonder deze
+     regels valt naamVan() terug op de routestring en komt er letterlijk
+     "sectoren/retail" in een link te staan. */
+  'sectoren/automotive': 'Automotive en dealerbedrijven',
+  'sectoren/bedrijventerreinen': 'Bedrijventerreinen',
+  'sectoren/bouw': 'Bouw en infra',
+  'sectoren/gebiedsontwikkeling': 'Gebiedsontwikkeling',
+  'sectoren/horeca': 'Horeca',
+  'sectoren/opslag-en-distributie': 'Opslag en distributie',
+  'sectoren/parkeren': 'Parkeren',
+  'sectoren/productie-en-industrie': 'Productie en industrie',
+  'sectoren/retail': 'Retail',
+  'sectoren/transport-en-wagenparken': 'Transport en wagenparken',
+  'sectoren/zorgvastgoed': 'Zorgvastgoed',
+
+  'toepassingen/batterij-slim-inzetten': 'Een batterij slim inzetten',
+  'toepassingen/bestaande-aansluiting-optimaliseren': 'De bestaande aansluiting optimaliseren',
+  'toepassingen/elektrificatie-bedrijfswagens': 'Bedrijfswagens elektrificeren',
+  'toepassingen/geen-extra-transportvermogen': 'Geen extra transportvermogen',
+  'toepassingen/laden-met-beperkte-aansluiting': 'Laden met een beperkte aansluiting',
+  'toepassingen/meerdere-locaties': 'Meerdere locaties',
+  'toepassingen/netcongestie-bij-uitbreiding': 'Netcongestie bij uitbreiding',
+  'toepassingen/pieken-in-verbruik': 'Pieken in het verbruik',
+  'toepassingen/processen-sturen-met-ems': 'Processen sturen met een EMS',
+  'toepassingen/terugleverbeperking': 'Terugleverbeperking',
+
+  'kennis/netcongestie-uitgelegd': 'Netcongestie uitgelegd',
 };
 
 export function naamVan(route, terugval) {

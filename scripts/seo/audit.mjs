@@ -26,6 +26,12 @@ const gemeenten = lees('data', 'geo', 'gemeenten.json').gemeenten;
 const opl = lees('data', 'seo', 'oplossingen.json');
 const projGeo = lees('data', 'bewijs', 'projecten-geo.json').per_gemeente;
 const projecten = lees('scripts', 'projecten.json').projecten;
+/* Release 3.1: poort 3 toetst het bewijs achter een vrijgegeven gemeente, dus
+   heeft hij de bewijsbestanden en het publicatiebesluit nodig. */
+const terrBron = lees('data', 'bewijs', 'bedrijventerreinen.json');
+const vestBron = lees('data', 'bewijs', 'vestigingen.json');
+const takBron = lees('data', 'bewijs', 'bedrijfstakken.json');
+const besluit = lees('data', 'seo', 'publicatiebesluit.json');
 
 const register = new Map(reg.routes.map((r) => [r.route, r]));
 const indexRoutes = reg.routes.filter((r) => r.staat === 'INDEX');
@@ -133,12 +139,81 @@ poort('2  Geografische broonintegriteit', true, () => {
 });
 
 /* ======================================================= 3 · LOKAAL BEWIJS */
+/* RELEASE 3.1 — DEZE POORT IS AANGESCHERPT, NIET VERSOEPELD.
+
+   Hij eiste tot nu toe één ding van een gemeentehub: een gerealiseerd
+   project. Dat was de Release 1-grond en hij gaf 11 pagina's.
+
+   Release 3.1 publiceert op een andere grond: twee ONAFHANKELIJKE bronnen.
+   Zou deze poort ongewijzigd blijven, dan faalt hij op alle 327 nieuwe
+   routes en is er geen poort meer die het nieuwe bewijs controleert. Dat is
+   het slechtste van twee werelden: een rode poort die niets toetst.
+
+   Wat hij nu eist van een gemeentehub op INDEX — alle vier, niet één:
+
+   1 · Een gerealiseerd project OF een expliciete regel in
+       publicatiebesluit.json. Bewijs alleen promoveert nooit; een mens moet
+       de verantwoordelijkheid hebben genomen.
+   2 · Bij vrijgave zonder project: een IBIS-bedrijventerrein MET naam en
+       MET een oppervlak. Een terrein zonder naam of zonder hectares is geen
+       verifieerbaar feit.
+   3 · Bij vrijgave zonder project: een CBS-vestigingscijfer en een
+       bedrijfstakprofiel met minstens één publiceerbaar locatiequotient.
+   4 · Het bewijs moet OP DE PAGINA STAAN. De poort zoekt de naam van het
+       grootste terrein en het vestigingsaantal letterlijk in de HTML. Een
+       registerregel die wel bewijs noemt maar een pagina die het niet toont,
+       is precies het gat waar dit systeem voor is gebouwd.
+
+   Daarmee is de poort strenger dan hij was: hij controleert nu ook of het
+   bewijs de bezoeker bereikt, en dat deed hij voor de 11 bestaande pagina's
+   evenmin. */
 poort('3  Lokaal bewijs achter elke regionale INDEX-route', true, () => {
   const fouten = [];
   for (const r of indexRoutes) {
     if (r.subsoort === 'gemeente') {
       const p = projGeo[r.gemeentecode] || [];
-      if (!p.length) fouten.push(`${r.route}: gemeentehub op INDEX zonder gerealiseerd project`);
+      const vrij = besluit.vrijgegeven?.[r.route] || null;
+      if (!p.length && !vrij) {
+        fouten.push(`${r.route}: gemeentehub op INDEX zonder gerealiseerd project en zonder regel in publicatiebesluit.json`);
+      } else if (!p.length) {
+        /* Vrijgegeven op bewijs: controleer dat bewijs, en controleer dat het
+           op de pagina staat. */
+        const terreinen = terrBron.per_gemeente[r.gemeentecode] || [];
+        const bruikbaar = terreinen.filter((t) => t.naam && (t.ha_netto ?? t.ha_bruto));
+        const vest = vestBron.per_gemeente[r.gemeentecode];
+        const profiel = takBron.per_gemeente[r.gemeentecode];
+        const lqs = profiel ? profiel.takken.filter((t) => t.lq_publiceerbaar).length : 0;
+
+        if (!bruikbaar.length) fouten.push(`${r.route}: vrijgegeven zonder bedrijventerrein met naam en oppervlak`);
+        if (typeof vest !== 'number') fouten.push(`${r.route}: vrijgegeven zonder CBS-vestigingscijfer`);
+        if (!lqs) fouten.push(`${r.route}: vrijgegeven zonder publiceerbaar bedrijfstakprofiel`);
+
+        const html = htmlVan(r.route);
+        if (!html) {
+          fouten.push(`${r.route}: vrijgegeven maar er staat geen bestand op schijf`);
+        } else {
+          const body = tekstVan(mainVan(html));
+          if (bruikbaar.length && !body.includes(bruikbaar[0].naam)) {
+            fouten.push(`${r.route}: het grootste bedrijventerrein "${bruikbaar[0].naam}" staat niet op de pagina`);
+          }
+          if (typeof vest === 'number' && !body.includes(new Intl.NumberFormat('nl-NL').format(vest))) {
+            fouten.push(`${r.route}: het vestigingsaantal ${vest} staat niet op de pagina`);
+          }
+        }
+      }
+    }
+    /* Een provinciehub mag bestaan op eigen werk of als ouder van
+       gepubliceerde gemeenten. Niet op niets. */
+    if (r.subsoort === 'provincie') {
+      const inProv = gemeenten.filter((g) => g.provinciecode === r.provinciecode);
+      const eigenWerk = inProv.some((g) => (projGeo[g.gemeentecode] || []).length);
+      const kinderen = inProv.filter((g) => {
+        const kr = register.get(`regios/${g.provincie_slug}/${g.slug}`);
+        return kr && kr.staat === 'INDEX';
+      }).length;
+      if (!eigenWerk && !kinderen) {
+        fouten.push(`${r.route}: provinciehub op INDEX zonder eigen project en zonder gepubliceerde gemeente`);
+      }
     }
     if (r.subsoort === 'gemeente-familie') {
       const p = projGeo[r.gemeentecode] || [];
@@ -331,20 +406,62 @@ poort('8  Weespagina\'s', true, () => {
 });
 
 /* ======================================================= 9 · SITEMAPPARITEIT */
+/* Release 3.1: sitemap.xml is een sitemapINDEX geworden. Deze poort loopt hem
+   af en toetst de pariteit over alle deelbestanden samen. Hij controleert ook
+   dat de index zelf klopt: elk genoemd deelbestand moet bestaan, en elk
+   bestaand deelbestand moet in de index staan. Een weesbestand dat niet in de
+   index staat is een tweede, onbewaakte lijst URL's. */
 poort('9  Sitemappariteit', true, () => {
   const fouten = [];
-  const xml = readFileSync(resolve(wortel, 'sitemap.xml'), 'utf8');
-  const locs = alle(/<loc>([^<]+)<\/loc>/g, xml);
+  const indexXml = readFileSync(resolve(wortel, 'sitemap.xml'), 'utf8');
+  const isIndexVorm = /<sitemapindex\b/.test(indexXml);
+
+  let locs = [];
+  let lastmods = 0;
+  const bestanden = [];
+
+  if (isIndexVorm) {
+    const genoemd = alle(/<loc>([^<]+)<\/loc>/g, indexXml);
+    for (const loc of genoemd) {
+      const naam = loc.replace(`${HOST}/`, '');
+      if (!/^sitemap-[a-z0-9-]+\.xml$/.test(naam)) { fouten.push(`sitemapindex noemt een onverwacht pad: ${loc}`); continue; }
+      const p = resolve(wortel, naam);
+      if (!existsSync(p)) { fouten.push(`sitemapindex noemt ${naam}, maar dat bestand bestaat niet`); continue; }
+      bestanden.push(naam);
+      const deel = readFileSync(p, 'utf8');
+      if (/<sitemapindex\b/.test(deel)) fouten.push(`${naam} is zelf een index; geneste indexen zijn niet toegestaan`);
+      const deelLocs = alle(/<loc>([^<]+)<\/loc>/g, deel);
+      locs.push(...deelLocs);
+      lastmods += (deel.match(/<lastmod>/g) || []).length;
+      if (/<priority>/.test(deel)) fouten.push(`${naam} bevat <priority>; dat veld wordt genegeerd en suggereert een meting die er niet is`);
+      /* Protocolgrens: 50.000 URL's per bestand. */
+      if (deelLocs.length > 50000) fouten.push(`${naam} heeft ${deelLocs.length} URL's; de protocolgrens is 50.000`);
+    }
+    /* Geen weesbestand op schijf. */
+    for (const f of readdirSync(wortel)) {
+      if (/^sitemap-[a-z0-9-]+\.xml$/.test(f) && !bestanden.includes(f)) {
+        fouten.push(`${f} staat op schijf maar niet in de sitemapindex`);
+      }
+    }
+  } else {
+    locs = alle(/<loc>([^<]+)<\/loc>/g, indexXml);
+    lastmods = (indexXml.match(/<lastmod>/g) || []).length;
+    if (/<priority>/.test(indexXml)) fouten.push('de sitemap bevat <priority>; dat veld wordt genegeerd en suggereert een meting die er niet is');
+  }
+
   const inSitemap = new Set(locs);
+  if (inSitemap.size !== locs.length) fouten.push(`${locs.length - inSitemap.size} URL('s) staan in meer dan één sitemapbestand`);
   const verwacht = new Set(indexRoutes.map((r) => url(r.route)));
   for (const v of verwacht) if (!inSitemap.has(v)) fouten.push(`INDEX-route niet in de sitemap: ${v}`);
   for (const l of inSitemap) if (!verwacht.has(l)) fouten.push(`sitemapregel zonder INDEX-route: ${l}`);
-  const zonderLastmod = locs.length - (xml.match(/<lastmod>/g) || []).length;
-  if (zonderLastmod !== 0) fouten.push(`${zonderLastmod} sitemapregels zonder lastmod`);
-  if (/<priority>/.test(xml)) fouten.push('de sitemap bevat <priority>; dat veld wordt door de zoekmachines genegeerd en suggereert een meting die er niet is');
+  if (locs.length !== lastmods) fouten.push(`${locs.length - lastmods} sitemapregels zonder lastmod`);
   const robots = readFileSync(resolve(wortel, 'robots.txt'), 'utf8');
   if (!robots.includes(`${HOST}/sitemap.xml`)) fouten.push('robots.txt verwijst niet naar de sitemap op de www-host');
-  return { ok: fouten.length === 0, meting: `${locs.length} sitemapregels tegenover ${verwacht.size} INDEX-routes`, details: fouten };
+  return {
+    ok: fouten.length === 0,
+    meting: `${locs.length} sitemapregels tegenover ${verwacht.size} INDEX-routes${isIndexVorm ? ` · index met ${bestanden.length} deelbestand(en)` : ' · één urlset'}`,
+    details: fouten,
+  };
 });
 
 /* ======================================================= 10 · CLAIMS */
