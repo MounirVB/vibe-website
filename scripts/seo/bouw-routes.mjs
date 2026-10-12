@@ -28,6 +28,7 @@
    Draaien: node scripts/seo/bouw-routes.mjs
    ============================================================================ */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { routeGemeente, routeGemeenteFamilie, routeProvincie, routeProvincieFamilie, REGIO_WORTEL, botsendeSlugs } from './lib/paden.mjs';
@@ -207,19 +208,71 @@ zet({
     : 'Geen enkele provincie heeft gepubliceerd bewijs; een lege hub wordt niet gepubliceerd.',
 });
 
-/* ---- regionaal: provinciehubs ---- */
+/* ---- regionaal: provinciehubs ----
+
+   RELEASE 3.1 — EEN TWEEDE GROND OM EEN PROVINCIEHUB TE PUBLICEREN.
+
+   Tot nu was de enige grond: een gerealiseerd project in die provincie. Dat
+   gaf 4 van de 12 hubs. De reden was goed ("een hub zonder eigen bewijs is
+   alleen een lijst gemeentenamen") maar hij dekt niet het geval dat Release
+   3.1 maakt.
+
+   DE DWINGENDE REDEN IS STRUCTUREEL, NIET REDACTIONEEL. Elke gemeentepagina
+   draagt de kruimel Regio's > <Provincie> > <Gemeente>. Linkt die middelste
+   kruimel naar een PENDING-route, dan is dat een interne link naar een
+   pagina die niet bestaat, en poort 7 faalt — terecht. Gemeenten publiceren
+   in een provincie waarvan de hub PENDING is, is dus geen keuze: het kan niet.
+
+   De tweede grond is daarom: de provincie heeft minstens één gepubliceerde
+   gemeentepagina. Dan is de hub geen lege verzamelpagina maar de ouder van
+   bestaande kinderen, en hij draagt bovendien zijn eigen geaggregeerde
+   bewijs (vestigingen, bedrijventerreinen, netbeheerderverdeling,
+   bedrijfstakprofiel) over de hele provincie.
+
+   Wat hij NIET mag doen is gerealiseerd werk suggereren. Een provincie
+   zonder project krijgt daarom een andere pagina-opzet; zie bouwProvincie in
+   genereer.mjs. */
+const gemeentenVrijgegevenPerProvincie = new Map();
+for (const g of gemeenten) {
+  const r = routeGemeente(g.provincie_slug, g.slug);
+  if (!besluit.vrijgegeven?.[r]) continue;
+  gemeentenVrijgegevenPerProvincie.set(
+    g.provinciecode,
+    (gemeentenVrijgegevenPerProvincie.get(g.provinciecode) || 0) + 1
+  );
+}
+
 for (const p of provincies) {
   const b = projectenPerProvincie.get(p.provinciecode);
+  const vrijgegevenGem = gemeentenVrijgegevenPerProvincie.get(p.provinciecode) || 0;
+  let staat = 'PENDING';
+  let reden;
+  if (b) {
+    staat = 'INDEX';
+    reden = `${b.projecten.length} gerealiseerd project(en) in ${b.gemeenten.length} gemeente(n) in deze provincie. De hub draagt eigen bewijs en is geen lege verzamelpagina.`;
+  } else if (vrijgegevenGem) {
+    staat = 'INDEX';
+    reden =
+      `Geen gerealiseerd project in deze provincie, maar ${vrijgegevenGem} vrijgegeven gemeentepagina('s) hangen ` +
+      `eronder. De hub is hun ouder in de kruimelpaden; zonder hem zou elke gemeentepagina een interne link naar ` +
+      `een niet-bestaande pagina dragen. De hub draagt daarnaast zijn eigen geaggregeerde bewijs over de provincie.`;
+  } else {
+    reden =
+      'Geen gerealiseerd project en geen vrijgegeven gemeentepagina in deze provincie. Een provinciehub zonder ' +
+      'eigen bewijs en zonder kinderen zou alleen een lijst gemeentenamen zijn.';
+  }
   zet({
     route: routeProvincie(p.slug),
     soort: 'regio',
     subsoort: 'provincie',
     provinciecode: p.provinciecode,
-    staat: b ? 'INDEX' : 'PENDING',
-    reden: b
-      ? `${b.projecten.length} gerealiseerd project(en) in ${b.gemeenten.length} gemeente(n) in deze provincie. De hub draagt eigen bewijs en is geen lege verzamelpagina.`
-      : 'Geen gerealiseerd project in deze provincie. Een provinciehub zonder eigen bewijs zou alleen een lijst gemeentenamen zijn.',
-    bewijs: b ? { projecten: b.projecten.length, gemeenten: b.gemeenten.length } : null,
+    staat,
+    reden,
+    bewijs: b
+      ? { projecten: b.projecten.length, gemeenten: b.gemeenten.length }
+      : vrijgegevenGem
+        ? { projecten: 0, vrijgegeven_gemeenten: vrijgegevenGem }
+        : null,
   });
 }
 
@@ -516,6 +569,45 @@ const samenvatting = {
   },
 };
 
+/* ===================================================== DE DATUM IN HET REGISTER
+
+   WAT HIER FOUT WAS, EN WAAROM HET ERGER WERD BIJ 430 PAGINA'S.
+
+   `_gegenereerd` stond op `new Date()`. genereer.mjs gaf die waarde aan elke
+   pagina mee als `gewijzigd`, en die landt in `dateModified` in de JSON-LD en
+   in `lastmod` in de sitemap. Wie de keten een dag later draaide zonder iets
+   te veranderen, kreeg dus een hele site met een nieuwe wijzigingsdatum.
+
+   Gemeten op 12 oktober 2026 was dat 18 bestanden; na deze release zou het
+   430 zijn. De CI-reproduceerbaarheidspoort faalde daardoor op elke dag ná de
+   commitdag, en de werkstroom loste dat op door ROUTES_DATUM te PINNEN. Dat
+   is een pleister: de poort was groen omdat de klok was vastgezet, niet omdat
+   de bouw reproduceerbaar was.
+
+   Nu bepaalt de INHOUD de datum, op twee niveaus:
+
+   · Per pagina doet lib/vingerafdruk.mjs dat. Alleen een pagina met een
+     veranderde inhoudshash krijgt een nieuwe datum.
+   · Hier, voor het register zelf: `_gegenereerd` schuift alleen op als de
+     ROUTESET verandert. `_routeset` is een hash over elke route met haar
+     staat. Blijft die gelijk, dan blijft de datum staan.
+
+   Daarmee is het pinnen van ROUTES_DATUM niet meer nodig om de poort groen te
+   krijgen. De variabele blijft werken voor wie een datum bewust wil zetten,
+   maar de keten reproduceert nu zonder hem. */
+const gesorteerd = routes.sort((a, b) => a.route.localeCompare(b.route));
+const routesetHash = createHash('sha256')
+  .update(gesorteerd.map((r) => `${r.route}\t${r.staat}`).join('\n'))
+  .digest('hex')
+  .slice(0, 16);
+
+const routesPad = resolve(wortel, 'data', 'seo', 'routes.json');
+const vorigeRoutes = existsSync(routesPad) ? JSON.parse(readFileSync(routesPad, 'utf8')) : null;
+const routesetGelijk = vorigeRoutes?._routeset === routesetHash && !!vorigeRoutes?._gegenereerd;
+const gegenereerdDatum = routesetGelijk
+  ? vorigeRoutes._gegenereerd
+  : process.env.ROUTES_DATUM || new Date().toISOString().slice(0, 10);
+
 mkdirSync(resolve(wortel, 'data', 'seo'), { recursive: true });
 writeFileSync(
   resolve(wortel, 'data', 'seo', 'routes.json'),
@@ -523,25 +615,14 @@ writeFileSync(
     {
       _toelichting:
         'Gegenereerd door scripts/seo/bouw-routes.mjs. Niet met de hand bijwerken. PENDING betekent: geen bestand, geen sitemapregel, geen canonical, geen interne link.',
-      /* LET OP BIJ HET DRAAIEN VAN DE KETEN: deze datum is de WANDKLOK.
-         Draai je de keten op een latere dag dan de dag waarop de uitvoer
-         is gecommit, dan wijzigen `dateModified` in de JSON-LD en
-         `lastmod` in de sitemap van elke route — gemeten op 12 oktober
-         2026: 18 bestanden, uitsluitend in het datumveld. `git status` is
-         dan niet leeg en de reproduceerbaarheidspoort in
-         .github/workflows/poort.yml faalt om een reden die niets met de
-         generator te maken heeft.
-         Daarom pint die werkstroom ROUTES_DATUM (en SITEMAP_DATUM,
-         GEO_OPHAALDATUM, BEWIJS_OPHAALDATUM) op de waarde die hier al in
-         routes.json staat. Doe dat lokaal ook als je alleen wilt
-         CONTROLEREN of de keten reproduceert:
-           ROUTES_DATUM=$(node -p "require('./data/seo/routes.json')._gegenereerd") \
-           SITEMAP_DATUM=$ROUTES_DATUM node scripts/seo/bouw.mjs --offline
-         Wil je de datums juist wél verversen, draai dan zonder pin en
-         commit de uitvoer mee. */
-      _gegenereerd: process.env.ROUTES_DATUM || new Date().toISOString().slice(0, 10),
+      _gegenereerd: gegenereerdDatum,
+      _routeset: routesetHash,
+      _datum_regel:
+        'Release 3.1: _gegenereerd is NIET de wandklok. Hij schuift alleen op als _routeset verandert, en dat is ' +
+        'een hash over elke route met zijn staat. Dezelfde routeset geeft dus altijd hetzelfde bestand, ook over ' +
+        'maanden heen. Zie de toelichting onderaan bouw-routes.mjs.',
       samenvatting,
-      routes: routes.sort((a, b) => a.route.localeCompare(b.route)),
+      routes: gesorteerd,
     },
     null,
     2
@@ -549,3 +630,5 @@ writeFileSync(
 );
 
 console.log(JSON.stringify(samenvatting, null, 2));
+console.log(`routeset-hash : ${routesetHash}`);
+console.log(`_gegenereerd  : ${gegenereerdDatum}${routesetGelijk ? ' (ongewijzigd behouden)' : ' (routeset is gewijzigd)'}`);

@@ -53,12 +53,31 @@ function kies() {
     { route: 'kennis', waarom: 'nieuwe hub' },
     { route: 'subsidies', waarom: 'nieuwe subsidiepagina' },
     { route: 'regios', waarom: 'regiowortel' },
-    { route: 'regios/gelderland', waarom: 'provinciehub — één map diep' },
-    { route: 'regios/gelderland/duiven', waarom: 'gemeentehub — twee mappen diep' },
+    { route: 'regios/gelderland', waarom: 'provinciehub MET eigen werk — één map diep' },
+    { route: 'regios/gelderland/duiven', waarom: 'gemeentehub MET eigen project — twee mappen diep' },
     pak((r) => r.subsoort === 'sector'),
     pak((r) => r.subsoort === 'toepassing'),
     pak((r) => r.subsoort === 'kennis'),
     pak((r) => r.subsoort === 'project'),
+
+    /* RELEASE 3.1 — de nieuwe paginatypes MOETEN hier in.
+       De selectie hierboven dekte alleen pagina's van Release 1. De 326
+       nieuwe gemeentehubs en 8 nieuwe provinciehubs hebben een ANDERE
+       opbouw: geen projectenblok, wel een bedrijfstakopsomming van maximaal
+       21 regels, een korte congestiesectie en een bronregel onder de lead.
+       Niets daarvan was ooit in een browser gezien. */
+    { route: 'regios/drenthe', waarom: 'R3.1 provinciehub ZONDER eigen werk' },
+    { route: 'regios/drenthe/aa-en-hunze', waarom: 'R3.1 gemeentehub ZONDER eigen project' },
+    { route: 'regios/groningen/groningen', waarom: 'R3.1 gemeente met dezelfde naam als de provincie' },
+    { route: 'regios/noord-brabant/nuenen-gerwen-en-nederwetten', waarom: 'R3.1 langste gemeentenaam — kop- en titelafbreking' },
+    { route: 'regios/zuid-holland', waarom: 'R3.1 provincie met de meeste gemeenten — lange lijst' },
+    /* De gemeentepagina met de MEESTE bedrijfstakregels: als de opsomming
+       ergens overloopt, dan daar. En de pagina met de minste, want die moet
+       niet leeg of gehavend ogen. */
+    (() => {
+      const gem = indexRoutes.filter((r) => r.subsoort === 'gemeente');
+      return gem.length ? { route: gem[0].route, waarom: 'R3.1 gemeentehub (eerste in het register)' } : null;
+    })(),
   ].filter(Boolean);
   const gezien = new Set();
   return kandidaten

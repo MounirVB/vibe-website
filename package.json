@@ -6,7 +6,10 @@
   "scripts": {
     "qa:assets": "node scripts/qa-assets.mjs",
     "seo:bouw": "node scripts/seo/bouw.mjs --offline",
+    "seo:bouw:online": "node scripts/seo/bouw.mjs",
     "seo:poort": "node scripts/seo/audit.mjs",
+    "seo:vijandig": "node scripts/seo/qa-vijandig.mjs",
+    "seo:artefact": "node scripts/publiek-artefact.mjs",
     "qa:nieuws": "node scripts/seo/qa-nieuws.mjs"
   }
 }

@@ -3,16 +3,18 @@
    ----------------------------------------------------------------------------
    De stappen zijn afhankelijk van elkaar en de orde is niet vrij:
 
-     1 haal-geo          netwerk; schrijft data/geo/
-     2 haal-bewijs       netwerk; heeft data/geo nodig
-     3 haal-netbeheerder netwerk; heeft data/geo nodig
-     4 bouw-routes       heeft data/geo + data/bewijs + data/inhoud nodig
-     5 genereer          heeft data/seo/routes.json nodig; schrijft de HTML
-     6 herstel-bestaand  werkt op de bestaande HTML; moet NA genereer, omdat
-                         hij het manifest gebruikt om gegenereerde bestanden
-                         over te slaan
-     7 sitemap           heeft het register EN de bestanden nodig
-     8 audit             toetst de uitkomst
+     1 haal-geo            netwerk; schrijft data/geo/
+     2 haal-bewijs         netwerk; heeft data/geo nodig
+     3 haal-bedrijfstakken netwerk; heeft data/geo nodig
+     4 haal-netbeheerder   netwerk; heeft data/geo nodig
+     5 vrijgeven-r31       leidt het publicatiebesluit af uit het bewijs
+     6 bouw-routes         heeft data/geo + data/bewijs + data/inhoud nodig
+     7 genereer            heeft data/seo/routes.json nodig; schrijft de HTML
+     8 herstel-bestaand    werkt op de bestaande HTML; moet NA genereer, omdat
+                           hij het manifest gebruikt om gegenereerde bestanden
+                           over te slaan
+     9 sitemap             heeft het register EN de bestanden nodig
+    10 audit               toetst de uitkomst
 
    De drie ophaalstappen zijn traag en vragen netwerk. Sla ze over met
    --offline als data/geo en data/bewijs al staan.
@@ -29,7 +31,13 @@ const OFFLINE = process.argv.includes('--offline');
 const stappen = [
   { naam: 'haal-geo', netwerk: true },
   { naam: 'haal-bewijs', netwerk: true },
+  /* Release 3.1: het bedrijfstakprofiel. Na haal-geo, want het heeft het
+     gemeenteregister nodig om CBS-rijen van opgeheven gemeenten te negeren. */
+  { naam: 'haal-bedrijfstakken', netwerk: true },
   { naam: 'haal-netbeheerder', netwerk: true },
+  /* Release 3.1: het publicatiebesluit volgt uit het bewijs en moet dus NA de
+     ophaalstappen en VOOR bouw-routes draaien. Hij is idempotent. */
+  { naam: 'vrijgeven-r31', netwerk: false },
   { naam: 'bouw-routes', netwerk: false },
   { naam: 'genereer', netwerk: false },
   { naam: 'herstel-bestaand', netwerk: false },
