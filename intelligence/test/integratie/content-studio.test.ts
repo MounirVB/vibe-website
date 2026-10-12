@@ -225,7 +225,22 @@ describe("content studio", () => {
     assert.equal(v.wijziging.soort, "geen", "een omgeleid voorstel levert geen tekst");
   });
 
-  test("hetzelfde feit op de JUISTE pagina komt wel door", async () => {
+  test("op de JUISTE pagina komt het door, maar als LINKVOORSTEL en niet als bedrag", async () => {
+    /* DEZE TOETS STOND EERST OP 'PASS met het bedrag in de tekst'.
+       Dat was de lakse versie van `verwoordbaarheid`: een bedrag met een
+       schaalwoord zou zelf al een volledige uitspraak zijn. In productie
+       leverde die regel deze alinea op:
+
+         "Per 2025-11-24 is vastgelegd: 200000000000 euro, 125000000 euro."
+
+       De waarden waren correct geschaald en de zin was nog steeds
+       onbruikbaar: 200 miljard WAARVOOR? `soort` is 'prijs' en
+       `onderwerp` is een clustersleutel; geen van beide zegt wat er
+       gemeten is. Dus ook een bedrag is niet verwoordbaar, en de regel
+       is gelijkgetrokken.
+
+       Wat er WEL doorkomt is het linkvoorstel: dat leunt alleen op de
+       sitekennis en beweert geen getal. */
     const v = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
       bouwVoorstel(c, kennis, kandidaatOpJuistePagina, "2026-10-12"),
     );
@@ -235,10 +250,25 @@ describe("content studio", () => {
       "KLAAR_VOOR_REVIEW",
       `verwacht KLAAR_VOOR_REVIEW, kreeg ${v.eindoordeel}: ${v.oordeelReden}`,
     );
-    /* Het bedrag mét schaalwoord is verwoordbaar zonder te citeren. */
-    assert.equal(v.controles.find((x) => x.naam === "verwoordbaarheid")?.oordeel, "PASS");
-    assert.ok(v.wijziging.nieuweTekst.includes("3000000000") || v.wijziging.nieuweTekst.includes("3000000000 euro"),
-      `de voorgestelde tekst hoort het bedrag te noemen: ${v.wijziging.nieuweTekst}`);
+    assert.equal(
+      v.controles.find((x) => x.naam === "verwoordbaarheid")?.oordeel,
+      "FAIL",
+      "een bedrag zonder benoemde grootheid hoort NIET verwoordbaar te zijn",
+    );
+    assert.equal(v.wijziging.soort, "interne_link");
+    /* En het kale getal staat NIET in de voorgestelde tekst. */
+    assert.ok(
+      !/\b3000000000\b/.test(v.wijziging.nieuweTekst),
+      `een kaal getal hoort niet in de voorgestelde tekst: ${v.wijziging.nieuweTekst}`,
+    );
+    assert.match(v.wijziging.nieuweTekst, /Verwijs vanuit deze sectie naar/);
+    /* Het feit blijft WEL als bewijs beschikbaar, leesbaar geformatteerd. */
+    assert.ok(v.onderbouwing.uitspraken.some((u) => u.waarde === "3000000000"));
+    const bewijs = v.controles.find((x) => x.naam === "verwoordbaarheid")?.bewijs ?? [];
+    assert.ok(
+      bewijs.some((b) => b.includes("3 miljard")),
+      `het bewijs hoort het bedrag leesbaar te tonen: ${bewijs.join(" | ")}`,
+    );
   });
 
   /* ---------- 9: canonieke URL blijft ---------- */
