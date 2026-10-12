@@ -12,6 +12,7 @@
     "bronnen": "node src/cli/bronnen.ts",
     "collector": "node src/cli/collector.ts",
     "pijplijn": "node src/cli/pijplijn.ts",
+    "semantiek": "node src/cli/semantiek.ts",
     "worker": "node src/cli/worker.ts",
     "planner": "node src/cli/planner.ts",
     "paginascan": "node src/cli/paginascan.ts",
