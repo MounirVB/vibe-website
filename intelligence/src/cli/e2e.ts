@@ -333,15 +333,82 @@ try {
   /* ---------------- 12. routeregister onaangetast ---------------- */
   {
     const pad = join(SITE, "data", "seo", "routes.json");
-    const reg = JSON.parse(readFileSync(pad, "utf8")) as { routes: { staat: string; soort: string }[] };
+    const reg = JSON.parse(readFileSync(pad, "utf8")) as {
+      routes: { route: string; staat: string; soort: string }[];
+    };
     const index = reg.routes.filter((x) => x.staat === "INDEX").length;
     const pending = reg.routes.filter((x) => x.staat === "PENDING").length;
     const regioPending = reg.routes.filter((x) => x.soort === "regio" && x.staat === "PENDING").length;
+
+    /* DEZE TOETS STOND OP TWEE BEVROREN GETALLEN: `index === 96 &&
+       regioPending === 4587`. Release 3.1 heeft 430 routes bewust
+       vrijgegeven, en daarmee werd de toets rood zonder dat er iets mis
+       was. Een getal dat de werkelijkheid inhaalt is geen invariant.
+
+       De invariant die hij WEL hoort te beschermen: er staat geen
+       regiopagina op INDEX die niemand heeft vrijgegeven. Gemeten op
+       12 oktober 2026 zijn de 350 regionale INDEX-routes volledig te
+       verklaren uit precies drie bronnen:
+
+         326  een redactioneel besluit in data/seo/publicatiebesluit.json
+          13  structurele hubs: /regios en de twaalf provinciehubs
+          11  pagina's die al voor Release 3.1 bestonden
+
+       Die laatste elf staan hieronder met naam. Dat is bewust: komt er
+       een twaalfde bij zonder redactioneel besluit, dan hoort deze toets
+       rood te worden in plaats van hem stil mee te rekenen. */
+    const besluitPad = join(SITE, "data", "seo", "publicatiebesluit.json");
+    const besluit = existsSync(besluitPad)
+      ? (JSON.parse(readFileSync(besluitPad, "utf8")) as { vrijgegeven?: Record<string, string> })
+      : { vrijgegeven: {} };
+    const vrijgegeven = new Set(Object.keys(besluit.vrijgegeven ?? {}));
+
+    /* De regiopagina's van voor Release 3.1. Niet uitgebreiden zonder
+       een redactioneel besluit erbij. */
+    const VOOR_RELEASE_31 = new Set([
+      "regios/gelderland/arnhem",
+      "regios/gelderland/duiven",
+      "regios/gelderland/nijmegen",
+      "regios/gelderland/renkum",
+      "regios/gelderland/rheden",
+      "regios/noord-brabant/tilburg",
+      "regios/noord-holland/alkmaar",
+      "regios/noord-holland/amsterdam",
+      "regios/noord-holland/medemblik",
+      "regios/noord-holland/purmerend",
+      "regios/overijssel/hengelo",
+    ]);
+    const isHub = (route: string) => route.replace(/^\//, "").split("/").length <= 2;
+
+    const regioIndex = reg.routes.filter((x) => x.soort === "regio" && x.staat === "INDEX");
+    const onverklaard = regioIndex.filter((x) => {
+      const r = x.route.replace(/^\//, "");
+      return !vrijgegeven.has(r) && !vrijgegeven.has(x.route) && !isHub(r) && !VOOR_RELEASE_31.has(r);
+    });
+
+    /* En de andere kant: heeft dit PLATFORM zelf iets geregionaals
+       gepubliceerd? Dat mag nooit, ongeacht wat de site bevat. */
+    const eigenRegio = await metOrganisatie(pool, { organisatieId }, (c) =>
+      rijen<{ n: number }>(
+        c,
+        `select count(*)::int as n
+           from intel.publicatiebesluiten pb
+           join intel.inhoud_versies v on v.id = pb.inhoud_versie_id
+          where pb.organisatie_id = $1 and v.pad like '/regios/%'`,
+        [organisatieId],
+      ),
+    );
+    const eigen = eigenRegio[0]?.n ?? 0;
+
     meld(
       12,
-      "Regionale intelligentie publiceert niets: de 4.587 PENDING-routes blijven PENDING",
-      index === 96 && regioPending === 4587 ? "PASS" : "FAIL",
-      `${index} INDEX, ${pending} PENDING, waarvan ${regioPending} regionaal`,
+      "Regionale publicatie is altijd een mensbesluit: geen onverklaarde INDEX, en het platform publiceert zelf niets regionaals",
+      onverklaard.length === 0 && eigen === 0 ? "PASS" : "FAIL",
+      `${index} INDEX (${regioIndex.length} regionaal), ${pending} PENDING waarvan ${regioPending} regionaal. ` +
+        `Verklaard: ${vrijgegeven.size} redactioneel besluit, ${regioIndex.filter((x) => isHub(x.route.replace(/^\//, ""))).length} hub, ` +
+        `${VOOR_RELEASE_31.size} van voor Release 3.1. Onverklaard ${onverklaard.length}. ` +
+        `Eigen regionale publicaties door dit platform: ${eigen}`,
+      onverklaard.slice(0, 5).map((x) => `INDEX zonder besluit: ${x.route}`),
     );
   }
 
@@ -997,11 +1064,30 @@ try {
       SITE,
     );
     const lijst = siteBestanden.uit.trim().split("\n").filter(Boolean);
-    const verdacht = draai(
-      "grep",
-      ["-rl", "-E", "INTEL_|intelligence|4320|vibe-intel", ...lijst.slice(0, 400)],
-      SITE,
-    );
+    /* HET PATROON WAS TE RUIM, EN DE DEKKING WERD STIL AFGEKAPT.
+
+       '4320' is het dashboardpoortnummer, maar als los cijferreeksje
+       matcht het ook midden in een getal. Gemeten na Release 3.1:
+       regios/zeeland/borsele.html gaf een treffer op de BREEDTEGRAAD
+       51.43204576 — '51.4320 4576'. Met 430 nieuwe regiopagina's met
+       geo-coordinaten was zo'n botsing onvermijdelijk.
+       Daarom moet het poortnummer nu in een poortcontext staan: ':4320',
+       'poort 4320', '=4320'. Niet omdat de toets te streng was, maar
+       omdat hij het verkeerde meette.
+
+       En `lijst.slice(0, 400)` kapte de dekking af bij 400 van de 451
+       bestanden, zonder dat te melden. Dat is precies de stille afkap
+       die een groene toets laat lijken op volledige dekking. Nu alles,
+       in blokken, zodat de argumentenlijst van grep niet overloopt. */
+    const PATROON = "INTEL_|intelligence|vibe-intel|[:=[:space:]]4320\\b|poort 4320";
+    const treffersSet = new Set<string>();
+    const BLOK = 200;
+    for (let i = 0; i < lijst.length; i += BLOK) {
+      const blok = lijst.slice(i, i + BLOK);
+      const r = draai("grep", ["-rl", "-E", PATROON, ...blok], SITE);
+      for (const t of r.uit.trim() ? r.uit.trim().split("\n") : []) treffersSet.add(t);
+    }
+    const verdacht = { uit: [...treffersSet].join("\n") };
     let treffers = verdacht.uit.trim() ? verdacht.uit.trim().split("\n") : [];
     const railpack = readFileSync(join(SITE, "railpack.json"), "utf8");
 
@@ -1027,7 +1113,7 @@ try {
       31,
       "De website is onafhankelijk: geen verwijzing naar de intelligencelaag, geen database",
       treffers.length === 0 && railpack.includes("staticfile") ? "PASS" : "FAIL",
-      `${lijst.length} sitebestanden gecontroleerd, ${treffers.length} met een verwijzing; ` +
+      `alle ${lijst.length} sitebestanden gecontroleerd (geen afkap), ${treffers.length} met een verwijzing; ` +
         `railpack provider staticfile: ${railpack.includes("staticfile") ? "ja" : "NEE"}`,
       treffers.slice(0, 3),
     );
