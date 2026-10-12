@@ -17,9 +17,10 @@ import { fileURLToPath } from "node:url";
 import { maakPool, metOrganisatie, rijen, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
 import { bewaarVoorstel, bouwVoorstel, EINDOORDEEL_LABEL, type Voorstel } from "../inhoud/voorstel.ts";
+import { leesSitekennis } from "../site/sitekennis.ts";
 
 const HIER = dirname(fileURLToPath(import.meta.url));
-const REPO_WORTEL = resolve(HIER, "..", "..", "..");
+const INTEL_WORTEL = resolve(HIER, "..", "..");
 
 function argument(naam: string): string | undefined {
   const i = process.argv.indexOf(`--${naam}`);
@@ -81,6 +82,26 @@ function toonVolledig(v: Voorstel): void {
 async function main(): Promise<number> {
   const pool = maakPool();
   const organisatieId = await huidigeOrganisatie(pool);
+
+  /* HET ARTEFACT IS EEN VOORWAARDE, GEEN GEMAK.
+     Zonder sitekennis kan deze laag niet beoordelen of een pagina een
+     onderwerp dekt, en dan hoort hij te weigeren in plaats van alles
+     met een leeg voorbehoud door te laten. */
+  const kennisUitslag = await leesSitekennis(INTEL_WORTEL);
+  if (!kennisUitslag.ok) {
+    process.stderr.write(
+      `AFGEBROKEN — sitekennis onbruikbaar (${kennisUitslag.fout.soort}).\n` +
+        `${kennisUitslag.fout.bericht}\n` +
+        `Er zijn GEEN voorstellen gemaakt en geen bestaande voorstellen gewijzigd.\n`,
+    );
+    return 2;
+  }
+  const kennis = kennisUitslag.kennis;
+  uit(
+    `sitekennis: ${kennis.aantalPaginas} gepubliceerde pagina's, ` +
+      `websiteVersie ${kennis.websiteVersie.slice(0, 12)}…\n`,
+  );
+
   const een = argument("kandidaat");
   const vandaag = argument("vandaag") ?? new Date().toISOString().slice(0, 10);
 
@@ -110,7 +131,7 @@ async function main(): Promise<number> {
   let bijgewerkt = 0;
   for (const id of ids) {
     const v = await metOrganisatie(pool, { organisatieId }, (c) =>
-      bouwVoorstel(c, REPO_WORTEL, id, vandaag),
+      bouwVoorstel(c, kennis, id, vandaag),
     );
     if (!v) continue;
     voorstellen.push(v);

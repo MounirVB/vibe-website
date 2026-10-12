@@ -62,6 +62,12 @@ import {
 } from "./html.ts";
 import { koppelingStatussen, funnelBeeld } from "../analytics/koppelingen.ts";
 import { FASE_LABEL, type Fase } from "../commercieel/aanbesteding.ts";
+import { leesSitekennis } from "../site/sitekennis.ts";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+/** De wortel van de intelligence-map; daar staat data/sitekennis.json. */
+const INTEL_WORTEL = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 const log = maakLogger("dashboard");
 
@@ -547,14 +553,34 @@ export function maakApp(pool: Pool): express.Express {
       return;
     }
 
+    /* DEZE AUDITREGEL LANDDE NOOIT.
+       De kolom heet `handeling`, niet `soort`; intel.audit_gebeurtenissen
+       heeft geen kolom `soort`. De insert faalde dus altijd, en de
+       `.catch(() => undefined)` eromheen slikte dat op. Gemeten gevolg:
+       71 auditregels, alle met handeling 'inloggen', en NUL regels voor
+       het instellen van een wachtwoord — terwijl die flow wel is
+       gebruikt.
+
+       Een wachtwoordwissel via een eenmalige sleutel is precies het soort
+       handeling waarvoor een auditspoor bestaat. De catch blijft staan
+       (een mislukt auditspoor mag een geslaagde wachtwoordwissel niet
+       terugdraaien) maar logt nu wel, zodat een volgende fout zichtbaar
+       is in plaats van stil. */
     await metOrganisatie(pool, { organisatieId }, (c) =>
       c.query(
         `insert into intel.audit_gebeurtenissen
-           (organisatie_id, soort, actor_soort, actor_naam, motivatie)
-         values ($1, 'wachtwoord_ingesteld', 'mens', $2, 'via eenmalige instelsleutel')`,
-        [organisatieId, `gebruiker ${uit.gebruikerId}`],
+           (organisatie_id, actor_soort, actor_id, actor_naam, handeling,
+            objectsoort, object_id, herkomst, motivatie)
+         values ($1, 'mens', $2, $3, 'wachtwoord_ingesteld', 'gebruiker', $4,
+                 'dashboard', 'via eenmalige instelsleutel')`,
+        [organisatieId, uit.gebruikerId, `gebruiker ${uit.gebruikerId}`, String(uit.gebruikerId)],
       ),
-    ).catch(() => undefined);
+    ).catch((e: unknown) => {
+      log.fout("auditregel voor wachtwoord_ingesteld kon niet worden geschreven", {
+        gebruiker: uit.gebruikerId,
+        fout: e,
+      });
+    });
 
     log.info("wachtwoord ingesteld via sleutel", { verzoek_id: req.correlatieId, gebruiker: uit.gebruikerId });
     zetCsrfKoekje(res, csrf);
@@ -562,6 +588,100 @@ export function maakApp(pool: Pool): express.Express {
       instelPagina("Het wachtwoord is ingesteld. U kunt nu inloggen.", "", csrf),
     );
   }));
+
+  /* ----------------------------------------------------------------
+     VOORSTEL BEOORDELEN — goedkeuren, afkeuren of herziening vragen
+     ----------------------------------------------------------------
+     DIT PUBLICEERT NIETS. Goedkeuren betekent: een mens vindt dit
+     voorstel de moeite waard om door te voeren. Het doorvoeren zelf is
+     een patch die een mens maakt; dit platform mag alleen
+     data/inhoud/nieuws/<slug>.json auteuren (TOEGESTAAN_AUTEURSPAD).
+
+     De databasegrendel `voorstel_alleen_review_goedkeuren` laat alleen
+     een voorstel met eindoordeel KLAAR_VOOR_REVIEW goedkeuren. Zonder
+     die grendel kon een afgewezen voorstel alsnog worden goedgekeurd, en
+     dan is de hele controlelaag decoratie. */
+  app.post(
+    "/voorstellen/:id/beoordeel",
+    async_(vereistInlog),
+    vereistRecht("distributie.concept"),
+    async_(async (req: MetGebruiker, res) => {
+      const body = (req.body ?? {}) as Record<string, unknown>;
+      if (!csrfPaarGeldig(leesKoekje(req, CSRF_KOEKJE), body[CSRF_VELD], sessieGeheim())) {
+        weiger(res, 403, "Het formulier is verlopen. Open de pagina opnieuw.");
+        return;
+      }
+      const id = String(req.params["id"] ?? "");
+      if (!/^\d+$/.test(id)) {
+        weiger(res, 400, "Ongeldig voorstelnummer.");
+        return;
+      }
+      const besluit = String(body["beoordeling"] ?? "");
+      if (!["GOEDGEKEURD", "AFGEKEURD", "AANGEPAST"].includes(besluit)) {
+        weiger(res, 400, "Onbekende beoordeling.");
+        return;
+      }
+      const notitie = String(body["notitie"] ?? "").slice(0, 2000);
+      /* Afkeuren en herziening vragen zonder reden is geen besluit. */
+      if (besluit !== "GOEDGEKEURD" && notitie.trim().length < 10) {
+        weiger(res, 400, "Geef een reden van minstens tien tekens bij een afkeuring of herziening.");
+        return;
+      }
+
+      const gebruikerId = req.gebruiker?.id ?? null;
+      try {
+        await alsGebruiker(req, async (c) => {
+          const r = await c.query(
+            `update intel.inhoud_voorstellen
+                set beoordeling = $2, beoordeling_notitie = $3,
+                    beoordeeld_op = now(), beoordeeld_door = $4
+              where id = $1
+              returning kandidaat_id, eindoordeel`,
+            [id, besluit, notitie || null, gebruikerId],
+          );
+          if (r.rowCount === 0) throw new Error("voorstel niet gevonden");
+          const rij = r.rows[0] as { kandidaat_id: number; eindoordeel: string };
+          /* Het auditspoor draagt WIE, WAT en WAAROM. Niet in een catch:
+             een beoordeling zonder spoor hoort niet te bestaan, dus als
+             dit faalt, faalt de hele transactie. */
+          await c.query(
+            `insert into intel.audit_gebeurtenissen
+               (organisatie_id, actor_soort, actor_id, actor_naam, handeling,
+                objectsoort, object_id, na_waarde, herkomst, motivatie)
+             values ($1, 'mens', $2, $3, $4, 'inhoud_voorstel', $5, $6, 'dashboard', $7)`,
+            [
+              req.gebruiker?.organisatieId ?? null,
+              gebruikerId,
+              req.gebruiker?.naam ?? "onbekend",
+              `voorstel_${besluit.toLowerCase()}`,
+              id,
+              JSON.stringify({ beoordeling: besluit, kandidaat: rij.kandidaat_id, eindoordeel: rij.eindoordeel }),
+              notitie || null,
+            ],
+          );
+        });
+      } catch (e) {
+        const bericht = (e as Error).message;
+        /* De databasegrendel die alleen KLAAR_VOOR_REVIEW laat
+           goedkeuren, hoort als UITLEG terug te komen en niet als 500. */
+        if (/voorstel_alleen_review_goedkeuren/.test(bericht)) {
+          weiger(
+            res,
+            409,
+            "Dit voorstel is niet klaar voor beoordeling en kan dus niet worden goedgekeurd. " +
+              "Alleen een voorstel dat alle vijf de controles haalt, mag door.",
+          );
+          return;
+        }
+        log.fout("beoordeling mislukt", { voorstel: id, fout: e });
+        weiger(res, 500, "De beoordeling kon niet worden vastgelegd.");
+        return;
+      }
+
+      log.info("voorstel beoordeeld", { voorstel: id, beoordeling: besluit, door: gebruikerId });
+      res.redirect(303, "/studio");
+    }),
+  );
 
   /* ---------------- gezondheid en gereedheid ----------------
      Twee endpoints met een ANDERE betekenis, en dat verschil is geen
@@ -880,6 +1000,15 @@ ${tabel(
   // ---------------- content studio ----------------
 
   app.get("/studio", async_(vereistInlog), vereistRecht("inhoud.lezen"), async_(async (req: MetGebruiker, res) => {
+    /* DE STAND VAN DE SITEKENNIS, BOVEN ALLES.
+       Par. 12: nul voorstellen mag nooit als 'gezond' worden getoond
+       terwijl de pijplijn de website niet kan zien. Dat was precies de
+       situatie in productie: Content Studio was leeg en zag er rustig
+       uit, terwijl de oorzaak was dat /app/kennis niet bestond. */
+    const kennisStand = await leesSitekennis(INTEL_WORTEL);
+    const csrf = maakCsrfToken(sessieGeheim());
+    zetCsrfKoekje(res, csrf);
+
     const d = await alsGebruiker(req, async (c) => ({
       /* WIJZIGINGSVOORSTELLEN op bestaande pagina's, met hun vier
          controles. Dit is wat op een mens wacht; het staat boven de
@@ -897,13 +1026,22 @@ ${tabel(
         doel_voorbehoud: string | null;
         noemt: number;
         cta_tekst: string | null;
+        huidige_tekst: string | null;
+        interne_links: string[];
+        wijziging_soort: string;
         beoordeling: string | null;
+        beoordeling_notitie: string | null;
+        beoordeeld_op: string | null;
+        beoordelaar: string | null;
         controles: { naam: string; oordeel: string; reden: string }[];
       }>(
         c,
         `select v.id::text, v.kandidaat_id, v.doel_pad, g.titel, v.eindoordeel,
                 v.oordeel_reden, v.nieuwe_tekst, v.doel_sectie, v.doel_voorbehoud,
                 v.doel_noemt_onderwerp as noemt, v.cta_tekst, v.beoordeling,
+                v.huidige_tekst, v.interne_links, v.wijziging_soort,
+                v.beoordeling_notitie, v.beoordeeld_op::text as beoordeeld_op,
+                gb.naam as beoordelaar,
                 coalesce((select json_agg(json_build_object(
                             'naam', ct.naam, 'oordeel', ct.oordeel, 'reden', ct.reden)
                           order by ct.naam)
@@ -911,6 +1049,7 @@ ${tabel(
                            where ct.voorstel_id = v.id), '[]'::json) as controles
            from intel.inhoud_voorstellen v
            join intel.markt_gebeurtenissen g on g.id = v.gebeurtenis_id
+           left join intel.gebruikers gb on gb.id = v.beoordeeld_door
           order by case v.eindoordeel
                      when 'KLAAR_VOOR_REVIEW' then 0 when 'UITSTELLEN' then 1
                      when 'HERROUTEREN' then 2 else 3 end,
@@ -973,6 +1112,26 @@ ${tabel(
 <p class="uitleg">Kandidaten uit de besluitmotor, conceptversies met hun poortuitslag, en het
 onveranderlijke publicatiespoor.</p>
 
+<h2>Sitekennis — kan de pijplijn de website zien?</h2>
+${
+  kennisStand.ok
+    ? `<table class="paren">
+         <tr><th>Stand</th><td><strong>GELDIG</strong></td></tr>
+         <tr><th>Gepubliceerde pagina's</th><td><span class="num">${kennisStand.kennis.aantalPaginas}</span></td></tr>
+         <tr><th>Websiteversie</th><td><code>${esc(kennisStand.kennis.websiteVersie.slice(0, 16))}</code></td></tr>
+         <tr><th>Inhoudshash</th><td><code>${esc(kennisStand.kennis.inhoudsHash.slice(0, 16))}</code></td></tr>
+         <tr><th>Schema</th><td>${kennisStand.kennis.schema}</td></tr>
+       </table>`
+    : `<p class="uitleg" style="border-left:3px solid #a11;padding-left:10px">
+         <strong>SITEKENNIS ONBRUIKBAAR (${esc(kennisStand.fout.soort)})</strong><br>
+         ${esc(kennisStand.fout.bericht)}<br>
+         <strong>Zolang dit zo is, zijn de voorstellen hieronder niet betrouwbaar</strong>: zonder
+         kennis van de bestaande pagina's kan de besluitmotor geen doelpagina vinden en stelt hij
+         voor elk onderwerp een nieuw artikel voor. Nul voorstellen betekent hier dus niet
+         "geen kansen" maar "ik kan de website niet zien".
+       </p>`
+}
+
 <h2>Wijzigingsvoorstellen — wachten op beoordeling</h2>
 <p class="uitleg">Voorstellen om een <strong>bestaande</strong> pagina te wijzigen. Elk voorstel is
 op vier punten gecontroleerd: bronverwijzing, actualiteit, duplicatie en SEO. Een voorstel dat er
@@ -992,8 +1151,19 @@ ${(() => {
     · de pagina noemt het onderwerp ${v.noemt} keer</p>
   <p><strong>Oordeel:</strong> ${esc(v.oordeel_reden)}</p>
   ${v.nieuwe_tekst
-    ? `<p class="klein">Voorgestelde toevoeging${v.doel_sectie ? ` in sectie &ldquo;${esc(v.doel_sectie)}&rdquo;` : ""}:</p>
-       <pre class="diff">+ ${esc(v.nieuwe_tekst)}</pre>`
+    ? `<p class="klein">Soort wijziging: <strong>${esc(v.wijziging_soort)}</strong>${
+        v.doel_sectie ? ` in sectie &ldquo;${esc(v.doel_sectie)}&rdquo;` : ""
+      }</p>
+       ${v.huidige_tekst
+         ? `<p class="klein">Wat er nu staat:</p><pre class="diff" style="border-left-color:#999;background:#f6f6f6">${esc(v.huidige_tekst)}</pre>`
+         : ""}
+       <p class="klein">Voorgesteld:</p>
+       <pre class="diff">+ ${esc(v.nieuwe_tekst)}</pre>
+       ${v.interne_links.length > 0
+         ? `<p class="klein">Aanbevolen interne links:</p><ul class="klein">${v.interne_links
+             .map((l) => `<li><code>${esc(l)}</code></li>`)
+             .join("")}</ul>`
+         : ""}`
     : `<p class="klein">Geen tekst voorgesteld: dit voorstel haalde de controles niet.</p>`}
   ${v.doel_voorbehoud
     ? `<p class="klein">Voorbehoud dat de doelpagina zelf publiceert:<br><em>${esc(v.doel_voorbehoud.slice(0, 260))}</em></p>`
@@ -1008,6 +1178,22 @@ ${(() => {
       )
       .join("")}
   </table>
+  ${v.beoordeling
+    ? `<p class="klein">Beoordeeld als <strong>${esc(v.beoordeling)}</strong> op
+         ${esc(v.beoordeeld_op?.slice(0, 16) ?? "")} door ${esc(v.beoordelaar ?? "onbekend")}.
+         ${v.beoordeling_notitie ? `<br>Notitie: ${esc(v.beoordeling_notitie)}` : ""}</p>`
+    : v.eindoordeel === "KLAAR_VOOR_REVIEW"
+      ? `<form method="post" action="/voorstellen/${esc(v.id)}/beoordeel">
+           <input type="hidden" name="${esc(CSRF_VELD)}" value="${esc(csrf)}">
+           <p class="klein"><label>Notitie (verplicht bij afkeuren of herzien)<br>
+             <textarea name="notitie" rows="2" style="width:100%;max-width:640px"></textarea></label></p>
+           <button type="submit" name="beoordeling" value="GOEDGEKEURD">Goedkeuren</button>
+           <button type="submit" name="beoordeling" value="AANGEPAST">Herziening vragen</button>
+           <button type="submit" name="beoordeling" value="AFGEKEURD">Afkeuren</button>
+           <p class="klein">Goedkeuren publiceert niets: het levert een patch op die een mens doorvoert.</p>
+         </form>`
+      : `<p class="klein">Niet beoordeelbaar: alleen een voorstel dat alle vijf de controles haalt,
+           kan worden goedgekeurd.</p>`}
 </details>`;
   return `
 <p><strong>${klaar.length}</strong> voorstel(len) klaar voor beoordeling,
@@ -1177,6 +1363,7 @@ ${tabel(
   /** Nederlandse labels voor het voorsteloordeel; nooit de enum zelf. */
   const VOORSTEL_LABEL: Record<string, string> = {
     KLAAR_VOOR_REVIEW: "Klaar voor beoordeling",
+    NEEDS_RESEARCH: "Feit moet eerst worden uitgezocht",
     HERROUTEREN: "Hoort op een andere pagina",
     UITSTELLEN: "Uitstellen",
     AFWIJZEN: "Afwijzen",

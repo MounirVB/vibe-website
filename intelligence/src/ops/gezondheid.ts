@@ -29,6 +29,9 @@ import { join } from "node:path";
 import type pg from "pg";
 import { rijen } from "../kern/db.ts";
 import { gcsConfigUitOmgeving, lijstGcs } from "./gcsopslag.ts";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { leesSitekennis } from "../site/sitekennis.ts";
 
 export type Niveau = "OK" | "LET OP" | "FOUT" | "NIET GEMETEN";
 
@@ -48,6 +51,15 @@ export const DREMPELS = {
   bronFoutenAchtereen: 3,
   /** Meer wachtende taken dan dit betekent dat de worker niet draait. */
   wachtrijAchterstand: 25,
+  /**
+   * Minder pagina's dan dit in de sitekennis is een storing.
+   *
+   * De live site heeft 430 gepubliceerde canonieke URL's. Honderd is
+   * ruim onder elke legitieme stand en ruim boven de 60 die een
+   * niet-recursieve scan opleverde, dus deze drempel vangt zowel een
+   * leeg artefact als een half gevulde scan.
+   */
+  sitekennisMinimumPaginas: 100,
   /** Elke dlq-taak is een beslissing die wacht. */
   dlqMeldDrempel: 1,
   /** Een back-up ouder dan dit haalt de RPO van 24 uur niet. */
@@ -284,6 +296,49 @@ export async function meetGezondheid(
     niveau: (p?.teruggedraaid ?? 0) === 0 ? "OK" : "LET OP",
     meting: `${p?.geschreven ?? 0} geschreven, ${p?.teruggedraaid ?? 0} teruggedraaid`,
   });
+
+  /* ---------------- sitekennis ----------------
+     ZONDER DIT SIGNAAL WAS DE STORING ONZICHTBAAR.
+     In productie kon Content Studio de website niet zien (/app/kennis
+     bestond niet) en leverde hij nul voorstellen. Nul voorstellen zag
+     eruit als rust. Dit signaal maakt het verschil tussen "geen kansen"
+     en "ik kan de site niet lezen". */
+  const kennis = await leesSitekennis(
+    resolve(dirname(fileURLToPath(import.meta.url)), "..", ".."),
+  );
+  if (kennis.ok) {
+    voeg({
+      groep: "sitekennis",
+      naam: "artefact",
+      niveau: "OK",
+      meting:
+        `${kennis.kennis.aantalPaginas} gepubliceerde pagina's, schema ${kennis.kennis.schema}, ` +
+        `websiteversie ${kennis.kennis.websiteVersie.slice(0, 12)}`,
+    });
+    /* Een artefact met verdacht weinig pagina's is technisch geldig maar
+       inhoudelijk een storing: de echte site heeft er honderden. */
+    voeg({
+      groep: "sitekennis",
+      naam: "dekking",
+      niveau: kennis.kennis.aantalPaginas >= DREMPELS.sitekennisMinimumPaginas ? "OK" : "FOUT",
+      meting:
+        `${kennis.kennis.aantalPaginas} pagina's (drempel ${DREMPELS.sitekennisMinimumPaginas})`,
+      advies:
+        kennis.kennis.aantalPaginas >= DREMPELS.sitekennisMinimumPaginas
+          ? undefined
+          : "npm run sitekennis in een checkout met de website erin, en commit het resultaat",
+    });
+  } else {
+    voeg({
+      groep: "sitekennis",
+      naam: "artefact",
+      niveau: "FOUT",
+      meting: `${kennis.fout.soort}: ${kennis.fout.bericht.slice(0, 200)}`,
+      advies:
+        "zonder sitekennis stelt de besluitmotor voor elk onderwerp een NIEUW artikel voor; " +
+        "Content Studio levert dan geen bruikbare voorstellen",
+    });
+  }
 
   /* ---------------- AI en kosten ---------------- */
   const ai = await rijen<{

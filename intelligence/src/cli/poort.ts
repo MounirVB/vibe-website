@@ -122,6 +122,26 @@ async function main(): Promise<number> {
     if (pool) await sluitAllePools();
   }
 
+  // 3b. Sitekennis: beschrijft het artefact de WERKELIJKE website?
+  //
+  // Dit is de poort die voorkomt dat het artefact stil verouderd raakt.
+  // Hij regenereert het uit de echte site en vergelijkt byte voor byte
+  // met wat er gecommit staat. Wie de website wijzigt zonder te
+  // regenereren, wordt hier rood — en dat is de enige reden dat de
+  // productiecontainer op een gecommit artefact mag vertrouwen.
+  {
+    const r = draai("node", ["src/cli/sitekennis.ts", "--controleer"]);
+    const paginas = /pagina's\s+(\d+)/.exec(r.uit)?.[1] ?? "?";
+    stappen.push({
+      naam: "SITEKENNIS",
+      uitkomst: r.code === 0 ? "PASS" : "FAIL",
+      detail:
+        r.code === 0
+          ? `het gecommitte artefact is gelijk aan de website (${paginas} gepubliceerde pagina's)`
+          : (r.uit).split("\n").filter(Boolean).slice(-3).join(" | ").slice(0, 240),
+    });
+  }
+
   // 4. Testsuite
   if (heeft("snel")) {
     stappen.push({

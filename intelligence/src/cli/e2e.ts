@@ -196,22 +196,71 @@ try {
     const regel = /nieuwe documenten (\d+), nieuwe versies (\d+)/.exec(r.uit);
     const bronregel = /bronnen geprobeerd (\d+), ok (\d+), fout (\d+)/.exec(r.uit);
     const bronnenFout = bronregel ? Number(bronregel[3]) : 0;
-    /* DE EXITCODE VAN DE COLLECTOR HOORT HIER NIET IN DE ASSERTIE.
+
+    /* WAT IDEMPOTENTIE HIER ECHT BETEKENT.
+       ----------------------------------------------------------------
+       Dit scenario stond op `nieuw === 0`: na een geforceerde herhaling
+       mochten er nul versies bij komen. Dat meet niet idempotentie maar
+       of de UITGEVERS stil waren. Met 21 live bronnen, waaronder
+       nieuwsfeeds, publiceert er geregeld een tussen de nulmeting en de
+       herhaling. Gemeten op 12 oktober 2026: 'nieuwe documenten 1,
+       nieuwe versies 1' terwijl er niets mis was. Het scenario werd
+       daarmee rood om iets wat juist goed ging — dezelfde valkuil als de
+       exitcode hieronder, en om dezelfde reden onbruikbaar.
+
+       De invariant die er WEL is, en die harder is: dezelfde inhoud
+       levert nooit een tweede versie. Dat wordt afgedwongen door
+       `on conflict (brondocument_id, inhoud_hash) do nothing` in
+       verzamelen.ts. Meetbaar als: nul dubbele (document, hash)-paren,
+       en geen enkele nieuwe versie die inhoudelijk gelijk is aan de
+       vorige versie van hetzelfde document.
+
+       Nieuwe inhoud van een uitgever is geen schending; een tweede rij
+       voor dezelfde inhoud wel.
+
+       DE EXITCODE VAN DE COLLECTOR HOORT HIER NIET IN DE ASSERTIE.
        collector.ts:53 geeft exit 1 zodra ÉÉN bron faalt, en dat is voor
-       een operator het juiste signaal. Maar dit scenario toetst
-       IDEMPOTENTIE: levert een herhaling nieuwe rijen op? Een bron van
-       een derde die plat ligt — gemeten op 12 oktober 2026 lagen de twee
-       TenderNed-bronnen eruit — zegt niets over die vraag. Door de
-       exitcode mee te nemen werd dit scenario rood om een storing bij
-       een uitgever, en dan toetst het niet meer wat de naam belooft.
-       De bronstoring blijft WEL zichtbaar in de meting hieronder, en
-       `npm run gezondheid` meldt hem als FOUT; dat is zijn plek. */
+       een operator het juiste signaal. Maar een bron van een derde die
+       plat ligt zegt niets over idempotentie. De bronstoring blijft WEL
+       zichtbaar in de meting, en `npm run gezondheid` meldt hem als
+       FOUT; dat is zijn plek. */
+    const dubbel = await metOrganisatie(pool, { organisatieId }, (c) =>
+      rijen<{ n: number }>(
+        c,
+        `select count(*)::int as n from (
+           select brondocument_id, inhoud_hash
+             from intel.brondocument_versies
+            where organisatie_id = $1
+            group by 1, 2 having count(*) > 1) t`,
+        [organisatieId],
+      ),
+    );
+    /* Een nieuwe versie die inhoudelijk gelijk is aan zijn voorganger:
+       dat zou een echte schending zijn. */
+    const herhaald = await metOrganisatie(pool, { organisatieId }, (c) =>
+      rijen<{ n: number }>(
+        c,
+        `select count(*)::int as n
+           from intel.brondocument_versies v
+          where v.organisatie_id = $1
+            and exists (
+              select 1 from intel.brondocument_versies w
+               where w.brondocument_id = v.brondocument_id
+                 and w.versie = v.versie - 1
+                 and w.inhoud_hash = v.inhoud_hash)`,
+        [organisatieId],
+      ),
+    );
+    const dubbelN = dubbel[0]?.n ?? 0;
+    const herhaaldN = herhaald[0]?.n ?? 0;
+
     meld(
       3,
-      "Ingestie is idempotent: een geforceerde herhaling levert niets nieuws",
-      nieuw === 0 ? "PASS" : "FAIL",
-      `versies voor ${voor[0]!.n}, na ${na[0]!.n}, verschil ${nieuw}` +
-        `${regel ? ` (collector meldde ${regel[1]} nieuwe documenten)` : ""}` +
+      "Ingestie is idempotent: dezelfde inhoud levert nooit een tweede versie",
+      dubbelN === 0 && herhaaldN === 0 ? "PASS" : "FAIL",
+      `${dubbelN} dubbele (document, hash)-paren, ${herhaaldN} versie(s) gelijk aan hun voorganger. ` +
+        `Versies voor ${voor[0]!.n}, na ${na[0]!.n} (+${nieuw} door nieuwe uitgaven)` +
+        `${regel ? `; collector meldde ${regel[1]} nieuwe documenten` : ""}` +
         `${bronnenFout > 0 ? `; ${bronnenFout} bron(nen) niet bereikbaar — zie gezondheid` : ""}`,
     );
   }
@@ -681,6 +730,88 @@ try {
             fouten,
           );
         }
+      }
+
+      /* 36 — Content Studio: sitekennis zichtbaar, voorstellen bruikbaar */
+      if (!beheerder) {
+        meld(36, "Content Studio: sitekennis zichtbaar en voorstellen beoordeelbaar", "NIET GEDRAAID", "geen sessie");
+      } else {
+        const r = await fetch(`${basis}/studio`, { headers: { cookie: beheerder } });
+        const html = await r.text();
+        const fouten: string[] = [];
+        if (r.status !== 200) fouten.push(`status ${r.status}`);
+
+        /* De stand van de sitekennis MOET op het scherm staan. Dat was de
+           kern van de storing: nul voorstellen zag eruit als rust terwijl
+           de pijplijn de website niet kon lezen. */
+        if (!/Sitekennis/.test(html)) fouten.push("de sitekennis-stand staat niet op de pagina");
+        const geldig = /Stand<\/th><td><strong>GELDIG/.test(html);
+        const onbruikbaar = /SITEKENNIS ONBRUIKBAAR/.test(html);
+        if (!geldig && !onbruikbaar) fouten.push("er staat geen expliciete sitekennis-stand");
+        if (geldig) {
+          const paginas = /Gepubliceerde pagina's<\/th><td><span class="num">(\d+)</.exec(html)?.[1];
+          if (!paginas || Number(paginas) < 100) {
+            fouten.push(`sitekennis meldt ${paginas ?? "geen"} pagina's; onder de drempel van 100`);
+          }
+        }
+
+        /* Een beoordeelbaar voorstel hoort een formulier te hebben met de
+           drie besluiten, en de grens eromheen moet er staan. */
+        const klaar = /Klaar voor beoordeling/.test(html);
+        if (klaar) {
+          for (const knop of ["GOEDGEKEURD", "AANGEPAST", "AFGEKEURD"]) {
+            if (!html.includes(`value="${knop}"`)) fouten.push(`beoordeelknop ${knop} ontbreekt`);
+          }
+          if (!/Goedkeuren publiceert niets/.test(html)) {
+            fouten.push("de grens 'goedkeuren publiceert niets' staat niet bij het formulier");
+          }
+          if (!/_csrf/.test(html)) fouten.push("het beoordeelformulier heeft geen CSRF-token");
+        }
+
+        /* Geen ruwe enumwaarden als label. */
+        for (const e of ["KLAAR_VOOR_REVIEW", "NEEDS_RESEARCH", "HERROUTEREN"]) {
+          if (new RegExp(`>${e}<`).test(html)) fouten.push(`ruwe enumwaarde zichtbaar: ${e}`);
+        }
+
+        meld(
+          36,
+          "Content Studio: sitekennis-stand zichtbaar, voorstellen beoordeelbaar, geen ruwe enums",
+          fouten.length === 0 ? "PASS" : "FAIL",
+          `status ${r.status}, sitekennis ${geldig ? "GELDIG" : onbruikbaar ? "ONBRUIKBAAR" : "?"}, ` +
+            `beoordeelbaar voorstel ${klaar ? "aanwezig" : "geen"}`,
+          fouten,
+        );
+      }
+
+      /* 37 — een beoordeling zonder CSRF wordt geweigerd */
+      if (!beheerder) {
+        meld(37, "Beoordelen vraagt CSRF en een recht", "NIET GEDRAAID", "geen sessie");
+      } else {
+        const zonderCsrf = await fetch(`${basis}/voorstellen/1/beoordeel`, {
+          method: "POST",
+          redirect: "manual",
+          headers: { "content-type": "application/x-www-form-urlencoded", cookie: beheerder },
+          body: new URLSearchParams({ beoordeling: "GOEDGEKEURD" }).toString(),
+        });
+        /* En zonder sessie al helemaal niet. */
+        const zonderSessie = await fetch(`${basis}/voorstellen/1/beoordeel`, {
+          method: "POST",
+          redirect: "manual",
+          headers: { "content-type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ beoordeling: "GOEDGEKEURD" }).toString(),
+        });
+        const fouten: string[] = [];
+        if (zonderCsrf.status !== 403) fouten.push(`zonder CSRF: ${zonderCsrf.status} in plaats van 403`);
+        if (![302, 303, 401, 403].includes(zonderSessie.status)) {
+          fouten.push(`zonder sessie: ${zonderSessie.status}`);
+        }
+        meld(
+          37,
+          "Een voorstel beoordelen vraagt een sessie EN een CSRF-token",
+          fouten.length === 0 ? "PASS" : "FAIL",
+          `zonder CSRF ${zonderCsrf.status}, zonder sessie ${zonderSessie.status}`,
+          fouten,
+        );
       }
 
       /* ---------------- 21. CSRF ---------------- */
