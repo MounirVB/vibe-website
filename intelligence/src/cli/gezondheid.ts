@@ -3,6 +3,7 @@
    ------------------------------------------------------------
      npm run gezondheid              volledig rapport
      npm run gezondheid -- --json    machineleesbaar, voor alertering
+     npm run gezondheid -- --meld    meldingen bijwerken en bezorgen
      npm run gezondheid -- --kort    alleen wat niet OK is
 
    Exitcode, zodat cron en een alerteerder hier iets mee kunnen:
@@ -20,6 +21,7 @@ import { laadEnvBestand, APP_WORTEL } from "../kern/config.ts";
 import { maakPool, metOrganisatie, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
 import { meetGezondheid, zwaarste, type Niveau } from "../ops/gezondheid.ts";
+import { meldRonde } from "../ops/melden.ts";
 
 laadEnvBestand();
 
@@ -77,6 +79,25 @@ try {
       console.log("");
       console.log("NIET GEMETEN is ernstiger dan LET OP: er is iets dat deze monitor");
       console.log("niet kan vaststellen, en dan weet je het dus niet.");
+    }
+  }
+
+  /* --meld maakt van de momentopname STAAT: open storingen worden
+     geopend of bijgewerkt, opgeloste worden gesloten, en als er een
+     bestemming is wordt er bezorgd. Bewust achter een vlag: een
+     eenvoudige meting hoort niets te schrijven. */
+  if (heeft("meld")) {
+    const stand = await metOrganisatie(pool, { organisatieId }, (c) =>
+      meldRonde(c, organisatieId, signalen),
+    );
+    if (!heeft("json")) {
+      console.log("");
+      console.log("MELDINGEN");
+      console.log(`  geopend ${stand.geopend}   bijgewerkt ${stand.bijgewerkt}   gesloten ${stand.gesloten}   open ${stand.open}`);
+      console.log(`  bezorgd ${stand.bezorgd}   bezorgfouten ${stand.bezorgfouten}`);
+      console.log(`  bestemming ${stand.bestemming}`);
+    } else {
+      console.log(JSON.stringify({ meldingen: stand }, null, 2));
     }
   }
 
