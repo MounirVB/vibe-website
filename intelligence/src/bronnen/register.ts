@@ -30,6 +30,16 @@ import type { Bron } from "./soorten.ts";
 /** Datum waarop de robots-, licentie- en endpointmetingen zijn gedaan. */
 export const GEMETEN_OP = "2026-10-10";
 
+/**
+ * Tweede meetronde, specifiek voor de TenderNed-lijst.
+ *
+ * Op 12 oktober 2026 is die bron opnieuw uitgelezen omdat het
+ * bewijsveld vijf van de negentien velden noemde. De meting staat onder
+ * een eigen datum zodat niet de indruk ontstaat dat alle bronnen die dag
+ * zijn herzien.
+ */
+export const GEMETEN_OP_TENDERNED = "2026-10-12";
+
 const STANDAARD = {
   taal: "nl",
   geoBereik: "nl",
@@ -673,13 +683,30 @@ export const BRONNEN: readonly Bron[] = [
     verificatie: {
       status: "geverifieerd",
       bewijs:
-        "Spring-paged JSON, HTTP 200. Gemeten keys: content, first, last, totalElements, totalPages, size, " +
-        "numberOfElements, number. Per item: publicatieId, publicatieDatum, typePublicatie{code,omschrijving}, " +
-        "aanbestedingNaam, opdrachtgeverNaam. Voor publicatieDatumVanaf=2026-10-01 was totalElements=802. " +
+        "Spring-paged JSON, HTTP 200, application/json;charset=UTF-8. Wortelkeys: content, first, last, " +
+        "totalElements, totalPages, size, numberOfElements, number. " +
+        "HERMETEN 2026-10-12: een item heeft NEGENTIEN velden, niet de vijf die hier eerder stonden. " +
+        "Volledige lijst: publicatieId, publicatieDatum, typePublicatie{code,omschrijving}, aanbestedingNaam, " +
+        "opdrachtgeverNaam, sluitingsDatum, aantalDagenTotSluitingsDatum, procedure{code,omschrijving}, " +
+        "typeOpdracht{code,omschrijving}, digitaal, europees, publicatiecode{code,omschrijving}, " +
+        "publicatiestatus{code,omschrijving}, isVroegtijdigeBeeindiging, opdrachtBeschrijving, " +
+        "isEformsWijziging, score, kenmerk, link. " +
+        "Op pagina 0 (size=100) is opdrachtBeschrijving gevuld op 100 van 100 items; lengte min 13, " +
+        "mediaan 342, max 1533 tekens. Wel met een voorbehoud: 23 van de 100 zijn korter dan 60 tekens " +
+        "en 11 van de 100 herhalen in wezen de titel, dus 'gevuld' is niet hetzelfde als 'informatief'. " +
+        "Velddekking per publicatiesoort (n / met sluitingsdatum / met procedure): AAO 37/37/37, " +
+        "REC 21/20/20, AGO 19/11/19, VAK 11/1/2, MAC 8/0/8, VBE 4/3/4. " +
+        "kenmerk staat op 100 van 100 en levert 72 UNIEKE waarden voor 100 publicaties — publicaties tellen " +
+        "telt aanbestedingen dus ruim een derde te hoog. Gemeten typePublicatie-codes met aantallen: " +
+        "AAO 37, REC 21, AGO 19, VAK 11, MAC 8, VBE 4. " +
+        "totalElements was 1058 ongefilterd op datum (met publicatieDatumVanaf=2026-10-01 eerder 802). " +
         "Belangrijk: een trefwoordfilter wordt STIL genegeerd (totalElements bleef op het ongefilterde " +
-        "146.314); alleen cpvCodes werkt, en de CPV-controlecijfer is verplicht (09300000 geeft HTTP 400, " +
-        "09300000-5 werkt). Licentie CC0 1.0 volgens TenderNeds eigen open-datarecord.",
-      op: GEMETEN_OP,
+        "146.314); alleen cpvCodes werkt, en het CPV-controlecijfer is verplicht (09300000 geeft HTTP 400, " +
+        "09300000-5 werkt). Licentie CC0 1.0 volgens TenderNeds eigen open-datarecord. " +
+        "NIET gemeten op 2026-10-12: www.tenderned.nl/robots.txt gaf 3 van 3 keer HTTP 503 terwijl de " +
+        "data-endpoints 200 geven. De robotsStatus hieronder dateert daarom nog van de eerste meting; " +
+        "er is op die grond GEEN nieuw endpoint geregistreerd.",
+      op: GEMETEN_OP_TENDERNED,
     },
     ophaalintervalMinuten: 360,
     maxItemsPerOphaling: 100,
@@ -693,7 +720,26 @@ export const BRONNEN: readonly Bron[] = [
       titelVelden: ["aanbestedingNaam"],
       datumVelden: ["publicatieDatum"],
       urlSjabloon: "https://www.tenderned.nl/aankondigingen/overzicht/{publicatieId}",
-      extraVelden: ["opdrachtgeverNaam", "typePublicatie.code", "typePublicatie.omschrijving"],
+      /* Gemeten 2026-10-12: gevuld op 100 van 100 items. Zonder dit veld
+         schreef de pijplijn tekst_lengte 0 voor elke aanbesteding, en
+         bleef er niets over om op te kwalificeren dan de titel. */
+      tekstVelden: ["opdrachtBeschrijving"],
+      /* kenmerk  = identiteit van de AANBESTEDING over fases heen
+         typePublicatie.code = de fase (AAO/REC open, AGO gegund, VBE beeindigd)
+         sluitingsDatum      = de termijn; die van de NIEUWSTE publicatie geldt
+         De eerste twee vangen elk een gemeten fout af: dubbeltelling en
+         een gegunde opdracht die als openstaande kans in de lijst stond. */
+      extraVelden: [
+        "opdrachtgeverNaam",
+        "typePublicatie.code",
+        "typePublicatie.omschrijving",
+        "kenmerk",
+        "sluitingsDatum",
+        "aantalDagenTotSluitingsDatum",
+        "procedure.omschrijving",
+        "typeOpdracht.omschrijving",
+        "publicatiestatus.omschrijving",
+      ],
       cpvCodes: ["09300000-5"],
     },
     notities:

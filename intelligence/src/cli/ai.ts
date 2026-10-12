@@ -213,7 +213,12 @@ try {
   }
 
   /* ---------------- budget ---------------- */
-  const b = await metOrganisatie(pool, { organisatieId }, (c) => budgetStand(c, organisatieId));
+  /* De CLI toont de stand zoals die voor een ECHTE betaalde aanroep
+     geldt; anders zou het overzicht ruimer lijken dan de pijplijn. */
+  const betaaldeProvider = configLezen().aiProvider === "openai";
+  const b = await metOrganisatie(pool, { organisatieId }, (c) =>
+    budgetStand(c, organisatieId, betaaldeProvider),
+  );
   console.log("");
   console.log("BUDGET");
   console.log(`  mag aanroepen       ${b.mag ? "JA" : "NEE"} — ${b.reden}`);

@@ -102,6 +102,21 @@ export function splitsZinnen(tekst: string): string[] {
     .filter((z) => z.length > 10);
 }
 
+/**
+ * Schaalwoorden achter een bedrag.
+ *
+ * Nederlandse bronnen schrijven 'EUR 200 miljard', niet '200000000000'.
+ * Wie het woord negeert, bewaart een getal dat negen ordes van grootte
+ * naast de bron ligt.
+ */
+const SCHAAL: Readonly<Record<string, number>> = {
+  duizend: 1_000,
+  miljoen: 1_000_000,
+  mln: 1_000_000,
+  miljard: 1_000_000_000,
+  mld: 1_000_000_000,
+};
+
 function getalVan(ruw: string): number | null {
   // Nederlands: punt is duizendscheiding, komma is decimaalteken.
   const genormaliseerd = ruw.replace(/\.(?=\d{3}\b)/g, "").replace(",", ".");
@@ -152,19 +167,37 @@ function zoekGetallen(zin: string): RuweUitspraak[] {
     });
   }
 
-  // Bedragen in euro's: '€ 1.250', '1.250 euro'.
-  const euroPatroon = /(?:€\s*(\d{1,3}(?:\.\d{3})*(?:,\d+)?)|(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*euro\b)/giu;
+  /* Bedragen in euro's: '€ 1.250', '1.250 euro', '€200 miljard'.
+     ------------------------------------------------------------------
+     DE SCHAALWOORDEN STONDEN HIER NIET, EN DAT WAS EEN ECHTE FOUT.
+     Gemeten in productie op 12 oktober 2026 stonden deze twee rijen in
+     intel.uitspraken, beide met verificatie_status 'bevestigd',
+     bewijs_kwaliteit 5 en vertrouwen 0,90:
+
+       brontekst 'meer dan EUR 200 miljard in het elektriciteitsnet'
+         -> waarde_numeriek 200, eenheid EUR
+       brontekst 'structureel EUR 125 miljoen per jaar (2027-2030)'
+         -> waarde_numeriek 125, eenheid EUR
+
+     Een factor 10^9 respectievelijk 10^6 ernaast, met de hoogste
+     bewijskwaliteit die dit systeem kent. Zonder deze reparatie zou een
+     wijzigingsvoorstel '200 euro' op een publieke pagina zetten waar de
+     bron 200 miljard zegt. */
+  const euroPatroon =
+    /(?:€\s*(\d{1,3}(?:\.\d{3})*(?:,\d+)?)|(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*euro\b)\s*(duizend|miljoen|miljard|mln\.?|mld\.?)?/giu;
   while ((m = euroPatroon.exec(zin)) !== null) {
-    const waarde = getalVan(m[1] ?? m[2] ?? "");
-    if (waarde === null) continue;
+    const basis = getalVan(m[1] ?? m[2] ?? "");
+    if (basis === null) continue;
+    const schaalWoord = (m[3] ?? "").toLowerCase().replace(/\.$/, "");
+    const factor = SCHAAL[schaalWoord] ?? 1;
     uit.push({
       tekst: kort(zin, 600),
       soort: "prijs",
-      waardeNumeriek: waarde,
+      waardeNumeriek: basis * factor,
       eenheid: "EUR",
       geldigVanaf: null,
       geldigTot: null,
-      vindplaats: `tekenpositie ${m.index}`,
+      vindplaats: `tekenpositie ${m.index}${schaalWoord ? ` (schaal: ${schaalWoord})` : ""}`,
     });
   }
 

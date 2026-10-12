@@ -25,6 +25,7 @@ import { bronOpSleutel } from "../bronnen/register.ts";
 import type { Onderwerp } from "../bronnen/soorten.ts";
 import { gebeurtenisSoortVan, herkenOnderwerpen, isProcedureel } from "./onderwerpen.ts";
 import { schrijfUitspraken, vindTegenspraak } from "./uitspraken.ts";
+import { classificeer, type Categorie } from "./relevantie.ts";
 
 const log = maakLogger("clusteren");
 /**
@@ -165,6 +166,8 @@ async function verwerkVersie(
   v: VersieRij,
 ): Promise<{
   onderwerp: Onderwerp | null;
+  relevantieCategorie: Categorie;
+  bedrijfsrelevantie: number;
   nieuw: boolean;
   uitsprakenAangemaakt: number;
   uitsprakenBevestigd: number;
@@ -178,8 +181,20 @@ async function verwerkVersie(
   const treffers = herkenOnderwerpen(v.titel, `${padWoorden} ${v.ruwe_tekst}`);
   const beste = treffers[0];
   if (!beste) {
+    /* Geen enkel onderwerp herkend: er komt geen gebeurtenis, dus ook
+       geen rij om relevantie op te schrijven. De uitslag wordt toch door
+       de classificeerder bepaald in plaats van hier vastgelegd, zodat er
+       een code pad is dat beslist wat 'niets herkend' betekent — en zodat
+       die beslissing zijn reden meedraagt. */
+    const geen = classificeer({
+      titel: v.titel,
+      tekst: v.ruwe_tekst,
+      onderwerpen: [],
+    });
     return {
       onderwerp: null,
+      relevantieCategorie: geen.categorie,
+      bedrijfsrelevantie: geen.bedrijfsrelevantie,
       nieuw: false,
       uitsprakenAangemaakt: 0,
       uitsprakenBevestigd: 0,
@@ -291,6 +306,20 @@ async function verwerkVersie(
 
   const samenvatting = await bouwSamenvatting(c, gebeurtenis.id, beste.onderwerp);
 
+  /* BEDRIJFSRELEVANTIE, naast materialiteit en niet erin.
+     Materialiteit meet hoe zwaar een publicatie is; vijf van zijn zes
+     assen beschrijven de bron en het bewijs. Relevantie meet of het ons
+     aangaat. Ze in een getal persen gaf in productie een wetsvoorstel
+     over maritieme handhaving (61) boven een echte aanbesteding (56).
+     Zie src/pijplijn/relevantie.ts voor de meting. */
+  const relevantie = classificeer({
+    titel: v.titel,
+    tekst: v.ruwe_tekst,
+    onderwerpen: treffers,
+    gebeurtenisSoort: soort,
+    geverifieerdeUitspraken: telling?.uitspraken ?? 0,
+  });
+
   await c.query(
     `update intel.markt_gebeurtenissen
         set aantal_bronnen          = $2,
@@ -298,6 +327,11 @@ async function verwerkVersie(
             materialiteit           = $4,
             materialiteit_grondslag = $5,
             samenvatting            = $6,
+            relevantie_categorie    = $7,
+            bedrijfsrelevantie      = $8,
+            relevantie_vertrouwen   = $9,
+            relevantie_grondslag    = $10,
+            relevantie_op           = now(),
             status                  = case when status = 'nieuw' then 'verrijkt' else status end
       where id = $1`,
     [
@@ -315,11 +349,20 @@ async function verwerkVersie(
         tegenspraak: tegenspraak.details,
       }),
       samenvatting,
+      relevantie.categorie,
+      relevantie.bedrijfsrelevantie,
+      relevantie.vertrouwen,
+      /* De grondslag is niet optioneel: de constraint
+         gebeurtenissen_relevantie_heeft_grondslag weigert een categorie
+         zonder uitleg. Een score zonder reden is hier geen score. */
+      JSON.stringify({ uitleg: relevantie.uitleg, ...relevantie.grondslag }),
     ],
   );
 
   return {
     onderwerp: beste.onderwerp,
+    relevantieCategorie: relevantie.categorie,
+    bedrijfsrelevantie: relevantie.bedrijfsrelevantie,
     nieuw: gebeurtenis.is_nieuw,
     uitsprakenAangemaakt: uitspraken.aangemaakt,
     uitsprakenBevestigd: uitspraken.bevestigd,

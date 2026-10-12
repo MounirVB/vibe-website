@@ -521,9 +521,9 @@ try {
 
       /* 19 — alle weergaven */
       if (!beheerder) {
-        meld(19, "Alle acht weergaven van het Intelligence Center laden", "NIET GEDRAAID", "geen sessie");
+        meld(19, "Alle negen weergaven van het Intelligence Center laden", "NIET GEDRAAID", "geen sessie");
       } else {
-        const paden = ["/", "/radar", "/studio", "/regio", "/signalen", "/distributie", "/prestaties", "/instellingen"];
+        const paden = ["/", "/radar", "/studio", "/regio", "/kansen", "/signalen", "/distributie", "/prestaties", "/instellingen"];
         const uitkomsten: string[] = [];
         for (const p of paden) {
           const r = await fetch(`${basis}${p}`, { headers: { cookie: beheerder } });
@@ -532,11 +532,88 @@ try {
         const slecht = uitkomsten.filter((u) => !u.endsWith(" 200"));
         meld(
           19,
-          "Alle acht weergaven van het Intelligence Center laden voor een beheerder",
+          "Alle negen weergaven van het Intelligence Center laden voor een beheerder",
           slecht.length === 0 ? "PASS" : "FAIL",
           `${paden.length - slecht.length} van ${paden.length} weergaven gaven 200`,
           slecht,
         );
+      }
+
+      /* 34 — de kansenweergave zegt wat ze niet weet */
+      if (!beheerder) {
+        meld(34, "Kansen: ONBEKEND is zichtbaar en er staat geen verzendknop", "NIET GEDRAAID", "geen sessie");
+      } else {
+        const r = await fetch(`${basis}/kansen`, { headers: { cookie: beheerder } });
+        const html = await r.text();
+
+        /* Een technische enumwaarde mag nooit het label zijn (par. 27).
+           Dit zijn de ruwe waarden uit de database; ze horen in de HTML
+           niet als zichtbare tekst voor te komen. */
+        const ruweEnums = ["ONDERZOEK_NODIG", "GEARCHIVEERD", "GOEDGEKEURD_VOOR_OPVOLGING", ">open<", ">gegund<"];
+        const gelekt = ruweEnums.filter((e) => html.includes(e));
+
+        /* Dit platform heeft geen verzendpad. Een knop die suggereert
+           dat je vanaf hier iemand benadert, hoort niet te bestaan. */
+        const verzendwoorden = ["Verstuur", "Verzend", "Mail versturen", "Neem contact", "Schrijf in"];
+        const verzend = verzendwoorden.filter((w) => html.includes(w));
+
+        const fouten: string[] = [];
+        if (r.status !== 200) fouten.push(`status ${r.status}`);
+        if (gelekt.length > 0) fouten.push(`ruwe enumwaarden zichtbaar: ${gelekt.join(", ")}`);
+        if (verzend.length > 0) fouten.push(`verzendknop gevonden: ${verzend.join(", ")}`);
+        if (!/ONBEKEND/.test(html)) {
+          fouten.push("het woord ONBEKEND komt niet voor; met onvolledige dossiers hoort het zichtbaar te zijn");
+        }
+        if (!/Kansen/.test(html)) fouten.push("de kop ontbreekt");
+
+        meld(
+          34,
+          "Kansen: ONBEKEND staat zichtbaar in beeld, geen ruwe enumwaarden en geen verzendknop",
+          fouten.length === 0 ? "PASS" : "FAIL",
+          `status ${r.status}, ${html.length} tekens HTML`,
+          fouten,
+        );
+      }
+
+      /* 35 — het dossier scheidt de drie lagen */
+      if (!beheerder) {
+        meld(35, "Kansdossier: feiten, gevolgtrekkingen en aanbeveling staan apart", "NIET GEDRAAID", "geen sessie");
+      } else {
+        /* Het eerste kansnummer uit de lijst; is er geen kans, dan is
+           dat een geldige uitkomst en geen fout. */
+        const lijst = await (await fetch(`${basis}/kansen`, { headers: { cookie: beheerder } })).text();
+        const id = /href="\/kansen\/(\d+)"/.exec(lijst)?.[1];
+        if (!id) {
+          meld(35, "Kansdossier: feiten, gevolgtrekkingen en aanbeveling staan apart", "NIET GEDRAAID",
+            "er staat geen enkele kans in de werkvoorraad van deze database");
+        } else {
+          const r = await fetch(`${basis}/kansen/${id}`, { headers: { cookie: beheerder } });
+          const html = await r.text();
+          const fouten: string[] = [];
+          if (r.status !== 200) fouten.push(`status ${r.status}`);
+          for (const kop of ["Feiten", "Wat niet bekend is", "Gevolgtrekkingen", "Publicaties", "Aanbeveling"]) {
+            if (!html.includes(`>${kop}`)) fouten.push(`kop '${kop}' ontbreekt`);
+          }
+          /* De vier assen horen elk hun eigen reden te dragen. */
+          for (const as of ["Relevantie", "Vertrouwen", "Urgentie", "Handelbaar"]) {
+            if (!html.includes(as)) fouten.push(`as '${as}' ontbreekt`);
+          }
+          if (!/Interesse bewezen/.test(html)) fouten.push("'Interesse bewezen' ontbreekt");
+          if (!/apart menselijk besluit/.test(html)) {
+            fouten.push("de grens rond externe benadering staat niet op het dossier");
+          }
+          /* Een ongeldig id hoort niet op een pagina uit te komen. */
+          const stuk = await fetch(`${basis}/kansen/nietsgeldig`, { headers: { cookie: beheerder } });
+          if (stuk.status !== 400) fouten.push(`/kansen/nietsgeldig gaf ${stuk.status} in plaats van 400`);
+
+          meld(
+            35,
+            "Kansdossier: feiten, gevolgtrekkingen en aanbeveling staan gescheiden, met de grens rond benadering",
+            fouten.length === 0 ? "PASS" : "FAIL",
+            `dossier ${id}, status ${r.status}, ${html.length} tekens`,
+            fouten,
+          );
+        }
       }
 
       /* ---------------- 21. CSRF ---------------- */

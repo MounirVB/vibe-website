@@ -1,0 +1,87 @@
+{
+  "_gemetenOp": "2026-10-12",
+  "_bron": "tenderned-publicaties (geregistreerd endpoint, CPV 09300000-5, pagina 0, size=100)",
+  "_toelichting": "Echte productiedata: de vier commerciele signalen uit Release 3.0 par. 3, met exact de extra-sleutelvorm die parsers.ts aanmaakt (het veldpad letterlijk als sleutel). De brontekst staat hier NIET verbatim in, alleen lengte en sha256: deze bron heeft mag_citeren=false en citaat_limiet_tekens=0, en een fixture is geen plek om dat te omzeilen.",
+  "publicaties": [
+    {
+      "externId": "434533",
+      "url": "https://www.tenderned.nl/aankondigingen/overzicht/434533",
+      "titel": "Zonnepanelen en Energieopslag",
+      "gepubliceerdOp": "2026-07-24",
+      "uitgever": "TenderNed",
+      "tekstLengte": 594,
+      "tekstSha256": "f14f3f6139b5291fb39cdfcd4a274304b14d2c46f21bd03a5539e924ef017e51",
+      "extra": {
+        "opdrachtgeverNaam": "Veiligheidsregio Rotterdam-Rijnmond",
+        "typePublicatie.code": "AAO",
+        "typePublicatie.omschrijving": "Aankondiging opdracht",
+        "kenmerk": 599611,
+        "sluitingsDatum": "2026-10-08T16:00:00",
+        "aantalDagenTotSluitingsDatum": -4,
+        "procedure.omschrijving": "Openbaar",
+        "typeOpdracht.omschrijving": "Leveringen",
+        "publicatiestatus.omschrijving": "Gepubliceerd"
+      }
+    },
+    {
+      "externId": "443632",
+      "url": "https://www.tenderned.nl/aankondigingen/overzicht/443632",
+      "titel": "Zonnepanelen en Energieopslag",
+      "gepubliceerdOp": "2026-10-08",
+      "uitgever": "TenderNed",
+      "tekstLengte": 594,
+      "tekstSha256": "f14f3f6139b5291fb39cdfcd4a274304b14d2c46f21bd03a5539e924ef017e51",
+      "extra": {
+        "opdrachtgeverNaam": "Veiligheidsregio Rotterdam-Rijnmond",
+        "typePublicatie.code": "REC",
+        "typePublicatie.omschrijving": "Rectificatie",
+        "kenmerk": 599611,
+        "sluitingsDatum": "2026-12-02T16:00:00",
+        "aantalDagenTotSluitingsDatum": 51,
+        "procedure.omschrijving": "Openbaar",
+        "typeOpdracht.omschrijving": "Leveringen",
+        "publicatiestatus.omschrijving": "Gepubliceerd"
+      }
+    },
+    {
+      "externId": "443550",
+      "url": "https://www.tenderned.nl/aankondigingen/overzicht/443550",
+      "titel": "AI 2026-0070 -  Circulair zonnepark Buiteneiland",
+      "gepubliceerdOp": "2026-10-08",
+      "uitgever": "TenderNed",
+      "tekstLengte": 47,
+      "tekstSha256": "7ac8a6bfe00a78abc5bf56d603450165cceea5b4e4488851f2a3be095730abd4",
+      "extra": {
+        "opdrachtgeverNaam": "Gemeente Amsterdam, Ingenieursbureau",
+        "typePublicatie.code": "AAO",
+        "typePublicatie.omschrijving": "Aankondiging opdracht",
+        "kenmerk": 581706,
+        "sluitingsDatum": "2026-12-04T14:00:00",
+        "aantalDagenTotSluitingsDatum": 53,
+        "procedure.omschrijving": "Openbaar",
+        "typeOpdracht.omschrijving": "Werken",
+        "publicatiestatus.omschrijving": "Gepubliceerd"
+      }
+    },
+    {
+      "externId": "441673",
+      "url": "https://www.tenderned.nl/aankondigingen/overzicht/441673",
+      "titel": "Realisatie zonnepanelen Limburgs Museum",
+      "gepubliceerdOp": "2026-09-27",
+      "uitgever": "TenderNed",
+      "tekstLengte": 319,
+      "tekstSha256": "db559c6acd349f67520f09a98935090542ea1523fc50ee0887a4cbe8c7bea11a",
+      "extra": {
+        "opdrachtgeverNaam": "Provincie Limburg",
+        "typePublicatie.code": "AGO",
+        "typePublicatie.omschrijving": "Aankondiging gegunde opdracht",
+        "kenmerk": 614680,
+        "sluitingsDatum": null,
+        "aantalDagenTotSluitingsDatum": null,
+        "procedure.omschrijving": "Openbaar",
+        "typeOpdracht.omschrijving": "Leveringen",
+        "publicatiestatus.omschrijving": "Gepubliceerd"
+      }
+    }
+  ]
+}

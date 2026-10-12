@@ -1,0 +1,282 @@
+[
+  {
+    "id": 57,
+    "titel": "Nettarieven 2027 stijgen maar slimme keuzes kunnen stijging remmen",
+    "soort": "infrastructuur",
+    "huidige_materialiteit": 75,
+    "verwachte_categorie": "redactionele_kans",
+    "onderbouwing": "nettarieven raken direct de businesscase van piekverlaging en opslag"
+  },
+  {
+    "id": 43,
+    "titel": "ACM: tijdsafhankelijke nettarieven maken slim stroomgebruik aantrekkelijker",
+    "soort": "infrastructuur",
+    "huidige_materialiteit": 71,
+    "verwachte_categorie": "redactionele_kans",
+    "onderbouwing": "tijdsafhankelijke tarieven zijn de kern van EMS-optimalisatie"
+  },
+  {
+    "id": 8,
+    "titel": "Zonnepanelen en Energieopslag",
+    "soort": "aanbesteding",
+    "huidige_materialiteit": 63,
+    "verwachte_categorie": "commerciele_kans",
+    "onderbouwing": "aanbesteding met expliciet energieopslag"
+  },
+  {
+    "id": 46,
+    "titel": "vijf bedrijven in nijmegen zetten samen met liander belangrijke stap in aanpak netcongestie",
+    "soort": "netcongestie",
+    "huidige_materialiteit": 61,
+    "verwachte_categorie": "marktintelligentie",
+    "onderbouwing": "collectieve netcongestieaanpak bij bedrijven; geen eigen aanbesteding"
+  },
+  {
+    "id": 42,
+    "titel": "actieplan netcongestie zuid holland slimmer omgaan met schaarse ruimte op het stroomnet",
+    "soort": "netcongestie",
+    "huidige_materialiteit": 61,
+    "verwachte_categorie": "marktintelligentie",
+    "onderbouwing": "provinciaal beleid over transportschaarste"
+  },
+  {
+    "id": 7,
+    "titel": "AI 2026-0070 - Circulair zonnepark Buiteneiland",
+    "soort": "aanbesteding",
+    "huidige_materialiteit": 61,
+    "verwachte_categorie": "commerciele_kans",
+    "onderbouwing": "openbare aanbesteding met zonnestroomcomponent"
+  },
+  {
+    "id": 5,
+    "titel": "subsidieregeling mvr",
+    "soort": "subsidie",
+    "huidige_materialiteit": 61,
+    "verwachte_categorie": "achtergrond",
+    "onderbouwing": "HERZIEN: de titel draagt geen inhoud, dus 'niet relevant' bewEErt meer dan we weten. Zichtbaar houden als achtergrond is eerlijker dan wegstoppen wat niet beoordeeld is."
+  },
+  {
+    "id": 1,
+    "titel": "Wetsvoorstel voor hardere aanpak schaduwvloot naar Tweede Kamer",
+    "soort": "regelgeving",
+    "huidige_materialiteit": 61,
+    "verwachte_categorie": "niet_relevant",
+    "onderbouwing": "maritieme handhaving; geen raakvlak met energie-infrastructuur"
+  },
+  {
+    "id": 35,
+    "titel": "In 2025 ruim € 3 miljard aan milieu-investeringen met belastingvoordeel MIA\\Vamil",
+    "soort": "subsidie",
+    "huidige_materialiteit": 60,
+    "verwachte_categorie": "redactionele_kans",
+    "onderbouwing": "MIA/Vamil is een B2B-investeringsregeling die batterijen raakt"
+  },
+  {
+    "id": 41,
+    "titel": "Slimmer stroomgebruik door huishoudens creëert sneller ruimte op het elektriciteitsnet",
+    "soort": "techniek",
+    "huidige_materialiteit": 59,
+    "verwachte_categorie": "marktintelligentie",
+    "onderbouwing": "huishoudens zijn geen doelgroep, maar netruimte is relevante context"
+  },
+  {
+    "id": 16,
+    "titel": "Elektriciteitsbalans; aanbod en verbruik",
+    "soort": "statistiek",
+    "huidige_materialiteit": 58,
+    "verwachte_categorie": "achtergrond",
+    "onderbouwing": "CBS-reeks; context zonder handelingsperspectief"
+  },
+  {
+    "id": 58,
+    "titel": "de nettarieven van liander stijgen in 2027",
+    "soort": "infrastructuur",
+    "huidige_materialiteit": 56,
+    "verwachte_categorie": "redactionele_kans",
+    "onderbouwing": "zelfde ontwikkeling als de ACM-publicatie; hoort geclusterd"
+  },
+  {
+    "id": 55,
+    "titel": "Netbeheer Nederland: Zonder groen gas en flexibiliteit wordt de energietransitie onbetaalbaar",
+    "soort": "techniek",
+    "huidige_materialiteit": 56,
+    "verwachte_categorie": "marktintelligentie",
+    "onderbouwing": "flexibiliteit als systeemthema"
+  },
+  {
+    "id": 52,
+    "titel": "Zonder flexibiliteit, groen gas en warmte wordt de energietransitie onbetaalbaar",
+    "soort": "techniek",
+    "huidige_materialiteit": 56,
+    "verwachte_categorie": "marktintelligentie",
+    "onderbouwing": "duplicaat van het Netbeheer Nederland-bericht"
+  },
+  {
+    "id": 17,
+    "titel": "Realisatie zonnepanelen Limburgs Museum",
+    "soort": "aanbesteding",
+    "huidige_materialiteit": 56,
+    "verwachte_categorie": "commerciele_kans",
+    "onderbouwing": "aanbesteding zonnestroom bij een vastgoedlocatie"
+  },
+  {
+    "id": 30,
+    "titel": "Ondernemers krijgen in 2026 meer tijd voor subsidieaanvraag SDE++",
+    "soort": "subsidie",
+    "huidige_materialiteit": 55,
+    "verwachte_categorie": "redactionele_kans",
+    "onderbouwing": "SDE++ is een B2B-regeling met een harde deadline"
+  },
+  {
+    "id": 27,
+    "titel": "Zonnepanelen en Energieopslag",
+    "soort": "aanbesteding",
+    "huidige_materialiteit": 53,
+    "verwachte_categorie": "commerciele_kans",
+    "onderbouwing": "aanbesteding met expliciet energieopslag"
+  },
+  {
+    "id": 28,
+    "titel": "laadinfrastructuur",
+    "soort": "infrastructuur",
+    "huidige_materialiteit": 51,
+    "verwachte_categorie": "achtergrond",
+    "onderbouwing": "HERZIEN: kernonderwerp maar een titel zonder inhoud; er valt niets op te besluiten."
+  },
+  {
+    "id": 26,
+    "titel": "Innovatiekrediet geeft impuls aan productie van flexibele zonnepanelen",
+    "soort": "techniek",
+    "huidige_materialiteit": 51,
+    "verwachte_categorie": "marktintelligentie",
+    "onderbouwing": "HERZIEN: paneelPRODUCTIE is niet onze uitrol, maar het is wel de markt waarin we werken. Marktinformatie is verdedigbaar; 'achtergrond' was te streng."
+  },
+  {
+    "id": 25,
+    "titel": "innovatiekrediet kalpana flexibele zonnepanelen",
+    "soort": "techniek",
+    "huidige_materialiteit": 51,
+    "verwachte_categorie": "marktintelligentie",
+    "onderbouwing": "HERZIEN: duplicaat van het bericht hierboven, zelfde oordeel."
+  },
+  {
+    "id": 24,
+    "titel": "subsidieregeling extensivering melkveehouderij sem",
+    "soort": "subsidie",
+    "huidige_materialiteit": 51,
+    "verwachte_categorie": "niet_relevant",
+    "onderbouwing": "landbouwregeling zonder energiecomponent"
+  },
+  {
+    "id": 23,
+    "titel": "isde wat wijzigt er 2026",
+    "soort": "subsidie",
+    "huidige_materialiteit": 51,
+    "verwachte_categorie": "niet_relevant",
+    "onderbouwing": "ISDE richt zich op particuliere warmte"
+  },
+  {
+    "id": 22,
+    "titel": "isde klantondersteuning door bouwprofessionals",
+    "soort": "subsidie",
+    "huidige_materialiteit": 51,
+    "verwachte_categorie": "niet_relevant",
+    "onderbouwing": "ISDE-ondersteuning, particulier"
+  },
+  {
+    "id": 34,
+    "titel": "3 miljard milieu investeringen mia vamil 2025",
+    "soort": "subsidie",
+    "huidige_materialiteit": 50,
+    "verwachte_categorie": "redactionele_kans",
+    "onderbouwing": "duplicaat van het MIA/Vamil-bericht"
+  },
+  {
+    "id": 31,
+    "titel": "2/3e van aanvragen SDE++-subsidie in 2025 afgewezen",
+    "soort": "subsidie",
+    "huidige_materialiteit": 50,
+    "verwachte_categorie": "redactionele_kans",
+    "onderbouwing": "afwijzingsgrond is bruikbare kennis voor ondernemers"
+  },
+  {
+    "id": 33,
+    "titel": "Energiebalans; aanbod, omzetting en verbruik",
+    "soort": "statistiek",
+    "huidige_materialiteit": 48,
+    "verwachte_categorie": "achtergrond",
+    "onderbouwing": "CBS-reeks"
+  },
+  {
+    "id": 32,
+    "titel": "Energiebalans; aanbod en verbruik, sector",
+    "soort": "statistiek",
+    "huidige_materialiteit": 48,
+    "verwachte_categorie": "achtergrond",
+    "onderbouwing": "CBS-reeks"
+  },
+  {
+    "id": 37,
+    "titel": "recordgroei eia investeringen 2025",
+    "soort": "subsidie",
+    "huidige_materialiteit": 46,
+    "verwachte_categorie": "redactionele_kans",
+    "onderbouwing": "EIA is een B2B-investeringsaftrek"
+  },
+  {
+    "id": 29,
+    "titel": "subsidieregeling nieuwe warmte nu",
+    "soort": "subsidie",
+    "huidige_materialiteit": 46,
+    "verwachte_categorie": "marktintelligentie",
+    "onderbouwing": "HERZIEN: de zachte demper doet hier precies zijn werk — warmtenetten liggen buiten de propositie maar zijn wel marktinformatie voor een energiebedrijf. 'achtergrond' was te streng."
+  },
+  {
+    "id": 38,
+    "titel": "Partijen in laadinfra maken werk van circulaire ambities",
+    "soort": "infrastructuur",
+    "huidige_materialiteit": 44,
+    "verwachte_categorie": "marktintelligentie",
+    "onderbouwing": "ongewijzigd; de motor miste dit door een vocabulairegat ('laadinfra'), nu gedicht."
+  },
+  {
+    "id": 36,
+    "titel": "jaarcijfers 2025",
+    "soort": "subsidie",
+    "huidige_materialiteit": 44,
+    "verwachte_categorie": "achtergrond",
+    "onderbouwing": "titel zonder onderwerp"
+  },
+  {
+    "id": 6,
+    "titel": "Terugblik: Energy Storage Day 2026 – Energieopslag als sleutel tot een flexibel energiesysteem",
+    "soort": "techniek",
+    "huidige_materialiteit": 43,
+    "verwachte_categorie": "marktintelligentie",
+    "onderbouwing": "sectorbijeenkomst over opslag"
+  },
+  {
+    "id": 39,
+    "titel": "Dit wordt warmtepompsubsidie ISDE in 2027",
+    "soort": "subsidie",
+    "huidige_materialiteit": 42,
+    "verwachte_categorie": "niet_relevant",
+    "onderbouwing": "particuliere warmtepompsubsidie"
+  },
+  {
+    "id": 63,
+    "titel": "day-ahead NL 2026-10-12: gemiddeld 199.05 EUR / MWh",
+    "soort": "marktprijs",
+    "huidige_materialiteit": 41,
+    "verwachte_categorie": "achtergrond",
+    "onderbouwing": "dagelijkse prijsreeks; herhaalt zich eeuwig"
+  },
+  {
+    "id": 61,
+    "titel": "day-ahead NL 2026-10-10: gemiddeld 110.49 EUR / MWh",
+    "soort": "marktprijs",
+    "huidige_materialiteit": 41,
+    "verwachte_categorie": "achtergrond",
+    "onderbouwing": "dagelijkse prijsreeks; herhaalt zich eeuwig"
+  }
+]

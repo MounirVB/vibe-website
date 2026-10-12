@@ -497,7 +497,9 @@ export async function maakConcept(
          uit. */
       const allow = await isModelToegestaan(c, provider.naam, provider.model);
       const breker = await onderbrekerStand(c, organisatieId);
-      const budget = await budgetStand(c, organisatieId);
+      /* `betaald` hangt aan de provider: alleen een echte openai-aanroep
+         kost geld, en alleen die hoort door de geldgrendels. */
+      const budget = await budgetStand(c, organisatieId, provider.naam === "openai");
 
       if (provider.naam !== "openai") {
         log.info("deterministische provider; geen modelaanroep", { provider: provider.naam });

@@ -309,6 +309,15 @@ export type BudgetStand = {
 export async function budgetStand(
   c: pg.PoolClient,
   organisatieId: number,
+  /**
+   * Kost een aanroep bij deze provider geld?
+   *
+   * Standaard `false`, want de deterministische weg is de normale weg in
+   * dit platform. Alleen een echt betaalde aanroep moet door de
+   * geldgrendels; wie hem vergeet mee te geven krijgt dus niet per
+   * ongeluk een lakser oordeel, maar hij hoort hem mee te geven.
+   */
+  betaald = false,
 ): Promise<BudgetStand> {
   const p = await eenRij<{
     actief: boolean;
@@ -364,8 +373,55 @@ export async function budgetStand(
     },
   };
 
+  /* GEEN PLAFOND IS GEEN VRIJBRIEF.
+     ------------------------------------------------------------------
+     Dit stond omgekeerd: zonder actief kostenplafond gaf deze functie
+     `mag: true` met de reden "geen actief kostenplafond ingesteld". Een
+     ontbrekende grens betekende dus onbeperkt, en de enige rem was dat
+     de modelallowlist leeg stond. Twee los staande grendels, waarvan
+     deze de verkeerde kant op viel.
+
+     Een betaalde provider zonder vastgesteld maandplafond is precies de
+     situatie die je niet wilt: de rekening is dan onbegrensd en
+     onmeetbaar. Daarom nu de andere kant op.
+
+     Een provider ZONDER kosten (provider 'geen', oftewel deterministisch)
+     raakt dit niet: daar valt niets te begrenzen. */
   if (!p || !p.actief) {
-    return { ...stand, mag: true, reden: "geen actief kostenplafond ingesteld" };
+    return betaald
+      ? {
+          ...stand,
+          mag: false,
+          reden:
+            "er is geen actief kostenplafond ingesteld. Bij een betaalde provider is een " +
+            "ontbrekend maandplafond een weigering en geen vrijbrief: zonder grens is de " +
+            "rekening onbegrensd. Stel een plafond in met `npm run ai -- --plafond`.",
+        }
+      : { ...stand, mag: true, reden: "geen kosten: deterministische provider" };
+  }
+
+  /* EEN TOKENPLAFOND IS GEEN GELDPLAFOND.
+     Tokens zijn te vertalen naar geld zolang er een tarief is. Is er
+     geen tarief, dan is 'binnen het tokenplafond' geen uitspraak over de
+     rekening. Dan mag een betaalde aanroep niet. */
+  if (betaald && stand.maandKosten.plafond === null) {
+    return {
+      ...stand,
+      mag: false,
+      reden:
+        "er is wel een actief plafond maar geen MONETAIR maandplafond (max_kosten_per_maand). " +
+        "Een tokenplafond begrenst de rekening niet zolang er geen tarief bekend is.",
+    };
+  }
+  if (betaald && stand.maandKosten.onbekendeAanroepen > 0 && stand.maandKosten.plafond !== null) {
+    return {
+      ...stand,
+      mag: false,
+      reden:
+        `${stand.maandKosten.onbekendeAanroepen} aanroep(en) deze maand hebben onbekende kosten, ` +
+        `dus de gemeten ${stand.maandKosten.gemeten} is een ondergrens en niet de stand. ` +
+        `Zolang dat zo is, is het monetaire plafond niet te handhaven.`,
+    };
   }
 
   const grenzen: { naam: string; gebruikt: number; plafond: number | null }[] = [

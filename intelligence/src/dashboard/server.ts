@@ -61,6 +61,7 @@ import {
   vlag,
 } from "./html.ts";
 import { koppelingStatussen, funnelBeeld } from "../analytics/koppelingen.ts";
+import { FASE_LABEL, type Fase } from "../commercieel/aanbesteding.ts";
 
 const log = maakLogger("dashboard");
 
@@ -772,6 +773,9 @@ ${tabel(
         titel: string;
         soort: string;
         materialiteit: number;
+        relevantie: number | null;
+        categorie: string | null;
+        vertrouwen: number | null;
         risico: string;
         bronnen: number;
         tegenspraak: boolean;
@@ -779,14 +783,29 @@ ${tabel(
         onderwerp: string | null;
       }>(
         c,
+        /* DE SORTERING IS HET HELE PUNT.
+           Dit stond op `order by g.materialiteit desc`, en materialiteit
+           meet hoe ZWAAR een publicatie is: vijf van zijn zes assen
+           beschrijven de bron en het bewijs. Gevolg, gemeten in
+           productie: een wetsvoorstel over maritieme handhaving
+           (materialiteit 61) stond boven een echte aanbesteding (56).
+
+           Bedrijfsrelevantie gaat nu voor. Materialiteit blijft ernaast
+           staan, zichtbaar, want de twee meten verschillende dingen en
+           juist dat verschil is wat een lezer nodig heeft.
+           Gebeurtenissen zonder relevantie (nog niet geclassificeerd)
+           zakken naar onderen in plaats van bovenaan te blijven staan. */
         `select g.id, g.titel, g.gebeurtenis_soort as soort, g.materialiteit,
+                g.bedrijfsrelevantie as relevantie,
+                g.relevantie_categorie as categorie,
+                g.relevantie_vertrouwen as vertrouwen,
                 g.risico_klasse as risico, g.aantal_bronnen as bronnen,
                 g.heeft_tegenspraak as tegenspraak, g.gebeurd_op,
                 oc.sleutel as onderwerp
            from intel.markt_gebeurtenissen g
            left join intel.onderwerp_clusters oc on oc.id = g.onderwerp_cluster_id
           where g.status <> 'afgewezen'
-          order by g.materialiteit desc, g.id
+          order by g.bedrijfsrelevantie desc nulls last, g.materialiteit desc, g.id
           limit 40`,
       ),
       ophalingen: await rijen<{ resultaat: string; n: number }>(
@@ -829,10 +848,21 @@ ${tabel(
   ]),
 )}
 
-<h2>Gebeurtenissen, hoogste materialiteit eerst</h2>
+<h2>Gebeurtenissen, hoogste bedrijfsrelevantie eerst</h2>
+<p class="uitleg"><strong>Relevantie</strong> meet of iets ons aangaat; <strong>materialiteit</strong>
+meet hoe zwaar de publicatie is. Twee aparte assen, want ze lopen uiteen: een wetsvoorstel kan zwaar
+zijn en ons niet aangaan. <strong>Vertrouwen</strong> zegt hoe hard het bewijs is — een aanbesteding
+zonder brontekst is relevant met een laag vertrouwen, en dat is iets anders dan niet relevant.</p>
 ${tabel(
-  ["Mat.", "Soort", "Onderwerp", "Titel", "Bronnen", "Risico", "Datum"],
+  ["Rel.", "Categorie", "Vert.", "Mat.", "Soort", "Onderwerp", "Titel", "Bronnen", "Risico", "Datum"],
   d.gebeurtenissen.map((g) => [
+    g.relevantie === null
+      ? '<span class="onbekend">N.N.G.</span>'
+      : `<span class="num${g.relevantie >= 50 ? " dringend" : ""}">${g.relevantie}</span>`,
+    g.categorie
+      ? esc(RELEVANTIE_LABEL[g.categorie] ?? g.categorie)
+      : '<span class="onbekend">niet geclassificeerd</span>',
+    g.vertrouwen === null ? '<span class="onbekend">?</span>' : `<span class="num">${g.vertrouwen}</span>`,
     `<span class="num">${g.materialiteit}</span>`,
     esc(g.soort),
     g.onderwerp ? `<code>${esc(g.onderwerp)}</code>` : '<span class="onbekend">GEEN</span>',
@@ -851,6 +881,42 @@ ${tabel(
 
   app.get("/studio", async_(vereistInlog), vereistRecht("inhoud.lezen"), async_(async (req: MetGebruiker, res) => {
     const d = await alsGebruiker(req, async (c) => ({
+      /* WIJZIGINGSVOORSTELLEN op bestaande pagina's, met hun vier
+         controles. Dit is wat op een mens wacht; het staat boven de
+         conceptversies omdat het de enige lijst is waar iemand iets
+         mee moet. */
+      voorstellen: await rijen<{
+        id: string;
+        kandidaat_id: number;
+        doel_pad: string | null;
+        titel: string;
+        eindoordeel: string;
+        oordeel_reden: string;
+        nieuwe_tekst: string | null;
+        doel_sectie: string | null;
+        doel_voorbehoud: string | null;
+        noemt: number;
+        cta_tekst: string | null;
+        beoordeling: string | null;
+        controles: { naam: string; oordeel: string; reden: string }[];
+      }>(
+        c,
+        `select v.id::text, v.kandidaat_id, v.doel_pad, g.titel, v.eindoordeel,
+                v.oordeel_reden, v.nieuwe_tekst, v.doel_sectie, v.doel_voorbehoud,
+                v.doel_noemt_onderwerp as noemt, v.cta_tekst, v.beoordeling,
+                coalesce((select json_agg(json_build_object(
+                            'naam', ct.naam, 'oordeel', ct.oordeel, 'reden', ct.reden)
+                          order by ct.naam)
+                            from intel.inhoud_voorstel_controles ct
+                           where ct.voorstel_id = v.id), '[]'::json) as controles
+           from intel.inhoud_voorstellen v
+           join intel.markt_gebeurtenissen g on g.id = v.gebeurtenis_id
+          order by case v.eindoordeel
+                     when 'KLAAR_VOOR_REVIEW' then 0 when 'UITSTELLEN' then 1
+                     when 'HERROUTEREN' then 2 else 3 end,
+                   v.kandidaat_id
+          limit 40`,
+      ),
       versies: await rijen<{
         id: number;
         pad: string;
@@ -906,6 +972,51 @@ ${tabel(
 <h1>Content Studio</h1>
 <p class="uitleg">Kandidaten uit de besluitmotor, conceptversies met hun poortuitslag, en het
 onveranderlijke publicatiespoor.</p>
+
+<h2>Wijzigingsvoorstellen — wachten op beoordeling</h2>
+<p class="uitleg">Voorstellen om een <strong>bestaande</strong> pagina te wijzigen. Elk voorstel is
+op vier punten gecontroleerd: bronverwijzing, actualiteit, duplicatie en SEO. Een voorstel dat er
+niet door komt krijgt geen tekst maar een reden.
+<strong>Er wordt niets gepubliceerd</strong>: goedkeuren levert een patch op die een mens doorvoert.</p>
+
+${(() => {
+  const klaar = d.voorstellen.filter((v) => v.eindoordeel === "KLAAR_VOOR_REVIEW" && !v.beoordeling);
+  const rest = d.voorstellen.filter((v) => !(v.eindoordeel === "KLAAR_VOOR_REVIEW" && !v.beoordeling));
+  const kaart = (v: (typeof d.voorstellen)[number]) => `
+<details${v.eindoordeel === "KLAAR_VOOR_REVIEW" ? " open" : ""}>
+  <summary><strong>${esc(VOORSTEL_LABEL[v.eindoordeel] ?? v.eindoordeel)}</strong>
+    — ${esc(v.titel.slice(0, 74))}
+    ${v.beoordeling ? `<span class="klein">(beoordeeld: ${esc(v.beoordeling)})</span>` : ""}</summary>
+  <p class="klein">kandidaat ${v.kandidaat_id} · doelpagina
+    ${v.doel_pad ? `<code>${esc(v.doel_pad)}</code>` : '<span class="onbekend">ONBEKEND</span>'}
+    · de pagina noemt het onderwerp ${v.noemt} keer</p>
+  <p><strong>Oordeel:</strong> ${esc(v.oordeel_reden)}</p>
+  ${v.nieuwe_tekst
+    ? `<p class="klein">Voorgestelde toevoeging${v.doel_sectie ? ` in sectie &ldquo;${esc(v.doel_sectie)}&rdquo;` : ""}:</p>
+       <pre class="diff">+ ${esc(v.nieuwe_tekst)}</pre>`
+    : `<p class="klein">Geen tekst voorgesteld: dit voorstel haalde de controles niet.</p>`}
+  ${v.doel_voorbehoud
+    ? `<p class="klein">Voorbehoud dat de doelpagina zelf publiceert:<br><em>${esc(v.doel_voorbehoud.slice(0, 260))}</em></p>`
+    : ""}
+  ${v.cta_tekst ? `<p class="klein">CTA: &ldquo;${esc(v.cta_tekst)}&rdquo;</p>` : ""}
+  <table class="paren">
+    ${v.controles
+      .map(
+        (ct) =>
+          `<tr><th>${esc(ct.naam)}</th><td><strong>${esc(ct.oordeel)}</strong>
+             <div class="klein">${esc(ct.reden)}</div></td></tr>`,
+      )
+      .join("")}
+  </table>
+</details>`;
+  return `
+<p><strong>${klaar.length}</strong> voorstel(len) klaar voor beoordeling,
+<strong>${rest.length}</strong> met een onderbouwde afwijzing of omleiding.</p>
+${klaar.map(kaart).join("")}
+${rest.length > 0
+  ? `<details><summary>Niet doorgezet (${rest.length}) — met reden</summary>${rest.map(kaart).join("")}</details>`
+  : ""}`;
+})()}
 
 <h2>Kandidaten (geen REJECT of MONITOR)</h2>
 ${tabel(
@@ -1039,6 +1150,320 @@ ${tabel(
   }));
 
   // ---------------- commerciële signalen ----------------
+
+  /**
+   * De Nederlandse naam van een fase.
+   *
+   * §27 verbiedt een technische enumwaarde als label voor een mens. Een
+   * onbekende waarde valt terug op een leesbare tekst in plaats van op
+   * de ruwe sleutel, zodat een nieuwe fase in de database nooit als
+   * 'beeindigd' op het scherm verschijnt.
+   */
+  /**
+   * Nederlandse labels voor de relevantiecategorie.
+   *
+   * De enumwaarde ('commerciele_kans') is een sleutel, niet een label
+   * voor een mens; par. 27 eist dat onderscheid.
+   */
+  const RELEVANTIE_LABEL: Record<string, string> = {
+    commerciele_kans: "Commerciële kans",
+    redactionele_kans: "Redactionele kans",
+    regelgeving: "Regelgeving",
+    marktintelligentie: "Marktinformatie",
+    achtergrond: "Achtergrond",
+    niet_relevant: "Niet relevant",
+  };
+
+  /** Nederlandse labels voor het voorsteloordeel; nooit de enum zelf. */
+  const VOORSTEL_LABEL: Record<string, string> = {
+    KLAAR_VOOR_REVIEW: "Klaar voor beoordeling",
+    HERROUTEREN: "Hoort op een andere pagina",
+    UITSTELLEN: "Uitstellen",
+    AFWIJZEN: "Afwijzen",
+  };
+
+  const faseLabelVan = (fase: string | null): string =>
+    fase ? (FASE_LABEL[fase as Fase] ?? "Fase onbekend") : "Fase onbekend";
+
+  /* ----------------------------------------------------------------
+     KANSEN — de werkvoorraad, en per kans een dossier
+     ----------------------------------------------------------------
+     DRIE LAGEN GESCHEIDEN (§6): wat de bron meldt (FEITEN), wat wij
+     eruit opmaken (GEVOLGTREKKINGEN) en wat we voorstellen
+     (AANBEVELING). Die scheiding staat in de opmaak, niet alleen in de
+     tekst, zodat een lezer nooit hoeft te raden welke laag hij ziet.
+
+     WAT HIER NIET STAAT: een knop die iets verstuurt. Er bestaat in dit
+     platform geen verzendpad; externe benadering vraagt een apart
+     menselijk besluit buiten dit scherm. */
+  app.get("/kansen", async_(vereistInlog), vereistRecht("signaal.lezen"), async_(async (req: MetGebruiker, res) => {
+    const vandaag = new Date().toISOString().slice(0, 10);
+    const d = await alsGebruiker(req, (c) =>
+      rijen<{
+        id: string;
+        opdrachtgever: string;
+        project: string;
+        fase: string | null;
+        status: string;
+        sluit_op: string | null;
+        score_relevantie: number;
+        score_vertrouwen: number;
+        score_urgentie: number;
+        score_handelbaar: number;
+        ontbrekend: string[];
+        aanbevolen_actie: string | null;
+        pubs: number;
+        dagen_tot: number | null;
+      }>(
+        c,
+        `select k.id::text, k.opdrachtgever, k.project, k.fase, k.status,
+                k.sluit_op::text, k.score_relevantie, k.score_vertrouwen,
+                k.score_urgentie, k.score_handelbaar, k.ontbrekend, k.aanbevolen_actie,
+                (select count(*)::int from intel.kans_publicaties p where p.kans_id = k.id) as pubs,
+                case when k.sluit_op is null then null
+                     else (k.sluit_op - $1::date) end as dagen_tot
+           from intel.kansen k
+          where k.status not in ('GEWONNEN','VERLOREN','GEARCHIVEERD','AFGEWEZEN')
+            and (k.sluit_op is null or k.sluit_op >= $1::date)
+          order by k.score_urgentie desc, k.score_relevantie desc, k.id desc
+          limit 50`,
+        [vandaag],
+      ),
+    );
+
+    /* Eindstanden en verstreken termijnen worden GETELD, niet verzwegen.
+       Een werkvoorraad die stil items weglaat, laat de lezer denken dat
+       er niets anders is. */
+    const buiten = await alsGebruiker(req, (c) =>
+      rijen<{ reden: string; n: number }>(
+        c,
+        `select case
+                  when fase = 'gegund'    then 'gegund'
+                  when fase = 'beeindigd' then 'vroegtijdig beëindigd'
+                  when status in ('GEWONNEN','VERLOREN','AFGEWEZEN','GEARCHIVEERD')
+                                          then 'afgehandeld'
+                  else 'termijn verstreken'
+                end as reden,
+                count(*)::int as n
+           from intel.kansen
+          where status in ('GEWONNEN','VERLOREN','GEARCHIVEERD','AFGEWEZEN')
+             or (sluit_op is not null and sluit_op < $1::date)
+          group by 1 order by 2 desc`,
+        [vandaag],
+      ),
+    );
+
+    const onbekend = (v: string | null) =>
+      v ? esc(v) : '<span class="onbekend">ONBEKEND</span>';
+    const termijn = (r: { sluit_op: string | null; dagen_tot: number | null }) => {
+      if (!r.sluit_op) return '<span class="onbekend">ONBEKEND</span>';
+      const d = r.dagen_tot;
+      const klasse = d === null ? "" : d <= 7 ? "dringend" : d <= 21 ? "binnenkort" : "";
+      return `<span class="${klasse}">${esc(r.sluit_op)}</span>` +
+        (d === null ? "" : `<div class="klein">over ${d} dagen</div>`);
+    };
+
+    res.send(
+      pagina({
+        titel: "Kansen",
+        huidigPad: "/kansen",
+        gebruiker: req.gebruiker ?? null,
+        inhoud: `
+<h1>Kansen</h1>
+<p class="uitleg">Eén rij per <strong>aanbesteding</strong>, niet per publicatie. Meerdere
+aankondigingen over dezelfde inkoop staan in één dossier; dat scheelde bij de laatste meting
+ruim een derde aan dubbeltellingen. <strong>ONBEKEND is een echte waarde</strong>: een kans
+zonder sluitingsdatum is een onderzoeksvraag, geen kans met termijn nul.
+Dit platform verstuurt niets en legt niets vast bij derden.</p>
+
+${d.length === 0 ? "<p>Geen openstaande kansen.</p>" : tabel(
+  ["Opdrachtgever", "Aanbesteding", "Fase", "Sluit op", "Relevantie", "Vertrouwen", "Urgentie", "Handelbaar", "Wat ontbreekt"],
+  d.map((k) => [
+    `<a href="/kansen/${esc(k.id)}">${esc(k.opdrachtgever)}</a>` +
+      (k.pubs > 1 ? `<div class="klein">${k.pubs} publicaties</div>` : ""),
+    `${esc(k.project.slice(0, 80))}<div class="klein">${esc(k.aanbevolen_actie ?? "")}</div>`,
+    esc(faseLabelVan(k.fase)),
+    termijn(k),
+    `<span class="num">${k.score_relevantie}</span>`,
+    `<span class="num">${k.score_vertrouwen}</span>`,
+    `<span class="num">${k.score_urgentie}</span>`,
+    `<span class="num">${k.score_handelbaar}</span>`,
+    k.ontbrekend.length === 0
+      ? '<span class="klein">niets</span>'
+      : `<span class="onbekend">${k.ontbrekend.length}</span><div class="klein">${esc(k.ontbrekend.slice(0, 2).join(", "))}${k.ontbrekend.length > 2 ? "…" : ""}</div>`,
+  ]),
+)}
+
+<details>
+  <summary>Wat hier NIET in staat (${buiten.reduce((a, b) => a + b.n, 0)})</summary>
+  <p class="klein">Deze kansen zijn bewaard maar vragen geen aandacht. Niets wordt weggegooid:
+  een gunning is marktinformatie over wie won en tegen welke uitvraag.</p>
+  <ul class="klein">
+    ${buiten.map((b) => `<li>${esc(b.reden)}: ${b.n}</li>`).join("") || "<li>niets</li>"}
+  </ul>
+</details>`,
+      }),
+    );
+  }));
+
+  app.get("/kansen/:id", async_(vereistInlog), vereistRecht("signaal.lezen"), async_(async (req: MetGebruiker, res) => {
+    const id = String(req.params["id"] ?? "");
+    if (!/^\d+$/.test(id)) {
+      weiger(res, 400, "Ongeldig kansnummer.");
+      return;
+    }
+
+    const k = (await alsGebruiker(req, (c) =>
+      rijen<{
+        id: string;
+        opdrachtgever: string;
+        project: string;
+        fase: string | null;
+        status: string;
+        sluit_op: string | null;
+        referentie: string | null;
+        procedure_soort: string | null;
+        procedure_status: string | null;
+        opdracht_omvang: string | null;
+        locatie: string | null;
+        eisen: string[];
+        relevante_oplossingen: string[];
+        ontbrekend: string[];
+        aanbevolen_actie: string | null;
+        fase_grondslag: string[];
+        identiteit: string | null;
+        identiteit_grondslag: string | null;
+        interesse_bewezen: boolean;
+        score_relevantie: number;
+        score_vertrouwen: number;
+        score_urgentie: number;
+        score_handelbaar: number;
+        score_grondslag: Record<string, { score: number; reden: string }>;
+      }>(
+        c,
+        `select id::text, opdrachtgever, project, fase, status, sluit_op::text, referentie,
+                procedure_soort, procedure_status, opdracht_omvang, locatie, eisen,
+                relevante_oplossingen, ontbrekend, aanbevolen_actie, fase_grondslag,
+                identiteit, identiteit_grondslag, interesse_bewezen,
+                score_relevantie, score_vertrouwen, score_urgentie, score_handelbaar,
+                score_grondslag
+           from intel.kansen where id = $1`,
+        [id],
+      ),
+    ))[0];
+
+    if (!k) {
+      weiger(res, 404, "Deze kans bestaat niet, of hij hoort bij een andere organisatie.");
+      return;
+    }
+
+    const pubs = await alsGebruiker(req, (c) =>
+      rijen<{
+        url: string;
+        titel: string;
+        gepubliceerd_op: string | null;
+        publicatie_soort: string | null;
+        relatie: string;
+        relatie_grondslag: string | null;
+        sluitingsdatum_bron: string | null;
+      }>(
+        c,
+        `select url, titel, gepubliceerd_op::text, publicatie_soort, relatie,
+                relatie_grondslag, sluitingsdatum_bron::text
+           from intel.kans_publicaties
+          where kans_id = $1 order by gepubliceerd_op nulls first`,
+        [id],
+      ),
+    );
+
+    const feit = (label: string, waarde: string | null) =>
+      `<tr><th>${esc(label)}</th><td>${
+        waarde ? esc(waarde) : '<span class="onbekend">ONBEKEND</span>'
+      }</td></tr>`;
+
+    const as = (naam: string, label: string) => {
+      const g = k.score_grondslag[naam];
+      return `<tr><th>${esc(label)}</th><td><span class="num">${g?.score ?? "?"}</span>
+        <div class="klein">${esc(g?.reden ?? "geen grondslag vastgelegd")}</div></td></tr>`;
+    };
+
+    res.send(
+      pagina({
+        titel: `Kans ${k.id}`,
+        huidigPad: "/kansen",
+        gebruiker: req.gebruiker ?? null,
+        inhoud: `
+<p class="klein"><a href="/kansen">&larr; alle kansen</a></p>
+<h1>${esc(k.opdrachtgever)}</h1>
+<p class="uitleg">${esc(k.project)}</p>
+
+<h2>Feiten</h2>
+<p class="klein">Wat de bron zelf meldt. Niets op deze regel is onze interpretatie.</p>
+<table class="paren">
+  ${feit("Opdrachtgever", k.opdrachtgever)}
+  ${feit("Kenmerk", k.referentie)}
+  ${feit("Procedure", k.procedure_soort)}
+  ${feit("Fase", k.fase ? faseLabelVan(k.fase) : null)}
+  ${feit("Sluit op", k.sluit_op)}
+  ${feit("Omvang", k.opdracht_omvang)}
+  ${feit("Locatie", k.locatie)}
+  ${feit("Gestelde eisen", k.eisen.length > 0 ? k.eisen.join("; ") : null)}
+</table>
+
+<h2>Wat niet bekend is${k.ontbrekend.length > 0 ? ` — ${k.ontbrekend.length} veld(en)` : ""}</h2>
+<p class="klein">Elk leeg veld is een onderzoeksvraag, niet een nul.</p>
+${k.ontbrekend.length === 0
+  ? "<p>Het dossier is volledig.</p>"
+  : `<ul>${k.ontbrekend.map((o) => `<li>${esc(o)}</li>`).join("")}</ul>`}
+
+<h2>Gevolgtrekkingen</h2>
+<p class="klein">Onze inschatting op vier losse assen. Ze staan apart omdat ze verschillende
+dingen meten: een aanbesteding kan zeer relevant zijn met een laag vertrouwen.</p>
+<table class="paren">
+  ${as("relevantie", "Relevantie")}
+  ${as("vertrouwen", "Vertrouwen")}
+  ${as("urgentie", "Urgentie")}
+  ${as("handelbaar", "Handelbaar")}
+  <tr><th>Raakt onze oplossingen</th><td>${
+    k.relevante_oplossingen.length > 0
+      ? esc(k.relevante_oplossingen.join(", "))
+      : '<span class="onbekend">ONBEKEND</span>'
+  }<div class="klein">Dit is een gevolgtrekking uit het onderwerp, geen vastgestelde behoefte.</div></td></tr>
+  <tr><th>Interesse bewezen</th><td>${k.interesse_bewezen ? "ja" : "nee"}
+    <div class="klein">Een openbare aankondiging is geen bewijs dat deze organisatie iets van
+    Vibe Energy wil. Dit kan de pijplijn niet zetten.</div></td></tr>
+</table>
+
+<h2>Publicaties — ${pubs.length}</h2>
+<p class="klein">Samengenomen op: ${esc(k.identiteit_grondslag ?? k.identiteit ?? "ONBEKEND")}</p>
+${tabel(
+  ["Gepubliceerd", "Soort", "Relatie", "Gemelde termijn", "Bron"],
+  pubs.map((p) => [
+    esc(p.gepubliceerd_op ?? "onbekend"),
+    esc(p.publicatie_soort ?? "?"),
+    `${esc(p.relatie)}${p.relatie_grondslag ? `<div class="klein">${esc(p.relatie_grondslag)}</div>` : ""}`,
+    p.sluitingsdatum_bron
+      ? `${esc(p.sluitingsdatum_bron)}${
+          k.sluit_op && p.sluitingsdatum_bron !== k.sluit_op
+            ? '<div class="klein">vervangen door een latere publicatie</div>'
+            : ""
+        }`
+      : '<span class="onbekend">geen</span>',
+    `<a href="${esc(p.url)}" rel="noopener nofollow noreferrer" target="_blank">aankondiging</a>`,
+  ]),
+)}
+
+<h2>Hoe de fase is vastgesteld</h2>
+<ul class="klein">${k.fase_grondslag.map((g) => `<li>${esc(g)}</li>`).join("") || "<li>niet vastgelegd</li>"}</ul>
+
+<h2>Aanbeveling</h2>
+<p>${esc(k.aanbevolen_actie ?? "geen")}</p>
+<p class="uitleg">Deze aanbeveling gaat altijd over het vaststellen van feiten, nooit over het
+benaderen van een organisatie. Dit platform verstuurt geen berichten, schrijft niet in op
+aanbestedingen en legt niets vast in een extern systeem. Dat vraagt een apart menselijk besluit.</p>`,
+      }),
+    );
+  }));
 
   app.get("/signalen", async_(vereistInlog), vereistRecht("signaal.lezen"), async_(async (req: MetGebruiker, res) => {
     const d = await alsGebruiker(req, (c) =>

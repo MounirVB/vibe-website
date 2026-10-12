@@ -154,10 +154,70 @@ describe("allowlist, budget en onderbreker", () => {
     assert.match(nee.reden, /staat niet op de allowlist/);
   });
 
-  test("zonder plafond mag alles, en dat wordt gemeld", async () => {
-    const b = await metOrganisatie(db.pool, { organisatieId: org }, (c) => budgetStand(c, org));
-    assert.equal(b.mag, true);
-    assert.match(b.reden, /geen actief kostenplafond/);
+  test("zonder plafond mag een BETAALDE aanroep niet, en dat wordt gemeld", async () => {
+    /* DEZE TOETS STOND OMGEKEERD, en zijn oude naam zei het zelf:
+       "zonder plafond mag alles". Dat was de gemeten werkelijkheid —
+       budgetStand() gaf `mag: true` met de reden "geen actief
+       kostenplafond ingesteld" — en dus was een ontbrekende grens een
+       vrijbrief in plaats van een weigering. De enige rem was dat de
+       modelallowlist leeg stond; twee onafhankelijke grendels waarvan
+       deze de verkeerde kant op viel.
+
+       Een betaalde provider zonder maandplafond hoort geweigerd te
+       worden: zonder grens is de rekening onbegrensd. */
+    const betaald = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      budgetStand(c, org, true),
+    );
+    assert.equal(betaald.mag, false, "een betaalde aanroep zonder plafond hoort geweigerd");
+    assert.match(betaald.reden, /geen actief kostenplafond/);
+    assert.match(betaald.reden, /weigering|onbegrensd/);
+
+    /* De deterministische weg raakt dit niet: daar valt niets te
+       begrenzen, en die mag dus wel. */
+    const gratis = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      budgetStand(c, org, false),
+    );
+    assert.equal(gratis.mag, true, "deterministisch genereren hoort niet door de geldgrendel");
+    assert.match(gratis.reden, /geen kosten|deterministisch/);
+  });
+
+  test("een tokenplafond is geen geldplafond", async () => {
+    /* Par. 18 verbiedt expliciet een tokenlimiet te lezen als een
+       gegarandeerde geldlimiet. Met een actief plafond dat WEL tokens
+       begrenst maar GEEN bedrag, hoort een betaalde aanroep te worden
+       geweigerd.
+
+       Dit draait op een TWEEDE ORGANISATIE in dezelfde database, niet op
+       een tweede wegwerpdatabase: harnas.opruimen() roept
+       sluitAllePools() aan en sluit daarmee elke pool in het proces,
+       ook die van deze suite. */
+    const org2 = await maakOrganisatie(db, "ai-org-tokenplafond");
+    await metOrganisatie(db.pool, { organisatieId: org2 }, (c) =>
+      c.query(
+        `insert into intel.kostenplafonds
+           (organisatie_id, max_ai_aanroepen_per_dag, max_tokens_uit_per_dag,
+            max_bron_ophalingen_per_dag, max_concurrency, max_tokens_uit_per_maand, actief)
+         values ($1, 200, 100000, 1000, 4, 4000000, true)`,
+        [org2],
+      ),
+    );
+    const b = await metOrganisatie(db.pool, { organisatieId: org2 }, (c) =>
+      budgetStand(c, org2, true),
+    );
+    assert.equal(b.mag, false, "tokens begrenzen de rekening niet");
+    assert.match(b.reden, /MONETAIR|geen tarief/i);
+
+    /* En met een bedrag erbij mag het wel. */
+    await metOrganisatie(db.pool, { organisatieId: org2 }, (c) =>
+      c.query(
+        `update intel.kostenplafonds set max_kosten_per_maand = 50 where organisatie_id = $1`,
+        [org2],
+      ),
+    );
+    const metBedrag = await metOrganisatie(db.pool, { organisatieId: org2 }, (c) =>
+      budgetStand(c, org2, true),
+    );
+    assert.equal(metBedrag.mag, true, `met een monetair plafond hoort het te mogen: ${metBedrag.reden}`);
   });
 
   test("het dagplafond blokkeert", async () => {

@@ -101,6 +101,19 @@ button {
 details { background: var(--vlak); border: 1px solid var(--rand); border-radius: 8px; padding: 10px 12px; margin-top: 8px; }
 summary { cursor: pointer; font-size: 14px; }
 code { background: #eef2f6; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+/* ONBEKEND is een eerste-klas waarde in dit systeem en hoort er ook zo
+   uit te zien: niet als een leeg vakje dat je over het hoofd ziet. */
+.onbekend { color: #8a5a00; background: #fff6e5; border: 1px solid #f0d9a8;
+            border-radius: 4px; padding: 0 5px; font-size: 12px; font-weight: 600; }
+.dringend { color: #a11; font-weight: 700; }
+pre.diff { background: #f4fbf4; border-left: 3px solid #3a7; padding: 8px 10px; overflow-x: auto;
+           font-size: 13px; white-space: pre-wrap; border-radius: 4px; }
+.binnenkort { color: #a56a00; font-weight: 600; }
+table.paren { width: 100%; border-collapse: collapse; margin-top: 8px; }
+table.paren th { text-align: left; width: 210px; vertical-align: top; padding: 6px 10px 6px 0;
+                 border-bottom: 1px solid var(--rand); font-weight: 600; font-size: 13px; }
+table.paren td { padding: 6px 0; border-bottom: 1px solid var(--rand); font-size: 14px; }
+h2 { font-size: 16px; margin-top: 26px; padding-bottom: 4px; border-bottom: 2px solid var(--rand); }
 `;
 
 export type NavItem = { pad: string; naam: string; recht: string | null };
@@ -110,6 +123,10 @@ export const NAVIGATIE: readonly NavItem[] = [
   { pad: "/radar", naam: "Market Radar", recht: null },
   { pad: "/studio", naam: "Content Studio", recht: "inhoud.lezen" },
   { pad: "/regio", naam: "Regio", recht: "inhoud.lezen" },
+  /* KANSEN staat VOOR signalen: een kans is wat je oppakt, een signaal
+     is de publicatie eronder. Release 3.0 maakt dat onderscheid, en de
+     volgorde in de navigatie hoort het te volgen. */
+  { pad: "/kansen", naam: "Kansen", recht: "signaal.lezen" },
   { pad: "/signalen", naam: "Commerciële signalen", recht: "signaal.lezen" },
   { pad: "/distributie", naam: "Distributie", recht: "distributie.concept" },
   { pad: "/prestaties", naam: "Prestaties", recht: "inhoud.lezen" },
