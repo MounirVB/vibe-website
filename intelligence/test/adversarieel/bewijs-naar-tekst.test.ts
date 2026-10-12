@@ -215,6 +215,34 @@ describe("bewijs naar tekst — adversarieel", () => {
     assert.match(p.uitslag.reden, /vergelijk|basis/i);
   });
 
+  test("8c. een tegenstrijdige richting blokkeert", () => {
+    /* HET ECHTE GEVAL, gemeten in productie na de eerste uitrol van deze
+       release. De bron noemt een SYMMETRISCHE onzekerheid:
+
+         "vallen netkosten gemiddeld genomen 10% voordeliger of 10%
+          nadeliger uit"
+
+       en de zin die eruit kwam was "Volgens Netbeheer Nederland daalt
+       het nettarief met 10%." Een vaste daling waar de bron beide kanten
+       openlaat. De richtingsherkenning toetste daling vóór stijging en
+       gaf bij de eerste match terug, dus zag het conflict nooit. */
+    const p = poortVoor(
+      "In sectoren waarin afnameprofielen niet kunnen wijzigen, vallen netkosten gemiddeld " +
+        "genomen 10% voordeliger of 10% nadeliger uit.",
+    );
+    assert.equal(p.semantiek.richting, null, "bij beide richtingen hoort er geen richting te zijn");
+    assert.equal(p.uitslag.uitslag, "CONTEXT_ONVOLLEDIG");
+    assert.equal(p.zin(), null, "er mag geen zin uitkomen");
+
+    /* En een eenduidige richting blijft wel werken. */
+    for (const [zin, verwacht] of [
+      ["De nettarieven voor kleinverbruikers stijgen met 8%.", "stijging"],
+      ["De tarieven voor grootverbruikers dalen met 4,5%.", "daling"],
+    ] as const) {
+      assert.equal(poortVoor(zin).semantiek.richting, verwacht, zin);
+    }
+  });
+
   /* ---------- 9 ---------- */
   test("9. promptinjectie in de brontekst verandert niets", () => {
     const kwaad =

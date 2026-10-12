@@ -223,12 +223,37 @@ function herkenSubject(zin: string): { sleutel: string; via: string } | null {
   return null;
 }
 
+/* Woorden die een richting aangeven maar niet als werkwoord: 'voordeliger',
+   'nadeliger', 'hoger', 'lager'. Deze horen bij de ambiguïteitstoets. */
+const GUNSTIGER = /voordeliger|gunstiger|lager\b|goedkoper/i;
+const ONGUNSTIGER = /nadeliger|ongunstiger|hoger\b|duurder/i;
+
+/**
+ * De richting van de verandering.
+ *
+ * GEEFT NULL BIJ TEGENSTRIJDIGE AANWIJZINGEN. De eerste versie toetste
+ * daling vóór stijging en gaf bij de eerste match terug, waardoor hij
+ * een conflict nooit zag. Gemeten in productie:
+ *
+ *   bron "vallen netkosten gemiddeld genomen 10% voordeliger OF 10%
+ *         nadeliger"
+ *   zin  "Volgens Netbeheer Nederland daalt het nettarief met 10%."
+ *
+ * De bron noemt een symmetrische onzekerheid — 10% beter of 10%
+ * slechter — en onze zin maakte er een vaste daling van. Staan beide
+ * richtingen in de zin, dan is de richting niet vast te stellen, en dan
+ * is er bij een percentage geen predicaat en dus geen zin.
+ */
 function herkenRichting(zin: string): Richting | null {
   if (ONGEWIJZIGD.test(zin)) return "ongewijzigd";
-  /* Daling eerst: 'minder stijging' bestaat, en 'minder' is explicieter
-     dan de losse 'meer' in STIJGING. */
-  if (DALING.test(zin)) return "daling";
-  if (STIJGING.test(zin)) return "stijging";
+
+  const omhoog = STIJGING.test(zin) || ONGUNSTIGER.test(zin);
+  const omlaag = DALING.test(zin) || GUNSTIGER.test(zin);
+
+  /* Beide kanten genoemd: niet vast te stellen. */
+  if (omhoog && omlaag) return null;
+  if (omlaag) return "daling";
+  if (omhoog) return "stijging";
   return null;
 }
 
@@ -299,6 +324,9 @@ export function leidSemantiekAf(zin: string, u: Uitdrukking): Semantiek {
   if (s) grondslag.push(`subject '${s.sleutel}' via "${s.via}"`);
   const richting = herkenRichting(zin);
   if (richting) grondslag.push(`richting '${richting}'`);
+  else if (/\bof\b/i.test(zin) && (STIJGING.test(zin) || DALING.test(zin) || GUNSTIGER.test(zin) || ONGUNSTIGER.test(zin))) {
+    grondslag.push("richting niet vast te stellen: de zin noemt beide kanten");
+  }
 
   const soort = soortVan(u.eenheid, f?.sleutel ?? null);
   let g = soort === "percentage" ? herkenGrondtal(zin) : null;
