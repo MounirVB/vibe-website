@@ -69,6 +69,7 @@ export const TAAKSOORTEN = [
   "beoordelen",
   "regio",
   "signaleren",
+  "backup",
 ] as const;
 
 const REGISTER: Record<string, Handler> = {
@@ -103,6 +104,97 @@ const REGISTER: Record<string, Handler> = {
     const { maakSignalen } = await import("../commercieel/signalen.ts");
     const r = await maakSignalen(pool, organisatieId, {});
     return `signalen nieuw ${r.signalenNieuw}, bijgewerkt ${r.signalenBijgewerkt}`;
+  },
+
+  /**
+   * De dagelijkse back-up, met de externe kopie erbij.
+   *
+   * DEZE TAAK DRAAIT ALS OPERATOR EN NIET ALS APPLICATIEROL. De
+   * applicatierol mag intel.migraties niet lezen en bezit niets — dat
+   * is het hele punt van die rol — en pg_dump heeft die leesrechten
+   * nodig. Daarom een eigen pool zonder SET ROLE, net als de
+   * back-up-CLI doet.
+   *
+   * DE TAAK FAALT ALS DE EXTERNE KOPIE NIET LUKT. Dat is bewust: een
+   * back-up die alleen op de containerschijf staat, is op Railway na de
+   * volgende deploy weg. Zou deze taak dan 'gereed' melden, dan zou de
+   * wachtrij succes rapporteren voor iets dat geen retentie oplevert.
+   * Nu loopt hij door de backoff en eindigt hij in de dlq, waar een
+   * mens hem ziet.
+   */
+  async backup(organisatieId) {
+    const [{ maakBackup, KRITIEKE_TABELLEN }, { gcsConfigUitOmgeving, uploadNaarGcs }, { readFile }, { basename, join }, { APP_WORTEL, configLezen }] =
+      await Promise.all([
+        import("../ops/backup.ts"),
+        import("../ops/gcsopslag.ts"),
+        import("node:fs/promises"),
+        import("node:path"),
+        import("../kern/config.ts"),
+      ]);
+    const { maakPool: maakEigenPool, zonderOrganisatie, rijen: leesRijen } = await import("../kern/db.ts");
+    const config = configLezen();
+
+    const eigenaarPool = maakEigenPool({ rol: null, max: 2 });
+    const info = await zonderOrganisatie(eigenaarPool, (c) =>
+      leesRijen<{ versie: string; naam: string; migraties: number }>(
+        c,
+        `select current_setting('server_version') as versie,
+                current_database()                as naam,
+                (select count(*)::int from intel.migraties) as migraties`,
+      ),
+    );
+    const meta = info[0];
+    if (!meta) throw new Error("kon de databasegegevens niet lezen voor de back-up");
+
+    const tellingen: Record<string, number> = {};
+    for (const tabel of KRITIEKE_TABELLEN) {
+      const r = await zonderOrganisatie(eigenaarPool, (c) =>
+        leesRijen<{ n: number }>(c, `select count(*)::int as n from ${tabel}`),
+      );
+      tellingen[tabel] = r[0]?.n ?? 0;
+    }
+
+    const doelmap = join(APP_WORTEL, "backups");
+    const stempel = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+    const uit = await maakBackup({
+      databaseUrl: config.databaseUrl,
+      doelmap,
+      stempel,
+      retentieDagen: 30,
+      tellingen,
+      serverVersie: meta.versie,
+      migraties: meta.migraties,
+      databaseNaam: meta.naam,
+    });
+
+    const gcs = gcsConfigUitOmgeving();
+    if (!gcs) {
+      throw new Error(
+        "back-up gemaakt maar er is GEEN externe bestemming (INTEL_GCS_BUCKET/INTEL_GCS_SLEUTEL). " +
+          "Op een ephemere schijf is dat geen retentie; deze taak faalt daarom bewust.",
+      );
+    }
+    const dumpNaam = basename(uit.dumpPad);
+    const o = await uploadNaarGcs(
+      gcs,
+      dumpNaam,
+      await readFile(uit.dumpPad),
+      "application/octet-stream",
+    );
+    await uploadNaarGcs(
+      gcs,
+      `${dumpNaam}.manifest.json`,
+      await readFile(`${uit.dumpPad}.manifest.json`),
+      "application/json",
+    );
+    if (o.sha256 !== uit.manifest.sha256) {
+      throw new Error(`de kopie in gs://${gcs.bucket} wijkt af van het manifest`);
+    }
+    void organisatieId;
+    return (
+      `dump ${Math.round(uit.manifest.bytes / 1024)} kB, ${uit.manifest.migraties} migraties, ` +
+      `extern in gs://${gcs.bucket} (sha ${o.sha256.slice(0, 12)})`
+    );
   },
 };
 

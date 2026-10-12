@@ -168,7 +168,31 @@ export type Slot = {
  * inlog wist de teller.
  */
 export function maakSlot(opties: SlotOpties): Slot {
-  const staat = new Map<string, { pogingen: number; totMs: number }>();
+  const staat = new Map<string, { pogingen: number; totMs: number; laatstMs: number }>();
+
+  /**
+   * Zonder deze opruiming groeit `staat` onbeperkt.
+   *
+   * De sleutel is het INGEZONDEN e-mailadres, dus een aanvaller die niet
+   * is ingelogd bepaalt hem zelf: tienduizend verzonnen adressen zijn
+   * tienduizend invoeren die nooit meer verdwijnen. `isOpSlot` ruimt
+   * alleen op als er een slot WAS en dat verlopen is; een adres dat
+   * onder maxPogingen blijft, blijft eeuwig staan. maakBegrenzer
+   * hieronder had deze opruiming al wel — dit sluit het verschil.
+   *
+   * VERGEETVENSTER: een invoer zonder actief slot waarvan de laatste
+   * poging langer dan `slotMs` geleden is, draagt geen informatie meer.
+   * De teller zou bij de volgende poging toch bij 1 beginnen.
+   */
+  const DREMPEL = 10_000;
+  function ruimOp(): void {
+    const nu = Date.now();
+    for (const [sleutel, s] of staat) {
+      const slotVerlopen = s.totMs !== 0 && s.totMs <= nu;
+      const vergeten = s.totMs === 0 && nu - s.laatstMs > opties.slotMs;
+      if (slotVerlopen || vergeten) staat.delete(sleutel);
+    }
+  }
 
   return {
     isOpSlot(sleutel) {
@@ -183,8 +207,10 @@ export function maakSlot(opties: SlotOpties): Slot {
       return { opSlot: false, overMs: 0 };
     },
     misluktePoging(sleutel) {
-      const s = staat.get(sleutel) ?? { pogingen: 0, totMs: 0 };
+      if (staat.size > DREMPEL) ruimOp();
+      const s = staat.get(sleutel) ?? { pogingen: 0, totMs: 0, laatstMs: 0 };
       s.pogingen += 1;
+      s.laatstMs = Date.now();
       if (s.pogingen >= opties.maxPogingen) {
         s.totMs = Date.now() + opties.slotMs;
         s.pogingen = 0;

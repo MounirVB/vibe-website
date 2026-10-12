@@ -250,12 +250,41 @@ export function veiligeInline(tekst: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
+    /* `"` en `'` MOETEN hier ook weg. Zonder deze twee regels sluit een
+       URL het href-attribuut af en opent hij een nieuw attribuut:
+         [Lees meer](/nieuws/x" onmouseover="alert(1))
+       De schemacontrole hieronder liet dat door, want de string begint
+       netjes met `/`. Gemeten: dit leverde een werkend onmouseover op. */
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>")
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, label: string, u: string) => {
-      const veilig = /^(\/|https:\/\/)/.test(u) ? u : "#";
-      return `<a href="${veilig}">${label}</a>`;
+      return `<a href="${veiligeLinkdoel(u)}">${label}</a>`;
     });
+}
+
+/**
+ * Het doel van een link, of `#` als er iets aan mankeert.
+ *
+ * Drie eisen, en elke eis dekt een andere faalwijze:
+ *
+ *  1. het schema is een eigen pad (`/…`) of expliciet `https://` —
+ *     dat houdt `javascript:` en `data:` buiten;
+ *  2. er zit geen attribuutbrekend of ruimtelijk teken in — dat houdt
+ *     een tweede attribuut buiten, ook als de escapestap ooit verandert;
+ *  3. er zit geen reeds geëscapeerde quote in (`&quot;` of `&#39;`) —
+ *     die zou een browser in een attribuutwaarde weer als quote lezen.
+ *
+ * De derde eis bestaat omdat deze functie NA het escapen loopt: een
+ * rauwe `"` is dan al `&quot;`, en alleen op de rauwe vorm toetsen zou
+ * dus niets vinden.
+ */
+function veiligeLinkdoel(u: string): string {
+  if (!/^(\/|https:\/\/)/.test(u)) return "#";
+  if (/["'<>`\\\s]/.test(u)) return "#";
+  if (/&quot;|&#39;|&lt;|&gt;/.test(u)) return "#";
+  return u;
 }
 
 /**

@@ -28,6 +28,7 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import type pg from "pg";
 import { rijen } from "../kern/db.ts";
+import { gcsConfigUitOmgeving, lijstGcs } from "./gcsopslag.ts";
 
 export type Niveau = "OK" | "LET OP" | "FOUT" | "NIET GEMETEN";
 
@@ -57,6 +58,16 @@ export const DREMPELS = {
   budgetWaarschuwingPct: 80,
   /** Accountblokkades in dit venster. */
   authVensterUren: 24,
+  /**
+   * De planner hoort elk uur te draaien (cron `0 * * * *` op
+   * vibe-intel-planner, zie deploy/railway.md). Twee uur is dus één
+   * gemist venster plus marge.
+   *
+   * Deze stond als losse `2` midden in de code terwijl elke andere
+   * drempel hier staat, mét onderbouwing. Een drempel die je niet op
+   * één plek kunt vinden, wordt bij de volgende wijziging vergeten.
+   */
+  plannerHartslagUren: 2,
 } as const;
 
 function urenSinds(d: Date | string | null): number | null {
@@ -226,13 +237,18 @@ export async function meetGezondheid(
   voeg({
     groep: "planner",
     naam: "hartslag",
-    niveau: plannerUren === null ? "NIET GEMETEN" : plannerUren <= 2 ? "OK" : "FOUT",
+    niveau:
+      plannerUren === null
+        ? "NIET GEMETEN"
+        : plannerUren <= DREMPELS.plannerHartslagUren
+          ? "OK"
+          : "FOUT",
     meting:
       plannerUren === null
         ? "nog nooit gedraaid"
         : `laatste run ${plannerUren.toFixed(1)} uur geleden (${planner[0]?.n} runs totaal)`,
     advies:
-      plannerUren !== null && plannerUren > 2
+      plannerUren !== null && plannerUren > DREMPELS.plannerHartslagUren
         ? "de planner hoort elk uur te draaien; staat de cron aan?"
         : undefined,
   });
@@ -465,6 +481,63 @@ export async function meetGezondheid(
       meting: "geen bewijs van een restoretest gevonden",
       advies: `npm run restoretest — hoort minstens elke ${DREMPELS.restoretestLeeftijdDagen} dagen`,
     });
+  }
+
+  /* ---------------- externe kopie ---------------- */
+  /* DIT IS HET SIGNAAL DAT HET VERSCHIL MEET tussen "er is een back-up
+     gemaakt" en "er ligt een back-up". De lokale map is op Railway een
+     containerschijf: na een deploy is hij leeg, en dan meldden de twee
+     signalen hierboven NIET GEMETEN terwijl het echte archief prima in
+     de bucket staat. Omgekeerd kan de lokale map vol staan terwijl er
+     niets buiten de machine bewaard is. Alleen deze meting zegt iets
+     over herstelbaarheid na verlies van de machine. */
+  const gcs = gcsConfigUitOmgeving();
+  if (!gcs) {
+    voeg({
+      groep: "backup",
+      naam: "externe kopie",
+      niveau: "NIET GEMETEN",
+      meting: "INTEL_GCS_BUCKET en/of INTEL_GCS_SLEUTEL ontbreken",
+      advies:
+        "zonder externe bestemming is er geen retentie: de containerschijf is na een deploy leeg",
+    });
+  } else {
+    try {
+      const objecten = (await lijstGcs(gcs, "vibe-intel-")).filter((o) => o.naam.endsWith(".dump"));
+      const nieuwste = objecten[objecten.length - 1];
+      if (!nieuwste) {
+        voeg({
+          groep: "backup",
+          naam: "externe kopie",
+          niveau: "FOUT",
+          meting: `gs://${gcs.bucket} bevat geen enkele dump`,
+          advies: "npm run backup — de bucket bestaat maar is leeg",
+        });
+      } else {
+        const uren = (Date.now() - new Date(nieuwste.gemaaktOp).getTime()) / 3_600_000;
+        voeg({
+          groep: "backup",
+          naam: "externe kopie",
+          niveau: uren <= DREMPELS.backupLeeftijdUren ? "OK" : "FOUT",
+          meting:
+            `${objecten.length} dump(s) in gs://${gcs.bucket}, nieuwste ${uren.toFixed(1)} uur oud ` +
+            `(${Math.round(nieuwste.bytes / 1024)} kB)`,
+          advies:
+            uren > DREMPELS.backupLeeftijdUren
+              ? `ouder dan ${DREMPELS.backupLeeftijdUren} uur; de RPO van 24 uur wordt niet gehaald`
+              : undefined,
+        });
+      }
+    } catch (e) {
+      /* Een onbereikbare bucket is GEEN stilzwijgende OK. */
+      voeg({
+        groep: "backup",
+        naam: "externe kopie",
+        niveau: "FOUT",
+        meting: `gs://${gcs.bucket} niet te lezen: ${(e as Error).message.slice(0, 120)}`,
+        advies: "controleer INTEL_GCS_SLEUTEL en de rechten op de bucket",
+      });
+    }
   }
 
   return uit;

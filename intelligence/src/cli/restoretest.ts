@@ -7,6 +7,8 @@
      npm run restoretest -- --doel-url <beheer-url>
                                          restore naar een WEGWERPDATABASE
                                          op een bestaande server
+     npm run restoretest -- --uit-gcs    haal de nieuwste dump UIT DE
+                                         bucket en zet DIE terug
 
    DIT IS HET ENIGE BEWIJS DAT EEN BACK-UP WERKT.
    Een geslaagde `pg_dump` bewijst dat er een bestand is. Een geslaagde
@@ -45,13 +47,15 @@
    ============================================================ */
 
 import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import { readdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import pg from "pg";
 import { laadEnvBestand, APP_WORTEL } from "../kern/config.ts";
-import { vindPgGereedschap, type BackupManifest } from "../ops/backup.ts";
+import { KRITIEKE_TABELLEN, vindPgGereedschap, type BackupManifest } from "../ops/backup.ts";
+import { downloadUitGcs, gcsConfigUitOmgeving, lijstGcs } from "../ops/gcsopslag.ts";
 
 const uitvoeren = promisify(execFile);
 laadEnvBestand();
@@ -124,10 +128,54 @@ async function containerLeeft(): Promise<boolean> {
 
 let containerGestart = false;
 let wegwerpDbGemaakt = false;
+/* Pad van een uit de bucket gehaalde dump; wordt na de test opgeruimd. */
+let uitGcsGehaald: string | null = null;
 
 try {
   /* ---------------- de back-up kiezen ---------------- */
   let dumpPad = waarde("dump") ? resolve(waarde("dump")!) : null;
+
+  /* `--uit-gcs` haalt de nieuwste dump UIT DE BUCKET en zet die terug.
+     Dat is een wezenlijk ander bewijs dan de lokale vorm: het toetst de
+     hele keten waar het op aankomt — dump, upload, retentie, OPHALEN en
+     restore — in plaats van alleen het deel dat op deze schijf staat.
+     Een archief dat je niet kunt terughalen is geen back-up. */
+  if (heeft("uit-gcs")) {
+    if (dumpPad) throw new Error("--dump en --uit-gcs sluiten elkaar uit");
+    const gcs = gcsConfigUitOmgeving();
+    if (!gcs) {
+      throw new Error(
+        "--uit-gcs vraagt INTEL_GCS_BUCKET en INTEL_GCS_SLEUTEL; zonder credential is er geen externe kopie om te toetsen",
+      );
+    }
+    const inBucket = (await lijstGcs(gcs, "vibe-intel-")).filter((o) => o.naam.endsWith(".dump"));
+    const nieuwste = inBucket[inBucket.length - 1];
+    if (!nieuwste) throw new Error(`geen .dump in gs://${gcs.bucket}. Draai eerst 'npm run backup'.`);
+
+    await mkdir(DOELMAP, { recursive: true });
+    const lokaal = join(DOELMAP, `uit-gcs-${nieuwste.naam}`);
+    const dumpBytes = await downloadUitGcs(gcs, nieuwste.naam);
+    const manifestBytes = await downloadUitGcs(gcs, `${nieuwste.naam}.manifest.json`);
+    await writeFile(lokaal, dumpBytes);
+    await writeFile(`${lokaal}.manifest.json`, manifestBytes);
+
+    /* De som uit het MEEGEHAALDE manifest tegen de MEEGEHAALDE bytes.
+       Dit is de controle die bewijst dat de bucket geen stille bitrot of
+       halve upload bevat. */
+    const mani = JSON.parse(manifestBytes.toString("utf8")) as BackupManifest;
+    const som = createHash("sha256").update(dumpBytes).digest("hex");
+    if (som !== mani.sha256) {
+      throw new Error(
+        `de dump uit gs://${gcs.bucket} klopt niet met zijn manifest: ${som} tegen ${mani.sha256}`,
+      );
+    }
+    console.log("");
+    console.log(`uit gs://${gcs.bucket} gehaald: ${nieuwste.naam}`);
+    console.log(`  bytes ${dumpBytes.byteLength}, sha256 ${som} — klopt met het manifest`);
+    uitGcsGehaald = lokaal;
+    dumpPad = lokaal;
+  }
+
   if (!dumpPad) {
     if (!existsSync(DOELMAP)) throw new Error(`geen back-upmap: ${DOELMAP}. Draai eerst 'npm run backup'.`);
     const d = (await readdir(DOELMAP)).filter((b) => b.endsWith(".dump")).sort();
@@ -230,16 +278,44 @@ try {
      --no-owner gemaakt, maar RLS-policies en grants verwijzen bij naam
      naar rollen; die moeten dus eerst bestaan. Dit is precies de stap
      die een restoreprocedure zonder test mist. */
-  for (const rol of ["vibe_intel_app", "vibe_intel_lezer", "vibe_intel_onderhoud"]) {
-    await uitvoeren(gereedschap.psql, [
-      doelUrl,
-      "-v",
-      "ON_ERROR_STOP=1",
-      "-c",
-      `do $$ begin if not exists (select 1 from pg_roles where rolname = '${rol}') then create role ${rol} nologin; end if; end $$;`,
+  /* EEN ROL IS CLUSTERBREED, GEEN DATABASEOBJECT.
+     In de Docker-vorm is dat onschuldig: de hele server wordt daarna
+     weggegooid. Bij `--doel-url` staat de server er NA de test nog, en
+     dat is de productieserver. Rollen die wij daar aanmaken blijven dan
+     achter — buiten de wegwerpdatabase, dus buiten de isolatie die dit
+     bestand belooft.
+     Daarom: bij een bestaande server maken we NIETS aan. De rollen horen
+     daar al te bestaan, want de migraties hebben ze gezet. Ontbreken ze,
+     dan is dat een echte bevinding over die server en geen reden om er
+     stilletjes iets bij te zetten. */
+  if (NAAR_BESTAANDE_SERVER) {
+    const { stdout } = await uitvoeren(gereedschap.psql, [
+      doelUrl, "-At", "-c",
+      `select rolname from pg_roles where rolname in ('vibe_intel_app','vibe_intel_lezer','vibe_intel_onderhoud') order by 1`,
     ]);
+    const aanwezig = stdout.split("\n").map((r) => r.trim()).filter(Boolean);
+    const ontbreekt = ["vibe_intel_app", "vibe_intel_lezer", "vibe_intel_onderhoud"]
+      .filter((r) => !aanwezig.includes(r));
+    if (ontbreekt.length) {
+      throw new Error(
+        `de doelserver mist applicatierol(len) ${ontbreekt.join(", ")}. ` +
+          `Deze test maakt op een BESTAANDE server geen rollen aan, want een rol is ` +
+          `clusterbreed en zou na de test achterblijven. Draai eerst de migraties.`,
+      );
+    }
+    console.log(`  applicatierollen bestaan al op de doelserver (${aanwezig.length}); niets aangemaakt`);
+  } else {
+    for (const rol of ["vibe_intel_app", "vibe_intel_lezer", "vibe_intel_onderhoud"]) {
+      await uitvoeren(gereedschap.psql, [
+        doelUrl,
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-c",
+        `do $$ begin if not exists (select 1 from pg_roles where rolname = '${rol}') then create role ${rol} nologin; end if; end $$;`,
+      ]);
+    }
+    console.log("  applicatierollen aangemaakt in de wegwerpcontainer (de dump draagt geen rollen)");
   }
-  console.log("  applicatierollen aangemaakt (de dump draagt geen rollen)");
 
   const { stderr: restoreFout } = await uitvoeren(
     gereedschap.pgRestore,
@@ -267,14 +343,38 @@ try {
       `${mig?.n} teruggezet tegen ${manifest.migraties} in het manifest`,
     );
 
+    /* De tabelnaam komt uit een manifestBESTAND op schijf en gaat in een
+       identifierpositie, waar een parameter niet kan. Zonder de toets
+       hieronder is dat SQL-injectie: `--dump <pad>` bepaalt welk manifest
+       gelezen wordt, en node-pg stuurt een query ZONDER parameters via het
+       simple protocol, dat meerdere statements achter een puntkomma
+       uitvoert. Een manifest met de sleutel
+       `intel.x; drop table intel.taken; --` zou dus draaien.
+
+       Daarom niet alleen een vormtoets maar een WITTE LIJST: de naam moet
+       in KRITIEKE_TABELLEN staan, de constante die maakBackup() ook
+       gebruikt om het manifest te vullen. Een manifest dat iets anders
+       noemt, is per definitie niet door onze back-up geschreven. */
+    const toegestaneTabellen = new Set<string>(KRITIEKE_TABELLEN);
     let tellingenOk = true;
+    const geweigerd: string[] = [];
     for (const [tabel, verwacht] of Object.entries(manifest.tellingen)) {
-      const r = await een<{ n: number }>(`select count(*)::int as n from ${tabel}`);
+      if (!toegestaneTabellen.has(tabel) || !/^intel\.[a-z_]+$/.test(tabel)) {
+        geweigerd.push(tabel);
+        tellingenOk = false;
+        console.log(`    GEWEIGERD ${tabel} — staat niet in KRITIEKE_TABELLEN`);
+        continue;
+      }
+      const r = await een<{ n: number }>(`select count(*)::int as n from ${tabel} where true`);
       const ok = r?.n === verwacht;
       if (!ok) tellingenOk = false;
       console.log(`    ${ok ? "ok  " : "MIS "} ${tabel.padEnd(32)} ${r?.n} / ${verwacht}`);
     }
-    toets("elke kritieke tabel heeft exact de rijtelling uit het manifest", tellingenOk);
+    toets(
+      "elke kritieke tabel heeft exact de rijtelling uit het manifest",
+      tellingenOk,
+      geweigerd.length ? `${geweigerd.length} tabelnaam/namen geweigerd: ${geweigerd.join(", ")}` : "",
+    );
 
     /* Goedkeuringen MET hun context, niet alleen de rij. */
     const g = await een<{ totaal: number; met_naam: number; met_afdruk: number }>(
@@ -454,7 +554,16 @@ try {
     /* Major 0: een `drop database` stelt geen eisen aan de clientversie,
        anders dan een dump. Elke psql in PATH is hier goed genoeg. */
     const g = await vindPgGereedschap(0).catch(() => null);
-    if (g) {
+    if (!g) {
+      /* Zonder else-tak bleef de wegwerpdatabase hier STIL achter op de
+         productieserver: geen melding, geen exitcode. Een opruiming die
+         kan overslaan zonder dat iemand het ziet, is geen opruiming. */
+      console.error("");
+      console.error(`LET OP: geen psql gevonden, dus ${WEGWERP_DB} is NIET gedropt.`);
+      console.error(`Hij staat op de doelserver uit INTEL_RESTORETEST_DOEL_URL.`);
+      console.error(`Verwijder hem met de hand: drop database ${WEGWERP_DB};`);
+      process.exitCode = 1;
+    } else {
       await uitvoeren(g.psql, [beheer, "-c", `drop database if exists ${WEGWERP_DB} with (force)`])
         .then(() => {
           console.log("");
@@ -470,5 +579,14 @@ try {
   } else if (wegwerpDbGemaakt) {
     console.log("");
     console.log(`wegwerpdatabase ${WEGWERP_DB} blijft staan (--houd)`);
+  }
+
+  if (uitGcsGehaald && !heeft("houd")) {
+    /* De meegehaalde kopie hoort niet te blijven liggen: hij bevat
+       goedkeuringen, gebruikers en het auditspoor, en de map staat
+       bewust in .gitignore maar is geen archief. */
+    await rm(uitGcsGehaald, { force: true });
+    await rm(`${uitGcsGehaald}.manifest.json`, { force: true });
+    console.log(`de uit de bucket gehaalde kopie is weer verwijderd`);
   }
 }
