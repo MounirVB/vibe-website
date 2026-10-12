@@ -151,4 +151,55 @@ describe("sessie-intrekking", () => {
       c.query("update intel.gebruikers set laatste_login = now() where id = $1", [gebruikerId]),
     );
   });
+
+  test("de UPSERT van zaai werkt onder de applicatierol", async () => {
+    /* DEZE TOETS BESTAAT OMDAT HIJ ONTBRAK EN DAT PRODUCTIE HEEFT GEKOST.
+       Migratie 0015 nam het tabelbrede update-recht op intel.gebruikers
+       af en gaf alleen `laatste_login` terug. Dat liet elke bestaande
+       toets groen — maar `src/db/zaai.ts` doet een upsert met
+       `on conflict ... do update set naam`, en die heeft UPDATE op de
+       kolom `naam` nodig. De api-deploy draait zaai als pre-deploy, dus
+       de deploy faalde met 'permission denied for table gebruikers'.
+       Migratie 0017 geeft dat ene kolomrecht terug.
+
+       De vorm hieronder is bewust LETTERLIJK die uit zaai.ts. Een toets
+       die alleen 'update naam' probeert zou de conflictclausule missen,
+       en juist daar zat het. */
+    await metOrganisatie(db.pool, { organisatieId }, (c) =>
+      c.query(
+        `insert into intel.gebruikers (organisatie_id, email, naam, wachtwoord_hash)
+         values ($1, $2, $3, null)
+         on conflict (lower(email)) do update set naam = excluded.naam
+         returning id`,
+        [organisatieId, "intrekking@vibeenergy.nl", "Nieuwe Naam"],
+      ),
+    );
+    const c2 = new pg.Client({ connectionString: db.url, options: "-c search_path=intel,public" });
+    await c2.connect();
+    try {
+      const r = await c2.query<{ naam: string }>(
+        "select naam from intel.gebruikers where id = $1",
+        [gebruikerId],
+      );
+      assert.equal(r.rows[0]?.naam, "Nieuwe Naam", "de upsert hoort de naam te hebben bijgewerkt");
+    } finally {
+      await c2.end();
+    }
+  });
+
+  test("de applicatierol mag ONDANKS 0017 nog steeds niet aan wachtwoord_hash", async () => {
+    /* De grendel uit 0015 moet overeind blijven na de reparatie van
+       0017. Eén kolom erbij mag niet betekenen dat de deur open staat. */
+    await assert.rejects(
+      () =>
+        metOrganisatie(db.pool, { organisatieId }, (c) =>
+          c.query("update intel.gebruikers set wachtwoord_hash = 'x' where id = $1", [gebruikerId]),
+        ),
+      (e: unknown) => {
+        const m = e instanceof Error ? e.message : String(e);
+        assert.match(m, /permission denied|rechten|42501/i, `onverwachte fout: ${m}`);
+        return true;
+      },
+    );
+  });
 });
