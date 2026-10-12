@@ -18,7 +18,7 @@
 
    Draaien: node scripts/seo/sitemap.mjs
    ============================================================================ */
-import { readFileSync, writeFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, statSync, readdirSync, rmSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -56,7 +56,23 @@ function isGevolgd(relpad) {
   }
 }
 
-function laatsteWijziging(relpad) {
+/* Het vingerafdrukgrootboek is de AUTORITEIT voor gegenereerde routes.
+
+   Zonder dit stond `lastmod` op VANDAAG voor elk bestand dat van HEAD
+   afweek, en week elk bestand af zodra de generator zijn eigen datum in de
+   JSON-LD had bijgewerkt. Dat is rond: de klok verandert de pagina, de
+   veranderde pagina verandert de lastmod.
+
+   Het grootboek bepaalt de datum uit de inhoud (zie lib/vingerafdruk.mjs).
+   Staat een route erin, dan is dat de datum, en dan zeggen `lastmod` en
+   `dateModified` hetzelfde. Bestaande, met de hand geschreven pagina's staan
+   niet in het grootboek; die houden de git-weg. */
+const vingerPad = resolve(wortel, 'data', 'seo', 'vingerafdrukken.json');
+const vingers = existsSync(vingerPad) ? JSON.parse(readFileSync(vingerPad, 'utf8')).routes || {} : {};
+
+function laatsteWijziging(relpad, route) {
+  const v = vingers[route];
+  if (v?.gewijzigd) return { datum: v.gewijzigd, herkomst: 'inhoudsvingerafdruk' };
   /* Een nieuw bestand is vandaag gemaakt; git weet er nog niets van, dus
      `git diff HEAD` zou misleidend "geen verschil" melden. */
   if (!isGevolgd(relpad)) return { datum: VANDAAG, herkomst: 'nieuw in deze release' };
@@ -66,10 +82,39 @@ function laatsteWijziging(relpad) {
   return { datum: VANDAAG, herkomst: 'geen git-historie' };
 }
 
+/* ====================================================== SITEMAPARCHITECTUUR
+
+   RELEASE 3.1 — EEN SITEMAPINDEX MET TWEE GROEPEN.
+
+   Met 96 URL's was één bestand goed. Met 430 nog steeds: de limiet van het
+   protocol is 50.000 URL's en 50 MB, en daar zitten we ver onder. Splitsen is
+   hier dus GEEN technische noodzaak, en dat moet gezegd worden voordat iemand
+   denkt dat het dat wel is.
+
+   De reden om het tóch te doen is meetbaarheid. Search Console rapporteert
+   dekking PER SITEMAP. Met één bestand zie je straks "430 ingediend, N
+   geïndexeerd" en weet je niet of de 334 nieuwe regiopagina's het doen of dat
+   het de bestaande 96 zijn. Met twee groepen is dat één blik. Precies de
+   vraag die deze release oproept.
+
+   De groepen volgen de boom en niet het toeval:
+     sitemap-nationaal.xml  alles buiten /regios  (oplossingen, sectoren,
+                            toepassingen, kennis, projecten, juridisch)
+     sitemap-regios.xml     /regios en alles eronder (provincies, gemeenten)
+
+   `sitemap.xml` blijft het adres dat robots.txt noemt en dat bij Search
+   Console is ingediend; hij is nu de INDEX. Dat is een geldige waarde voor
+   dat bestand en vraagt geen nieuwe indiening.
+
+   De drempel staat op MAX_PER_BESTAND zodat een groep die ooit te groot
+   wordt vanzelf in genummerde delen uiteenvalt in plaats van stil het
+   protocol te overtreden. */
+const MAX_PER_BESTAND = 10000;
+
 const index = reg.routes.filter((r) => r.staat === 'INDEX');
-const regels = [];
 const ontbrekend = [];
 const herkomsten = {};
+const perGroep = new Map();
 
 for (const r of index.sort((a, b) => a.route.localeCompare(b.route))) {
   const relpad = bestand(r.route);
@@ -77,9 +122,11 @@ for (const r of index.sort((a, b) => a.route.localeCompare(b.route))) {
     ontbrekend.push({ route: r.route, bestand: relpad });
     continue;
   }
-  const { datum, herkomst } = laatsteWijziging(relpad);
+  const { datum, herkomst } = laatsteWijziging(relpad, r.route);
   herkomsten[herkomst] = (herkomsten[herkomst] || 0) + 1;
-  regels.push(`  <url>\n    <loc>${url(r.route)}</loc>\n    <lastmod>${datum}</lastmod>\n  </url>`);
+  const groep = r.soort === 'regio' ? 'regios' : 'nationaal';
+  if (!perGroep.has(groep)) perGroep.set(groep, []);
+  perGroep.get(groep).push(`  <url>\n    <loc>${url(r.route)}</loc>\n    <lastmod>${datum}</lastmod>\n  </url>`);
 }
 
 if (ontbrekend.length) {
@@ -88,10 +135,50 @@ if (ontbrekend.length) {
   process.exit(1);
 }
 
+/* De deelbestanden. Vaste groepsvolgorde, zodat de uitvoer deterministisch is
+   en een diff leesbaar blijft. */
+const GROEPVOLGORDE = ['nationaal', 'regios'];
+const deelbestanden = [];
+let totaalUrls = 0;
+
+for (const groep of GROEPVOLGORDE) {
+  const regels = perGroep.get(groep) || [];
+  if (!regels.length) continue;
+  totaalUrls += regels.length;
+  const delen = [];
+  for (let i = 0; i < regels.length; i += MAX_PER_BESTAND) delen.push(regels.slice(i, i + MAX_PER_BESTAND));
+  delen.forEach((deel, i) => {
+    const naam = delen.length === 1 ? `sitemap-${groep}.xml` : `sitemap-${groep}-${i + 1}.xml`;
+    writeFileSync(
+      resolve(wortel, naam),
+      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${deel.join('\n')}\n</urlset>\n`
+    );
+    /* De lastmod van een deelbestand is de nieuwste lastmod die erin staat.
+       Niet de klok: anders hangt de index alsnog aan de tijd. */
+    const nieuwste = deel
+      .map((rg) => (rg.match(/<lastmod>([^<]+)<\/lastmod>/) || [])[1])
+      .filter(Boolean)
+      .sort()
+      .pop();
+    deelbestanden.push({ naam, aantal: deel.length, lastmod: nieuwste });
+  });
+}
+
+/* Oude deelbestanden opruimen: een groep die krimpt mag geen weesbestand
+   achterlaten dat nog in de index van gisteren stond. */
+const actueel = new Set(deelbestanden.map((d) => d.naam));
+for (const f of readdirSync(wortel)) {
+  if (!/^sitemap-[a-z0-9-]+\.xml$/.test(f) || actueel.has(f)) continue;
+  rmSync(resolve(wortel, f));
+  console.log(`opgeruimd (geen groep meer): ${f}`);
+}
+
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${regels.join('\n')}
-</urlset>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${deelbestanden
+  .map((d) => `  <sitemap>\n    <loc>${HOST}/${d.naam}</loc>\n    <lastmod>${d.lastmod}</lastmod>\n  </sitemap>`)
+  .join('\n')}
+</sitemapindex>
 `;
 writeFileSync(resolve(wortel, 'sitemap.xml'), xml);
 
@@ -126,7 +213,8 @@ Sitemap: ${HOST}/sitemap.xml
 `;
 writeFileSync(resolve(wortel, 'robots.txt'), robots);
 
-console.log(`sitemap.xml : ${regels.length} URL's`);
+console.log(`sitemap.xml : sitemapindex met ${deelbestanden.length} deelbestand(en), samen ${totaalUrls} URL's`);
+for (const d of deelbestanden) console.log(`  ${d.naam.padEnd(26)} ${String(d.aantal).padStart(5)} URL's · lastmod ${d.lastmod}`);
 console.log(`robots.txt  : sitemap op ${HOST}`);
 console.log('lastmod-herkomst:');
 for (const [k, v] of Object.entries(herkomsten)) console.log(`  ${k.padEnd(32)} ${v}`);

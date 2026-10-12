@@ -36,6 +36,25 @@ const EIGENAAR = 'netcongestie';
 let geslaagd = 0;
 const mislukt = [];
 
+/* Alle URL's uit de sitemap, of die nu uit één urlset komt of uit een
+   sitemapindex met deelbestanden. */
+function alleSitemapUrls() {
+  const uit = new Set();
+  const top = readFileSync(resolve(wortel, 'sitemap.xml'), 'utf8');
+  const locs = (s) => [...s.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  if (!/<sitemapindex\b/.test(top)) {
+    for (const l of locs(top)) uit.add(l);
+    return uit;
+  }
+  for (const d of locs(top)) {
+    const naam = d.replace(/^https?:\/\/[^/]+\//, '');
+    const p = resolve(wortel, naam);
+    if (!existsSync(p)) continue;
+    for (const l of locs(readFileSync(p, 'utf8'))) uit.add(l);
+  }
+  return uit;
+}
+
 function toets(naam, voorwaarde, toelichting = '') {
   if (voorwaarde) {
     geslaagd += 1;
@@ -252,9 +271,13 @@ try {
   toets('hub linkt naar het artikel', hubHtml.includes(`href="/${FIXTURE_ROUTE}"`));
   toets('hub groepeert op onderwerp', hubHtml.includes(`id="onderwerp-${EIGENAAR}"`));
 
-  const sitemap = readFileSync(resolve(wortel, 'sitemap.xml'), 'utf8');
-  toets('artikel in de sitemap', sitemap.includes(`<loc>https://www.vibeenergy.nl/${FIXTURE_ROUTE}</loc>`));
-  toets('hub in de sitemap', sitemap.includes('<loc>https://www.vibeenergy.nl/nieuws</loc>'));
+  /* Sinds Release 3.1 is sitemap.xml een sitemapINDEX en staan de URL's in
+     deelbestanden. Deze toets keek alleen in sitemap.xml en vond daar nog
+     twee <loc>-regels die naar de deelbestanden wijzen — en meldde terecht
+     dat het artikel ontbrak. Lees de hele set, niet alleen de index. */
+  const sitemapUrls = alleSitemapUrls();
+  toets('artikel in de sitemap', sitemapUrls.has(`https://www.vibeenergy.nl/${FIXTURE_ROUTE}`));
+  toets('hub in de sitemap', sitemapUrls.has('https://www.vibeenergy.nl/nieuws'));
 
   /* De navigatie: nu de hub INDEX is, hoort /nieuws in de noscript-navigatie
      van zowel een gegenereerde als een bestaande pagina te staan. */

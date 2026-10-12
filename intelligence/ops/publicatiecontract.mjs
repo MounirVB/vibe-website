@@ -145,22 +145,102 @@ const hub = routes.find((r) => r.route === "nieuws");
   /* De getallen uit de vastgestelde basislijn. Een PR die hier
      verandering in brengt moet dat expliciet verantwoorden; stil
      promoveren van regioroutes is precies wat deze poort moet
-     tegenhouden. */
-  const BASISLIJN_REGIO_PENDING = 4587;
+     tegenhouden.
+
+     HET VASTE GETAL IS VERVANGEN — EN DAT IS EEN VERSCHERPING.
+
+     De basislijn stond op 4587 en viel om op de promotie van Release 3.1.
+     Dat was zijn werk. Maar een VAST getal heeft twee gebreken:
+
+     1. Het bijstellen is het enige wat nodig is om hem te passeren. Wie het
+        cijfer bijwerkt zet de draad door en merkt de volgende keer niets.
+     2. Het verbiedt een gefaseerde uitrol. Elke fase verandert het aantal,
+        dus elke fase zou het getal moeten bijwerken — en dan toetst het
+        niets meer.
+
+     De vervanging leunt niet op een getal maar op het BESLUITBESTAND: het
+     aantal regionale INDEX-routes moet exact gelijk zijn aan wat er is
+     verantwoord. Dat is zelfonderhoudend, het laat elke fase door, en het
+     blijft precies die ene fout tegenhouden waarvoor de draad er hing: een
+     route die op INDEX komt zonder door publicatiebesluit.json te gaan.
+
+     Het aantal staat nog steeds in de meting, zodat een reviewer in de
+     CI-uitvoer ziet hoeveel pagina's een PR publiceert. */
   const regioPending = routes.filter((r) => r.soort === "regio" && r.staat === "PENDING").length;
   const regioIndex = routes.filter((r) => r.soort === "regio" && r.staat === "INDEX").length;
+
+  /* De toets die niet op een getal leunt. */
+  const besluitPad = resolve(WORTEL, "data", "seo", "publicatiebesluit.json");
+  const besluit = existsSync(besluitPad) ? JSON.parse(readFileSync(besluitPad, "utf8")) : { vrijgegeven: {} };
+  const projGeoPad = resolve(WORTEL, "data", "bewijs", "projecten-geo.json");
+  const projGeo = existsSync(projGeoPad) ? JSON.parse(readFileSync(projGeoPad, "utf8")).per_gemeente : {};
+  const gemeentenPad = resolve(WORTEL, "data", "geo", "gemeenten.json");
+  const gemeenten = existsSync(gemeentenPad) ? JSON.parse(readFileSync(gemeentenPad, "utf8")).gemeenten : [];
+  const provHeeftWerk = new Set(
+    gemeenten.filter((g) => (projGeo[g.gemeentecode] || []).length).map((g) => g.provinciecode),
+  );
+
+  const onverantwoord = [];
+  for (const r of routes.filter((x) => x.soort === "regio" && x.staat === "INDEX")) {
+    if (r.subsoort === "wortel") continue;
+    if (r.subsoort === "gemeente") {
+      const heeftProject = (projGeo[r.gemeentecode] || []).length > 0;
+      if (!heeftProject && !besluit.vrijgegeven?.[r.route]) onverantwoord.push(r.route);
+    } else if (r.subsoort === "provincie") {
+      /* Een provinciehub mag op eigen werk of als ouder van een
+         vrijgegeven gemeente; beide zijn verantwoord. */
+      const kinderen = routes.some(
+        (x) => x.subsoort === "gemeente" && x.provinciecode === r.provinciecode && x.staat === "INDEX",
+      );
+      if (!provHeeftWerk.has(r.provinciecode) && !kinderen) onverantwoord.push(r.route);
+    } else if (!besluit.vrijgegeven?.[r.route]) {
+      onverantwoord.push(r.route);
+    }
+  }
+  const vrijgegevenAantal = Object.keys(besluit.vrijgegeven || {}).length;
   toets(
-    "de regionale PENDING-routes zijn niet stil gepromoveerd",
-    regioPending === BASISLIJN_REGIO_PENDING,
-    `${regioPending} PENDING (basislijn ${BASISLIJN_REGIO_PENDING}), ${regioIndex} op INDEX`,
+    "geen regionale route op INDEX zonder verantwoording (eigen project of een regel in publicatiebesluit.json)",
+    onverantwoord.length === 0,
+    onverantwoord.length
+      ? `${onverantwoord.length} zonder verantwoording: ${onverantwoord.slice(0, 5).join(", ")}`
+      : `${regioIndex} op INDEX · ${regioPending} PENDING · ${vrijgegevenAantal} regel(s) in publicatiebesluit.json`,
+  );
+
+  /* Andersom óók: een regel in het besluit die niet tot een INDEX-route
+     heeft geleid, betekent dat de vrijgave stil is mislukt — bijvoorbeeld
+     omdat de route niet meer bestaat na een gemeentelijke herindeling.
+     Dan staat er een belofte in het besluit die de site niet nakomt. */
+  const register = new Map(routes.map((r) => [r.route, r]));
+  const nietGeland = Object.keys(besluit.vrijgegeven || {}).filter((r) => register.get(r)?.staat !== "INDEX");
+  toets(
+    "elke regel in publicatiebesluit.json heeft ook echt een pagina opgeleverd",
+    nietGeland.length === 0,
+    nietGeland.length
+      ? `${nietGeland.length} vrijgegeven zonder INDEX-route: ${nietGeland.slice(0, 5).join(", ")}`
+      : `${vrijgegevenAantal} vrijgegeven route(s), allemaal op INDEX`,
   );
 }
 
 /* ---------------- 5. sitemappariteit ---------------- */
 {
+  /* Sinds Release 3.1 is sitemap.xml een sitemapINDEX: de URL's staan in
+     deelbestanden en in de index staan alleen verwijzingen. Deze poort las
+     alleen de index en zag dus 2 regels tegenover 430 routes — terecht
+     rood. Hij loopt de index nu af. */
   const sitemapPad = resolve(WORTEL, "sitemap.xml");
   const xml = existsSync(sitemapPad) ? readFileSync(sitemapPad, "utf8") : "";
-  const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  const haalLocs = (s) => [...s.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  let locs = [];
+  if (/<sitemapindex\b/.test(xml)) {
+    for (const d of haalLocs(xml)) {
+      const naam = d.replace(/^https?:\/\/[^/]+\//, "");
+      const p = resolve(WORTEL, naam);
+      if (!existsSync(p)) continue;
+      locs.push(...haalLocs(readFileSync(p, "utf8")));
+    }
+  } else {
+    locs = haalLocs(xml);
+  }
   const uitRegister = new Set(
     index.map((r) => (r.route === "" ? "https://www.vibeenergy.nl/" : `https://www.vibeenergy.nl/${r.route}`)),
   );
