@@ -175,29 +175,73 @@ test("IntelFout kiest een verstandige herhaalbaarheid per soort", () => {
 // Dat is zo uitgewerkt dat een publieke binding in productie zonder
 // TLS-proxy wordt geweigerd, in plaats van stil toegestaan.
 
+/* WAAROM `omgevingExpliciet` HIER EXPLICIET MEEGAAT
+   startWeigering leest standaard process.env.INTEL_OMGEVING om te zien
+   of de omgeving bewust is gezet. Die lezing hoort in productie thuis,
+   maar maakte deze toetsen afhankelijk van de shell waarin ze draaien:
+   met INTEL_OMGEVING in de omgeving waren ze groen, zonder rood. Dat is
+   geen productiefout — Railway zet de variabele — maar wel een toets die
+   iets anders meet dan hij beweert.
+
+   De parameter gaat daarom expliciet mee. Dat MODELLEERT de
+   productievoorwaarde in plaats van hem te verzwakken: de weigering
+   zelf blijft onaangeroerd en krijgt hieronder zijn eigen toets. */
+const ALS_OMGEVING_GEZET = true;
+
 test("dashboard: productie + publieke binding zonder TLS-proxy wordt geweigerd", async () => {
   const { startWeigering } = await import("../../src/dashboard/server.ts");
-  const reden = startWeigering({
-    omgeving: "productie",
-    dashboardBind: "0.0.0.0",
-    dashboardAchterTlsProxy: false,
-    dashboardSessieGeheimAanwezig: true,
-  });
+  const reden = startWeigering(
+    {
+      omgeving: "productie",
+      dashboardBind: "0.0.0.0",
+      dashboardAchterTlsProxy: false,
+      dashboardSessieGeheimAanwezig: true,
+    },
+    ALS_OMGEVING_GEZET,
+  );
   assert.ok(reden, "dit had geweigerd moeten worden");
-  assert.match(reden!, /TLS/);
+  /* Niet alleen /TLS/: die kwam ook voor in de weigering OVER een
+     ontbrekende INTEL_OMGEVING, waardoor deze toets groen bleef om de
+     verkeerde reden. De weigering moet over de proxy gaan. */
+  assert.match(reden!, /TLS-proxy|tls_proxy|achter een TLS/i);
+  assert.ok(
+    !/INTEL_OMGEVING niet is gezet/.test(reden!),
+    `dit is de weigering over de omgevingsvariabele, niet over TLS: ${reden}`,
+  );
 });
 
 test("dashboard: productie + publieke binding MET verklaarde TLS-proxy mag", async () => {
   const { startWeigering } = await import("../../src/dashboard/server.ts");
   assert.equal(
-    startWeigering({
+    startWeigering(
+      {
+        omgeving: "productie",
+        dashboardBind: "0.0.0.0",
+        dashboardAchterTlsProxy: true,
+        dashboardSessieGeheimAanwezig: true,
+      },
+      ALS_OMGEVING_GEZET,
+    ),
+    null,
+  );
+});
+
+test("dashboard: een NIET expliciet gezette omgeving wordt apart geweigerd", async () => {
+  /* De weigering die de twee toetsen hierboven vertroebelde, krijgt zijn
+     eigen plek. Hij hoort te bestaan: een ontbrekende INTEL_OMGEVING
+     valt terug op 'ontwikkel' en dat zet geen Secure op het koekje. */
+  const { startWeigering } = await import("../../src/dashboard/server.ts");
+  const reden = startWeigering(
+    {
       omgeving: "productie",
       dashboardBind: "0.0.0.0",
       dashboardAchterTlsProxy: true,
       dashboardSessieGeheimAanwezig: true,
-    }),
-    null,
+    },
+    false,
   );
+  assert.ok(reden, "een impliciete omgeving op een publieke binding hoort geweigerd te worden");
+  assert.match(reden!, /INTEL_OMGEVING/);
 });
 
 test("dashboard: productie op de loopback mag altijd", async () => {

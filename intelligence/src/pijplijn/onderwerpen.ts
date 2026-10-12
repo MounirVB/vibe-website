@@ -133,6 +133,17 @@ const VOCABULAIRE: readonly Vocabulaire[] = [
       "laadpunten",
       "v2g",
       "bidirectioneel laden",
+      /* 'laadinfra' is de gangbare afkorting in Nederlandse branchetaal
+         en ontbrak. Gemeten gevolg: de productietitel "Partijen in
+         laadinfra maken werk van circulaire ambities" matchte GEEN enkel
+         onderwerp en viel daardoor als volstrekt niet-relevant uit de
+         classificatie.
+         STERK en niet zwak: `raakt` hieronder eist een sterke term in de
+         titel of twee zwakke, dus een losse zwakke afkorting had het
+         gat niet gedicht. En dat is ook juist — 'laadinfra' betekent
+         niets anders dan laadinfrastructuur, net zo eenduidig als
+         'laadplein'. */
+      "laadinfra",
     ],
     zwak: ["elektrisch vervoer", "elektrische auto", "truckladen", "laadbehoefte", "laadvermogen"],
     tegen: [],

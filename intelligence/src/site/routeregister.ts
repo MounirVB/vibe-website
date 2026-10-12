@@ -246,7 +246,28 @@ export const CLUSTER_NAAR_ROUTE: Readonly<Record<string, readonly string[]>> = {
   ems: ["kennis/ems-energiemanagementsysteem", "kennis/load-balancing"],
   laadinfrastructuur: ["kennis/laadinfrastructuur-dimensioneren"],
   "zonne-energie": ["kennis/terugleverbeperking"],
-  subsidie: ["kennis/subsidiemechanismen", "subsidies"],
+  /* DE VOLGORDE HIER BESLIST, en hij stond verkeerd.
+     routeVoorCluster() geeft de EERSTE kandidaat terug die in het
+     routeregister staat, en beide staan er. Het subsidiecluster landde
+     daardoor altijd op kennis/subsidiemechanismen.
+
+     Die pagina draagt in zijn eigen bron
+     (data/inhoud/kennis/subsidiemechanismen.json, direct_antwoord.
+     voorbehoud) de tekst: "Dit antwoord beschrijft hoe mechanismen
+     werken, NIET de stand van een regeling. Welke regelingen bestaan,
+     welke voorwaarden, termijnen en bedragen gelden en of er budget is,
+     staat hier niet en verandert tussentijds." Sectie 9 sluit af met
+     "De stand van de regelingen staat elders."
+
+     Een voorstel dat regelingsnieuws op die pagina zet, vecht dus met
+     de gepubliceerde scope van de pagina zelf. /subsidies bezit die
+     feiten wel: gemeten 2026-10-12 noemt subsidies.html SDE 16 keer en
+     EIA 18 keer, is indexeerbaar en is geen redirect-stub.
+
+     kennis/subsidiemechanismen blijft als tweede staan: voor een
+     gebeurtenis die echt over de WERKING van een mechanisme gaat is hij
+     de juiste eigenaar. */
+  subsidie: ["subsidies", "kennis/subsidiemechanismen"],
   regelgeving: ["kennis/normen-en-keuringen"],
   rendement: ["kennis/businesscase-batterij"],
   marktprijs: ["kennis/energiehandel-en-flexibiliteit"],

@@ -333,15 +333,82 @@ try {
   /* ---------------- 12. routeregister onaangetast ---------------- */
   {
     const pad = join(SITE, "data", "seo", "routes.json");
-    const reg = JSON.parse(readFileSync(pad, "utf8")) as { routes: { staat: string; soort: string }[] };
+    const reg = JSON.parse(readFileSync(pad, "utf8")) as {
+      routes: { route: string; staat: string; soort: string }[];
+    };
     const index = reg.routes.filter((x) => x.staat === "INDEX").length;
     const pending = reg.routes.filter((x) => x.staat === "PENDING").length;
     const regioPending = reg.routes.filter((x) => x.soort === "regio" && x.staat === "PENDING").length;
+
+    /* DEZE TOETS STOND OP TWEE BEVROREN GETALLEN: `index === 96 &&
+       regioPending === 4587`. Release 3.1 heeft 430 routes bewust
+       vrijgegeven, en daarmee werd de toets rood zonder dat er iets mis
+       was. Een getal dat de werkelijkheid inhaalt is geen invariant.
+
+       De invariant die hij WEL hoort te beschermen: er staat geen
+       regiopagina op INDEX die niemand heeft vrijgegeven. Gemeten op
+       12 oktober 2026 zijn de 350 regionale INDEX-routes volledig te
+       verklaren uit precies drie bronnen:
+
+         326  een redactioneel besluit in data/seo/publicatiebesluit.json
+          13  structurele hubs: /regios en de twaalf provinciehubs
+          11  pagina's die al voor Release 3.1 bestonden
+
+       Die laatste elf staan hieronder met naam. Dat is bewust: komt er
+       een twaalfde bij zonder redactioneel besluit, dan hoort deze toets
+       rood te worden in plaats van hem stil mee te rekenen. */
+    const besluitPad = join(SITE, "data", "seo", "publicatiebesluit.json");
+    const besluit = existsSync(besluitPad)
+      ? (JSON.parse(readFileSync(besluitPad, "utf8")) as { vrijgegeven?: Record<string, string> })
+      : { vrijgegeven: {} };
+    const vrijgegeven = new Set(Object.keys(besluit.vrijgegeven ?? {}));
+
+    /* De regiopagina's van voor Release 3.1. Niet uitgebreiden zonder
+       een redactioneel besluit erbij. */
+    const VOOR_RELEASE_31 = new Set([
+      "regios/gelderland/arnhem",
+      "regios/gelderland/duiven",
+      "regios/gelderland/nijmegen",
+      "regios/gelderland/renkum",
+      "regios/gelderland/rheden",
+      "regios/noord-brabant/tilburg",
+      "regios/noord-holland/alkmaar",
+      "regios/noord-holland/amsterdam",
+      "regios/noord-holland/medemblik",
+      "regios/noord-holland/purmerend",
+      "regios/overijssel/hengelo",
+    ]);
+    const isHub = (route: string) => route.replace(/^\//, "").split("/").length <= 2;
+
+    const regioIndex = reg.routes.filter((x) => x.soort === "regio" && x.staat === "INDEX");
+    const onverklaard = regioIndex.filter((x) => {
+      const r = x.route.replace(/^\//, "");
+      return !vrijgegeven.has(r) && !vrijgegeven.has(x.route) && !isHub(r) && !VOOR_RELEASE_31.has(r);
+    });
+
+    /* En de andere kant: heeft dit PLATFORM zelf iets geregionaals
+       gepubliceerd? Dat mag nooit, ongeacht wat de site bevat. */
+    const eigenRegio = await metOrganisatie(pool, { organisatieId }, (c) =>
+      rijen<{ n: number }>(
+        c,
+        `select count(*)::int as n
+           from intel.publicatiebesluiten pb
+           join intel.inhoud_versies v on v.id = pb.inhoud_versie_id
+          where pb.organisatie_id = $1 and v.pad like '/regios/%'`,
+        [organisatieId],
+      ),
+    );
+    const eigen = eigenRegio[0]?.n ?? 0;
+
     meld(
       12,
-      "Regionale intelligentie publiceert niets: de 4.587 PENDING-routes blijven PENDING",
-      index === 96 && regioPending === 4587 ? "PASS" : "FAIL",
-      `${index} INDEX, ${pending} PENDING, waarvan ${regioPending} regionaal`,
+      "Regionale publicatie is altijd een mensbesluit: geen onverklaarde INDEX, en het platform publiceert zelf niets regionaals",
+      onverklaard.length === 0 && eigen === 0 ? "PASS" : "FAIL",
+      `${index} INDEX (${regioIndex.length} regionaal), ${pending} PENDING waarvan ${regioPending} regionaal. ` +
+        `Verklaard: ${vrijgegeven.size} redactioneel besluit, ${regioIndex.filter((x) => isHub(x.route.replace(/^\//, ""))).length} hub, ` +
+        `${VOOR_RELEASE_31.size} van voor Release 3.1. Onverklaard ${onverklaard.length}. ` +
+        `Eigen regionale publicaties door dit platform: ${eigen}`,
+      onverklaard.slice(0, 5).map((x) => `INDEX zonder besluit: ${x.route}`),
     );
   }
 
@@ -521,9 +588,9 @@ try {
 
       /* 19 — alle weergaven */
       if (!beheerder) {
-        meld(19, "Alle acht weergaven van het Intelligence Center laden", "NIET GEDRAAID", "geen sessie");
+        meld(19, "Alle negen weergaven van het Intelligence Center laden", "NIET GEDRAAID", "geen sessie");
       } else {
-        const paden = ["/", "/radar", "/studio", "/regio", "/signalen", "/distributie", "/prestaties", "/instellingen"];
+        const paden = ["/", "/radar", "/studio", "/regio", "/kansen", "/signalen", "/distributie", "/prestaties", "/instellingen"];
         const uitkomsten: string[] = [];
         for (const p of paden) {
           const r = await fetch(`${basis}${p}`, { headers: { cookie: beheerder } });
@@ -532,11 +599,88 @@ try {
         const slecht = uitkomsten.filter((u) => !u.endsWith(" 200"));
         meld(
           19,
-          "Alle acht weergaven van het Intelligence Center laden voor een beheerder",
+          "Alle negen weergaven van het Intelligence Center laden voor een beheerder",
           slecht.length === 0 ? "PASS" : "FAIL",
           `${paden.length - slecht.length} van ${paden.length} weergaven gaven 200`,
           slecht,
         );
+      }
+
+      /* 34 — de kansenweergave zegt wat ze niet weet */
+      if (!beheerder) {
+        meld(34, "Kansen: ONBEKEND is zichtbaar en er staat geen verzendknop", "NIET GEDRAAID", "geen sessie");
+      } else {
+        const r = await fetch(`${basis}/kansen`, { headers: { cookie: beheerder } });
+        const html = await r.text();
+
+        /* Een technische enumwaarde mag nooit het label zijn (par. 27).
+           Dit zijn de ruwe waarden uit de database; ze horen in de HTML
+           niet als zichtbare tekst voor te komen. */
+        const ruweEnums = ["ONDERZOEK_NODIG", "GEARCHIVEERD", "GOEDGEKEURD_VOOR_OPVOLGING", ">open<", ">gegund<"];
+        const gelekt = ruweEnums.filter((e) => html.includes(e));
+
+        /* Dit platform heeft geen verzendpad. Een knop die suggereert
+           dat je vanaf hier iemand benadert, hoort niet te bestaan. */
+        const verzendwoorden = ["Verstuur", "Verzend", "Mail versturen", "Neem contact", "Schrijf in"];
+        const verzend = verzendwoorden.filter((w) => html.includes(w));
+
+        const fouten: string[] = [];
+        if (r.status !== 200) fouten.push(`status ${r.status}`);
+        if (gelekt.length > 0) fouten.push(`ruwe enumwaarden zichtbaar: ${gelekt.join(", ")}`);
+        if (verzend.length > 0) fouten.push(`verzendknop gevonden: ${verzend.join(", ")}`);
+        if (!/ONBEKEND/.test(html)) {
+          fouten.push("het woord ONBEKEND komt niet voor; met onvolledige dossiers hoort het zichtbaar te zijn");
+        }
+        if (!/Kansen/.test(html)) fouten.push("de kop ontbreekt");
+
+        meld(
+          34,
+          "Kansen: ONBEKEND staat zichtbaar in beeld, geen ruwe enumwaarden en geen verzendknop",
+          fouten.length === 0 ? "PASS" : "FAIL",
+          `status ${r.status}, ${html.length} tekens HTML`,
+          fouten,
+        );
+      }
+
+      /* 35 — het dossier scheidt de drie lagen */
+      if (!beheerder) {
+        meld(35, "Kansdossier: feiten, gevolgtrekkingen en aanbeveling staan apart", "NIET GEDRAAID", "geen sessie");
+      } else {
+        /* Het eerste kansnummer uit de lijst; is er geen kans, dan is
+           dat een geldige uitkomst en geen fout. */
+        const lijst = await (await fetch(`${basis}/kansen`, { headers: { cookie: beheerder } })).text();
+        const id = /href="\/kansen\/(\d+)"/.exec(lijst)?.[1];
+        if (!id) {
+          meld(35, "Kansdossier: feiten, gevolgtrekkingen en aanbeveling staan apart", "NIET GEDRAAID",
+            "er staat geen enkele kans in de werkvoorraad van deze database");
+        } else {
+          const r = await fetch(`${basis}/kansen/${id}`, { headers: { cookie: beheerder } });
+          const html = await r.text();
+          const fouten: string[] = [];
+          if (r.status !== 200) fouten.push(`status ${r.status}`);
+          for (const kop of ["Feiten", "Wat niet bekend is", "Gevolgtrekkingen", "Publicaties", "Aanbeveling"]) {
+            if (!html.includes(`>${kop}`)) fouten.push(`kop '${kop}' ontbreekt`);
+          }
+          /* De vier assen horen elk hun eigen reden te dragen. */
+          for (const as of ["Relevantie", "Vertrouwen", "Urgentie", "Handelbaar"]) {
+            if (!html.includes(as)) fouten.push(`as '${as}' ontbreekt`);
+          }
+          if (!/Interesse bewezen/.test(html)) fouten.push("'Interesse bewezen' ontbreekt");
+          if (!/apart menselijk besluit/.test(html)) {
+            fouten.push("de grens rond externe benadering staat niet op het dossier");
+          }
+          /* Een ongeldig id hoort niet op een pagina uit te komen. */
+          const stuk = await fetch(`${basis}/kansen/nietsgeldig`, { headers: { cookie: beheerder } });
+          if (stuk.status !== 400) fouten.push(`/kansen/nietsgeldig gaf ${stuk.status} in plaats van 400`);
+
+          meld(
+            35,
+            "Kansdossier: feiten, gevolgtrekkingen en aanbeveling staan gescheiden, met de grens rond benadering",
+            fouten.length === 0 ? "PASS" : "FAIL",
+            `dossier ${id}, status ${r.status}, ${html.length} tekens`,
+            fouten,
+          );
+        }
       }
 
       /* ---------------- 21. CSRF ---------------- */
@@ -920,11 +1064,30 @@ try {
       SITE,
     );
     const lijst = siteBestanden.uit.trim().split("\n").filter(Boolean);
-    const verdacht = draai(
-      "grep",
-      ["-rl", "-E", "INTEL_|intelligence|4320|vibe-intel", ...lijst.slice(0, 400)],
-      SITE,
-    );
+    /* HET PATROON WAS TE RUIM, EN DE DEKKING WERD STIL AFGEKAPT.
+
+       '4320' is het dashboardpoortnummer, maar als los cijferreeksje
+       matcht het ook midden in een getal. Gemeten na Release 3.1:
+       regios/zeeland/borsele.html gaf een treffer op de BREEDTEGRAAD
+       51.43204576 — '51.4320 4576'. Met 430 nieuwe regiopagina's met
+       geo-coordinaten was zo'n botsing onvermijdelijk.
+       Daarom moet het poortnummer nu in een poortcontext staan: ':4320',
+       'poort 4320', '=4320'. Niet omdat de toets te streng was, maar
+       omdat hij het verkeerde meette.
+
+       En `lijst.slice(0, 400)` kapte de dekking af bij 400 van de 451
+       bestanden, zonder dat te melden. Dat is precies de stille afkap
+       die een groene toets laat lijken op volledige dekking. Nu alles,
+       in blokken, zodat de argumentenlijst van grep niet overloopt. */
+    const PATROON = "INTEL_|intelligence|vibe-intel|[:=[:space:]]4320\\b|poort 4320";
+    const treffersSet = new Set<string>();
+    const BLOK = 200;
+    for (let i = 0; i < lijst.length; i += BLOK) {
+      const blok = lijst.slice(i, i + BLOK);
+      const r = draai("grep", ["-rl", "-E", PATROON, ...blok], SITE);
+      for (const t of r.uit.trim() ? r.uit.trim().split("\n") : []) treffersSet.add(t);
+    }
+    const verdacht = { uit: [...treffersSet].join("\n") };
     let treffers = verdacht.uit.trim() ? verdacht.uit.trim().split("\n") : [];
     const railpack = readFileSync(join(SITE, "railpack.json"), "utf8");
 
@@ -950,7 +1113,7 @@ try {
       31,
       "De website is onafhankelijk: geen verwijzing naar de intelligencelaag, geen database",
       treffers.length === 0 && railpack.includes("staticfile") ? "PASS" : "FAIL",
-      `${lijst.length} sitebestanden gecontroleerd, ${treffers.length} met een verwijzing; ` +
+      `alle ${lijst.length} sitebestanden gecontroleerd (geen afkap), ${treffers.length} met een verwijzing; ` +
         `railpack provider staticfile: ${railpack.includes("staticfile") ? "ja" : "NEE"}`,
       treffers.slice(0, 3),
     );

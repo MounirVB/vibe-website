@@ -98,7 +98,24 @@ export const CLUSTERS: readonly {
     naam: "Subsidies en fiscale regelingen",
     omschrijving: "SDE++, EIA, MIA/Vamil, SCE, ISDE: voorwaarden, bedragen en termijnen.",
     risico: "hoog",
-    paginaKandidaten: ["/kennis/subsidiemechanismen", "/oplossing-subsidies"],
+    /* GEMETEN 2026-10-12 — de volgorde hier is het verschil tussen een
+       bruikbaar voorstel en een voorstel dat de pagina tegenspreekt.
+
+       /kennis/subsidiemechanismen stond hier eerst, en werd dus gekozen.
+       Maar die pagina draagt in zijn eigen bron het voorbehoud "Dit
+       antwoord beschrijft hoe mechanismen werken, NIET de stand van een
+       regeling... en verandert tussentijds", en sluit af met "De stand
+       van de regelingen staat elders". Nieuws over een regeling hoort
+       daar dus niet; de pagina zegt het zelf.
+
+       /subsidies bezit die feiten wel: gemeten 16 keer SDE en 18 keer
+       EIA in subsidies.html, indexeerbaar, geen redirect-stub. Die hoort
+       voorop.
+
+       /oplossing-subsidies blijft als laatste staan maar wordt nooit
+       gekozen: het is een noindex redirect-stub van 42 regels met een
+       canonical naar /subsidies, en de filter hieronder sluit stubs uit. */
+    paginaKandidaten: ["/subsidies", "/kennis/subsidiemechanismen", "/oplossing-subsidies"],
   },
   {
     sleutel: "regelgeving",
@@ -328,9 +345,24 @@ async function zaaiClusters(
   // Een cluster mag ook een LIVE pagina als eigenaar hebben. De
   // kennispagina's op productie bestaan niet in de repo, maar ze bezitten
   // de zoekintentie wel degelijk.
+  /* DE FILTER GOLD ALLEEN VOOR DE REPO-SCAN.
+     `scan.paginas` wordt gezeefd op !isRedirectStub && indexeerbaar,
+     maar `livePaden` ging er ongefilterd bij. Een live noindex-stub kon
+     daardoor eigenaar van een zoekintentie worden langs de voordeur die
+     voor de repo juist dichtzat.
+
+     Gemeten gevolg op dit moment: geen. Alle vijftien clusters wijzen nu
+     naar een echte /kennis-pagina, dus er is nu niets fout. Maar het gat
+     is er wel, en een stub die later live komt zou hem openen. De
+     livePaden-bron weet niet of een pad indexeerbaar is, dus de zeef kan
+     hier alleen op de repo-kennis leunen: een pad dat in de repo een
+     stub is, mag ook via livePaden niet terugkomen. */
+  const repoStubs = new Set(
+    scan.paginas.filter((p) => p.isRedirectStub || !p.indexeerbaar).map((p) => p.pad),
+  );
   const bestaandePaden = new Set([
     ...scan.paginas.filter((p) => !p.isRedirectStub && p.indexeerbaar).map((p) => p.pad),
-    ...livePaden,
+    ...[...livePaden].filter((p) => !repoStubs.has(p)),
   ]);
   let geschreven = 0;
   const zonderPagina: string[] = [];
