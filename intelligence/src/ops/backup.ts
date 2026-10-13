@@ -45,6 +45,7 @@ import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises"
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { maakLogger } from "../kern/log.ts";
+import { draaiPgGereedschap } from "./pgomgeving.ts";
 
 const uitvoeren = promisify(execFile);
 const log = maakLogger("backup");
@@ -194,16 +195,19 @@ export async function maakBackup(opties: {
   /* Custom format: comprimeert, en pg_restore kan er selectief uit
      terugzetten. --no-owner en --no-privileges houden de dump
      herbruikbaar in een doel waar de rolnamen anders heten; de rollen
-     worden door migratie 0001 opnieuw aangelegd. */
-  await uitvoeren(gereedschap.pgDump, [
-    "--format=custom",
-    "--compress=9",
-    "--no-owner",
-    "--no-privileges",
-    "--file",
-    dumpPad,
+     worden door migratie 0001 opnieuw aangelegd.
+
+     DE VERBINDING STAAT NIET IN ARGV. Tot 3.0.4 stond `databaseUrl`
+     hier als laatste argument. Node zet bij een mislukte execFile de
+     hele commandoregel in `Error.message`, en die melding ging via
+     kern/wachtrij.ts naar intel.taken.laatste_fout — met wachtwoord.
+     draaiPgGereedschap geeft de verbinding via de procesomgeving mee en
+     redigeert wat er alsnog uit het gereedschap komt. */
+  await draaiPgGereedschap(
+    gereedschap.pgDump,
+    ["--format=custom", "--compress=9", "--no-owner", "--no-privileges", "--file", dumpPad],
     opties.databaseUrl,
-  ]);
+  );
 
   const s = await stat(dumpPad);
   if (s.size === 0) throw new Error(`de dump ${dumpPad} is nul bytes`);

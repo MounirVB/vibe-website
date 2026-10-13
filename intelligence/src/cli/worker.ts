@@ -21,6 +21,7 @@ import { laadEnvBestand, configLezen } from "../kern/config.ts";
 import { maakPool, metOrganisatie, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
 import { maakLogger } from "../kern/log.ts";
+import { redacteerFout, redigeer } from "../kern/geheimen.ts";
 import {
   dlqInhoud,
   geefVerlopenTerug,
@@ -74,12 +75,30 @@ export const TAAKSOORTEN = [
 
 const REGISTER: Record<string, Handler> = {
   async ophalen(organisatieId, payload) {
-    const { verzamel } = await import("../pijplijn/verzamelen.ts");
+    const { verzamel, beoordeelOphaalronde } = await import("../pijplijn/verzamelen.ts");
     const r = await verzamel(pool, organisatieId, {
       alleenBron: tekstOf(payload, "bron"),
       forceer: payload["forceer"] === true,
     });
-    return `bronnen ${r.perBron.length}, nieuwe documenten ${r.nieuweDocumenten}, nieuwe versies ${r.nieuweVersies}`;
+
+    /* De beslisregel staat als pure functie in verzamelen.ts, zodat hij
+       zonder database te toetsen is. Werpen betekent: via de normale
+       backoff opnieuw, en bij uitputting naar de dlq. Dat is precies de
+       zichtbaarheid die ontbrak toen een ronde met 29 gefaalde bronnen
+       nog GEREED meldde. */
+    const uitkomst = beoordeelOphaalronde(r);
+    if (!uitkomst.geslaagd) {
+      const { IntelFout } = await import("../kern/fouten.ts");
+      throw new IntelFout("netwerk", uitkomst.melding, {
+        herhaalbaar: true,
+        context: {
+          bronnen_geprobeerd: r.bronnenGeprobeerd,
+          bronnen_fout: r.bronnenFout,
+          bronnen_overgeslagen: r.bronnenOvergeslagen,
+        },
+      });
+    }
+    return uitkomst.melding;
   },
 
   async clusteren(organisatieId) {
@@ -232,7 +251,7 @@ try {
     console.log("");
     for (const t of inhoud) {
       console.log(`  [${t.id}] ${t.soort.padEnd(14)} ${t.pogingen} pogingen  ${t.bijgewerktOp}`);
-      console.log(`       ${t.laatsteFoutSoort ?? "onbekend"}: ${(t.laatsteFout ?? "").slice(0, 120)}`);
+      console.log(`       ${t.laatsteFoutSoort ?? "onbekend"}: ${redigeer(t.laatsteFout ?? "").slice(0, 120)}`);
     }
     if (heeft("dlq-hervat")) {
       const soort = waarde("soort");
@@ -287,7 +306,7 @@ try {
       if (uit === "dlq") dlq += 1;
       else mislukt += 1;
       console.log(
-        `[${uitkomst.id}] ${uitkomst.soort} ${uit.toUpperCase()} — ${e instanceof Error ? e.message : String(e)}`,
+        `[${uitkomst.id}] ${uitkomst.soort} ${uit.toUpperCase()} — ${redacteerFout(e)}`,
       );
     }
 

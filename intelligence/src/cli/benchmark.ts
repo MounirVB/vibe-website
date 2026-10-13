@@ -22,6 +22,7 @@ import { execFileSync } from "node:child_process";
 import { laadEnvBestand, configLezen } from "../kern/config.ts";
 import { eenRij, maakPool, metOrganisatie, rijen, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
+import { redigeer } from "../kern/geheimen.ts";
 import { maakApp } from "../dashboard/server.ts";
 
 laadEnvBestand();
@@ -302,7 +303,7 @@ try {
   console.log("PRESTATIEMETING");
   console.log("=".repeat(96));
   console.log(`  node ${process.version} op ${process.platform}/${process.arch}`);
-  console.log(`  database ${config.databaseUrl.replace(/\/\/[^@]*@/, "//<verborgen>@")}`);
+  console.log(`  database ${redigeer(config.databaseUrl)}`);
   console.log("");
   let groep = "";
   for (const m of metingen) {

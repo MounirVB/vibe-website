@@ -4,6 +4,9 @@
 !.env.voorbeeld
 
 node_modules/
+# ... en ook als iemand er een SYMLINK van maakt: 'node_modules/' met
+# schuine streep matcht alleen een map.
+node_modules
 *.log
 .uitvoer/
 

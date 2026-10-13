@@ -87,7 +87,42 @@ type VoorstelRij = {
   beoordeeld_door_email: string | null;
   beoordeeld_op: string | null;
   precheck_uitslag: string | null;
+  /** De risicoklasse van de gebeurtenis waar dit voorstel aan hangt. */
+  risico_klasse: string | null;
 };
+
+/* ---------------------------------------------------------------- rechten
+   WAAROM DE RECHTENCONTROLE HIER STAAT EN NIET ALLEEN IN DE ROUTE.
+
+   Tot 3.0.4 hing goedkeuren uitsluitend aan de middleware
+   `vereistRecht("distributie.concept")` in dashboard/server.ts. Twee
+   problemen, beide gemeten:
+
+   1 Het was het VERKEERDE recht. De rechtenmatrix in 0001 geeft
+     `distributie.concept` ook aan de rol `analist`, die géén
+     `inhoud.goedkeuren` heeft. Een analist kon dus redactionele
+     paginarevisies goedkeuren.
+   2 Het stond alleen op de route. Elke andere aanroeper van beoordeel()
+     — een CLI, een taak, een volgende route — had geen enkele
+     rechtencontrole.
+
+   Daarom toetst beoordeel() het recht nu zelf, tegen intel.rol_rechten.
+   De route houdt zijn middleware (dat geeft een nette 403 in plaats van
+   een exception), maar de grendel zit hier. */
+export const RECHT_BEOORDELEN = "inhoud.goedkeuren";
+export const RECHT_HOOGRISICO = "inhoud.hoogrisico.goedkeuren";
+
+async function rechtenVan(c: pg.PoolClient, gebruikerId: number): Promise<Set<string>> {
+  const r = await rijen<{ recht: string }>(
+    c,
+    `select distinct rr.recht
+       from intel.gebruiker_rollen gr
+       join intel.rol_rechten rr on rr.rol = gr.rol
+      where gr.gebruiker_id = $1`,
+    [gebruikerId],
+  );
+  return new Set(r.map((x) => x.recht));
+}
 
 async function leesVoorstel(
   c: pg.PoolClient,
@@ -100,7 +135,9 @@ async function leesVoorstel(
             publicatie_status, inhouds_hash, goedgekeurd_hash, beoordeeld_door,
             (select g.email from intel.gebruikers g where g.id = beoordeeld_door)
               as beoordeeld_door_email,
-            beoordeeld_op::text, precheck_uitslag
+            beoordeeld_op::text, precheck_uitslag,
+            (select mg.risico_klasse from intel.markt_gebeurtenissen mg
+              where mg.id = gebeurtenis_id) as risico_klasse
        from intel.inhoud_voorstellen
       where organisatie_id = $1 and id = $2::bigint`,
     [organisatieId, voorstelId],
@@ -191,6 +228,31 @@ export async function beoordeel(
   }
   const door = gebruiker.email;
   const rij = await leesVoorstel(c, organisatieId, opdracht.voorstelId);
+
+  /* HET RECHT, SERVER-SIDE. Zie de toelichting bij RECHT_BEOORDELEN:
+     dit hing eerder alleen aan de route, en aan het verkeerde recht. */
+  const rechten = await rechtenVan(c, opdracht.gebruikerId);
+  if (!rechten.has(RECHT_BEOORDELEN)) {
+    throw new IntelFout(
+      "autorisatie",
+      `${door} mag geen redactioneel besluit nemen: het recht ${RECHT_BEOORDELEN} ontbreekt`,
+    );
+  }
+  /* Hoog risico vraagt een zwaarder recht. 0001 geeft dat met opzet
+     alleen aan `beheerder`; zie de comment op intel.rol_rechten. De
+     risicoklasse komt van de gebeurtenis en niet van de aanvrager, dus
+     hij is niet te beïnvloeden door wie goedkeurt. */
+  if (
+    opdracht.besluit === "goedgekeurd" &&
+    rij.risico_klasse === "hoog" &&
+    !rechten.has(RECHT_HOOGRISICO)
+  ) {
+    throw new IntelFout(
+      "autorisatie",
+      `voorstel ${rij.id} hangt aan een gebeurtenis met risicoklasse hoog; ` +
+        `goedkeuren vraagt het recht ${RECHT_HOOGRISICO} en ${door} heeft dat niet`,
+    );
+  }
 
   if (!rij.inhouds_hash) {
     throw new IntelFout(

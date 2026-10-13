@@ -45,6 +45,7 @@
 import type pg from "pg";
 import { rijen, eenRij } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
+import { redacteerFout } from "../kern/geheimen.ts";
 import type { Signaal } from "./gezondheid.ts";
 
 const log = maakLogger("melden");
@@ -235,7 +236,9 @@ export async function bezorgMeldingen(
       );
       bezorgd += 1;
     } catch (e) {
-      const bericht = e instanceof Error ? e.message : String(e);
+      /* Redigeren VOOR het afkappen: deze tekst gaat naar
+         intel.meldingen.laatste_bezorgfout en naar het log. */
+      const bericht = redacteerFout(e);
       await c.query(
         `update intel.meldingen
             set bezorgpogingen = bezorgpogingen + 1,

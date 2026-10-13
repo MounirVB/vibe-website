@@ -618,10 +618,20 @@ export function maakApp(pool: Pool): express.Express {
      een voorstel met eindoordeel KLAAR_VOOR_REVIEW goedkeuren. Zonder
      die grendel kon een afgewezen voorstel alsnog worden goedgekeurd, en
      dan is de hele controlelaag decoratie. */
+  /* HET RECHT IS inhoud.goedkeuren, NIET distributie.concept.
+     Gemeten defect: dit hing aan `distributie.concept`, en de
+     rechtenmatrix in 0001 geeft dat recht óók aan de rol `analist` —
+     die géén `inhoud.goedkeuren` heeft. Een analist kon dus
+     redactionele paginarevisies goedkeuren.
+
+     De echte grendel staat in beoordeel() zelf, tegen intel.rol_rechten,
+     zodat ook een niet-HTTP-aanroeper hem niet kan omzeilen. Deze
+     middleware blijft staan omdat ze een nette 403-pagina geeft in
+     plaats van een exception. */
   app.post(
     "/voorstellen/:id/beoordeel",
     async_(vereistInlog),
-    vereistRecht("distributie.concept"),
+    vereistRecht("inhoud.goedkeuren"),
     async_(async (req: MetGebruiker, res) => {
       const body = (req.body ?? {}) as Record<string, unknown>;
       if (!csrfPaarGeldig(leesKoekje(req, CSRF_KOEKJE), body[CSRF_VELD], sessieGeheim())) {

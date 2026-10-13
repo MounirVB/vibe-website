@@ -81,9 +81,18 @@ function standaardHerhaalbaar(soort: FoutSoort): boolean {
 export function httpHerhaalbaar(status: number): boolean {
   return status === 408 || status === 425 || status === 429 || (status >= 500 && status <= 599);
 }
+import { redigeer, wachtwoordUit } from "./geheimen.ts";
 
 export function alsIntelFout(e: unknown, soort: FoutSoort = "onbekend"): IntelFout {
   if (e instanceof IntelFout) return e;
-  const bericht = e instanceof Error ? e.message : String(e);
+  /* REDIGEREN OP HET KNOOPPUNT. Dit is de plek waar vrijwel elke
+     onbekende fout de codebase binnenkomt, en de boodschap gaat daarna
+     naar logs en naar databasekolommen. Node zet bij een mislukte
+     execFile de hele commandoregel in `message`; zonder deze regel
+     reist die mee tot in intel.taken.laatste_fout. */
+  const bericht = redigeer(
+    e instanceof Error ? e.message : String(e),
+    [wachtwoordUit(process.env.INTEL_DB_URL)],
+  );
   return new IntelFout(soort, bericht, { oorzaak: e });
 }
