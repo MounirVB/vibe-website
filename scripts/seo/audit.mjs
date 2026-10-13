@@ -256,9 +256,14 @@ poort('4  Metadata per gepubliceerde pagina', true, () => {
     if (titel && (titel.length < 25 || titel.length > 70)) waarschuwing.push(`${r.route}: titellengte ${titel.length}`);
     if (desc && (desc.length < 70 || desc.length > 165)) waarschuwing.push(`${r.route}: descriptionlengte ${desc.length}`);
   }
+  /* De metingregel noemde wél de niet-blokkerende lengteafwijkingen en NIET
+     de blokkerende fouten. Dat is de verkeerde asymmetrie: bij een FAIL las
+     de tabelrij als "430 pagina's · 36 lengteafwijkingen" en moest je de
+     detailsectie eronder erbij pakken om te zien of er één of 430 pagina's
+     stuk waren. Beide getallen horen in de rij. */
   return {
     ok: fouten.length === 0,
-    meting: `${indexRoutes.length} pagina's · ${waarschuwing.length} lengteafwijkingen`,
+    meting: `${indexRoutes.length} pagina's · ${fouten.length} blokkerende fout(en) · ${waarschuwing.length} lengteafwijkingen`,
     details: fouten,
     advies: waarschuwing,
   };
@@ -288,7 +293,64 @@ poort('5  Canonical-conflicten en hostconsistentie', true, () => {
       perCanon.set(canon, f);
     }
   }
-  return { ok: fouten.length === 0, meting: `${htmlBestanden.length} bestanden · ${perCanon.size} unieke canonicals op INDEX`, details: fouten };
+  /* ---------- de doorverwijsstubs: keten, lus en homepage-afvoerputje ----------
+
+     De 16 legacy-URL's zijn geen 301 maar HTTP 200 met noindex + canonical +
+     meta-refresh. Dat is een bewust besluit (de host is een railpack
+     staticfile-provider zonder eigen Caddyfile, dus een echte 301 bestaat
+     hier niet), maar de BESTEMMING was tot SEO 3.2 alleen op LEGALITEIT
+     getoetst: de lus hierboven keurt een canonical naar een onbekende of
+     PENDING route af. Drie defecten glipten daar langs, elk via de
+     brontabel in herstel-bestaand.mjs en dus via de normale ketenrun:
+
+       · KETEN   stub A verwijst naar stub B. Beide canonicals zijn legaal
+                 (B bestaat en is NOINDEX, geen PENDING), dus groen — maar
+                 Google volgt dan twee hops naar een noindex-pagina.
+       · LUS     een stub die naar zichzelf verwijst. Ook legaal, ook groen.
+       · AFVOER  een stub die naar `/` verwijst. De wortelroute is een
+                 geldige INDEX-route, dus elke bestaande toets vindt dit
+                 goed. Het is precies het patroon dat de opdracht verbiedt:
+                 een gepensioneerde URL naar de homepage sturen in plaats
+                 van naar de inhoudelijke opvolger.
+
+     Daarom hier drie eisen bovenop legaliteit: de bestemming moet INDEX
+     zijn (dat sluit keten en lus uit, want een stub is NOINDEX), hij mag
+     niet de pagina zelf zijn, en hij mag niet de wortel zijn. Plus: de
+     meta-refresh en de canonical moeten DEZELFDE route noemen, anders
+     krijgt een bezoeker een andere pagina dan de zoekmachine.
+
+     Route-genormaliseerd vergelijken is noodzakelijk en geen detail: de
+     canonical is absoluut (url()) en de refresh is wortel-relatief (href()).
+     Letterlijk vergelijken zou altijd falen. */
+  const stubs = reg.routes.filter((r) => r.subsoort === 'doorverwijsstub');
+  for (const r of stubs) {
+    const s = htmlVan(r.route);
+    if (!s) continue;
+    const canon = een(/<link rel="canonical" href="([^"]*)"/i, s);
+    const robots = een(/<meta name="robots" content="([^"]*)"/i, s);
+    const refresh = een(/http-equiv="refresh"[^>]*content="[^"]*url=([^"]+)"/i, s);
+    if (!/noindex/i.test(robots || '')) fouten.push(`${r.route}: doorverwijsstub zonder noindex (robots="${robots || ''}")`);
+    if (!refresh) fouten.push(`${r.route}: doorverwijsstub zonder meta-refresh`);
+    if (!canon) continue;
+    const doel = canon.replace(`${HOST}/`, '').replace(/\/$/, '');
+    const doelReg = register.get(doel);
+    if (doel === r.route) fouten.push(`${r.route}: doorverwijsstub verwijst naar zichzelf — een lus`);
+    else if (doel === '') fouten.push(`${r.route}: doorverwijsstub verwijst naar de homepage in plaats van naar een inhoudelijke opvolger`);
+    else if (doelReg && doelReg.staat !== 'INDEX') {
+      fouten.push(
+        `${r.route}: doorverwijsstub verwijst naar '${doel}', dat ${doelReg.staat} is${doelReg.subsoort === 'doorverwijsstub' ? ' en zelf een stub — een keten' : ''}`,
+      );
+    }
+    if (refresh) {
+      const refreshRoute = refresh.replace(/^\//, '').replace(/\/$/, '');
+      if (refreshRoute !== doel) fouten.push(`${r.route}: meta-refresh wijst naar '${refreshRoute}' maar de canonical naar '${doel}'`);
+    }
+  }
+  return {
+    ok: fouten.length === 0,
+    meting: `${htmlBestanden.length} bestanden · ${perCanon.size} unieke canonicals op INDEX · ${stubs.length} doorverwijsstub(s) op bestemming getoetst`,
+    details: fouten,
+  };
 });
 
 /* ======================================================= 6 · STRUCTURED DATA */
@@ -563,6 +625,17 @@ poort('11 Duplicaat-inhoud tussen gepubliceerde pagina\'s', true, () => {
   const lijst = [...shingles.entries()];
   const DREMPEL = 0.6;
   let paren = 0;
+  /* DE MARGE HOORT IN DE TABELRIJ, NIET ALLEEN IN EEN RELEASENOTITIE.
+     De rij meldde tot SEO 3.2 alleen het aantal paren en de drempel. Daarmee
+     was de enige vraag die telt — hoe VEEL ruimte is er nog — onzichtbaar,
+     en kon hij release na release slinken zonder dat iemand het zag. Dat is
+     geen theorie: de marge rust volledig op één blok. Gemeten op edc10d2
+     geeft het weglaten van de sectie id="profiel" een hoogste jaccard van
+     0,7092 en 1.256 paren boven de drempel, tegen 0,52 met dat blok erin.
+     Wie de regiosjablonen inkort, hoort dat hier te zien. */
+  let hoogsteJaccard = 0;
+  let hoogstePaar = '';
+  let hoogsteDekking = 0;
   for (let i = 0; i < lijst.length; i++) {
     for (let j = i + 1; j < lijst.length; j++) {
       const [ra, sa] = lijst[i];
@@ -575,12 +648,24 @@ poort('11 Duplicaat-inhoud tussen gepubliceerde pagina\'s', true, () => {
       for (const sh of klein) if (groot.has(sh)) gedeeld += 1;
       const jaccard = gedeeld / (sa.size + sb.size - gedeeld);
       const dekking = gedeeld / klein.size;
+      if (jaccard > hoogsteJaccard) {
+        hoogsteJaccard = jaccard;
+        hoogstePaar = `${ra} ↔ ${rb}`;
+      }
+      if (dekking > hoogsteDekking) hoogsteDekking = dekking;
       if (jaccard > DREMPEL || dekking > 0.85) {
         fouten.push(`${ra} en ${rb}: jaccard ${jaccard.toFixed(2)}, overlap ${(dekking * 100).toFixed(0)}% van de kleinste`);
       }
     }
   }
-  return { ok: fouten.length === 0, meting: `${paren} paren vergeleken op 5-woordreeksen, drempel jaccard ${DREMPEL}`, details: fouten };
+  return {
+    ok: fouten.length === 0,
+    meting:
+      `${paren} paren · drempel jaccard ${DREMPEL} · hoogste ${hoogsteJaccard.toFixed(4)} ` +
+      `(marge ${(DREMPEL - hoogsteJaccard).toFixed(4)}) · hoogste dekking ${(hoogsteDekking * 100).toFixed(1)}%`,
+    details: fouten,
+    advies: hoogstePaar ? [`hoogste overlap: ${hoogstePaar}`] : [],
+  };
 });
 
 /* ======================================================= 12 · KANNIBALISATIE */
@@ -662,17 +747,53 @@ poort('15 Projectverwijzingen', true, () => {
     }
   }
   /* Elke projectroute waarnaar een regionale pagina verwijst, moet in die
-     gemeente liggen volgens data/bewijs/projecten-geo.json. */
+     gemeente liggen volgens data/bewijs/projecten-geo.json.
+
+     DEZE LUS BEOORDEELDE TOT SEO 3.2 NUL LINKS, EN DE POORT MELDDE PASS.
+
+     De sectie werd gezocht met /<section[^>]*>([\s\S]*?Opgeleverd in[...])<\/section>/i.
+     Die regex begint bij de EERSTE <section> van het document en loopt
+     non-greedy door tot de eerste </section> ná de eerste treffer op
+     "opgeleverd in" — en door de /i-vlag is dat het proza halverwege de
+     pagina, niet de kop van de bewijssectie. Gemeten op alle 11
+     gemeentepagina's die een projectlink dragen: de oude regex vond 0 van
+     de 16 projectlinks (capture ~2,4 kB, beginnend bij de verkeerde sectie
+     en met een geneste </section> erin), een anker op id="bewijs" vindt
+     alle 16 (capture 0,6-1,2 kB). Een verplichte poort die PASS meldt over
+     een controle die hij niet uitvoert, is erger dan geen poort: hij geeft
+     dekking die er niet is.
+
+     De bewijssectie draagt id="bewijs" (genereer.mjs). Een anker op een
+     id is bovendien niet gevoelig voor de redactionele tekst erin, en dat
+     was precies de fout. */
+  let beoordeeldeProjectlinks = 0;
   for (const r of indexRoutes.filter((x) => x.subsoort === 'gemeente' || x.subsoort === 'gemeente-familie')) {
     const s = htmlVan(r.route);
     if (!s) continue;
     const hier = new Set((projGeo[r.gemeentecode] || []).map((p) => p.slug));
-    const sectie = een(/<section[^>]*>([\s\S]*?Opgeleverd in[\s\S]*?)<\/section>/i, s) || een(/<section[^>]*>([\s\S]*?Het bewijs in[\s\S]*?)<\/section>/i, s) || '';
+    const sectie = een(/<section[^>]*\bid="bewijs"[^>]*>([\s\S]*?)<\/section>/i, s) || '';
     for (const h of alle(/href="\/(project-[a-z0-9-]+)"/gi, sectie)) {
+      beoordeeldeProjectlinks += 1;
       if (!hier.has(h)) fouten.push(`${r.route}: noemt project '${h}' als lokaal bewijs, maar dat ligt niet in deze gemeente`);
     }
   }
-  return { ok: fouten.length === 0, meting: `${slugs.size} echte projecten · verwijzingen op ${indexRoutes.filter((x) => !x.bestaand).length} nieuwe pagina's`, details: fouten };
+  /* Een lus die niets beoordeelt mag niet als PASS wegkomen. Zodra er een
+     gemeentepagina met een projectlink bestaat, MOET deze teller boven nul
+     staan; is hij nul, dan is het anker stuk — zoals het drie releases lang
+     stuk was zonder dat iemand het zag. */
+  const metProjectlink = indexRoutes.filter(
+    (x) => (x.subsoort === 'gemeente' || x.subsoort === 'gemeente-familie') && /href="\/project-/.test(htmlVan(x.route) || ''),
+  ).length;
+  if (metProjectlink > 0 && beoordeeldeProjectlinks === 0) {
+    fouten.push(
+      `de lokaliteitstoets beoordeelde 0 projectlinks terwijl ${metProjectlink} regionale pagina's er een dragen — het anker op id="bewijs" vindt de bewijssectie niet`,
+    );
+  }
+  return {
+    ok: fouten.length === 0,
+    meting: `${slugs.size} echte projecten · verwijzingen op ${indexRoutes.filter((x) => !x.bestaand).length} nieuwe pagina's · ${beoordeeldeProjectlinks} projectlink(s) op lokaliteit beoordeeld`,
+    details: fouten,
+  };
 });
 
 /* ======================================================= 16 · NIEUWSKANAAL */

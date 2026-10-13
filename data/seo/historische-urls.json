@@ -1,0 +1,1617 @@
+{
+  "_toelichting": "De historische URL-voorraad van vibeenergy.nl en de beslissingsregels erover. Dit bestand is het datacontract achter twee scripts: scripts/seo/gsc-import.mjs vult de sleutel gsc_inventaris met een genormaliseerde Search Console-export, scripts/seo/historische-urls.mjs classificeert elke bekende URL en drukt het inventarisrapport af. Wat hier niet in staat, bestaat voor die scripts niet: zij verzinnen geen familie en geen bestemming.",
+  "_versie": "1.0.0",
+  "_vastgesteld": "2026-10-13",
+  "_beslisregel": "Een URL krijgt precies een actie. Een 301 mag alleen voorgesteld worden als de bestemming ONDERBOUWD is (gelijke slug, een gemeten stub-canonical, of een regel in handle_afbeelding met reden en bewijs) EN alle controles onder `controles` doorstaat. Doorstaat hij er een niet, dan WEIGERT de classificator de bestemming; hij waarschuwt niet. Een voorstel uit handle_afbeelding dat weigert, laat het script falen met exitcode 3 — een mens heeft dan een fout gemaakt en die mag niet stil in het rapport blijven staan.",
+  "rapportcijfers_eigenaar": {
+    "_herkomst": "SCHERMAFBEELDING",
+    "_vertrouwen": "UNVERIFIED",
+    "_waarschuwing": "Deze getallen zijn GEEN meting. Ze komen van schermafbeeldingen die de eigenaar op 13 oktober 2026 uit Search Console heeft gemaakt. Er zijn geen GSC-credentials (lokaal noch op de vier Railway-services) en geen GSC-API-client in de code, dus niets hiervan is in deze repository te reproduceren. Noem ze nooit als meting en reken er nooit mee alsof het een telling is.",
+    "waargenomen_op": "2026-10-13",
+    "geindexeerd": 35,
+    "niet_geindexeerd_ongeveer": 15300,
+    "niet_gevonden_404": 7728,
+    "pagina_met_omleiding": 31,
+    "alternatieve_pagina_met_correcte_canonieke_tag": 6,
+    "duplicaat_google_koos_andere_canonieke_pagina": 3,
+    "uitgesloten_door_noindex_tag": 1
+  },
+  "dekking": {
+    "gsc_api": "NOT_AVAILABLE",
+    "reden_geen_api": "GEMETEN op 13 oktober 2026: geen GSC-credentials lokaal, geen op de vier Railway-services, en geen GSC-API-client in de code. Er is dus geen weg om de 7.728 URL's programmatisch op te halen; alleen een handmatige CSV-export van de eigenaar.",
+    "export_afkapping_per_reden": 1000,
+    "reden_afkapping": "Search Console exporteert per reden maximaal 1.000 voorbeeld-URL's. Elke telling die uit een import komt is daarom een ONDERGRENS, nooit een totaal. Met het rapportcijfer 7.728 in gedachten: een volledige export per reden dekt bij 8 redenen maximaal 8.000 rijen en realistisch veel minder.",
+    "reconstructie_elders_onmogelijk": "GEMETEN: het Wayback-archief kent voor het hele domein 172 unieke momentopnames, waarvan 169 op vibeenergy.nl zelf. De git-historie bevat geen verloren URL's: alle 318 ooit verwijderde html/xml-paden bestaan vandaag weer. De lijst van 7.728 bestaat dus nergens anders dan in Search Console."
+  },
+  "normalisatiebeleid": {
+    "_toelichting": "Een URL wordt op precies een manier genormaliseerd, hier vastgelegd zodat de importer en de classificator niet uit elkaar kunnen lopen. De ruwe URL blijft altijd bewaard; zonder de ruwe vorm is niet meer te zien of Google de slash- of de .html-variant rapporteerde, en juist dat verschil bepaalt de actie.",
+    "http_naar_https": true,
+    "apex_naar_www": true,
+    "fragment_eraf": true,
+    "afsluitende_streep_eraf_behalve_wortel": true,
+    "querystring_bewaren": true,
+    "reden_querystring": "Bij Shopify is de query het onderscheidende deel: /cdn/shop/files/green-city.png?v=1694261092&width=750 en dezelfde naam met width=360 zijn twee verschillende gearchiveerde URL's (gemeten, beide in de Wayback-inventaris). Query wegstrepen zou de 113 rijen onder /cdn/shop tot enkele tientallen samenvouwen en de afkapping erger maken dan hij is.",
+    "parametervolgorde_bewaren": true,
+    "pad_niet_naar_kleine_letters": "GEMETEN: /X geeft 404 en /x geeft 200. Het pad is hoofdlettergevoelig, dus naar kleine letters omzetten zou een bestaande URL in een niet-bestaande veranderen. Alleen de hostnaam gaat naar kleine letters."
+  },
+  "hostgedrag": {
+    "_toelichting": "Gemeten gedrag van de productiehost op 13 oktober 2026 (Railway, railpack provider staticfile, Caddy 2.11.4). Dit bepaalt welke acties uitvoerbaar zijn en welke een hostwijziging eisen die vandaag niet bestaat.",
+    "gemeten_op": "2026-10-13",
+    "apex_naar_www": "301",
+    "http_naar_https": "301",
+    "extensieloos_pad": "200",
+    "html_tweeling": "200, met canonical naar de extensieloze URL (431 paden)",
+    "afsluitende_streep": "404",
+    "hoofdletterpad": "404",
+    "onbekend_pad": "404 met 404.html",
+    "kan_410_per_pad": false,
+    "kan_301_per_pad": false,
+    "reden_geen_301_mechanisme": "GEMETEN op 13 oktober 2026: in de repository bestaat geen Caddyfile, nginx.conf, _redirects of static.json (bevestigd met een directorylisting en een grep; docs/vibe-url-conventie.md regel 27 zegt hetzelfde). De apex-naar-www-301 en de http-naar-https-301 komen van de nginx/Plesk-server voor vibeenergy.nl, niet van deze repository. Een echte 301 per pad kan deze site vandaag dus NIET serveren. Het mechanisme dat de repository wel heeft is de doorverwijsstub: HTTP 200 met noindex, canonical naar de opvolger, meta-refresh en location.replace (gemeten in capaciteit-als-dienst.html, 16 stubs in gebruik). Een rij met actie REDIRECT_301 zegt daarom WAT er moet gebeuren, en het veld `uitvoering` zegt dat het een hostregel of een stub vraagt die er nu niet is."
+  },
+  "drempels": {
+    "_toelichting": "Beleidsdrempels, geen metingen. Ze staan hier zodat ze te wijzigen zijn zonder een script aan te raken, en zodat niemand ze voor een gemeten grens aanziet.",
+    "min_interne_ingangen": 2,
+    "reden_min_interne_ingangen": "Een pagina met precies een interne ingang hangt aan een bron; valt die link weg, dan is de pagina een wees. Gemeten is dat er vandaag 0 weespagina's zijn (iedereen heeft er minstens een), dus deze drempel vindt de volgende laag: wie er precies een heeft.",
+    "max_bronnen_per_bestemming": 20,
+    "reden_max_bronnen": "Boven dit aantal is een bestemming geen opvolger meer maar een verzamelbak, en een verzamelbak-301 leest voor Google als een soft 404. De drempel is een keuze, niet een meting.",
+    "vertoningen_zonder_klik": 50,
+    "zwakke_positie": 20,
+    "reden_prestatiedrempels": "Deze twee gelden alleen op een Prestaties-export en bepalen wanneer een bestaande pagina IMPROVE_CONTENT krijgt: minstens zoveel vertoningen, nul klikken, of een gemiddelde positie slechter dan de grens. Zonder export zijn ze niet van toepassing en blijft de kolom zoekprestatie NOT_AVAILABLE."
+  },
+  "productiemeting": {
+    "_toelichting": "De productiestand zoals die op 13 oktober 2026 is gemeten. De classificator vergelijkt het routeregister hiermee: wijkt het register af, dan mag hij \"200 GEMETEN\" niet meer zeggen en valt hij terug op \"200 AFGELEID\". Zo verloopt deze meting zichzelf in plaats van stil verouderd te blijven.",
+    "gemeten_op": "2026-10-13",
+    "aantal_index": 430,
+    "aantal_noindex": 17,
+    "aantal_pending": 4254,
+    "live_200": 430,
+    "canonical_zelfverwijzend": 430,
+    "robots_index_follow": 430,
+    "html_tweelingen_200": 431,
+    "bewijsregel": "Vierwegpariteit GEMETEN: routes.json INDEX=430 == sitemap 430 == 430 repobestanden == 430 live HTTP 200. De 16 doorverwijsstubs gaven alle 16 een 200 met noindex, follow en een canonical naar hun opvolger. NOINDEX=17 staat 0 keer in de sitemap, PENDING=4254 heeft 0 bestanden en staat 0 keer in de sitemap."
+  },
+  "gsc_redenregels": [
+    {
+      "patroon": "serverfout|server error|5xx",
+      "actie": "FIX_TECHNICAL",
+      "seo_risico": "HOOG",
+      "reden": "Een serverfout op een bestaande pagina is een technisch defect dat de crawl blokkeert; inhoud of links veranderen daar niets aan."
+    },
+    {
+      "patroon": "omleidingsfout|redirect error",
+      "actie": "FIX_TECHNICAL",
+      "seo_risico": "HOOG",
+      "reden": "Een omleidingsfout betekent een keten, een lus of een doorverwijzing naar een fout; dat is per definitie een technisch defect."
+    },
+    {
+      "patroon": "geblokkeerd door robots|blocked by robots",
+      "actie": "FIX_TECHNICAL",
+      "seo_risico": "HOOG",
+      "reden": "Een pagina die geindexeerd hoort te worden maar in robots.txt op Disallow staat, is een configuratiefout. Let op: /data/, /scripts/, /docs/, /api/ en /intelligence/ staan er BEWUST op; die horen hier niet te verschijnen."
+    },
+    {
+      "patroon": "zachte 404|soft 404",
+      "actie": "IMPROVE_CONTENT",
+      "seo_risico": "MIDDEL",
+      "reden": "Google ziet een 200 met te weinig of te generieke inhoud. Dat is een inhoudsprobleem, niet een statusprobleem."
+    },
+    {
+      "patroon": "duplicaat|duplicate|alternatieve pagina|alternate page",
+      "actie": "CANONICALIZE",
+      "seo_risico": "MIDDEL",
+      "reden": "Google koos een andere canonieke pagina dan wij aanwijzen. Het canonical-signaal moet kloppen of de pagina moet verdwijnen; aan de inhoud sleutelen lost dit niet op."
+    },
+    {
+      "patroon": "gecrawld.*niet ge.ndexeerd|crawled.*not indexed",
+      "actie": "IMPROVE_CONTENT_OF_LINKING",
+      "seo_risico": "MIDDEL",
+      "reden": "Google heeft de pagina gezien en bewust niet opgenomen. Dat komt door te weinig onderscheidende inhoud of door te weinig interne ingangen; de gemeten interne linkgraaf bepaalt welke van de twee."
+    },
+    {
+      "patroon": "gevonden.*niet ge.ndexeerd|discovered.*not indexed",
+      "actie": "IMPROVE_LINKING",
+      "seo_risico": "MIDDEL",
+      "reden": "Google kent de URL maar heeft hem niet gecrawld. Dat is een ontdekkings- en crawlbudgetprobleem: meer en betere interne ingangen helpen, inhoud herschrijven niet."
+    },
+    {
+      "patroon": "uitgesloten door.*noindex|excluded by.*noindex",
+      "actie": "VOLG_REGISTER",
+      "seo_risico": "LAAG",
+      "reden": "Of dit een probleem is, bepaalt het register: bij een doorverwijsstub is noindex de bedoeling, bij een INDEX-route is het een defect."
+    },
+    {
+      "patroon": "niet gevonden|not found|404",
+      "actie": "VOLG_REGISTER",
+      "seo_risico": "MIDDEL",
+      "reden": "Dit is de hoofdgroep van 7.728. Of een 404 juist is, bepaalt de familie- en registerbeoordeling, niet de melding zelf. Bestaat de URL vandaag wel, dan is de melding historisch."
+    },
+    {
+      "patroon": "pagina met omleiding|page with redirect",
+      "actie": "VOLG_REGISTER",
+      "seo_risico": "LAAG",
+      "reden": "Een gerapporteerde omleiding is geen fout zolang hij naar het eindpunt wijst. De registerbeoordeling bepaalt of de bestemming klopt."
+    }
+  ],
+  "verboden_bestemmingen": [
+    "",
+    "404"
+  ],
+  "controles": [
+    {
+      "code": "C1_GEEN_HOMEPAGE",
+      "eis": "de bestemming mag niet de homepage zijn",
+      "waarom": "Een homepage-301 voor een verdwenen pagina is de klassieke verzamelbak. Google behandelt hem als soft 404 en de gebruiker landt op iets wat zijn vraag niet beantwoordt."
+    },
+    {
+      "code": "C2_IN_REGISTER",
+      "eis": "de bestemming moet een route in data/seo/routes.json zijn",
+      "waarom": "Een bestemming buiten het register is niet gegenereerd, niet gepoort en niet gemeten. Dan weten we niet of hij bestaat."
+    },
+    {
+      "code": "C3_NIET_PENDING",
+      "eis": "de bestemmingsroute mag niet PENDING zijn",
+      "waarom": "GEMETEN: alle 4.254 PENDING-routes hebben 0 bestanden en staan 0 keer in de sitemap. Een 301 daarheen levert een 404 aan het eind."
+    },
+    {
+      "code": "C4_NIET_NOINDEX",
+      "eis": "de bestemmingsroute mag niet NOINDEX zijn",
+      "waarom": "Doorverwijzen naar een noindex-pagina gooit het signaal weg dat de 301 juist moest overdragen. Het is ook de bron van ketens: de 16 doorverwijsstubs zijn zelf noindex en wijzen door naar hun opvolger."
+    },
+    {
+      "code": "C5_HEEFT_BESTAND",
+      "eis": "de bestemming moet een bestand op schijf hebben",
+      "waarom": "Het register kan INDEX zeggen terwijl de generator niet gedraaid is. Pas het bestand bewijst dat de pagina bestaat."
+    },
+    {
+      "code": "C6_GEEN_KETEN",
+      "eis": "de bestemming mag zelf geen bron van een voorgestelde 301 zijn",
+      "waarom": "Een keten verliest signaal bij elke stap en vertraagt de crawl. Een 301 wijst naar het eindpunt of hij wijst niet."
+    },
+    {
+      "code": "C7_GEEN_LUS",
+      "eis": "de bestemming mag niet gelijk zijn aan de bron",
+      "waarom": "Een URL die naar zichzelf verwijst is een lus; de browser en de crawler lopen vast."
+    },
+    {
+      "code": "C8_ONDERBOUWD",
+      "eis": "de herkomst van de bestemming moet SLUG_GELIJK, STUB_CANONICAL_GEMETEN, TABEL_MET_REDEN of FAMILIEREGEL_MET_REDEN zijn",
+      "waarom": "Dit is de controle tegen de 301 naar een onverwante pagina. Verwantschap is geen gevoel: of de slug is gelijk, of een gemeten canonical wijst die kant op, of een mens heeft het met reden en bewijs vastgelegd — per handle in handle_afbeelding, of voor een hele familie in familieregels. Anders geen bestemming. Een door een mens vastgelegde bestemming die een van de andere controles schendt, laat het script FALEN; een automatisch gevonden gelijke slug die iets schendt, valt stil terug op REQUIRES_REVIEW en wordt geteld."
+    },
+    {
+      "code": "C9_GEEN_VERZAMELBAK",
+      "eis": "niet meer dan drempels.max_bronnen_per_bestemming bronnen per bestemming",
+      "waarom": "Verwantschap per URL kan kloppen terwijl het geheel alsnog een verzamelbak wordt. Deze controle kijkt naar het geheel."
+    },
+    {
+      "code": "C10_NIET_VERBODEN",
+      "eis": "de bestemming mag niet in verboden_bestemmingen staan",
+      "waarom": "Een expliciete zwarte lijst naast de regels, zodat een nieuw gevonden slechte bestemming met een regel te blokkeren is in plaats van met code."
+    }
+  ],
+  "familieregels": [
+    {
+      "familie": "shopify-cdn-bestanden",
+      "patroon": "/cdn/shop",
+      "soort": "segment-prefix",
+      "bewijs": "MEASURED",
+      "bewijsregel": "Gezien in het Wayback-archief: 113 van de 169 gearchiveerde URL's op vibeenergy.nl beginnen met /cdn/shop (mediabestanden onder /cdn/shop/files, themabestanden onder /cdn/shop/t/3/assets, /cdn/shop/t/3/compiled_assets).",
+      "strategie": "vast",
+      "actie": "RETURN_404",
+      "reden": "Platformpad van Shopify. De bestanden hebben geen opvolger op de huidige site en er hoort er geen te komen: het zijn themabestanden en afbeeldingsderivaten van een winkel die niet meer bestaat. Een 404 is het juiste antwoord en is ook al het gemeten antwoord.",
+      "seo_risico": "LAAG",
+      "uitvoering": "GEEN ACTIE NODIG",
+      "handmatige_actie": null,
+      "afbeelding_toegestaan": false
+    },
+    {
+      "familie": "shopify-cdn-platform",
+      "patroon": "/cdn/shopifycloud",
+      "soort": "segment-prefix",
+      "bewijs": "MEASURED",
+      "bewijsregel": "Gezien in het Wayback-archief: 5 URL's onder /cdn/shopifycloud (boomerang, payment-sheet, storefront features).",
+      "strategie": "vast",
+      "actie": "RETURN_404",
+      "reden": "Broncode van het Shopify-platform zelf, nooit inhoud van deze site. Geen opvolger mogelijk.",
+      "seo_risico": "LAAG",
+      "uitvoering": "GEEN ACTIE NODIG",
+      "handmatige_actie": null,
+      "afbeelding_toegestaan": false
+    },
+    {
+      "familie": "shopify-cdn-fonts",
+      "patroon": "/cdn/fonts",
+      "soort": "segment-prefix",
+      "bewijs": "MEASURED",
+      "bewijsregel": "Gezien in het Wayback-archief: 4 lettertypebestanden onder /cdn/fonts (archivo, questrial), met een hmac-parameter waarin base64 \"vibebatterij.nl\" en het winkeldomein 782e0c.myshopify.com staan. Dat is het harde bewijs dat de vorige site Shopify was.",
+      "strategie": "vast",
+      "actie": "RETURN_404",
+      "reden": "Lettertypebestanden van het oude thema. De huidige site levert zijn eigen woff2 uit de wortel; de oude paden hebben geen opvolger.",
+      "seo_risico": "LAAG",
+      "uitvoering": "GEEN ACTIE NODIG",
+      "handmatige_actie": null,
+      "afbeelding_toegestaan": false
+    },
+    {
+      "familie": "shopify-cdn-overig",
+      "patroon": "/cdn",
+      "soort": "segment-prefix",
+      "bewijs": "MEASURED",
+      "bewijsregel": "Gezien in het Wayback-archief: 1 URL('s) onder /cdn die niet in een van de drie specifiekere families vallen.",
+      "strategie": "vast",
+      "actie": "RETURN_404",
+      "reden": "Rest van de Shopify-CDN-wortel. Zelfde beoordeling als de drie specifiekere families; deze regel staat er zodat een onbekend /cdn-pad niet alsnog in de restcategorie belandt.",
+      "seo_risico": "LAAG",
+      "uitvoering": "GEEN ACTIE NODIG",
+      "handmatige_actie": null,
+      "afbeelding_toegestaan": false
+    },
+    {
+      "familie": "shopify-afrekenen",
+      "patroon": "/checkouts",
+      "soort": "segment-prefix",
+      "bewijs": "MEASURED",
+      "bewijsregel": "Gezien in het Wayback-archief: 1 URL('s) onder /checkouts, waaronder /checkouts/internal/preloads.js?locale=nl-NL&permanent-domain=782e0c.myshopify.com.",
+      "strategie": "vast",
+      "actie": "RETURN_404",
+      "reden": "Afrekenproces van de oude webwinkel. Er is geen webwinkel meer en er is geen pagina die dit opvolgt. Deze URL's horen ook nooit geindexeerd te zijn; ze stonden bij Shopify al op noindex.",
+      "seo_risico": "LAAG",
+      "uitvoering": "GEEN ACTIE NODIG",
+      "handmatige_actie": null,
+      "afbeelding_toegestaan": false
+    },
+    {
+      "familie": "shopify-winkelwagen",
+      "patroon": "^/cart(\\.(js|json|atom))?(/|$)",
+      "soort": "regex",
+      "bewijs": "INFERRED",
+      "bewijsregel": "Standaardfamilie van Shopify, hier NIET gearchiveerd: in de Wayback-inventaris staat geen enkele /cart-URL. De familie bestaat in de regels omdat de export hem bijna zeker bevat, niet omdat wij hem gezien hebben.",
+      "strategie": "vast",
+      "actie": "RETURN_404",
+      "reden": "Functioneel eindpunt van een webwinkel die niet meer bestaat, geen inhoud. Geen opvolger, en een 301 naar een inhoudelijke pagina zou een gebruiker met koopintentie op een uitlegpagina zetten.",
+      "seo_risico": "LAAG",
+      "uitvoering": "GEEN ACTIE NODIG",
+      "handmatige_actie": null,
+      "afbeelding_toegestaan": false
+    },
+    {
+      "familie": "shopify-account",
+      "patroon": "/account",
+      "soort": "segment-prefix",
+      "bewijs": "INFERRED",
+      "bewijsregel": "Standaardfamilie van Shopify, hier niet gearchiveerd.",
+      "strategie": "vast",
+      "actie": "RETURN_404",
+      "reden": "Inlog- en accountpagina's van de oude winkel. Er is geen account meer en de huidige site heeft geen inlog. Geen opvolger.",
+      "seo_risico": "LAAG",
+      "uitvoering": "GEEN ACTIE NODIG",
+      "handmatige_actie": null,
+      "afbeelding_toegestaan": false
+    },
+    {
+      "familie": "shopify-zoeken",
+      "patroon": "^/search(\\.(js|json))?(/|$|\\?)",
+      "soort": "regex",
+      "bewijs": "INFERRED",
+      "bewijsregel": "Standaardfamilie van Shopify, hier niet gearchiveerd.",
+      "strategie": "vast",
+      "actie": "RETURN_404",
+      "reden": "Interne zoekresultaten. Die horen niet geindexeerd te zijn (Shopify zette er zelf noindex op) en leveren eindeloos veel queryvarianten op. Geen opvolger; de huidige site heeft geen zoekfunctie.",
+      "seo_risico": "LAAG",
+      "uitvoering": "GEEN ACTIE NODIG",
+      "handmatige_actie": null,
+      "afbeelding_toegestaan": false
+    },
+    {
+      "familie": "shopify-appproxy",
+      "patroon": "/apps",
+      "soort": "segment-prefix",
+      "bewijs": "INFERRED",
+      "bewijsregel": "Standaardfamilie van Shopify (app-proxy), hier niet gearchiveerd.",
+      "strategie": "vast",
+      "actie": "RETURN_404",
+      "reden": "Eindpunten van Shopify-apps. Technische proxypaden zonder eigen inhoud en zonder opvolger.",
+      "seo_risico": "LAAG",
+      "uitvoering": "GEEN ACTIE NODIG",
+      "handmatige_actie": null,
+      "afbeelding_toegestaan": false
+    },
+    {
+      "familie": "shopify-collecties",
+      "patroon": "/collections",
+      "soort": "segment-prefix",
+      "bewijs": "INFERRED",
+      "bewijsregel": "Standaardfamilie van Shopify, hier niet gearchiveerd. Dat de winkel collecties had is aannemelijk maar ongemeten; welke handles dat waren is ONBEKEND.",
+      "strategie": "tabel-of-terugval",
+      "actie": "RETURN_404",
+      "reden": "Categorielijsten van een productcatalogus. De huidige site verkoopt geen producten en heeft dus geen categorielijst die dit opvolgt. Een 301 naar bijvoorbeeld /systeem-energieopslag zou een catalogus-URL op een uitlegpagina laten landen; dat is geen opvolger maar een gok. Een handle met een aantoonbare opvolger kan met reden in handle_afbeelding.collections komen; zolang die leeg is, is 404 het antwoord.",
+      "seo_risico": "MIDDEL",
+      "uitvoering": "GEEN ACTIE NODIG",
+      "handmatige_actie": null,
+      "afbeelding_toegestaan": true,
+      "tabelsleutel": "collections"
+    },
+    {
+      "familie": "shopify-producten",
+      "patroon": "/products",
+      "soort": "segment-prefix",
+      "bewijs": "INFERRED",
+      "bewijsregel": "Standaardfamilie van Shopify, hier niet gearchiveerd; de handles zijn ONBEKEND.",
+      "strategie": "tabel-of-terugval",
+      "actie": "RETURN_404",
+      "reden": "Productdetailpagina's van een webwinkel die niet meer bestaat. Vibe levert nu projecten en systemen, geen artikelen met een prijs; er is geen pagina die een artikel een-op-een opvolgt. 404 is eerlijk, een 301 zou de zoekintentie (kopen) naar een pagina met een andere intentie (laten uitvoeren) sturen.",
+      "seo_risico": "MIDDEL",
+      "uitvoering": "GEEN ACTIE NODIG",
+      "handmatige_actie": null,
+      "afbeelding_toegestaan": true,
+      "tabelsleutel": "products"
+    },
+    {
+      "familie": "shopify-beleidspaginas",
+      "patroon": "/policies",
+      "soort": "segment-prefix",
+      "bewijs": "INFERRED",
+      "bewijsregel": "Standaardfamilie van Shopify, hier niet gearchiveerd. De handleset van Shopify is wel klein en vast (privacy-policy, terms-of-service, refund-policy, shipping-policy, legal-notice, subscription-policy, contact-information), daarom is hij hier per handle beoordeeld in plaats van als geheel.",
+      "strategie": "tabel-of-terugval",
+      "actie": "RETURN_404",
+      "reden": "Juridische winkelpagina's. Twee ervan hebben een inhoudelijke opvolger op de huidige site en staan met reden in handle_afbeelding.policies; de rest (retour, verzending, abonnement) gaat over een winkelmodel dat niet meer bestaat en krijgt 404.",
+      "seo_risico": "MIDDEL",
+      "uitvoering": "GEEN ACTIE NODIG",
+      "handmatige_actie": null,
+      "afbeelding_toegestaan": true,
+      "tabelsleutel": "policies"
+    },
+    {
+      "familie": "shopify-blog",
+      "patroon": "/blogs",
+      "soort": "segment-prefix",
+      "bewijs": "INFERRED",
+      "bewijsregel": "Standaardfamilie van Shopify, hier niet gearchiveerd. Vorm: /blogs/<blog> is de index, /blogs/<blog>/<artikel> is een artikel.",
+      "strategie": "blogindex-of-review",
+      "actie": "REQUIRES_REVIEW",
+      "blogindex_bestemming": "kennis",
+      "blogindex_reden": "Een blogindex heeft precies een inhoudelijke opvolger: de kennisbank /kennis (gemeten: INDEX, HTTP 200, 17 onderliggende artikelen). Index naar index, een-op-een, en de bezoeker landt op dezelfde soort pagina als waar hij op klikte.",
+      "blogartikel_reden": "Welk kennisartikel een oud blogartikel opvolgt, kan alleen iemand zeggen die de titel van dat artikel kent. Een 301 van elk artikel naar /kennis zou de kennisbank tot verzamelbak maken (dat is de C9-controle) en voor Google als soft 404 lezen. Daarom per artikel een besluit, met de handle in handle_afbeelding.blogs zodra de opvolger benoemd is.",
+      "reden": "Per niveau beoordeeld: de blogindex krijgt een 301 naar /kennis, een los artikel krijgt REQUIRES_REVIEW.",
+      "seo_risico": "HOOG",
+      "uitvoering": "VEREIST BESLUIT",
+      "handmatige_actie": null,
+      "afbeelding_toegestaan": true,
+      "tabelsleutel": "blogs"
+    },
+    {
+      "familie": "shopify-redactionele-paginas",
+      "patroon": "/pages",
+      "soort": "segment-prefix",
+      "bewijs": "INFERRED",
+      "bewijsregel": "Standaardfamilie van Shopify, hier niet gearchiveerd. Dit is de enige familie waar een 301 kansrijk is: /pages/<handle> waren de redactionele pagina's van de winkel, en de huidige site heeft redactionele pagina's met dezelfde onderwerpen.",
+      "strategie": "handle-of-review",
+      "actie": "REQUIRES_REVIEW",
+      "reden": "Per handle beoordeeld. Is de handle gelijk aan een bestaande INDEX-route in de wortel (bijvoorbeeld /pages/contact naast /contact), dan is de opvolger aantoonbaar en volgt een 301. Is de handle gelijk aan een van de 16 doorverwijsstubs, dan gaat de 301 naar de GEMETEN canonical van die stub en niet naar de stub zelf — anders zou het een keten naar een noindex-pagina zijn. Anders: REQUIRES_REVIEW, want een handle zonder gelijke slug kan alles betekenen en raden is hier verboden.",
+      "seo_risico": "HOOG",
+      "uitvoering": "VEREIST BESLUIT",
+      "handmatige_actie": null,
+      "afbeelding_toegestaan": true,
+      "tabelsleutel": "pages"
+    },
+    {
+      "familie": "legacy-sitemapeindpunt",
+      "patroon": "legacy_sitemapeindpunten",
+      "soort": "lijst",
+      "bewijs": "MEASURED",
+      "bewijsregel": "GEMETEN op 13 oktober 2026: alle dertien kandidaat-eindpunten geven 404 (/sitemap_index.xml, /sitemap_products_1.xml, /sitemap_collections_1.xml, /sitemap_pages_1.xml, /sitemap_blogs_1.xml, /wp-sitemap.xml, /post-sitemap.xml, /page-sitemap.xml, /product-sitemap.xml, /category-sitemap.xml, /sitemap.xml.gz, /feed, /rss). De drie echte sitemaps geven 200.",
+      "strategie": "vast",
+      "actie": "RETURN_404",
+      "reden": "Sitemapeindpunten van het oude platform. Ze geven al 404 en dat is correct: ze mogen niet gaan bestaan, want dan zou een tweede, verouderde URL-verzameling naast sitemap.xml staan. De enige resterende actie zit niet op de site maar in Search Console.",
+      "seo_risico": "MIDDEL",
+      "uitvoering": "HANDMATIG IN SEARCH CONSOLE",
+      "handmatige_actie": "Verwijder de INZENDING van dit sitemapadres in Search Console (Sitemaps > rij selecteren > Sitemap verwijderen). Een 404 op het adres haalt de inzending niet weg; zolang hij staat ingediend blijft Google hem opvragen en blijft de fout gerapporteerd. Dit is een handmatige actie in de console en GEEN wijziging aan de site.",
+      "afbeelding_toegestaan": false
+    },
+    {
+      "familie": "eigen-asset",
+      "patroon": "^/(assets|img|vibe)/|\\.(css|js|mjs|woff2?|ttf|jpe?g|png|webp|svg|gif|ico|mp4|webm|pdf)$",
+      "soort": "regex",
+      "bewijs": "MEASURED",
+      "bewijsregel": "Deze paden komen uit de Wayback-inventaris van de huidige site zelf (/assets/logo.png, /assets/projects/*.jpg, /tokens.css, /home.css, /_header.js, /0205-2026_Vibe-drone_small.mp4). Of ze vandaag bestaan wordt per bestand op schijf gecontroleerd.",
+      "strategie": "bestand-of-terugval",
+      "actie": "RETURN_404",
+      "reden": "Eigen bestand, geen pagina. Bestaat het nog op schijf, dan KEEP; bestaat het niet meer, dan is 404 het juiste antwoord: een asset heeft geen zoekintentie en geen opvolger die een 301 verdient.",
+      "seo_risico": "LAAG",
+      "uitvoering": "GEEN ACTIE NODIG",
+      "handmatige_actie": null,
+      "afbeelding_toegestaan": false
+    }
+  ],
+  "handle_afbeelding": {
+    "_toelichting": "Handmatige afbeeldingen van een oude handle naar een bestemming. Elke regel eist `reden` en `bewijs`; zonder die twee weigert de classificator de bestemming (controle C8). Een regel die een van de controles schendt laat scripts/seo/historische-urls.mjs FALEN met exitcode 3 — een foute 301 moet luid stuklopen en niet stil in het rapport belanden. `actie` mag ook RETURN_404 zijn: dan is vastgelegd dat deze handle BEOORDEELD is en geen opvolger heeft.",
+    "policies": {
+      "privacy-policy": {
+        "actie": "REDIRECT_301",
+        "bestemming": "privacy",
+        "bewijs": "INFERRED_HANDLE_MEASURED_BESTEMMING",
+        "reden": "Zelfde onderwerp, en de bestemming is gemeten: /privacy geeft 200, staat op INDEX en draagt een zelfverwijzende canonical. De handle zelf is INFERRED: dat Shopify deze handle gebruikt is standaardgedrag van het platform, maar wij hebben hem voor deze winkel niet gearchiveerd gezien."
+      },
+      "terms-of-service": {
+        "actie": "REDIRECT_301",
+        "bestemming": "algemene-voorwaarden",
+        "bewijs": "INFERRED_HANDLE_MEASURED_BESTEMMING",
+        "reden": "De algemene voorwaarden zijn de Nederlandse tegenhanger van terms of service. Bestemming gemeten: /algemene-voorwaarden geeft 200 en staat op INDEX."
+      },
+      "legal-notice": {
+        "actie": "REDIRECT_301",
+        "bestemming": "algemene-voorwaarden",
+        "bewijs": "INFERRED_HANDLE_MEASURED_BESTEMMING",
+        "reden": "Wettelijke mededelingen staan op deze site in de algemene voorwaarden; er is geen aparte colofonpagina. Bestemming gemeten: 200, INDEX."
+      },
+      "contact-information": {
+        "actie": "REDIRECT_301",
+        "bestemming": "contact",
+        "bewijs": "INFERRED_HANDLE_MEASURED_BESTEMMING",
+        "reden": "Contactgegevens staan op /contact (gemeten: 200, INDEX). Een-op-een hetzelfde doel: de bezoeker wil Vibe bereiken."
+      },
+      "refund-policy": {
+        "actie": "RETURN_404",
+        "bestemming": null,
+        "bewijs": "INFERRED",
+        "reden": "BEOORDEELD en geen opvolger: er is geen webwinkel, dus geen retourbeleid. De cookie- en privacypagina gaan over iets anders en zouden een onverwante bestemming zijn."
+      },
+      "shipping-policy": {
+        "actie": "RETURN_404",
+        "bestemming": null,
+        "bewijs": "INFERRED",
+        "reden": "BEOORDEELD en geen opvolger: er wordt niets verzonden. Projecten worden uitgevoerd, niet geleverd per pakket."
+      },
+      "subscription-policy": {
+        "actie": "RETURN_404",
+        "bestemming": null,
+        "bewijs": "INFERRED",
+        "reden": "BEOORDEELD en geen opvolger: er is geen abonnementsproduct."
+      }
+    },
+    "pages": {},
+    "collections": {},
+    "products": {},
+    "blogs": {}
+  },
+  "legacy_sitemapeindpunten": {
+    "_toelichting": "Kandidaat-sitemapadressen van het oude platform. Alle dertien zijn op 13 oktober 2026 gemeten en geven 404. De drie echte sitemaps staan er apart bij omdat de poort moet kunnen zien dat ze NIET in deze lijst thuishoren.",
+    "gemeten_op": "2026-10-13",
+    "status_404": [
+      "/sitemap_index.xml",
+      "/sitemap_products_1.xml",
+      "/sitemap_collections_1.xml",
+      "/sitemap_pages_1.xml",
+      "/sitemap_blogs_1.xml",
+      "/wp-sitemap.xml",
+      "/post-sitemap.xml",
+      "/page-sitemap.xml",
+      "/product-sitemap.xml",
+      "/category-sitemap.xml",
+      "/sitemap.xml.gz",
+      "/feed",
+      "/rss"
+    ],
+    "status_200_echte_sitemaps": [
+      "/sitemap.xml",
+      "/sitemap-nationaal.xml",
+      "/sitemap-regios.xml"
+    ]
+  },
+  "gemeten_steekproef": {
+    "_toelichting": "Een steekproef, geen familietelling. Van elke familie is een representatieve URL opgevraagd om te bewijzen dat de familie vandaag werkelijk 404 geeft en niet per ongeluk iets serveert. Veertien URL's is veertien metingen; het zegt niets over de duizenden URL's die wij niet hebben.",
+    "gemeten_op": "2026-10-13",
+    "methode": "curl -s -o /dev/null -w '%{http_code}' --max-time 15",
+    "metingen": [
+      {
+        "url": "https://www.vibeenergy.nl/cdn/shop/files/green-city.png?v=1694261092&width=750",
+        "status": 404
+      },
+      {
+        "url": "https://www.vibeenergy.nl/cdn/shop/t/3/assets/base.css?v=140624990073879848751685613427",
+        "status": 404
+      },
+      {
+        "url": "https://www.vibeenergy.nl/cdn/shopifycloud/boomerang/shopify-boomerang-1.0.0.min.js",
+        "status": 404
+      },
+      {
+        "url": "https://www.vibeenergy.nl/checkouts/internal/preloads.js?locale=nl-NL&permanent-domain=782e0c.myshopify.com",
+        "status": 404
+      },
+      {
+        "url": "https://www.vibeenergy.nl/collections/all",
+        "status": 404
+      },
+      {
+        "url": "https://www.vibeenergy.nl/products/vibe-batterij",
+        "status": 404
+      },
+      {
+        "url": "https://www.vibeenergy.nl/cart",
+        "status": 404
+      },
+      {
+        "url": "https://www.vibeenergy.nl/account/login",
+        "status": 404
+      },
+      {
+        "url": "https://www.vibeenergy.nl/search?q=batterij",
+        "status": 404
+      },
+      {
+        "url": "https://www.vibeenergy.nl/policies/privacy-policy",
+        "status": 404
+      },
+      {
+        "url": "https://www.vibeenergy.nl/blogs/nieuws",
+        "status": 404
+      },
+      {
+        "url": "https://www.vibeenergy.nl/blogs/nieuws/een-artikel",
+        "status": 404
+      },
+      {
+        "url": "https://www.vibeenergy.nl/pages/over-ons",
+        "status": 404
+      },
+      {
+        "url": "https://www.vibeenergy.nl/apps/iets",
+        "status": 404
+      }
+    ]
+  },
+  "wayback_inventaris": {
+    "_toelichting": "De enige historische URL-inventaris die buiten Search Console bestaat. Hier letterlijk ingebed omdat de meetmap waarin hij stond verdwijnt en dit bestand daarna de bron is. Per rij: [url, timestamp, statuscode, mimetype] zoals de CDX-API hem gaf.",
+    "bron": "CDX-API van het Internet Archive, velden original,timestamp,statuscode,mimetype",
+    "opgehaald_op": "2026-10-13",
+    "aantal_rijen": 172,
+    "aantal_op_hoofdhost": 169,
+    "aantal_op_subdomein": 3,
+    "waarschuwing": "Dit zijn 172 momentopnames voor het HELE domein over alle jaren, waarvan 169 op vibeenergy.nl zelf. Tegen het rapportcijfer van 7.728 niet-gevonden URL's is dat geen reconstructie en ook geen steekproef waaruit je mag generaliseren.",
+    "rijen": [
+      [
+        "http://aanvragen.vibeenergy.nl/",
+        "20240831161704",
+        "301",
+        "text/html"
+      ],
+      [
+        "http://vibeenergy.nl/cdn/fonts/archivo/archivo_n7.6f363ab30b12ea00d5e6243ed0e977a11393a3ad.woff2?h1=NzgyZTBjLmFjY291bnQubXlzaG9waWZ5LmNvbQ&h2=dmliZWJhdHRlcmlqLm5s&h3=dmliZWVuZXJneS5ubA&hmac=d2a1f104a1a34d95eded281b453f6f7cd783030afb2eeb85acf321f51a0c7035",
+        "20240122060454",
+        "301",
+        "unk"
+      ],
+      [
+        "http://vibeenergy.nl/cdn/fonts/archivo/archivo_n7.846b40a5735bbd149ad44b083a19c3e5d88d8fab.woff?h1=NzgyZTBjLmFjY291bnQubXlzaG9waWZ5LmNvbQ&h2=dmliZWJhdHRlcmlqLm5s&h3=dmliZWVuZXJneS5ubA&hmac=bcae68ab67ebd5aeb8edfde8979d53445c563b7de62a92f02fbb34ab573bcffa",
+        "20240122060454",
+        "301",
+        "unk"
+      ],
+      [
+        "http://vibeenergy.nl/cdn/fonts/questrial/questrial_n4.0ba6d2b6094954bab23732c75d3ecb4c47a5869c.woff2?h1=NzgyZTBjLmFjY291bnQubXlzaG9waWZ5LmNvbQ&h2=dmliZWJhdHRlcmlqLm5s&h3=dmliZWVuZXJneS5ubA&hmac=6651e772ba8e2870b1a0edd910d5eb9c38c20aad4eb721efb071ba63997bfe13",
+        "20240122060454",
+        "301",
+        "unk"
+      ],
+      [
+        "http://vibeenergy.nl/cdn/fonts/questrial/questrial_n4.5abce10d8846bb9326c9741eaffed9667c847692.woff?h1=NzgyZTBjLmFjY291bnQubXlzaG9waWZ5LmNvbQ&h2=dmliZWJhdHRlcmlqLm5s&h3=dmliZWVuZXJneS5ubA&hmac=60434e87b3efdbdd7eba415b0f827bc76ff8a94079d497be85d2693a3d1ee684",
+        "20240122060454",
+        "301",
+        "unk"
+      ],
+      [
+        "https://aanvragen.vibeenergy.nl/2.0",
+        "20250207102149",
+        "404",
+        "text/html"
+      ],
+      [
+        "https://aanvragen.vibeenergy.nl/aanvragen.vibeenergy.nl",
+        "20250207102148",
+        "404",
+        "text/html"
+      ],
+      [
+        "https://vibeenergy.nl/",
+        "20231102075355",
+        "200",
+        "text/html"
+      ],
+      [
+        "https://vibeenergy.nl/_clarity.js",
+        "20260730101655",
+        "200",
+        "application/javascript"
+      ],
+      [
+        "https://vibeenergy.nl/_consent.js",
+        "20260812172707",
+        "200",
+        "application/javascript"
+      ],
+      [
+        "https://vibeenergy.nl/_footer.js",
+        "20260730101655",
+        "200",
+        "application/javascript"
+      ],
+      [
+        "https://vibeenergy.nl/_header.js?v=3",
+        "20260730101655",
+        "200",
+        "application/javascript"
+      ],
+      [
+        "https://vibeenergy.nl/_leadpopup.js",
+        "20260730101655",
+        "200",
+        "application/javascript"
+      ],
+      [
+        "https://vibeenergy.nl/0205-2026_Vibe-drone_small.mp4",
+        "20260730101656",
+        "206",
+        "video/mp4"
+      ],
+      [
+        "https://vibeenergy.nl/assets/energy-hubs-hero.jpg",
+        "20260730101700",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/assets/logo.png",
+        "20260730101656",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/assets/projects/arnhem-60.jpg",
+        "20260730101656",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/assets/projects/beethovenstraat.jpg",
+        "20260730101656",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/assets/projects/dormio.jpg",
+        "20260730101656",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/assets/projects/hedin-alkmaar.jpg",
+        "20260730101656",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/assets/projects/hedin-amsterdam.jpg",
+        "20260730101656",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/assets/projects/ratio-16.jpg",
+        "20260730101655",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/capaciteit-als-dienst",
+        "20260730101709",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn",
+        "20240122060455",
+        "404",
+        "text/html"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/AdobeStock_462828602_1414cd0d-ba3c-444b-897b-e7da72ebdeee.jpg?v=1696248587&width=1070",
+        "20240122060450",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/AdobeStock_462828602_1414cd0d-ba3c-444b-897b-e7da72ebdeee.jpg?v=1696248587&width=1500",
+        "20240122060450",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/AdobeStock_462828602_1414cd0d-ba3c-444b-897b-e7da72ebdeee.jpg?v=1696248587&width=165",
+        "20240122060450",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/AdobeStock_462828602_1414cd0d-ba3c-444b-897b-e7da72ebdeee.jpg?v=1696248587&width=360",
+        "20240122060450",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/AdobeStock_462828602_1414cd0d-ba3c-444b-897b-e7da72ebdeee.jpg?v=1696248587&width=535",
+        "20240122060450",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/AdobeStock_462828602_1414cd0d-ba3c-444b-897b-e7da72ebdeee.jpg?v=1696248587&width=750",
+        "20240122060450",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/green-city.png?v=1694261092&width=1070",
+        "20240122060450",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/green-city.png?v=1694261092&width=1500",
+        "20240122060450",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/green-city.png?v=1694261092&width=165",
+        "20240122060450",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/green-city.png?v=1694261092&width=360",
+        "20240122060450",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/green-city.png?v=1694261092&width=535",
+        "20240122060450",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/green-city.png?v=1694261092&width=750",
+        "20240122060450",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/image00071-1-2048x1536.jpg?v=1694099827&width=1070",
+        "20240122060452",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/image00071-1-2048x1536.jpg?v=1694099827&width=1500",
+        "20240122060451",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/image00071-1-2048x1536.jpg?v=1694099827&width=165",
+        "20240122060451",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/image00071-1-2048x1536.jpg?v=1694099827&width=360",
+        "20240122060452",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/image00071-1-2048x1536.jpg?v=1694099827&width=535",
+        "20240122060452",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/image00071-1-2048x1536.jpg?v=1694099827&width=750",
+        "20240122060452",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/image00072-2048x1536.jpg?v=1694099884&width=1070",
+        "20240122060450",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/image00072-2048x1536.jpg?v=1694099884&width=1500",
+        "20240122060449",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/image00072-2048x1536.jpg?v=1694099884&width=165",
+        "20240122060449",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/image00072-2048x1536.jpg?v=1694099884&width=360",
+        "20240122060449",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/image00072-2048x1536.jpg?v=1694099884&width=535",
+        "20240122060449",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/image00072-2048x1536.jpg?v=1694099884&width=750",
+        "20240122060450",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/optimized.jpg?v=1694522830&width=1070",
+        "20240122060454",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/optimized.jpg?v=1694522830&width=1500",
+        "20240122060453",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/optimized.jpg?v=1694522830&width=165",
+        "20240122060453",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/optimized.jpg?v=1694522830&width=360",
+        "20240122060453",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/optimized.jpg?v=1694522830&width=535",
+        "20240122060453",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/optimized.jpg?v=1694522830&width=750",
+        "20240122060454",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_1582549144_1.jpg?v=1696501924&width=1100",
+        "20240122060451",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_1582549144_1.jpg?v=1696501924&width=1500",
+        "20240122060451",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_1582549144_1.jpg?v=1696501924&width=1780",
+        "20240122060451",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_1582549144_1.jpg?v=1696501924&width=2000",
+        "20240122060451",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_1582549144_1.jpg?v=1696501924&width=3000",
+        "20240122060451",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_1582549144_1.jpg?v=1696501924&width=375",
+        "20240122060450",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_1582549144_1.jpg?v=1696501924&width=3840",
+        "20240122060450",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_1582549144_1.jpg?v=1696501924&width=550",
+        "20240122060451",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_1582549144_1.jpg?v=1696501924&width=750",
+        "20240122060451",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_764274979-2.jpg?v=1696499624&width=1320",
+        "20240122060449",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_764274979-2.jpg?v=1696499624&width=1800",
+        "20240122060449",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_764274979-2.jpg?v=1696499624&width=2136",
+        "20240122060449",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_764274979-2.jpg?v=1696499624&width=2400",
+        "20240122060449",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_764274979-2.jpg?v=1696499624&width=3600",
+        "20240122060449",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_764274979-2.jpg?v=1696499624&width=3840",
+        "20240122060449",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_764274979-2.jpg?v=1696499624&width=450",
+        "20240122060449",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_764274979-2.jpg?v=1696499624&width=660",
+        "20240122060449",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/shutterstock_764274979-2.jpg?v=1696499624&width=900",
+        "20240122060449",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/SolarOplossing-project-Beemster-Garlic-1024x698.png?v=1694593733&width=1070",
+        "20240122060454",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/SolarOplossing-project-Beemster-Garlic-1024x698.png?v=1694593733&width=1500",
+        "20240122060454",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/SolarOplossing-project-Beemster-Garlic-1024x698.png?v=1694593733&width=165",
+        "20240122060454",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/SolarOplossing-project-Beemster-Garlic-1024x698.png?v=1694593733&width=360",
+        "20240122060454",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/SolarOplossing-project-Beemster-Garlic-1024x698.png?v=1694593733&width=535",
+        "20240122060454",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/SolarOplossing-project-Beemster-Garlic-1024x698.png?v=1694593733&width=750",
+        "20240122060454",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/VIBE_696dbe5c-9eeb-4ad1-8103-012fcecc4d60.png?v=1690450817&width=180",
+        "20240112092536",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/VIBE_696dbe5c-9eeb-4ad1-8103-012fcecc4d60.png?v=1690450817&width=270",
+        "20240122060449",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/VIBE_696dbe5c-9eeb-4ad1-8103-012fcecc4d60.png?v=1690450817&width=360",
+        "20240122060449",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/VIBE_696dbe5c-9eeb-4ad1-8103-012fcecc4d60.png?v=1690450817&width=600",
+        "20240122060449",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/VIBE_cab9c0dd-fcc4-40f0-8827-4ff325343bbd.png?v=1690450871&width=290",
+        "20240112092400",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/VIBE_cab9c0dd-fcc4-40f0-8827-4ff325343bbd.png?v=1690450871&width=580",
+        "20240122060454",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/VIBE_cab9c0dd-fcc4-40f0-8827-4ff325343bbd.png?v=1690450871&width=760",
+        "20240122060454",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/Vibe_ESS.png?v=1694507326&width=1100",
+        "20240122060452",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/Vibe_ESS.png?v=1694507326&width=1500",
+        "20240122060452",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/Vibe_ESS.png?v=1694507326&width=1780",
+        "20240122060453",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/Vibe_ESS.png?v=1694507326&width=2000",
+        "20240122060453",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/Vibe_ESS.png?v=1694507326&width=3000",
+        "20240122060453",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/Vibe_ESS.png?v=1694507326&width=375",
+        "20240122060452",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/Vibe_ESS.png?v=1694507326&width=3840",
+        "20240122060452",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/Vibe_ESS.png?v=1694507326&width=550",
+        "20240122060452",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/Vibe_ESS.png?v=1694507326&width=750",
+        "20240122060452",
+        "200",
+        "image/png"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/WhatsApp_Image_2023-09-08_at_10.14.19.jpg?v=1694263137&width=1070",
+        "20240122060453",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/WhatsApp_Image_2023-09-08_at_10.14.19.jpg?v=1694263137&width=1500",
+        "20240122060453",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/WhatsApp_Image_2023-09-08_at_10.14.19.jpg?v=1694263137&width=165",
+        "20240122060453",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/WhatsApp_Image_2023-09-08_at_10.14.19.jpg?v=1694263137&width=360",
+        "20240122060453",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/WhatsApp_Image_2023-09-08_at_10.14.19.jpg?v=1694263137&width=535",
+        "20240122060453",
+        "200",
+        "image/jpeg"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/files/WhatsApp_Image_2023-09-08_at_10.14.19.jpg?v=1694263137&width=750",
+        "20240122060453",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/base.css?v=140624990073879848751685613427",
+        "20240112092327",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/cart-drawer.js?v=44260131999403604181685613427",
+        "20240122060455",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/cart-notification.js?v=160453272920806432391685613427",
+        "20240122060455",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/cart.js?v=21876159511507192261685613427",
+        "20240112092401",
+        "200",
+        "text/javascript"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-cart-drawer.css?v=35930391193938886121685613427",
+        "20240112092327",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-cart-items.css?v=29412722223528841861685613427",
+        "20240122060455",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-cart-notification.css?v=108833082844665799571685613427",
+        "20240122060455",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-cart.css?v=61086454150987525971685613427",
+        "20240112092426",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-discounts.css?v=152760482443307489271685613427",
+        "20240112092634",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-image-with-text.css?v=137828147691215233621685613427",
+        "20240122060455",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-list-menu.css?v=151968516119678728991685613427",
+        "20240122060455",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-list-payment.css?v=69253961410771838501685613427",
+        "20240122060455",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-list-social.css?v=52211663153726659061685613427",
+        "20240122060455",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-loading-overlay.css?v=167310470843593579841685613427",
+        "20240112092619",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-localization-form.css?v=173603692892863148811685613427",
+        "20240122060455",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-menu-drawer.css?v=94074963897493609391685613427",
+        "20240122060455",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-newsletter.css?v=103472482056003053551685613427",
+        "20240122060455",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-predictive-search.css?v=85913294783299393391685613427",
+        "20240122060455",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-price.css?v=65402837579211014041685613427",
+        "20240122060455",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-search.css?v=184225813856820874251685613427",
+        "20240122060455",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-slider.css?v=111384418465749404671685613427",
+        "20240122060455",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-slideshow.css?v=87432719022228681551685613428",
+        "20240122060455",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/component-totals.css?v=86168756436424464851685613428",
+        "20240112092536",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/constants.js?v=95358004781563950421685613428",
+        "20240122060454",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/details-disclosure.js?v=153497636716254413831685613428",
+        "20240112092401",
+        "200",
+        "text/javascript"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/details-modal.js?v=4511761896672669691685613428",
+        "20240112092401",
+        "200",
+        "text/javascript"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/global.js?v=127210358271191040921685613428",
+        "20240122060454",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/localization-form.js?v=131562513936691783521685613428",
+        "20240122060455",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/newsletter-section.css?v=62410470717655853621685613428",
+        "20240122060455",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/predictive-search.js?v=16985596534672189881685613428",
+        "20240122060455",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/pubsub.js?v=2921868252632587581685613428",
+        "20240122060454",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/search-form.js?v=113639710312857635801685613428",
+        "20240122060455",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/section-footer.css?v=171161867995400310821685613428",
+        "20240122060455",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/section-image-banner.css?v=157711996801846961761685613428",
+        "20240112092611",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/section-multicolumn.css?v=138363567467112740511685613428",
+        "20240122060455",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/assets/section-rich-text.css?v=155250126305810049721685613428",
+        "20240112092633",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shop/t/3/compiled_assets/scripts.js?706=",
+        "20240122060454",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shopifycloud/boomerang/shopify-boomerang-1.0.0.min.js",
+        "20240122060455",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shopifycloud/payment-sheet/assets/latest/dynamic-checkout-cart.nl.js",
+        "20240122060454",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shopifycloud/payment-sheet/assets/latest/spb.nl.js",
+        "20240122060454",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shopifycloud/shopify/assets/storefront/features-1c0b396bd4d054b94abae1eb6a1bd6ba47beb35525c57a217c77a862ff06d83f.js",
+        "20240122060454",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/cdn/shopifycloud/shopify/assets/storefront/load_feature-87876fa245af19cbd14aa886ed59c6aa8a27c45d24dcd7a81cf2d2323506233e.js",
+        "20240122060454",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/checkouts/internal/preloads.js?locale=nl-NL&permanent-domain=782e0c.myshopify.com",
+        "20240122060454",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/contact",
+        "20260812172723",
+        "400",
+        "text/html"
+      ],
+      [
+        "https://vibeenergy.nl/energie-als-vastgoedopbrengst",
+        "20260730101708",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/energiehandel-flexmarkten",
+        "20260730101708",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/energy-hubs",
+        "20260730101709",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/home.css",
+        "20260730101655",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/industrie-logistiek",
+        "20260812172723",
+        "400",
+        "text/html"
+      ],
+      [
+        "https://vibeenergy.nl/industrie-residentieel",
+        "20260812172723",
+        "400",
+        "text/html"
+      ],
+      [
+        "https://vibeenergy.nl/industrie-vve",
+        "20260730101709",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/microgrids",
+        "20260730101709",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/netcongestie-check",
+        "20260730101709",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/oplossing-energielabel",
+        "20260730101708",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/oplossing-exploitatie",
+        "20260730101709",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/oplossing-laadplein",
+        "20260730101708",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/oplossing-netcongestie",
+        "20260730101709",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/oplossing-paris-proof",
+        "20260812172723",
+        "400",
+        "text/html"
+      ],
+      [
+        "https://vibeenergy.nl/oplossing-subsidies",
+        "20260730101709",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/over-ons",
+        "20260730101708",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/privacy",
+        "20260730101708",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/project-arnhem-60",
+        "20260812172723",
+        "400",
+        "text/html"
+      ],
+      [
+        "https://vibeenergy.nl/project-dormio-medemblik",
+        "20260812172723",
+        "400",
+        "text/html"
+      ],
+      [
+        "https://vibeenergy.nl/project-hedin-alkmaar",
+        "20260730101708",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/project-hedin-amsterdam",
+        "20260730101709",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/project-van-beethovenstraat",
+        "20260730101708",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/projecten",
+        "20260730101709",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/systeem-ems",
+        "20260730101709",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/systeem-energieopslag",
+        "20260812172723",
+        "400",
+        "text/html"
+      ],
+      [
+        "https://vibeenergy.nl/systeem-laadpalen",
+        "20260730101709",
+        "-",
+        "warc/revisit"
+      ],
+      [
+        "https://vibeenergy.nl/tokens.css",
+        "20260730101655",
+        "200",
+        "text/css"
+      ],
+      [
+        "https://vibeenergy.nl/waarom-vibe",
+        "20260812172723",
+        "400",
+        "text/html"
+      ]
+    ]
+  },
+  "gsc_inventaris": {
+    "_status": "NOT_AVAILABLE",
+    "_toelichting": "Hier landt de genormaliseerde Search Console-export. Vul dit NIET met de hand: draai scripts/seo/gsc-import.mjs <export.csv>, die alleen deze sleutel herschrijft en de rest van het bestand ongemoeid laat. Zolang _status NOT_AVAILABLE is, heeft niemand een export aangeleverd en zegt het rapport dat eerlijk.",
+    "afgekapt": true,
+    "telling_label": "ONDERGRENS",
+    "gezaghebbend_totaal": null,
+    "aantal_urls": 0,
+    "ingelezen": [],
+    "urls": [],
+    "geweigerde_rijen": []
+  }
+}

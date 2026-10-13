@@ -12,8 +12,15 @@
 
    DE DREMPEL IS NIET VERLAAGD — ER IS BEWIJS BIJGEKOMEN.
    Release 1 hield deze gemeenten vast met een gemeten argument: met alleen
-   een vestigingstotaal, een terreinenlijst en een netbeheerder deelden de
-   gemeentepagina's 55 tot 57 procent van hun vijfwoordreeksen (drempel 60).
+   een vestigingstotaal, een terreinenlijst en een netbeheerder lag de JACCARD
+   OVER VIJFWOORDREEKSEN tussen de elf gemeentepagina's op 0,49 tot 0,57 met
+   mediaan 0,53, bij een drempel van 0,60. Hier stond "55 tot 57 procent";
+   dat was het BOVENSTE KWARTIEL (0,550 tot 0,573, 14 van de 55 paren), niet
+   het bereik — nagemeten op de Release-1-commit a2fbad7 met het algoritme van
+   poort 11. De metrieknaam hoort erbij, want poort 11 meet er twee: dezelfde
+   55 paren geven op de DEKKINGSMETRIEK (gedeelde reeksen als aandeel van de
+   kleinste pagina, eigen drempel 0,85) 68 tot 74 procent. Zonder die naam is
+   een los percentage tussen 49 en 74 niet thuis te brengen.
    Te weinig bewijs voor te veel pagina's.
 
    Release 3.1 voegt het bedrijfstakprofiel toe (CBS 81575NED, 21 secties per

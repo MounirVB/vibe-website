@@ -3,15 +3,35 @@
 Hoe het systeem in elkaar zit, waarom het zo is gebouwd, en hoe je het draait.
 Vastgesteld 10 oktober 2026. Bijgewerkt 12 oktober 2026 met Release 3.1.
 
+Op 13 oktober 2026 zijn in dit document zeven gemeten onwaarheden gecorrigeerd: de
+poortentelling, het overlapbereik, de ontbrekende metrieknaam op twee plaatsen, de twee
+paartellingen die verschillende populaties vergeleken, de caddyversie, de telling van de bestaande
+pagina's en de staat van het nieuwskanaal. Daarbij is één waarschuwing toegevoegd over de
+providermetadata van Railway. Elke correctie staat bij het onderwerp zelf, met wat er stond en
+waarom dat onjuist was — niet in een losse errata-lijst, want die wordt niet gelezen door wie de
+regel hergebruikt.
+
 ## Release 3.1 in het kort
 
 Van **96 naar 430 geïndexeerde URL's**: 326 gemeentepagina's en 8 provinciepagina's
 vrijgegeven die Release 1 bewust vasthield.
 
 Release 1 hield ze tegen met een gemeten argument, niet met een voorgevoel: met alleen een
-vestigingstotaal, een terreinenlijst en een netbeheerder deelden de elf gemeentepagina's
-**55 tot 57 procent** van hun vijfwoordreeksen, tegen een drempel van 60. Er was te weinig
-bewijs om 338 pagina's van te vullen, en de rest zou sjabloon zijn.
+vestigingstotaal, een terreinenlijst en een netbeheerder lag de **jaccard over vijfwoordreeksen**
+tussen de elf gemeentepagina's op **0,49 tot 0,57, mediaan 0,53**, tegen een drempel van 0,60.
+Er was te weinig bewijs om 338 pagina's van te vullen, en de rest zou sjabloon zijn.
+
+Twee correcties op hoe dat getal eerder in deze repository stond, beide nagemeten op de
+Release-1-commit `a2fbad7` met het algoritme van poort 11 (55 paren, de elf gemeentepagina's):
+
+- Hier stond **"55 tot 57 procent"**. Dat is niet het bereik maar het **bovenste kwartiel**
+  (0,550 tot 0,573, 14 van de 55 paren). Het bereik begint bij 0,489. Wie het kwartiel voor het
+  bereik leest, denkt dat de ONDERgrens 0,55 was en dus dat de pagina's dichter op de drempel
+  zaten dan ze deden.
+- De **metrieknaam** ontbrak, en poort 11 meet er twee. Naast de jaccard rekent hij de
+  **dekking**: gedeelde reeksen als aandeel van de kleinste pagina, met een eigen drempel van
+  0,85 (`audit.mjs` regel 577-578). Over diezelfde 55 paren geeft die metriek **68 tot 74
+  procent**. Een los percentage tussen 49 en 74 is zonder metrieknaam dus niet thuis te brengen.
 
 Release 3.1 lost dat op met bewijs, niet met een lagere drempel. Drie ingrepen:
 
@@ -25,15 +45,33 @@ Release 3.1 lost dat op met bewijs, niet met een lagere drempel. Drie ingrepen:
    variant, want daar zijn er twaalf van en geen 338.
 3. **De wijzigingsdatum uit de inhoud.** Zie "Determinisme" hieronder.
 
-Gemeten na die drie ingrepen, over **92.235 paren**: hoogste jaccard **0,522**, nul paren boven
-de drempel, marge **0,078**. Ter vergelijking: vóór deze release was de marge 0,027 over 105
-paren. Drie keer zoveel marge bij dertig keer zoveel pagina's.
+Gemeten na die drie ingrepen, zoals poort 11 het zelf rapporteert: **92.235 paren** over alle 430
+INDEX-routes, hoogste jaccard **0,522**, nul paren boven de drempel, marge **0,078**.
+
+De vergelijking met Release 1 hoort in **één populatie** te staan. Eerder stond hier "marge 0,027
+over 105 paren" naast die 92.235, en dat zijn verschillende dingen: 105 is C(15,2) over de 15
+regionale pagina's van Release 1 (11 gemeenten plus 4 provincies), 92.235 is C(430,2) over alle
+INDEX-routes. Zo lijkt het aantal paren 878 keer te zijn gegroeid terwijl de populatie wisselde.
+De eerlijke vergelijking staat op de **gemeentepagina's**, want daar ging het argument over:
+
+| | gemeentepagina's | paren | hoogste jaccard | marge tot 0,60 |
+|---|---:|---:|---:|---:|
+| Release 1 (`a2fbad7`) | 11 | 55 | 0,573 | 0,027 |
+| nu (`edc10d2`) | 337 | 56.616 | 0,522 | 0,078 |
+
+Bijna drie keer zoveel marge (×2,9) bij ruim dertig keer zoveel gemeentepagina's (×30,6).
+
+Dat die tabel mag staan naast de 92.235 van poort 11 is zelf gemeten: het hoogst scorende paar is
+in alle drie de populaties hetzelfde gemeentepaar — `regios/noord-brabant/eersel` met
+`regios/noord-brabant/steenbergen`, jaccard 0,5217. Het maximum verschuift dus niet met de
+populatiekeuze, alleen de noemer. Voor de drie populaties nu: 430 pagina's → 92.235 paren,
+349 regionale pagina's → 60.726 paren, 337 gemeentepagina's → 56.616 paren.
 
 **Wat NIET is vrijgegeven, en waarom:**
 
 | | aantal | reden |
 |---|---:|---|
-| gemeente × familie | 4.104 | 2.394 zijn families die niet gemeentelijk zinvol zijn (een EMS is software, advies begint op afstand); 1.694 missen een lokaal project dat die familie aantoont; 16 hebben toereikend bewijs maar delen 84–88% van hun tekst met hun zusterpagina's |
+| gemeente × familie | 4.104 | 2.394 zijn families die niet gemeentelijk zinvol zijn (een EMS is software, advies begint op afstand); 1.694 missen een lokaal project dat die familie aantoont; 16 hebben toereikend bewijs maar delen 84–88% van hun vijfwoordreeksen met hun zusterpagina's op de dekkingsmetriek (jaccard 0,71–0,77) |
 | provincie × familie | 144 | zelfde redenen, 12 met toereikend bewijs en te veel overlap |
 | gemeenten zonder bedrijventerrein | 4 | Rozendaal, Bloemendaal, Laren, Voorne aan Zee. Vestigingen en bedrijfstakprofiel komen uit **dezelfde CBS-tabel**: twee doorsnedes van één bron, geen twee onafhankelijke feiten |
 | Schiermonnikoog | 1 | geen enkele bedrijfstak haalt 50 vestigingen, dus geen publiceerbaar locatiequotient |
@@ -66,7 +104,7 @@ haal-netbeheerder ──┘           │
                             genereer ──> HTML + data/seo/vingerafdrukken.json
                                 │
                                 v
-                       herstel-bestaand ──> de 34 bestaande pagina's
+                       herstel-bestaand ──> de 51 bestaande bestanden
                                 │
                                 v
                              sitemap ──> sitemapindex + 2 deelbestanden + robots.txt
@@ -95,11 +133,29 @@ naar een doorverwijzing. Alles staat nu op `www`. Zie `scripts/seo/lib/paden.mjs
 
 ### 2 · Nesten mag, een afsluitende schuine streep niet
 De railpack-provider `staticfile` zet Caddy neer met
-`try_files {path} {path}.html {path}/index.html`. Lokaal nagebouwd met caddy 2.11.7 en de echte
-template gemeten: `/regios/gelderland/arnhem` serveert `regios/gelderland/arnhem.html`, en een map
-met dezelfde naam als een `.html`-bestand overschaduwt dat bestand **niet**. `/regios/` geeft 404.
+`try_files {path} {path}.html {path}/index.html`. Met de echte template nagebouwd en gemeten:
+`/regios/gelderland/arnhem` serveert `regios/gelderland/arnhem.html`, en een map met dezelfde naam
+als een `.html`-bestand overschaduwt dat bestand **niet**. `/regios/` geeft 404.
 Daarom: geneste bestanden, extensieloze URL's, nooit een afsluitende schuine streep, en op elke
 gegenereerde pagina root-relatieve paden.
+
+**Natoetsen hoort op de versie die productie pint: caddy 2.11.4.** Hier stond 2.11.7, en dat is
+niet cosmetisch. Uit de bouwlogs van twee deployments: `Railpack 0.40.1`,
+`railpack-frontend:v0.40.1`, `mise install-into caddy@2.11.4`. De gegenereerde template verschilt
+tussen die twee versies precies op een plek die een poort kan verbergen: 2.11.4 laat de eerste
+`hide`-regel vallen en geeft `[".env*"]`, waar 2.11.7 `[".git",".env*"]` geeft. Een nameting op
+2.11.7 maakt dat defect dus ONZICHTBAAR. Een poort die je op een andere versie draait dan
+productie, toetst productie niet.
+
+**En de metadata van Railway is hier geen bron — de bouwlog is dat.** Gemeten op dezelfde
+deployment: de deployment-metadata zegt `providers = "node"` en `detectedProviders = ["node"]`,
+terwijl de bouwlog van diezelfde deployment `Using provider Staticfile from config` afdrukt en als
+enige pakket caddy 2.11.4 oplost — geen node, geen npm-install, geen bundelstap. De verklaring zit
+in railpack zelf: de node-detector ziet `package.json` nog steeds staan, omdat `core/app/app.go`
+die bestandscontrole met `os.Stat` doet ZONDER de excludematcher, en de `provider`-sleutel in
+`railpack.json` overruleert de detectie daarna. Wie uit dat metadataveld concludeert dat hier een
+node-build loopt, gaat op zoek naar een buildstap die niet bestaat en trekt verkeerde conclusies
+over wat een push naar `main` doet.
 
 ### 3 · De regionale boom hangt onder `/regios`, niet onder de oplossing
 De opdracht stelde `/zakelijke-batterij/gelderland` voor. Dat kan hier niet:
@@ -157,18 +213,29 @@ zijn eigen postcode opzoekt. Dat is juridisch veilig, actueler en inhoudelijk co
 
 ## De poorten
 
-`scripts/seo/audit.mjs` draait vijftien poorten en geeft per poort PASS/FAIL met een getal. Eén
+`scripts/seo/audit.mjs` draait **zestien** poorten en geeft per poort PASS/FAIL met een getal. Eén
 exitcode zonder tabel zegt te weinig om op te releasen.
 
 1 routeregister en pariteit · 2 geo-integriteit · 3 lokaal bewijs · 4 metadata · 5 canonical ·
 6 structured data · 7 interne links · 8 weespagina's · 9 sitemappariteit · 10 claims ·
-11 duplicaat-inhoud · 12 kannibalisatie · 13 conversie · 14 mobiel · 15 projectverwijzingen
+11 duplicaat-inhoud · 12 kannibalisatie · 13 conversie · 14 mobiel · 15 projectverwijzingen ·
+16 nieuwskanaal
+
+Hier stond "vijftien" met een opsomming van vijftien. De zestiende poort (nieuwskanaal) kwam er in
+Release 2.1 bij; de telling is te toetsen met `grep -c "^poort(" scripts/seo/audit.mjs`, die geeft
+**16**. Een telling die niet meegroeit met de code is gevaarlijker dan geen telling: de verderop
+genoemde "zestien groene poorten" van de vijandige QA sprak hem al tegen, en wie dan één van de
+twee gelooft, gelooft de verkeerde.
 
 **Poort 11 heeft in deze release een echt defect gevonden in het eigen ontwerp.** De routes
-`/regios/<prov>/<gem>/<familie>` deelden 84 tot 88 procent van hun vijfwoordreeksen met hun
-zusterpagina's, omdat het lokale bewijs per gemeente bestaat en niet per combinatie van gemeente
-en familie. Die 28 routes zijn daarop teruggezet naar PENDING in plaats van de drempel te
-verlagen. De reden staat in `data/seo/oplossingen.json`, sleutel `familieroutes_publiceren`.
+`/regios/<prov>/<gem>/<familie>` deelden binnen één gemeente **84 tot 88 procent** van hun
+vijfwoordreeksen op de **dekkingsmetriek**, bij een **jaccard van 0,71 tot 0,77** — dus ruim boven
+beide drempels (0,85 dekking, 0,60 jaccard). Beide getallen horen erbij, want zonder metrieknaam
+staat 84% naast 0,77 zonder dat te zien is dat het dezelfde meting is. De oorzaak: het lokale
+bewijs bestaat per gemeente en niet per combinatie van gemeente en familie. Die 28 routes zijn
+daarop teruggezet naar PENDING in plaats van de drempel te verlagen. De volledige meting, inclusief
+het provincieniveau (78 tot 81 procent dekking, jaccard 0,61 tot 0,66), staat in
+`data/seo/oplossingen.json`, sleutel `familieroutes_publiceren`.
 
 ## Inhoud toevoegen
 
@@ -241,8 +308,25 @@ HTML-injectie via een externe bronnaam, en een intern bestand dat de publieke se
 
 Zestien groene poorten zeggen niets zolang niemand heeft geprobeerd ze rood te krijgen.
 
-## Release 2
+## Release 2 — het nieuwskanaal
 
-De News & Market Intelligence Engine is **niet** gebouwd. Het contract staat in
-`data/seo/nieuws-architectuur.json` en het padsegment `/nieuws` is in het register gereserveerd
-zodat geen latere pagina die slug kan claimen.
+De News & Market Intelligence Engine is **gebouwd en staat leeg**. Hier stond "niet gebouwd", en
+dat kon niet meer waar zijn zodra poort 16 bestond: een poort op een onderdeel dat niet bestaat,
+heeft niets om op te toetsen.
+
+Gemeten op deze commit:
+
+| onderdeel | waar | meting |
+|---|---|---|
+| poort | `scripts/seo/audit.mjs` | poort 16 "Nieuwskanaal", verplicht |
+| generator | `scripts/seo/genereer-nieuws.mjs` | aanwezig |
+| toestandsmachine | `scripts/seo/bouw-routes.mjs` | `weigerNieuws()` |
+| QA | `node scripts/seo/qa-nieuws.mjs` | 47 geslaagd, 0 mislukt, exitcode 0 |
+| contract | `data/seo/nieuws-architectuur.json` | `_status` = geïmplementeerd in Release 2.1 |
+
+Wat er NIET is, is één artikel. Gemeten in `data/seo/routes.json`: **nul** routes met
+`subsoort: "nieuws"`, en de hub `nieuws` staat op **PENDING**. Dat is de bedoelde uitkomst en geen
+achterstand: een artikel komt alleen op INDEX met `redactionele_staat: "GOEDGEKEURD"`, en die staat
+zet een mens. Het padsegment `/nieuws` blijft gereserveerd zodat geen latere pagina die slug kan
+claimen, en poort 16 blokkeert zowel een artikel zonder goedkeuring als een hub op INDEX zonder
+artikel.

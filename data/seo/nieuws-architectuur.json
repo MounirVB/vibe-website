@@ -27,6 +27,12 @@
     "opgelost": "Poort 10 is in Release 2.1 uitgebreid naar subsoort 'nieuws', met een bredere cijferdefinitie (bedragen, percentages, vermogens, energie) en blokkerend in plaats van adviserend."
   },
 
+  "_correctie_op_dit_contract_2": {
+    "wat": "Onder herbruikbaar_uit_release_1 staat: 'scripts/seo/audit.mjs — de vijftien poorten gelden ongewijzigd voor een nieuwsartikel'. Die regel is twee keer onjuist en blijft hier staan zoals Release 1 hem besloot; deze correctie draagt wat er in plaats daarvan geldt.",
+    "waarom_onjuist": "(1) De telling. Er zijn er zestien, niet vijftien: grep -c '^poort(' scripts/seo/audit.mjs geeft 16 (gemeten 13 oktober 2026). (2) 'Ongewijzigd' is precies wat ze niet golden. De zestiende poort IS dit kanaal en bestond in Release 1 niet, en poort 10 en poort 13 zijn voor subsoort 'nieuws' uitgebreid — zie _waar.poort in dit bestand, en audit.mjs regel 525 (poort 10 filtert nu op soort 'regio' OF subsoort 'nieuws') en regel 624 (poort 13 neemt 'nieuws' en 'nieuws-hub' op in de subsoorten die een conversiepad moeten dragen). Het nieuwskanaal heeft de poorten dus niet geerfd, het heeft ze veranderd. Dat is geen detail: wie deze regel leest als 'niets aan de poorten te doen' bouwt een artikel dat op poort 16 blokkeert.",
+    "opgelost": "Wat uit Release 1 wel ongewijzigd geldt voor een nieuwsartikel: poort 1 tot en met 9, 11, 12, 14 en 15. Uitgebreid voor nieuws: poort 10 (cijfer met bron, blokkerend) en poort 13 (conversiepad). Nieuw in Release 2.1: poort 16 (nieuwskanaal)."
+  },
+
   "_activeringsstap_die_een_mens_moet_doen": "vibe/chrome.js draagt de zichtbare navigatie en kan het routeregister niet lezen. Zodra de hub op INDEX komt, moet daar met de hand een /nieuws-link bij. Poort 16 FAALT zolang dat niet is gebeurd, zodat het kanaal niet live kan staan zonder dat een bezoeker het kan vinden.",
 
   "artikelschema": {

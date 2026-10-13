@@ -9,10 +9,15 @@
 
    Release 1 publiceerde 11 gemeentepagina's en hield 327 gemeenten met
    toereikend bewijs vast. De reden was gemeten en terecht: met alleen een
-   vestigingstotaal, een lijst bedrijventerreinen en een netbeheerder deelden
-   die pagina's 55 tot 57 procent van hun vijfwoordreeksen. Het bewijs
-   verschilde wel per gemeente, maar het was te WEINIG bewijs om een pagina
-   van 480 woorden te vullen; de rest was onvermijdelijk sjabloon.
+   vestigingstotaal, een lijst bedrijventerreinen en een netbeheerder lag de
+   JACCARD OVER VIJFWOORDREEKSEN tussen die 11 pagina's op 0,49 tot 0,57 met
+   mediaan 0,53 over 55 paren (nagemeten op de Release-1-commit a2fbad7).
+   Hier stond "55 tot 57 procent", en dat was het BOVENSTE KWARTIEL, niet het
+   bereik; bovendien ontbrak de metrieknaam, waardoor het verwisselbaar is met
+   de dekkingsmetriek van poort 11, die over dezelfde 55 paren 68 tot 74
+   procent geeft. Het bewijs verschilde wel per gemeente, maar het was te
+   WEINIG bewijs om een pagina van 480 woorden te vullen; de rest was
+   onvermijdelijk sjabloon.
 
    Een bedrijfstakprofiel lost dat structureel op. Het is geen extra
    tekstvariatie maar een extra FEIT per gemeente, en het verandert wat de

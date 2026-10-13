@@ -34,6 +34,59 @@ function meervoud(n, enkel, meer) {
   return `${getal(n)} ${n === 1 ? enkel : meer}`;
 }
 
+/* ===================================================== naamvarianten
+   DE BELOFTE VAN geo-overschrijvingen.json WAARMAKEN.
+
+   Dat bestand zegt bij 'Friesland' (regel 29) en 'Den Bosch' (regel 8)
+   letterlijk dat de variant "in titel en inhoud" staat, "niet in het pad".
+   Gemeten op de uitvoer van edc10d2 was dat onwaar: geen van de vijf
+   varianten — Friesland, Den Bosch, 's-Gravenhage, Hengelo (Overijssel),
+   Hengelo (O) — stond in één van de vier betrokken pagina's, titel noch
+   tekst. haal-geo.mjs vult drie naamvelden (naam, naam_officieel, aliassen)
+   en de generator las alleen `naam`. De weergavenaam staat er overvloedig;
+   de varianten nergens, en juist die zijn de zoekvraag van de bezoeker die
+   'Den Bosch' of 'Friesland' intypt.
+   ===================================================================== */
+
+/** De naam zoals hij in een titel hoort te staan, met zijn varianten erbij.
+ *
+ *  Een variant die de weergavenaam al bevat ('Hengelo (Overijssel)')
+ *  VERVANGT hem; 'Hengelo (Hengelo (Overijssel))' zou onzin zijn. De overige
+ *  varianten komen tussen haakjes erachter.
+ *
+ *  Gemeten titellengtes van de vier pagina's: 42/51/43/42 wordt 54/63/59/55
+ *  tekens — alle vier onder de 70 die poort 4 als bovengrens aanhoudt, dus
+ *  nul nieuwe lengteafwijkingen. */
+export function naamMetVarianten(naam, varianten) {
+  const v = (varianten || []).filter((x) => x && x !== naam);
+  if (!v.length) return naam;
+  const bevattend = v.find((x) => x.includes(naam));
+  const basis = bevattend || naam;
+  const rest = v.filter((x) => x !== bevattend);
+  return rest.length ? `${basis} (${rest.join(', ')})` : basis;
+}
+
+/** De naamvariantregel voor de pagina zelf, direct onder de lead.
+ *
+ *  Hij noemt de officiële registernaam en de gangbare varianten. Dit is een
+ *  naamfeit uit ons eigen geo-register en geen bewering met een cijfer, dus
+ *  het vraagt geen bronregel; poort 10 kijkt naar cijfers in de sectie en
+ *  deze regel draagt er geen.
+ *
+ *  Leeg zodra er niets te melden is — en dat is op 345 van de 349 regionale
+ *  hubpagina's het geval, zodat hun uitvoer byte-identiek blijft. */
+export function naamvariantRegel(naam, naamOfficieel, aliassen) {
+  const officieel = naamOfficieel && naamOfficieel !== naam ? naamOfficieel : null;
+  const overig = (aliassen || []).filter((a) => a && a !== naam && a !== officieel);
+  if (!officieel && !overig.length) return '';
+  const delen = [];
+  if (officieel) delen.push(`heet in het officiële register <strong>${esc(officieel)}</strong>`);
+  if (overig.length) {
+    delen.push(`wordt ook <strong>${overig.map((a) => esc(a)).join('</strong> of <strong>')}</strong> genoemd`);
+  }
+  return `<p class="ve-small">${esc(naam)} ${delen.join(' en ')}.</p>`;
+}
+
 /* ------------------------------------------------------------ netbeheerder */
 export function netbeheerderAlinea(gebiedsnaam, nb, bron) {
   if (!nb) return '';
@@ -79,9 +132,29 @@ export function terreinenAlinea(gebiedsnaam, terreinen, bron) {
      Een getal publiceren op een aangenomen veldbetekenis is een verzinsel met
      een bronvermelding eronder, en dat is erger dan het weglaten. */
 
+  /* HET HECTARETOTAAL IS SOMS EEN ONDERGRENS, EN DAN MOET DAT ERBIJ.
+
+     Een terrein zonder netto oppervlak telt in deze som als nul. Gemeten op
+     10 gemeentepagina's staat er minstens één terrein dat in IBIS wél een
+     bruto oppervlak heeft maar geen netto — Terneuzen is het zwaarste geval
+     (NOORDERDOKKEN EO, 54,387 ha bruto, netto 0). Het totaal ligt daar 0,43
+     tot 4,43 procent te laag, dus is het een ondergrens en geen schatting.
+
+     WAAROM DE TOETS NAAR HA_BRUTO KIJKT EN NIET NAAR 'NETTO ONTBREEKT'.
+     Hulst heeft twee terreinen (DE STATIE (TOL-MORRES) en POLENLAAN) waar
+     bruto, netto en uitgeefbaar alle drie 0 zijn, net als KOEGORSPOLDER in
+     Terneuzen. Daar is geen enkele aanwijzing dat er oppervlak ontbreekt;
+     'ondergrens' zou er een bewering zijn die de bron niet dekt. Vandaar 11
+     gemeenten met een nul-nettoterrein en 10 pagina's met deze toevoeging. */
+  const ondergrens = terreinen.filter((t) => !(t.ha_netto > 0) && t.ha_bruto > 0);
+
   let h =
     `<p>${esc(gebiedsnaam)} telt <strong>${meervoud(terreinen.length, 'bedrijventerrein', 'bedrijventerreinen')}</strong> in het landelijke ` +
     `IBIS-register, samen ongeveer ${getal(Math.round(nettoTotaal))} hectare netto` +
+    (ondergrens.length
+      ? ` &mdash; een ondergrens, want bij ${meervoud(ondergrens.length, 'terrein', 'terreinen')} geeft IBIS wel ` +
+        `een bruto maar geen netto oppervlak`
+      : '') +
     `. Dat is de plek waar de zakelijke energievraag in deze gemeente zit: hallen met een plat dak, ` +
     `wagenparken die elektrificeren en aansluitingen die bij uitbreiding knellen.</p>`;
 
@@ -325,12 +398,40 @@ export function bedrijfstakProfielBlok(gebiedsnaam, profiel, bron) {
     },
   ]);
 
+  /* DE LEEGTE IN DE OPSOMMING KRIJGT ZIJN REDEN ERBIJ.
+
+     In de lijst hierboven ontbreekt de regel '... x het landelijke aandeel'
+     bij elke bedrijfstak zonder publiceerbaar locatiequotient. Gemeten over de
+     349 pagina's die deze opsomming dragen: mediaan 3 takken zonder die
+     verhouding, maximaal 15 (Vlieland, 15 van 16). De afrondingsregel stond er
+     al, maar LOSGEKOPPELD van die leegte — wie de lijst scant, ziet een gat
+     zonder uitleg en kan niet weten dat het gat zelf een betekenis heeft.
+
+     De reden is in alle gevallen dezelfde: te weinig vestigingen. Gemeten over
+     alle 342 gemeenteprofielen is `lq_publiceerbaar` 1.202 keer onwaar bij een
+     tak met vestigingen, en 1.202 keer is dat omdat het aantal onder de
+     drempel ligt; `lq === null` komt er niet één keer voor. Ook op de negen
+     provinciepagina's met een gat (1 tot 2 takken, meestal delfstoffenwinning)
+     is het aantal te klein. De uitleg is dus waar voor elk gat dat er staat.
+
+     De toevoeging wordt VOLLEDIG onderdrukt bij nul ontbrekende takken (4
+     pagina's); 'bij 0 bedrijfstakken' is geen uitleg maar ruis. meervoud()
+     houdt n=1 (14 pagina's) grammaticaal heel. */
+  const zonderLq = metWaarde.filter((t) => !t.lq_publiceerbaar).length;
+  const lqDrempel = profiel._min_lq;
+
   /* CBS rondt elke waarde af op een vijfvoud. Dat moet op de pagina staan,
      anders suggereert '115 vestigingen' een precisie die de bron niet geeft. */
   h +=
     `<p class="ve-small">CBS rondt deze aantallen af op vijfvouden. De percentages zijn berekend over de som van ` +
     `de bedrijfstakken (${getal(profiel.totaal_secties)}); die som kan door het afronden een paar vestigingen ` +
-    `verschillen van het gepubliceerde totaal van ${getal(profiel.totaal_cbs)}.</p>`;
+    `verschillen van het gepubliceerde totaal van ${getal(profiel.totaal_cbs)}.` +
+    (zonderLq && lqDrempel
+      ? ` Bij ${meervoud(zonderLq, 'bedrijfstak', 'bedrijfstakken')} hierboven staat daarom geen verhouding tot ` +
+        `het landelijke aandeel: onder ${getal(lqDrempel)} vestigingen is dezelfde afronding te grof om die ` +
+        `verhouding te berekenen.`
+      : '') +
+    `</p>`;
   return h;
 }
 

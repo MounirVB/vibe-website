@@ -21,12 +21,16 @@
      · een regionale PENDING-route die stil op INDEX is gezet
      · een sitemap die niet meer met het routeregister klopt
      · een met de hand bijgewerkte sitemap of HTML
+     · een PR die een deel van de LIVE site onzichtbaar maakt
 
-   De laatste twee zijn de reden dat deze poort bestaat náást
+   De laatste drie zijn de reden dat deze poort bestaat náást
    audit.mjs: audit.mjs toetst de GEGENEREERDE uitkomst, en deze poort
-   toetst of de uitkomst nog uit het register volgt.
+   toetst of de uitkomst nog uit het register volgt — en of het register
+   niet stilletjes kleiner is geworden dan de stand waar de PR op
+   begon.
    ============================================================ */
 
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -38,6 +42,7 @@ const lees = (...p) => JSON.parse(readFileSync(resolve(WORTEL, ...p), "utf8"));
 
 let geslaagd = 0;
 const bevindingen = [];
+const overgeslagen = [];
 function toets(naam, ok, meting = "") {
   if (ok) {
     geslaagd += 1;
@@ -46,6 +51,20 @@ function toets(naam, ok, meting = "") {
     bevindingen.push(`${naam}${meting ? ` — ${meting}` : ""}`);
     console.log(`  FAIL  ${naam}${meting ? ` — ${meting}` : ""}`);
   }
+}
+
+/* EEN DERDE UITKOMST, OMDAT TWEE ER EEN TE WEINIG ZIJN.
+
+   Stap 7 heeft een basisreferentie nodig die er niet altijd is: een
+   shallow clone, een losse checkout of een vijandige kopie zonder `.git`
+   leveren hem niet. Die stap als PASS afdoen zou de enige poort die een
+   massaverwijdering kan zien stil groen maken — precies de fout die deze
+   poort elders tegenhoudt. Een niet-gemeten stap heet daarom
+   OVERGESLAGEN, krijgt zijn eigen regel met de reden, en staat ook in het
+   EINDOORDEEL, zodat niemand een halve meting voor een hele aanziet. */
+function overslaan(naam, reden) {
+  overgeslagen.push(`${naam} — ${reden}`);
+  console.log(`  OVERGESLAGEN  ${naam} — ${reden}`);
 }
 
 console.log("");
@@ -287,10 +306,239 @@ const hub = routes.find((r) => r.route === "nieuws");
   }
 }
 
+/* ---------------- 7. de depublicatiegrendel ---------------- */
+{
+  /* EEN GROENE KETEN DIE 314 LIVE PAGINA'S WEGGOOIT.
+
+     Dit is de enige stap die naar de VORIGE stand kijkt in plaats van naar
+     de huidige, en hij bestaat omdat alle andere poorten per definitie
+     blind zijn voor krimp: ze toetsen of wat er staat klopt, niet of er nog
+     staat wat er stond. Gemeten op een wegwerpkopie van edc10d2:
+
+       · basislijn            430 INDEX-routes, 430 sitemapregels,
+                              326 sleutels in publicatiebesluit.json
+       · `vrijgeven-r31.mjs --fase 1`  → vrijgegeven 326 → 18
+         (dat commando staat LETTERLIJK AANBEVOLEN in scripts/seo/bouw.mjs)
+       · `bouw.mjs --offline` → exit 0; INDEX 430 → 116, sitemap 430 → 116,
+                              314 HTML-bestanden VERWIJDERD
+       · audit.mjs            exit 0, alle 16 poorten groen
+       · publicatiecontract   exit 0, PASS
+       · publiek-artefact     exit 1 — maar alleen tot de commit; na
+                              `git add -A && git commit` is ook die groen
+       · reproduceerbaarheid  groen: `git status` is leeg na een ketenrun,
+                              want de generator maakt exact deze krimp
+
+     Netto stond er NUL rem op het depubliceren van de halve site.
+
+     Dat dit géén bedacht scenario is, staat in scripts/seo/bouw.mjs:49: de
+     keten schreef het publicatiebesluit eerst zelf, en `--fase 1` zette toen
+     18 gemeenten in het besluit waarna de eerstvolgende ketenrun er weer 326
+     in zette. Dat is dezelfde knop, de andere kant op. Hoe vaak de krimpkant
+     echt is voorgekomen staat nergens vastgelegd en is dus ONGEMETEN.
+
+     WAAROM DE BASIS NIET `HEAD` IS — GEMETEN, WANT HET VOELT ALS DE
+     LOGISCHE KEUZE.
+
+     Vergelijken met `git show HEAD:data/seo/routes.json` is een NO-OP. De
+     gegenereerde uitvoer staat gecommit en poort.yml ("De generator moet
+     REPRODUCEERBAAR zijn") eist dat `git status` na een volledige ketenrun
+     leeg is. HEAD en de werkboom zijn dus altijd byte-identiek: op edc10d2
+     geven `git show HEAD:data/seo/routes.json` en het bestand zelf beide
+     sha256 91fce18113388e1656be8c6cdf3022d17fd5f4827f679d809fb4cc9aa29dee44.
+     Een grendel op HEAD meldt dus eeuwig "verdwenen: 0", ook in exact de
+     PR die 314 pagina's weggooit. Gemeten op een simulatie met 14
+     gedepubliceerde gemeenten die net als een echte PR gecommit was:
+     met de basis op origin/main meldt deze stap FAIL met "verdwenen 14",
+     met de basis op HEAD meldt hij PASS met "verdwenen 0".
+
+     De basis is daarom de BASIS VAN DE WIJZIGING: waar deze tak van main
+     afsplitste. Volgorde van bronnen:
+
+       1. git, want dat is de enige basis die de PR zelf niet kan kiezen:
+          SEO_BASIS_SHA (poort.yml kan daar
+          `github.event.pull_request.base.sha` in zetten), anders diezelfde
+          sha uit GITHUB_EVENT_PATH, anders origin/$GITHUB_BASE_REF, anders
+          origin/main — en daarna `git merge-base` voor de echte afsplitsing,
+          zodat een tak die achterloopt niet alles wat main erbij kreeg als
+          "verdwenen" ziet.
+       2. SEO_BASIS_INDEX, een pad naar een JSON met de basisroutes. Die
+          val-terug bestaat voor omgevingen ZONDER git: een vijandig
+          scenario kopieert `.git` niet (git geeft daar exit 128) en kan de
+          krimp anders niet simuleren. Git gaat voor, zodat deze variabele
+          een poort nooit kan verzachten waar git wél werkt.
+
+     Is er geen basis, dan is de uitkomst OVERGESLAGEN met de reden erbij —
+     nooit stil PASS.
+
+     GEEN DREMPEL, GEEN MARGE. Niet "meer dan X procent krimp": één
+     weggegooide indexeerbare URL zonder verantwoording is al het defect.
+     Een percentage is precies het soort knop dat later wordt bijgedraaid om
+     een rode poort groen te krijgen.
+
+     DE ONTSNAPPINGSKLEP. Een pagina intrekken moet kunnen. Dat gaat net als
+     vrijgeven: een sleutel per route in publicatiebesluit.json, maar in de
+     sectie `ingetrokken`, met als waarde de REDEN. Een verdwenen route met
+     een niet-lege reden is verantwoord; elke andere maakt deze poort rood.
+     De sectie mag ontbreken en wordt dan als leeg gelezen, zodat het
+     besluitbestand niet hoeft te veranderen om de grendel te plaatsen.
+
+     Een URL die van naam verandert valt hier ook onder, en dat is juist:
+     de oude URL staat geïndexeerd en verdwijnt. De verantwoording is dan
+     een regel in `ingetrokken` die naar de brugstub verwijst, zoals de 16
+     bestaande NOINDEX-doorverwijsstubs dat doen. */
+  const NAAM = "geen gepubliceerde URL verdwijnt zonder een regel in publicatiebesluit.json `ingetrokken`";
+
+  const besluitPad = resolve(WORTEL, "data", "seo", "publicatiebesluit.json");
+  const besluit = existsSync(besluitPad) ? JSON.parse(readFileSync(besluitPad, "utf8")) : {};
+  const ingetrokken = besluit.ingetrokken ?? {};
+
+  /* maxBuffer MOET omhoog. data/seo/routes.json is 2.356.065 bytes (2,25
+     MiB) en de standaard maxBuffer van execFileSync is 1 MiB, dus
+     `git show <sha>:data/seo/routes.json` sneuvelt daar met ENOBUFS — niet
+     als faalmelding maar als crash, en dan zegt deze stap niets meer. */
+  const git = (...args) =>
+    execFileSync("git", ["-C", WORTEL, ...args], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      maxBuffer: 64 * 1024 * 1024,
+    });
+
+  /* Twee vormen zijn aanleverbaar: een heel routes.json (dan filtert hij
+     zelf op INDEX) of een platte lijst routes. De eerste komt uit git, de
+     tweede is handig voor een toets die alleen de set wil zetten. */
+  function indexUit(ruw) {
+    if (Array.isArray(ruw)) {
+      if (ruw.every((x) => typeof x === "string")) return new Set(ruw);
+      return new Set(ruw.filter((x) => (x?.staat ?? "INDEX") === "INDEX").map((x) => String(x?.route ?? "")));
+    }
+    if (ruw && Array.isArray(ruw.routes)) {
+      return new Set(ruw.routes.filter((r) => r.staat === "INDEX").map((r) => r.route));
+    }
+    return null;
+  }
+
+  function basisIndexSet() {
+    const geprobeerd = [];
+
+    let topNiveau = null;
+    try {
+      topNiveau = git("rev-parse", "--show-toplevel").trim();
+    } catch {
+      topNiveau = null;
+    }
+    /* Een kopie die TOEVALLIG in een andere repository ligt mag niet de
+       basis van die repository lenen; dan zou de grendel een vreemde stand
+       vergelijken en onzin melden. */
+    if (topNiveau !== WORTEL) {
+      geprobeerd.push(topNiveau ? `git wijst naar ${topNiveau}, niet naar deze boom` : "geen git-repository");
+    } else {
+      const kandidaten = [];
+      if (process.env.SEO_BASIS_SHA) kandidaten.push([process.env.SEO_BASIS_SHA, "SEO_BASIS_SHA"]);
+      const evPad = process.env.GITHUB_EVENT_PATH;
+      if (evPad && existsSync(evPad)) {
+        try {
+          const sha = JSON.parse(readFileSync(evPad, "utf8"))?.pull_request?.base?.sha;
+          if (sha) kandidaten.push([sha, "pull_request.base.sha"]);
+        } catch {
+          geprobeerd.push("GITHUB_EVENT_PATH is onleesbaar");
+        }
+      }
+      if (process.env.GITHUB_BASE_REF) {
+        kandidaten.push([`origin/${process.env.GITHUB_BASE_REF}`, `origin/${process.env.GITHUB_BASE_REF}`]);
+      }
+      kandidaten.push(["origin/main", "origin/main"]);
+
+      for (const [ref, label] of kandidaten) {
+        let commit;
+        try {
+          commit = git("rev-parse", "--verify", `${ref}^{commit}`).trim();
+        } catch {
+          geprobeerd.push(`${label} bestaat niet in deze checkout`);
+          continue;
+        }
+        let punt = commit;
+        try {
+          punt = git("merge-base", commit, "HEAD").trim() || commit;
+        } catch {
+          geprobeerd.push(`${label} heeft geen gemeenschappelijke voorouder met HEAD`);
+        }
+        let set = null;
+        try {
+          set = indexUit(JSON.parse(git("show", `${punt}:data/seo/routes.json`)));
+        } catch {
+          geprobeerd.push(`${label} @ ${punt.slice(0, 7)} levert geen leesbare data/seo/routes.json`);
+          continue;
+        }
+        if (!set) {
+          geprobeerd.push(`${label} @ ${punt.slice(0, 7)}: routes.json in een onbekende vorm`);
+          continue;
+        }
+        return { set, herkomst: `${label} @ ${punt.slice(0, 7)}` };
+      }
+    }
+
+    const pad = process.env.SEO_BASIS_INDEX;
+    if (pad) {
+      if (!existsSync(pad)) return { reden: `SEO_BASIS_INDEX=${pad} bestaat niet; ${geprobeerd.join("; ")}` };
+      let set = null;
+      try {
+        set = indexUit(JSON.parse(readFileSync(pad, "utf8")));
+      } catch (e) {
+        return { reden: `SEO_BASIS_INDEX=${pad} is geen leesbare JSON (${e.message})` };
+      }
+      if (!set) {
+        return { reden: `SEO_BASIS_INDEX=${pad} heeft een onbekende vorm; verwacht routes.json of een lijst routes` };
+      }
+      return { set, herkomst: `SEO_BASIS_INDEX ${pad}` };
+    }
+
+    return {
+      reden:
+        `geen basisreferentie beschikbaar (${geprobeerd.join("; ")}); ` +
+        "zet SEO_BASIS_SHA of SEO_BASIS_INDEX, of haal origin/main op — de krimp is NIET getoetst",
+    };
+  }
+
+  const basis = basisIndexSet();
+  const nu = new Set(index.map((r) => r.route));
+
+  if (!basis.set) {
+    overslaan(NAAM, basis.reden);
+  } else {
+    /* Een route die van INDEX naar NOINDEX of PENDING gaat is voor Google
+       net zo verdwenen als een route die uit het register valt: de URL
+       stond geïndexeerd en staat straks niet meer in de sitemap. Daarom
+       wordt alleen de INDEX-set vergeleken en niet het bestaan van de
+       regel. */
+    const verdwenen = [...basis.set].filter((r) => !nu.has(r)).sort();
+    const bijgekomen = [...nu].filter((r) => !basis.set.has(r)).sort();
+    const onverantwoord = verdwenen.filter((r) => !String(ingetrokken[r] ?? "").trim());
+    const toon = (lijst) =>
+      lijst.slice(0, 15).join(", ") + (lijst.length > 15 ? ` …(+${lijst.length - 15} meer)` : "");
+    const kop =
+      `basis ${basis.set.size} INDEX (${basis.herkomst}) · nu ${nu.size} · ` +
+      `verdwenen ${verdwenen.length} · bijgekomen ${bijgekomen.length}`;
+
+    toets(
+      NAAM,
+      onverantwoord.length === 0,
+      onverantwoord.length
+        ? `${kop}; ${onverantwoord.length} zonder reden in \`ingetrokken\`: ${toon(onverantwoord)}`
+        : verdwenen.length
+          ? `${kop}; alle ${verdwenen.length} verdwenen route(s) staan met reden in \`ingetrokken\`: ${toon(verdwenen)}`
+          : kop,
+    );
+  }
+}
+
 /* ---------------- rapport ---------------- */
 console.log("");
 console.log("-".repeat(72));
-console.log(`geslaagd ${geslaagd}   gefaald ${bevindingen.length}`);
+console.log(`geslaagd ${geslaagd}   gefaald ${bevindingen.length}   overgeslagen ${overgeslagen.length}`);
+if (overgeslagen.length) {
+  console.log("");
+  for (const o of overgeslagen) console.log(`  OVERGESLAGEN ${o}`);
+}
 if (bevindingen.length) {
   console.log("");
   for (const b of bevindingen) console.log(`  FAIL ${b}`);
@@ -299,4 +547,8 @@ if (bevindingen.length) {
   process.exit(1);
 }
 console.log("");
-console.log("EINDOORDEEL PUBLICATIECONTRACT = PASS");
+console.log(
+  `EINDOORDEEL PUBLICATIECONTRACT = PASS${
+    overgeslagen.length ? ` — ${overgeslagen.length} stap NIET GETOETST (zie OVERGESLAGEN)` : ""
+  }`,
+);

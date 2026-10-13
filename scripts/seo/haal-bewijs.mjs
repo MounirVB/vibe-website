@@ -110,9 +110,20 @@ async function haalBedrijventerreinen() {
     });
   }
   /* Sorteer per gemeente op netto oppervlak: het grootste terrein eerst, want
-     dat is het terrein dat een pagina als eerste wil noemen. */
+     dat is het terrein dat een pagina als eerste wil noemen.
+
+     WAAROM `||` EN NIET `??` — gemeten defect.
+     `??` valt alleen terug bij null of undefined. IBIS schrijft een onbekend
+     netto oppervlak echter als 0 en niet als null, en dan is 0 een geldige
+     waarde waar `??` niet op terugvalt. Gevolg: NOORDERDOKKEN EO in Terneuzen
+     (netto 0, bruto 54,387 ha) sorteerde als nul op plek 36 van 37, achter
+     ZAAMSLAGVEER van 0,85 ha netto, terwijl het onder deze sleutel het
+     zevende terrein van de gemeente is. `||` behandelt 0 als 'geen maat' en
+     valt wél terug op bruto. Gemeten over alle 342 gemeenten verandert dat de
+     volgorde bij 9 gemeenten en de zichtbare top-6 bij één (Deventer:
+     BLAUWENOORD komt op plek 5 in plaats van buiten de lijst). */
   for (const code of Object.keys(perGemeente)) {
-    perGemeente[code].sort((a, b) => (b.ha_netto ?? b.ha_bruto ?? 0) - (a.ha_netto ?? a.ha_bruto ?? 0));
+    perGemeente[code].sort((a, b) => (b.ha_netto || b.ha_bruto || 0) - (a.ha_netto || a.ha_bruto || 0));
   }
   return { perGemeente, features: d.features.length, zonderSleutel, buitenRegister, jaren };
 }

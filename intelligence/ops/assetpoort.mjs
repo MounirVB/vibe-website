@@ -47,10 +47,28 @@ const BASISLIJN = {
     'vibe/chrome.js: "vibe-energy-logo-light.svg" — CASE MISMATCH',
     'vibe/chrome.js: "vibe-energy-logo-dark.svg" — CASE MISMATCH',
   ],
+  /* Deze tekst zei tot 13 oktober 2026: "Bestaand defect in Release 1, aanwezig op de
+     gedeployde commit a2fbad7 en dus live." Dat is nagemeten en onjuist. Niets aan de
+     basislijn zelf verandert — de twee bevindingen komen nog steeds — maar de REDEN
+     waarom ze verantwoord zijn, is een andere, en dat verschil bepaalt wie het hoort op
+     te lossen. */
   reden:
-    "Bestaand defect in Release 1, aanwezig op de gedeployde commit a2fbad7 en dus live. " +
-    "Niet veroorzaakt door het intelligenceplatform: vibe/chrome.js is niet aangeraakt. " +
-    "Repareren is een besluit van de eigenaar over Release 1-gebied.",
+    "GEEN LIVE DEFECT, maar een beperking van de statische assetcontroleur. Gemeten 13 oktober 2026: " +
+    "/assets/vibe-energy-logo-light.svg en /assets/vibe-energy-logo-dark.svg geven op " +
+    "www.vibeenergy.nl beide HTTP 200 met content-type image/svg+xml, en de bestandsnamen in " +
+    "assets/ zijn teken voor teken gelijk aan de referentie in vibe/chrome.js regel 124. Er is dus " +
+    "geen hoofdletterverschil; het label CASE MISMATCH is zelf onjuist. Het ontstaat zo: chrome.js " +
+    "regel 125 bouwt het pad tijdens runtime als '/assets/' + bestand, dus scripts/qa-assets.mjs ziet " +
+    "alleen de BARE bestandsnaam. Die lost hij eerst op ten opzichte van het verwijzende bestand " +
+    "(vibe/vibe-energy-logo-light.svg — bestaat niet) en daarna wortelrelatief " +
+    "(vibe-energy-logo-light.svg — bestaat niet, want het staat in assets/); pas de " +
+    "hoofdletterONgevoelige suffixzoeker op qa-assets.mjs regel 68 vindt assets/… en kiest daarom het " +
+    "label CASE MISMATCH in plaats van BESTAND ONTBREEKT. Een statische controleur kan een " +
+    "runtime-concatenatie niet zien. Niet veroorzaakt door het intelligenceplatform: " +
+    "git diff a2fbad7..HEAD -- vibe/chrome.js is leeg. De basislijn blijft op 2 omdat de melding blijft " +
+    "komen zolang qa-assets.mjs samengestelde paden niet begrijpt; een DERDE bevinding blokkeert " +
+    "onverminderd. Oplossen betekent qa-assets.mjs leren over samengestelde paden — Release 1-gebied, " +
+    "en een besluit van de eigenaar.",
 };
 
 let uit = "";

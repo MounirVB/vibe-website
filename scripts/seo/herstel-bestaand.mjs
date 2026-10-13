@@ -1,8 +1,19 @@
 /* ============================================================================
    VIBE ENERGY — TECHNISCH SEO-HERSTEL OP DE BESTAANDE PAGINA'S
    ----------------------------------------------------------------------------
-   Vier gemeten defecten op de 35 bestaande pagina's, en wat dit script eraan
+   Vier gemeten defecten op de bestaande bestanden, en wat dit script eraan
    doet. Idempotent: twee keer draaien verandert niets extra.
+
+   HOEVEEL BESTANDEN DIT ZIJN — hier stond "de 35 bestaande pagina's", en dat
+   getal komt in geen enkele meting terug. Gemeten 13 oktober 2026: de lus
+   hieronder leest alle *.html in de wortel die niet in
+   data/seo/gegenereerd.json staan, en dat zijn er 51. In het routeregister
+   dragen precies 51 routes de vlag `bestaand`: 34 op INDEX en 17 op NOINDEX
+   (16 legacy-brugstubs plus 404.html). Van die 51 bestanden dragen er 50 een
+   canonical; 404.html draagt er geen. Dat maakt "alle 50 canonicals" bij
+   defect 1 en "1 van de 51 bestanden" bij defect 2 hieronder kloppend — het
+   waren nooit twee tegenstrijdige tellingen, alleen twee verschillende
+   noemers naast een derde die fout was.
 
    1 · CANONICAL WIJST NAAR EEN DOORVERWIJZING.
        Gemeten 10 okt 2026: alle 50 canonicals staan op https://vibeenergy.nl/.
