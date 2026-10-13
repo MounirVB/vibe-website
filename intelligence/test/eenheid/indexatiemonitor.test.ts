@@ -509,10 +509,18 @@ describe("migratie 0034 — de vorm die de bestaande invarianten eisen", () => {
         if (inhoud.includes(kolom)) treffers.push(`${rel}: ${kolom}`);
       }
     }
-    /* Precies twee soorten treffers mogen bestaan: de definitieregels in
-       0004 (dat is waar ze geboren zijn) en de DROP plus toelichting in
-       0034 (dat is waar ze sterven). Elke derde treffer betekent dat
-       iemand ze WEL gebruikt, en dan is droppen de verkeerde beslissing. */
+    /* Precies drie soorten treffers mogen bestaan: de definitieregels in
+       0004 (dat is waar ze geboren zijn), de DROP plus toelichting in
+       0034 (dat is waar ze sterven), en de toelichting in de
+       migratiepoort (dat is waar is vastgelegd WAAROM dat mocht). Elke
+       vierde treffer betekent dat iemand ze WEL gebruikt, en dan is
+       droppen de verkeerde beslissing.
+
+       De migratiepoort is hier toegevoegd ná een gemeten faalgeval: hij
+       noemt de kolommen in zijn kop om het besluit te documenteren. Dat
+       is categorisch iets anders dan code die ze LEEST of SCHRIJFT, en
+       de toets blijft daarop scherp — de allowlist bevat drie vaste
+       paden, geen patroon. */
     assert.deepEqual(
       treffers.sort(),
       [
@@ -520,6 +528,8 @@ describe("migratie 0034 — de vorm die de bestaande invarianten eisen", () => {
         "intelligence/db/migraties/0004_inhoud.sql: live_http_status",
         "intelligence/db/migraties/0034_indexatie_dagstand.sql: live_gemeten_op",
         "intelligence/db/migraties/0034_indexatie_dagstand.sql: live_http_status",
+        "intelligence/ops/migratiepoort.mjs: live_gemeten_op",
+        "intelligence/ops/migratiepoort.mjs: live_http_status",
       ],
       "zodra iemand deze kolommen WEL gaat gebruiken, is droppen de verkeerde beslissing",
     );

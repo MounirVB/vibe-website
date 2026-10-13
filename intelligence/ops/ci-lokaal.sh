@@ -164,6 +164,7 @@ stap "release2: de volledige regressiepoort" npm run poort
 cd "$WORTEL"
 stap "beveiliging: geheimenscan" node intelligence/ops/geheimenscan.mjs
 stap "beveiliging: publicatiecontract" node intelligence/ops/publicatiecontract.mjs
+stap "beveiliging: migratiepoort (destructieve DDL benoemd)" node intelligence/ops/migratiepoort.mjs
 cd "$APP"
 stap "beveiliging: npm audit (hoog blokkeert)" npm audit --audit-level=high
 
