@@ -37,6 +37,7 @@
 import type pg from "pg";
 import { eenRij, metOrganisatie, rijen, type Pool } from "./db.ts";
 import { IntelFout } from "./fouten.ts";
+import { redigeer, wachtwoordUit } from "./geheimen.ts";
 import { maakLogger } from "./log.ts";
 
 const log = maakLogger("wachtrij");
@@ -187,7 +188,19 @@ export async function laatMislukken(
 ): Promise<"opnieuw" | "dlq"> {
   const herhaalbaar = fout instanceof IntelFout ? fout.herhaalbaar : true;
   const soort = fout instanceof IntelFout ? fout.soort : "onbekend";
-  const bericht = fout instanceof Error ? fout.message : String(fout);
+
+  /* REDIGEREN VOORDAT DIT WORDT BEWAARD — gemeten defect, geen voorzorg.
+     Deze melding gaat hieronder naar intel.taken.laatste_fout. De
+     logger schermde geheimen al af, maar deze route liep er niet langs:
+     `fout.message` ging ruw de database in. Een mislukte pg_dump zet
+     bij Node de HELE commandoregel in `message`, en daar stond de
+     verbindings-URL met wachtwoord in. Sinds 3.0.4 staat de credential
+     niet meer in argv (ops/pgomgeving.ts) én wordt hier geredigeerd:
+     twee grendels, want één is te weinig. */
+  const bericht = redigeer(
+    fout instanceof Error ? fout.message : String(fout),
+    [wachtwoordUit(process.env.INTEL_DB_URL)],
+  );
 
   const opgebruikt = taak.pogingen >= taak.maxPogingen;
   const naarDlq = opgebruikt || !herhaalbaar;

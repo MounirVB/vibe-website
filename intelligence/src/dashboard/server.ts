@@ -73,7 +73,11 @@ import { beoordeel, type Besluit } from "../inhoud/beoordeling.ts";
  */
 const PUBLICATIE_UITLEG: Readonly<Record<string, string>> = {
   DRAFT: "haalt de controles niet; er is niets te beoordelen",
-  READY_FOR_REVIEW: "alle controles gehaald, wacht op een mens",
+  /* Sinds 0032 is dit waar: een gefaalde verwoordbaarheid belandt in
+     READY_FOR_LINK_REVIEW en niet meer hier. */
+  READY_FOR_REVIEW: "alle vijf de controles gehaald, wacht op een mens",
+  READY_FOR_LINK_REVIEW:
+    "linkvoorstel: het feit is niet te verwoorden, de linkaanbeveling wel onderbouwd; wacht op een mens",
   APPROVED: "goedgekeurd en gebonden aan een inhoudshash; nog niet uitgerold",
   PUBLICATION_PRECHECK: "publicatiecontrole gehaald; klaar om door een mens te worden doorgevoerd",
   DEPLOYMENT: "de wijziging is doorgevoerd, nog niet live teruggezien",
@@ -618,10 +622,20 @@ export function maakApp(pool: Pool): express.Express {
      een voorstel met eindoordeel KLAAR_VOOR_REVIEW goedkeuren. Zonder
      die grendel kon een afgewezen voorstel alsnog worden goedgekeurd, en
      dan is de hele controlelaag decoratie. */
+  /* HET RECHT IS inhoud.goedkeuren, NIET distributie.concept.
+     Gemeten defect: dit hing aan `distributie.concept`, en de
+     rechtenmatrix in 0001 geeft dat recht óók aan de rol `analist` —
+     die géén `inhoud.goedkeuren` heeft. Een analist kon dus
+     redactionele paginarevisies goedkeuren.
+
+     De echte grendel staat in beoordeel() zelf, tegen intel.rol_rechten,
+     zodat ook een niet-HTTP-aanroeper hem niet kan omzeilen. Deze
+     middleware blijft staan omdat ze een nette 403-pagina geeft in
+     plaats van een exception. */
   app.post(
     "/voorstellen/:id/beoordeel",
     async_(vereistInlog),
-    vereistRecht("distributie.concept"),
+    vereistRecht("inhoud.goedkeuren"),
     async_(async (req: MetGebruiker, res) => {
       const body = (req.body ?? {}) as Record<string, unknown>;
       if (!csrfPaarGeldig(leesKoekje(req, CSRF_KOEKJE), body[CSRF_VELD], sessieGeheim())) {
@@ -672,6 +686,29 @@ export function maakApp(pool: Pool): express.Express {
         AFGEKEURD: "afgewezen",
         AANGEPAST: "herziening_gevraagd",
       };
+
+      /* DE WEBSITEVERSIE WORDT HIER GEMETEN, NIET MEEGESTUURD.
+         beoordeel() legt bij een goedkeuring vast op WELKE versie van de
+         website is goedgekeurd (migratie 0033), zodat publicatiePrecheck
+         later twee ONAFHANKELIJKE waarden kan vergelijken. Kwam die
+         versie uit het formulier, dan kon een client hem gelijk maken
+         aan de huidige en de controle zinloos maken.
+
+         Zonder bruikbaar artefact weigeren we. Een goedkeuring zonder
+         vastgelegde websiteversie is een goedkeuring waarvan later niet
+         te zeggen is waarop ze gold. */
+      const kennisVoorBesluit = await leesSitekennis(INTEL_WORTEL);
+      if (!kennisVoorBesluit.ok) {
+        weiger(
+          res,
+          409,
+          `Het sitekennisartefact is onbruikbaar (${kennisVoorBesluit.fout.soort}): ` +
+            `${kennisVoorBesluit.fout.bericht} Er is niets beoordeeld.`,
+        );
+        return;
+      }
+      const websiteVersie = kennisVoorBesluit.kennis.websiteVersie;
+
       try {
         await alsGebruiker(req, async (c) => {
           /* VIA beoordeel(), niet met een eigen update.
@@ -687,6 +724,7 @@ export function maakApp(pool: Pool): express.Express {
             gebruikerId,
             notitie: notitie || null,
             verwachteHash: gezienHash,
+            websiteVersie,
           });
           const rij = { kandidaat_id: uitslag.voorstelId, eindoordeel: uitslag.statusNa };
           /* Het auditspoor draagt WIE, WAT en WAAROM. Niet in een catch:
@@ -728,7 +766,7 @@ export function maakApp(pool: Pool): express.Express {
             res,
             409,
             "Dit voorstel is niet klaar voor beoordeling en kan dus niet worden goedgekeurd. " +
-              "Alleen een voorstel dat alle vijf de controles haalt, mag door.",
+              "Alleen een voorstel dat alle vijf de controles haalt, of een linkvoorstel, mag door.",
           );
           return;
         }
@@ -1214,8 +1252,21 @@ niet door komt krijgt geen tekst maar een reden.
 <strong>Er wordt niets gepubliceerd</strong>: goedkeuren levert een patch op die een mens doorvoert.</p>
 
 ${(() => {
+  /* DRIE BAKKEN, NIET TWEE.
+     Tot 3.0.4 stond een linkvoorstel in dezelfde bak als een feitelijke
+     paginarevisie, onder een kop die beloofde dat alle vijf de controles
+     waren gehaald. Dat was precies niet zo: de verwoordbaarheid was
+     gefaald. De scheiding is nu zichtbaar in de studio, zodat een
+     beoordelaar weet waar hij naar kijkt. */
   const klaar = d.voorstellen.filter((v) => v.eindoordeel === "KLAAR_VOOR_REVIEW" && !v.beoordeling);
-  const rest = d.voorstellen.filter((v) => !(v.eindoordeel === "KLAAR_VOOR_REVIEW" && !v.beoordeling));
+  const klaarLink = d.voorstellen.filter(
+    (v) => v.eindoordeel === "KLAAR_VOOR_LINKREVIEW" && !v.beoordeling,
+  );
+  const rest = d.voorstellen.filter(
+    (v) =>
+      !(v.eindoordeel === "KLAAR_VOOR_REVIEW" && !v.beoordeling) &&
+      !(v.eindoordeel === "KLAAR_VOOR_LINKREVIEW" && !v.beoordeling),
+  );
   const kaart = (v: (typeof d.voorstellen)[number]) => `
 <details${v.eindoordeel === "KLAAR_VOOR_REVIEW" ? " open" : ""}>
   <summary><strong>${esc(VOORSTEL_LABEL[v.eindoordeel] ?? v.eindoordeel)}</strong>
@@ -1299,13 +1350,17 @@ ${(() => {
       : v.eindoordeel === "KLAAR_VOOR_REVIEW"
         ? `<p class="klein">Niet beoordeelbaar: dit voorstel heeft geen inhoudshash, dus er is
              niets om een goedkeuring aan te binden. Draai de voorstelronde opnieuw.</p>`
-        : `<p class="klein">Niet beoordeelbaar: alleen een voorstel dat alle vijf de controles haalt,
+        : `<p class="klein">Niet beoordeelbaar: alleen een feitelijke revisie die alle vijf de controles haalt, of een linkvoorstel,
              kan worden goedgekeurd.</p>`}
 </details>`;
   return `
-<p><strong>${klaar.length}</strong> voorstel(len) klaar voor beoordeling,
+<p><strong>${klaar.length}</strong> feitelijke paginarevisie(s) klaar voor beoordeling,
+<strong>${klaarLink.length}</strong> linkvoorstel(len), en
 <strong>${rest.length}</strong> met een onderbouwde afwijzing of omleiding.</p>
 ${klaar.map(kaart).join("")}
+${klaarLink.length > 0
+  ? `<details open><summary>Linkvoorstellen (${klaarLink.length}) — GEEN feitelijke revisie: het feit was niet te verwoorden, de linkaanbeveling wel onderbouwd</summary>${klaarLink.map(kaart).join("")}</details>`
+  : ""}
 ${rest.length > 0
   ? `<details><summary>Niet doorgezet (${rest.length}) — met reden</summary>${rest.map(kaart).join("")}</details>`
   : ""}`;

@@ -7,34 +7,39 @@
    ============================================================ */
 
 import { configLezen } from "./config.ts";
+import { redigeer, VERBORGEN, VERDACHTE_SLEUTEL, wachtwoordUit } from "./geheimen.ts";
 
 export type Niveau = "debug" | "info" | "waarschuwing" | "fout";
 
 const RANG: Record<Niveau, number> = { debug: 10, info: 20, waarschuwing: 30, fout: 40 };
 
-const VERDACHTE_SLEUTEL =
-  /(sleutel|key|token|secret|geheim|wachtwoord|password|authorization|cookie|bearer|private)/i;
-
-/** Patronen van echte geheimen zoals ze in waarden kunnen opduiken. */
-const VERDACHTE_WAARDE: readonly RegExp[] = [
-  /\bsk-[A-Za-z0-9_-]{16,}\b/g,
-  /\bghp_[A-Za-z0-9]{20,}\b/g,
-  /\bre_[A-Za-z0-9_-]{16,}\b/g,
-  /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g,
-  /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g,
-  /postgres(?:ql)?:\/\/[^:\s]+:[^@\s]+@/g,
-];
-
-const VERBORGEN = "[verborgen]";
 const MAX_TEKST = 2000;
+
+/* De patronen staan sinds 3.0.4 in kern/geheimen.ts, zodat de logger en
+   elke PERSISTEERroute dezelfde afscherming gebruiken. Ze stonden hier
+   module-privé, en daardoor was kern/wachtrij.ts — die een foutmelding
+   in intel.taken.laatste_fout schrijft — er niet door gedekt.
+
+   Naast de patronen strepen we het letterlijke wachtwoord uit de
+   geconfigureerde verbinding weg. Een gereedschap dat het buiten zijn
+   URL in een melding zet wordt zo ook gedekt. De lezing is gecached en
+   faalt stil: een logger die omvalt op configuratie is erger dan een
+   logger zonder deze extra grendel. */
+let letterlijkeGeheimen: readonly (string | null)[] | null = null;
+
+function geheimenVanOmgeving(): readonly (string | null)[] {
+  if (letterlijkeGeheimen === null) {
+    letterlijkeGeheimen = [wachtwoordUit(process.env.INTEL_DB_URL)];
+  }
+  return letterlijkeGeheimen;
+}
 
 function schoonWaarde(waarde: unknown, diepte: number): unknown {
   if (diepte > 6) return "[te diep]";
   if (waarde === null || waarde === undefined) return waarde;
 
   if (typeof waarde === "string") {
-    let s = waarde;
-    for (const p of VERDACHTE_WAARDE) s = s.replace(p, VERBORGEN);
+    let s = redigeer(waarde, geheimenVanOmgeving());
     if (s.length > MAX_TEKST) s = `${s.slice(0, MAX_TEKST)}…[${s.length} tekens]`;
     return s;
   }

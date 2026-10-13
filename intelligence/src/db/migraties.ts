@@ -118,7 +118,24 @@ export type MigreerResultaat = {
  */
 export async function migreer(
   client: pg.PoolClient | pg.Client,
-  opties: { droog?: boolean; driftToestaan?: boolean } = {},
+  opties: {
+    droog?: boolean;
+    driftToestaan?: boolean;
+    /**
+     * Migreer alleen TOT EN MET dit nummer.
+     *
+     * Bestaat uitsluitend voor de toetsen die een PRODUCTIEVORMIG
+     * scenario naspelen: eerst migreren tot de versie die in productie
+     * stond, dan representatieve historische rijen invoeren, dan verder
+     * migreren. Zonder die mogelijkheid kan CI alleen een VERSE,
+     * LEGE database toetsen — en precies daardoor kwam 0027 ongemerkt
+     * tot in productie, waar hij op bestaande rijen afbrak.
+     *
+     * Er is met opzet GEEN CLI-vlag voor: half migreren is in productie
+     * nooit wat je wil.
+     */
+    totNummer?: number;
+  } = {},
 ): Promise<MigreerResultaat> {
   await client.query(BOOTSTRAP);
   const bestanden = await leesMigraties();
@@ -140,7 +157,9 @@ export async function migreer(
     );
   }
 
-  const openstaand = bestanden.filter((m) => !gedaan.has(m.naam));
+  const openstaand = bestanden.filter(
+    (m) => !gedaan.has(m.naam) && (opties.totNummer === undefined || m.nummer <= opties.totNummer),
+  );
   const toegepastNu: string[] = [];
 
   for (const m of openstaand) {

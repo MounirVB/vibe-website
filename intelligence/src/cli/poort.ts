@@ -15,6 +15,7 @@ import { APP_WORTEL, configLezen } from "../kern/config.ts";
 import { controleerRol, maakPool, sluitAllePools, zonderOrganisatie } from "../kern/db.ts";
 import { status as migratieStatus } from "../db/migraties.ts";
 import { BRONNEN } from "../bronnen/register.ts";
+import { redacteerFout } from "../kern/geheimen.ts";
 import { controleerBron } from "../bronnen/soorten.ts";
 
 const heeft = (naam: string) => process.argv.includes(`--${naam}`);
@@ -116,7 +117,7 @@ async function main(): Promise<number> {
     stappen.push({
       naam: "DATABASE",
       uitkomst: "NIET GEDRAAID",
-      detail: `database niet bereikbaar: ${(e as Error).message}`,
+      detail: `database niet bereikbaar: ${redacteerFout(e)}`,
     });
   } finally {
     if (pool) await sluitAllePools();

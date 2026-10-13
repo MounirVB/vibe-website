@@ -21,6 +21,8 @@ import { laadEnvBestand, configLezen } from "../kern/config.ts";
 import { maakPool, metOrganisatie, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
 import { maakLogger } from "../kern/log.ts";
+import { GEPLANDE_SOORTEN, TAAKSOORTEN, voerUit } from "../kern/taken.ts";
+import { redacteerFout, redigeer } from "../kern/geheimen.ts";
 import {
   dlqInhoud,
   geefVerlopenTerug,
@@ -44,169 +46,36 @@ const waarde = (naam: string) => {
 };
 
 const WORKER = `${hostname()}/${process.pid}`;
+
+/* GRENDEL BIJ HET OPSTARTEN — niet bij het falen van een taak.
+
+   Het defect dat 3.0.4 repareert was dat de planner soorten plande die
+   geen handler hadden (en omgekeerd: handlers die nooit werden gepland).
+   Dat bleef onzichtbaar tot een taak in de dlq belandde met 'onbekende
+   taaksoort', of — erger — tot iemand merkte dat een stap dagen niets
+   had gedaan. De vergelijking hoort hier, bij het opstarten, zodat een
+   deploy met een scheve registratie meteen opvalt. De toets die hem
+   vóór de deploy vangt staat in test/eenheid/taken.test.ts. */
+const zonderHandler = GEPLANDE_SOORTEN.filter((s) => !TAAKSOORTEN.includes(s));
+if (zonderHandler.length > 0) {
+  log.fout("geplande taaksoort zonder handler", { soorten: zonderHandler });
+  console.error(
+    `De planner plant ${zonderHandler.join(", ")} maar deze worker kan die soort(en) ` +
+      `niet uitvoeren. Dat is een registratiefout in kern/taken.ts, geen taakfout.`,
+  );
+  process.exit(1);
+}
 const soortFilter = waarde("soort");
 
-/* ------------------------------------------------------------
-   De taakregistratie.
-   ------------------------------------------------------------
-   Elke soort wijst naar een bestaande, al geteste stap. De worker is
-   een uitvoerder en geen tweede implementatie: zou hij de logica
-   dupliceren, dan bestaan er twee waarheden over wat "ophalen" doet.
-   Een onbekende soort is een NIET-herhaalbare fout — opnieuw proberen
-   levert dezelfde onbekende soort op.
-   ------------------------------------------------------------ */
-type Handler = (
-  organisatieId: number,
-  payload: Record<string, unknown>,
-) => Promise<string>;
+/* De taakregistratie staat sinds 3.0.4 in kern/taken.ts.
 
-const tekstOf = (p: Record<string, unknown>, k: string): string | undefined =>
-  typeof p[k] === "string" ? (p[k] as string) : undefined;
-
-export const TAAKSOORTEN = [
-  "ophalen",
-  "clusteren",
-  "beoordelen",
-  "regio",
-  "signaleren",
-  "backup",
-] as const;
-
-const REGISTER: Record<string, Handler> = {
-  async ophalen(organisatieId, payload) {
-    const { verzamel } = await import("../pijplijn/verzamelen.ts");
-    const r = await verzamel(pool, organisatieId, {
-      alleenBron: tekstOf(payload, "bron"),
-      forceer: payload["forceer"] === true,
-    });
-    return `bronnen ${r.perBron.length}, nieuwe documenten ${r.nieuweDocumenten}, nieuwe versies ${r.nieuweVersies}`;
-  },
-
-  async clusteren(organisatieId) {
-    const { clusterNieuweVersies } = await import("../pijplijn/clusteren.ts");
-    const r = await clusterNieuweVersies(pool, organisatieId, {});
-    return `versies ${r.versiesBekeken}, gebeurtenissen ${r.gebeurtenissenNieuw}, uitspraken ${r.uitsprakenAangemaakt}`;
-  },
-
-  async beoordelen(organisatieId) {
-    const { neemBesluiten } = await import("../besluit/motor.ts");
-    const r = await neemBesluiten(pool, organisatieId, {});
-    return `beoordeeld ${r.beoordeeld}, kandidaten ${r.kandidatenGeschreven}`;
-  },
-
-  async regio(organisatieId) {
-    const { bouwRegioImpacts } = await import("../regio/impacts.ts");
-    const r = await bouwRegioImpacts(pool, organisatieId, {});
-    return `gebonden ${r.gebiedenGebonden}, voorstellen ${r.impactsNieuw}`;
-  },
-
-  async signaleren(organisatieId) {
-    const { maakSignalen } = await import("../commercieel/signalen.ts");
-    const r = await maakSignalen(pool, organisatieId, {});
-    return `signalen nieuw ${r.signalenNieuw}, bijgewerkt ${r.signalenBijgewerkt}`;
-  },
-
-  /**
-   * De dagelijkse back-up, met de externe kopie erbij.
-   *
-   * DEZE TAAK DRAAIT ALS OPERATOR EN NIET ALS APPLICATIEROL. De
-   * applicatierol mag intel.migraties niet lezen en bezit niets — dat
-   * is het hele punt van die rol — en pg_dump heeft die leesrechten
-   * nodig. Daarom een eigen pool zonder SET ROLE, net als de
-   * back-up-CLI doet.
-   *
-   * DE TAAK FAALT ALS DE EXTERNE KOPIE NIET LUKT. Dat is bewust: een
-   * back-up die alleen op de containerschijf staat, is op Railway na de
-   * volgende deploy weg. Zou deze taak dan 'gereed' melden, dan zou de
-   * wachtrij succes rapporteren voor iets dat geen retentie oplevert.
-   * Nu loopt hij door de backoff en eindigt hij in de dlq, waar een
-   * mens hem ziet.
-   */
-  async backup(organisatieId) {
-    const [{ maakBackup, KRITIEKE_TABELLEN }, { gcsConfigUitOmgeving, uploadNaarGcs }, { readFile }, { basename, join }, { APP_WORTEL, configLezen }] =
-      await Promise.all([
-        import("../ops/backup.ts"),
-        import("../ops/gcsopslag.ts"),
-        import("node:fs/promises"),
-        import("node:path"),
-        import("../kern/config.ts"),
-      ]);
-    const { maakPool: maakEigenPool, zonderOrganisatie, rijen: leesRijen } = await import("../kern/db.ts");
-    const config = configLezen();
-
-    const eigenaarPool = maakEigenPool({ rol: null, max: 2 });
-    const info = await zonderOrganisatie(eigenaarPool, (c) =>
-      leesRijen<{ versie: string; naam: string; migraties: number }>(
-        c,
-        `select current_setting('server_version') as versie,
-                current_database()                as naam,
-                (select count(*)::int from intel.migraties) as migraties`,
-      ),
-    );
-    const meta = info[0];
-    if (!meta) throw new Error("kon de databasegegevens niet lezen voor de back-up");
-
-    const tellingen: Record<string, number> = {};
-    for (const tabel of KRITIEKE_TABELLEN) {
-      const r = await zonderOrganisatie(eigenaarPool, (c) =>
-        leesRijen<{ n: number }>(c, `select count(*)::int as n from ${tabel}`),
-      );
-      tellingen[tabel] = r[0]?.n ?? 0;
-    }
-
-    const doelmap = join(APP_WORTEL, "backups");
-    const stempel = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-    const uit = await maakBackup({
-      databaseUrl: config.databaseUrl,
-      doelmap,
-      stempel,
-      retentieDagen: 30,
-      tellingen,
-      serverVersie: meta.versie,
-      migraties: meta.migraties,
-      databaseNaam: meta.naam,
-    });
-
-    const gcs = gcsConfigUitOmgeving();
-    if (!gcs) {
-      throw new Error(
-        "back-up gemaakt maar er is GEEN externe bestemming (INTEL_GCS_BUCKET/INTEL_GCS_SLEUTEL). " +
-          "Op een ephemere schijf is dat geen retentie; deze taak faalt daarom bewust.",
-      );
-    }
-    const dumpNaam = basename(uit.dumpPad);
-    const o = await uploadNaarGcs(
-      gcs,
-      dumpNaam,
-      await readFile(uit.dumpPad),
-      "application/octet-stream",
-    );
-    await uploadNaarGcs(
-      gcs,
-      `${dumpNaam}.manifest.json`,
-      await readFile(`${uit.dumpPad}.manifest.json`),
-      "application/json",
-    );
-    if (o.sha256 !== uit.manifest.sha256) {
-      throw new Error(`de kopie in gs://${gcs.bucket} wijkt af van het manifest`);
-    }
-    void organisatieId;
-    return (
-      `dump ${Math.round(uit.manifest.bytes / 1024)} kB, ${uit.manifest.migraties} migraties, ` +
-      `extern in gs://${gcs.bucket} (sha ${o.sha256.slice(0, 12)})`
-    );
-  },
-};
-
-async function voerUit(organisatieId: number, taak: Taak): Promise<string> {
-  const handler = REGISTER[taak.soort];
-  if (!handler) {
-    const { IntelFout } = await import("../kern/fouten.ts");
-    throw new IntelFout("configuratie", `onbekende taaksoort '${taak.soort}'`, {});
-  }
-  return handler(organisatieId, taak.payload);
-}
-
+   WAAROM VERHUISD. PLAN stond in cli/planner.ts en REGISTER hier, en
+   beide zijn CLI's met top-level await — geen toets kon ze importeren.
+   Daardoor kon de lijst geplande soorten uit de pas lopen met de lijst
+   uitvoerbare soorten zonder dat iets het merkte, en dat is precies wat
+   er gebeurde: `semantiek` en `voorstel` stonden in geen van beide, en
+   `gezondheid` werd door niets gestart. De vergelijking staat nu als
+   toets in test/eenheid/taken.test.ts. */
 const pool = maakPool();
 let gestopt = false;
 for (const sig of ["SIGINT", "SIGTERM"] as const) {
@@ -232,7 +101,7 @@ try {
     console.log("");
     for (const t of inhoud) {
       console.log(`  [${t.id}] ${t.soort.padEnd(14)} ${t.pogingen} pogingen  ${t.bijgewerktOp}`);
-      console.log(`       ${t.laatsteFoutSoort ?? "onbekend"}: ${(t.laatsteFout ?? "").slice(0, 120)}`);
+      console.log(`       ${t.laatsteFoutSoort ?? "onbekend"}: ${redigeer(t.laatsteFout ?? "").slice(0, 120)}`);
     }
     if (heeft("dlq-hervat")) {
       const soort = waarde("soort");
@@ -275,7 +144,7 @@ try {
 
     const begin = performance.now();
     try {
-      const melding = await voerUit(organisatieId, uitkomst);
+      const melding = await voerUit(pool, organisatieId, uitkomst);
       const duur = performance.now() - begin;
       await metOrganisatie(pool, { organisatieId }, (c) => rondAf(c, uitkomst.id, duur));
       gedaan += 1;
@@ -287,7 +156,7 @@ try {
       if (uit === "dlq") dlq += 1;
       else mislukt += 1;
       console.log(
-        `[${uitkomst.id}] ${uitkomst.soort} ${uit.toUpperCase()} — ${e instanceof Error ? e.message : String(e)}`,
+        `[${uitkomst.id}] ${uitkomst.soort} ${uit.toUpperCase()} — ${redacteerFout(e)}`,
       );
     }
 

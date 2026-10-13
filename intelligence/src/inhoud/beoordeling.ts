@@ -38,6 +38,10 @@ import { IntelFout } from "../kern/fouten.ts";
 export type PublicatieStatus =
   | "DRAFT"
   | "READY_FOR_REVIEW"
+  /* NIEUW IN 3.0.4: een linkvoorstel wacht op een mens, maar is geen
+     feitelijke paginarevisie en mag dus niet in READY_FOR_REVIEW staan.
+     Zie de toelichting bij KLAAR_VOOR_LINKREVIEW in inhoud/voorstel.ts. */
+  | "READY_FOR_LINK_REVIEW"
   | "APPROVED"
   | "PUBLICATION_PRECHECK"
   | "DEPLOYMENT"
@@ -65,6 +69,7 @@ const BESLUIT_NAAR_KOLOM: Readonly<Record<Besluit, string>> = {
 export const STATUS_LABEL: Readonly<Record<PublicatieStatus, string>> = {
   DRAFT: "Concept",
   READY_FOR_REVIEW: "Klaar voor beoordeling",
+  READY_FOR_LINK_REVIEW: "Linkvoorstel, klaar voor beoordeling",
   APPROVED: "Goedgekeurd",
   PUBLICATION_PRECHECK: "Publicatiecontrole",
   DEPLOYMENT: "Uitgerold",
@@ -87,7 +92,44 @@ type VoorstelRij = {
   beoordeeld_door_email: string | null;
   beoordeeld_op: string | null;
   precheck_uitslag: string | null;
+  /** De risicoklasse van de gebeurtenis waar dit voorstel aan hangt. */
+  risico_klasse: string | null;
+  /** De websiteVersie waarop is goedgekeurd; null vóór migratie 0033. */
+  goedgekeurde_website_versie: string | null;
 };
+
+/* ---------------------------------------------------------------- rechten
+   WAAROM DE RECHTENCONTROLE HIER STAAT EN NIET ALLEEN IN DE ROUTE.
+
+   Tot 3.0.4 hing goedkeuren uitsluitend aan de middleware
+   `vereistRecht("distributie.concept")` in dashboard/server.ts. Twee
+   problemen, beide gemeten:
+
+   1 Het was het VERKEERDE recht. De rechtenmatrix in 0001 geeft
+     `distributie.concept` ook aan de rol `analist`, die géén
+     `inhoud.goedkeuren` heeft. Een analist kon dus redactionele
+     paginarevisies goedkeuren.
+   2 Het stond alleen op de route. Elke andere aanroeper van beoordeel()
+     — een CLI, een taak, een volgende route — had geen enkele
+     rechtencontrole.
+
+   Daarom toetst beoordeel() het recht nu zelf, tegen intel.rol_rechten.
+   De route houdt zijn middleware (dat geeft een nette 403 in plaats van
+   een exception), maar de grendel zit hier. */
+export const RECHT_BEOORDELEN = "inhoud.goedkeuren";
+export const RECHT_HOOGRISICO = "inhoud.hoogrisico.goedkeuren";
+
+async function rechtenVan(c: pg.PoolClient, gebruikerId: number): Promise<Set<string>> {
+  const r = await rijen<{ recht: string }>(
+    c,
+    `select distinct rr.recht
+       from intel.gebruiker_rollen gr
+       join intel.rol_rechten rr on rr.rol = gr.rol
+      where gr.gebruiker_id = $1`,
+    [gebruikerId],
+  );
+  return new Set(r.map((x) => x.recht));
+}
 
 async function leesVoorstel(
   c: pg.PoolClient,
@@ -100,7 +142,10 @@ async function leesVoorstel(
             publicatie_status, inhouds_hash, goedgekeurd_hash, beoordeeld_door,
             (select g.email from intel.gebruikers g where g.id = beoordeeld_door)
               as beoordeeld_door_email,
-            beoordeeld_op::text, precheck_uitslag
+            beoordeeld_op::text, precheck_uitslag,
+            goedgekeurde_website_versie,
+            (select mg.risico_klasse from intel.markt_gebeurtenissen mg
+              where mg.id = gebeurtenis_id) as risico_klasse
        from intel.inhoud_voorstellen
       where organisatie_id = $1 and id = $2::bigint`,
     [organisatieId, voorstelId],
@@ -170,6 +215,16 @@ export async function beoordeel(
     notitie?: string | null;
     /** De hash zoals getoond aan de beoordelaar. */
     verwachteHash: string;
+    /**
+     * De websiteVersie uit het sitekennisartefact, GEMETEN door de
+     * aanroeper en niet uit invoer.
+     *
+     * Wordt bij een goedkeuring vastgelegd, zodat publicatiePrecheck
+     * later twee ONAFHANKELIJKE waarden kan vergelijken. Tot 3.0.4 kreeg
+     * die controle beide waarden van dezelfde aanroeper en bewees hij
+     * niets. Zie migratie 0033.
+     */
+    websiteVersie: string;
   },
 ): Promise<BeoordeelUitslag> {
   /* HET ACCOUNT MOET BESTAAN EN BIJ DEZE ORGANISATIE HOREN.
@@ -189,8 +244,40 @@ export async function beoordeel(
         `een beoordeling zonder geldig account wordt niet vastgelegd`,
     );
   }
+  if (!/^[0-9a-f]{64}$/.test(opdracht.websiteVersie)) {
+    throw new IntelFout(
+      "validatie",
+      "websiteVersie is geen sha256; de aanroeper hoort hem uit het sitekennisartefact te MÉTEN",
+    );
+  }
+
   const door = gebruiker.email;
   const rij = await leesVoorstel(c, organisatieId, opdracht.voorstelId);
+
+  /* HET RECHT, SERVER-SIDE. Zie de toelichting bij RECHT_BEOORDELEN:
+     dit hing eerder alleen aan de route, en aan het verkeerde recht. */
+  const rechten = await rechtenVan(c, opdracht.gebruikerId);
+  if (!rechten.has(RECHT_BEOORDELEN)) {
+    throw new IntelFout(
+      "autorisatie",
+      `${door} mag geen redactioneel besluit nemen: het recht ${RECHT_BEOORDELEN} ontbreekt`,
+    );
+  }
+  /* Hoog risico vraagt een zwaarder recht. 0001 geeft dat met opzet
+     alleen aan `beheerder`; zie de comment op intel.rol_rechten. De
+     risicoklasse komt van de gebeurtenis en niet van de aanvrager, dus
+     hij is niet te beïnvloeden door wie goedkeurt. */
+  if (
+    opdracht.besluit === "goedgekeurd" &&
+    rij.risico_klasse === "hoog" &&
+    !rechten.has(RECHT_HOOGRISICO)
+  ) {
+    throw new IntelFout(
+      "autorisatie",
+      `voorstel ${rij.id} hangt aan een gebeurtenis met risicoklasse hoog; ` +
+        `goedkeuren vraagt het recht ${RECHT_HOOGRISICO} en ${door} heeft dat niet`,
+    );
+  }
 
   if (!rij.inhouds_hash) {
     throw new IntelFout(
@@ -217,11 +304,12 @@ export async function beoordeel(
      Een voorstel dat de controles niet haalt is geen keuze die aan een
      mens hoort te worden voorgelegd; goedkeuren zou een poort omzeilen
      in plaats van passeren. */
-  if (opdracht.besluit === "goedgekeurd" && rij.publicatie_status !== "READY_FOR_REVIEW") {
+  const BEOORDEELBAAR: readonly PublicatieStatus[] = ["READY_FOR_REVIEW", "READY_FOR_LINK_REVIEW"];
+  if (opdracht.besluit === "goedgekeurd" && !BEOORDEELBAAR.includes(rij.publicatie_status)) {
     throw new IntelFout(
       "validatie",
       `voorstel ${rij.id} staat op ${rij.publicatie_status} en is niet goed te keuren. ` +
-        `Alleen READY_FOR_REVIEW kan worden goedgekeurd.`,
+        `Alleen ${BEOORDEELBAAR.join(" of ")} kan worden goedgekeurd.`,
     );
   }
 
@@ -241,7 +329,12 @@ export async function beoordeel(
             beoordeeld_door   = $6,
             beoordeeld_op     = now(),
             beoordeling       = $8,
-            beoordeling_notitie = $7
+            beoordeling_notitie = $7,
+            /* De versie waarop is goedgekeurd, gemeten uit het artefact.
+               Alleen bij een goedkeuring; bij afwijzen of herziening is
+               er niets om aan te binden. Zie migratie 0033. */
+            goedgekeurde_website_versie =
+              case when $4 = 'goedgekeurd' then $9 else null end
       where organisatie_id = $1 and id = $2::bigint`,
     [
       organisatieId,
@@ -252,6 +345,7 @@ export async function beoordeel(
       opdracht.gebruikerId,
       opdracht.notitie ?? null,
       BESLUIT_NAAR_KOLOM[opdracht.besluit],
+      opdracht.websiteVersie,
     ],
   );
 
@@ -312,9 +406,16 @@ export async function publicatiePrecheck(
   context: {
     /** De routes die het sitekennisartefact nu als gepubliceerd kent. */
     gepubliceerdeRoutes: readonly string[];
-    /** De websiteversie waarop de goedkeuring is gebaseerd. */
-    websiteVersie: string;
-    /** De websiteversie van het artefact dat NU geldt. */
+    /**
+     * De websiteversie van het artefact dat NU geldt, gemeten door de
+     * aanroeper.
+     *
+     * De versie waarop is GOEDGEKEURD komt NIET meer van de aanroeper
+     * maar uit de rij (kolom goedgekeurde_website_versie, migratie
+     * 0033). Tot 3.0.4 kreeg deze functie beide waarden van dezelfde
+     * aanroeper, en dan vergelijkt de controle twee kopieën van hetzelfde
+     * getal in plaats van twee onafhankelijke metingen.
+     */
     huidigeWebsiteVersie: string;
   },
 ): Promise<PrecheckUitslag> {
@@ -348,14 +449,19 @@ export async function publicatiePrecheck(
      Is de site gewijzigd sinds de goedkeuring, dan kan de sectie waar
      deze alinea in moest anders zijn of niet meer bestaan. Dat is geen
      reden om te weigeren maar wel om opnieuw te kijken. */
-  const zelfdeSite = context.websiteVersie === context.huidigeWebsiteVersie;
+  const goedgekeurdOp = rij.goedgekeurde_website_versie;
+  const zelfdeSite = goedgekeurdOp !== null && goedgekeurdOp === context.huidigeWebsiteVersie;
   voeg(
     "website onveranderd sinds goedkeuring",
     zelfdeSite,
-    zelfdeSite
-      ? `websiteversie ${context.huidigeWebsiteVersie.slice(0, 12)} ongewijzigd`
-      : `de website is gewijzigd: goedgekeurd op ${context.websiteVersie.slice(0, 12)}, ` +
-        `nu ${context.huidigeWebsiteVersie.slice(0, 12)}`,
+    goedgekeurdOp === null
+      ? `er is niet vastgelegd op welke websiteversie is goedgekeurd. Dat kan bij een ` +
+        `goedkeuring van vóór migratie 0033; dan is niet vast te stellen of de doelsectie ` +
+        `sindsdien is verschoven. Laat dit voorstel opnieuw beoordelen.`
+      : zelfdeSite
+        ? `websiteversie ${context.huidigeWebsiteVersie.slice(0, 12)} ongewijzigd sinds de goedkeuring`
+        : `de website is gewijzigd: goedgekeurd op ${goedgekeurdOp.slice(0, 12)}, ` +
+          `nu ${context.huidigeWebsiteVersie.slice(0, 12)}`,
   );
 
   const heeftTekst = (rij.nieuwe_tekst ?? "").trim().length > 0;

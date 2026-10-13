@@ -55,6 +55,8 @@ import { promisify } from "node:util";
 import pg from "pg";
 import { laadEnvBestand, APP_WORTEL } from "../kern/config.ts";
 import { KRITIEKE_TABELLEN, vindPgGereedschap, type BackupManifest } from "../ops/backup.ts";
+import { redacteerFout, redigeer } from "../kern/geheimen.ts";
+import { draaiPgGereedschap } from "../ops/pgomgeving.ts";
 import { downloadUitGcs, gcsConfigUitOmgeving, lijstGcs } from "../ops/gcsopslag.ts";
 
 const uitvoeren = promisify(execFile);
@@ -216,13 +218,14 @@ try {
 
     /* `create database` kan niet in een transactie en niet via een
        parameter; de naam is daarom hierboven op vorm gecontroleerd. */
-    await uitvoeren(gereedschap.psql, [
+    /* De verbinding gaat via de procesomgeving, niet via argv: een
+       mislukte psql zette tot 3.0.4 de hele commandoregel — inclusief
+       het wachtwoord van de BEHEERDER — in Error.message. */
+    await draaiPgGereedschap(
+      gereedschap.psql,
+      ["-v", "ON_ERROR_STOP=1", "-c", `create database ${WEGWERP_DB}`],
       beheer.toString(),
-      "-v",
-      "ON_ERROR_STOP=1",
-      "-c",
-      `create database ${WEGWERP_DB}`,
-    ]);
+    );
     wegwerpDbGemaakt = true;
     console.log(`  database       ${WEGWERP_DB} aangemaakt`);
 
@@ -240,14 +243,21 @@ try {
       "--rm",
       "--name",
       CONTAINER,
+      /* Naamvorm: docker leest de WAARDE uit onze procesomgeving, zodat
+         het wachtwoord niet op de commandoregel staat (en dus niet in
+         `ps` of in een foutmelding van execFile). */
       "--env",
-      `POSTGRES_PASSWORD=${WACHTWOORD}`,
+      "POSTGRES_PASSWORD",
       "--env",
       `POSTGRES_DB=${DB}`,
       "--publish",
       `127.0.0.1:${POORT}:5432`,
       `postgres:${serverMajor}-alpine`,
-    ]);
+    ], {
+      /* De waarde hoort hier, niet in argv. docker kopieert hem naar de
+         container; onze eigen commandoregel blijft schoon. */
+      env: { ...process.env, POSTGRES_PASSWORD: WACHTWOORD },
+    });
     containerGestart = true;
     console.log(`  container gestart: postgres:${serverMajor}-alpine`);
     doelUrl = `postgresql://postgres:${WACHTWOORD}@127.0.0.1:${POORT}/${DB}`;
@@ -257,7 +267,7 @@ try {
   let klaar = false;
   for (let i = 0; i < 60; i++) {
     try {
-      await uitvoeren(gereedschap.psql, [doelUrl, "-At", "-c", "select 1"]);
+      await draaiPgGereedschap(gereedschap.psql, ["-At", "-c", "select 1"], doelUrl);
       klaar = true;
       break;
     } catch {
@@ -289,10 +299,11 @@ try {
      dan is dat een echte bevinding over die server en geen reden om er
      stilletjes iets bij te zetten. */
   if (NAAR_BESTAANDE_SERVER) {
-    const { stdout } = await uitvoeren(gereedschap.psql, [
-      doelUrl, "-At", "-c",
-      `select rolname from pg_roles where rolname in ('vibe_intel_app','vibe_intel_lezer','vibe_intel_onderhoud') order by 1`,
-    ]);
+    const { stdout } = await draaiPgGereedschap(
+      gereedschap.psql,
+      ["-At", "-c", `select rolname from pg_roles where rolname in ('vibe_intel_app','vibe_intel_lezer','vibe_intel_onderhoud') order by 1`],
+      doelUrl,
+    );
     const aanwezig = stdout.split("\n").map((r) => r.trim()).filter(Boolean);
     const ontbreekt = ["vibe_intel_app", "vibe_intel_lezer", "vibe_intel_onderhoud"]
       .filter((r) => !aanwezig.includes(r));
@@ -306,23 +317,23 @@ try {
     console.log(`  applicatierollen bestaan al op de doelserver (${aanwezig.length}); niets aangemaakt`);
   } else {
     for (const rol of ["vibe_intel_app", "vibe_intel_lezer", "vibe_intel_onderhoud"]) {
-      await uitvoeren(gereedschap.psql, [
+      await draaiPgGereedschap(
+        gereedschap.psql,
+        ["-v", "ON_ERROR_STOP=1", "-c",
+         `do $$ begin if not exists (select 1 from pg_roles where rolname = '${rol}') then create role ${rol} nologin; end if; end $$;`],
         doelUrl,
-        "-v",
-        "ON_ERROR_STOP=1",
-        "-c",
-        `do $$ begin if not exists (select 1 from pg_roles where rolname = '${rol}') then create role ${rol} nologin; end if; end $$;`,
-      ]);
+      );
     }
     console.log("  applicatierollen aangemaakt in de wegwerpcontainer (de dump draagt geen rollen)");
   }
 
-  const { stderr: restoreFout } = await uitvoeren(
+  const { stderr: restoreFout } = await draaiPgGereedschap(
     gereedschap.pgRestore,
-    ["--dbname", doelUrl, "--no-owner", "--no-privileges", "--exit-on-error", dumpPad],
+    ["--no-owner", "--no-privileges", "--exit-on-error", dumpPad],
+    doelUrl,
     { maxBuffer: 256 * 1024 * 1024 },
-  ).catch((e: { stderr?: string; stdout?: string; message?: string }) => {
-    throw new Error(`pg_restore mislukte: ${(e.stderr ?? e.message ?? "").slice(0, 600)}`);
+  ).catch((e: unknown) => {
+    throw new Error(`pg_restore mislukte: ${redacteerFout(e).slice(0, 600)}`);
   });
   const restoreMs = Date.now() - begin;
   console.log(`  pg_restore gereed in ${restoreMs} ms${restoreFout?.trim() ? " (met meldingen)" : ""}`);
@@ -404,7 +415,7 @@ try {
       await client.query("update intel.audit_gebeurtenissen set handeling = 'gemanipuleerd'");
     } catch (e) {
       appendOnlyWerkt = /append|only|niet toegestaan|wijzig/i.test(
-        e instanceof Error ? e.message : String(e),
+        redacteerFout(e),
       );
     }
     toets(
@@ -534,7 +545,7 @@ try {
   }
 } catch (e) {
   console.error("");
-  console.error(`RESTORETEST AFGEBROKEN: ${e instanceof Error ? e.message : String(e)}`);
+  console.error(`RESTORETEST AFGEBROKEN: ${redacteerFout(e)}`);
   process.exitCode = 1;
 } finally {
   if (containerGestart && !heeft("houd")) {
@@ -564,14 +575,14 @@ try {
       console.error(`Verwijder hem met de hand: drop database ${WEGWERP_DB};`);
       process.exitCode = 1;
     } else {
-      await uitvoeren(g.psql, [beheer, "-c", `drop database if exists ${WEGWERP_DB} with (force)`])
+      await draaiPgGereedschap(g.psql, ["-c", `drop database if exists ${WEGWERP_DB} with (force)`], beheer)
         .then(() => {
           console.log("");
           console.log(`wegwerpdatabase ${WEGWERP_DB} gedropt`);
         })
         .catch((e: Error) => {
           console.error("");
-          console.error(`LET OP: ${WEGWERP_DB} kon niet gedropt worden: ${e.message.slice(0, 200)}`);
+          console.error(`LET OP: ${WEGWERP_DB} kon niet gedropt worden: ${redigeer(e.message).slice(0, 200)}`);
           console.error("Verwijder hem met de hand; hij staat op de productieserver.");
           process.exitCode = 1;
         });

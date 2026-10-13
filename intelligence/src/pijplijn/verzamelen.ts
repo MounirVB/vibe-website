@@ -80,6 +80,53 @@ export type VerzamelRapport = {
   readonly perBron: readonly BronUitkomst[];
 };
 
+export type OphaalBeoordeling = {
+  /** false = de worker moet deze taak NIET als gereed afronden. */
+  readonly geslaagd: boolean;
+  readonly melding: string;
+};
+
+/**
+ * Beoordeelt of een ophaalronde geslaagd is.
+ *
+ * HET DEFECT DAT DIT OPLOST — gemeten op 13 oktober 2026.
+ *
+ * De worker meldde `ophalen GEREED` met alleen het aantal bronnen en
+ * het aantal nieuwe documenten. `bronnenFout` werd hier wél berekend
+ * maar nergens gebruikt. Bij 29 bronnen op HTTP 500 stond de taak op
+ * gereed, bleef de dlq leeg en was een totale ingestiestoring
+ * operationeel onzichtbaar.
+ *
+ * De regel is met opzet smal, want een te brede regel maakt een rustige
+ * nacht tot een storing:
+ *
+ * · nul bronnen toe          geslaagd. Niets te doen is geen fout, en
+ *                            een ronde met nul nieuwe documenten is
+ *                            normaal.
+ * · minstens één bron ok     geslaagd, maar de foutcount staat IN de
+ *                            melding zodat gedeeltelijke uitval
+ *                            leesbaar blijft.
+ * · alles wat toe was faalt  NIET geslaagd.
+ *
+ * Een bron die ons structureel buitensluit valt al buiten `toe` via
+ * isToeAanOphalen (opschorting), dus een permanent verbod laat deze
+ * regel niet onterecht vuren.
+ */
+export function beoordeelOphaalronde(r: VerzamelRapport): OphaalBeoordeling {
+  const melding =
+    `bronnen ${r.bronnenGeprobeerd} (ok ${r.bronnenOk}, fout ${r.bronnenFout}, ` +
+    `overgeslagen ${r.bronnenOvergeslagen}), nieuwe documenten ${r.nieuweDocumenten}, ` +
+    `nieuwe versies ${r.nieuweVersies}`;
+
+  if (r.bronnenGeprobeerd > 0 && r.bronnenOk === 0) {
+    return {
+      geslaagd: false,
+      melding: `alle ${r.bronnenGeprobeerd} geschikte bron(nen) faalden; ${melding}`,
+    };
+  }
+  return { geslaagd: true, melding };
+}
+
 function isToeAanOphalen(rij: BronRij, nu: Date, forceer: boolean): boolean {
   if (forceer) return true;
   /* OPGESCHORT BLIJFT OPGESCHORT.

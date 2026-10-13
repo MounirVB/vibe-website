@@ -54,7 +54,7 @@
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 import type pg from "pg";
-import { eenRij, rijen } from "../kern/db.ts";
+import { eenRij, metOrganisatie, rijen, type Pool } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 import { herkenOnderwerpen } from "../pijplijn/onderwerpen.ts";
 import { vindSchaalverlies } from "../pijplijn/schaalcorrectie.ts";
@@ -74,6 +74,13 @@ export type Controle = {
 
 export type Eindoordeel =
   | "KLAAR_VOOR_REVIEW"
+  /* NIEUW IN 3.0.4. Een linkvoorstel is GEEN feitelijke paginarevisie en
+     hoort dus niet in dezelfde staat te wachten. Tot 3.0.4 kreeg een
+     voorstel waarvan het feit NIET te verwoorden was alsnog
+     KLAAR_VOOR_REVIEW zodra er een interne-linkkans was, en kwam het
+     daarmee in de studio naast een echte revisie te staan — onder een
+     kop die beloofde dat alle vijf de controles waren gehaald. */
+  | "KLAAR_VOOR_LINKREVIEW"
   | "NEEDS_RESEARCH"
   | "HERROUTEREN"
   | "UITSTELLEN"
@@ -81,6 +88,7 @@ export type Eindoordeel =
 
 export const EINDOORDEEL_LABEL: Record<Eindoordeel, string> = {
   KLAAR_VOOR_REVIEW: "Klaar voor beoordeling",
+  KLAAR_VOOR_LINKREVIEW: "Linkvoorstel, klaar voor beoordeling",
   NEEDS_RESEARCH: "Feit moet eerst worden uitgezocht",
   HERROUTEREN: "Hoort op een andere pagina",
   UITSTELLEN: "Uitstellen",
@@ -855,13 +863,23 @@ export async function bouwVoorstel(
      lopen. Dan keurt iemand een CTA goed en publiceert het platform een
      andere. Eén waarde, twee gebruikers. */
   const wijzigingSoort =
-    eindoordeel !== "KLAAR_VOOR_REVIEW"
-      ? "geen"
-      : feitVerwoordbaar
-        ? sectieKop
-          ? "alinea_toevoegen"
-          : "sectie_toevoegen"
-        : "interne_link";
+    eindoordeel === "KLAAR_VOOR_REVIEW"
+      ? sectieKop
+        ? "alinea_toevoegen"
+        : "sectie_toevoegen"
+      : eindoordeel === "KLAAR_VOOR_LINKREVIEW"
+        ? "interne_link"
+        : "geen";
+  /* feitVerwoordbaar bepaalde hier eerder de soort. Sinds 3.0.4 bepaalt
+     het EINDOORDEEL hem, en dat oordeel volgt al uit dezelfde controle:
+     KLAAR_VOOR_REVIEW kan niet bestaan met een gefaalde verwoordbaarheid.
+     De variabele blijft als assertie dat die twee niet uiteenlopen. */
+  if (eindoordeel === "KLAAR_VOOR_REVIEW" && !feitVerwoordbaar) {
+    throw new Error(
+      "interne inconsistentie: KLAAR_VOOR_REVIEW met een gefaalde verwoordbaarheid; " +
+        "weegAf en de wijzigingssoort lopen uiteen",
+    );
+  }
 
   const CTA_DOEL = "/contact";
   /* De CTA volgt het ONDERWERP. Een congestievoorstel met een CTA over
@@ -1269,21 +1287,11 @@ function weegAf(
      De gebeurtenis blijft de aanleiding ("dit onderwerp speelt nu"), en
      het feit gaat als bewijs mee zodat de reviewer het kan nalezen en
      eventueel zelf een zin schrijft. */
-  const verwoord = controles.find((x) => x.naam === "verwoordbaarheid" && x.oordeel === "FAIL");
-  if (verwoord) {
-    if (linkKansen > 0) {
-      return {
-        eindoordeel: "KLAAR_VOOR_REVIEW",
-        oordeelReden:
-          `het feit zelf is niet te verwoorden zonder te citeren (${verwoord.reden.slice(0, 90)}…), ` +
-          `maar er is wel een onderbouwd voorstel: ${linkKansen} interne link(s) naar pagina's met ` +
-          `hetzelfde onderwerp waar deze pagina nog niet naar wijst. Dat voorstel leunt alleen op ` +
-          `de sitekennis en beweert geen enkel getal. Het feit gaat als bewijs mee.`,
-      };
-    }
-    return { eindoordeel: "NEEDS_RESEARCH", oordeelReden: verwoord.reden };
-  }
-
+  /* DE TWEE ALGEMENE REGELS STAAN BOVEN DE VERWOORDBAARHEID.
+     Ze stonden eronder, en daardoor golden ze NIET voor een
+     linkvoorstel: een kandidaat met twee voorbehouden of met een
+     bedrijfsrelevantie van 3 ging als linkvoorstel alsnog naar review.
+     Een linkvoorstel kost net zo goed redactietijd. */
   const voorbehouden = controles.filter((x) => x.oordeel === "VOORBEHOUD");
   if (voorbehouden.length >= 2) {
     return {
@@ -1299,12 +1307,120 @@ function weegAf(
         `de controles zijn wel gehaald`,
     };
   }
+
+  /* HET FEIT IS NIET TE VERWOORDEN — maar dat is niet het einde, en het
+     is ook GEEN feitelijke revisie.
+
+     Tot 3.0.4 gaf deze tak KLAAR_VOOR_REVIEW, waardoor een linkvoorstel
+     in dezelfde staat belandde als een gecontroleerde feitelijke
+     paginarevisie. De studio zette er een kop boven die beloofde dat
+     alle vijf de controles waren gehaald, terwijl de verwoordbaarheid
+     juist was GEFAALD. Gemeten: voorstel 10 (kandidaat 19) stond zo op
+     READY_FOR_REVIEW met als eigen reden "het feit zelf is niet te
+     verwoorden".
+
+     Het voorstel blijft bestaan en blijft de moeite waard — het leunt
+     alleen op het sitekennisartefact, citeert niets en beweert geen
+     getal — maar het krijgt een EIGEN gereedheidsklasse, zodat
+     READY_FOR_REVIEW weer betekent wat het belooft. */
+  const verwoord = controles.find((x) => x.naam === "verwoordbaarheid" && x.oordeel === "FAIL");
+  if (verwoord) {
+    if (linkKansen > 0) {
+      return {
+        eindoordeel: "KLAAR_VOOR_LINKREVIEW",
+        oordeelReden:
+          `het feit zelf is niet te verwoorden zonder te citeren (${verwoord.reden.slice(0, 90)}…), ` +
+          `maar er is wel een onderbouwd voorstel: ${linkKansen} interne link(s) naar pagina's met ` +
+          `hetzelfde onderwerp waar deze pagina nog niet naar wijst. Dat voorstel leunt alleen op ` +
+          `de sitekennis en beweert geen enkel getal. Het feit gaat als bewijs mee. Dit is GEEN ` +
+          `feitelijke paginarevisie.`,
+      };
+    }
+    return { eindoordeel: "NEEDS_RESEARCH", oordeelReden: verwoord.reden };
+  }
   return {
     eindoordeel: "KLAAR_VOOR_REVIEW",
     oordeelReden:
       `alle vijf de controles gehaald${voorbehouden.length ? ` (1 voorbehoud: ${voorbehouden[0]!.naam})` : ""}. ` +
       `Risicoklasse ${k.risico_klasse}: een mens voert de wijziging door, het platform schrijft niets.`,
   };
+}
+
+export type VoorstelrondeRapport = {
+  readonly kandidaten: number;
+  readonly gebouwd: number;
+  readonly nieuw: number;
+  readonly bijgewerkt: number;
+  readonly zonderVoorstel: number;
+  readonly perEindoordeel: Readonly<Record<string, number>>;
+};
+
+/**
+ * Eén volledige voorstelronde: kandidaten kiezen, voorstel bouwen,
+ * voorstel bewaren.
+ *
+ * WAAROM DIT BESTAAT. Deze lus stond alleen in cli/voorstel.ts, en dus
+ * kon de stap alleen met de hand draaien. De planner plande hem niet en
+ * de worker kende de soort niet, met als gevolg dat het dashboard
+ * dagenlang op dezelfde (of nul) READY_FOR_REVIEW-rijen bleef staan
+ * terwijl er wél nieuwe kandidaten binnenkwamen. Sinds 3.0.4 roept de
+ * taaksoort `voorstel` deze functie aan; de CLI gebruikt hem ook, zodat
+ * er één waarheid is over wat een ronde doet.
+ *
+ * BESTAANDE MENSELIJKE BESLUITEN BLIJVEN STAAN. Dat zit niet hier maar
+ * in bewaarVoorstel: die laat de beoordeling ongemoeid zolang de
+ * inhoudshash gelijk blijft, en laat hem als geheel vervallen zodra de
+ * inhoud wijzigt. Een herhaalde ronde over ongewijzigde kandidaten is
+ * daarmee een no-op op de besluitkolommen.
+ */
+export async function voorstelronde(
+  pool: Pool,
+  organisatieId: number,
+  kennis: SitekennisBestand,
+  opties: { vandaag?: string; kandidaatIds?: readonly number[] } = {},
+): Promise<VoorstelrondeRapport> {
+  const vandaag = opties.vandaag ?? new Date().toISOString().slice(0, 10);
+
+  const ids =
+    opties.kandidaatIds ??
+    (
+      await metOrganisatie(pool, { organisatieId }, (c) =>
+        rijen<{ id: number }>(
+          c,
+          `select k.id
+             from intel.inhoud_kandidaten k
+            where k.besluit = 'UPDATE_EXISTING'
+              and k.doel_pagina_id is not null
+              and k.status <> 'afgehandeld'
+            order by k.id`,
+        ),
+      )
+    ).map((r) => r.id);
+
+  let gebouwd = 0;
+  let nieuw = 0;
+  let bijgewerkt = 0;
+  let zonderVoorstel = 0;
+  const perEindoordeel: Record<string, number> = {};
+
+  for (const id of ids) {
+    const v = await metOrganisatie(pool, { organisatieId }, (c) =>
+      bouwVoorstel(c, kennis, id, vandaag),
+    );
+    if (!v) {
+      zonderVoorstel += 1;
+      continue;
+    }
+    gebouwd += 1;
+    perEindoordeel[v.eindoordeel] = (perEindoordeel[v.eindoordeel] ?? 0) + 1;
+    const r = await metOrganisatie(pool, { organisatieId }, (c) =>
+      bewaarVoorstel(c, organisatieId, v),
+    );
+    if (r.wat === "nieuw") nieuw += 1;
+    else bijgewerkt += 1;
+  }
+
+  return { kandidaten: ids.length, gebouwd, nieuw, bijgewerkt, zonderVoorstel, perEindoordeel };
 }
 
 /** Bouwt voorstellen voor alle kandidaten met een doelpagina. */
@@ -1355,7 +1471,13 @@ export async function bewaarVoorstel(
         cta_tekst, cta_doel, cta_grondslag, eindoordeel, oordeel_reden,
         huidige_tekst, interne_links, inhouds_hash, publicatie_status)
      values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,
-             case when $15 = 'KLAAR_VOOR_REVIEW' then 'READY_FOR_REVIEW' else 'DRAFT' end)
+             case $15
+               when 'KLAAR_VOOR_REVIEW' then 'READY_FOR_REVIEW'
+               -- Een linkvoorstel wacht op een mens, maar in zijn EIGEN
+               -- staat: het is geen feitelijke paginarevisie.
+               when 'KLAAR_VOOR_LINKREVIEW' then 'READY_FOR_LINK_REVIEW'
+               else 'DRAFT'
+             end)
      on conflict (organisatie_id, kandidaat_id) do update set
        doel_pad             = excluded.doel_pad,
        doel_h1              = excluded.doel_h1,
@@ -1388,8 +1510,11 @@ export async function bewaarVoorstel(
        publicatie_status =
          case
            when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
-             then case when excluded.eindoordeel = 'KLAAR_VOOR_REVIEW'
-                       then 'READY_FOR_REVIEW' else 'DRAFT' end
+             then case excluded.eindoordeel
+                       when 'KLAAR_VOOR_REVIEW' then 'READY_FOR_REVIEW'
+                       when 'KLAAR_VOOR_LINKREVIEW' then 'READY_FOR_LINK_REVIEW'
+                       else 'DRAFT'
+                     end
            else intel.inhoud_voorstellen.publicatie_status
          end,
        /* Vervalt de binding, dan vervalt ook de gebonden hash — anders
@@ -1449,6 +1574,28 @@ export async function bewaarVoorstel(
            when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
              then null
            else intel.inhoud_voorstellen.beoordeeld_op
+         end,
+       /* OOK DE PRECHECKSPOREN VERVALLEN. Een precheck is gemeten tegen
+          een specifieke inhoud en een specifieke websiteversie. Blijft
+          hij staan nadat de inhoud is veranderd, dan draagt de rij een
+          PASS die over andere tekst ging. Zie migratie 0033. */
+       goedgekeurde_website_versie =
+         case
+           when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
+             then null
+           else intel.inhoud_voorstellen.goedgekeurde_website_versie
+         end,
+       precheck_op =
+         case
+           when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
+             then null
+           else intel.inhoud_voorstellen.precheck_op
+         end,
+       precheck_uitslag =
+         case
+           when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
+             then null
+           else intel.inhoud_voorstellen.precheck_uitslag
          end
      returning id::text, (xmax = 0) as was_nieuw`,
     [
