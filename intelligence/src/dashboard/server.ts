@@ -1123,6 +1123,17 @@ ${tabel(
     const csrf = maakCsrfToken(sessieGeheim());
     zetCsrfKoekje(res, csrf);
 
+    /* WIE NIET MAG GOEDKEUREN, KRIJGT GEEN GOEDKEURKNOP.
+       Gevonden door de browsertoets van 3.0.6: een gebruiker met alleen
+       `inhoud.lezen` zag het volledige goedkeurformulier. De server
+       weigerde het besluit wel — de HTTP-toets bewijst 403 — dus het was
+       geen beveiligingslek, maar wel precies de misleidende actie die
+       par. 14 verbiedt: een knop die bij elke klik faalt.
+
+       De grendel blijft op de server staan; dit is de weergave die zich
+       eraan houdt. */
+    const magGoedkeuren = req.gebruiker?.rechten.has("inhoud.goedkeuren") ?? false;
+
     const d = await alsGebruiker(req, async (c) => ({
       /* WIJZIGINGSVOORSTELLEN op bestaande pagina's, met hun vier
          controles. Dit is wat op een mens wacht; het staat boven de
@@ -1148,6 +1159,19 @@ ${tabel(
         beoordeeld_op: string | null;
         beoordelaar: string | null;
         publicatie_status: string;
+        /** Het paginavoorstel; alleen gevuld bij eindoordeel NIEUWE_PAGINA. */
+        nieuwe_pagina: {
+          slug?: string;
+          soort?: string;
+          werktitel?: string;
+          hoofdonderwerp?: string;
+          zoekintentie?: string;
+          doelgroep?: string;
+          voorgesteldeStructuur?: string[];
+          naastgelegenPaginas?: { route: string; vermeldingen: number }[];
+          waaromGeenBestaandePagina?: string;
+          duplicaatrisico?: string;
+        } | null;
         inhouds_hash: string | null;
         goedgekeurd_hash: string | null;
         precheck_uitslag: string | null;
@@ -1161,7 +1185,8 @@ ${tabel(
                 v.huidige_tekst, v.interne_links, v.wijziging_soort,
                 v.beoordeling_notitie, v.beoordeeld_op::text as beoordeeld_op,
                 gb.naam as beoordelaar,
-                v.publicatie_status, v.inhouds_hash, v.goedgekeurd_hash, v.precheck_uitslag,
+                v.publicatie_status,
+                v.nieuwe_pagina, v.inhouds_hash, v.goedgekeurd_hash, v.precheck_uitslag,
                 /* HET AUDITSPOOR PER VOORSTEL (par. 14). Nieuwste eerst,
                    begrensd zodat een lange geschiedenis de pagina niet
                    onleesbaar maakt. */
@@ -1279,10 +1304,17 @@ ${(() => {
   const klaarLink = d.voorstellen.filter(
     (v) => v.eindoordeel === "KLAAR_VOOR_LINKREVIEW" && !v.beoordeling,
   );
+  /* NIEUW IN 3.0.6. Een paginavoorstel is geen revisie van een
+     bestaande pagina en hoort dus niet in dezelfde bak. Zie
+     inhoud/nieuwepagina.ts: dit is een VOORSTEL, geen pagina. */
+  const klaarNieuw = d.voorstellen.filter(
+    (v) => v.eindoordeel === "NIEUWE_PAGINA" && !v.beoordeling,
+  );
   const rest = d.voorstellen.filter(
     (v) =>
       !(v.eindoordeel === "KLAAR_VOOR_REVIEW" && !v.beoordeling) &&
-      !(v.eindoordeel === "KLAAR_VOOR_LINKREVIEW" && !v.beoordeling),
+      !(v.eindoordeel === "KLAAR_VOOR_LINKREVIEW" && !v.beoordeling) &&
+      !(v.eindoordeel === "NIEUWE_PAGINA" && !v.beoordeling),
   );
   const kaart = (v: (typeof d.voorstellen)[number]) => `
 <details${v.eindoordeel === "KLAAR_VOOR_REVIEW" ? " open" : ""}>
@@ -1293,6 +1325,37 @@ ${(() => {
     ${v.doel_pad ? `<code>${esc(v.doel_pad)}</code>` : '<span class="onbekend">ONBEKEND</span>'}
     · de pagina noemt het onderwerp ${v.noemt} keer</p>
   <p><strong>Oordeel:</strong> ${esc(v.oordeel_reden)}</p>
+  ${
+    /* HET VOORSTEL VOOR EEN NIEUWE PAGINA (par. 12).
+       Een redacteur moet hier kunnen zien WAT wordt voorgesteld en
+       waarom geen bestaande pagina volstaat, zonder de database in te
+       hoeven. De werktitel kondigt zich als werktitel aan: dit platform
+       schrijft geen koppen. */
+    v.nieuwe_pagina
+      ? `<div class="kader">
+           <p><strong>Voorstel voor een NIEUWE pagina</strong> — dit is een voorstel, geen pagina.
+              Er wordt niets aangemaakt zonder dat een mens erover besluit.</p>
+           <table>
+             <tr><th>voorgestelde route</th><td><code>/${esc(v.nieuwe_pagina.slug ?? "")}</code></td></tr>
+             <tr><th>soort</th><td>${esc(v.nieuwe_pagina.soort ?? "")}</td></tr>
+             <tr><th>werktitel</th><td>${esc(v.nieuwe_pagina.werktitel ?? "")}</td></tr>
+             <tr><th>hoofdonderwerp</th><td>${esc(v.nieuwe_pagina.hoofdonderwerp ?? "")}</td></tr>
+             <tr><th>zoekintentie</th><td>${esc(v.nieuwe_pagina.zoekintentie ?? "")}</td></tr>
+             <tr><th>doelgroep</th><td>${esc(v.nieuwe_pagina.doelgroep ?? "")}</td></tr>
+             <tr><th>voorgestelde structuur</th><td>${(v.nieuwe_pagina.voorgesteldeStructuur ?? [])
+               .map((x) => esc(x))
+               .join(" · ")}</td></tr>
+             <tr><th>waarom geen bestaande pagina</th><td>${esc(
+               v.nieuwe_pagina.waaromGeenBestaandePagina ?? "",
+             )}</td></tr>
+             <tr><th>naastgelegen pagina's</th><td>${(v.nieuwe_pagina.naastgelegenPaginas ?? [])
+               .map((x) => `<code>${esc(x.route)}</code> (${x.vermeldingen})`)
+               .join(", ")}</td></tr>
+             <tr><th>duplicaatrisico</th><td>${esc(v.nieuwe_pagina.duplicaatrisico ?? "")}</td></tr>
+           </table>
+         </div>`
+      : ""
+  }
   ${v.nieuwe_tekst
     ? `<p class="klein">Soort wijziging: <strong>${esc(v.wijziging_soort)}</strong>${
         v.doel_sectie ? ` in sectie &ldquo;${esc(v.doel_sectie)}&rdquo;` : ""
@@ -1358,8 +1421,15 @@ ${(() => {
          besluit dat volgens de regels mag, maar waarvoor geen knop
          bestond. Par. 14 eist dat database, poort, API en weergave het
          eens zijn; dit was de enige plek waar dat niet zo was. */
-      (v.eindoordeel === "KLAAR_VOOR_REVIEW" || v.eindoordeel === "KLAAR_VOOR_LINKREVIEW") &&
-        v.inhouds_hash
+      (v.eindoordeel === "KLAAR_VOOR_REVIEW" ||
+        v.eindoordeel === "KLAAR_VOOR_LINKREVIEW" ||
+        /* Ook een paginavoorstel is een besluit dat een mens neemt;
+           migratie 0035 verruimde de databasegrendel er expliciet voor.
+           Zonder deze tak was NEW_PAGE_CANDIDATE een doodlopende weg —
+           dezelfde val als bij het linkvoorstel in 0032. */
+        v.eindoordeel === "NIEUWE_PAGINA") &&
+        v.inhouds_hash &&
+        magGoedkeuren
       ? `<form method="post" action="/voorstellen/${esc(v.id)}/beoordeel">
            <input type="hidden" name="${esc(CSRF_VELD)}" value="${esc(csrf)}">
            <!-- Par. 15: het besluit bindt aan de inhoud die hier staat.
@@ -1374,7 +1444,13 @@ ${(() => {
            <button type="submit" name="beoordeling" value="AFGEKEURD">Afkeuren</button>
            <p class="klein">Goedkeuren publiceert niets: het levert een patch op die een mens doorvoert.</p>
          </form>`
-      : v.eindoordeel === "KLAAR_VOOR_REVIEW"
+      : !magGoedkeuren &&
+          (v.eindoordeel === "KLAAR_VOOR_REVIEW" ||
+            v.eindoordeel === "KLAAR_VOOR_LINKREVIEW" ||
+            v.eindoordeel === "NIEUWE_PAGINA")
+        ? `<p class="klein">U kunt dit voorstel lezen maar niet beoordelen: dat vraagt het recht
+             <code>inhoud.goedkeuren</code>.</p>`
+        : v.eindoordeel === "KLAAR_VOOR_REVIEW"
         ? `<p class="klein">Niet beoordeelbaar: dit voorstel heeft geen inhoudshash, dus er is
              niets om een goedkeuring aan te binden. Draai de voorstelronde opnieuw.</p>`
         : `<p class="klein">Niet beoordeelbaar: alleen een feitelijke revisie die alle vijf de controles haalt, of een linkvoorstel,
@@ -1382,11 +1458,15 @@ ${(() => {
 </details>`;
   return `
 <p><strong>${klaar.length}</strong> feitelijke paginarevisie(s) klaar voor beoordeling,
-<strong>${klaarLink.length}</strong> linkvoorstel(len), en
+<strong>${klaarLink.length}</strong> linkvoorstel(len),
+<strong>${klaarNieuw.length}</strong> voorstel(len) voor een NIEUWE pagina, en
 <strong>${rest.length}</strong> met een onderbouwde afwijzing of omleiding.</p>
 ${klaar.map(kaart).join("")}
 ${klaarLink.length > 0
   ? `<details open><summary>Linkvoorstellen (${klaarLink.length}) — GEEN feitelijke revisie: het feit was niet te verwoorden, de linkaanbeveling wel onderbouwd</summary>${klaarLink.map(kaart).join("")}</details>`
+  : ""}
+${klaarNieuw.length > 0
+  ? `<details open><summary>Voorstellen voor een NIEUWE pagina (${klaarNieuw.length}) — geen bestaande pagina dekt dit onderwerp; dit zijn VOORSTELLEN, er wordt niets aangemaakt</summary>${klaarNieuw.map(kaart).join("")}</details>`
   : ""}
 ${rest.length > 0
   ? `<details><summary>Niet doorgezet (${rest.length}) — met reden</summary>${rest.map(kaart).join("")}</details>`
