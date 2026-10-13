@@ -99,6 +99,25 @@ sjabloonoppervlakken: de noscript-navigatie en een verwant-blok. Binnen `<main>`
 inkomend 1 en uitgaand 5. "429 inkomende links" is dus geen interne-linkkracht; zie het
 reviewmanifest §7 voor wat daar wél aan te doen valt.
 
+### robots.txt — nagemeten op 13 oktober 2026, GEEN defect, dus niet gewijzigd
+
+| controle | uitkomst |
+|---|---|
+| HTTP-status en type | **200**, `text/plain; charset=utf-8` |
+| vorm | 687 bytes, **geen BOM**, 18 × LF en 0 × CRLF, 0 niet-ASCII bytes |
+| groepen | precies één `User-agent: *` |
+| `Allow` | `/` |
+| `Disallow` | `/data/`, `/scripts/`, `/docs/`, `/api/`, `/intelligence/` |
+| niet-ondersteunde richtlijnen | **geen** `noindex`, `crawl-delay` of `host` |
+| blokkeert het een canonieke URL? | **0 van 430** |
+| blokkeert het een renderbenodigde asset? | **geen** — `/vibe/vibe.css`, `/vibe/tokens.css`, `/vibe/chrome.js`, `/_consent.js`, `/_clarity.js`, `/assets/*` vallen alle buiten elke `Disallow` |
+| `Sitemap`-regel | `https://www.vibeenergy.nl/sitemap.xml` → **200 zonder redirect**, `text/xml` |
+| apex-variant | `https://vibeenergy.nl/robots.txt` → 301 naar www |
+
+De vijf `Disallow`-paden geven zelf alle 404 op productie (gemeten), dus ze sluiten niets uit wat
+bestaat; ze zijn de tweede laag naast de allowlist van `publiek-artefact.mjs`. Er is geen
+aantoonbaar defect, en het bestand is daarom **niet aangeraakt**.
+
 ### Eén meetfout, voor de volledigheid
 
 Mijn eerste crawl meldde een ontbrekende `meta description` op
@@ -347,19 +366,89 @@ structureel nooit. Dat is gerepareerd, met begrensde gelijktijdigheid als voorwa
 met een timeout van 20 s zou een 430-run een staart tot ~2,4 uur geven) en met de noemer altijd in
 de uitvoer.
 
-`intelligence/db/migraties/0034_indexatie_dagstand.sql` is **geschreven, in CI bewezen, en NIET op
-productie toegepast.**
-`intel.indexatie_status` kan per constructie geen trend bevatten: `unique (organisatie_id, url,
-bron)` met `on conflict … do update` zet `laatst_gecontroleerd_op = now()` en vernietigt daarmee de
-vorige stand. Over 33 migraties bestaat geen dagstandtabel. De migratie is additief en draagt
-identity-PK, foreign key, RLS met `*_eigen_organisatie`-policy en grants — zonder elk van die vier
-vuurt een bestaande invariant in `0008_invarianten.sql`.
+`intelligence/db/migraties/0034_indexatie_dagstand.sql` lost op dat `intel.indexatie_status` per
+constructie geen trend kan bevatten: `unique (organisatie_id, url, bron)` met
+`on conflict … do update` zet `laatst_gecontroleerd_op = now()` en vernietigt daarmee de vorige
+stand. Over 33 migraties bestond geen dagstandtabel.
+
+> ### CORRECTIE 13 oktober 2026 — deze paragraaf beweerde het tegenovergestelde
+>
+> Hier stond: *"geschreven, in CI bewezen, en NIET op productie toegepast"*, en punt 8 van het
+> reviewmanifest vroeg om toestemming om hem later toe te passen. **Dat was onjuist.** De schrijver
+> had `buildCommand`, `startCommand` en `rootDirectory` van de services gemeten, maar niet
+> `preDeployCommand` — en juist daar zit het migratiepad.
+>
+> Gemeten via de Railway-API: `vibe-intel-api` draagt
+> `preDeployCommand = ["npm run migreer && npm run zaai && npm run geo"]`. Die draait *binnen* het
+> privénet, bij elke deploy, vóór de nieuwe container live gaat. **Een merge naar `main` past
+> openstaande migraties dus toe op productie.** Dat is geen losse, later te kiezen handeling.
+>
+> Bewijsketen dat 0034 bij de deploy van `8cbf6b5` (2026-10-13T14:42:15Z, SUCCESS) is toegepast:
+>
+> | stap | meting |
+> |---|---|
+> | het pad bestaat | `preDeployCommand` zoals hierboven, via de Railway-API |
+> | de runner faalt hard | `src/cli/migreer.ts` eindigt met `process.exit(1)` bij elke fout; empirisch bevestigd — een droogloop die op `ENOTFOUND` stuitte gaf exitcode **1** |
+> | de keten is voltooid | de `&&`-keten liep door: het deploylog van `8cbf6b5` bevat de volledige uitvoer van `zaai` (`ZAAIEN GEREED`, 430 pagina's) **en** van `geo` (`GEOGRAFIE GESYNCHRONISEERD`, 12 provincies), en de container startte |
+> | dus | `migreer` eindigde met exitcode 0 tegen de productiedatabase, en liet geen migratie open |
+>
+> Label: **INFERRED op gemeten premissen.** Het schema zelf is niet gelezen — zie hieronder waarom
+> dat niet kon, en met welk commando je het in één regel tot MEASURED maakt.
+>
+> **De twee `DROP COLUMN`-statements zijn daarmee ook uitgevoerd**, zonder dat daar expliciet om is
+> gevraagd. Wat dat verzacht, elk gemeten: beide kolommen waren leeg op een onafhankelijke database
+> met 449 rijen in `pagina_register` (0 non-null in `live_http_status`, 0 in `live_gemeten_op`), geen
+> regel code buiten hun eigen definitie in `0004_inhoud.sql` noemt ze, en terugdraaien is het
+> opnieuw toevoegen van twee nullable kolommen — er was geen data om te verliezen. Wat het niet
+> verzacht: een migratie die een additieve tabel en een onomkeerbare `DROP COLUMN` in één bestand
+> combineert, dwingt beide beslissingen tot één. **Aanbeveling: splits zo'n migratie voortaan.**
 
 **Gemeten in CI tegen een echte PostgreSQL 17.11:** `MIGRATIES PASS — 34/34 toegepast, drift 0`,
-`INVARIANTEN PASS — RLS, functierechten, auditspoor en bewijsplicht: 0 bevindingen`,
-integratietoetsen 185/185. De migratie is dus niet langer onbewezen in uitvoering; wat ontbreekt is
-uitsluitend de toepassing op **productie**, en die staat in het manifest omdat de productiedatabase
-privé-only is en een schemawijziging daar een eigen, expliciete handeling is.
+`INVARIANTEN PASS — 0 bevindingen`, integratietoetsen 185/185.
+
+**Gemeten in een repetitie op een wegwerpdatabase** (PostgreSQL 17.11, alle 34 migraties vanaf nul,
+daarna opgeruimd): tabel met tien kolommen waarvan alleen `aantal` en `noemer` nullable, drie
+indexen (`_pkey`, `_uniek`, `_idx`), `relrowsecurity = true`, policy
+`indexatie_dagstand_eigen_organisatie` voor `vibe_intel_app` + `vibe_intel_lezer`, grants exact
+`INSERT, SELECT, UPDATE` voor de app en `SELECT` voor de lezer — **geen DELETE**, want een dagstand
+is historie. Beide dode kolommen verdwenen. `intel_priv.controleer_invarianten()` gaf **0
+bevindingen**. En de zeven gedragstoetsen op de constraints:
+
+| toets | verwacht | uitkomst |
+|---|---|---|
+| geldige `MEASURED`-rij | lukt | lukt |
+| `NOT_AVAILABLE` mét getal | faalt | `indexatie_dagstand_ontbrekend_heeft_geen_getal` |
+| `MEASURED` zónder getal | faalt | `indexatie_dagstand_gemeten_heeft_een_getal` |
+| `NOT_AVAILABLE` zónder getal | lukt | lukt — de reden dat `aantal` nullable is |
+| leeg `bewijs` | faalt | `indexatie_dagstand_bewijs_check` |
+| onbekende metriek | faalt | `indexatie_dagstand_metriek_check` |
+| twee rijen op twee datums | lukt | 2026-10-13 = 430 én 2026-10-14 = 431 naast elkaar |
+
+Die laatste is het hele punt: twee meetpunten op twee datums zijn een trend, en dat was onder
+`indexatie_status` structureel onmogelijk.
+
+**Waarom het productieschema niet te lezen was.** Zes routes gemeten, alle dicht: de
+Postgres-service heeft geen `RAILWAY_TCP_PROXY_DOMAIN` en geen `DATABASE_PUBLIC_URL` (over alle 26
+variabelen); `railway run` voert lokaal uit en strandt op
+`getaddrinfo ENOTFOUND postgres.railway.internal`; `railway ssh` weigert zonder SSH-sleutel en er
+staat geen sleutel in `~/.ssh` of in de agent; zeven onbeveiligde HTTP-routes gaven 404
+(`/migraties`, `/schema`, `/versie`, …); de structuurlogregels van de runner worden door Railway's
+pre-deploy-logcapture niet bewaard (vier filterquery's, nul regels); en de enige code die de tabel
+expliciet aftast — `indexatieRapport()` in `src/analytics/koppelingen.ts` — is alleen bereikbaar via
+`src/cli/analytics.ts`, dat in productie door niets wordt aangeroepen.
+
+**Eén regel maakt het MEASURED** (vereist een SSH-sleutel op de Railway-account):
+
+```
+railway ssh --service vibe-intel-api "npm run migreer -- --droog"
+```
+
+`--droog` past niets toe. `toegepast: 0, overgeslagen: 34` is het bewijs dat de stand klopt.
+
+**De gedeployde code hangt niet van de migratie af.** `koppelingen.ts:955` en `:1176` doen
+`select to_regclass('intel.indexatie_dagstand') is not null` en degraderen naar
+`"intel.indexatie_dagstand bestaat niet (migratie 0034 niet toegepast)"`. Productie kon dus nooit
+in een inconsistente staat komen, ongeacht of de migratie al had gelopen.
 
 Gemeten en bevestigd: er staat **nul** code in deze repo die een sitemap bij Google indient of de
 Indexing API aanroept, en er is nu een poort die een `webmasters`-schrijfscope of een
@@ -437,7 +526,7 @@ Niets uit deze lijst zit in deze release.
 | 5 | **Navigatie voor `/energieadvies` en `/verduurzaming-bedrijfspanden`** | Gemeten: de enige 2 van de 10 `oplossing`-routes die in géén van de vier navigatieoppervlakken staan. Commit `6b47dc9` maakte alle vier nieuwe oplossingpagina's én is de laatste commit die `chrome.js` aanraakte — hij nam `/laadplein` en `/netcongestie` op en sloeg deze twee over, zonder reden. Repareren is per definitie een sitewide blok, dus een navigatiebesluit. |
 | 6 | **10.442 zusterlinks verwijderen** (52% van alle `<main>`-links, 337 pagina's) | Gesimuleerd gunstig, maar niet nagemeten tegen poort 8 en de linkgraaf ná generatie. |
 | 7 | **Verwant-blok op de vier bevroren masters** | Grootste gemeten hefboom (1.559 inkomende links die nergens heen gaan), maar expliciet tegen `herstel-bestaand.mjs` en `audit.mjs:346-352`. |
-| 8 | **Migratie 0034 op PRODUCTIE toepassen** | In CI bewezen tegen een echte PostgreSQL 17.11 (34/34 toegepast, drift 0, invarianten 0 bevindingen, integratietoetsen 185/185), maar de productiedatabase is privé-only (`postgres.railway.internal`, `railway connect` eist een SSH-sleutel). Een schemawijziging daar is een eigen, expliciete handeling en geen onderdeel van een websitedeploy. |
+| 8 | ~~**Migratie 0034 op PRODUCTIE toepassen**~~ — **VERVALLEN** | Dit punt rustte op een onjuiste aanname. `vibe-intel-api` draagt een `preDeployCommand` die bij elke deploy `npm run migreer` binnen het privénet draait, dus de migratie is bij `8cbf6b5` al toegepast. Zie de correctie in §5.4. Wat hier wél blijft staan als te doen: **splits 0034's additieve helft van zijn twee `DROP COLUMN`-statements** in toekomstige migraties, zodat een onomkeerbare stap nooit meeleunt op de goedkeuring van een additieve. |
 | 9 | **`Cache-Control` op de subresources** | Googlebot haalt per render acht gedeelde bestanden opnieuw op; 2.082 KiB assets tegen 341 KiB documentbytes (6,1:1), de woff2 alleen 850 KiB (41%). Maar: ETag staat op 430/430 en hervalidatie werkt, en Googlebot stuurde **0** conditionele verzoeken — hij negeerde signalen die hij al had. De winst is dus een hypothese. Alle acht namen zijn ongehasht, en een lange `max-age` op `/_consent.js` is een nalevingsrisico. `railway cdn` niet blind omzetten: `available: true, enabled: false`, en `htmlLastPurgedEpoch` wijst erop dat hij ook HTML kan cachen. |
 | 10 | **De 107 onverwezen bestanden (51,75 MiB)** | Uitsluiten van de deploy maakt die paden 404; eerst de Railway-toegangslogs. Uit de repo verwijderen breekt 27 social cards en de maak-webp-masters. |
 
