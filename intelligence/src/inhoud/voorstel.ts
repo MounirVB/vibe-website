@@ -1574,6 +1574,28 @@ export async function bewaarVoorstel(
            when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
              then null
            else intel.inhoud_voorstellen.beoordeeld_op
+         end,
+       /* OOK DE PRECHECKSPOREN VERVALLEN. Een precheck is gemeten tegen
+          een specifieke inhoud en een specifieke websiteversie. Blijft
+          hij staan nadat de inhoud is veranderd, dan draagt de rij een
+          PASS die over andere tekst ging. Zie migratie 0033. */
+       goedgekeurde_website_versie =
+         case
+           when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
+             then null
+           else intel.inhoud_voorstellen.goedgekeurde_website_versie
+         end,
+       precheck_op =
+         case
+           when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
+             then null
+           else intel.inhoud_voorstellen.precheck_op
+         end,
+       precheck_uitslag =
+         case
+           when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
+             then null
+           else intel.inhoud_voorstellen.precheck_uitslag
          end
      returning id::text, (xmax = 0) as was_nieuw`,
     [

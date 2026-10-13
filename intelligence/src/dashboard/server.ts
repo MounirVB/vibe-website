@@ -686,6 +686,29 @@ export function maakApp(pool: Pool): express.Express {
         AFGEKEURD: "afgewezen",
         AANGEPAST: "herziening_gevraagd",
       };
+
+      /* DE WEBSITEVERSIE WORDT HIER GEMETEN, NIET MEEGESTUURD.
+         beoordeel() legt bij een goedkeuring vast op WELKE versie van de
+         website is goedgekeurd (migratie 0033), zodat publicatiePrecheck
+         later twee ONAFHANKELIJKE waarden kan vergelijken. Kwam die
+         versie uit het formulier, dan kon een client hem gelijk maken
+         aan de huidige en de controle zinloos maken.
+
+         Zonder bruikbaar artefact weigeren we. Een goedkeuring zonder
+         vastgelegde websiteversie is een goedkeuring waarvan later niet
+         te zeggen is waarop ze gold. */
+      const kennisVoorBesluit = await leesSitekennis(INTEL_WORTEL);
+      if (!kennisVoorBesluit.ok) {
+        weiger(
+          res,
+          409,
+          `Het sitekennisartefact is onbruikbaar (${kennisVoorBesluit.fout.soort}): ` +
+            `${kennisVoorBesluit.fout.bericht} Er is niets beoordeeld.`,
+        );
+        return;
+      }
+      const websiteVersie = kennisVoorBesluit.kennis.websiteVersie;
+
       try {
         await alsGebruiker(req, async (c) => {
           /* VIA beoordeel(), niet met een eigen update.
@@ -701,6 +724,7 @@ export function maakApp(pool: Pool): express.Express {
             gebruikerId,
             notitie: notitie || null,
             verwachteHash: gezienHash,
+            websiteVersie,
           });
           const rij = { kandidaat_id: uitslag.voorstelId, eindoordeel: uitslag.statusNa };
           /* Het auditspoor draagt WIE, WAT en WAAROM. Niet in een catch:

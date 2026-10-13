@@ -42,6 +42,10 @@ import { beoordeel } from "../../src/inhoud/beoordeling.ts";
 import { inhoudsHashVan } from "../../src/inhoud/voorstel.ts";
 
 const PAD = "/kennis/fixture-poort-niet-live";
+/* Een vaste, verzonnen websiteversie: beoordeel() eist een sha256 en legt
+   hem vast, zodat publicatiePrecheck later twee onafhankelijke waarden
+   vergelijkt. Zie migratie 0033. */
+const WEBSITE_VERSIE = "f".repeat(64);
 
 describe("de poort van vijf controles", () => {
   let db: Wegwerpdatabase;
@@ -158,6 +162,7 @@ describe("de poort van vijf controles", () => {
         gebruikerId: beheerder,
         notitie: "fixture: linkaanbeveling overgenomen",
         verwachteHash: linkVoorstel.hash,
+        websiteVersie: WEBSITE_VERSIE,
       }),
     );
     assert.equal(u.statusNa, "APPROVED");

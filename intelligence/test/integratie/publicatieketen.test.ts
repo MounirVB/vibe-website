@@ -146,6 +146,7 @@ describe("publicatieketen met een geisoleerde fixture", () => {
             /* Een gebruikers-id dat niet bestaat. */
             gebruikerId: 999999,
             verwachteHash: hash,
+        websiteVersie: WEBSITE_VERSIE,
           }),
         /geen actief account/,
       );
@@ -163,6 +164,7 @@ describe("publicatieketen met een geisoleerde fixture", () => {
             besluit: "goedgekeurd",
             gebruikerId: beoordelaar,
             verwachteHash: "0".repeat(64),
+        websiteVersie: WEBSITE_VERSIE,
           }),
         /gewijzigd sinds u het opende/,
       );
@@ -177,6 +179,7 @@ describe("publicatieketen met een geisoleerde fixture", () => {
         gebruikerId: beoordelaar,
         notitie: "fixture voor par. 25",
         verwachteHash: hash,
+        websiteVersie: WEBSITE_VERSIE,
       }),
     );
     assert.equal(uitslag.statusNa, "APPROVED");
@@ -197,7 +200,6 @@ describe("publicatieketen met een geisoleerde fixture", () => {
     const r = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
       publicatiePrecheck(c, org, voorstelId, {
         gepubliceerdeRoutes: [FIXTURE_PAD],
-        websiteVersie: WEBSITE_VERSIE,
         huidigeWebsiteVersie: WEBSITE_VERSIE,
       }),
     );
@@ -211,7 +213,6 @@ describe("publicatieketen met een geisoleerde fixture", () => {
     const r = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
       publicatiePrecheck(c, org, voorstelId, {
         gepubliceerdeRoutes: ["/kennis/een-heel-andere-pagina"],
-        websiteVersie: WEBSITE_VERSIE,
         huidigeWebsiteVersie: WEBSITE_VERSIE,
       }),
     );
@@ -225,7 +226,6 @@ describe("publicatieketen met een geisoleerde fixture", () => {
     const r = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
       publicatiePrecheck(c, org, voorstelId, {
         gepubliceerdeRoutes: [FIXTURE_PAD],
-        websiteVersie: WEBSITE_VERSIE,
         huidigeWebsiteVersie: "a".repeat(64),
       }),
     );
@@ -286,7 +286,6 @@ describe("publicatieketen met een geisoleerde fixture", () => {
     const r = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
       publicatiePrecheck(c, org, voorstelId, {
         gepubliceerdeRoutes: [FIXTURE_PAD],
-        websiteVersie: WEBSITE_VERSIE,
         huidigeWebsiteVersie: WEBSITE_VERSIE,
       }),
     );
@@ -504,6 +503,7 @@ describe("publicatieketen met een geisoleerde fixture", () => {
         gebruikerId: beoordelaar,
         notitie: "fixture: goedgekeurd op versie een",
         verwachteHash: een.inhoudsHash,
+        websiteVersie: WEBSITE_VERSIE,
       }),
     );
     assert.equal(besluit.statusNa, "APPROVED");
@@ -549,5 +549,47 @@ describe("publicatieketen met een geisoleerde fixture", () => {
     assert.ok(bewaard, "de goedkeuring hoort in het auditspoor te staan");
     assert.equal(bewaard.inhouds_hash, een.inhoudsHash, "gebonden aan de tekst die is goedgekeurd");
     assert.equal(bewaard.door, "beheer@vibeenergy.nl");
+  });
+
+  /* ==================================================================
+     16. DE PRECHECK VERGELIJKT NU TWEE ONAFHANKELIJKE METINGEN
+
+     Tot 3.0.4 kreeg publicatiePrecheck ZOWEL de versie waarop was
+     goedgekeurd ALS de huidige versie van de AANROEPER. Een aanroeper
+     die beide uit hetzelfde artefact las kreeg altijd PASS, terwijl de
+     doelpagina sinds de goedkeuring herschreven kon zijn.
+
+     Sinds migratie 0033 staat de goedgekeurde versie in de rij,
+     geschreven door beoordeel() uit een gemeten artefact. De aanroeper
+     levert alleen nog de HUIDIGE versie. Toetsen 5 en 7 hierboven
+     bewijzen dat al impliciet; deze toets dekt het geval dat er NIETS
+     is vastgelegd — een goedkeuring van vóór 0033.
+     ================================================================== */
+  test("16. zonder vastgelegde websiteversie weigert de precheck", async () => {
+    await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      c.query(
+        `update intel.inhoud_voorstellen
+            set goedgekeurde_website_versie = null
+          where id = $1::bigint`,
+        [voorstelId],
+      ),
+    );
+
+    const r = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      publicatiePrecheck(c, org, voorstelId, {
+        gepubliceerdeRoutes: [FIXTURE_PAD],
+        huidigeWebsiteVersie: WEBSITE_VERSIE,
+      }),
+    );
+
+    assert.equal(r.uitslag, "FAIL");
+    const ct = r.controles.find((x) => x.naam === "website onveranderd sinds goedkeuring");
+    assert.ok(ct, "de controle hoort te bestaan");
+    assert.equal(ct.oordeel, "FAIL", "zonder vastlegging hoort dit NIET te slagen");
+    assert.match(
+      ct.reden,
+      /niet vastgelegd/i,
+      `de reden hoort te zeggen dat er niets is vastgelegd: ${ct.reden}`,
+    );
   });
 });

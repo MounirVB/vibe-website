@@ -38,6 +38,10 @@ import { beoordeel, RECHT_BEOORDELEN, RECHT_HOOGRISICO } from "../../src/inhoud/
 import { inhoudsHashVan } from "../../src/inhoud/voorstel.ts";
 
 const PAD = "/kennis/fixture-autorisatie-niet-live";
+/* Een vaste, verzonnen websiteversie: beoordeel() eist een sha256 en legt
+   hem vast, zodat publicatiePrecheck later twee onafhankelijke waarden
+   vergelijkt. Zie migratie 0033. */
+const WEBSITE_VERSIE = "f".repeat(64);
 
 describe("autorisatie op het redactionele besluit", () => {
   let db: Wegwerpdatabase;
@@ -122,6 +126,7 @@ describe("autorisatie op het redactionele besluit", () => {
         gebruikerId,
         notitie: "fixture",
         verwachteHash: voorstel[risico].hash,
+        websiteVersie: WEBSITE_VERSIE,
       }),
     );
 

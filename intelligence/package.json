@@ -34,6 +34,7 @@
     "concept": "node src/cli/concept.ts",
     "voorstel": "node src/cli/voorstel.ts",
     "publiceer": "node src/cli/publiceer.ts",
+    "precheck": "node src/cli/precheck.ts",
     "signalen": "node src/cli/signalen.ts",
     "kansen": "node src/cli/kansen.ts",
     "wachtwoord": "node src/cli/wachtwoord.ts",
