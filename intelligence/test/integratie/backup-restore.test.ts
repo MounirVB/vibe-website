@@ -25,6 +25,7 @@ import { promisify } from "node:util";
 import pg from "pg";
 import { maakGebruiker, maakOrganisatie, maakWegwerpdatabase, type Wegwerpdatabase } from "../harnas.ts";
 import { vindPgGereedschap } from "../../src/ops/backup.ts";
+import { pgRestoreNaarDatabase } from "../../src/ops/pgomgeving.ts";
 
 const uitvoeren = promisify(execFile);
 
@@ -129,11 +130,12 @@ describe("back-up en restore van de niet-herbouwbare laag", () => {
       await eigenaar.end();
     }
 
-    await uitvoeren(
-      g.pgRestore,
-      ["--dbname", doel.url, "--no-owner", "--no-privileges", "--exit-on-error", dumpPad],
-      { maxBuffer: 256 * 1024 * 1024 },
-    );
+    /* DOOR DEZELFDE FUNCTIE ALS PRODUCTIE.
+       Deze toets riep execFile direct aan met de URL op argv, en bleef
+       daarom groen toen in 3.0.4 `--dbname` uit het productiepad
+       verdween. Een toets die een ander codepad neemt dan productie
+       bewijst niets over productie. */
+    await pgRestoreNaarDatabase(g.pgRestore, dumpPad, doel.url);
 
     const c = new pg.Client({ connectionString: doel.url, options: "-c search_path=intel,public" });
     await c.connect();

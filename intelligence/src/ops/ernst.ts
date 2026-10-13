@@ -57,7 +57,14 @@ export type Domein =
   | "redactie"
   | "connectoren"
   | "backup"
-  | "publicatie";
+  | "publicatie"
+  /* NIEUW IN 3.0.5. De alerteringsbestemming stond onder `koppelingen`
+     en dus in het domein Connectoren. Het dashboard meldde daardoor
+     "Connectoren ACTION_REQUIRED" terwijl alle twintig actieve bronnen
+     gezond waren en het werkelijke punt een ontbrekende meldbestemming
+     was. Een lezer die dan de bronnen gaat nakijken, zoekt op de
+     verkeerde plek. */
+  | "monitoring";
 
 export const DOMEIN_LABEL: Readonly<Record<Domein, string>> = {
   platform: "Platform",
@@ -68,6 +75,7 @@ export const DOMEIN_LABEL: Readonly<Record<Domein, string>> = {
   connectoren: "Connectoren",
   backup: "Back-up",
   publicatie: "Publicatie",
+  monitoring: "Monitoring",
 };
 
 /**
@@ -88,6 +96,7 @@ const GROEP_DOMEIN: Readonly<Record<string, Domein>> = {
   backup: "backup",
   publicatie: "publicatie",
   redactie: "redactie",
+  melden: "monitoring",
 };
 
 /**

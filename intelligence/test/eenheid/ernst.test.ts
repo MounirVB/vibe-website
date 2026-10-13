@@ -25,6 +25,12 @@ const sig = (over: Partial<Signaal> & Pick<Signaal, "groep" | "niveau">): Signaa
 
 /** Een volledig gezonde meting voor elk domein, zodat niets ontbreekt. */
 function alleDomeinenOk(): Signaal[] {
+  /* ELK domein, ook de nieuwe. Een domein zonder meting is met opzet
+     ACTION_REQUIRED (zie bouwErnstRapport), dus een helper die er één
+     overslaat toetst niet wat hij belooft. In 3.0.5 kwam `monitoring`
+     erbij: de alerteringsbestemming stond onder `koppelingen` en dus in
+     het domein Connectoren, waardoor het dashboard "Connectoren
+     ACTION_REQUIRED" meldde terwijl alle actieve bronnen gezond waren. */
   return [
     sig({ groep: "planner", niveau: "OK" }),
     sig({ groep: "database", niveau: "OK" }),
@@ -34,6 +40,7 @@ function alleDomeinenOk(): Signaal[] {
     sig({ groep: "ingestie", niveau: "OK" }),
     sig({ groep: "backup", niveau: "OK" }),
     sig({ groep: "publicatie", niveau: "OK" }),
+    sig({ groep: "melden", niveau: "OK" }),
   ];
 }
 
@@ -41,7 +48,11 @@ describe("ernstmodel", () => {
   it("noemt een volledig gemeten platform HEALTHY", () => {
     const r = bouwErnstRapport(alleDomeinenOk());
     assert.equal(r.totaal, "HEALTHY");
-    assert.equal(r.domeinen.length, 8, "par. 18 noemt acht domeinen");
+    assert.equal(
+      r.domeinen.length,
+      9,
+      "par. 18 noemde acht domeinen; 3.0.5 voegde `monitoring` toe voor de meldbestemming",
+    );
     assert.equal(r.nietGemeten.length, 0);
   });
 

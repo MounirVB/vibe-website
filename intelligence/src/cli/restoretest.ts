@@ -50,14 +50,15 @@ import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import pg from "pg";
 import { laadEnvBestand, APP_WORTEL } from "../kern/config.ts";
 import { KRITIEKE_TABELLEN, vindPgGereedschap, type BackupManifest } from "../ops/backup.ts";
+import { RESTORETEST_MERK_OBJECT } from "../ops/gezondheid.ts";
 import { redacteerFout, redigeer } from "../kern/geheimen.ts";
-import { draaiPgGereedschap } from "../ops/pgomgeving.ts";
-import { downloadUitGcs, gcsConfigUitOmgeving, lijstGcs } from "../ops/gcsopslag.ts";
+import { draaiPgGereedschap, pgRestoreNaarDatabase } from "../ops/pgomgeving.ts";
+import { downloadUitGcs, gcsConfigUitOmgeving, lijstGcs, uploadNaarGcs } from "../ops/gcsopslag.ts";
 
 const uitvoeren = promisify(execFile);
 laadEnvBestand();
@@ -327,11 +328,14 @@ try {
     console.log("  applicatierollen aangemaakt in de wegwerpcontainer (de dump draagt geen rollen)");
   }
 
-  const { stderr: restoreFout } = await draaiPgGereedschap(
+  /* De argumenten staan in ops/pgomgeving.ts, zodat de integratietoets
+     DEZELFDE aanroep gebruikt. Zie de toelichting daar: in 3.0.4 brak dit
+     pad terwijl de toets groen bleef, omdat die zijn eigen argumenten
+     bouwde. */
+  const { stderr: restoreFout } = await pgRestoreNaarDatabase(
     gereedschap.pgRestore,
-    ["--no-owner", "--no-privileges", "--exit-on-error", dumpPad],
+    dumpPad,
     doelUrl,
-    { maxBuffer: 256 * 1024 * 1024 },
   ).catch((e: unknown) => {
     throw new Error(`pg_restore mislukte: ${redacteerFout(e).slice(0, 600)}`);
   });
@@ -524,8 +528,10 @@ try {
        `npm run gezondheid` eeuwig op NIET GEMETEN, en dat is precies
        het soort blinde vlek dat deze exercitie moet wegnemen: een
        back-up die nooit is teruggezet is een aanname. */
-    await writeFile(
-      join(DOELMAP, ".laatste-restoretest.json"),
+    /* ÉÉN tekst, twee bestemmingen. Zou de bucketversie apart worden
+       samengesteld, dan kunnen de twee bewijzen uiteenlopen en weet
+       niemand welke de echte is. */
+    const bewijs =
       JSON.stringify(
         {
           op: new Date().toISOString(),
@@ -534,14 +540,50 @@ try {
           toetsen_geslaagd: geslaagd,
           restore_ms: restoreMs,
           bronserver: manifest.serverVersie,
+          /* Welke back-up is teruggezet. Zonder dit is het bewijs niet
+             te herleiden tot een object in de bucket. */
+          dump_object: basename(dumpPad).replace(/^uit-gcs-/, ""),
+          dump_sha256: manifest.sha256,
         },
         null,
         2,
-      ) + "\n",
-      "utf8",
-    );
+      ) + "\n";
+    await writeFile(join(DOELMAP, ".laatste-restoretest.json"), bewijs, "utf8");
     console.log("");
     console.log(`bewijs vastgelegd in ${join(DOELMAP, ".laatste-restoretest.json")}`);
+
+    /* EN NAAR DE BUCKET, WANT DAT IS DE ENIGE DUURZAME PLEK.
+       Het merkbestand hierboven staat op de schijf van de machine die de
+       test draaide. Op Railway is dat ephemere containerschijf; op een
+       laptop staat het buiten het bereik van de productiemonitor. Het
+       gevolg, gemeten op 13 oktober 2026: het signaal backup/restoretest
+       stond permanent op NIET GEMETEN en trok het ernstrapport naar
+       CRITICAL, ook nadat een restore van de echte productieback-up
+       aantoonbaar was geslaagd.
+
+       Daarom gaat hetzelfde bewijs ook naar gs://<bucket>/restoretest/
+       laatste.json, onder de naam die ops/gezondheid.ts leest. Mislukt
+       de upload, dan is dat een WAARSCHUWING en geen falende test: de
+       restore zelf is wel bewezen. */
+    const gcsMerk = gcsConfigUitOmgeving();
+    if (!gcsMerk) {
+      console.log("geen bucket geconfigureerd; het bewijs staat alleen lokaal");
+    } else {
+      try {
+        await uploadNaarGcs(
+          gcsMerk,
+          RESTORETEST_MERK_OBJECT,
+          Buffer.from(bewijs, "utf8"),
+          "application/json",
+        );
+        console.log(`bewijs ook in gs://${gcsMerk.bucket}/${RESTORETEST_MERK_OBJECT}`);
+      } catch (e) {
+        console.error(
+          `LET OP: het bewijs kon niet naar de bucket: ${redacteerFout(e)}. ` +
+            `De restore is wel geslaagd; de productiemonitor ziet dit bewijs nu niet.`,
+        );
+      }
+    }
   }
 } catch (e) {
   console.error("");

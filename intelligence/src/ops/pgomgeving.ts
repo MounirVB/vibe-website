@@ -124,3 +124,47 @@ export async function draaiPgGereedschap(
     throw new Error(melding.slice(0, 2000));
   }
 }
+
+/**
+ * Zet een dump terug in de database waar `doelUrl` naar wijst.
+ *
+ * WAAROM DIT EEN GEDEELDE FUNCTIE IS EN GEEN ARGUMENTENLIJST OP TWEE
+ * PLEKKEN.
+ *
+ * In 3.0.4 is bij het weghalen van de credential uit argv per ongeluk de
+ * hele `--dbname <url>` verdwenen. pg_restore eist expliciet een van
+ * -d/--dbname of -f/--file en stopte met:
+ *
+ *   pg_restore: error: one of -d/--dbname and -f/--file must be specified
+ *
+ * `npm run restoretest` was daarmee in productie stuk. De CI-toets bleef
+ * groen omdat die zijn eigen execFile-aanroep had met zijn eigen
+ * argumenten. Twee plekken die hetzelfde moeten doen lopen uiteen, en
+ * dan bewijst de groene toets niets over het productiepad.
+ *
+ * Sinds 3.0.5 bouwt deze ene functie de argumenten, en gebruiken de CLI
+ * én de integratietoets hem. De databasenaam komt uit de URL en is geen
+ * geheim; host, gebruiker en wachtwoord blijven in de omgeving.
+ */
+export async function pgRestoreNaarDatabase(
+  binary: string,
+  dumpPad: string,
+  doelUrl: string,
+  opties: DraaiOpties = {},
+): Promise<{ stdout: string; stderr: string }> {
+  let databaseNaam: string;
+  try {
+    databaseNaam = new URL(doelUrl).pathname.replace(/^\//, "");
+  } catch {
+    throw new Error("de doel-URL is niet te parseren (de URL zelf staat bewust niet in deze melding)");
+  }
+  if (!databaseNaam) {
+    throw new Error("de doel-URL noemt geen database; pg_restore zou dan naar een bestand schrijven");
+  }
+  return draaiPgGereedschap(
+    binary,
+    ["--dbname", databaseNaam, "--no-owner", "--no-privileges", "--exit-on-error", dumpPad],
+    doelUrl,
+    { maxBuffer: 256 * 1024 * 1024, ...opties },
+  );
+}

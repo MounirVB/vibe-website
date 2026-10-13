@@ -761,6 +761,23 @@ export function maakApp(pool: Pool): express.Express {
           weiger(res, 409, bericht);
           return;
         }
+        /* AUTORISATIE IS 403, GEEN 500.
+           beoordeel() toetst sinds 3.0.4 het recht zelf tegen
+           intel.rol_rechten en verzwaart naar inhoud.hoogrisico.
+           goedkeuren bij een gebeurtenis met risicoklasse hoog. Die twee
+           weigeringen vielen hier in de 500-tak: de gebruiker kreeg "De
+           beoordeling kon niet worden vastgelegd" terwijl het antwoord
+           was dat hij er het recht niet voor heeft. Dat is zowel
+           verwarrend als een verkeerde statuscode. */
+        if (/recht inhoud\.(hoogrisico\.)?goedkeuren ontbreekt|mag geen redactioneel besluit nemen|vraagt het recht/.test(bericht)) {
+          weiger(res, 403, bericht);
+          return;
+        }
+        /* Een onbekend voorstel-id is een 404 en geen storing. */
+        if (/bestaat niet/.test(bericht)) {
+          weiger(res, 404, bericht);
+          return;
+        }
         if (/voorstel_alleen_review_goedkeuren/.test(bericht)) {
           weiger(
             res,
@@ -1332,7 +1349,17 @@ ${(() => {
     ? `<p class="klein">Beoordeeld als <strong>${esc(v.beoordeling)}</strong> op
          ${esc(v.beoordeeld_op?.slice(0, 16) ?? "")} door ${esc(v.beoordelaar ?? "onbekend")}.
          ${v.beoordeling_notitie ? `<br>Notitie: ${esc(v.beoordeling_notitie)}` : ""}</p>`
-    : v.eindoordeel === "KLAAR_VOOR_REVIEW" && v.inhouds_hash
+    : /* OOK EEN LINKVOORSTEL IS BEOORDEELBAAR.
+         Deze test stond op `=== "KLAAR_VOOR_REVIEW"`, en daarmee was de
+         weergave het oneens met de backend: beoordeel() laat sinds 3.0.4
+         ook KLAAR_VOOR_LINKREVIEW goedkeuren en migratie 0032 verruimde
+         de databasegrendel er expliciet voor. Het formulier ontbrak dus
+         voor precies het soort voorstel dat 0032 heeft ingevoerd — een
+         besluit dat volgens de regels mag, maar waarvoor geen knop
+         bestond. Par. 14 eist dat database, poort, API en weergave het
+         eens zijn; dit was de enige plek waar dat niet zo was. */
+      (v.eindoordeel === "KLAAR_VOOR_REVIEW" || v.eindoordeel === "KLAAR_VOOR_LINKREVIEW") &&
+        v.inhouds_hash
       ? `<form method="post" action="/voorstellen/${esc(v.id)}/beoordeel">
            <input type="hidden" name="${esc(CSRF_VELD)}" value="${esc(csrf)}">
            <!-- Par. 15: het besluit bindt aan de inhoud die hier staat.

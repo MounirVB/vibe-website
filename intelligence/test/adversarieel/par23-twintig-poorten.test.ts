@@ -383,6 +383,10 @@ describe("par. 23 — twintig manipulaties, twintig poorten", () => {
       { groep: "redactie", naam: "voorstellen", niveau: "OK" as const, meting: "ok" },
       { groep: "backup", naam: "kopie", niveau: "OK" as const, meting: "ok" },
       { groep: "publicatie", naam: "spoor", niveau: "OK" as const, meting: "ok" },
+      /* Ook het domein `monitoring`, dat 3.0.5 toevoegde: een domein
+         zonder meting is met opzet ACTION_REQUIRED, en dan toetst deze
+         basis niet meer wat hij belooft. */
+      { groep: "melden", naam: "bestemming", niveau: "OK" as const, meting: "ok" },
     ];
     const r = bouwErnstRapport([
       ...basis,

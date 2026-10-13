@@ -72,7 +72,13 @@ function tabel(m: ProductieMeting): void {
     console.log("    → 0 schendingen: VALIDATE CONSTRAINT kan worden gedraaid.");
   }
   if (m.uitspraken.tijdgrensSchendingen > 0) {
-    console.log("    → valideren mag NIET; eerst de schendende rijen herstellen.");
+    console.log("    → valideren mag NIET; eerst de schendende rijen beoordelen.");
+    for (const r of m.uitspraken.schendingen) {
+      console.log(`      uitspraak ${r.id} (${r.fenomeen ?? "geen fenomeen"}): ${r.tekst}`);
+    }
+    console.log("    → een horizon mag NIET worden verzonnen. Is er gezaghebbend bewijs,");
+    console.log("      gebruik dan de append-only correctieweg; anders blijft dit een");
+    console.log("      gedocumenteerde uitzondering en blijft de constraint NOT VALID.");
   }
 
   console.log("");
@@ -81,6 +87,25 @@ function tabel(m: ProductieMeting): void {
   regel("soorten", m.credentiallek.soorten.join(", ") || "(geen)");
   if (m.credentiallek.takenMetCredential > 0) {
     console.log("    → BLOOTSTELLING: roteer de credential via de geautoriseerde procedure.");
+  }
+
+  console.log("");
+  console.log("PRIMAIRE BLOKKEERREDEN PER VOORSTEL");
+  for (const t of m.blokkeerredenen) console.log(`    ${t.sleutel.padEnd(34)}${t.aantal}`);
+
+  console.log("");
+  console.log("BRONDEKKING");
+  regel("bronnen totaal", m.brondekking.totaal);
+  regel("actief", m.brondekking.actief);
+  regel("  waarvan nu toe", m.brondekking.toe);
+  regel("  nog niet toe", m.brondekking.nietToe);
+  for (const [k, v] of Object.entries(m.brondekking.perKlasse)) regel(`  ${k}`, v);
+  regel("laatste geslaagde ophaling", m.brondekking.laatsteGeslaagdeOphaling ?? "nooit");
+  if (m.brondekking.perKlasse.FAILED > 0 || m.brondekking.perKlasse.DEGRADED > 0) {
+    console.log("");
+    for (const b of m.brondekking.bronnen.filter((x) => x.klasse === "FAILED" || x.klasse === "DEGRADED")) {
+      console.log(`    ${b.klasse.padEnd(18)}${b.sleutel.padEnd(34)}${b.reden}`);
+    }
   }
 
   console.log("");
@@ -127,10 +152,23 @@ try {
     uitspraken_totaal: meting.uitspraken.totaal,
     uitspraken_horizon_null: meting.uitspraken.horizonNull,
     tijdgrens_schendingen: meting.uitspraken.tijdgrensSchendingen,
+    tijdgrens_schendende_ids: meting.uitspraken.schendingen.map((r) => r.id).join(",") || null,
     tijdgrens_constraint_gevalideerd: meting.uitspraken.constraintGevalideerd,
     taken_met_credential: meting.credentiallek.takenMetCredential,
     taken_met_credential_soorten: meting.credentiallek.soorten.join(",") || null,
     migraties_toegepast: meting.migraties.toegepast,
+    blokkeerredenen: meting.blokkeerredenen.map((t) => `${t.sleutel}=${t.aantal}`).join(",") || null,
+    bronnen_totaal: meting.brondekking.totaal,
+    bronnen_actief: meting.brondekking.actief,
+    bronnen_toe: meting.brondekking.toe,
+    bronnen_niet_toe: meting.brondekking.nietToe,
+    bronnen_success: meting.brondekking.perKlasse.SUCCESS,
+    bronnen_degraded: meting.brondekking.perKlasse.DEGRADED,
+    bronnen_failed: meting.brondekking.perKlasse.FAILED,
+    bronnen_access_restricted: meting.brondekking.perKlasse.ACCESS_RESTRICTED,
+    bronnen_disabled: meting.brondekking.perKlasse.DISABLED,
+    bronnen_onbekend: meting.brondekking.perKlasse.ONBEKEND,
+    bronnen_laatste_ophaling: meting.brondekking.laatsteGeslaagdeOphaling,
     migratie_hoogste: meting.migraties.hoogste,
   });
 

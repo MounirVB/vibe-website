@@ -28,19 +28,41 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import type pg from "pg";
 import { rijen } from "../kern/db.ts";
-import { gcsConfigUitOmgeving, lijstGcs } from "./gcsopslag.ts";
+import { downloadUitGcs, gcsConfigUitOmgeving, lijstGcs } from "./gcsopslag.ts";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { leesSitekennis } from "../site/sitekennis.ts";
 import { meldBestemming } from "./melden.ts";
+import { meetBrondekking, vatBrondekkingSamen } from "./brondekking.ts";
 
 export type Niveau = "OK" | "LET OP" | "FOUT" | "NIET GEMETEN";
+
+/**
+ * Waar het restorebewijs in de bucket staat.
+ *
+ * Eén naam, gedeeld door cli/restoretest.ts (die hem schrijft) en dit
+ * bestand (dat hem leest). Twee losse letterlijke strings zouden bij de
+ * eerste wijziging uiteenlopen, en dan staat het signaal weer op NIET
+ * GEMETEN zonder dat iemand weet waarom.
+ */
+export const RESTORETEST_MERK_OBJECT = "restoretest/laatste.json";
 
 export type Signaal = {
   readonly groep: string;
   readonly naam: string;
   readonly niveau: Niveau;
   readonly meting: string;
+  /**
+   * Wanneer het GEMETEN FEIT dateert, in ISO-vorm.
+   *
+   * Par. 9: een status zonder tijdstempel mag niet als verse meting
+   * gelden. Dit is met opzet NIET het moment van meten — dat is altijd
+   * "nu" en zegt niets — maar de ouderdom van het onderliggende feit:
+   * het moment van de nieuwste dump, van het laatste restorebewijs, van
+   * de laatste plannerrun. Ontbreekt hij, dan is de meting momentaan en
+   * is er niets te verouderen.
+   */
+  readonly gemetenOp?: string;
   readonly advies?: string;
   /**
    * Een BEKENDE en aanvaarde beperking, geen nieuw probleem.
@@ -105,6 +127,65 @@ function urenSinds(d: Date | string | null): number | null {
   const t = typeof d === "string" ? new Date(d) : d;
   if (Number.isNaN(t.getTime())) return null;
   return (Date.now() - t.getTime()) / 3600_000;
+}
+
+/**
+ * De stand van het EXTERNE archief, als één signaal.
+ *
+ * Stond als inline tak onderaan meetGezondheid. Sinds 3.0.5 apart, omdat
+ * de uitkomst nodig is VOORDAT de lokale back-upsignalen worden gezet:
+ * een leeg lokaal archief is een aanvaarde grens zolang de bucket een
+ * verse dump heeft, en een echt probleem zodra dat niet zo is.
+ */
+async function meetExterneBackup(
+  gcs: ReturnType<typeof gcsConfigUitOmgeving>,
+): Promise<Signaal> {
+  if (!gcs) {
+    return {
+      groep: "backup",
+      naam: "externe kopie",
+      niveau: "NIET GEMETEN",
+      meting: "INTEL_GCS_BUCKET en/of INTEL_GCS_SLEUTEL ontbreken",
+      advies:
+        "zonder externe bestemming is er geen retentie: de containerschijf is na een deploy leeg",
+    };
+  }
+  try {
+    const objecten = (await lijstGcs(gcs, "vibe-intel-")).filter((o) => o.naam.endsWith(".dump"));
+    const nieuwste = objecten[objecten.length - 1];
+    if (!nieuwste) {
+      return {
+        groep: "backup",
+        naam: "externe kopie",
+        niveau: "FOUT",
+        meting: `gs://${gcs.bucket} bevat geen enkele dump`,
+        advies: "npm run backup — de bucket bestaat maar is leeg",
+      };
+    }
+    const uren = (Date.now() - new Date(nieuwste.gemaaktOp).getTime()) / 3_600_000;
+    return {
+      groep: "backup",
+      naam: "externe kopie",
+      niveau: uren <= DREMPELS.backupLeeftijdUren ? "OK" : "FOUT",
+      meting:
+        `${objecten.length} dump(s) in gs://${gcs.bucket}, nieuwste ${uren.toFixed(1)} uur oud ` +
+        `(${Math.round(nieuwste.bytes / 1024)} kB, ${nieuwste.naam})`,
+      gemetenOp: new Date(nieuwste.gemaaktOp).toISOString(),
+      advies:
+        uren > DREMPELS.backupLeeftijdUren
+          ? `ouder dan ${DREMPELS.backupLeeftijdUren} uur; de RPO van 24 uur wordt niet gehaald`
+          : undefined,
+    };
+  } catch (e) {
+    /* Een onbereikbare bucket is GEEN stilzwijgende OK. */
+    return {
+      groep: "backup",
+      naam: "externe kopie",
+      niveau: "FOUT",
+      meting: `gs://${gcs.bucket} niet te lezen: ${(e as Error).message.slice(0, 120)}`,
+      advies: "controleer INTEL_GCS_SLEUTEL en de rechten op de bucket",
+    };
+  }
 }
 
 /**
@@ -622,19 +703,70 @@ export async function meetGezondheid(
      Een e-mailadres of webhook bedenken zou betekenen dat we
      bedrijfsgegevens naar een partij sturen die niemand heeft
      goedgekeurd. */
+  /* GROEP `melden`, NIET `koppelingen` — sinds 3.0.5.
+     Dit signaal stond in het domein Connectoren. Het dashboard meldde
+     daardoor "Connectoren ACTION_REQUIRED" terwijl alle twintig actieve
+     bronnen gezond waren; het werkelijke punt was een ontbrekende
+     meldbestemming. Zie de toelichting bij het domein `monitoring` in
+     ops/ernst.ts.
+
+     EN HIJ IS AANVAARD ZOLANG HIJ BEWUST ONTBREEKT.
+     Een bestemming verzinnen is verboden: dat zou bedrijfsgegevens naar
+     een partij sturen die niemand heeft goedgekeurd. Het gevolg was wel
+     dat dit signaal permanent op ACTION_REQUIRED stond, en een dashboard
+     dat altijd rood is wordt niet meer gelezen. Daarom: zichtbaar
+     blijven, met de exacte voorwaarde in het advies, maar niet boven
+     DEGRADED — precies waar `aanvaard` voor bestaat.
+
+     Dat mag alleen omdat de INTERNE monitoring wél werkt: elke melding
+     wordt bewaard in intel.meldingen en intel.systeem_meldingen, en het
+     dashboard toont de open meldingen op /. Zou dat wegvallen, dan is
+     dit geen aanvaarde grens meer maar een blinde vlek. */
   const bestemming = meldBestemming();
   voeg({
-    groep: "koppelingen",
+    groep: "melden",
     naam: "alerteringsbestemming",
     niveau: bestemming.soort === "webhook" ? "OK" : "NIET GEMETEN",
+    aanvaard: bestemming.soort === "webhook" ? undefined : true,
     meting:
       bestemming.soort === "webhook"
         ? `webhook geconfigureerd${bestemming.token ? " met token" : " zonder token"}`
-        : `NIET_GECONFIGUREERD — ${bestemming.reden}`,
+        : `NIET_GECONFIGUREERD — ${bestemming.reden} Interne monitoring werkt wel: ` +
+          `meldingen staan in intel.meldingen en zijn zichtbaar op het dashboard.`,
     advies:
       bestemming.soort === "geen"
-        ? "zet INTEL_MELD_WEBHOOK op een door een mens goedgekeurde https-bestemming"
+        ? "om externe meldingen aan te zetten: INTEL_MELD_WEBHOOK op een door een mens " +
+          "goedgekeurde https-bestemming, eventueel met INTEL_MELD_WEBHOOK_TOKEN"
         : undefined,
+  });
+
+  /* ---------------- brondekking (par. 16-18) ----------------
+     'overgeslagen 19' is op zichzelf onleesbaar: het kan negentien
+     kapotte bronnen betekenen of negentien die netjes nog niet toe
+     waren. Dit signaal maakt dat verschil meetbaar. Alleen
+     opeenvolgende FOUTEN maken een bron ongezond; een ontbrekende
+     toestemming is ACCESS_RESTRICTED en blijft dat. Zie
+     ops/brondekking.ts. */
+  const dekking = await meetBrondekking(c, organisatieId);
+  voeg({
+    groep: "ingestie",
+    naam: "brondekking",
+    niveau:
+      dekking.actief === 0
+        ? "FOUT"
+        : dekking.perKlasse.FAILED > 0
+          ? "FOUT"
+          : dekking.perKlasse.DEGRADED > 0
+            ? "LET OP"
+            : "OK",
+    meting: vatBrondekkingSamen(dekking),
+    gemetenOp: dekking.laatsteGeslaagdeOphaling ?? undefined,
+    advies:
+      dekking.perKlasse.FAILED > 0
+        ? `${dekking.perKlasse.FAILED} bron(nen) faalden drie keer achtereen; npm run bronaudit`
+        : dekking.actief === 0
+          ? "er is geen enkele actieve bron; zonder ingestie komt er niets binnen"
+          : undefined,
   });
 
   const nietAangesloten = kop.filter((k) => k.status !== "geconfigureerd");
@@ -653,13 +785,39 @@ export async function meetGezondheid(
   });
 
   /* ---------------- back-up en restore ---------------- */
+  /* DE BUCKET IS DE WAARHEID, DE CONTAINERSCHIJF IS EEN BIJZAAK.
+     Dat stond al in de toelichting bij 'externe kopie', maar de twee
+     LOKALE signalen trokken de totaalernst nog steeds omhoog. Op Railway
+     is APP_WORTEL/backups ephemere containerschijf: na elke deploy leeg.
+     Gemeten op 13 oktober 2026 stond daardoor backup/aanwezigheid op
+     NIET GEMETEN en het ernstrapport op CRITICAL, terwijl de bucket een
+     dump van 13 uur oud bevatte waarvan de restore aantoonbaar werkte.
+
+     Sinds 3.0.5 bepalen we de EXTERNE stand eerst. Is die gezond, dan
+     blijven de lokale signalen zichtbaar — er wordt niets weggemoffeld —
+     maar krijgen ze `aanvaard: true`: een bekende, verantwoorde grens die
+     niet boven DEGRADED uitkomt. Zie de kop van ops/ernst.ts; dat veld
+     bestaat precies hiervoor. Is de externe stand NIET gezond, dan wegen
+     ze onverminderd zwaar. */
+  const gcs = gcsConfigUitOmgeving();
+  const externeStand = await meetExterneBackup(gcs);
+  /* Aanvaarden mag alleen als de bucket aantoonbaar een VERSE dump heeft.
+     Een onbereikbare of lege bucket mag een leeg lokaal archief niet
+     vergoelijken. */
+  const externVers = externeStand.niveau === "OK";
+
   if (!opties.backupMap || !existsSync(opties.backupMap)) {
     voeg({
       groep: "backup",
       naam: "aanwezigheid",
       niveau: "NIET GEMETEN",
-      meting: opties.backupMap ? `map ${opties.backupMap} bestaat niet` : "geen back-upmap opgegeven",
-      advies: "npm run backup",
+      meting:
+        (opties.backupMap ? `map ${opties.backupMap} bestaat niet` : "geen back-upmap opgegeven") +
+        (externVers
+          ? "; op Railway is dit ephemere containerschijf — zie 'externe kopie' voor het echte archief"
+          : ""),
+      aanvaard: externVers ? true : undefined,
+      advies: externVers ? undefined : "npm run backup",
     });
   } else {
     const bestanden = (await readdir(opties.backupMap)).filter((x) => x.endsWith(".dump")).sort();
@@ -667,9 +825,14 @@ export async function meetGezondheid(
       voeg({
         groep: "backup",
         naam: "aanwezigheid",
-        niveau: "FOUT",
-        meting: "geen enkele back-up aanwezig",
-        advies: "npm run backup — zonder back-up is de goedkeuringsgeschiedenis onherstelbaar",
+        niveau: externVers ? "NIET GEMETEN" : "FOUT",
+        meting:
+          "geen enkele back-up op de lokale schijf" +
+          (externVers ? "; het archief staat extern — zie 'externe kopie'" : ""),
+        aanvaard: externVers ? true : undefined,
+        advies: externVers
+          ? undefined
+          : "npm run backup — zonder back-up is de goedkeuringsgeschiedenis onherstelbaar",
       });
     } else {
       const nieuwste = bestanden[bestanden.length - 1]!;
@@ -711,9 +874,36 @@ export async function meetGezondheid(
   /* De restoretest laat een merkbestand achter zodat de LEEFTIJD van
      het laatste bewijs te meten is. Ontbreekt dat bestand, dan is er
      geen bewijs en is dat NIET GEMETEN — nooit OK. */
+  /* HET BEWIJS MOET DUURZAAM STAAN, NIET OP DE CONTAINERSCHIJF.
+     Tot 3.0.5 werd alleen het lokale merkbestand gelezen. Op Railway is
+     dat na elke deploy weg, dus stond dit signaal permanent op NIET
+     GEMETEN — ook nadat een restore aantoonbaar was geslaagd. Dat is
+     precies het geval dat par. 7 verbiedt: een valse CRITICAL door een
+     afwezig merkbestand terwijl het bewijs elders bestaat.
+
+     Sinds 3.0.5 schrijft cli/restoretest.ts het bewijs ook naar de
+     bucket (RESTORETEST_MERK_OBJECT), en leest dit signaal dáár eerst.
+     De lokale kopie blijft de terugval voor een machine zonder bucket. */
   const merk = opties.backupMap ? join(opties.backupMap, ".laatste-restoretest.json") : null;
-  if (merk && existsSync(merk)) {
-    const j = JSON.parse(await readFile(merk, "utf8")) as {
+  let bewijsRuw: string | null = null;
+  let bewijsBron = "";
+  if (gcs) {
+    try {
+      bewijsRuw = (await downloadUitGcs(gcs, RESTORETEST_MERK_OBJECT)).toString("utf8");
+      bewijsBron = `gs://${gcs.bucket}/${RESTORETEST_MERK_OBJECT}`;
+    } catch {
+      /* Geen merk in de bucket is geen fout van deze meting; we vallen
+         terug op de lokale kopie en melden hieronder NIET GEMETEN als die
+         er ook niet is. */
+      bewijsRuw = null;
+    }
+  }
+  if (!bewijsRuw && merk && existsSync(merk)) {
+    bewijsRuw = await readFile(merk, "utf8");
+    bewijsBron = merk;
+  }
+  if (bewijsRuw) {
+    const j = JSON.parse(bewijsRuw) as {
       op?: string;
       uitslag?: string;
       toetsen_geslaagd?: number;
@@ -731,7 +921,8 @@ export async function meetGezondheid(
             : "LET OP",
       meting:
         `laatste ${j.uitslag ?? "?"} ${Number.isFinite(dagen) ? `${dagen.toFixed(1)} dagen geleden` : "op een onbekend moment"}` +
-        `, ${j.toetsen_geslaagd ?? "?"} toetsen, restore in ${j.restore_ms ?? "?"} ms`,
+        `, ${j.toetsen_geslaagd ?? "?"} toetsen, restore in ${j.restore_ms ?? "?"} ms (bewijs: ${bewijsBron})`,
+      gemetenOp: j.op,
       advies:
         dagen > DREMPELS.restoretestLeeftijdDagen
           ? `ouder dan ${DREMPELS.restoretestLeeftijdDagen} dagen; npm run restoretest`
@@ -742,67 +933,24 @@ export async function meetGezondheid(
       groep: "backup",
       naam: "restoretest",
       niveau: "NIET GEMETEN",
-      meting: "geen bewijs van een restoretest gevonden",
-      advies: `npm run restoretest — hoort minstens elke ${DREMPELS.restoretestLeeftijdDagen} dagen`,
+      meting:
+        "geen bewijs van een restoretest gevonden" +
+        (gcs ? ` (niet in gs://${gcs.bucket}/${RESTORETEST_MERK_OBJECT}, niet lokaal)` : " (geen bucket)"),
+      advies: `npm run restoretest -- --uit-gcs — hoort minstens elke ${DREMPELS.restoretestLeeftijdDagen} dagen`,
     });
   }
 
   /* ---------------- externe kopie ---------------- */
   /* DIT IS HET SIGNAAL DAT HET VERSCHIL MEET tussen "er is een back-up
      gemaakt" en "er ligt een back-up". De lokale map is op Railway een
-     containerschijf: na een deploy is hij leeg, en dan meldden de twee
-     signalen hierboven NIET GEMETEN terwijl het echte archief prima in
-     de bucket staat. Omgekeerd kan de lokale map vol staan terwijl er
-     niets buiten de machine bewaard is. Alleen deze meting zegt iets
-     over herstelbaarheid na verlies van de machine. */
-  const gcs = gcsConfigUitOmgeving();
-  if (!gcs) {
-    voeg({
-      groep: "backup",
-      naam: "externe kopie",
-      niveau: "NIET GEMETEN",
-      meting: "INTEL_GCS_BUCKET en/of INTEL_GCS_SLEUTEL ontbreken",
-      advies:
-        "zonder externe bestemming is er geen retentie: de containerschijf is na een deploy leeg",
-    });
-  } else {
-    try {
-      const objecten = (await lijstGcs(gcs, "vibe-intel-")).filter((o) => o.naam.endsWith(".dump"));
-      const nieuwste = objecten[objecten.length - 1];
-      if (!nieuwste) {
-        voeg({
-          groep: "backup",
-          naam: "externe kopie",
-          niveau: "FOUT",
-          meting: `gs://${gcs.bucket} bevat geen enkele dump`,
-          advies: "npm run backup — de bucket bestaat maar is leeg",
-        });
-      } else {
-        const uren = (Date.now() - new Date(nieuwste.gemaaktOp).getTime()) / 3_600_000;
-        voeg({
-          groep: "backup",
-          naam: "externe kopie",
-          niveau: uren <= DREMPELS.backupLeeftijdUren ? "OK" : "FOUT",
-          meting:
-            `${objecten.length} dump(s) in gs://${gcs.bucket}, nieuwste ${uren.toFixed(1)} uur oud ` +
-            `(${Math.round(nieuwste.bytes / 1024)} kB)`,
-          advies:
-            uren > DREMPELS.backupLeeftijdUren
-              ? `ouder dan ${DREMPELS.backupLeeftijdUren} uur; de RPO van 24 uur wordt niet gehaald`
-              : undefined,
-        });
-      }
-    } catch (e) {
-      /* Een onbereikbare bucket is GEEN stilzwijgende OK. */
-      voeg({
-        groep: "backup",
-        naam: "externe kopie",
-        niveau: "FOUT",
-        meting: `gs://${gcs.bucket} niet te lezen: ${(e as Error).message.slice(0, 120)}`,
-        advies: "controleer INTEL_GCS_SLEUTEL en de rechten op de bucket",
-      });
-    }
-  }
+     containerschijf: na een deploy is hij leeg. Omgekeerd kan de lokale
+     map vol staan terwijl er niets buiten de machine bewaard is. Alleen
+     deze meting zegt iets over herstelbaarheid na verlies van de machine.
+
+     De meting zelf staat sinds 3.0.5 in meetExterneBackup(), want de
+     uitkomst is hierboven al nodig om te beslissen of een leeg LOKAAL
+     archief een aanvaarde grens is of een echt probleem. */
+  voeg(externeStand);
 
   return uit;
 }
