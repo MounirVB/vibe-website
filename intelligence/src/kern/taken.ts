@@ -180,10 +180,43 @@ export const REGISTER: Record<string, Handler> = {
       vanafId = r.laatsteId;
     }
 
+    /* DROOG, EN DAT BLIJFT ZO.
+       Een schaalcorrectie verandert een BEWAARD FEIT. Dat de keten
+       append-only is -- een nieuwe uitspraak met de volle waarde, een
+       correctieregel naar de oude, niets ge-update en niets verwijderd
+       -- maakt het navraagbaar, maar nog geen handeling die een
+       geplande taak ongevraagd hoort te doen. De planner meet; een mens
+       besluit. */
     const schaal = await herstelSchaal(pool, organisatieId, { toepassen: false });
+
+    /* EN WELKE VIER. Gemeten op productie (taak 429, 13 oktober 2026
+       16:02Z): "openstaande schaalcorrecties 4", zonder één aanwijzing
+       welke. Om ze na te trekken was databasetoegang nodig, en die
+       bestaat met opzet niet -- dus stonden ze eindeloos open.
+
+       Het bewijs per regel is wat het navraagbaar maakt: het
+       schaalwoord stond DIRECT naast het getal (daar is
+       vindSchaalverlies streng in, anders corrigeert hij een percentage
+       in een zin die over miljarden gaat), en `vindplaats` is het
+       letterlijke bronfragment. Dat hoort in de regel, niet in een
+       tabel die niemand kan lezen. */
+    const schaalDetail =
+      schaal.regels.length > 0
+        ? "; te besluiten: " +
+          schaal.regels
+            .slice(0, 6)
+            .map(
+              (r) =>
+                `uitspraak ${r.uitspraakId} ${r.oudeWaarde}->${r.nieuweWaarde}` +
+                `${r.eenheid ? ` ${r.eenheid}` : ""} (${r.schaalwoord}: "${r.vindplaats.slice(0, 70)}")`,
+            )
+            .join(" | ") +
+          (schaal.regels.length > 6 ? ` | +${schaal.regels.length - 6} meer` : "")
+        : "";
+
     return (
       `bekeken ${bekeken}, verrijkt ${verrijkt}, zonder uitdrukking ${zonderUitdrukking}, ` +
-      `rondes ${rondes}, openstaande schaalcorrecties ${schaal.gevonden}`
+      `rondes ${rondes}, openstaande schaalcorrecties ${schaal.gevonden}${schaalDetail}`
     );
   },
 
