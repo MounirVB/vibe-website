@@ -28,7 +28,7 @@ import {
   goedkeuringGeldig,
   publicatiePrecheck,
 } from "../../src/inhoud/beoordeling.ts";
-import { inhoudsHashVan } from "../../src/inhoud/voorstel.ts";
+import { bewaarVoorstel, inhoudsHashVan, type Voorstel } from "../../src/inhoud/voorstel.ts";
 
 /* EEN EIGEN PAGINA DIE NIET BESTAAT.
    Par. 25: geen testinhoud naar de live website. Dit pad staat niet in
@@ -371,5 +371,183 @@ describe("publicatieketen met een geisoleerde fixture", () => {
       !uitslag.kennis.paginas.some((p) => p.route === FIXTURE_PAD),
       `${FIXTURE_PAD} hoort niet in de gepubliceerde sitekennis te staan`,
     );
+  });
+
+  /* ==================================================================
+     15. HET SCENARIO WAAR PAR. 15 OM BEGON — door de echte motor
+
+     De toetsen hierboven manipuleren de rij met eigen SQL. Daarmee bleef
+     één route ongetest: de voorstelmotor die DEZELFDE kandidaat opnieuw
+     wegschrijft nadat een mens hem heeft beoordeeld. Precies daar zat een
+     blokkerend defect.
+
+     bewaarVoorstel nulde bij een gewijzigde inhoudshash `goedgekeurd_hash`,
+     `beoordeeld_door` en `beoordeeld_op`, maar liet `beoordeling` staan —
+     met de bedoeling de menselijke beoordeling te bewaren. 0021 eist
+     `beoordeling is null or (beoordeeld_op is not null and beoordeeld_door
+     is not null)`. Twee van de drie nullen schendt die constraint:
+
+       ERROR: new row for relation "inhoud_voorstellen" violates
+              check constraint "voorstel_beoordeling_compleet"
+
+     Gemeten op 13 oktober 2026. Het defect vuurde pas na de EERSTE echte
+     beoordeling, dus geen enkele bestaande toets raakte het.
+     ================================================================== */
+  test("15. de motor kan een BEOORDEELD voorstel opnieuw wegschrijven", async () => {
+    const TEKST_EEN =
+      "Volgens de fixture-uitgever bedraagt het fixturebedrag in 2026 €2 miljoen. " +
+      "Deze zin is testmateriaal en hoort niet op de website.";
+    const TEKST_TWEE =
+      "Volgens de fixture-uitgever bedraagt het fixturebedrag in 2026 €3 miljoen. " +
+      "Deze zin is testmateriaal en hoort niet op de website.";
+
+    /* Een eigen gebeurtenis en kandidaat, zodat deze toets de rij van de
+       toetsen hierboven niet aanraakt. */
+    const { gebeurtenisId, kandidaatId } = await metOrganisatie(
+      db.pool,
+      { organisatieId: org },
+      async (c) => {
+        const g = await c.query<{ id: string }>(
+          `insert into intel.markt_gebeurtenissen
+             (organisatie_id, sleutel, titel, gebeurtenis_soort)
+           values ($1, 'fixture-hashbinding', 'Fixture voor de hashbinding', 'overig')
+           returning id::text`,
+          [org],
+        );
+        const k = await c.query<{ id: string }>(
+          `insert into intel.inhoud_kandidaten
+             (organisatie_id, gebeurtenis_id, besluit, motor_versie)
+           values ($1, $2::bigint, 'UPDATE_EXISTING', 'fixture-hashbinding')
+           returning id::text`,
+          [org, g.rows[0]!.id],
+        );
+        return { gebeurtenisId: Number(g.rows[0]!.id), kandidaatId: Number(k.rows[0]!.id) };
+      },
+    );
+
+    const bouw = (nieuweTekst: string): Voorstel => ({
+      kandidaatId,
+      gebeurtenisId,
+      titel: "Fixture voor de hashbinding",
+      brondatum: null,
+      bedrijfsrelevantie: 80,
+      doelPad: FIXTURE_PAD,
+      bestaandePagina: {
+        pad: FIXTURE_PAD,
+        h1: "Fixture",
+        lead: null,
+        gepubliceerdVoorbehoud: null,
+        secties: ["Wat dit kost"],
+        noemtOnderwerp: 3,
+        bestaatAlsBron: true,
+      },
+      wijziging: {
+        soort: "alinea_toevoegen",
+        doelSectie: "Wat dit kost",
+        huidigeTekst: "De bestaande fixturetekst.",
+        nieuweTekst,
+        diff: [],
+      },
+      aanbevolenInterneLinks: [],
+      onderbouwing: {
+        uitspraken: [],
+        bronnen: [{ uitgever: "Fixture-uitgever", url: "https://voorbeeld.invalid/fixture", op: null }],
+      },
+      cta: { tekst: "Laat uw fixture doorrekenen", doel: "/contact", grondslag: "fixture" },
+      feiten: [
+        {
+          zin: nieuweTekst,
+          uitdrukking: null,
+          fenomeen: null,
+          tijdgrens: null,
+          exactheid: null,
+          uitgever: "Fixture-uitgever",
+          brondatum: null,
+          bronUrl: "https://voorbeeld.invalid/fixture",
+        },
+      ],
+      zakelijkeRelevantie: "Testmateriaal, geen marktbewering.",
+      seoRelevantie: "Testmateriaal, geen marktbewering.",
+      reviewerNotities: [],
+      risicoklasse: "hoog",
+      inhoudsHash: inhoudsHashVan({
+        doelPad: FIXTURE_PAD,
+        doelSectie: "Wat dit kost",
+        wijzigingSoort: "alinea_toevoegen",
+        nieuweTekst,
+        feiten: ["fixturefeit"],
+        links: [],
+        ctaTekst: "Laat uw fixture doorrekenen",
+        ctaDoel: "/contact",
+      }),
+      herrouteerdVan: null,
+      controles: [{ naam: "bronverwijzing", oordeel: "PASS", reden: "fixture", bewijs: [] }],
+      eindoordeel: "KLAAR_VOOR_REVIEW",
+      oordeelReden: "fixture voor de hashbinding: de motor schrijft deze rij elke ronde opnieuw",
+    });
+
+    const een = bouw(TEKST_EEN);
+    const twee = bouw(TEKST_TWEE);
+    assert.notEqual(een.inhoudsHash, twee.inhoudsHash, "de twee versies moeten echt verschillen");
+
+    /* Ronde 1: de motor legt het voorstel neer. */
+    const eerste = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      bewaarVoorstel(c, org, een),
+    );
+    assert.equal(eerste.wat, "nieuw");
+
+    /* Een mens beoordeelt het — langs de echte route, met een echt account. */
+    const besluit = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      beoordeel(c, org, {
+        voorstelId: eerste.id,
+        besluit: "goedgekeurd",
+        gebruikerId: beoordelaar,
+        notitie: "fixture: goedgekeurd op versie een",
+        verwachteHash: een.inhoudsHash,
+      }),
+    );
+    assert.equal(besluit.statusNa, "APPROVED");
+
+    /* Ronde 2: dezelfde kandidaat, andere tekst. Dit viel eerder om op de
+       check-constraint. Het MOET gewoon slagen. */
+    const tweede = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      bewaarVoorstel(c, org, twee),
+    );
+    assert.equal(tweede.wat, "bijgewerkt");
+    assert.equal(tweede.id, eerste.id, "het is dezelfde rij, niet een tweede voorstel");
+
+    /* En het besluit is als GEHEEL vervallen: niet voor twee derde. */
+    await metOrganisatie(db.pool, { organisatieId: org }, async (c) => {
+      const r = await c.query(
+        `select publicatie_status, inhouds_hash, goedgekeurd_hash,
+                beoordeling, beoordeling_notitie, beoordeeld_door, beoordeeld_op
+           from intel.inhoud_voorstellen where id = $1::bigint`,
+        [eerste.id],
+      );
+      const rij = r.rows[0]!;
+      assert.equal(rij.inhouds_hash, twee.inhoudsHash, "de nieuwe inhoud staat erin");
+      assert.equal(rij.beoordeling, null, "de beoordeling hoort te vervallen");
+      assert.equal(rij.beoordeling_notitie, null, "de notitie hoorde bij het oude besluit");
+      assert.equal(rij.beoordeeld_door, null, "wie hoort te vervallen");
+      assert.equal(rij.beoordeeld_op, null, "wanneer hoort te vervallen");
+      assert.equal(rij.goedgekeurd_hash, null, "de binding hoort te vervallen");
+      assert.equal(
+        rij.publicatie_status,
+        "READY_FOR_REVIEW",
+        "een gewijzigd voorstel valt terug naar beoordeling",
+      );
+      const g = goedkeuringGeldig(rij);
+      assert.equal(g.geldig, false, "er mag geen geldige goedkeuring meer zijn");
+    });
+
+    /* De geschiedenis mag NIET zijn verdwenen: dat is de plek waar staat
+       wie wat vond, en de reden dat de drie kolommen mogen vervallen. */
+    const geschiedenis = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      beoordelingsgeschiedenis(c, org, eerste.id),
+    );
+    const bewaard = geschiedenis.find((x) => x.besluit === "goedgekeurd");
+    assert.ok(bewaard, "de goedkeuring hoort in het auditspoor te staan");
+    assert.equal(bewaard.inhouds_hash, een.inhoudsHash, "gebonden aan de tekst die is goedgekeurd");
+    assert.equal(bewaard.door, "beheer@vibeenergy.nl");
   });
 });

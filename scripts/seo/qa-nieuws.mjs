@@ -171,7 +171,67 @@ function ruimFixtureOp() {
   if (existsSync(NIEUWSMAP) && readdirSync(NIEUWSMAP).length === 0) rmSync(NIEUWSMAP, { recursive: true });
 }
 
+/* ---------------------------------------------------------- DE GROOTBOEKEN
+   Het opruimen van de fixture was niet genoeg, en dat is gemeten.
+
+   De fixture zet de nieuwshub op INDEX. Daardoor krijgt elke pagina
+   `/nieuws` in de noscript-navigatie, dus verandert de inhoudshash van alle
+   430 pagina's. lib/vingerafdruk.mjs geeft een pagina met een veranderde
+   hash de bouwdatum van vandaag en SCHRIJFT die hash plus datum weg in
+   data/seo/vingerafdrukken.json — een gecommit bronbestand, geen cache.
+   Hetzelfde geldt voor `_gegenereerd` in routes.json, want de routeset
+   verandert met twee routes mee.
+
+   Na het opruimen staat de navigatie weer goed en komt de hash terug op de
+   gecommitte waarde — maar die wijkt nu af van wat in het grootboek staat.
+   Dus luidt het oordeel opnieuw "gewijzigd" en krijgt alles opnieuw de datum
+   van vandaag. Gevolg: 356 bestanden vuil met uitsluitend een datumverschil
+   (`dateModified` en `lastmod`), zonder dat één letter inhoud verschilt.
+
+   Op de commitdag zelf is dat onzichtbaar, omdat de bouwdatum dan gelijk is
+   aan de gecommitte datum. Op elke dag DAARNA faalde FASE C — ook op main,
+   zonder dat er iets aan de release mankeerde.
+
+   Daarom zet dit harnas de grootboeken die het zelf aanraakt terug. We
+   bewaren de INHOUD zoals die bij het begin van de meting was, niet de staat
+   uit HEAD: wie met ongecommitte wijzigingen meet, hoort die ook weer terug
+   te krijgen.
+
+   LET OP DE TWEE MOMENTEN. Ze zijn niet uitwisselbaar, ook dat is gemeten.
+
+   · vingerafdrukken.json en routes.json zijn INVOER voor de bouw. Ze moeten
+     terug VÓÓR de keten draait, anders leidt genereer.mjs de datums opnieuw
+     uit het vervuilde grootboek af.
+   · gegenereerd.json is het OPRUIMMANIFEST ("administratie van de vorige
+     generatorrun, nodig om een bestand op te ruimen zodra zijn route
+     verdwijnt"). Dat moet tijdens de keten juist LEVEND blijven: het is de
+     enige plek waar staat dat nieuws.html en nieuws/<fixture>.html zijn
+     gegenereerd. Zet je het te vroeg terug, dan weet genereer.mjs niet meer
+     dat het die twee moet verwijderen en blijven ze als weesbestanden staan.
+     Het gaat dus pas terug NA de keten; het bevat alleen administratie en
+     een datum, geen invoer. */
+const GROOTBOEKEN_INVOER = ['vingerafdrukken.json', 'routes.json'].map((n) =>
+  resolve(wortel, 'data', 'seo', n)
+);
+const GROOTBOEK_MANIFEST = [resolve(wortel, 'data', 'seo', 'gegenereerd.json')];
+
+function leesGrootboeken(paden) {
+  return paden.map((p) => ({ pad: p, inhoud: existsSync(p) ? readFileSync(p, 'utf8') : null }));
+}
+
+function herstelGrootboeken(opname) {
+  for (const { pad, inhoud } of opname) {
+    if (inhoud === null) {
+      if (existsSync(pad)) rmSync(pad);
+    } else if (!existsSync(pad) || readFileSync(pad, 'utf8') !== inhoud) {
+      writeFileSync(pad, inhoud);
+    }
+  }
+}
+
 /* ========================================================================= */
+const invoerVoor = leesGrootboeken(GROOTBOEKEN_INVOER);
+const manifestVoor = leesGrootboeken(GROOTBOEK_MANIFEST);
 const staatVoor = werkboomstaat();
 console.log('\nVIBE ENERGY — QA NIEUWSKANAAL');
 console.log('='.repeat(72));
@@ -302,10 +362,17 @@ try {
   console.log('\nFASE C — opruimen laat geen spoor achter');
 } finally {
   ruimFixtureOp();
+  /* De invoergrootboeken terug VÓÓR de keten: genereer.mjs leidt de
+     wijzigingsdatum van elke pagina uit vingerafdrukken.json af, dus een
+     herstel ná de bouw zou de datums op schijf laten staan. */
+  herstelGrootboeken(invoerVoor);
   const r1 = draai('bouw-routes.mjs');
   const r2 = draai('genereer.mjs');
   const r3 = draai('herstel-bestaand.mjs');
   const r4 = draai('sitemap.mjs');
+  /* Het manifest pas NU terug: de keten hierboven had het nog nodig om de
+     twee fixturepagina's als wees te herkennen en te verwijderen. */
+  herstelGrootboeken(manifestVoor);
   const alleOk = r1.ok && r2.ok && r3.ok && r4.ok;
   toets('keten draait na opruimen', alleOk, alleOk ? '' : [r1, r2, r3, r4].filter((x) => !x.ok).map((x) => x.uit.slice(-200)).join(' | '));
   toets('artikelbestand is opgeruimd', !existsSync(resolve(wortel, `${FIXTURE_ROUTE}.html`)));

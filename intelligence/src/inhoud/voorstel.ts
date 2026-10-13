@@ -1,6 +1,6 @@
 /* ============================================================
    WIJZIGINGSVOORSTEL — bestaande pagina, voorgestelde wijziging,
-   onderbouwing, CTA, en vier controles die het kunnen afkeuren
+   onderbouwing, CTA, en vijf controles die het kunnen afkeuren
    ------------------------------------------------------------
    WAAROM DEZE LAAG BOVEN `concept.ts` ZIT
 
@@ -27,7 +27,7 @@
    "Welke posten uw netbeheerder in rekening brengt en wat ze kosten,
    staat op het tarievenblad van die netbeheerder."
 
-   DE VIER CONTROLES
+   DE VIJF CONTROLES
 
    bronverwijzing  is elke bewering herleidbaar tot een bevestigde
                    uitspraak met een bron-URL, en is er uberhaupt een
@@ -1234,7 +1234,7 @@ export function inhoudsHashVan(inhoud: {
 }
 
 /**
- * Van vier controles naar een besluit.
+ * Van vijf controles naar een besluit.
  *
  * DE VOLGORDE IS BEWUST. Een voorstel dat op de verkeerde pagina staat
  * moet HERROUTEREN heten en niet AFWIJZEN: het feit kan prima kloppen.
@@ -1302,7 +1302,7 @@ function weegAf(
   return {
     eindoordeel: "KLAAR_VOOR_REVIEW",
     oordeelReden:
-      `alle vier de controles gehaald${voorbehouden.length ? ` (1 voorbehoud: ${voorbehouden[0]!.naam})` : ""}. ` +
+      `alle vijf de controles gehaald${voorbehouden.length ? ` (1 voorbehoud: ${voorbehouden[0]!.naam})` : ""}. ` +
       `Risicoklasse ${k.risico_klasse}: een mens voert de wijziging door, het platform schrijft niets.`,
   };
 }
@@ -1330,12 +1330,17 @@ export async function bouwVoorstellen(
    ------------------------------------------------------------------ */
 
 /**
- * Schrijft een voorstel weg, inclusief de vier controles.
+ * Schrijft een voorstel weg, inclusief de vijf controles.
  *
- * Raakt een bestaande MENSELIJKE beoordeling nooit aan: zodra iemand
- * heeft gekeken, blijft dat staan en worden alleen de meetwaarden
- * bijgewerkt. Een pijplijn die het oordeel van een reviewer overschrijft
- * maakt het dashboard onbetrouwbaar.
+ * Een bestaande MENSELIJKE beoordeling blijft staan zolang de inhoud
+ * gelijk blijft: dan worden alleen de meetwaarden bijgewerkt. Een pijplijn
+ * die het oordeel van een reviewer over dezelfde tekst overschrijft maakt
+ * het dashboard onbetrouwbaar.
+ *
+ * Verandert de inhoudshash wél, dan vervalt het besluit als geheel —
+ * beoordeling, notitie, wie en wanneer samen. Het ging over een tekst die
+ * niet meer bestaat. De geschiedenis blijft append-only bewaard in
+ * intel.voorstel_beoordelingen; zie de toelichting bij de on-conflict-set.
  */
 export async function bewaarVoorstel(
   c: pg.PoolClient,
@@ -1395,6 +1400,43 @@ export async function bewaarVoorstel(
            when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
              then null
            else intel.inhoud_voorstellen.goedgekeurd_hash
+         end,
+       /* ÉÉN BESLUIT VERVALT ALS GEHEEL, NIET VOOR TWEE DERDE.
+
+          Dit nulde eerder alleen beoordeeld_door en beoordeeld_op en liet
+          beoordeling staan, met als bedoeling de menselijke beoordeling te
+          bewaren. Dat kan de database niet aan. Constraint
+          voorstel_beoordeling_compleet uit 0021 eist dat beoordeling null
+          is, of dat beoordeeld_op EN beoordeeld_door beide gevuld zijn.
+          Twee van de drie nullen schendt dat, dus liep juist het scenario
+          waarvoor deze goedkeuringsbinding is gebouwd — inhoud wijzigt ná
+          goedkeuring — op een harde databasefout:
+
+            ERROR: new row for relation "inhoud_voorstellen" violates
+                   check constraint "voorstel_beoordeling_compleet"
+
+          Een tweede botsing zat er latent naast: voorstel_alleen_review
+          _goedkeuren eist dat beoordeling niet GOEDGEKEURD is zolang het
+          eindoordeel niet KLAAR_VOOR_REVIEW is. Een blijvende GOEDGEKEURD
+          naast een nieuw eindoordeel AFWIJZEN brak dus ook.
+
+          Het besluit vervalt daarom als geheel. De geschiedenis gaat niet
+          verloren: elk besluit staat append-only in
+          intel.voorstel_beoordelingen, met de hash waarover is besloten en
+          de beoordelaar als momentopname. Dat is de plek om na te vertellen
+          wie wat vond; deze drie kolommen dragen alleen het LEVENDE besluit
+          over de huidige inhoud. */
+       beoordeling =
+         case
+           when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
+             then null
+           else intel.inhoud_voorstellen.beoordeling
+         end,
+       beoordeling_notitie =
+         case
+           when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
+             then null
+           else intel.inhoud_voorstellen.beoordeling_notitie
          end,
        beoordeeld_door =
          case
