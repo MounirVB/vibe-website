@@ -43,7 +43,10 @@ export type Wegwerpdatabase = {
   opruimen(): Promise<void>;
 };
 
-export async function maakWegwerpdatabase(label: string): Promise<Wegwerpdatabase> {
+export async function maakWegwerpdatabase(
+  label: string,
+  opties: { totNummer?: number } = {},
+): Promise<Wegwerpdatabase> {
   teller += 1;
   const schoon = label.replace(/[^a-z0-9]/gi, "").slice(0, 16).toLowerCase();
   const naam = `vibe_intel_t_${schoon}_${process.pid}_${teller}`;
@@ -71,7 +74,7 @@ export async function maakWegwerpdatabase(label: string): Promise<Wegwerpdatabas
   });
   await eigenaar.connect();
   try {
-    await migreer(eigenaar);
+    await migreer(eigenaar, opties.totNummer === undefined ? {} : { totNummer: opties.totNummer });
   } finally {
     await eigenaar.end();
   }
@@ -165,6 +168,35 @@ export async function alsEigenaar<T>(
     return await werk(client);
   } finally {
     await client.end();
+  }
+}
+
+/**
+ * Migreert een halfgemigreerde wegwerpdatabase verder.
+ *
+ * Hoort bij `maakWegwerpdatabase(label, { totNummer })`: eerst migreren
+ * tot de versie die in productie stond, dan representatieve historische
+ * rijen invoeren, dan hiermee de rest toepassen. Dat is het scenario dat
+ * CI tot 3.0.4 NIET kon naspelen, en precies daardoor kwam 0027 tot in
+ * productie waar hij op bestaande rijen afbrak.
+ */
+export async function migreerVerder(
+  db: Wegwerpdatabase,
+  opties: { totNummer?: number } = {},
+): Promise<{ toegepast: readonly string[] }> {
+  const eigenaar = new pg.Client({
+    connectionString: db.url,
+    options: "-c search_path=intel,public",
+  });
+  await eigenaar.connect();
+  try {
+    const r = await migreer(
+      eigenaar,
+      opties.totNummer === undefined ? {} : { totNummer: opties.totNummer },
+    );
+    return { toegepast: r.toegepast };
+  } finally {
+    await eigenaar.end();
   }
 }
 
