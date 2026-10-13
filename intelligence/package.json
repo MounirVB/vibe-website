@@ -46,8 +46,10 @@
     "ai": "node src/cli/ai.ts",
     "gezondheid": "node src/cli/gezondheid.ts",
     "meting": "node src/cli/meting.ts",
+    "dekkingsmeting": "node src/cli/dekkingsmeting.ts",
     "benchmark": "node src/cli/benchmark.ts",
-    "wachtwoordtoken": "node src/cli/wachtwoordtoken.ts"
+    "wachtwoordtoken": "node src/cli/wachtwoordtoken.ts",
+    "browser": "node --test --test-concurrency=1 \"test/browser/*.browser.test.ts\""
   },
   "dependencies": {
     "express": "^4.21.2",
@@ -57,6 +59,7 @@
     "@types/express": "^4.17.21",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.11.10",
+    "playwright-core": "^1.64.0",
     "typescript": "^5.7.2"
   }
 }

@@ -420,14 +420,90 @@ monitor wel, maar moet iemand hem lezen.
 
 ## 6. Wat dit runbook nog niet dekt
 
-Deze onderdelen bestaan als code of configuratie maar zijn **niet
-uitgerold**, en hun procedures zijn dus niet in hun doelomgeving
-bewezen:
+Bijgewerkt op 13 oktober 2026. De vijf onderdelen die hier eerder als
+"niet uitgerold" stonden zijn dat allemaal wél: de API, de worker, de
+planner, de back-up op schema en de productiedatabase draaien op
+Railway, en de back-up is extern bewezen teruggezet (zie §3).
 
-- de Intelligence API als dienst
-- de worker en de planner als permanente processen
-- geautomatiseerde back-up op een schema
-- monitoring en alertering
-- de productiedatabase zelf
+Wat nog NIET in zijn doelomgeving is bewezen:
 
-Zie `docs/PRODUCTIE.md` voor de topologie en de openstaande punten.
+- **externe alertbezorging.** De monitoring meet en rapporteert, maar
+  `INTEL_MELD_WEBHOOK` is niet geconfigureerd, dus er gaat geen signaal
+  de deur uit. Zie §7 hieronder.
+- **een volledige productie-restore naar productie zelf.** Bewust: een
+  restore mag productie niet overschrijven. Bewezen is de restore naar
+  een geïsoleerde database uit de echte productiedump.
+
+---
+
+## 7. Externe alertbezorging inschakelen
+
+De gezondheidsmeting kent een domein `melden`. Zolang er geen
+bestemming is geconfigureerd staat dat domein op **NOT_CONFIGURED** —
+niet op OK, want er is niets bewezen, en niet op CRITICAL, want er is
+niets stuk.
+
+Dit platform verzint geen bestemming. Een operator zet hem:
+
+```bash
+# 1. een webhook-URL van de eigen meldbestemming (Slack, Teams, eigen dienst)
+railway variables -s vibe-intel-planner --set INTEL_MELD_WEBHOOK=<url>
+
+# 2. redeploy, zodat de planner de variabele leest
+railway redeploy -s vibe-intel-planner --yes
+
+# 3. bewijzen dat er iets AANKOMT — niet dat de variabele bestaat
+npm run gezondheid -- --meld --droogloop   # stuurt een testsignaal
+```
+
+De droogloop stuurt een signaal met `soort: "test"` zodat een echte
+alert niet te onderscheiden valt van een proef. Komt er niets aan, dan
+blijft het domein NOT_CONFIGURED; `bezorgfouten` telt wat er misging.
+
+**Nooit een echte productiealert naar een niet-goedgekeurde bestemming
+sturen.** De URL hoort bij de organisatie, niet bij wie hem instelt.
+
+---
+
+## 8. De browsersuite
+
+Een eigen harnas, los van elk ander project. Het leunt niet op een
+Playwright-installatie elders op de machine.
+
+**Installatie** — eenmalig, en er wordt GEEN browser gedownload:
+
+```bash
+cd intelligence
+npm install                       # playwright-core staat in devDependencies
+```
+
+De suite gebruikt de Chrome die al op de machine staat, via
+`channel: "chrome"`. Staat die er niet, dan meldt de suite dat en
+faalt hij — hij gaat niet stilletjes over op een andere engine.
+
+**Draaien:**
+
+```bash
+cd intelligence
+set -a && . ./.env && set +a         # voor INTEL_DB_URL
+npm run browser
+```
+
+Verwacht: `pass 14`, `fail 0`.
+
+**Wat de suite doet, en wat hij NIET doet.** Hij start het dashboard op
+een eigen poort tegen de LOKALE database, zaait zijn eigen voorstellen
+in een eigen organisatie en ruimt ze op. Hij raakt productie niet aan
+en hij keurt geen echte inhoud goed.
+
+**Waarom hij buiten `npm test` staat.** De drie globs van `npm test`
+dekken `eenheid`, `integratie` en `adversarieel`. De browsersuite
+vraagt een echte Chrome en is daarmee van een andere orde: een machine
+zonder Chrome hoort de andere 614 toetsen nog te kunnen draaien. De
+CI-poort draait hem daarom niet; hij is een lokale poort vóór een
+release, en het resultaat hoort in het releaserapport.
+
+**Wat hij al heeft gevonden.** Een gebruiker met alleen `inhoud.lezen`
+zag het volledige goedkeurformulier. De server weigerde het besluit wel
+(403, bewezen door de HTTP-suite), dus het was geen beveiligingslek,
+maar wel een knop die bij elke klik faalt. Zie toets 6.

@@ -42,6 +42,9 @@ export type PublicatieStatus =
      feitelijke paginarevisie en mag dus niet in READY_FOR_REVIEW staan.
      Zie de toelichting bij KLAAR_VOOR_LINKREVIEW in inhoud/voorstel.ts. */
   | "READY_FOR_LINK_REVIEW"
+  /* NIEUW IN 3.0.6: een voorstel voor een nieuwe pagina wacht op een
+     mens, in zijn eigen staat. Zie inhoud/nieuwepagina.ts en 0035. */
+  | "NEW_PAGE_CANDIDATE"
   | "APPROVED"
   | "PUBLICATION_PRECHECK"
   | "DEPLOYMENT"
@@ -70,6 +73,7 @@ export const STATUS_LABEL: Readonly<Record<PublicatieStatus, string>> = {
   DRAFT: "Concept",
   READY_FOR_REVIEW: "Klaar voor beoordeling",
   READY_FOR_LINK_REVIEW: "Linkvoorstel, klaar voor beoordeling",
+  NEW_PAGE_CANDIDATE: "Voorstel voor een NIEUWE pagina, klaar voor beoordeling",
   APPROVED: "Goedgekeurd",
   PUBLICATION_PRECHECK: "Publicatiecontrole",
   DEPLOYMENT: "Uitgerold",
@@ -304,7 +308,14 @@ export async function beoordeel(
      Een voorstel dat de controles niet haalt is geen keuze die aan een
      mens hoort te worden voorgelegd; goedkeuren zou een poort omzeilen
      in plaats van passeren. */
-  const BEOORDEELBAAR: readonly PublicatieStatus[] = ["READY_FOR_REVIEW", "READY_FOR_LINK_REVIEW"];
+  const BEOORDEELBAAR: readonly PublicatieStatus[] = [
+    "READY_FOR_REVIEW",
+    "READY_FOR_LINK_REVIEW",
+    /* Goedkeuren betekent hier "deze pagina mag gemaakt worden". Het
+       maken zelf blijft mensenwerk via de beschermde git-werkstroom;
+       dit platform schrijft geen bestand en registreert geen route. */
+    "NEW_PAGE_CANDIDATE",
+  ];
   if (opdracht.besluit === "goedgekeurd" && !BEOORDEELBAAR.includes(rij.publicatie_status)) {
     throw new IntelFout(
       "validatie",

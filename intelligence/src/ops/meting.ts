@@ -88,6 +88,25 @@ export type ProductieMeting = {
   readonly brondekking: Brondekking;
   /** Per voorstel precies één primaire blokkeerreden; zie hieronder. */
   readonly blokkeerredenen: readonly Telling[];
+  /**
+   * De VERWOORDBAARHEIDSTRAP — de werkelijke flessenhals.
+   *
+   * Gemeten op 13 oktober 2026: van 57 uitspraken in productie was er
+   * TWEE verwoordbaar. 26 stonden op CONTEXT_ONVOLLEDIG, 19 hadden geen
+   * oordeel (geen numerieke uitdrukking, dus de semantische laag slaat
+   * ze over), 8 op VERIFICATIE_NODIG en 2 op VEROUDERD.
+   *
+   * Daarmee is het plafond op volledige feitelijke revisies 2, en één
+   * daarvan viel af op bedrijfsrelevantie. Dat verklaart waarom er
+   * precies één revisie klaarstaat — en het is GEEN matchingprobleem.
+   * Zonder deze uitsplitsing zou een lezer de oorzaak bij de
+   * paginamatching zoeken, en daar is hij niet.
+   */
+  readonly verwoordbaarheid: readonly Telling[];
+  /** Voorstellen met minstens één verwoordbare uitspraak. */
+  readonly voorstellenMetVerwoordbaarFeit: number;
+  /** Paginavoorstellen, geteld als DISTINCTE slug; zie par. 19. */
+  readonly nieuwePaginaKandidaten: number;
 };
 
 async function telling(
@@ -361,6 +380,35 @@ export async function meetProductie(
     [organisatieId],
   );
 
+  /* ------------------------------------------- verwoordbaarheidstrap
+     De meting die de echte flessenhals blootlegt; zie het veld. */
+  const verwoordbaarheid = await telling(
+    c,
+    `select coalesce(verwoordbaar, '(geen oordeel)') as sleutel, count(*)::text as aantal
+       from intel.uitspraken where organisatie_id = $1
+      group by 1 order by 2 desc, 1`,
+    [organisatieId],
+  );
+  const voorstellenMetVerwoordbaarFeit = await getal(
+    c,
+    `select count(*)::text as n from intel.inhoud_voorstellen v
+      where v.organisatie_id = $1
+        and exists (select 1 from intel.uitspraken u
+                     where u.gebeurtenis_id = v.gebeurtenis_id
+                       and u.verwoordbaar = 'VERWOORDBAAR')`,
+    [organisatieId],
+  );
+  /* DISTINCTE slug, niet rijen: negen ontdekkingen over nettarieven zijn
+     EEN redactioneel besluit. Par. 19 verbiedt het opblazen van dit
+     getal door bijna-identieke voorstellen te tellen. */
+  const nieuwePaginaKandidaten = await getal(
+    c,
+    `select count(distinct nieuwe_pagina->>'slug')::text as n
+       from intel.inhoud_voorstellen
+      where organisatie_id = $1 and nieuwe_pagina is not null`,
+    [organisatieId],
+  );
+
   /* De bronclassificatie hoort in de dagelijkse logregel, want 'overgeslagen
      19' is op zichzelf onleesbaar. Zie ops/brondekking.ts. */
   const brondekking = await meetBrondekking(c, organisatieId);
@@ -397,5 +445,8 @@ export async function meetProductie(
     migraties: { toegepast: migratieTotaal, hoogste: hoogsteRij[0]?.naam ?? null },
     brondekking,
     blokkeerredenen,
+    verwoordbaarheid,
+    voorstellenMetVerwoordbaarFeit,
+    nieuwePaginaKandidaten,
   };
 }
