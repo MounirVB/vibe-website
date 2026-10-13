@@ -63,6 +63,23 @@ import {
 import { koppelingStatussen, funnelBeeld } from "../analytics/koppelingen.ts";
 import { FASE_LABEL, type Fase } from "../commercieel/aanbesteding.ts";
 import { leesSitekennis } from "../site/sitekennis.ts";
+import { beoordeel, type Besluit } from "../inhoud/beoordeling.ts";
+
+/**
+ * Wat elke publicatiestatus betekent voor de lezer van het dashboard.
+ *
+ * Een statuscode zonder uitleg dwingt de beoordelaar om de code te
+ * kennen. Dit is de plek waar de keten van par. 16 in woorden staat.
+ */
+const PUBLICATIE_UITLEG: Readonly<Record<string, string>> = {
+  DRAFT: "haalt de controles niet; er is niets te beoordelen",
+  READY_FOR_REVIEW: "alle controles gehaald, wacht op een mens",
+  APPROVED: "goedgekeurd en gebonden aan een inhoudshash; nog niet uitgerold",
+  PUBLICATION_PRECHECK: "publicatiecontrole gehaald; klaar om door een mens te worden doorgevoerd",
+  DEPLOYMENT: "de wijziging is doorgevoerd, nog niet live teruggezien",
+  LIVE_VERIFIED: "live teruggezien op de website",
+  REJECTED: "afgewezen; dit voorstel gaat niet door",
+};
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -628,19 +645,50 @@ export function maakApp(pool: Pool): express.Express {
         return;
       }
 
+      /* DE HASH DIE DE BEOORDELAAR OP ZIJN SCHERM HAD.
+         Par. 15: een goedkeuring geldt voor precies de inhoud die is
+         gelezen. Het formulier draagt die hash mee; wijkt hij af van
+         wat er nu in de rij staat, dan is het voorstel ondertussen
+         herbouwd en wordt het besluit geweigerd in plaats van op de
+         nieuwe tekst geplakt. */
+      const gezienHash = String(body["inhouds_hash"] ?? "");
+      if (!/^[0-9a-f]{64}$/.test(gezienHash)) {
+        weiger(
+          res,
+          400,
+          "Dit formulier draagt geen inhoudshash. Open de pagina opnieuw, zodat de " +
+            "beoordeling aan de inhoud kan worden gebonden.",
+        );
+        return;
+      }
+
       const gebruikerId = req.gebruiker?.id ?? null;
+      if (gebruikerId === null) {
+        weiger(res, 403, "Een beoordeling vraagt een ingelogd account.");
+        return;
+      }
+      const naarBesluit: Readonly<Record<string, Besluit>> = {
+        GOEDGEKEURD: "goedgekeurd",
+        AFGEKEURD: "afgewezen",
+        AANGEPAST: "herziening_gevraagd",
+      };
       try {
         await alsGebruiker(req, async (c) => {
-          const r = await c.query(
-            `update intel.inhoud_voorstellen
-                set beoordeling = $2, beoordeling_notitie = $3,
-                    beoordeeld_op = now(), beoordeeld_door = $4
-              where id = $1
-              returning kandidaat_id, eindoordeel`,
-            [id, besluit, notitie || null, gebruikerId],
-          );
-          if (r.rowCount === 0) throw new Error("voorstel niet gevonden");
-          const rij = r.rows[0] as { kandidaat_id: number; eindoordeel: string };
+          /* VIA beoordeel(), niet met een eigen update.
+             Deze route schreef eerder zelf `beoordeling` weg. Dat legde
+             vast DAT er was goedgekeurd maar niet WAAROP, en het zette
+             de publicatiestatus niet. Daarmee kon een goedkeuring op een
+             herbouwd voorstel blijven staan — precies het gat dat par.
+             15 dicht. Eén pad voor alle beoordelingen, zodat de binding
+             niet van de aanroeper afhangt. */
+          const uitslag = await beoordeel(c, req.gebruiker!.organisatieId, {
+            voorstelId: id,
+            besluit: naarBesluit[besluit]!,
+            gebruikerId,
+            notitie: notitie || null,
+            verwachteHash: gezienHash,
+          });
+          const rij = { kandidaat_id: uitslag.voorstelId, eindoordeel: uitslag.statusNa };
           /* Het auditspoor draagt WIE, WAT en WAAROM. Niet in een catch:
              een beoordeling zonder spoor hoort niet te bestaan, dus als
              dit faalt, faalt de hele transactie. */
@@ -664,6 +712,17 @@ export function maakApp(pool: Pool): express.Express {
         const bericht = (e as Error).message;
         /* De databasegrendel die alleen KLAAR_VOOR_REVIEW laat
            goedkeuren, hoort als UITLEG terug te komen en niet als 500. */
+        /* Een conflict is geen storing maar een bericht: de inhoud is
+           veranderd terwijl de beoordelaar keek. Dat hoort hij te
+           lezen, niet als 500 te krijgen. */
+        if (/gewijzigd sinds u het opende/.test(bericht)) {
+          weiger(res, 409, bericht);
+          return;
+        }
+        if (/is niet goed te keuren|geen actief account|geen inhoudshash/.test(bericht)) {
+          weiger(res, 409, bericht);
+          return;
+        }
         if (/voorstel_alleen_review_goedkeuren/.test(bericht)) {
           weiger(
             res,
@@ -1033,7 +1092,12 @@ ${tabel(
         beoordeling_notitie: string | null;
         beoordeeld_op: string | null;
         beoordelaar: string | null;
+        publicatie_status: string;
+        inhouds_hash: string | null;
+        goedgekeurd_hash: string | null;
+        precheck_uitslag: string | null;
         controles: { naam: string; oordeel: string; reden: string }[];
+        besluiten: { besluit: string; door: string; op: string; hash: string; notitie: string | null }[];
       }>(
         c,
         `select v.id::text, v.kandidaat_id, v.doel_pad, g.titel, v.eindoordeel,
@@ -1042,6 +1106,17 @@ ${tabel(
                 v.huidige_tekst, v.interne_links, v.wijziging_soort,
                 v.beoordeling_notitie, v.beoordeeld_op::text as beoordeeld_op,
                 gb.naam as beoordelaar,
+                v.publicatie_status, v.inhouds_hash, v.goedgekeurd_hash, v.precheck_uitslag,
+                /* HET AUDITSPOOR PER VOORSTEL (par. 14). Nieuwste eerst,
+                   begrensd zodat een lange geschiedenis de pagina niet
+                   onleesbaar maakt. */
+                coalesce((select json_agg(json_build_object(
+                            'besluit', b.besluit, 'door', b.door,
+                            'op', b.op::text, 'hash', b.inhouds_hash,
+                            'notitie', b.notitie) order by b.op desc)
+                            from (select * from intel.voorstel_beoordelingen bb
+                                   where bb.voorstel_id = v.id
+                                   order by bb.op desc limit 8) b), '[]'::json) as besluiten,
                 coalesce((select json_agg(json_build_object(
                             'naam', ct.naam, 'oordeel', ct.oordeel, 'reden', ct.reden)
                           order by ct.naam)
@@ -1178,13 +1253,42 @@ ${(() => {
       )
       .join("")}
   </table>
-  ${v.beoordeling
+  <table class="paren">
+    <tr><th>publicatiestatus</th><td><strong>${esc(v.publicatie_status)}</strong>
+      <div class="klein">${esc(PUBLICATIE_UITLEG[v.publicatie_status] ?? "")}</div></td></tr>
+    <tr><th>inhoudshash</th><td><code>${esc((v.inhouds_hash ?? "geen").slice(0, 16))}</code>
+      <div class="klein">${
+        v.goedgekeurd_hash === null
+          ? "nog geen goedkeuring aan een hash gebonden"
+          : v.goedgekeurd_hash === v.inhouds_hash
+            ? `goedkeuring gebonden aan deze inhoud (${esc(v.goedgekeurd_hash.slice(0, 16))})`
+            : `GOEDKEURING VERVALLEN: goedgekeurd op ${esc(v.goedgekeurd_hash.slice(0, 16))}, de inhoud is daarna gewijzigd. Er is een nieuwe beoordeling nodig.`
+      }</div></td></tr>
+    ${v.precheck_uitslag ? `<tr><th>publicatiecontrole</th><td><strong>${esc(v.precheck_uitslag)}</strong></td></tr>` : ""}
+  </table>
+  ${v.besluiten.length > 0
+    ? `<p class="klein">Beoordelingsgeschiedenis:</p>
+       <table class="paren">${v.besluiten
+         .map(
+           (b) =>
+             `<tr><th>${esc(b.op.slice(0, 16))}</th><td><strong>${esc(b.besluit)}</strong>
+                door ${esc(b.door)} op inhoud <code>${esc(b.hash.slice(0, 12))}</code>
+                ${b.notitie ? `<div class="klein">${esc(b.notitie)}</div>` : ""}</td></tr>`,
+         )
+         .join("")}</table>`
+    : ""}
+  ${v.beoordeling && v.goedgekeurd_hash === v.inhouds_hash
     ? `<p class="klein">Beoordeeld als <strong>${esc(v.beoordeling)}</strong> op
          ${esc(v.beoordeeld_op?.slice(0, 16) ?? "")} door ${esc(v.beoordelaar ?? "onbekend")}.
          ${v.beoordeling_notitie ? `<br>Notitie: ${esc(v.beoordeling_notitie)}` : ""}</p>`
-    : v.eindoordeel === "KLAAR_VOOR_REVIEW"
+    : v.eindoordeel === "KLAAR_VOOR_REVIEW" && v.inhouds_hash
       ? `<form method="post" action="/voorstellen/${esc(v.id)}/beoordeel">
            <input type="hidden" name="${esc(CSRF_VELD)}" value="${esc(csrf)}">
+           <!-- Par. 15: het besluit bindt aan de inhoud die hier staat.
+                Wordt het voorstel herbouwd terwijl dit scherm open is,
+                dan weigert de server het besluit in plaats van het op
+                de nieuwe tekst te plakken. -->
+           <input type="hidden" name="inhouds_hash" value="${esc(v.inhouds_hash)}">
            <p class="klein"><label>Notitie (verplicht bij afkeuren of herzien)<br>
              <textarea name="notitie" rows="2" style="width:100%;max-width:640px"></textarea></label></p>
            <button type="submit" name="beoordeling" value="GOEDGEKEURD">Goedkeuren</button>
@@ -1192,8 +1296,11 @@ ${(() => {
            <button type="submit" name="beoordeling" value="AFGEKEURD">Afkeuren</button>
            <p class="klein">Goedkeuren publiceert niets: het levert een patch op die een mens doorvoert.</p>
          </form>`
-      : `<p class="klein">Niet beoordeelbaar: alleen een voorstel dat alle vijf de controles haalt,
-           kan worden goedgekeurd.</p>`}
+      : v.eindoordeel === "KLAAR_VOOR_REVIEW"
+        ? `<p class="klein">Niet beoordeelbaar: dit voorstel heeft geen inhoudshash, dus er is
+             niets om een goedkeuring aan te binden. Draai de voorstelronde opnieuw.</p>`
+        : `<p class="klein">Niet beoordeelbaar: alleen een voorstel dat alle vijf de controles haalt,
+             kan worden goedgekeurd.</p>`}
 </details>`;
   return `
 <p><strong>${klaar.length}</strong> voorstel(len) klaar voor beoordeling,

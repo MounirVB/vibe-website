@@ -51,13 +51,15 @@
    wijzigen is per definitie een patch die een mens doorvoert.
    ============================================================ */
 
-import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { join } from "node:path";
 import type pg from "pg";
 import { eenRij, rijen } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 import { herkenOnderwerpen } from "../pijplijn/onderwerpen.ts";
+import { vindSchaalverlies } from "../pijplijn/schaalcorrectie.ts";
 import { paginaVan, type KennisPagina, type SitekennisBestand } from "../site/sitekennis.ts";
+import { FENOMEEN_ZINSVORM } from "../pijplijn/verwoord.ts";
 
 const log = maakLogger("voorstel");
 
@@ -133,6 +135,40 @@ export type Voorstel = {
     readonly bronnen: readonly { readonly uitgever: string; readonly url: string; readonly op: string | null }[];
   };
   readonly cta: { readonly tekst: string; readonly doel: string; readonly grondslag: string };
+  /**
+   * De feiten die in de voorgestelde tekst staan, elk met zijn bron.
+   * Par. 11 eist een claim-to-source mapping; zonder die koppeling is
+   * een alinea niet na te rekenen.
+   */
+  readonly feiten: readonly {
+    readonly zin: string;
+    readonly uitdrukking: string | null;
+    readonly fenomeen: string | null;
+    readonly tijdgrens: string | null;
+    readonly exactheid: string | null;
+    readonly uitgever: string | null;
+    readonly brondatum: string | null;
+    readonly bronUrl: string | null;
+  }[];
+  /** Waarom dit een Nederlandse ondernemer aangaat. */
+  readonly zakelijkeRelevantie: string;
+  /** Waarom deze pagina hier beter van wordt. */
+  readonly seoRelevantie: string;
+  /** Wat de reviewer moet weten voordat hij beslist. */
+  readonly reviewerNotities: readonly string[];
+  /** Hoe zeker is dit voorstel? */
+  readonly risicoklasse: "laag" | "midden" | "hoog";
+  /** sha256 over de inhoud waaraan een goedkeuring zich bindt. */
+  readonly inhoudsHash: string;
+  /**
+   * Als het voorstel naar een ANDERE pagina is verplaatst dan de
+   * besluitmotor koos: welke, en waarom.
+   *
+   * Par. 7 vraagt dat relevante feiten aan bestaande pagina's worden
+   * gekoppeld. 'Hoort op een andere pagina' zonder te zeggen welke is
+   * een doodlopend antwoord; de reviewer moet dan zelf zoeken.
+   */
+  readonly herrouteerdVan: { readonly pad: string; readonly reden: string } | null;
   readonly controles: readonly Controle[];
   readonly eindoordeel: Eindoordeel;
   readonly oordeelReden: string;
@@ -167,6 +203,7 @@ export type PaginaBron = {
   readonly oplossingen: readonly string[];
   readonly woorden: number;
   readonly vingerafdruk: string;
+  readonly termfrequenties: Readonly<Record<string, number>>;
 };
 
 function alsPaginaBron(p: KennisPagina): PaginaBron {
@@ -180,6 +217,7 @@ function alsPaginaBron(p: KennisPagina): PaginaBron {
     interneLinks: p.interneLinks,
     onderwerpen: p.onderwerpen,
     oplossingen: p.oplossingen,
+    termfrequenties: p.termfrequenties,
     woorden: p.woorden,
     vingerafdruk: p.vingerafdruk,
   };
@@ -196,7 +234,9 @@ function alsPaginaBron(p: KennisPagina): PaginaBron {
  */
 export function leesbaarBedrag(waarde: number, eenheid: string | null): string {
   const e = (eenheid ?? "").toUpperCase();
-  const teken = e === "EUR" ? "\u20ac " : "";
+  /* '\u20ac200 miljard', zonder spatie: dezelfde vorm als de verwoorder
+     gebruikt en als par. 8 voorschrijft. */
+  const teken = e === "EUR" ? "\u20ac" : "";
   const staart = e === "EUR" ? "" : eenheid ? ` ${eenheid}` : "";
   if (Math.abs(waarde) >= 1_000_000_000) return `${teken}${waarde / 1_000_000_000} miljard${staart}`;
   if (Math.abs(waarde) >= 1_000_000) return `${teken}${waarde / 1_000_000} miljoen${staart}`;
@@ -204,14 +244,28 @@ export function leesbaarBedrag(waarde: number, eenheid: string | null): string {
   return `${teken}${waarde}${staart}`;
 }
 
+/**
+ * Hoe vaak noemt de pagina dit onderwerp? Nul is een signaal.
+ *
+ * Eerst de termfrequentie-index van de sitekennis, want die is geteld
+ * over de VOLLEDIGE pagina. De opgeslagen `tekst` is afgekapt op 1500
+ * tekens en `secties[].tekst` op 500: tellen in die tekst gaf nul voor
+ * pagina's die het woord verderop vijf keer noemen, en daarop werden
+ * feiten afgewezen. Staat een term niet in het vocabulaire — en dus
+ * niet in de index — dan valt deze functie terug op de opgeslagen
+ * tekst; dat is dan een ondergrens en geen volledige telling.
+ */
 function noemtHoeVaak(bron: PaginaBron | null, termen: readonly string[]): number {
   if (!bron || termen.length === 0) return 0;
-  const alles = `${bron.titel ?? ""} ${bron.h1 ?? ""} ${bron.sectiekoppen.join(" ")} ${bron.tekst}`.toLowerCase();
+  const alles = `${bron.titel ?? ""} ${bron.h1 ?? ""} ${bron.sectiekoppen.join(" ")} ${bron.tekst} ${bron.secties
+    .map((x) => x.tekst)
+    .join(" ")}`.toLowerCase();
   let n = 0;
   for (const t of termen) {
     const schoon = t.toLowerCase().trim();
     if (schoon.length < 4) continue;
-    n += alles.split(schoon).length - 1;
+    const uitIndex = bron.termfrequenties[schoon];
+    n += uitIndex !== undefined ? uitIndex : alles.split(schoon).length - 1;
   }
   return n;
 }
@@ -268,10 +322,50 @@ export async function bouwVoorstel(
     verificatie_status: string;
     tekst: string | null;
     onderwerp: string | null;
+    verwoordbaar: string | null;
+    verwoorde_zin: string | null;
+    verwoordbaar_reden: string | null;
+    fenomeen: string | null;
+    subject: string | null;
+    richting: string | null;
+    grondtal: string | null;
+    periode: string | null;
+    horizon: string | null;
+    exactheid: string | null;
+    uitdrukking: string | null;
+    schaalwoord: string | null;
+    semantiek_herkomst: string | null;
+    scope_waarschuwing: string | null;
   }>(
     c,
-    `select soort, waarde_numeriek, eenheid, verificatie_status, tekst, onderwerp
-       from intel.uitspraken where gebeurtenis_id = $1 order by id`,
+    /* DE SEMANTISCHE VELDEN HOREN HIER THUIS.
+       ----------------------------------------------------------------
+       Dit was de kern van het probleem. Release 3.0.2 bouwde een
+       semantische laag die van een uitspraak een getrouwe Nederlandse
+       zin maakt, en legde die zin op in `verwoorde_zin` met een oordeel
+       in `verwoordbaar`. Deze query las die kolommen niet, en controle 5
+       hieronder leidde zijn eigen oordeel af uit `soort` alleen — wat
+       nooit kon slagen.
+
+       Gevolg, gemeten in productie: twee uitspraken met een complete,
+       geverifieerde Nederlandse zin in de database, en nul feitelijke
+       paginavoorstellen. De zin lag er en niemand kwam hem halen. */
+    `select soort, waarde_numeriek, eenheid, verificatie_status, tekst, onderwerp,
+            verwoordbaar, verwoorde_zin, verwoordbaar_reden,
+            fenomeen, subject, richting, grondtal, periode, horizon,
+            exactheid, uitdrukking, schaalwoord, semantiek_herkomst, scope_waarschuwing
+       from intel.uitspraken u
+      where u.gebeurtenis_id = $1
+        /* GERECTIFICEERDE UITSPRAKEN ZIJN GESCHIEDENIS.
+           De correctieketen is append-only: de oude waarde blijft
+           staan. Zou het voorstel die ook lezen, dan blijft de
+           gecorrigeerde gebeurtenis afgewezen op de fout die net
+           gerepareerd is. De oude rij blijft bestaan en navraagbaar;
+           hij draagt alleen geen voorstel meer. */
+        and not exists (
+          select 1 from intel.uitspraak_correcties k
+           where k.vervangen_id = u.id and k.soort = 'rectificatie')
+      order by u.id`,
     [k.gebeurtenis_id],
   );
 
@@ -328,16 +422,19 @@ export async function bouwVoorstel(
   for (const u of uitspraken) {
     if (u.waarde_numeriek === null || !u.tekst) continue;
     const bewaard = Number(u.waarde_numeriek);
-    const schaalInBron = /\b(duizend|miljoen|miljard|mln\.?|mld\.?)\b/i.exec(u.tekst);
-    if (!schaalInBron) continue;
-    const woord = schaalInBron[1]!.toLowerCase().replace(/\.$/, "");
-    const factor = woord === "duizend" ? 1e3 : woord.startsWith("mln") || woord === "miljoen" ? 1e6 : 1e9;
-    /* De bewaarde waarde hoort de schaal al te bevatten. Is hij kleiner
-       dan de factor, dan is het schaalwoord onderweg verdwenen. */
-    if (bewaard < factor) {
+    /* HET SCHAALWOORD NAAST HET GETAL, NIET ERGENS IN DE ZIN.
+       De eerste versie zocht 'miljard' overal in de brontekst. Dat
+       vlagt ook een percentage in een zin die verder over miljarden
+       gaat — 'de netbeheerders investeren €200 miljard; het nettarief
+       stijgt 8%' zou de 8 afkeuren. vindSchaalverlies() eist dat het
+       schaalwoord direct naast DIT getal staat, en leest daarvoor
+       alleen tekst en waarde: niet de velden die de ontleder zelf
+       heeft geschreven. */
+    const verlies = vindSchaalverlies(u.tekst, bewaard);
+    if (verlies) {
       onrijmbaar.push(
-        `bewaard ${bewaard}${u.eenheid ?? ""} terwijl de brontekst '${woord}' zegt: ` +
-          `"${u.tekst.slice(0, 110)}"`,
+        `bewaard ${bewaard}${u.eenheid ?? ""} terwijl de brontekst '${verlies.schaalwoord}' ` +
+          `direct naast dat getal zet: "${verlies.vindplaats}"`,
       );
     }
   }
@@ -580,95 +677,152 @@ export async function bouwVoorstel(
   })();
 
   /* ---------- CONTROLE 5: verwoordbaarheid ----------
-     KAN DIT FEIT OP EEN PAGINA WORDEN GEZET ZONDER TE CITEREN EN ZONDER
-     EEN KAAL GETAL TE BEWEREN?
+     LEEST HET GEZAGHEBBENDE OORDEEL, leidt er geen tweede af.
 
-     Dit is de controle die de laatste zelfbedachte zin tegenhield. De
-     eerste versie van deze module schreef voor kandidaat 19:
+     De vorige versie bepaalde hier zelf of een feit te verwoorden was,
+     op grond van `soort` ('cijfer', 'prijs'). Dat kon per definitie niet
+     slagen, en het negeerde de semantische laag die daar nu juist voor
+     is. Twee oordelen over dezelfde vraag lopen altijd uiteen; er hoort
+     er één te zijn, en dat is `intel.uitspraken.verwoordbaar`.
 
-       "Per 2026-04-03 meldt Netbeheer Nederland: 8%, 60%."
-
-     8% van wat? De bronzin weet het ("Ook voor bedrijven aangesloten bij
-     TenneT geldt een stijging van 20%"), maar de BEWAARDE uitspraak
-     draagt alleen soort, eenheid en onderwerp. En die bronzin mag niet
-     mee: netbeheer-nederland-nieuws heeft mag_citeren=false en
-     citaat_limiet_tekens=0.
-
-     Dus: of het feit is te verwoorden uit eigen gestructureerde velden,
-     of het is dat niet en dan hoort er geen zin te worden verzonnen.
-     Par. 13 schrijft dat laatste expliciet voor: liever NEEDS_RESEARCH
-     dan een gefabriceerde alinea. */
-  const magCiteren = bronnen.length > 0 && bronMagCiteren;
+     Een uitspraak telt hier mee als hij VERWOORDBAAR is EN een
+     opgeslagen zin heeft. Die twee samen zijn door migratie 0025 aan
+     elkaar vastgelegd, dus het een zonder het ander kan niet bestaan —
+     de controle vraagt het toch, want een poort die op een constraint
+     vertrouwt zonder hem te toetsen is een aanname. */
+  const verwoordbareUitspraken = uitspraken.filter(
+    (u) => u.verwoordbaar === "VERWOORDBAAR" && (u.verwoorde_zin ?? "").trim().length > 0,
+  );
   const verwoordbaarheid: Controle = (() => {
-    const bewijs = [
-      `mag_citeren van de bron: ${bronMagCiteren}`,
-      ...harde.map(
-        (u) =>
-          `${leesbaarBedrag(Number(u.waarde_numeriek), u.eenheid)} — soort '${u.soort}', ` +
-          `onderwerp '${u.onderwerp ?? "onbekend"}'; bronzin ${u.tekst ? "aanwezig" : "ONTBREEKT"}`,
-      ),
-    ];
-    if (harde.length === 0) {
-      return { naam: "verwoordbaarheid", oordeel: "FAIL", reden: "er is geen feit om te verwoorden", bewijs };
+    const bewijs = uitspraken.map(
+      (u) =>
+        /* Zonder opgeslagen uitdrukking het getal LEESBAAR tonen, niet
+           kaal. '3000000000' is voor een reviewer geen bedrag, en het
+           is precies de vorm waarin de schaal eerder is zoekgeraakt. */
+        `${u.uitdrukking ?? (u.waarde_numeriek === null ? "?" : leesbaarBedrag(Number(u.waarde_numeriek), u.eenheid))} — ` +
+        `${u.verwoordbaar ?? "nog niet beoordeeld"}` +
+        `${u.fenomeen ? ` (fenomeen '${u.fenomeen}')` : ""}`,
+    );
+    if (uitspraken.length === 0) {
+      return { naam: "verwoordbaarheid", oordeel: "FAIL", reden: "er is geen uitspraak om te verwoorden", bewijs };
     }
-    /* ELK GETAL HEEFT EEN ONDERWERP NODIG, OOK EEN BEDRAG.
-       De eerste versie van deze controle liet bedragen door omdat
-       'EUR 457.488' zelf al een volledige uitspraak lijkt. Dat is het
-       niet. In productie leverde dat deze voorgestelde alinea op:
-
-         "Per 2025-11-24 is vastgelegd: 200000000000 euro, 125000000 euro."
-
-       De waarden waren inmiddels correct geschaald, en de zin was nog
-       steeds onbruikbaar: 200 miljard WAARVOOR? De bronzin zegt het
-       ("Tot 2040 investeren de netbeheerders meer dan EUR 200 miljard in
-       het elektriciteitsnet"), de bewaarde uitspraak niet.
-
-       `onderwerp` draagt een clustersleutel ('netcongestie'), niet een
-       omschrijving van de grootheid. Er is dus GEEN veld dat zegt wat
-       het getal meet. Deze controle zoekt dat veld, vindt het niet, en
-       weigert — en zodra een toekomstige migratie zo'n omschrijving
-       toevoegt, gaat hij vanzelf over. */
-    const metOmschrijving = harde.filter((u) => {
-      /* Een grootheid is pas benoemd als er iets staat dat géén
-         clustersleutel is. `onderwerp` is dat wel, dus die telt niet. */
-      const beschrijft = (u.soort ?? "").trim();
-      return beschrijft !== "" && beschrijft !== "cijfer" && beschrijft !== "prijs";
-    });
-    const zonderOmschrijving = harde.length - metOmschrijving.length;
-
-    if (zonderOmschrijving > 0 && !magCiteren) {
+    const nogNietBeoordeeld = uitspraken.filter((u) => u.verwoordbaar === null).length;
+    if (verwoordbareUitspraken.length === 0) {
+      /* De redenen van de semantische poort overnemen in plaats van een
+         eigen formulering: die poort heeft gemeten waarom het niet kan. */
+      const redenen = [
+        ...new Set(
+          uitspraken
+            .filter((u) => u.verwoordbaar !== null && u.verwoordbaar !== "VERWOORDBAAR")
+            .map((u) => `${u.verwoordbaar}: ${(u.verwoordbaar_reden ?? "").slice(0, 150)}`),
+        ),
+      ];
       return {
         naam: "verwoordbaarheid",
         oordeel: "FAIL",
         reden:
-          `${zonderOmschrijving} van de ${harde.length} feiten is een getal zonder benoemde ` +
-          `grootheid: soort '${harde[0]?.soort}' en onderwerp '${harde[0]?.onderwerp ?? "?"}' ` +
-          `zeggen niet WAT er gemeten is. Dat staat alleen in de bronzin, en deze bron staat ` +
-          `citeren niet toe (mag_citeren=false). Een zin verzinnen zou een bewering toevoegen ` +
-          `die de bron niet doet; een mens moet de formulering maken.`,
+          nogNietBeoordeeld === uitspraken.length
+            ? /* GEEN ONUITVOERBAAR ADVIES.
+                 Hier stond "draai 'npm run semantiek'". Dat klopte niet:
+                 de backfill WAS gedraaid, en deze uitspraken kregen
+                 geen oordeel omdat er geen leesbare uitdrukking in zit —
+                 alle 19 zijn datumuitspraken zonder getal. Een reviewer
+                 die dat commando draait ziet niets veranderen en weet
+                 nog steeds niet waarom. Het echte onderscheid staat
+                 hieronder. */
+              `geen van de ${uitspraken.length} uitspraak(en) heeft een semantisch oordeel. ` +
+              (uitspraken.every((u) => u.waarde_numeriek === null)
+                ? `Geen ervan draagt een getal, dus de semantische laag — die numerieke ` +
+                  `uitdrukkingen leest — kan er geen grootheid uit halen. Dit vraagt onderzoek ` +
+                  `(NEEDS_RESEARCH), geen herberekening.`
+                : `Draai de semantiekbackfill; is die al gedraaid, dan kon er uit de brontekst ` +
+                  `geen uitdrukking gelezen worden.`)
+            : `geen van de ${uitspraken.length} uitspraak(en) is te verwoorden. ` +
+              redenen.slice(0, 2).join(" | "),
         bewijs,
       };
     }
     return {
       naam: "verwoordbaarheid",
       oordeel: "PASS",
-      reden: `alle ${harde.length} feiten hebben een benoemde grootheid`,
+      reden:
+        `${verwoordbareUitspraken.length} van ${uitspraken.length} uitspraak(en) is verwoordbaar, ` +
+        `met een opgeslagen zin uit de semantische laag`,
       bewijs,
     };
   })();
 
-  const controles = [bronControle, actualiteit, duplicatie, seo, verwoordbaarheid];
+  /* ---------- HERROUTEREN IN PLAATS VAN AFWIJZEN ----------
+     Een verwoordbaar feit op de verkeerde pagina is geen afgekeurd
+     feit; het is een feit dat ergens anders hoort. Vond de SEO-controle
+     een tegenspraak met het voorbehoud van de pagina, dan zoeken we een
+     pagina die dit feit WEL mag dragen — en bouwen het voorstel daar.
+
+     De controle op de oorspronkelijke pagina blijft FAIL en zichtbaar:
+     de reviewer hoort te zien dat de besluitmotor eerst elders mikte en
+     waarom dat niet kon. */
+  let herrouteerdVan: { pad: string; reden: string } | null = null;
+  let effectieveBron = bron;
+  let effectiefPad = k.doel_pad;
+  let effectieveSeo = seo;
+  let effectieveNoemt = noemt;
+
+  if (seo.oordeel === "FAIL" && verwoordbareUitspraken.length > 0 && k.doel_pad) {
+    const fenomeen = verwoordbareUitspraken[0]!.fenomeen;
+    /* ZOEK OP HET FENOMEEN, NIET OP DE CLUSTERTERM.
+       `termen` komt uit herkenOnderwerpen() op de gebeurtenistitel en
+       levert de term zoals die in de TITEL stond: 'nettarieven'. Een
+       pagina die vijf keer 'nettarief' schrijft, telt daarop nul. Het
+       fenomeen van de uitspraak is wat het feit identificeert en staat
+       in het enkelvoud, dus dat zijn de zoekwoorden: de sleutel zelf
+       plus de woorden uit zijn zinsvorm. */
+    const fenomeenTermen = fenomeen
+      ? [fenomeen, ...(FENOMEEN_ZINSVORM[fenomeen] ?? "").split(/\s+/).filter((w) => w.length >= 5)]
+      : [];
+    const zoektermen = [...new Set([...fenomeenTermen, ...termen])];
+    const alternatief = beterePagina(kennis, k.doel_pad, fenomeen, zoektermen, onderwerpSleutels);
+    if (alternatief) {
+      const altBron = alsPaginaBron(alternatief);
+      const altNoemt = noemtHoeVaak(altBron, zoektermen);
+      if (altNoemt > 0 && !wijstFeitWeg(altBron.voorbehoud, fenomeen)) {
+        herrouteerdVan = {
+          pad: k.doel_pad,
+          reden:
+            `de besluitmotor koos ${k.doel_pad} op grond van het onderwerpcluster, maar die pagina ` +
+            `wijst dit soort feit weg in zijn eigen voorbehoud. ${alternatief.route} noemt het ` +
+            `onderwerp ${altNoemt} keer en wijst niets weg, dus daar hoort dit feit.`,
+        };
+        effectieveBron = altBron;
+        effectiefPad = alternatief.route;
+        effectieveNoemt = altNoemt;
+        effectieveSeo = {
+          naam: "seo",
+          oordeel: "PASS",
+          reden:
+            `herrouteerd naar ${alternatief.route}: die pagina noemt het onderwerp ${altNoemt} keer ` +
+            `en wijst dit soort feit niet weg`,
+          bewijs: [
+            `oorspronkelijke doelpagina ${k.doel_pad}: ${seo.reden}`,
+            `nieuwe doelpagina ${alternatief.route}: ${altNoemt} vermeldingen, geen tegenstrijdig voorbehoud`,
+          ],
+        };
+      }
+    }
+  }
+
+  const controles = [bronControle, actualiteit, duplicatie, effectieveSeo, verwoordbaarheid];
+
 
   /* ---------- Het eindoordeel ----------
      De linkkansen worden hier al bepaald, want ze kunnen het oordeel
      veranderen: een onverwoordbaar feit met linkkansen levert nog steeds
      een beoordeelbaar voorstel op. */
-  const alGelinkt = new Set(bron?.interneLinks ?? []);
+  const alGelinkt = new Set(effectieveBron?.interneLinks ?? []);
   const mijnOnderwerpen = new Set<string>(onderwerpSleutels);
   const aanbevolenInterneLinks = kennis.paginas
     .filter(
       (kp) =>
-        kp.route !== k.doel_pad &&
+        kp.route !== effectiefPad &&
         !alGelinkt.has(kp.route) &&
         kp.onderwerpen.some((o) => mijnOnderwerpen.has(o)),
     )
@@ -685,16 +839,68 @@ export async function bouwVoorstel(
   const waarden = harde
     .map((u) => leesbaarBedrag(Number(u.waarde_numeriek), u.eenheid))
     .filter((v, i, a) => a.indexOf(v) === i);
-  const sectieKop = bron?.sectiekoppen.find((kop) => /kost|tarief|geld|prijs/i.test(kop)) ?? null;
+  /* De doelsectie komt van de EFFECTIEVE pagina; na een herroutering is
+     dat een andere pagina met andere secties. */
+  const sectieKop =
+    effectieveBron?.sectiekoppen.find((kop) => /kost|tarief|geld|prijs|rendement|businesscase/i.test(kop)) ??
+    effectieveBron?.sectiekoppen[0] ??
+    null;
   const feitVerwoordbaar =
     controles.find((x) => x.naam === "verwoordbaarheid")?.oordeel === "PASS";
+
+  /* DE WIJZIGINGSSOORT EN DE CTA ALS WAARDEN, NIET INLINE.
+     Ze stonden als expressie in het geretourneerde object. Dat werkte,
+     tot de inhoudshash ze ook moest dekken: dan heb je ze twee keer
+     nodig, en een tweede exemplaar is een plek waar ze uiteen kunnen
+     lopen. Dan keurt iemand een CTA goed en publiceert het platform een
+     andere. Eén waarde, twee gebruikers. */
+  const wijzigingSoort =
+    eindoordeel !== "KLAAR_VOOR_REVIEW"
+      ? "geen"
+      : feitVerwoordbaar
+        ? sectieKop
+          ? "alinea_toevoegen"
+          : "sectie_toevoegen"
+        : "interne_link";
+
+  const CTA_DOEL = "/contact";
+  /* De CTA volgt het ONDERWERP. Een congestievoorstel met een CTA over
+     tariefposities leest als een standaardregel en ondermijnt de
+     geloofwaardigheid van het voorstel. */
+  const ctaTekst = onderwerpSleutels.includes("netcongestie")
+    ? "Laat uw netbeperking en congestiepositie in kaart brengen"
+    : onderwerpSleutels.includes("bess") || onderwerpSleutels.includes("flexibiliteit")
+      ? "Laat de businesscase voor opslag en flexibiliteit doorrekenen"
+      : onderwerpSleutels.includes("subsidie")
+        ? "Laat toetsen welke regelingen op uw investering van toepassing zijn"
+        : onderwerpSleutels.includes("laadinfrastructuur")
+          ? "Laat uw laadbehoefte tegen de beschikbare aansluiting doorrekenen"
+          : "Laat uw transportvermogen en tariefpositie doorrekenen";
 
   /* DE VOORGESTELDE TEKST.
      Alleen een feitelijke alinea als het feit ECHT te verwoorden is uit
      eigen velden. Anders een linkvoorstel, dat niets beweert. */
+  /* ---------- DE VOORGESTELDE TEKST ----------
+     Uit de OPGESLAGEN zinnen van de semantische laag, niet uit een
+     eigen formulering. Die zinnen zijn door tien controles gegaan, zijn
+     opgebouwd uit ons eigen vocabulaire en dragen hun tijdgrens.
+
+     De vorige versie plakte hier zelf iets in elkaar ("Per <datum> is
+     vastgelegd: <waarden>"), en dat was precies het soort zin waar deze
+     hele release over gaat. */
+  const feiten = verwoordbareUitspraken.map((u) => ({
+    zin: (u.verwoorde_zin ?? "").trim(),
+    uitdrukking: u.uitdrukking,
+    fenomeen: u.fenomeen,
+    tijdgrens: u.horizon ?? u.periode,
+    exactheid: u.exactheid,
+    uitgever: bronnen[0]?.uitgever ?? null,
+    brondatum: bronnen[0]?.gepubliceerd_op?.slice(0, 10) ?? null,
+    bronUrl: bronnen[0]?.canonieke_url ?? null,
+  }));
+
   const nieuweTekst = feitVerwoordbaar
-    ? `Per ${k.gebeurd_op?.slice(0, 10) ?? "onbekende datum"} is vastgelegd: ${waarden.join(", ")} ` +
-      `(bron: ${bronnen[0]?.uitgever ?? "onbekend"}).`
+    ? feiten.map((f) => f.zin).join(" ")
     : aanbevolenInterneLinks.length > 0
       ? `Verwijs vanuit deze sectie naar ${aanbevolenInterneLinks
           .slice(0, 2)
@@ -706,6 +912,7 @@ export async function bouwVoorstel(
      een reviewer niet zien wat er verandert, en par. 8 eist juist dat
      hij dat ziet. */
   const huidigeTekst = (() => {
+    const bron = effectieveBron;
     if (!bron) return "";
     /* De tekst van de GEKOZEN sectie, uit het artefact. Niet de opening
        van de pagina: dat zou de reviewer de verkeerde vergelijking
@@ -717,7 +924,7 @@ export async function bouwVoorstel(
 
   const diff: string[] = [];
   if (eindoordeel === "KLAAR_VOOR_REVIEW" && nieuweTekst) {
-    diff.push(`--- ${k.doel_pad} (huidige tekst uit sitekennis ${kennis.websiteVersie.slice(0, 8)})`);
+    diff.push(`--- ${effectiefPad} (huidige tekst uit sitekennis ${kennis.websiteVersie.slice(0, 8)})`);
     diff.push(`+++ voorstel kandidaat ${k.kandidaat_id}`);
     diff.push(`@@ sectie: ${sectieKop ?? "(nieuwe sectie)"} @@`);
     for (const r of huidigeTekst.slice(0, 400).split(/(?<=\.)\s+/).filter(Boolean).slice(0, 3)) {
@@ -737,25 +944,18 @@ export async function bouwVoorstel(
     titel: k.titel,
     brondatum: k.gebeurd_op,
     bedrijfsrelevantie: k.bedrijfsrelevantie,
-    doelPad: k.doel_pad,
+    doelPad: effectiefPad,
     bestaandePagina: {
-      pad: k.doel_pad,
-      h1: bron?.h1 ?? bron?.titel ?? null,
+      pad: effectiefPad,
+      h1: effectieveBron?.h1 ?? effectieveBron?.titel ?? null,
       lead: null,
-      gepubliceerdVoorbehoud: voorbehoud,
-      secties: bron?.sectiekoppen ?? [],
-      noemtOnderwerp: noemt,
-      bestaatAlsBron: bron !== null,
+      gepubliceerdVoorbehoud: effectieveBron?.voorbehoud ?? null,
+      secties: effectieveBron?.sectiekoppen ?? [],
+      noemtOnderwerp: effectieveNoemt,
+      bestaatAlsBron: effectieveBron !== null,
     },
     wijziging: {
-      soort:
-        eindoordeel !== "KLAAR_VOOR_REVIEW"
-          ? "geen"
-          : feitVerwoordbaar
-            ? sectieKop
-              ? "alinea_toevoegen"
-              : "sectie_toevoegen"
-            : "interne_link",
+      soort: wijzigingSoort,
       doelSectie: sectieKop,
       huidigeTekst,
       nieuweTekst,
@@ -772,19 +972,8 @@ export async function bouwVoorstel(
       bronnen: bronnen.map((b) => ({ uitgever: b.uitgever, url: b.canonieke_url, op: b.gepubliceerd_op })),
     },
     cta: {
-      /* De CTA volgt het ONDERWERP. Een congestievoorstel met een CTA
-         over tariefposities leest als een standaardregel en ondermijnt
-         de geloofwaardigheid van het voorstel. */
-      tekst: onderwerpSleutels.includes("netcongestie")
-        ? "Laat uw netbeperking en congestiepositie in kaart brengen"
-        : onderwerpSleutels.includes("bess") || onderwerpSleutels.includes("flexibiliteit")
-          ? "Laat de businesscase voor opslag en flexibiliteit doorrekenen"
-          : onderwerpSleutels.includes("subsidie")
-            ? "Laat toetsen welke regelingen op uw investering van toepassing zijn"
-            : onderwerpSleutels.includes("laadinfrastructuur")
-              ? "Laat uw laadbehoefte tegen de beschikbare aansluiting doorrekenen"
-              : "Laat uw transportvermogen en tariefpositie doorrekenen",
-      doel: "/contact",
+      tekst: ctaTekst,
+      doel: CTA_DOEL,
       grondslag:
         "De CTA verwijst naar een eigen pagina en belooft een doorrekening, geen uitkomst. " +
         "Er wordt niemand benaderd: de bezoeker neemt zelf het initiatief.",
@@ -792,7 +981,256 @@ export async function bouwVoorstel(
     controles,
     eindoordeel,
     oordeelReden,
+    feiten,
+    zakelijkeRelevantie: zakelijkeRelevantieVan(
+      onderwerpSleutels,
+      oplossingenVan(onderwerpSleutels),
+      feiten,
+    ),
+    seoRelevantie:
+      effectieveNoemt > 0
+        ? `De pagina bezit deze zoekintentie al: hij noemt het onderwerp ${effectieveNoemt} keer en is de ` +
+          `canonieke pagina van cluster '${k.cluster_sleutel}'. Een feit toevoegen versterkt een ` +
+          `bestaande pagina in plaats van een concurrerende URL te maken.`
+        : `De pagina noemt het onderwerp niet; een toevoeging zou de bestaande zoekintentie ` +
+          `verwateren in plaats van versterken.`,
+    reviewerNotities: reviewerNotitiesVan(k, feiten, effectieveBron, aanbevolenInterneLinks.length),
+    risicoklasse:
+      k.risico_klasse === "hoog" ? "hoog" : feiten.length === 0 ? "midden" : (k.risico_klasse as "laag" | "midden"),
+    herrouteerdVan,
+    inhoudsHash: inhoudsHashVan({
+      doelPad: effectiefPad,
+      doelSectie: sectieKop,
+      nieuweTekst,
+      feiten: feiten.map((f) => f.zin),
+      links: aanbevolenInterneLinks.map((l) => l.route),
+      ctaTekst,
+      ctaDoel: CTA_DOEL,
+      wijzigingSoort,
+    }),
   };
+}
+
+/**
+ * Zoekt een pagina die dit feit WEL mag dragen.
+ *
+ * Voorwaarden, in deze orde:
+ *   1. de pagina noemt de termen van het fenomeen echt (niet nul);
+ *   2. de pagina wijst dit soort feit niet weg in zijn eigen voorbehoud;
+ *   3. de pagina is gepubliceerd — dat is in het artefact al afgedwongen.
+ *
+ * Gemeten voorbeeld: een nettariefdaling werd toegewezen aan
+ * /kennis/transportvermogen-versus-aansluitwaarde, een pagina die in zijn
+ * voorbehoud zegt dat tarieven op het tarievenblad van de netbeheerder
+ * staan. /kennis/businesscase-batterij noemt 'nettarief' vijf keer en
+ * wijst niets weg — daar hoort het feit, en daar is het ook commercieel
+ * relevant omdat een batterijbusinesscase op tarieven draait.
+ */
+function beterePagina(
+  kennis: SitekennisBestand,
+  huidigPad: string | null,
+  fenomeen: string | null,
+  termen: readonly string[],
+  onderwerpSleutels: readonly string[],
+): KennisPagina | null {
+  if (termen.length === 0) return null;
+  const zoek = termen.filter((t) => t.length >= 4).map((t) => t.toLowerCase());
+  if (zoek.length === 0) return null;
+
+  const gewogen = kennis.paginas
+    .filter((p) => p.route !== huidigPad)
+    .map((p) => {
+      /* Dezelfde teller als de SEO-meting. Liepen die uiteen, dan koos
+         de zoeker een pagina die de meter daarna op nul zette en werd
+         er niets geherrouteerd — precies wat er gebeurde. */
+      return { p, n: noemtHoeVaak(alsPaginaBron(p), zoek) };
+    })
+    .filter((x) => x.n > 0)
+    /* Een pagina die dit soort feit wegwijst is geen alternatief. */
+    .filter((x) => !wijstFeitWeg(x.p.voorbehoud, fenomeen))
+    .sort((a, b) => {
+      /* Vermeldingen eerst: een pagina die het woord vaker gebruikt gaat
+         er inhoudelijk vaker over.
+
+         Daarna de CLUSTEROVERLAP, en dat is geen cosmetica. Gemeten op
+         kandidaat 17: drie pagina's noemden 'nettarief' of
+         'nettarieven' precies één keer. Zonder deze afweging won
+         /kennis/batterij-dimensioneren op alfabet — een pagina over
+         MAATVOERING, die het woord één keer langs de zijlijn noemt.
+         /kennis/peak-shaving en /kennis/businesscase-batterij staan
+         beide in cluster 'netbeheer' en gaan er wel over. Gelijke
+         vermeldingen zeggen dus niets; het cluster wel.
+
+         Route als laatste, zodat de uitkomst reproduceerbaar is en niet
+         van de scanvolgorde afhangt. */
+      if (b.n !== a.n) return b.n - a.n;
+      const overlap = (x: { p: KennisPagina }) =>
+        x.p.onderwerpen.filter((o) => onderwerpSleutels.includes(o)).length;
+      const d = overlap(b) - overlap(a);
+      if (d !== 0) return d;
+      return a.p.route.localeCompare(b.p.route);
+    });
+
+  return gewogen[0]?.p ?? null;
+}
+
+/** Wijst het voorbehoud van een pagina dit soort feit weg? */
+function wijstFeitWeg(voorbehoud: string | null, fenomeen: string | null): boolean {
+  if (!voorbehoud) return false;
+  const geld = /tarievenblad|wat ze kosten|in rekening brengt/i.test(voorbehoud);
+  const regeling = /niet de stand van een regeling|stand van de regelingen/i.test(voorbehoud);
+  const tariefachtig = fenomeen === "nettarief" || fenomeen === "elektriciteitsprijs";
+  const regelingachtig = fenomeen === "subsidiebudget" || fenomeen === "subsidiebedrag";
+  return (geld && tariefachtig) || (regeling && regelingachtig);
+}
+
+/** Welke Vibe-oplossingsfamilies een onderwerp raakt. Interpretatie. */
+function oplossingenVan(onderwerpen: readonly string[]): string[] {
+  const kaart: Record<string, readonly string[]> = {
+    bess: ["batterijopslag", "energiemanagement"],
+    ems: ["energiemanagement"],
+    netcongestie: ["batterijopslag", "netaansluiting", "energiemanagement"],
+    flexibiliteit: ["batterijopslag", "energiemanagement"],
+    laadinfrastructuur: ["laadinfrastructuur"],
+    "zonne-energie": ["zonnestroom"],
+    netbeheer: ["netaansluiting"],
+    vastgoedverduurzaming: ["energielabel", "zonnestroom"],
+    rendement: ["batterijopslag"],
+  };
+  return [...new Set(onderwerpen.flatMap((o) => kaart[o] ?? []))];
+}
+
+/**
+ * Waarom dit een Nederlandse ondernemer aangaat.
+ *
+ * Par. 11 en 12 vragen een zakelijke uitleg, en par. 12 verbiedt
+ * tegelijk het forceren van een oplossing in een onderwerp dat er niet
+ * om vraagt. Daarom: de uitleg komt uit het FENOMEEN en de herkende
+ * oplossingsfamilies, en als die er niet zijn blijft hij leeg in plaats
+ * van een verkooppraatje te worden.
+ */
+function zakelijkeRelevantieVan(
+  onderwerpen: readonly string[],
+  oplossingen: readonly string[],
+  feiten: readonly { fenomeen: string | null; tijdgrens: string | null }[],
+): string {
+  const fenomenen = [...new Set(feiten.map((f) => f.fenomeen).filter(Boolean))] as string[];
+  const WAAROM: Record<string, string> = {
+    nettarief:
+      "Een tariefwijziging raakt de vaste kosten van elke grootverbruikaansluiting. Wie zijn " +
+      "profiel kan verschuiven, kan die stijging deels opvangen.",
+    netinvestering:
+      "De omvang van het investeringsprogramma bepaalt hoe lang netverzwaring duurt. Zolang die " +
+      "rij niet korter wordt, is een eigen oplossing achter de meter de snellere route.",
+    netcapaciteit:
+      "Beschikbare transportcapaciteit bepaalt of uitbreiden kan zonder te wachten op de netbeheerder.",
+    subsidiebudget:
+      "Een budget met een termijn bepaalt of een investering dit jaar nog in aanmerking komt.",
+    subsidiebedrag: "Het bedrag per aanvraag bepaalt of een businesscase rond komt.",
+    batterijcapaciteit:
+      "De energie-inhoud bepaalt hoeveel uur een piek te dekken is; dat is een andere maat dan vermogen.",
+    opgesteldvermogen: "Het opgestelde vermogen bepaalt de piek die een aansluiting moet kunnen verwerken.",
+    aansluitvermogen: "Het aansluitvermogen is de harde grens waarbinnen elk plan moet passen.",
+    transportvermogen:
+      "Gecontracteerd transportvermogen kost jaarlijks geld, ook ongebruikt; de juiste maat kiezen scheelt direct.",
+    wachttijd: "Een wachttijd op een aansluiting bepaalt of een uitbreiding dit jaar haalbaar is.",
+    doorlooptijd: "De doorlooptijd bepaalt of netverzwaring een reëel alternatief is of een papieren optie.",
+    elektriciteitsprijs: "De prijsontwikkeling bepaalt de waarde van verschuiven en opslaan.",
+  };
+  const delen = fenomenen.map((f) => WAAROM[f]).filter(Boolean) as string[];
+  if (delen.length === 0) {
+    return "Geen zakelijke uitleg vastgesteld: het fenomeen achter dit feit staat niet in de lijst met onderwerpen waarvoor wij een gevolg kunnen benoemen.";
+  }
+  const tijd = feiten.map((f) => f.tijdgrens).filter(Boolean)[0];
+  return (
+    delen.join(" ") +
+    (oplossingen.length > 0
+      ? ` Raakt onze oplossingen: ${oplossingen.join(", ")}.`
+      : "") +
+    (tijd ? ` Let op de termijn: ${tijd}.` : "")
+  );
+}
+
+/** Wat de reviewer moet weten voordat hij beslist. */
+function reviewerNotitiesVan(
+  k: { risico_klasse: string; doel_pad: string | null; cluster_sleutel: string | null },
+  feiten: readonly { exactheid: string | null; tijdgrens: string | null; bronUrl: string | null }[],
+  bron: PaginaBron | null,
+  linkKansen: number,
+): string[] {
+  const n: string[] = [];
+  if (k.risico_klasse === "hoog") {
+    n.push(
+      "Risicoklasse HOOG: dit onderwerp raakt juridische, subsidie-, rendements- of " +
+        "netcapaciteitsuitspraken. Een mens moet dit altijd doorvoeren; het platform schrijft niets.",
+    );
+  }
+  for (const f of feiten) {
+    if (f.exactheid && f.exactheid !== "exact") {
+      n.push(
+        `De waarde is '${f.exactheid}', niet exact. De onzekerheid staat in de voorgestelde zin ` +
+          `('circa', 'meer dan', 'tussen'); houd die formulering intact bij het doorvoeren.`,
+      );
+    }
+    if (!f.tijdgrens) {
+      n.push("Dit feit draagt geen termijn; controleer of de pagina elders een periode noemt.");
+    }
+  }
+  if (bron?.voorbehoud) {
+    n.push(
+      `De doelpagina publiceert zelf een voorbehoud over zijn scope. Lees dat na: ` +
+        `"${bron.voorbehoud.slice(0, 160)}"`,
+    );
+  }
+  if (linkKansen > 0) {
+    n.push(`Er zijn ook ${linkKansen} interne link(s) voorgesteld; die staan los van het feit.`);
+  }
+  n.push("Goedkeuren publiceert niets: het levert een patch op die een mens doorvoert.");
+  return n;
+}
+
+/**
+ * De inhoudshash waaraan een goedkeuring zich bindt.
+ *
+ * Par. 15: een goedkeuring hoort aan EXACT deze inhoud vast te zitten.
+ * Verandert de tekst, de doelsectie, een feit of een voorgestelde link,
+ * dan verandert de hash en is de goedkeuring niet meer geldig. Zonder
+ * die binding zou een herziene tekst meeliften op een oude goedkeuring.
+ */
+export function inhoudsHashVan(inhoud: {
+  doelPad: string | null;
+  doelSectie: string | null;
+  nieuweTekst: string;
+  feiten: readonly string[];
+  links: readonly string[];
+  /** De CTA hoort erbij: ook die komt op de pagina te staan. */
+  ctaTekst: string | null;
+  ctaDoel: string | null;
+  /** De soort wijziging: alinea toevoegen is iets anders dan vervangen. */
+  wijzigingSoort: string;
+}): string {
+  /* WAT ER IN DE HASH ZIT, EN WAAROM PRECIES DIT.
+     Alles wat bepaalt wat er op de pagina terechtkomt, en niets anders.
+     De onderbouwing, de controles en de tijdstempels zitten er NIET in:
+     die veranderen bij elke ronde zonder dat de wijziging anders wordt,
+     en dan zou elke goedkeuring binnen een dag vervallen — waarmee de
+     binding onbruikbaar en dus genegeerd wordt.
+
+     De CTA zit er WEL in. Die stond er eerst niet, en dat was fout: de
+     CTA is gepubliceerde tekst met een belofte erin. Een voorstel
+     goedkeuren en dan de CTA veranderen zou een andere belofte
+     publiceren dan de beoordelaar heeft gezien. */
+  const canoniek = JSON.stringify({
+    doelPad: inhoud.doelPad ?? "",
+    doelSectie: inhoud.doelSectie ?? "",
+    wijzigingSoort: inhoud.wijzigingSoort,
+    nieuweTekst: inhoud.nieuweTekst.trim(),
+    ctaTekst: (inhoud.ctaTekst ?? "").trim(),
+    ctaDoel: (inhoud.ctaDoel ?? "").trim(),
+    feiten: [...inhoud.feiten].map((f) => f.trim()).sort(),
+    links: [...inhoud.links].sort(),
+  });
+  return createHash("sha256").update(canoniek, "utf8").digest("hex");
 }
 
 /**
@@ -910,8 +1348,9 @@ export async function bewaarVoorstel(
        (organisatie_id, kandidaat_id, gebeurtenis_id, doel_pad, doel_h1, doel_voorbehoud,
         doel_noemt_onderwerp, wijziging_soort, doel_sectie, nieuwe_tekst, diff,
         cta_tekst, cta_doel, cta_grondslag, eindoordeel, oordeel_reden,
-        huidige_tekst, interne_links)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+        huidige_tekst, interne_links, inhouds_hash, publicatie_status)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,
+             case when $15 = 'KLAAR_VOOR_REVIEW' then 'READY_FOR_REVIEW' else 'DRAFT' end)
      on conflict (organisatie_id, kandidaat_id) do update set
        doel_pad             = excluded.doel_pad,
        doel_h1              = excluded.doel_h1,
@@ -927,7 +1366,48 @@ export async function bewaarVoorstel(
        cta_doel             = excluded.cta_doel,
        cta_grondslag        = excluded.cta_grondslag,
        eindoordeel          = excluded.eindoordeel,
-       oordeel_reden        = excluded.oordeel_reden
+       oordeel_reden        = excluded.oordeel_reden,
+       inhouds_hash         = excluded.inhouds_hash,
+       /* DE PUBLICATIESTATUS VOLGT DE INHOUD (par. 15).
+          Dit is de kern van de goedkeuringsbinding. De voorstelmotor
+          draait elke ronde opnieuw over dezelfde kandidaat en werkt deze
+          rij bij. Verandert de inhoudshash, dan is dit een ANDER
+          voorstel dan wat er is goedgekeurd, en valt het terug naar
+          beoordeling. De oude goedkeuring blijft als geschiedenis in
+          intel.voorstel_beoordelingen staan; alleen zijn geldigheid
+          vervalt.
+
+          Verandert de hash NIET, dan blijft de status staan: een
+          ongewijzigd voorstel hoeft niet opnieuw langs een mens, ook
+          niet als de ronde opnieuw draait. */
+       publicatie_status =
+         case
+           when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
+             then case when excluded.eindoordeel = 'KLAAR_VOOR_REVIEW'
+                       then 'READY_FOR_REVIEW' else 'DRAFT' end
+           else intel.inhoud_voorstellen.publicatie_status
+         end,
+       /* Vervalt de binding, dan vervalt ook de gebonden hash — anders
+          zou de constraint een goedkeuring laten bestaan die niemand
+          meer kan navertellen. */
+       goedgekeurd_hash =
+         case
+           when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
+             then null
+           else intel.inhoud_voorstellen.goedgekeurd_hash
+         end,
+       beoordeeld_door =
+         case
+           when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
+             then null
+           else intel.inhoud_voorstellen.beoordeeld_door
+         end,
+       beoordeeld_op =
+         case
+           when intel.inhoud_voorstellen.inhouds_hash is distinct from excluded.inhouds_hash
+             then null
+           else intel.inhoud_voorstellen.beoordeeld_op
+         end
      returning id::text, (xmax = 0) as was_nieuw`,
     [
       organisatieId,
@@ -948,6 +1428,7 @@ export async function bewaarVoorstel(
       v.oordeelReden,
       v.wijziging.huidigeTekst || null,
       v.aanbevolenInterneLinks.map((l) => `${l.route} — ${l.reden}`),
+      v.inhoudsHash,
     ],
   );
   if (!r) throw new Error("voorstel kon niet worden weggeschreven");

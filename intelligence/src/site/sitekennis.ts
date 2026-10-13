@@ -49,7 +49,8 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { normaliseerTekst } from "../kern/tekst.ts";
-import { herkenOnderwerpen } from "../pijplijn/onderwerpen.ts";
+import { herkenOnderwerpen, vocabulaireTermen } from "../pijplijn/onderwerpen.ts";
+import { FENOMEEN_ZINSVORM } from "../pijplijn/verwoord.ts";
 import { scanSite, type GescandePagina } from "./paginascan.ts";
 
 /**
@@ -61,7 +62,7 @@ import { scanSite, type GescandePagina } from "./paginascan.ts";
  * nette weigering. Precies daarvoor is dit nummer er: een artefact met
  * een ander schema wordt geweigerd en niet half gelezen.
  */
-export const SITEKENNIS_SCHEMA = 2;
+export const SITEKENNIS_SCHEMA = 3;
 
 /** Waar het artefact staat, relatief aan de intelligence-map. */
 export const SITEKENNIS_PAD = "data/sitekennis.json";
@@ -106,6 +107,22 @@ export type KennisPagina = {
   /** Interne links die deze pagina uitgaand heeft. */
   readonly interneLinks: readonly string[];
   /** Herkende onderwerpen, sterkste eerst. */
+  /**
+   * Hoe vaak de pagina elk vocabulairewoord noemt, geteld over de
+   * VOLLEDIGE paginatekst.
+   *
+   * Waarom dit bestaat: `tekst` en `secties[].tekst` zijn afgekapt om
+   * het artefact klein te houden. De voorstelmotor telde termen in die
+   * afgekapte tekst en concludeerde dat /kennis/businesscase-batterij
+   * het woord 'nettarief' nul keer noemt, terwijl de pagina er vijf
+   * vermeldingen van heeft — alleen voorbij de knipgrens. Daarop werd
+   * een feit afgewezen dat gewoon op een andere pagina hoorde.
+   *
+   * Alleen vocabulairewoorden, want dat zijn de enige woorden waarop de
+   * motor ooit zoekt; alleen waarden boven nul, zodat het artefact niet
+   * volloopt met nullen.
+   */
+  readonly termfrequenties: Readonly<Record<string, number>>;
   readonly onderwerpen: readonly string[];
   /** Welke Vibe-oplossingsfamilies dit raakt. Interpretatie, geen bronfeit. */
   readonly oplossingen: readonly string[];
@@ -138,6 +155,30 @@ const OPLOSSING_PER_ONDERWERP: Readonly<Record<string, readonly string[]>> = {
   rendement: ["batterijopslag"],
   vastgoedverduurzaming: ["energielabel", "zonnestroom"],
 };
+
+/**
+ * De woorden waarop de sitekennis frequenties bijhoudt: het
+ * onderwerpvocabulaire plus de fenomeensleutels van de uitspraaklaag.
+ * Enkelvoud dekt het meervoud, want er wordt op deelstring geteld
+ * ('nettarief' telt ook in 'nettarieven'); korte woorden blijven eruit
+ * omdat die in willekeurige samenstellingen opduiken.
+ */
+const INDEXTERMEN: readonly string[] = [
+  ...new Set([...vocabulaireTermen(), ...Object.keys(FENOMEEN_ZINSVORM)].map((t) => t.toLowerCase())),
+]
+  .filter((t) => t.length >= 4)
+  .sort();
+
+/** Telt de indextermen in de volledige paginatekst. Nullen blijven weg. */
+export function telIndextermen(volledigeTekst: string): Record<string, number> {
+  const alles = volledigeTekst.toLowerCase();
+  const uit: Record<string, number> = {};
+  for (const t of INDEXTERMEN) {
+    const n = alles.split(t).length - 1;
+    if (n > 0) uit[t] = n;
+  }
+  return uit;
+}
 
 const TEKST_LIMIET = 1500;
 const SECTIE_LIMIET = 500;
@@ -288,6 +329,7 @@ export async function bouwSitekennis(repoWortel: string): Promise<SitekennisBest
           : ruweSecties.slice(0, 12).map((x) => ({ kop: x.kop, tekst: "" })),
       sectiekoppen: koppen.slice(0, 15),
       interneLinks: links,
+      termfrequenties: telIndextermen(`${p.titel ?? ""} ${h1 ?? ""} ${volledig}`),
       onderwerpen,
       oplossingen,
     });

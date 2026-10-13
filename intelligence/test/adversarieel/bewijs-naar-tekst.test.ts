@@ -46,7 +46,13 @@ function poortVoor(zin: string, over: Partial<Parameters<typeof verwoordbaarheid
   const u = leesUitdrukkingen(zin)[0];
   assert.ok(u, `geen uitdrukking in: ${zin}`);
   const s = leidSemantiekAf(zin, u);
-  const inv = { semantiek: s, uitdrukking: u, uitgever: "Netbeheer Nederland", brondatum: "2026-01-01" };
+  const inv = {
+    semantiek: s,
+    uitdrukking: u,
+    uitgever: "Netbeheer Nederland",
+    brondatum: "2026-01-01",
+    bronzin: zin,
+  };
   return {
     semantiek: s,
     uitdrukking: u,
@@ -311,9 +317,9 @@ describe("bewijs naar tekst — adversarieel", () => {
     const gevallen: readonly [string, RegExp][] = [
       [
         "Tot 2040 investeren de netbeheerders meer dan €200 miljard in het elektriciteitsnet.",
-        /investeren de netbeheerders.*meer dan EUR 200 miljard/,
+        /investeren de netbeheerders tot 2040 meer dan \u20ac200 miljard in het elektriciteitsnet/,
       ],
-      ["Het subsidiebudget bedraagt €125 miljoen per jaar.", /subsidiebudget per jaar EUR 125 miljoen/],
+      ["Het subsidiebudget bedraagt €125 miljoen per jaar.", /subsidiebudget per jaar \u20ac125 miljoen/],
       ["De batterij heeft een capaciteit van 232 kWh.", /batterijcapaciteit 232 kWh/],
       ["De tarieven voor grootverbruikers dalen met 4,5%.", /daalt het nettarief voor grootverbruikers met 4,5%/],
     ];
@@ -329,10 +335,108 @@ describe("bewijs naar tekst — adversarieel", () => {
     }
   });
 
+  test("par. 8: de aanvaardbare vorm komt eruit, de onaanvaardbare niet", () => {
+    /* De opdracht schrijft in par. 8 twee zinnen voor: de ene mag, de
+       andere niet. Dit is geen stijlvoorkeur maar het verschil tussen
+       een bewering met herkomst en tijdgrens, en een losse claim.
+
+       aanvaardbaar:   "Volgens Netbeheer Nederland investeren de
+                        netbeheerders tot 2040 meer dan EUR200 miljard
+                        in het elektriciteitsnet."
+       onaanvaardbaar: "De netbeheerders investeren EUR200 miljard." */
+    const p = poortVoor(
+      "Tot 2040 investeren de netbeheerders meer dan \u20ac200 miljard in het elektriciteitsnet.",
+    );
+    assert.equal(p.uitslag.uitslag, "VERWOORDBAAR", p.uitslag.reden);
+    const zin = p.zin()!;
+    assert.equal(
+      zin.replace(/ \(gepubliceerd[^)]*\)\./, "."),
+      "Volgens Netbeheer Nederland investeren de netbeheerders tot 2040 meer dan " +
+        "\u20ac200 miljard in het elektriciteitsnet.",
+    );
+    /* En de onaanvaardbare vorm is geen uitkomst: de herkomst en de
+       tijdgrens zitten er niet los van te slopen. */
+    assert.notEqual(zin, "De netbeheerders investeren \u20ac200 miljard.");
+    assert.match(zin, /^Volgens /);
+    assert.match(zin, /tot 2040/);
+  });
+
+  test("een bedrag zonder subject levert geen zin", () => {
+    /* Gemeten op uitspraak 55: 'investeert in 2025 EUR3 miljard in het
+       elektriciteitsnet' — een zin zonder iemand die investeert. Wie er
+       investeert is de kern van het feit, niet de vorm. */
+    const p = poortVoor("In 2025 is er ruim \u20ac3 miljard geinvesteerd in het elektriciteitsnet.");
+    if (p.uitslag.uitslag === "VERWOORDBAAR") {
+      const zin = p.zin()!;
+      assert.doesNotMatch(zin, /Volgens [^,]+ investeer\w* (tot|in|per|circa|meer|maximaal|\u20ac)/);
+    } else {
+      assert.equal(p.zin(), null);
+    }
+  });
+
+  test("een milieu-investering wordt geen investering in het elektriciteitsnet", () => {
+    /* Gemeten op uitspraak 56: de bron zei '\u20ac 3 miljard aan
+       MILIEU-investeringen met belastingvoordeel MIA/Vamil' en de zin
+       maakte daar 'investeren bedrijven in 2025 \u20ac3 miljard in het
+       elektriciteitsnet' van. Een bestemming die in geen enkele bron
+       staat. */
+    const p = poortVoor(
+      "Bedrijven maakten in 2025 voor ruim \u20ac 3 miljard aan milieu-investeringen gebruik van " +
+        "het belastingvoordeel van de Milieu-investeringsaftrek (MIA).",
+    );
+    const zin = p.zin();
+    if (zin) assert.doesNotMatch(zin, /elektriciteitsnet/);
+  });
+
+  test("een herkaderd bedrag levert geen zin", () => {
+    /* Gemeten op gebeurtenis 40. Dit is het gevaarlijkste geval dat de
+       verwoorder tot nu toe produceerde: alle velden gevuld, de zin
+       grammaticaal correct, en de bewering onwaar. De EUR33 miljard is
+       een VERMINDERING van de opgave; de zin maakte er een investering
+       van. */
+    const bron =
+      "Uit het IBO blijkt dat gerichte keuzes van de overheid de investeringsopgave van " +
+      "\u20ac235 miljard tot 2040 met circa \u20ac33 miljard kunnen beperken.";
+    const p = poortVoor(bron);
+    assert.equal(p.uitslag.uitslag, "CONTEXT_ONVOLLEDIG", `kreeg ${p.uitslag.uitslag}`);
+    assert.equal(p.zin(), null);
+
+    /* Deze zin valt om op het FENOMEEN: een 'investeringsopgave' is
+       geen netinvestering en staat niet in het vocabulaire. Dat is een
+       tweede, onafhankelijke reden — en de juiste.
+
+       De herkaderingstoets zelf is daarmee nog niet geraakt, dus hier
+       een zin waarin het fenomeen wel wordt herkend en de herkadering
+       het enige bezwaar is. */
+    const q = poortVoor(
+      "De netbeheerders kunnen de investering in het elektriciteitsnet tot 2040 met circa " +
+        "\u20ac33 miljard beperken.",
+    );
+    assert.equal(q.uitslag.uitslag, "CONTEXT_ONVOLLEDIG", `kreeg ${q.uitslag.uitslag}`);
+    assert.match(q.uitslag.reden, /herkadert/);
+    assert.equal(q.zin(), null);
+  });
+
+  test("een gewone investeringszin blijft wel verwoordbaar", () => {
+    /* De herkaderingstoets mag niet alles afkeuren wat een bedrag
+       noemt: zonder herkaderend werkwoord hoort de zin er gewoon te
+       komen. Anders is de poort geen poort maar een muur. */
+    const p = poortVoor(
+      "Tot 2040 investeren de netbeheerders meer dan \u20ac200 miljard in het elektriciteitsnet.",
+    );
+    assert.equal(p.uitslag.uitslag, "VERWOORDBAAR", p.uitslag.reden);
+    assert.ok(p.zin());
+  });
+
   test("de onzekerheid staat in de zin, niet in een voetnoot", () => {
     for (const [bron, verwacht] of [
       ["Het opgestelde vermogen bedraagt ongeveer 2,5 MW.", /circa 2,5 MW/],
-      ["De netbeheerders investeren meer dan €200 miljard in het net.", /meer dan EUR 200 miljard/],
+      /* Mét tijdgrens: par. 8 eist die voor een netinvestering, en de
+         poort weigert de zin terecht zonder. */
+      [
+        "Tot 2040 investeren de netbeheerders meer dan \u20ac200 miljard in het net.",
+        /meer dan \u20ac200 miljard/,
+      ],
     ] as const) {
       const p = poortVoor(bron);
       assert.equal(p.uitslag.uitslag, "VERWOORDBAAR", p.uitslag.reden);

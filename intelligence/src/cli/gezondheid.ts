@@ -22,6 +22,7 @@ import { maakPool, metOrganisatie, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
 import { meetGezondheid, zwaarste, type Niveau } from "../ops/gezondheid.ts";
 import { meldRonde } from "../ops/melden.ts";
+import { bouwErnstRapport, DOMEIN_LABEL, ERNST_ORDE } from "../ops/ernst.ts";
 
 laadEnvBestand();
 
@@ -36,6 +37,10 @@ try {
     meetGezondheid(c, organisatieId, { backupMap: join(APP_WORTEL, "backups") }),
   );
   const totaal = zwaarste(signalen);
+  /* Par. 18: dezelfde metingen, maar gegroepeerd per domein en vertaald
+     naar ernst. `totaal` blijft het signaalniveau (voor de exitcode die
+     cron al gebruikt); `ernst` is wat een mens leest. */
+  const ernst = bouwErnstRapport(signalen);
 
   if (heeft("json")) {
     console.log(
@@ -43,6 +48,16 @@ try {
         {
           gemeten_op: new Date().toISOString(),
           eindoordeel: totaal,
+          ernst: ernst.totaal,
+          samenvatting: ernst.samenvatting,
+          aanvaarde_beperkingen: ernst.aanvaardTotaal,
+          domeinen: ernst.domeinen.map((d) => ({
+            domein: d.domein,
+            ernst: d.ernst,
+            reden: d.reden,
+            metingen: d.signalen.length,
+            aanvaard: d.aanvaard,
+          })),
           signalen,
         },
         null,
@@ -65,6 +80,41 @@ try {
       if (s.advies) console.log(`  ${" ".repeat(12)} -> ${s.advies}`);
     }
     if (heeft("kort") && teTonen.length === 0) console.log("\n  alles OK");
+
+    /* ---- par. 18: ernst per domein ----
+       Dit staat BOVEN de signaaltelling omdat het de vraag beantwoordt
+       die een mens stelt: moet ik nu iets doen, en waaraan. De losse
+       signalen blijven eronder staan als onderbouwing. */
+    console.log("");
+    console.log("=".repeat(92));
+    console.log("ERNST PER DOMEIN");
+    for (const d of ernst.domeinen) {
+      console.log(
+        `  ${d.ernst.padEnd(16)} ${DOMEIN_LABEL[d.domein].padEnd(16)} ${d.reden.slice(0, 54)}`,
+      );
+      if (d.aanvaard > 0) {
+        console.log(`  ${" ".repeat(16)} ${" ".repeat(16)} (${d.aanvaard} aanvaarde beperking(en))`);
+      }
+    }
+    console.log("");
+    console.log(`ERNST TOTAAL = ${ernst.totaal}`);
+    console.log(`  ${ernst.samenvatting}`);
+    if (ernst.aanvaardTotaal > 0) {
+      console.log("");
+      console.log(`AANVAARDE BEPERKINGEN (${ernst.aanvaardTotaal}) — zichtbaar, maar ze verhogen de`);
+      console.log("totaalernst niet. Een bron die ons bewust buitensluit maakt het platform");
+      console.log("niet ongezond zolang de rest werkt.");
+      for (const s of signalen.filter((x) => x.aanvaard === true)) {
+        console.log(`  ${s.groep}/${s.naam}: ${s.meting.slice(0, 70)}`);
+      }
+    }
+    if (ernst.nietGemeten.length > 0) {
+      console.log("");
+      console.log(`NIET GEMETEN (${ernst.nietGemeten.length}) — dit is geen 'in orde'.`);
+      for (const s of ernst.nietGemeten) {
+        console.log(`  ${s.groep}/${s.naam}: ${s.meting.slice(0, 70)}`);
+      }
+    }
 
     const tel = (n: Niveau) => signalen.filter((s) => s.niveau === n).length;
     console.log("");

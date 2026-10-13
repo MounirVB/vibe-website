@@ -66,6 +66,8 @@ export type Semantiek = {
   readonly richting: Richting | null;
   readonly grondtal: string | null;
   readonly periode: string | null;
+  /** De tijdgrens: 'tot 2040', 'vanaf 2026', '2027-2030'. */
+  readonly horizon: string | null;
   readonly geoBereik: string | null;
   readonly voorwaarden: readonly string[];
   readonly vergelijkingsbasis: string | null;
@@ -76,6 +78,22 @@ export type Semantiek = {
    * geformuleerd.
    */
   readonly scopeWaarschuwing: string | null;
+  /**
+   * Een werkwoord in de bronzin dat de ROL van het bedrag verandert.
+   *
+   * Gemeten op gebeurtenis 40: "gerichte keuzes van de overheid kunnen
+   * de investeringsopgave van EUR235 miljard tot 2040 met circa EUR33
+   * miljard BEPERKEN". Er werd van gemaakt: 'de overheid investeert tot
+   * 2040 circa EUR33 miljard'. Maar die EUR33 miljard is een
+   * VERMINDERING, geen investering, en de EUR235 miljard is een opgave
+   * die de overheid niet zelf doet. Het getal staat er, het fenomeen
+   * staat er, en de zin is toch onwaar.
+   *
+   * Zo'n herkadering is met een woordenlijst niet op te lossen — wat de
+   * rol van het bedrag dan WEL is, weet alleen de bron. Daarom is dit
+   * een signaal aan de poort en geen veld om op te vertrouwen.
+   */
+  readonly herkadering: string | null;
   /** Welke trefwoorden tot welke sleutel leidden. Navraagbaar. */
   readonly grondslag: readonly string[];
 };
@@ -99,15 +117,46 @@ export type Semantiek = {
    Daarom: geen linkergrens waar het woord een achtervoegsel kan zijn,
    \w* voor vervoegingen, en ruimere vensters. */
 const FENOMEEN_PATRONEN: readonly { sleutel: string; patroon: RegExp; eenheden?: readonly string[] }[] = [
-  { sleutel: "nettarief", patroon: /(net|transport)tarie(f|ven)|tarievenblad|netkosten|\btarie(f|ven)\b/i },
+  {
+    sleutel: "nettarief",
+    patroon: /(net|transport)tarie(f|ven)|tarievenblad|netkosten|\btarie(f|ven)\b/i,
+    /* Geld, of een procentuele verandering daarvan. Een tarief in kWh
+       bestaat niet. */
+    eenheden: ["EUR", "EUR/MWh", "ct/kWh", "%"],
+  },
   {
     sleutel: "netinvestering",
-    /* Venster ruim genoeg voor 'investeren de netbeheerders meer dan
-       EUR 200 miljard in het elektriciteitsnet' — dat is 55 tekens. */
-    patroon: /investeer\w*|investering\w*|investeren[^.]{0,90}?(elektriciteitsnet|net\b|infrastructuur)|(elektriciteitsnet|infrastructuur)[^.]{0,60}?investe/i,
+    /* HET MOET OVER HET NET GAAN, niet over investeren in het algemeen.
+       De eerste versie had `investeer\w*|investering\w*` als losse
+       alternatieven en matchte daarmee ELKE zin met het woord
+       investering. Gemeten gevolg: '€ 3 miljard aan
+       MILIEU-investeringen met belastingvoordeel MIA/Vamil' kreeg
+       fenomeen 'netinvestering', en de zinsvorm daarvan maakte er een
+       investering in het elektriciteitsnet van. Een verzonnen
+       bestemming, precies wat par. 8 verbiedt.
+
+       Dus: het woord investeren MOET samen met het net, de
+       netbeheerder of de energie-infrastructuur voorkomen. Het venster
+       is ruim genoeg voor 'investeren de netbeheerders meer dan €200
+       miljard in het elektriciteitsnet' (55 tekens) en kijkt beide
+       kanten op, want de bron zet ze in willekeurige volgorde. */
+    patroon:
+      /investe\w*[^.]{0,90}?(elektriciteitsnet|stroomnet|hoogspanningsnet|netbeheerder\w*|elektriciteitsinfrastructuur|energie-?infrastructuur|investeringsopgave|netverzwaring)|(elektriciteitsnet|stroomnet|hoogspanningsnet|netbeheerder\w*|elektriciteitsinfrastructuur|energie-?infrastructuur|investeringsopgave|netverzwaring)[^.]{0,90}?investe/i,
+    /* Een investeringsopgave is een bedrag. Een netinvestering in kWh
+       bestaat niet. */
+    eenheden: ["EUR", "EUR/MWh", "ct/kWh"],
   },
-  { sleutel: "subsidiebudget", patroon: /budget\w*|subsidieplafond|subsidiepot|regelingsbudget/i },
-  { sleutel: "subsidiebedrag", patroon: /subsidiebedrag|subsidiebijdrage|tegemoetkoming/i },
+  {
+    sleutel: "subsidiebudget",
+    patroon: /budget\w*|subsidieplafond|subsidiepot|regelingsbudget/i,
+    /* Een budget is geld; een budgetwijziging kan een percentage zijn. */
+    eenheden: ["EUR", "EUR/MWh", "ct/kWh", "%"],
+  },
+  {
+    sleutel: "subsidiebedrag",
+    patroon: /subsidiebedrag|subsidiebijdrage|tegemoetkoming/i,
+    eenheden: ["EUR", "EUR/MWh", "ct/kWh"],
+  },
   {
     sleutel: "batterijcapaciteit",
     patroon: /batterij\w*|accu\w*|energieopslag|opslagcapaciteit/i,
@@ -123,8 +172,25 @@ const FENOMEEN_PATRONEN: readonly { sleutel: string; patroon: RegExp; eenheden?:
     patroon: /aansluit\w*|aansluiting\w*/i,
     eenheden: ["kW", "MW", "kVA", "MVA"],
   },
-  { sleutel: "transportvermogen", patroon: /transportvermogen|gecontracteerd\w*\s+vermogen/i },
-  { sleutel: "netcapaciteit", patroon: /netcapaciteit|transportcapaciteit|netruimte|congestie\w*/i },
+  {
+    sleutel: "transportvermogen",
+    patroon: /transportvermogen|gecontracteerd\w*\s+vermogen/i,
+    /* VERMOGEN, GEEN ENERGIE — en dit was een gemeten gat (par. 23,
+       geval 4). Deze regel had geen eenhedenlijst, waardoor de
+       eenheidstoets in herkenFenomeen() hem oversloeg: 'De aansluiting
+       heeft een transportvermogen van 1.250 kWh' werd geaccepteerd en
+       verwoord als 'het gecontracteerde transportvermogen 1.250 kWh'.
+       Een contractwaarde in kWh bestaat niet, en een bron die kW en kWh
+       verwisselt hoort daarop te stuiten. */
+    eenheden: ["kW", "MW", "GW", "kVA", "MVA"],
+  },
+  {
+    sleutel: "netcapaciteit",
+    patroon: /netcapaciteit|transportcapaciteit|netruimte|congestie\w*/i,
+    /* Vermogen, of een aandeel: 'in 40% van de gebieden is geen ruimte'
+       is een geldige uitspraak over netcapaciteit. */
+    eenheden: ["kW", "MW", "GW", "kVA", "MVA", "%"],
+  },
   {
     sleutel: "energieverbruik",
     patroon: /verbruik\w*|afname\b|consumptie/i,
@@ -135,16 +201,32 @@ const FENOMEEN_PATRONEN: readonly { sleutel: string; patroon: RegExp; eenheden?:
     patroon: /productie\w*|opbrengst\w*|invoeding|teruglever\w*/i,
     eenheden: ["kWh", "MWh", "GWh"],
   },
-  { sleutel: "elektriciteitsprijs", patroon: /elektriciteitsprijs|stroomprijs|energieprijs|marktprijs/i },
-  { sleutel: "doorlooptijd", patroon: /doorlooptijd|looptijd|realisatietijd|duurt\b/i },
-  { sleutel: "wachttijd", patroon: /wachttijd|wachtlijst|wachtrij/i },
+  {
+    sleutel: "elektriciteitsprijs",
+    patroon: /elektriciteitsprijs|stroomprijs|energieprijs|marktprijs/i,
+    eenheden: ["EUR", "EUR/MWh", "ct/kWh", "%"],
+  },
+  {
+    sleutel: "doorlooptijd",
+    patroon: /doorlooptijd|looptijd|realisatietijd|duurt\b/i,
+    eenheden: ["jaar", "maand", "week", "dag"],
+  },
+  {
+    sleutel: "wachttijd",
+    patroon: /wachttijd|wachtlijst|wachtrij/i,
+    eenheden: ["jaar", "maand", "week", "dag"],
+  },
   /* TELFENOMENEN MOGEN GEEN VERMOGEN ZIJN.
      Gemeten: 'aanvragen' matchte een MW-waarde en leverde de zin
      "bedraagt het aantal aanvragen 6.739 MW" op. Een aantal is een
      stuks of een percentage, nooit een vermogen. */
   { sleutel: "aantal_aanvragen", patroon: /aanvra(ag|gen)\w*/i, eenheden: ["%", "stuks"] },
   { sleutel: "aantal_projecten", patroon: /project(en)?\b/i, eenheden: ["%", "stuks"] },
-  { sleutel: "opdrachtwaarde", patroon: /opdrachtwaarde|geschatte waarde|(opdracht|aanbesteding)[^.]{0,40}?(waarde|omvang)/i },
+  {
+    sleutel: "opdrachtwaarde",
+    patroon: /opdrachtwaarde|geschatte waarde|(opdracht|aanbesteding)[^.]{0,40}?(waarde|omvang)/i,
+    eenheden: ["EUR", "EUR/MWh", "ct/kWh"],
+  },
 ];
 
 const SUBJECT_PATRONEN: readonly { sleutel: string; patroon: RegExp }[] = [
@@ -264,6 +346,12 @@ function herkenRichting(zin: string): Richting | null {
    en die staat al in `exactheid`. Door 'meer dan' blind te matchen werd
    een begrensd bedrag als vergelijking geweigerd. Daarom moet er achter
    het vergelijkingswoord iets anders dan een getal staan. */
+/* Werkwoorden die zeggen dat het bedrag een VERMINDERING is en niet de
+   grootheid zelf. 'beperken', 'besparen', 'voorkomen': het getal meet
+   dan wat er niet gebeurt. */
+const HERKADERING =
+  /\b(beperk\w*|besparing\w*|bespaar\w*|verminder\w*|verlaag\w*|verlaging\w*|voorkom\w*|uitstell?\w*|schrapp?\w*|kort\w*en)\b/i;
+
 const VERGELIJKING =
   /\b(hoger|lager|sneller|langzamer)\s+dan\b|\b(meer|minder)\s+dan\s+(?![\d€]|EUR\b)|\bten opzichte van\b|\bvergeleken met\b|\bt\.o\.v\.?\b/i;
 
@@ -352,6 +440,7 @@ export function leidSemantiekAf(zin: string, u: Uitdrukking): Semantiek {
   if (g) grondslag.push(`grondtal via ${g.via}`);
 
   if (u.periode) grondslag.push(`periode '${u.periode}' uit de uitdrukking`);
+  if (u.horizon) grondslag.push(`tijdgrens '${u.horizon}' uit de zin`);
   if (u.schaalwoord) grondslag.push(`schaalwoord '${u.schaalwoord}' bewaard`);
   if (u.exactheid !== "exact") grondslag.push(`exactheid '${u.exactheid}'`);
 
@@ -361,14 +450,21 @@ export function leidSemantiekAf(zin: string, u: Uitdrukking): Semantiek {
     org && !herkenSubject(org[0]) ? org[0].slice(0, 60) : null;
   if (orgOnbekend) grondslag.push(`organisatie '${orgOnbekend}' staat niet in het subjectvocabulaire`);
 
+  /* Werkwoorden die een bedrag herkaderen: het getal is dan niet wat
+     er gebeurt maar wat er WORDT VOORKOMEN, bespaard of beperkt. */
+  const herkadering = HERKADERING.exec(zin)?.[0]?.toLowerCase() ?? null;
+  if (herkadering) grondslag.push(`de zin herkadert het bedrag met '${herkadering}'`);
+
   return {
     soort,
+    herkadering,
     scopeWaarschuwing: orgOnbekend,
     fenomeen: f?.sleutel ?? null,
     subject: s?.sleutel ?? null,
     richting,
     grondtal: g?.waarde ?? null,
     periode: u.periode,
+    horizon: u.horizon,
     geoBereik: null,
     voorwaarden: [],
     /* De basis van de vergelijking is niet uit het vocabulaire te halen
@@ -645,17 +741,88 @@ export function verwoordbaarheidspoort(inv: PoortInvoer): PoortUitslag {
   }
   voeg("brongebruik", true, `mag_citeren=${inv.magCiteren}, semantiek uit '${inv.semantiek.herkomst}'`);
 
-  /* 10. GEEN AANNAMES NODIG. */
-  const periodeNodig = inv.semantiek.soort === "bedrag" && inv.semantiek.fenomeen === "subsidiebudget";
-  if (periodeNodig && !inv.semantiek.periode) {
-    voeg("volledigheid", false, "een budget zonder periode is niet te plaatsen");
+  /* 10. TIJDGRENS WAAR DIE DE BETEKENIS DRAAGT.
+     ----------------------------------------------------------------
+     Par. 8 noemt dit geval met naam en toenaam. Onacceptabel:
+
+       "De netbeheerders investeren EUR 200 miljard."
+
+     Acceptabel:
+
+       "Volgens Netbeheer Nederland investeren de netbeheerders TOT 2040
+        meer dan EUR 200 miljard in het elektriciteitsnet."
+
+     Het verschil is geen nuance: een investeringsbedrag zonder horizon
+     leest als een jaarbedrag of als iets dat al gebeurd is, terwijl de
+     bron een opgave tot 2040 beschrijft. Een toekomstdoel is geen
+     voltooide investering.
+
+     Voor een BUDGET geldt hetzelfde met de herhaling: per jaar of in
+     totaal verandert het bedrag met een factor. */
+  const TIJDGEBONDEN_FENOMENEN = new Set([
+    "netinvestering",
+    "subsidiebudget",
+    "subsidiebedrag",
+    "opdrachtwaarde",
+  ]);
+  if (
+    inv.semantiek.fenomeen &&
+    TIJDGEBONDEN_FENOMENEN.has(inv.semantiek.fenomeen) &&
+    !inv.semantiek.periode &&
+    !inv.semantiek.horizon
+  ) {
+    voeg("tijdgrens", false, `fenomeen '${inv.semantiek.fenomeen}' zonder periode of horizon`);
     return {
       uitslag: "CONTEXT_ONVOLLEDIG",
-      reden: "een subsidiebudget zonder periode is niet te plaatsen: per jaar of in totaal?",
+      reden:
+        `'${inv.semantiek.fenomeen}' is een tijdgebonden grootheid en er is geen periode of ` +
+        `tijdgrens vastgesteld. ${inv.uitdrukking.uitdrukking} tot wanneer, of per welk jaar? ` +
+        `Zonder die grens leest een opgave als een jaarbedrag of als een voltooide investering, ` +
+        `en dat is een andere bewering dan de bron doet.`,
       controles,
     };
   }
-  voeg("volledigheid", true, "geen aanvullende aanname nodig");
+  voeg(
+    "tijdgrens",
+    true,
+    inv.semantiek.horizon
+      ? `tijdgrens '${inv.semantiek.horizon}'`
+      : inv.semantiek.periode
+        ? `periode '${inv.semantiek.periode}'`
+        : "geen tijdgrens nodig voor dit fenomeen",
+  );
+
+  /* 11. HERKADERT DE BRONZIN HET BEDRAG?
+     Gemeten op gebeurtenis 40. De bron: "gerichte keuzes van de
+     overheid kunnen de investeringsopgave van €235 miljard tot 2040 met
+     circa €33 miljard beperken." Daar kwam uit: "Volgens Netbeheer
+     Nederland investeert de overheid tot 2040 circa €33 miljard."
+
+     Alle velden waren gevuld en toch is de zin onwaar: die €33 miljard
+     is wat er NIET wordt geinvesteerd, en de €235 miljard is een opgave
+     die de overheid niet zelf uitvoert. Het fenomeen klopte, het
+     subject stond in de zin, de tijdgrens stond erbij — en het
+     resultaat was een verzonnen bewering.
+
+     Een richting lost dit niet op: 'daling' zou zeggen dat het bedrag
+     daalt, niet dat het bedrag EEN daling IS. Wat de rol van het getal
+     dan precies is, staat alleen in de bron en niet in onze velden.
+     Daarom weigert de poort hier, ook al ziet alles er volledig uit.
+     Par. 8: wie niet weet wat er gemeten is, hoort geen zin te
+     schrijven. */
+  if (inv.semantiek.herkadering && inv.semantiek.soort === "bedrag") {
+    voeg("herkadering", false, `de zin herkadert met '${inv.semantiek.herkadering}'`);
+    return {
+      uitslag: "CONTEXT_ONVOLLEDIG",
+      reden:
+        `de bronzin herkadert dit bedrag met '${inv.semantiek.herkadering}': ` +
+        `${inv.uitdrukking.uitdrukking} is dan mogelijk een vermindering of een voorkomen ` +
+        `bedrag en niet de grootheid zelf. Welke van de twee, staat niet in de vastgelegde ` +
+        `velden maar alleen in de bron, dus is er geen zin te maken die zeker klopt.`,
+      controles,
+    };
+  }
+  voeg("herkadering", true, "de zin herkadert het bedrag niet");
 
   /* 11. KOMT ER ECHT EEN ZIN UIT?
      De laatste controle is de uitkomst zelf. Wie dit overslaat, kan

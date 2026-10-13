@@ -21,6 +21,7 @@ import { eenRij, metOrganisatie, rijen, type Pool } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 import { bepaalWijziging, inhoudHash, kort, normaliseerTekst } from "../kern/tekst.ts";
 import { haalBron } from "../bronnen/haal.ts";
+import { classificeerStoring, type Storingssoort } from "../bronnen/storingssoort.ts";
 import { bronOpSleutel } from "../bronnen/register.ts";
 import type { Gezondheid, RuwItem } from "../bronnen/soorten.ts";
 import { onderzoekInjectie } from "./injectie.ts";
@@ -45,6 +46,11 @@ export type BronRij = {
   laatst_opgehaald_op: Date | null;
   opeenvolgende_fouten: number;
   gezondheid: Gezondheid;
+  robots_status: string | null;
+  tdm_status: string | null;
+  ophalen_opgeschort_tot: Date | null;
+  storingssoort: string | null;
+  storing_sinds: Date | null;
 };
 
 export type BronUitkomst = {
@@ -57,6 +63,7 @@ export type BronUitkomst = {
   readonly materieel: number;
   readonly injectieVerdacht: number;
   readonly gezondheid: Gezondheid;
+  readonly storingssoort: Storingssoort | null;
   readonly opmerking: string;
   readonly duurMs: number;
 };
@@ -75,6 +82,16 @@ export type VerzamelRapport = {
 
 function isToeAanOphalen(rij: BronRij, nu: Date, forceer: boolean): boolean {
   if (forceer) return true;
+  /* OPGESCHORT BLIJFT OPGESCHORT.
+     Een bron die ons buitensluit (403, of een robots.txt die niet te
+     lezen is) wordt niet elk interval opnieuw aangeklopt. Dat levert
+     niets op en het is onbehoorlijk tegenover de uitgever. Na het
+     opschortmoment valt hij automatisch terug in het normale ritme en
+     wordt er één nette poging gedaan — want een uitgever kan zijn
+     beleid wijzigen, en bij twee van onze bronnen bleek dat ook zo. */
+  if (rij.ophalen_opgeschort_tot && rij.ophalen_opgeschort_tot.getTime() > nu.getTime()) {
+    return false;
+  }
   if (!rij.laatst_opgehaald_op) return true;
   const verstrekenMinuten = (nu.getTime() - rij.laatst_opgehaald_op.getTime()) / 60_000;
   return verstrekenMinuten >= rij.ophaalinterval_minuten;
@@ -262,6 +279,9 @@ async function verzamelBron(
     return {
       sleutel: rij.sleutel,
       resultaat: "overgeslagen",
+      /* Het coderegister kent deze sleutel niet meer: de bron is
+         hernoemd of verwijderd. Dat is geen storing van de uitgever. */
+      storingssoort: "AFGESCHAFT",
       httpStatus: null,
       items: 0,
       nieuw: 0,
@@ -321,6 +341,34 @@ async function verzamelBron(
     rij.gezondheid,
   );
 
+  /* WAAROM levert deze bron niet. Zie bronnen/storingssoort.ts: de
+     taxonomie bepaalt of opnieuw proberen zin heeft, en bij welke
+     soorten we juist moeten STOPPEN met proberen. */
+  const storing = classificeerStoring({
+    resultaat: uitkomst.resultaat,
+    httpStatus,
+    foutSoort: uitkomst.resultaat === "fout" ? uitkomst.foutSoort : null,
+    herhaalbaar: uitkomst.resultaat === "fout" ? uitkomst.herhaalbaar : null,
+    aantalItems,
+    robotsStatus: rij.robots_status,
+    tdmStatus: rij.tdm_status,
+    overgeslagenReden: uitkomst.resultaat === "overgeslagen" ? uitkomst.reden : null,
+  });
+  /* `storing_sinds` meet hoe LANG al, dus bij een onveranderde soort
+     blijft de oorspronkelijke begintijd staan. Anders zou elke ronde
+     de storing weer 'net begonnen' maken en zie je nooit dat iets al
+     een week stuk is. */
+  const storingSinds =
+    storing.soort === null
+      ? null
+      : rij.storingssoort === storing.soort && rij.storing_sinds
+        ? rij.storing_sinds
+        : new Date();
+  const opgeschortTot =
+    storing.opschortenMinuten === null
+      ? null
+      : new Date(Date.now() + storing.opschortenMinuten * 60_000);
+
   // Ophaallog: altijd een rij, ook bij 304 en bij overgeslagen.
   await c.query(
     `insert into intel.bron_ophalingen
@@ -358,7 +406,12 @@ async function verzamelBron(
             laatste_etag          = coalesce($6, laatste_etag),
             laatste_last_modified = coalesce($7, laatste_last_modified),
             laatst_gewijzigd_op   = case when $8 > 0 then now() else laatst_gewijzigd_op end,
-            laatst_item_op        = case when $9 > 0 then now() else laatst_item_op end
+            laatst_item_op        = case when $9 > 0 then now() else laatst_item_op end,
+            storingssoort         = $10,
+            storing_sinds         = $11,
+            storing_detail        = $12,
+            ophalen_opgeschort_tot = $13,
+            hercontrole_interval_minuten = $14
       where id = $1`,
     [
       rij.id,
@@ -370,12 +423,18 @@ async function verzamelBron(
       uitkomst.resultaat === "ok" ? uitkomst.lastModified : null,
       gewijzigd,
       aantalItems,
+      storing.soort,
+      storingSinds,
+      storing.soort === null ? null : storing.detail.slice(0, 500),
+      opgeschortTot,
+      storing.opschortenMinuten,
     ],
   );
 
   return {
     sleutel: rij.sleutel,
     resultaat: uitkomst.resultaat,
+    storingssoort: storing.soort,
     httpStatus,
     items: aantalItems,
     nieuw,
@@ -400,7 +459,8 @@ export async function verzamel(
     rijen<BronRij>(
       c,
       `select id, sleutel, actief, ophaalinterval_minuten, laatste_etag,
-              laatste_last_modified, laatst_opgehaald_op, opeenvolgende_fouten, gezondheid
+              laatste_last_modified, laatst_opgehaald_op, opeenvolgende_fouten, gezondheid,
+              robots_status, tdm_status, ophalen_opgeschort_tot, storingssoort, storing_sinds
          from intel.bronnen
         where actief
           and ($1::text is null or sleutel = $1)
@@ -425,6 +485,9 @@ export async function verzamel(
       perBron.push({
         sleutel: rij.sleutel,
         resultaat: "fout",
+        /* Buiten de normale foutpaden om: onbekende oorzaak. Niet
+           verzinnen welke; de mildste soort met het detail in de log. */
+        storingssoort: "TIJDELIJKE_STORING",
         httpStatus: null,
         items: 0,
         nieuw: 0,

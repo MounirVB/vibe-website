@@ -51,6 +51,17 @@ export type Uitdrukking = {
   readonly bereikMax: number | null;
   /** 'per jaar', 'per maand', 'per kWh' — wat de noemer van het getal is. */
   readonly periode: string | null;
+  /**
+   * De tijdgrens van de uitspraak: 'tot 2040', 'vanaf 2026', '2027-2030'.
+   *
+   * APART VAN `periode`, want het zijn twee verschillende feiten. "EUR 125
+   * miljoen per jaar vanaf 2026" heeft een herhaling EN een horizon, en wie
+   * er één veld van maakt verliest de andere. Par. 8 noemt het weglaten van
+   * de tijdgrens expliciet onacceptabel: "De netbeheerders investeren EUR
+   * 200 miljard" is een andere bewering dan "tot 2040 ... meer dan EUR 200
+   * miljard".
+   */
+  readonly horizon: string | null;
   /** Tekenpositie in de zin, voor de vindplaats. */
   readonly positie: number;
 };
@@ -115,7 +126,11 @@ const PERIODE = /\bper\s+(jaar|maand|week|dag|kwartaal|aansluiting|kWh|MWh|wonin
    van de uitspraak, en zonder die aanduiding is een investeringsbedrag
    of een tarief niet te plaatsen. Deze stond er niet, waardoor 'Tot 2040
    investeren de netbeheerders ...' zijn horizon verloor. */
-const JAARPERIODE = /\b(tot(?:\s+en\s+met)?|in|vanaf|voor|per)\s+(20\d{2})\b/i;
+const JAARPERIODE = /\b(tot(?:\s+en\s+met)?|in|vanaf|voor|sinds|per)\s+(20\d{2})\b/i;
+
+/* 'in de periode 2027-2030', '2027 tot 2030', 'tussen 2026 en 2030'. */
+const PERIODEBEREIK =
+  /\b(?:in\s+de\s+periode\s+|tussen\s+)?(20\d{2})\s*(?:-|–|t\/m|tot(?:\s+en\s+met)?|en)\s*(20\d{2})\b/i;
 
 /**
  * Nederlands getal naar number.
@@ -161,13 +176,27 @@ function exactheidVan(voor: string, isBereik: boolean): Exactheid {
   return "exact";
 }
 
-function periodeVan(na: string, voor = ""): string | null {
+/** De herhaling: 'per jaar', 'per maand'. */
+function periodeVan(na: string): string | null {
   const m = PERIODE.exec(na);
-  if (m?.[1]) return `per ${m[1].toLowerCase()}`;
-  /* Een jaaraanduiding staat meestal VOOR het getal ('Tot 2040
-     investeren ... EUR 200 miljard') maar soms erachter ('de tarieven
-     stijgen in 2027 met 8%'). Beide kanten dus. */
-  const j = JAARPERIODE.exec(voor) ?? JAARPERIODE.exec(na);
+  return m?.[1] ? `per ${m[1].toLowerCase()}` : null;
+}
+
+/**
+ * De tijdgrens, uit de HELE zin.
+ *
+ * Eerst werd hier alleen een venster van 40 tekens vóór het getal
+ * bekeken. 'Tot 2040 investeren de netbeheerders meer dan EUR 200
+ * miljard' heeft 45 tekens tussen 'Tot 2040' en het bedrag, dus de
+ * horizon viel er net buiten en verdween. Een tijdgrens hoort nergens
+ * af te hangen van een vensterbreedte, dus: de hele zin.
+ */
+function horizonVan(zin: string): string | null {
+  const bereik = PERIODEBEREIK.exec(zin);
+  if (bereik?.[1] && bereik[2] && bereik[1] !== bereik[2]) {
+    return `${bereik[1]}-${bereik[2]}`;
+  }
+  const j = JAARPERIODE.exec(zin);
   if (j?.[1] && j[2]) {
     const woord = j[1].toLowerCase();
     return `${woord === "per" ? "in" : woord} ${j[2]}`;
@@ -223,7 +252,8 @@ export function leesUitdrukkingen(zin: string): Uitdrukking[] {
       exactheid: "bereik",
       bereikMin: a,
       bereikMax: b,
-      periode: periodeVan(na, voor),
+      periode: periodeVan(na),
+      horizon: horizonVan(zin),
       positie: m.index,
     });
   }
@@ -256,7 +286,8 @@ export function leesUitdrukkingen(zin: string): Uitdrukking[] {
       exactheid: exactheidVan(voor, false),
       bereikMin: null,
       bereikMax: null,
-      periode: periodeVan(na, voor),
+      periode: periodeVan(na),
+      horizon: horizonVan(zin),
       positie: m.index,
     });
   }
@@ -287,7 +318,8 @@ export function leesUitdrukkingen(zin: string): Uitdrukking[] {
       exactheid: exactheidVan(voor, false),
       bereikMin: null,
       bereikMax: null,
-      periode: periodeVan(na, voor),
+      periode: periodeVan(na),
+      horizon: horizonVan(zin),
       positie: m.index,
     });
   }

@@ -32,6 +32,7 @@ import { gcsConfigUitOmgeving, lijstGcs } from "./gcsopslag.ts";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { leesSitekennis } from "../site/sitekennis.ts";
+import { meldBestemming } from "./melden.ts";
 
 export type Niveau = "OK" | "LET OP" | "FOUT" | "NIET GEMETEN";
 
@@ -41,6 +42,17 @@ export type Signaal = {
   readonly niveau: Niveau;
   readonly meting: string;
   readonly advies?: string;
+  /**
+   * Een BEKENDE en aanvaarde beperking, geen nieuw probleem.
+   *
+   * Par. 18: een bron die ons bewust buitensluit mag het hele platform
+   * niet ongezond maken zolang de rest werkt. Zo'n signaal blijft
+   * zichtbaar — er wordt niets weggemoffeld — maar hij tilt de
+   * totaalernst niet verder dan DEGRADED. Zonder dit onderscheid staat
+   * het dashboard permanent op rood voor vijf bronnen die we zelf
+   * geparkeerd hebben, en dan kijkt niemand er meer naar.
+   */
+  readonly aanvaard?: boolean;
 };
 
 /* De drempels, met hun onderbouwing. */
@@ -80,6 +92,12 @@ export const DREMPELS = {
    * één plek kunt vinden, wordt bij de volgende wijziging vergeten.
    */
   plannerHartslagUren: 2,
+  /**
+   * De voorstelronde draait met de redactionele cyclus mee, niet per
+   * uur. Drie dagen is ruim: daarbinnen hoort elke werkweek minstens
+   * een ronde te vallen.
+   */
+  redactieVersheidUren: 72,
 } as const;
 
 function urenSinds(d: Date | string | null): number | null {
@@ -183,6 +201,69 @@ export async function meetGezondheid(
     niveau: (b?.ongezond ?? 0) === 0 ? "OK" : "LET OP",
     meting: `${b?.ongezond ?? 0} actieve bron(nen) niet HEALTHY`,
   });
+
+  /* ---------------- storingstaxonomie per bron ----------------
+     Niet 'hoeveel bronnen zijn stuk' maar WAAROM. De soort bepaalt wie
+     er iets moet doen, en of er iemand iets moet doen. Zie
+     bronnen/storingssoort.ts. */
+  const storingen = await rijen<{
+    soort: string;
+    aantal: number;
+    actieve: number;
+    sleutels: string;
+  }>(
+    c,
+    `select storingssoort as soort, count(*)::int as aantal,
+            count(*) filter (where actief)::int as actieve,
+            string_agg(sleutel, ', ' order by sleutel) as sleutels
+       from intel.bronnen
+      where organisatie_id = $1 and storingssoort is not null
+      group by storingssoort order by storingssoort`,
+    [organisatieId],
+  );
+  for (const st of storingen) {
+    /* EEN GEPARKEERDE BEPERKING IS AANVAARD, EEN ACTIEVE NIET.
+       Staat een beperkte bron uit, dan is de beperking vastgesteld en
+       hebben we hem geaccepteerd: dat is een bekende grens. Staat hij
+       nog ACTIEF en loopt hij tegen een beperking aan, dan is dat nieuw
+       en moet er iemand naar kijken. */
+    const beperking = st.soort === "TOEGANG_BEPERKT" || st.soort === "NIET_GEAUTORISEERD";
+    const aanvaard = beperking && st.actieve === 0;
+    voeg({
+      groep: "ingestie",
+      naam: `storingssoort ${st.soort}`,
+      niveau: st.soort === "LEEG_MAAR_GEZOND" ? "OK" : aanvaard ? "LET OP" : "FOUT",
+      meting: `${st.aantal} bron(nen), waarvan ${st.actieve} actief: ${st.sleutels.slice(0, 160)}`,
+      aanvaard,
+    });
+  }
+
+  /* TOESTEMMING NIET VASTGESTELD is geen storingssoort maar mag ook
+     nooit als gezond doorgaan: er is simpelweg niets nagetrokken. */
+  const onbepaald = await rijen<{ aantal: number; actieve: number; sleutels: string }>(
+    c,
+    `select count(*)::int as aantal,
+            count(*) filter (where actief)::int as actieve,
+            coalesce(string_agg(sleutel, ', ' order by sleutel), '') as sleutels
+       from intel.bronnen
+      where organisatie_id = $1
+        and storingssoort is null
+        and (robots_status = 'onbekend' or tdm_status = 'onbekend')`,
+    [organisatieId],
+  );
+  const ob = onbepaald[0];
+  if ((ob?.aantal ?? 0) > 0) {
+    voeg({
+      groep: "ingestie",
+      naam: "toestemming niet vastgesteld",
+      niveau: "NIET GEMETEN",
+      meting: `${ob!.aantal} bron(nen), waarvan ${ob!.actieve} actief: ${ob!.sleutels.slice(0, 160)}`,
+      advies: "robots.txt en TDM-voorbehoud natrekken; dit is geen verbod en geen storing",
+      /* Aanvaard zolang geen van die bronnen actief is: er wordt niets
+         opgehaald en er gaat dus ook niets mis. */
+      aanvaard: (ob?.actieve ?? 0) === 0,
+    });
+  }
 
   /* ---------------- wachtrij en worker ---------------- */
   const taken = await rijen<{
@@ -428,6 +509,134 @@ export async function meetGezondheid(
     "select sleutel, status, vertrouwd from intel.koppelingen where organisatie_id = $1 order by sleutel",
     [organisatieId],
   );
+  /* ---------------- redactie (par. 18) ----------------
+     Dit domein had GEEN ENKELE meting. Het ernstmodel liet dat zien met
+     'geen enkele meting voor dit domein', en dat was terecht: het
+     platform kon dus niet zeggen of de redactionele keten werkte. En
+     juist daar zit de kern van deze release — par. 10: uitspraken
+     verwoorden maar er geen paginavoorstel van kunnen maken.
+
+     De metingen hieronder zijn zo gekozen dat NUL nooit stilletjes
+     groen is. Nul voorstellen klaar voor review is een signaal, niet
+     een geslaagde ronde; nul verwoordbare uitspraken betekent dat de
+     keten tussen bewijs en tekst stilstaat. */
+  const redactie = await rijen<{
+    voorstellen: number;
+    klaar: number;
+    met_paginawijziging: number;
+    beoordeeld: number;
+    laatste: Date | null;
+  }>(
+    c,
+    `select count(*)::int as voorstellen,
+            count(*) filter (where eindoordeel = 'KLAAR_VOOR_REVIEW')::int as klaar,
+            count(*) filter (where wijziging_soort is not null
+                               and wijziging_soort <> 'geen')::int as met_paginawijziging,
+            count(*) filter (where beoordeeld_op is not null)::int as beoordeeld,
+            max(bijgewerkt_op) as laatste
+       from intel.inhoud_voorstellen where organisatie_id = $1`,
+    [organisatieId],
+  );
+  const red = redactie[0];
+  const redactieVersheid = urenSinds(red?.laatste ?? null);
+  voeg({
+    groep: "redactie",
+    naam: "voorstelronde versheid",
+    niveau:
+      redactieVersheid === null
+        ? "NIET GEMETEN"
+        : redactieVersheid <= DREMPELS.redactieVersheidUren
+          ? "OK"
+          : "LET OP",
+    meting:
+      redactieVersheid === null
+        ? "er is nog nooit een voorstelronde gedraaid"
+        : `laatste voorstelronde ${redactieVersheid.toFixed(1)} uur geleden (drempel ${DREMPELS.redactieVersheidUren})`,
+    advies: redactieVersheid === null ? "npm run voorstel" : undefined,
+  });
+  voeg({
+    groep: "redactie",
+    naam: "voorstellen klaar voor review",
+    /* NUL IS GEEN GEZONDE UITKOMST.
+       Par. 20 van 3.0.1: nul voorstellen mag nooit worden getoond alsof
+       alles in orde is. Zijn er wel voorstellen maar geen enkele klaar,
+       dan is dat LET OP: de keten loopt, maar er komt niets uit. */
+    niveau: (red?.voorstellen ?? 0) === 0 ? "NIET GEMETEN" : (red?.klaar ?? 0) > 0 ? "OK" : "LET OP",
+    meting:
+      (red?.voorstellen ?? 0) === 0
+        ? "geen enkel voorstel vastgelegd"
+        : `${red!.klaar} van ${red!.voorstellen} voorstel(len) klaar voor review, ${red!.beoordeeld} beoordeeld`,
+  });
+  voeg({
+    groep: "redactie",
+    naam: "voorstellen met een echte paginawijziging",
+    /* De kern van par. 10: een voorstel zonder wijzigingssoort is geen
+       paginarevisie. Staat dit op nul terwijl er wel voorstellen zijn,
+       dan kan het platform feiten wel beoordelen maar niet omzetten. */
+    niveau:
+      (red?.voorstellen ?? 0) === 0
+        ? "NIET GEMETEN"
+        : (red?.met_paginawijziging ?? 0) > 0
+          ? "OK"
+          : "FOUT",
+    meting:
+      (red?.voorstellen ?? 0) === 0
+        ? "geen enkel voorstel vastgelegd"
+        : `${red!.met_paginawijziging} van ${red!.voorstellen} voorstel(len) draagt een paginawijziging`,
+    advies:
+      (red?.voorstellen ?? 0) > 0 && (red?.met_paginawijziging ?? 0) === 0
+        ? "de keten verwoordt wel maar componeert niet; zie par. 10"
+        : undefined,
+  });
+
+  const verwoording = await rijen<{ totaal: number; verwoordbaar: number; met_zin: number }>(
+    c,
+    `select count(*)::int as totaal,
+            count(*) filter (where verwoordbaar = 'VERWOORDBAAR')::int as verwoordbaar,
+            count(*) filter (where verwoorde_zin is not null)::int as met_zin
+       from intel.uitspraken where organisatie_id = $1`,
+    [organisatieId],
+  );
+  const vw = verwoording[0];
+  voeg({
+    groep: "redactie",
+    naam: "verwoordbare uitspraken",
+    niveau: (vw?.totaal ?? 0) === 0 ? "NIET GEMETEN" : (vw?.met_zin ?? 0) > 0 ? "OK" : "FOUT",
+    meting:
+      (vw?.totaal ?? 0) === 0
+        ? "geen uitspraken"
+        : `${vw!.met_zin} uitspraak(en) met een opgeslagen zin, ${vw!.verwoordbaar} verwoordbaar van ${vw!.totaal}`,
+    advies:
+      (vw?.totaal ?? 0) > 0 && (vw?.met_zin ?? 0) === 0
+        ? "npm run semantiek; blijft dit nul, dan mist de semantische laag context"
+        : undefined,
+  });
+
+  /* ---------------- alerteringsbestemming (par. 19) ----------------
+     Of er uberhaupt iemand bereikt kan worden als er iets stuk is. Dit
+     hoort in de gezondheidsmeting zelf, want een monitor zonder
+     bestemming is een monitor die in een lege kamer schreeuwt.
+
+     Er wordt GEEN ontvanger verzonnen. Staat er geen bestemming
+     geconfigureerd, dan is dat de meting: NIET GEMETEN met de reden.
+     Een e-mailadres of webhook bedenken zou betekenen dat we
+     bedrijfsgegevens naar een partij sturen die niemand heeft
+     goedgekeurd. */
+  const bestemming = meldBestemming();
+  voeg({
+    groep: "koppelingen",
+    naam: "alerteringsbestemming",
+    niveau: bestemming.soort === "webhook" ? "OK" : "NIET GEMETEN",
+    meting:
+      bestemming.soort === "webhook"
+        ? `webhook geconfigureerd${bestemming.token ? " met token" : " zonder token"}`
+        : `NIET_GECONFIGUREERD — ${bestemming.reden}`,
+    advies:
+      bestemming.soort === "geen"
+        ? "zet INTEL_MELD_WEBHOOK op een door een mens goedgekeurde https-bestemming"
+        : undefined,
+  });
+
   const nietAangesloten = kop.filter((k) => k.status !== "geconfigureerd");
   voeg({
     groep: "koppelingen",

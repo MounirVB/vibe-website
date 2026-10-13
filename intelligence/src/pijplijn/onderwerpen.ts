@@ -231,6 +231,19 @@ function telTermen(tekst: string, termen: readonly string[]): string[] {
  * Leeg betekent: dit item gaat niet over een onderwerp dat wij volgen,
  * en dan stopt de verwerking hier.
  */
+/**
+ * Alle termen uit het vocabulaire, vlak en zonder dubbele.
+ *
+ * De sitekennis indexeert hierop: dit is precies de woordenlijst waarop
+ * de voorstelmotor pagina's zoekt, dus dit is ook de lijst waarvan de
+ * frequentie per pagina bekend moet zijn.
+ */
+export function vocabulaireTermen(): readonly string[] {
+  return [
+    ...new Set(VOCABULAIRE.flatMap((v) => [...v.sterk, ...v.zwak]).map((t) => t.toLowerCase())),
+  ].sort();
+}
+
 export function herkenOnderwerpen(titel: string, tekst: string): OnderwerpTreffer[] {
   const titelTekst = titel.toLowerCase();
   const bodyTekst = tekst.toLowerCase();

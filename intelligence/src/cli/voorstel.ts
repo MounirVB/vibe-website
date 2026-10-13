@@ -16,7 +16,13 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { maakPool, metOrganisatie, rijen, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
-import { bewaarVoorstel, bouwVoorstel, EINDOORDEEL_LABEL, type Voorstel } from "../inhoud/voorstel.ts";
+import {
+  bewaarVoorstel,
+  bouwVoorstel,
+  EINDOORDEEL_LABEL,
+  leesbaarBedrag,
+  type Voorstel,
+} from "../inhoud/voorstel.ts";
 import { leesSitekennis } from "../site/sitekennis.ts";
 
 const HIER = dirname(fileURLToPath(import.meta.url));
@@ -56,7 +62,11 @@ function toonVolledig(v: Voorstel): void {
   if (v.onderbouwing.uitspraken.length === 0) uit(`   (geen vastgelegde uitspraken)\n`);
   for (const u of v.onderbouwing.uitspraken) {
     uit(
-      `   ${u.waarde === null ? "ZONDER WAARDE" : `${Number(u.waarde)}${u.eenheid ?? ""}`}` +
+      /* leesbaarBedrag in plaats van het kale getal: het bewijspaneel
+         toonde '200000000000EUR' waar de bron '€200 miljard' zegt. Voor
+         een reviewer die dit moet nakijken is dat onleesbaar, en het is
+         precies het getal waarvan de schaal eerder is kwijtgeraakt. */
+      `   ${u.waarde === null ? "ZONDER WAARDE" : leesbaarBedrag(Number(u.waarde), u.eenheid)}` +
         ` — ${u.soort}, ${u.status}\n`,
     );
   }
