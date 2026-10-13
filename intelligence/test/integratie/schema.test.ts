@@ -433,4 +433,56 @@ describe("schema en beveiliging", () => {
     );
     assert.deepEqual(r.rows.map((x) => x.tabel), []);
   });
+
+  /* ------------------------------------------------------------------
+     0027 — de tijdgrens bindt NIEUWE rijen, maar niet de historie
+
+     Deze constraint stond eerst zonder `not valid` in 0027. Lokaal ging
+     dat door omdat de database geen schendende rij had; op productie brak
+     de migratieloper erop af en bleef de release half uitgerold staan.
+     De twee toetsen hieronder leggen beide helften vast, zodat de grendel
+     niet per ongeluk weer wordt aangedraaid.
+     ------------------------------------------------------------------ */
+  test("0027: een NIEUWE tijdgebonden uitspraak zonder tijd wordt alsnog geweigerd", async () => {
+    /* verwoordbaar_reden en verwoorde_zin staan hier met OPZET gevuld.
+       Postgres toetst CHECK-constraints op naam in alfabetische volgorde;
+       zonder die twee velden loopt de rij al stuk op
+       uitspraken_verwoordbaar_heeft_reden of ..._heeft_zin, en zou deze
+       toets om de verkeerde reden slagen. Nu is de tijdgrens de ENIGE
+       grendel die deze rij nog kan afkeuren. */
+    await assert.rejects(
+      () =>
+        metOrganisatie(db.pool, { organisatieId: orgA }, (c) =>
+          c.query(
+            `insert into intel.uitspraken
+               (organisatie_id, tekst, soort, fenomeen,
+                verwoordbaar, verwoordbaar_reden, verwoorde_zin)
+             values ($1, 'De netbeheerders investeren EUR 200 miljard.', 'feit',
+                     'netinvestering', 'VERWOORDBAAR', 'toets: alle andere eisen vervuld',
+                     'De netbeheerders investeren EUR 200 miljard in het elektriciteitsnet.')`,
+            [orgA],
+          ),
+        ),
+      /uitspraken_tijdgebonden_vraagt_tijd/i,
+      "not valid mag de grendel voor nieuwe rijen niet uitzetten",
+    );
+  });
+
+  test("0027: de tijdgrensconstraint staat bewust op NOT VALID", async () => {
+    const r = await alsEigenaar(db, (c) =>
+      c.query<{ convalidated: boolean }>(
+        `select convalidated
+           from pg_constraint
+          where conname = 'uitspraken_tijdgebonden_vraagt_tijd'
+            and conrelid = 'intel.uitspraken'::regclass`,
+      ),
+    );
+    assert.equal(r.rows.length, 1, "de constraint hoort te bestaan");
+    assert.equal(
+      r.rows[0]?.convalidated,
+      false,
+      "gevalideerd betekent dat bestaande rijen worden afgekeurd — daar brak de productiedeploy op. " +
+        "Repareer eerst de historische rijen en draai dan expliciet VALIDATE CONSTRAINT.",
+    );
+  });
 });
