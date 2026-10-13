@@ -72,7 +72,13 @@ function tabel(m: ProductieMeting): void {
     console.log("    → 0 schendingen: VALIDATE CONSTRAINT kan worden gedraaid.");
   }
   if (m.uitspraken.tijdgrensSchendingen > 0) {
-    console.log("    → valideren mag NIET; eerst de schendende rijen herstellen.");
+    console.log("    → valideren mag NIET; eerst de schendende rijen beoordelen.");
+    for (const r of m.uitspraken.schendingen) {
+      console.log(`      uitspraak ${r.id} (${r.fenomeen ?? "geen fenomeen"}): ${r.tekst}`);
+    }
+    console.log("    → een horizon mag NIET worden verzonnen. Is er gezaghebbend bewijs,");
+    console.log("      gebruik dan de append-only correctieweg; anders blijft dit een");
+    console.log("      gedocumenteerde uitzondering en blijft de constraint NOT VALID.");
   }
 
   console.log("");
@@ -146,6 +152,7 @@ try {
     uitspraken_totaal: meting.uitspraken.totaal,
     uitspraken_horizon_null: meting.uitspraken.horizonNull,
     tijdgrens_schendingen: meting.uitspraken.tijdgrensSchendingen,
+    tijdgrens_schendende_ids: meting.uitspraken.schendingen.map((r) => r.id).join(",") || null,
     tijdgrens_constraint_gevalideerd: meting.uitspraken.constraintGevalideerd,
     taken_met_credential: meting.credentiallek.takenMetCredential,
     taken_met_credential_soorten: meting.credentiallek.soorten.join(",") || null,

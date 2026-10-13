@@ -61,6 +61,23 @@ export type ProductieMeting = {
     readonly horizonNull: number;
     readonly tijdgrensSchendingen: number;
     readonly constraintGevalideerd: boolean | null;
+    /**
+     * De schendende rijen, identificeerbaar zonder databasetoegang.
+     *
+     * De productiedatabase is privé-only, dus een telling alleen is niet
+     * genoeg: par. 27 vraagt om DE RIJ te onderzoeken. Daarom noemt de
+     * meting id, fenomeen en de eerste 120 tekens van de brontekst, zodat
+     * een mens in het Railway-log kan zien WELKE uitspraak het is en kan
+     * besluiten of er gezaghebbend bewijs is voor een correctie.
+     *
+     * Er wordt geen horizon verzonnen en geen rij aangeraakt: dit is een
+     * meting, en de correctie loopt via de append-only weg van 0025.
+     */
+    readonly schendingen: readonly {
+      readonly id: string;
+      readonly fenomeen: string | null;
+      readonly tekst: string;
+    }[];
   };
   readonly credentiallek: {
     readonly takenMetCredential: number;
@@ -248,6 +265,21 @@ export async function meetProductie(
         and horizon is null`,
     [organisatieId],
   );
+  /* WELKE rijen, niet alleen hoeveel. Zie de toelichting bij het veld. */
+  const schendingen = await rijen<{ id: string; fenomeen: string | null; tekst: string }>(
+    c,
+    `select id::text, fenomeen, left(tekst, 120) as tekst
+       from intel.uitspraken
+      where organisatie_id = $1
+        and verwoordbaar = 'VERWOORDBAAR'
+        and fenomeen in ('netinvestering','subsidiebudget','subsidiebedrag','opdrachtwaarde')
+        and periode is null
+        and horizon is null
+      order by id
+      limit 25`,
+    [organisatieId],
+  );
+
   const constraintRij = await rijen<{ convalidated: boolean }>(
     c,
     `select convalidated from pg_constraint
@@ -356,6 +388,7 @@ export async function meetProductie(
       horizonNull,
       tijdgrensSchendingen,
       constraintGevalideerd,
+      schendingen,
     },
     credentiallek: {
       takenMetCredential,
