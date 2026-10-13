@@ -87,10 +87,86 @@ function ketenEnAudit(map) {
   return draai(map, 'audit.mjs');
 }
 
-/** Faalt poort <n> in deze auditoutput? */
-function poortFaalt(uit, n) {
-  const re = new RegExp(`^\\s*${n}\\s+\\S.*\\sFAIL\\s`, 'm');
-  return re.test(uit);
+/* ÉÉN TEKEN SCHAKELDE EEN POORT UIT EN DEZE QA MERKTE HET NIET.
+
+   poortFaalt() las alleen de TABELRIJ van audit.mjs, en de aanroeper gooide
+   `code` weg. Maar audit.mjs telt zijn eindoordeel als
+   `fouten.filter(p => !p.ok && p.verplicht)`: zet je bij één poort de tweede
+   parameter van poort() op `false`, dan print de rij nog steeds FAIL terwijl
+   het script "EINDOORDEEL POORT = PASS" afdrukt en met exitcode 0 eindigt.
+   Deze QA zag die FAIL-rij, riep GOED, en de release liep door met een
+   uitgeschakelde poort. Alle zestien poorten zijn verplicht; dat is precies
+   het soort gegeven dat per ongeluk verschuift.
+
+   Een vijandig scenario is daarom pas geslaagd als DRIE dingen kloppen:
+   de rij van poort n staat op FAIL, het EINDOORDEEL is FAIL, en de exitcode
+   is niet nul. Dat is wat CI werkelijk afgaat. */
+function poortFaalt(r, n) {
+  const uit = typeof r === 'string' ? r : r.uit;
+  const code = typeof r === 'string' ? null : r.code;
+  const rijFaalt = new RegExp(`^\\s*${n}\\s+\\S.*\\sFAIL\\s`, 'm').test(uit);
+  const eindFaalt = /EINDOORDEEL POORT = FAIL/.test(uit);
+  const codeFaalt = code === null ? null : code !== 0;
+  if (rijFaalt && eindFaalt && codeFaalt !== false) return { ok: true, waarom: `poort ${n} faalt zoals het hoort (rij FAIL, eindoordeel FAIL, exit ${code ?? '?'})` };
+  const mist = [];
+  if (!rijFaalt) mist.push(`de rij van poort ${n} staat niet op FAIL`);
+  if (!eindFaalt) mist.push('het EINDOORDEEL is niet FAIL');
+  if (codeFaalt === false) mist.push('de exitcode is 0');
+  return {
+    ok: false,
+    waarom:
+      rijFaalt && !eindFaalt
+        ? `poort ${n} meldt FAIL in de tabel maar het script eindigt met PASS en exit ${code} — staat 'verplicht' van deze poort nog op true?`
+        : `poort ${n} bleef GROEN terwijl het defect erin zat (${mist.join('; ')})`,
+  };
+}
+
+/* De poortinventaris. Een poort die verdwijnt of niet-verplicht wordt, is een
+   verzwakking van de keten en hoort niet stil te gebeuren. Deze lijst is geen
+   documentatie maar een TOETS: wijkt audit.mjs ervan af, dan faalt de QA en
+   moet iemand deze lijst met opzet bijwerken. */
+const POORTINVENTARIS = 16;
+
+/** Een willekeurig script in de kopie draaien, met de exitcode erbij. */
+function draaiScript(map, pad, env = {}) {
+  try {
+    const uit = execFileSync('node', [pad], {
+      cwd: map,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...process.env, ...env },
+      maxBuffer: 64 * 1024 * 1024,
+    });
+    return { code: 0, uit };
+  } catch (e) {
+    return { code: e.status ?? 1, uit: (e.stdout || '') + (e.stderr || '') };
+  }
+}
+
+/** De eerste <n> doorverwijsstubs uit het register van de KOPIE. */
+function stubRoutes(map, n = 1) {
+  const reg = lees(map, 'data', 'seo', 'routes.json');
+  const r = reg.routes.filter((x) => x.subsoort === 'doorverwijsstub').map((x) => x.route);
+  if (r.length < n) throw new Error(`minder dan ${n} doorverwijsstub(s) in deze situatie`);
+  return r.slice(0, n);
+}
+
+/**
+ * De bestemming van een stub verleggen naar <naarRoute>, in canonical ÉN in
+ * de meta-refresh ÉN in de JS-vervanging. Alle drie, want een scenario dat
+ * er maar één verlegt, zou falen op "refresh wijkt af van canonical" in
+ * plaats van op de bestemming zelf — en dan bewijst het de verkeerde poort.
+ */
+function verlegStub(map, route, naarRoute) {
+  const p = resolve(map, `${route}.html`);
+  if (!existsSync(p)) throw new Error(`stubbestand ontbreekt: ${route}.html`);
+  const naarHref = naarRoute === '' ? '/' : `/${naarRoute}`;
+  const naarUrl = naarRoute === '' ? 'https://www.vibeenergy.nl/' : `https://www.vibeenergy.nl/${naarRoute}`;
+  const uit = readFileSync(p, 'utf8')
+    .replace(/(<link rel="canonical" href=")[^"]*(")/i, `$1${naarUrl}$2`)
+    .replace(/(http-equiv="refresh"[^>]*content="0; url=)[^"]*(")/i, `$1${naarHref}$2`)
+    .replace(/(location\.replace\(')[^']*('\))/i, `$1${naarHref}$2`);
+  writeFileSync(p, uit);
 }
 
 /* GEEN HARDGECODEERDE GEMEENTEPADEN IN DE SCENARIO'S.
@@ -320,7 +396,165 @@ const SCENARIOS = [
       };
     },
   },
+
+  /* ============================================================ SEO 3.2
+     Vijf scenario's voor defecten die tot deze release ONGEDEKT waren. Elk
+     is eerst op de oude code gemeten en bleef daar GROEN; dat is de reden
+     dat ze bestaan. ============================================================ */
+
+  {
+    naam: 'de halve site wordt gedepubliceerd',
+    waarom:
+      'Gemeten op edc10d2: `vrijgeven-r31.mjs --fase 1` (aanbevolen in bouw.mjs:52) plus een normale ketenrun bracht ' +
+      '430 INDEX-routes naar 116 en verwijderde 314 HTML-bestanden, waarna audit.mjs, publicatiecontract.mjs, ' +
+      'qa-vijandig en — na de commit — ook publiek-artefact ALLE exit 0 gaven. Krimp is onzichtbaar voor elke poort ' +
+      'die alleen de huidige stand toetst.',
+    eigenToets: true,
+    breek(map) {
+      /* De basis-INDEX-set als BESTAND, want een verse kopie heeft geen
+         `.git` (NODIG kopieert hem niet) en git geeft daar exit 128. Dat is
+         precies waarom de grendel een bestandsval-terug heeft. */
+      const reg = lees(map, 'data', 'seo', 'routes.json');
+      const basis = reg.routes.filter((r) => r.staat === 'INDEX').map((r) => r.route);
+      schrijf(map, 'basis-index.json', basis);
+      /* Depubliceer net zoals het echte ongeluk dat doet: via het
+         publicatiebesluit, en dan intern consistent doorwerken. */
+      const slachtoffers = gepubliceerdeGemeenten(map, 12);
+      const besluit = lees(map, 'data', 'seo', 'publicatiebesluit.json');
+      for (const r of slachtoffers) delete besluit.vrijgegeven[r];
+      schrijf(map, 'data/seo/publicatiebesluit.json', besluit);
+      return { basis: basis.length, weg: slachtoffers.length };
+    },
+    toets(map, ctx) {
+      const reg = lees(map, 'data', 'seo', 'routes.json');
+      const nu = reg.routes.filter((r) => r.staat === 'INDEX').length;
+      if (nu >= ctx.basis) return { ok: false, waarom: `de keten depubliceerde niets (basis ${ctx.basis}, nu ${nu}) — scenario heeft niets getoetst` };
+      const r = draaiScript(map, resolve(map, 'intelligence', 'ops', 'publicatiecontract.mjs'), {
+        SEO_BASIS_INDEX: resolve(map, 'basis-index.json'),
+      });
+      if (r.code === 0) return { ok: false, waarom: `${ctx.basis - nu} gepubliceerde routes verdwenen en het publicatiecontract gaf exit 0` };
+      if (!/verdwenen/.test(r.uit)) return { ok: false, waarom: 'de poort faalde, maar niet op de depublicatiegrendel' };
+      return { ok: true, waarom: `de depublicatiegrendel valt om bij ${ctx.basis - nu} verdwenen route(s), exit ${r.code}` };
+    },
+  },
+
+  {
+    naam: 'project uit een andere gemeente als lokaal bewijs',
+    waarom:
+      'Poort 15 beoordeelde tot deze release 0 van de 16 projectlinks: de sectieregex ankerde door de /i-vlag op het ' +
+      'proza "opgeleverd in" in plaats van op de kop. Een project in de verkeerde gemeente was dus ongedekt, terwijl ' +
+      'dat juist de bewering is die een regiopagina geloofwaardig maakt.',
+    poort: 15,
+    naKeten: true,
+    breek(map) {
+      const reg = lees(map, 'data', 'seo', 'routes.json');
+      const projGeo = lees(map, 'data', 'bewijs', 'projecten-geo.json').per_gemeente;
+      /* Een gemeentepagina MET een bewijssectie, en een project dat ergens
+         anders ligt. Beide uit het register van de kopie, dus ook onder een
+         gefaseerde uitrol kiest dit scenario iets dat echt bestaat. */
+      const alleSlugs = new Set(Object.values(projGeo).flat().map((p) => p.slug));
+      const doel = reg.routes.find((r) => {
+        if (r.subsoort !== 'gemeente' || r.staat !== 'INDEX') return false;
+        const p = resolve(map, `${r.route}.html`);
+        return existsSync(p) && /id="bewijs"/.test(readFileSync(p, 'utf8'));
+      });
+      if (!doel) throw new Error('geen gepubliceerde gemeentepagina met een bewijssectie');
+      const eigen = new Set((projGeo[doel.gemeentecode] || []).map((p) => p.slug));
+      const vreemd = [...alleSlugs].find((s) => !eigen.has(s));
+      if (!vreemd) throw new Error('geen project dat buiten deze gemeente ligt');
+      const p = resolve(map, `${doel.route}.html`);
+      const s = readFileSync(p, 'utf8');
+      /* In de bewijssectie injecteren, niet er buiten: buiten de sectie is
+         een projectlink legitiem (de verwant-blokken linken ook). */
+      const uit = s.replace(/(<section[^>]*\bid="bewijs"[^>]*>)/i, `$1<p><a href="/${vreemd}">vals bewijs</a></p>`);
+      if (uit === s) throw new Error('de bewijssectie is niet gevonden om in te injecteren');
+      writeFileSync(p, uit);
+    },
+  },
+
+  {
+    naam: 'doorverwijsstub verwijst naar een andere stub',
+    waarom:
+      'Een keten van twee hops die eindigt op een noindex-pagina. De bestaande canonical-toets keurt dit goed, want ' +
+      'de bestemming BESTAAT en is geen PENDING — alleen de STAAT van de bestemming was ongetoetst.',
+    poort: 5,
+    naKeten: true,
+    breek(map) {
+      const [a, b] = stubRoutes(map, 2);
+      verlegStub(map, a, b);
+    },
+  },
+
+  {
+    naam: 'doorverwijsstub verwijst naar de homepage',
+    waarom:
+      'De wortelroute is een geldige INDEX-route, dus elke bestaande toets vindt dit goed. Het is precies het patroon ' +
+      'dat verboden is: een gepensioneerde URL naar de homepage sturen in plaats van naar de inhoudelijke opvolger.',
+    poort: 5,
+    naKeten: true,
+    breek(map) {
+      const [a] = stubRoutes(map, 1);
+      verlegStub(map, a, '');
+    },
+  },
+
+  {
+    naam: 'een poort wordt op niet-verplicht gezet',
+    waarom:
+      'audit.mjs telt zijn eindoordeel als `!p.ok && p.verplicht`. Eén teken — `true` naar `false` bij poort() — laat ' +
+      'de FAIL-rij staan maar maakt het EINDOORDEEL PASS en de exitcode 0. Deze QA las alleen de tabelrij en riep ' +
+      'GOED. Zolang dat kon, bewees geen enkele andere poortwijziging iets.',
+    eigenToets: true,
+    breek(map) {
+      /* GEEN BESTAANDE POORT UITZETTEN. Dat was de eerste opzet en die
+         bewees niets: het defect dat poort 1 hoort te vangen (een bestand op
+         een PENDING-route) wordt óók door andere poorten gevangen, dus bleef
+         het eindoordeel FAIL en was er geen tegenspraak te zien. Gemeten:
+         "rij FAIL, eindoordeel FAIL, exit 1" terwijl poort 1 wél uitstond.
+
+         Daarom een poort die ALLEEN dit scenario toevoegt en die met opzet
+         rood is, met `verplicht` op false. Dan is er precies één rode rij en
+         is de tegenspraak — rij FAIL, eindoordeel PASS, exit 0 — zuiver te
+         meten, zonder afhankelijkheid van welke andere poort meevuurt. */
+      const p = resolve(map, 'scripts', 'seo', 'audit.mjs');
+      const s = readFileSync(p, 'utf8');
+      const anker = "/* ============================================================== rapport */";
+      if (!s.includes(anker)) throw new Error('het rapportanker in audit.mjs is niet gevonden; is het herschreven?');
+      const proef = `poort('17 proefpoort — met opzet rood en niet-verplicht', false, () => ({\n  ok: false,\n  meting: 'opzettelijk rood',\n  details: ['deze poort hoort de keten te blokkeren maar staat op niet-verplicht'],\n}));\n\n`;
+      writeFileSync(p, s.replace(anker, proef + anker));
+    },
+    toets(map) {
+      const a = ketenEnAudit(map);
+      const rijFaalt = /^\s*17\s+\S.*\sFAIL\s/m.test(a.uit);
+      if (!rijFaalt) return { ok: false, waarom: 'de proefpoort staat niet als FAIL in de tabel; het scenario heeft niets opgezet' };
+      if (a.code !== 0) return { ok: false, waarom: `audit.mjs gaf exit ${a.code} — een niet-verplichte poort blokkeert dus al; dit scenario is achterhaald` };
+      const r = poortFaalt(a, 17);
+      if (r.ok) return { ok: false, waarom: `de QA keurde een poort goed die FAIL meldt terwijl het script exit 0 geeft: ${r.waarom}` };
+      if (!/verplicht/.test(r.waarom)) return { ok: false, waarom: `de QA faalde, maar noemt de oorzaak niet: ${r.waarom}` };
+      return { ok: true, waarom: 'de QA ziet dat de rij FAIL meldt terwijl het eindoordeel PASS is en de exitcode 0' };
+    },
+  },
 ];
+
+/* De poortinventaris van audit.mjs toetsen vóór de scenario's draaien: een
+   verdwenen of niet-verplichte poort is een verzwakking van de keten en
+   hoort niet stil te gebeuren. */
+{
+  const s = readFileSync(resolve(wortel, 'scripts', 'seo', 'audit.mjs'), 'utf8');
+  /* `(?:[^'\\]|\\.)+` en niet `[^']+`: drie poortnamen dragen een ontsnapte
+     apostrof ("Weespagina\'s"), en daar stopte een naïeve klasse. Gemeten:
+     die regex vond 13 van de 16 poorten en deze toets riep vals alarm. */
+  const decl = [...s.matchAll(/^poort\('((?:[^'\\]|\\.)+)',\s*(true|false),/gm)].map((m) => ({ naam: m[1], verplicht: m[2] === 'true' }));
+  const nietVerplicht = decl.filter((d) => !d.verplicht);
+  if (decl.length !== POORTINVENTARIS || nietVerplicht.length) {
+    console.log('VIJANDIGE QA = FAIL  (poortinventaris)');
+    console.log(`  verwacht ${POORTINVENTARIS} verplichte poorten, gevonden ${decl.length} waarvan ${nietVerplicht.length} niet-verplicht`);
+    for (const d of nietVerplicht) console.log(`  · niet verplicht: ${d.naam}`);
+    console.log('  Is dit met opzet, werk dan POORTINVENTARIS in dit bestand bij en leg de reden vast.');
+    process.exit(1);
+  }
+  console.log(`poortinventaris: ${decl.length} poorten, alle verplicht`);
+}
 
 /* ================================================================ draaien */
 console.log('VIJANDIGE QA — elk scenario MOET de poort rood krijgen');
@@ -339,9 +573,7 @@ for (const sc of SCENARIOS) {
       draai(map, 'sitemap.mjs');
       sc.breek(map);
       const a = draai(map, 'audit.mjs');
-      uitslag = poortFaalt(a.uit, sc.poort)
-        ? { ok: true, waarom: `poort ${sc.poort} faalt zoals het hoort` }
-        : { ok: false, waarom: `poort ${sc.poort} bleef GROEN terwijl het defect erin zat` };
+      uitslag = poortFaalt(a, sc.poort);
     } else if (sc.eigenToets) {
       const ctx = sc.breek(map) || {};
       ketenEnAudit(map);
@@ -349,9 +581,7 @@ for (const sc of SCENARIOS) {
     } else {
       sc.breek(map);
       const a = ketenEnAudit(map);
-      uitslag = poortFaalt(a.uit, sc.poort)
-        ? { ok: true, waarom: `poort ${sc.poort} faalt zoals het hoort` }
-        : { ok: false, waarom: `poort ${sc.poort} bleef GROEN terwijl het defect erin zat` };
+      uitslag = poortFaalt(a, sc.poort);
     }
   } catch (e) {
     uitslag = { ok: false, waarom: `scenario wierp een uitzondering: ${e.message}` };

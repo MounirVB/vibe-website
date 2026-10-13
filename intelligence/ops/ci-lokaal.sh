@@ -17,8 +17,17 @@
 #
 #  Het verschil met CI dat blijft: CI draait op ubuntu-latest met een
 #  postgres:17-alpine servicecontainer, hier is het macOS met de
-#  lokale Postgres 17. De pg-major is gelijk; het besturingssysteem
-#  niet. Dat is de enige onbewezen variabele.
+#  lokale Postgres 17. De pg-major is gelijk; het besturingssysteem niet.
+#
+#  "Dat is de enige onbewezen variabele" stond hier, en dat was onwaar:
+#  gemeten in SEO 3.2 ontbraken VIER stappen uit poort.yml (de klokstap,
+#  qa-vijandig, publiek-artefact en `npm run poort`). Drie daarvan zijn
+#  er ná dit script in de werkstroom bij gekomen en nooit overgezet; de
+#  vierde ontbrak vanaf het begin. Ze staan er nu in.
+#
+#  Wie hier een stap aan poort.yml toevoegt: voeg hem ook hier toe. Een
+#  spiegel die een stap mist, geeft een valse voorsprong op precies de
+#  poort die later in CI rood wordt.
 # ============================================================
 set -euo pipefail
 
@@ -96,7 +105,38 @@ generator_reproduceerbaar() {
   return 0
 }
 stap "release1: generator is reproduceerbaar" generator_reproduceerbaar
+
+# DRIE STAPPEN DIE HIER ONTBRAKEN, EN DAT WAS DRIFT, GEEN KEUZE.
+#
+# Bij de commit waarin dit script ontstond spiegelde het poort.yml exact.
+# Daarna kwamen publiek-artefact, de klokstap en qa-vijandig in de
+# werkstroom, en niemand bracht ze hierheen. Daardoor beloofde dit script
+# "precies de stappen uit poort.yml" terwijl drie van de acht
+# release1-stappen ontbraken — en lokaal groen was dus een valse
+# voorsprong op precies de poorten die het scherpst zijn.
+klok_onafhankelijk() {
+  local voor na
+  voor="$(git status --porcelain -- . ':(exclude)intelligence')"
+  # unset, GEEN pin: CI zet deze variabelen juist NIET, en via `npm run e2e`
+  # erft dit script ze wel. Met een geërfde pin zou deze stap altijd groen
+  # zijn — hij meet dan de pin in plaats van de generator.
+  ( unset ROUTES_DATUM SITEMAP_DATUM GEO_OPHAALDATUM BEWIJS_OPHAALDATUM
+    ROUTES_DATUM=2028-04-12 SITEMAP_DATUM=2028-04-12 \
+    GEO_OPHAALDATUM=2028-04-12 BEWIJS_OPHAALDATUM=2028-04-12 \
+      node scripts/seo/bouw.mjs --offline >/dev/null )
+  na="$(git status --porcelain -- . ':(exclude)intelligence')"
+  if [ "$na" != "$voor" ]; then
+    echo "    Een bouw met een datum 18 maanden vooruit gaf andere uitvoer."
+    git diff --stat -- . ':(exclude)intelligence' | sed 's/^/      /'
+    return 1
+  fi
+  echo "    een bouw 18 maanden vooruit geeft byte-identieke uitvoer"
+  return 0
+}
+stap "release1: de bouw mag NIET aan de klok hangen" klok_onafhankelijk
 stap "release1: QA nieuwskanaal" node scripts/seo/qa-nieuws.mjs
+stap "release1: vijandige QA" node scripts/seo/qa-vijandig.mjs
+stap "release1: publiek artefact (allowlist webroot)" node scripts/publiek-artefact.mjs
 stap "release1: assetpoort (basislijn)" node intelligence/ops/assetpoort.mjs
 
 # ---------------- job: release2 ----------------
@@ -114,6 +154,11 @@ stap "release2: driftcontrole" npm run migreer -- --droog
 stap "release2: eenheidstoetsen" npm run test:eenheid
 stap "release2: integratietoetsen" npm run test:integratie
 stap "release2: adversariele toetsen" npm run test:adversarieel
+# `npm run poort` stond vanaf de eerste versie van dit script niet in de
+# lijst, terwijl poort.yml hem als laatste release2-stap draait. Dat is geen
+# dubbel werk: poort.ts print een tabel waarin NIET GEDRAAID iets anders is
+# dan PASS, en dat verschil ziet geen van de losse suites hierboven.
+stap "release2: de volledige regressiepoort" npm run poort
 
 # ---------------- job: beveiliging ----------------
 cd "$WORTEL"

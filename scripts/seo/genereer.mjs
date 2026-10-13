@@ -33,6 +33,8 @@ import {
   projectenBlok,
   FAMILIE_BELOFTE,
   getal,
+  naamMetVarianten,
+  naamvariantRegel,
 } from './lib/regio-inhoud.mjs';
 
 const hier = dirname(fileURLToPath(import.meta.url));
@@ -122,8 +124,12 @@ function bewijsVanGemeente(code) {
     projecten: projBron.per_gemeente[code] || [],
     /* De periode reist mee in het profiel, zodat de bronregel op de pagina
        het peiljaar kan noemen zonder dat regio-inhoud.mjs het bronbestand
-       hoeft te kennen. */
-    bedrijfstakken: profiel ? { ...profiel, _periode: takBron.periode } : null,
+       hoeft te kennen. _min_lq reist om dezelfde reden mee: de pagina legt
+       uit waarom een locatiequotient ontbreekt, en die grens (50 vestigingen)
+       staat in het bewijsbestand en niet in de inhoudsmodule. */
+    bedrijfstakken: profiel
+      ? { ...profiel, _periode: takBron.periode, _min_lq: takBron.min_vestigingen_voor_lq }
+      : null,
   };
 }
 
@@ -160,7 +166,17 @@ function provincieProfiel(lijstGemeenten) {
     };
   });
   takken.sort((a, b) => b.vestigingen - a.vestigingen);
-  return { totaal_cbs: totaalCbs, totaal_secties: totaalSecties, takken, _periode: takBron.periode };
+  return {
+    totaal_cbs: totaalCbs,
+    totaal_secties: totaalSecties,
+    takken,
+    _periode: takBron.periode,
+    /* Ook op provincieniveau blijft een gat over: negen van de twaalf
+       provincies houden 1 tot 2 takken zonder locatiequotient (gemeten,
+       meestal delfstoffenwinning met 5 tot 35 vestigingen). De drempel reist
+       dus mee, want de pagina moet dat gat kunnen uitleggen. */
+    _min_lq: takBron.min_vestigingen_voor_lq,
+  };
 }
 
 /** Families met een INDEX-pagina voor deze gemeente. */
@@ -344,7 +360,13 @@ function bouwProvincie(p) {
      een provincie is iets anders dan die van elk van haar gemeenten. */
   const provProfiel = provincieProfiel(alleGem);
 
-  const naam = p.naam + (p.aliassen?.length ? ` (${p.aliassen.join(', ')})` : '');
+  /* DE DODE ALIASREGEL, NU AANGESLOTEN.
+     Deze variabele bestond al sinds de funderingscommit en werd nergens
+     gebruikt: `naam` werd berekend en daarna weggegooid, waardoor 'Friesland'
+     nooit op /regios/fryslan belandde terwijl geo-overschrijvingen.json dat
+     wel beweert. Nu voedt hij de titel, en naamvariantRegel() de tekst. */
+  const naamMetAlias = naamMetVarianten(p.naam, p.aliassen);
+  const naamRegel = naamvariantRegel(p.naam, p.naam_officieel, p.aliassen);
 
   const gemLijst = alleGem
     .map((g) => {
@@ -372,7 +394,13 @@ function bouwProvincie(p) {
           ? `<a class="ve-btn ve-btn--ghost ve-btn--lg" href="#bewijs">Bekijk het gerealiseerde werk</a>`
           : `<a class="ve-btn ve-btn--ghost ve-btn--lg" href="#gemeenten">Kies uw gemeente</a>`,
       ],
-      naLead: heeftWerk ? null : bronregel([BRON.vestigingen, BRON.terreinen]),
+      /* De naamvariantregel staat vóór de bronregel: hij hoort bij de naam in
+         de H1 erboven, niet bij de cijfers in de lead. Zonder variant en
+         zonder bronregel blijft naLead null en is de uitvoer byte-identiek
+         aan die van vóór deze wijziging. */
+      naLead: [naamRegel, heeftWerk ? '' : bronregel([BRON.vestigingen, BRON.terreinen])]
+        .filter(Boolean)
+        .join('\n      ') || null,
     }),
     heeftWerk
       ? directAntwoord({
@@ -482,7 +510,7 @@ ${gemLijst}
     route,
     pagina({
       route,
-      titel: `Zakelijke energie in ${p.naam} | Vibe Energy`,
+      titel: `Zakelijke energie in ${naamMetAlias} | Vibe Energy`,
       beschrijving: heeftWerk
         ? `Gerealiseerde batterijopslag, zonnedaken en laadinfrastructuur in ${p.naam}, met de netbeheerders en ` +
           `de cijfers over bedrijventerreinen.`
@@ -674,7 +702,13 @@ function bouwGemeente(g) {
      botsing, zodat de overige 335 gemeentepagina's hun korte titel houden. */
   const botstMetProvincie = g.naam === p.naam;
   const gemeenteInTekst = botstMetProvincie ? `de gemeente ${g.naam}` : g.naam;
-  const gemeenteInTitel = botstMetProvincie ? `gemeente ${g.naam}` : g.naam;
+  /* De titel draagt de naamvarianten uit het geo-register: 'Den Bosch',
+     "'s-Gravenhage", 'Hengelo (Overijssel)'. Geen van de drie gemeenten met
+     een variant botst met haar provincienaam, dus de twee regels bijten
+     elkaar niet. De overige 334 gemeentetitels blijven letterlijk gelijk. */
+  const naamMetAlias = naamMetVarianten(g.naam, g.aliassen);
+  const gemeenteInTitel = botstMetProvincie ? `gemeente ${naamMetAlias}` : naamMetAlias;
+  const naamRegel = naamvariantRegel(g.naam, g.naam_officieel, g.aliassen);
 
   /* De sectorpagina's die bij het profiel van déze gemeente horen. Dit maakt
      de keten sector -> regio die de opdracht vraagt, en hij verschilt per
@@ -716,7 +750,9 @@ function bouwGemeente(g) {
          eist dat per SECTIE en de hero is een sectie. Dat die cijfers een
          alinea lager mét bron terugkomen is geen excuus: wie alleen de hero
          leest, moet daar al kunnen zien waar ze vandaan komen. */
-      naLead: heeftWerk ? null : bronregel([BRON.vestigingen, BRON.terreinen]),
+      naLead: [naamRegel, heeftWerk ? '' : bronregel([BRON.vestigingen, BRON.terreinen])]
+        .filter(Boolean)
+        .join('\n      ') || null,
     }),
     heeftWerk
       ? directAntwoord({
@@ -737,7 +773,21 @@ function bouwGemeente(g) {
               ? 'Het werk in deze gemeente betreft wooncomplexen en woningportefeuilles. Dat bewijst dat Vibe Energy hier ' +
                 'heeft gebouwd, maar het is geen referentie voor een zakelijke installatie.'
               : null,
-          bronnen: [BRON.vestigingen, BRON.terreinen, bw.netbeheerder ? BRON.netbeheer : null].filter(Boolean),
+          /* Dezelfde regel als in de tak zonder werk hieronder: een bron hoort
+             bij een getal dat in DIT blok staat. Het vestigings- en
+             terreinaantal staan in één voorwaardelijke zin, dus hangen hun
+             twee bronnen aan dezelfde voorwaarde. De netbeheerder wordt hier
+             alleen bij zekerheid EENDUIDIG genoemd, dus staat zijn bron er ook
+             alleen dan.
+             Gemeten: alle 11 gemeenten met werk zijn EENDUIDIG en hebben een
+             vestigingscijfer, dus deze strengere voorwaarden laten hun uitvoer
+             byte-identiek. Ze houden het defect tegen zodra er werk in een
+             OVERWEGEND- of VERDEELD-gemeente landt. */
+          bronnen: [
+            typeof bw.vestigingen === 'number' ? BRON.vestigingen : null,
+            typeof bw.vestigingen === 'number' ? BRON.terreinen : null,
+            bw.netbeheerder?.zekerheid === 'EENDUIDIG' ? BRON.netbeheer : null,
+          ].filter(Boolean),
         })
       : directAntwoord({
           vraag: `Kan een bedrijf in ${esc(g.naam)} uitbreiden zonder een zwaardere aansluiting?`,
@@ -752,7 +802,35 @@ function bouwGemeente(g) {
           voorbehoud:
             'Wat er op uw adres mogelijk is, hangt af van uw aansluitwaarde en uw kwartiersprofiel. Deze pagina geeft ' +
             'het gemeentelijke beeld, geen uitspraak over uw pand.',
-          bronnen: [BRON.bedrijfstakken, bw.netbeheerder ? BRON.netbeheer : null].filter(Boolean),
+          /* DE BRONNEN VAN DIT BLOK ZIJN DE BRONNEN VAN DE GETALLEN DIE ERIN
+             STAAN — niet meer en niet minder.
+
+             Dit is het blok dat een antwoordmachine letterlijk overneemt; zie
+             de toelichting bij directAntwoord() in lib/sjabloon.mjs, die juist
+             daarom een EIGEN bronregel eist en niet op de bron verderop in de
+             pagina mag leunen.
+
+             Gemeten op de uitvoer van edc10d2: 326 van de 337
+             gemeentepagina's noemden hier een IBIS-bedrijventerreinaantal
+             terwijl de bronregel eronder alleen CBS en de netbeheerder noemde.
+             Het IBIS-terrein is volgens de releasenotitie juist het
+             bewijspunt waarop zo'n gemeente is vrijgegeven, en het reisde dus
+             zonder zijn herkomst de wereld in. De hero hierboven deed het voor
+             dezelfde twee getallen al goed; dit blok volgt nu diezelfde lijst.
+
+             CBS 81575NED staat hier als VESTIGINGENbron en niet als
+             bedrijfstakbron: het getal in dit blok is het vestigingstotaal uit
+             data/bewijs/vestigingen.json, en geen bedrijfstakcijfer.
+
+             De netbeheerder gaat alleen mee als zijn naam ook echt in de
+             alinea staat, dus bij zekerheid EENDUIDIG. Gemeten: 30 pagina's
+             (20 OVERWEGEND, 10 VERDEELD) droegen die bron onder een blok dat
+             geen enkele netbeheerder noemt. */
+          bronnen: [
+            BRON.vestigingen,
+            BRON.terreinen,
+            bw.netbeheerder?.zekerheid === 'EENDUIDIG' ? BRON.netbeheer : null,
+          ].filter(Boolean),
         }),
     heeftWerk
       ? tekstsectie({
