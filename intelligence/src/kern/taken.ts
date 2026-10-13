@@ -393,9 +393,24 @@ export const REGISTER: Record<string, Handler> = {
 
        De `aanvaard`-vlag gaat mee, zodat een bekende grens niet als
        nieuw probleem leest. */
+    /* EN BIJ EEN FOUT OOK DE MÉTING ERACHTER.
+       Gemeten op productie, 13 oktober 2026 16:02Z (taak 435): de regel
+       noemde drie FOUT-signalen in de groep `ingestie`, en geen ervan
+       was uitvoerbaar. "storingssoort TOEGANG_BEPERKT=FOUT" zegt dat er
+       een toegangsbeperkte bron nog ACTIEF staat — maar niet wélke, en
+       dus kan niemand hem uitzetten zonder databasetoegang. Die toegang
+       bestaat met opzet niet.
+
+       De meting van juist die signalen draagt de bronsleutels al
+       (`sleutels` in de query hierboven). Alleen bij FOUT, want daar
+       moet iemand iets doen; bij LET OP en NIET GEMETEN zou het de regel
+       onleesbaar maken zonder dat er een handeling tegenover staat. */
     const nietOk = signalen
       .filter((x) => x.niveau !== "OK")
-      .map((x) => `${x.groep}/${x.naam}=${x.niveau}${x.aanvaard === true ? "(aanvaard)" : ""}`)
+      .map((x) => {
+        const kop = `${x.groep}/${x.naam}=${x.niveau}${x.aanvaard === true ? "(aanvaard)" : ""}`;
+        return x.niveau === "FOUT" && x.meting ? `${kop} [${x.meting.slice(0, 180)}]` : kop;
+      })
       .join(" ");
 
     return (

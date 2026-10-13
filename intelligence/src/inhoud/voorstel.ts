@@ -1406,7 +1406,11 @@ export function inhoudsHashVan(inhoud: {
  * Een verouderd feit moet UITSTELLEN of AFWIJZEN heten, want herrouteren
  * helpt niet. Zo zegt het oordeel zelf wat de volgende stap is.
  */
-function weegAf(
+/* Geëxporteerd om adversarieel te kunnen toetsen: dit is de routering
+   die beslist of een ontdekking naar een bestaande pagina gaat, naar een
+   nieuwe, of naar niemand. Par. 32 eist dat zo'n besluit aantoonbaar
+   faalt op de juiste grond, niet dat de grendel 'bestaat'. */
+export function weegAf(
   controles: readonly Controle[],
   k: { risico_klasse: string; bedrijfsrelevantie: number | null },
   linkKansen: number,
