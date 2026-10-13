@@ -54,7 +54,7 @@
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 import type pg from "pg";
-import { eenRij, rijen } from "../kern/db.ts";
+import { eenRij, metOrganisatie, rijen, type Pool } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 import { herkenOnderwerpen } from "../pijplijn/onderwerpen.ts";
 import { vindSchaalverlies } from "../pijplijn/schaalcorrectie.ts";
@@ -1305,6 +1305,83 @@ function weegAf(
       `alle vijf de controles gehaald${voorbehouden.length ? ` (1 voorbehoud: ${voorbehouden[0]!.naam})` : ""}. ` +
       `Risicoklasse ${k.risico_klasse}: een mens voert de wijziging door, het platform schrijft niets.`,
   };
+}
+
+export type VoorstelrondeRapport = {
+  readonly kandidaten: number;
+  readonly gebouwd: number;
+  readonly nieuw: number;
+  readonly bijgewerkt: number;
+  readonly zonderVoorstel: number;
+  readonly perEindoordeel: Readonly<Record<string, number>>;
+};
+
+/**
+ * Eén volledige voorstelronde: kandidaten kiezen, voorstel bouwen,
+ * voorstel bewaren.
+ *
+ * WAAROM DIT BESTAAT. Deze lus stond alleen in cli/voorstel.ts, en dus
+ * kon de stap alleen met de hand draaien. De planner plande hem niet en
+ * de worker kende de soort niet, met als gevolg dat het dashboard
+ * dagenlang op dezelfde (of nul) READY_FOR_REVIEW-rijen bleef staan
+ * terwijl er wél nieuwe kandidaten binnenkwamen. Sinds 3.0.4 roept de
+ * taaksoort `voorstel` deze functie aan; de CLI gebruikt hem ook, zodat
+ * er één waarheid is over wat een ronde doet.
+ *
+ * BESTAANDE MENSELIJKE BESLUITEN BLIJVEN STAAN. Dat zit niet hier maar
+ * in bewaarVoorstel: die laat de beoordeling ongemoeid zolang de
+ * inhoudshash gelijk blijft, en laat hem als geheel vervallen zodra de
+ * inhoud wijzigt. Een herhaalde ronde over ongewijzigde kandidaten is
+ * daarmee een no-op op de besluitkolommen.
+ */
+export async function voorstelronde(
+  pool: Pool,
+  organisatieId: number,
+  kennis: SitekennisBestand,
+  opties: { vandaag?: string; kandidaatIds?: readonly number[] } = {},
+): Promise<VoorstelrondeRapport> {
+  const vandaag = opties.vandaag ?? new Date().toISOString().slice(0, 10);
+
+  const ids =
+    opties.kandidaatIds ??
+    (
+      await metOrganisatie(pool, { organisatieId }, (c) =>
+        rijen<{ id: number }>(
+          c,
+          `select k.id
+             from intel.inhoud_kandidaten k
+            where k.besluit = 'UPDATE_EXISTING'
+              and k.doel_pagina_id is not null
+              and k.status <> 'afgehandeld'
+            order by k.id`,
+        ),
+      )
+    ).map((r) => r.id);
+
+  let gebouwd = 0;
+  let nieuw = 0;
+  let bijgewerkt = 0;
+  let zonderVoorstel = 0;
+  const perEindoordeel: Record<string, number> = {};
+
+  for (const id of ids) {
+    const v = await metOrganisatie(pool, { organisatieId }, (c) =>
+      bouwVoorstel(c, kennis, id, vandaag),
+    );
+    if (!v) {
+      zonderVoorstel += 1;
+      continue;
+    }
+    gebouwd += 1;
+    perEindoordeel[v.eindoordeel] = (perEindoordeel[v.eindoordeel] ?? 0) + 1;
+    const r = await metOrganisatie(pool, { organisatieId }, (c) =>
+      bewaarVoorstel(c, organisatieId, v),
+    );
+    if (r.wat === "nieuw") nieuw += 1;
+    else bijgewerkt += 1;
+  }
+
+  return { kandidaten: ids.length, gebouwd, nieuw, bijgewerkt, zonderVoorstel, perEindoordeel };
 }
 
 /** Bouwt voorstellen voor alle kandidaten met een doelpagina. */

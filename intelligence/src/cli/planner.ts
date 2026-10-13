@@ -38,6 +38,7 @@
 import { laadEnvBestand } from "../kern/config.ts";
 import { eenRij, maakPool, metOrganisatie, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
+import { PLAN } from "../kern/taken.ts";
 import { zetInWachtrij } from "../kern/wachtrij.ts";
 
 laadEnvBestand();
@@ -59,26 +60,9 @@ if (Number.isNaN(NU.getTime())) {
 /** Het uurvenster, bijvoorbeeld '2026-10-10T12'. */
 const VENSTER = NU.toISOString().slice(0, 13);
 
-/* De keten in de juiste orde. De prioriteit bepaalt welke taak een
-   worker eerst pakt: ophalen voedt clusteren, clusteren voedt
-   beoordelen, en zo verder. Een lager getal gaat voor. */
-const PLAN: { soort: string; prioriteit: number; toelichting: string; dagelijks?: true }[] = [
-  { soort: "ophalen", prioriteit: 10, toelichting: "alle actieve bronnen; de collector respecteert zelf elk bronninterval" },
-  { soort: "clusteren", prioriteit: 20, toelichting: "nieuwe bronversies naar gebeurtenissen en uitspraken" },
-  { soort: "beoordelen", prioriteit: 30, toelichting: "de besluitmotor over nieuwe gebeurtenissen" },
-  { soort: "regio", prioriteit: 40, toelichting: "gebieden binden en regiovoorstellen maken" },
-  { soort: "signaleren", prioriteit: 50, toelichting: "commerciele signalen uit SALES_SIGNAL-kandidaten" },
-  /* DAGELIJKS, NIET PER UUR. De idempotentiesleutel van deze taak draagt
-     alleen de DATUM, dus de eerste plannerrun van een dag maakt hem aan
-     en de 23 runs daarna slaan hem over — precies hetzelfde mechanisme
-     dat een dubbele plannerrun al onschadelijk maakt, nu met een grover
-     venster. Een uurlijkse back-up van een database die één keer per uur
-     een handvol rijen bijschrijft is verspilling; een dagelijkse haalt
-     de RPO van 24 uur die het runbook vastlegt.
-     Prioriteit 90: de back-up gaat ná de keten, zodat hij de staat van
-     die dag meeneemt in plaats van die van gisteren. */
-  { soort: "backup", prioriteit: 90, dagelijks: true, toelichting: "logische back-up plus externe kopie in de bucket" },
-];
+/* Het PLAN staat sinds 3.0.4 in kern/taken.ts, naast het register van
+   taaksoorten, zodat een toets kan bewijzen dat elke geplande soort ook
+   een handler heeft. Zie de toelichting in dat bestand. */
 
 const pool = maakPool();
 try {
