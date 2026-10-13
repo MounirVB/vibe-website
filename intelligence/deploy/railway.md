@@ -186,6 +186,74 @@ curl -fsS https://<servicedomein>/gereed
 Stap 7 is de stap die van "uitgerold" naar "operationeel" gaat. Zonder
 die uitvoer in de doelomgeving blijft de status READY_FOR_ACTIVATION.
 
+## `railway run` WERKT HIER NIET — gemeten 13 oktober 2026
+
+Elke `railway run`-regel hierboven is onuitvoerbaar vanaf een machine
+buiten Railway, en dat is geen detail: wie deze procedure volgt denkt een
+migratie te hebben toegepast en heeft dat niet.
+
+`railway run` injecteert de variabelen van de service maar voert het
+commando **lokaal** uit. `INTEL_DB_URL` wijst naar
+`postgres.railway.internal`, en die naam bestaat alleen binnen het
+privénet. Gemeten:
+
+```
+$ railway run --service vibe-intel-api -- npm run migreer -- --droog
+{"niveau":"fout","onderdeel":"cli:migreer","bericht":"migratie mislukt",
+ "fout":{"bericht":"getaddrinfo ENOTFOUND postgres.railway.internal"}}
+$ echo $?
+1
+```
+
+De Postgres-service heeft **geen** publiek eindpunt: er is geen
+`RAILWAY_TCP_PROXY_DOMAIN` en geen `DATABASE_PUBLIC_URL` (gemeten over
+alle 26 variabelen van de service). Dat is opzet — zie §1 — maar het
+maakt de procedure hierboven onuitvoerbaar zoals ze er staat.
+
+**Wat migraties in productie WEL toepast**, en wat in dit document
+ontbrak: `vibe-intel-api` draagt een `preDeployCommand`, en die draait
+*binnen* het privénet, bij elke deploy, vóór de nieuwe container live
+gaat:
+
+```
+npm run migreer && npm run zaai && npm run geo
+```
+
+Gevolg, en dit is de eigenschap om te kennen vóór je iets merget:
+**een merge naar `main` past openstaande migraties toe op productie.**
+Een migratie is hier dus géén losse handeling die je later nog kiest —
+hij hangt aan de deploy. De `&&`-keten is daarbij de enige
+uitkomstmelding die overblijft: `migreer` eindigt met exitcode 1 bij elke
+fout (gemeten), dus als de uitvoer van `zaai` en `geo` in het
+deploylog staat, is `migreer` geslaagd. De structuurlogregels van de
+runner zelf worden door Railway's pre-deploy-logcapture **niet**
+bewaard — vier filterquery's op `deploymentLogs` gaven nul regels.
+
+De drie routes die wél in het privénet uitkomen:
+
+| route | voorwaarde |
+|---|---|
+| `preDeployCommand` | automatisch bij elke deploy; dit is het echte migratiepad |
+| `railway ssh --service <naam> "<commando>"` | vereist een SSH-sleutel in de agent of `~/.ssh`; zonder sleutel weigert de CLI |
+| een tijdelijke `startCommand` | productieconfiguratiewijziging plus een herstart; laatste redmiddel |
+
+Wie de migratiestand van productie wil LEZEN zonder iets te wijzigen,
+heeft daarvoor dus een SSH-sleutel nodig:
+
+```
+railway ssh --service vibe-intel-api \
+  "node -e \"import('./src/kern/db.ts').then(async m=>{const p=m.maakPool();console.log((await m.rijen(p,'select count(*) as n from intel.migraties')).at(0));process.exit(0)})\""
+```
+
+Of, eenvoudiger en met dezelfde uitkomst:
+
+```
+railway ssh --service vibe-intel-api "npm run migreer -- --droog"
+```
+
+`--droog` past niets toe en meldt per migratie of hij zou worden
+toegepast. Nul toe te passen migraties is het bewijs dat de stand klopt.
+
 ---
 
 ## 6. Terugdraaien

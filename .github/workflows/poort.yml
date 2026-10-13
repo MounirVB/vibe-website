@@ -297,3 +297,20 @@ jobs:
         # menselijke goedkeuring, en de sitemap moet met het
         # routeregister kloppen.
         run: node intelligence/ops/publicatiecontract.mjs
+
+      - name: Migratiepoort — destructieve DDL moet benoemd zijn
+        # EEN MERGE NAAR MAIN PAST MIGRATIES TOE OP PRODUCTIE.
+        # vibe-intel-api draagt preDeployCommand
+        #   npm run migreer && npm run zaai && npm run geo
+        # en die draait binnen het privénet vóór de nieuwe container live
+        # gaat. Op 13 oktober 2026 liepen daardoor twee `drop column`-
+        # statements uit migratie 0034 op productie zonder dat iemand er
+        # expliciet toestemming voor gaf. Het was onschadelijk — beide
+        # kolommen waren gemeten leeg en geen commit in de hele historie
+        # las of schreef ze — maar dat was een uitkomst, geen controle.
+        #
+        # Deze poort print wat er bij een merge op productie gebeurt en
+        # faalt op een destructieve statement zonder
+        #   -- DESTRUCTIEF: <reden>
+        # in het migratiebestand.
+        run: node intelligence/ops/migratiepoort.mjs
