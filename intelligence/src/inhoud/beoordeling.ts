@@ -38,6 +38,10 @@ import { IntelFout } from "../kern/fouten.ts";
 export type PublicatieStatus =
   | "DRAFT"
   | "READY_FOR_REVIEW"
+  /* NIEUW IN 3.0.4: een linkvoorstel wacht op een mens, maar is geen
+     feitelijke paginarevisie en mag dus niet in READY_FOR_REVIEW staan.
+     Zie de toelichting bij KLAAR_VOOR_LINKREVIEW in inhoud/voorstel.ts. */
+  | "READY_FOR_LINK_REVIEW"
   | "APPROVED"
   | "PUBLICATION_PRECHECK"
   | "DEPLOYMENT"
@@ -65,6 +69,7 @@ const BESLUIT_NAAR_KOLOM: Readonly<Record<Besluit, string>> = {
 export const STATUS_LABEL: Readonly<Record<PublicatieStatus, string>> = {
   DRAFT: "Concept",
   READY_FOR_REVIEW: "Klaar voor beoordeling",
+  READY_FOR_LINK_REVIEW: "Linkvoorstel, klaar voor beoordeling",
   APPROVED: "Goedgekeurd",
   PUBLICATION_PRECHECK: "Publicatiecontrole",
   DEPLOYMENT: "Uitgerold",
@@ -279,11 +284,12 @@ export async function beoordeel(
      Een voorstel dat de controles niet haalt is geen keuze die aan een
      mens hoort te worden voorgelegd; goedkeuren zou een poort omzeilen
      in plaats van passeren. */
-  if (opdracht.besluit === "goedgekeurd" && rij.publicatie_status !== "READY_FOR_REVIEW") {
+  const BEOORDEELBAAR: readonly PublicatieStatus[] = ["READY_FOR_REVIEW", "READY_FOR_LINK_REVIEW"];
+  if (opdracht.besluit === "goedgekeurd" && !BEOORDEELBAAR.includes(rij.publicatie_status)) {
     throw new IntelFout(
       "validatie",
       `voorstel ${rij.id} staat op ${rij.publicatie_status} en is niet goed te keuren. ` +
-        `Alleen READY_FOR_REVIEW kan worden goedgekeurd.`,
+        `Alleen ${BEOORDEELBAAR.join(" of ")} kan worden goedgekeurd.`,
     );
   }
 

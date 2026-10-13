@@ -47,6 +47,8 @@ export type ProductieMeting = {
   readonly gereedFeitelijk: number;
   readonly gereedAlleenLink: number;
   readonly gereedOnvolledig: number;
+  /** READY_FOR_REVIEW terwijl een opgeslagen controle op FAIL staat. */
+  readonly poortMismatch: number;
   readonly goedgekeurd: number;
   readonly gepubliceerd: number;
   readonly afgewezen: number;
@@ -152,11 +154,15 @@ export async function meetProductie(
         and ${FEITELIJK} and ${VOLLEDIG}`,
     [organisatieId, feitelijk],
   );
+  /* Sinds migratie 0032 wacht een linkvoorstel in zijn EIGEN staat. We
+     tellen beide vormen, zodat een halfgemigreerde database opvalt in
+     plaats van stil nul te melden. */
   const gereedAlleenLink = await getal(
     c,
     `select count(*)::text as n from intel.inhoud_voorstellen
-      where organisatie_id = $1 and publicatie_status = 'READY_FOR_REVIEW'
-        and wijziging_soort = $2`,
+      where organisatie_id = $1
+        and (publicatie_status = 'READY_FOR_LINK_REVIEW'
+             or (publicatie_status = 'READY_FOR_REVIEW' and wijziging_soort = $2))`,
     [organisatieId, LINKSOORT],
   );
   const gereedOnvolledig = await getal(
@@ -165,6 +171,22 @@ export async function meetProductie(
       where organisatie_id = $1 and publicatie_status = 'READY_FOR_REVIEW'
         and ${FEITELIJK} and not (${VOLLEDIG})`,
     [organisatieId, feitelijk],
+  );
+
+  /* DE DETECTOR. Als dit ooit boven nul komt, is er iets langs de poort
+     geglipt: READY_FOR_REVIEW belooft vijf PASS, dus een opgeslagen
+     controle op FAIL in diezelfde rij is een tegenspraak. Dit is de
+     meting die het defect van 3.0.3 zou hebben gevonden. */
+  const poortMismatch = await getal(
+    c,
+    `select count(distinct v.id)::text as n
+       from intel.inhoud_voorstellen v
+       join intel.inhoud_voorstel_controles ct
+         on ct.voorstel_id = v.id and ct.organisatie_id = v.organisatie_id
+      where v.organisatie_id = $1
+        and v.publicatie_status = 'READY_FOR_REVIEW'
+        and ct.oordeel = 'FAIL'`,
+    [organisatieId],
   );
 
   const inStatus = (statussen: readonly string[]) =>
@@ -269,6 +291,7 @@ export async function meetProductie(
     gereedFeitelijk,
     gereedAlleenLink,
     gereedOnvolledig,
+    poortMismatch,
     goedgekeurd,
     gepubliceerd,
     afgewezen,

@@ -40,6 +40,7 @@ function tabel(m: ProductieMeting): void {
   regel("  waarvan READY_FOR_REVIEW", m.gereedFeitelijk);
   regel("READY_FOR_REVIEW alleen-link", m.gereedAlleenLink);
   regel("READY_FOR_REVIEW onvolledig", m.gereedOnvolledig);
+  regel("POORTMISMATCH (gereed mét een FAIL)", m.poortMismatch);
   regel("APPROVED", m.goedgekeurd);
   regel("in publicatieketen", m.inPublicatieketen);
   regel("LIVE_VERIFIED", m.gepubliceerd);
@@ -116,6 +117,7 @@ try {
     gereed_feitelijk: meting.gereedFeitelijk,
     gereed_alleen_link: meting.gereedAlleenLink,
     gereed_onvolledig: meting.gereedOnvolledig,
+    poort_mismatch: meting.poortMismatch,
     goedgekeurd: meting.goedgekeurd,
     in_publicatieketen: meting.inPublicatieketen,
     live_geverifieerd: meting.gepubliceerd,
@@ -135,6 +137,15 @@ try {
   /* Een blootstelling is geen 'geslaagde meting'. Exitcode 2 zodat een
      cron of een release hem niet over het hoofd ziet. */
   if (meting.credentiallek.takenMetCredential > 0) process.exitCode = 2;
+  /* Een rij die READY_FOR_REVIEW heet terwijl een controle faalt is een
+     tegenspraak, niet een detail. Exitcode 3 zodat een release hem ziet. */
+  if (meting.poortMismatch > 0) {
+    console.error(
+      `POORTMISMATCH: ${meting.poortMismatch} voorstel(len) staan op READY_FOR_REVIEW ` +
+        `terwijl een opgeslagen controle op FAIL staat. Draai migratie 0032 of onderzoek de rij.`,
+    );
+    process.exitCode = 3;
+  }
 } finally {
   await sluitAllePools();
 }

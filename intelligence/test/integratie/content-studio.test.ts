@@ -264,10 +264,21 @@ describe("content studio", () => {
       bouwVoorstel(c, kennis, kandidaatOpJuistePagina, "2026-10-12"),
     );
     assert.ok(v);
+    /* AANGESCHERPT IN 3.0.4. Deze toets verwachtte KLAAR_VOOR_REVIEW, en
+       dat was precies het defect: een voorstel met een GEFAALDE
+       verwoordbaarheid belandde in dezelfde staat als een gecontroleerde
+       feitelijke paginarevisie, onder een kop die beloofde dat alle vijf
+       de controles waren gehaald. Een linkvoorstel heeft nu zijn eigen
+       gereedheidsklasse. */
     assert.equal(
       v.eindoordeel,
+      "KLAAR_VOOR_LINKREVIEW",
+      `verwacht KLAAR_VOOR_LINKREVIEW, kreeg ${v.eindoordeel}: ${v.oordeelReden}`,
+    );
+    assert.notEqual(
+      v.eindoordeel,
       "KLAAR_VOOR_REVIEW",
-      `verwacht KLAAR_VOOR_REVIEW, kreeg ${v.eindoordeel}: ${v.oordeelReden}`,
+      "een gefaalde verwoordbaarheid mag NOOIT tot KLAAR_VOOR_REVIEW leiden",
     );
     assert.equal(
       v.controles.find((x) => x.naam === "verwoordbaarheid")?.oordeel,
