@@ -226,13 +226,27 @@ export async function haalOp(opties: HaalOpties): Promise<HaalUitkomst> {
     if (opties.robotsPerHop !== false) {
       const robots = await urlToegestaan(huidigeUrl);
       if (!robots.toegestaan) {
+        /* ONLEESBAAR IS NIET HETZELFDE ALS VERBODEN.
+           Beide stoppen de ophaling — dat eist RFC 9309 en dat is ook
+           wat we willen — maar een onleesbaar beleid is een server die
+           hapert en een verboden pad is een uitgever die nee zegt. De
+           storingstaxonomie moet daarop een ander antwoord geven: het
+           eerste is opnieuw proberen, het tweede opschorten. */
+        const onleesbaar = robots.grond === "onleesbaar";
         return {
           soort: "fout",
           httpStatus: null,
-          foutSoort: hop === 0 ? "robots_verbod" : "robots_verbod_na_redirect",
+          foutSoort: onleesbaar
+            ? hop === 0
+              ? "robots_onleesbaar"
+              : "robots_onleesbaar_na_redirect"
+            : hop === 0
+              ? "robots_verbod"
+              : "robots_verbod_na_redirect",
           bericht:
             robots.reden + (hop > 0 ? ` — bereikt via redirect vanaf ${opties.url}` : ""),
-          herhaalbaar: false,
+          /* Een onleesbaar beleid kan straks wel leesbaar zijn. */
+          herhaalbaar: onleesbaar,
           duurMs: Date.now() - start,
         };
       }

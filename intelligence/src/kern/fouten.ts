@@ -17,6 +17,20 @@ export type FoutSoort =
   | "poort"
   | "budget"
   | "model"
+  /**
+   * De aanroeper vraagt iets dat niet kan met de gegeven waarden: een
+   * beoordeling zonder beoordelaar, een goedkeuring op een voorstel dat
+   * de controles niet haalt. Dat is geen poort die dichtgaat maar een
+   * opdracht die niet klopt, en opnieuw proberen met dezelfde waarden
+   * levert hetzelfde op.
+   */
+  | "validatie"
+  /**
+   * De toestand is veranderd sinds de aanroeper hem las. Hier is
+   * opnieuw proberen WEL zinvol, maar alleen na opnieuw lezen — en dat
+   * is een beslissing van de aanroeper, niet van een retry-lus.
+   */
+  | "conflict"
   | "onbekend";
 
 export class IntelFout extends Error {
@@ -51,6 +65,12 @@ function standaardHerhaalbaar(soort: FoutSoort): boolean {
     case "autorisatie":
     case "poort":
     case "budget":
+    case "validatie":
+      return false;
+    case "conflict":
+      /* Niet automatisch herhalen: de aanroeper moet eerst opnieuw
+         lezen. Een retry met dezelfde verouderde waarden zou precies de
+         fout maken die dit type moet voorkomen. */
       return false;
     case "onbekend":
       return false;

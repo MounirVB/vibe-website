@@ -1,0 +1,413 @@
+/* ============================================================
+   INHOUD — beoordeling en publicatieketen (par. 14, 15, 16)
+   ------------------------------------------------------------
+   Een mens keurt goed, en die goedkeuring geldt voor PRECIES wat hij
+   heeft gezien. Dat laatste is de hele moeilijkheid.
+
+   De voorstelmotor draait elke ronde opnieuw over dezelfde kandidaten
+   en werkt hun rij bij. Zonder binding zou een goedkeuring van gisteren
+   blijven staan op een alinea die vandaag anders is — en dan publiceert
+   het platform iets wat niemand heeft gelezen. Daarom hangt elke
+   beslissing aan de inhoudshash: verandert de inhoud wezenlijk, dan
+   vervalt de goedkeuring en moet er opnieuw naar gekeken worden.
+
+   DE KETEN
+     DRAFT              het voorstel haalt de controles niet
+     READY_FOR_REVIEW   een mens kan er iets van vinden
+     APPROVED           goedgekeurd, gebonden aan een hash
+     PUBLICATION_PRECHECK  de laatste poort vóór uitrol
+     DEPLOYMENT         de wijziging is uitgerold
+     LIVE_VERIFIED      en live teruggezien
+     REJECTED           eindpunt ernaast
+
+   Elke overgang wordt vastgelegd in intel.voorstel_beoordelingen, met
+   de hash waarover is besloten. Dat is append-only: een auditspoor dat
+   je kunt bijwerken is geen auditspoor.
+
+   WAT DEZE MODULE NIET DOET
+   Hij keurt niets zelf goed. Er is altijd een `door` nodig, en die
+   waarde komt uit de ingelogde sessie. Een automatische goedkeuring
+   bestaat hier niet — niet als gemak, niet als test, niet om een
+   acceptatietest groen te krijgen.
+   ============================================================ */
+
+import type pg from "pg";
+import { eenRij, rijen } from "../kern/db.ts";
+import { IntelFout } from "../kern/fouten.ts";
+
+export type PublicatieStatus =
+  | "DRAFT"
+  | "READY_FOR_REVIEW"
+  | "APPROVED"
+  | "PUBLICATION_PRECHECK"
+  | "DEPLOYMENT"
+  | "LIVE_VERIFIED"
+  | "REJECTED";
+
+export type Besluit = "goedgekeurd" | "afgewezen" | "herziening_gevraagd";
+
+/**
+ * Naar het vocabulaire van intel.inhoud_voorstellen.beoordeling.
+ *
+ * Die kolom bestond al met drie waarden in kapitalen (0021) en het
+ * auditspoor van 0029 gebruikt kleine letters met een vierde waarde.
+ * Dat is geen slordigheid om weg te poetsen: de kolom draagt de
+ * LAATSTE beslissing voor de bestaande UI, het auditspoor draagt de
+ * geschiedenis met een fijnere indeling. Eén kaart tussen de twee, zodat
+ * ze niet uiteen kunnen lopen.
+ */
+const BESLUIT_NAAR_KOLOM: Readonly<Record<Besluit, string>> = {
+  goedgekeurd: "GOEDGEKEURD",
+  afgewezen: "AFGEKEURD",
+  herziening_gevraagd: "AANGEPAST",
+};
+
+export const STATUS_LABEL: Readonly<Record<PublicatieStatus, string>> = {
+  DRAFT: "Concept",
+  READY_FOR_REVIEW: "Klaar voor beoordeling",
+  APPROVED: "Goedgekeurd",
+  PUBLICATION_PRECHECK: "Publicatiecontrole",
+  DEPLOYMENT: "Uitgerold",
+  LIVE_VERIFIED: "Live geverifieerd",
+  REJECTED: "Afgewezen",
+};
+
+type VoorstelRij = {
+  id: string;
+  kandidaat_id: number;
+  doel_pad: string | null;
+  wijziging_soort: string;
+  nieuwe_tekst: string | null;
+  eindoordeel: string;
+  publicatie_status: PublicatieStatus;
+  inhouds_hash: string | null;
+  goedgekeurd_hash: string | null;
+  beoordeeld_door: number | null;
+  /** Het e-mailadres van de beoordelaar, voor weergave en audit. */
+  beoordeeld_door_email: string | null;
+  beoordeeld_op: string | null;
+  precheck_uitslag: string | null;
+};
+
+async function leesVoorstel(
+  c: pg.PoolClient,
+  organisatieId: number,
+  voorstelId: string,
+): Promise<VoorstelRij> {
+  const r = await eenRij<VoorstelRij>(
+    c,
+    `select id::text, kandidaat_id, doel_pad, wijziging_soort, nieuwe_tekst, eindoordeel,
+            publicatie_status, inhouds_hash, goedgekeurd_hash, beoordeeld_door,
+            (select g.email from intel.gebruikers g where g.id = beoordeeld_door)
+              as beoordeeld_door_email,
+            beoordeeld_op::text, precheck_uitslag
+       from intel.inhoud_voorstellen
+      where organisatie_id = $1 and id = $2::bigint`,
+    [organisatieId, voorstelId],
+  );
+  if (!r) throw new IntelFout("validatie", `voorstel ${voorstelId} bestaat niet`);
+  return r;
+}
+
+/**
+ * Is de goedkeuring nog geldig?
+ *
+ * Geldig betekent: er IS een goedkeuring, en de inhoud is sindsdien niet
+ * veranderd. Een rij waarvan de hash is doorgeschoven heeft geen geldige
+ * goedkeuring meer, ook al staat er een naam en een datum bij.
+ */
+export function goedkeuringGeldig(rij: {
+  publicatie_status: string;
+  inhouds_hash: string | null;
+  goedgekeurd_hash: string | null;
+}): { geldig: boolean; reden: string } {
+  const na = new Set(["APPROVED", "PUBLICATION_PRECHECK", "DEPLOYMENT", "LIVE_VERIFIED"]);
+  if (!na.has(rij.publicatie_status)) {
+    return { geldig: false, reden: `status ${rij.publicatie_status}: nog niet goedgekeurd` };
+  }
+  if (!rij.goedgekeurd_hash) {
+    return { geldig: false, reden: "goedgekeurd zonder gebonden hash" };
+  }
+  if (rij.goedgekeurd_hash !== rij.inhouds_hash) {
+    return {
+      geldig: false,
+      reden:
+        `de inhoud is na goedkeuring gewijzigd: goedgekeurd op ` +
+        `${rij.goedgekeurd_hash.slice(0, 12)}, nu ${(rij.inhouds_hash ?? "geen").slice(0, 12)}. ` +
+        `Er is opnieuw een beoordeling nodig.`,
+    };
+  }
+  return { geldig: true, reden: `gebonden aan ${rij.goedgekeurd_hash.slice(0, 12)}` };
+}
+
+export type BeoordeelUitslag = {
+  readonly voorstelId: string;
+  readonly besluit: Besluit;
+  readonly statusVoor: PublicatieStatus;
+  readonly statusNa: PublicatieStatus;
+  readonly gebondenHash: string;
+};
+
+/**
+ * Legt een menselijk besluit vast.
+ *
+ * `gebruikerId` is verplicht en verwijst naar een bestaand account; de
+ * aanroeper haalt die uit de sessie. Een naam als vrije tekst zou
+ * niets bewijzen — iedereen kan 'beheer@vibeenergy.nl' typen.
+ * `verwachteHash` is de hash die de beoordelaar
+ * op zijn scherm zag: klopt die niet meer met de rij, dan is het
+ * voorstel ondertussen gewijzigd en wordt het besluit GEWEIGERD. Zo kan
+ * een beoordelaar niet per ongeluk iets anders goedkeuren dan hij las.
+ */
+export async function beoordeel(
+  c: pg.PoolClient,
+  organisatieId: number,
+  opdracht: {
+    voorstelId: string;
+    besluit: Besluit;
+    /** Het account dat besluit. Komt uit de sessie, niet uit invoer. */
+    gebruikerId: number;
+    notitie?: string | null;
+    /** De hash zoals getoond aan de beoordelaar. */
+    verwachteHash: string;
+  },
+): Promise<BeoordeelUitslag> {
+  /* HET ACCOUNT MOET BESTAAN EN BIJ DEZE ORGANISATIE HOREN.
+     Dit is geen formaliteit: zonder deze controle kan een
+     gebruikers-id uit een andere organisatie een voorstel goedkeuren,
+     en dan is het auditspoor onwaar. */
+  const gebruiker = await eenRij<{ email: string }>(
+    c,
+    `select email from intel.gebruikers
+      where id = $1 and organisatie_id = $2 and actief`,
+    [opdracht.gebruikerId, organisatieId],
+  );
+  if (!gebruiker) {
+    throw new IntelFout(
+      "autorisatie",
+      `gebruiker ${opdracht.gebruikerId} is geen actief account van deze organisatie; ` +
+        `een beoordeling zonder geldig account wordt niet vastgelegd`,
+    );
+  }
+  const door = gebruiker.email;
+  const rij = await leesVoorstel(c, organisatieId, opdracht.voorstelId);
+
+  if (!rij.inhouds_hash) {
+    throw new IntelFout(
+      "validatie",
+      `voorstel ${rij.id} heeft geen inhoudshash; er is niets om een besluit aan te binden`,
+    );
+  }
+
+  /* DE HASH DIE DE BEOORDELAAR ZAG MOET DE HUIDIGE ZIJN.
+     Anders keurt iemand goed wat hij een minuut eerder op zijn scherm
+     had, terwijl de motor er intussen een andere alinea in heeft gezet.
+     Dit is dezelfde gedachte als een optimistische lock, maar met de
+     inhoud als versie in plaats van een teller. */
+  if (opdracht.verwachteHash !== rij.inhouds_hash) {
+    throw new IntelFout(
+      "conflict",
+      `het voorstel is gewijzigd sinds u het opende (u zag ` +
+        `${opdracht.verwachteHash.slice(0, 12)}, er staat nu ${rij.inhouds_hash.slice(0, 12)}). ` +
+        `Lees het opnieuw voordat u besluit.`,
+    );
+  }
+
+  /* ALLEEN BEOORDEELBARE VOORSTELLEN.
+     Een voorstel dat de controles niet haalt is geen keuze die aan een
+     mens hoort te worden voorgelegd; goedkeuren zou een poort omzeilen
+     in plaats van passeren. */
+  if (opdracht.besluit === "goedgekeurd" && rij.publicatie_status !== "READY_FOR_REVIEW") {
+    throw new IntelFout(
+      "validatie",
+      `voorstel ${rij.id} staat op ${rij.publicatie_status} en is niet goed te keuren. ` +
+        `Alleen READY_FOR_REVIEW kan worden goedgekeurd.`,
+    );
+  }
+
+  const statusNa: PublicatieStatus =
+    opdracht.besluit === "goedgekeurd"
+      ? "APPROVED"
+      : opdracht.besluit === "afgewezen"
+        ? "REJECTED"
+        : /* Herziening gevraagd: terug naar concept, want er moet iets
+             veranderen voordat er weer iets te beoordelen is. */
+          "DRAFT";
+
+  await c.query(
+    `update intel.inhoud_voorstellen
+        set publicatie_status = $3,
+            goedgekeurd_hash  = case when $4 = 'goedgekeurd' then $5 else null end,
+            beoordeeld_door   = $6,
+            beoordeeld_op     = now(),
+            beoordeling       = $8,
+            beoordeling_notitie = $7
+      where organisatie_id = $1 and id = $2::bigint`,
+    [
+      organisatieId,
+      rij.id,
+      statusNa,
+      opdracht.besluit,
+      rij.inhouds_hash,
+      opdracht.gebruikerId,
+      opdracht.notitie ?? null,
+      BESLUIT_NAAR_KOLOM[opdracht.besluit],
+    ],
+  );
+
+  await c.query(
+    `insert into intel.voorstel_beoordelingen
+       (organisatie_id, voorstel_id, inhouds_hash, besluit, door, door_gebruiker_id,
+        notitie, status_voor, status_na)
+     values ($1, $2::bigint, $3, $4, $5, $6, $7, $8, $9)`,
+    [
+      organisatieId,
+      rij.id,
+      rij.inhouds_hash,
+      opdracht.besluit,
+      /* Het adres zoals het NU is: een momentopname, zodat het spoor
+         niet meebeweegt als het account later wordt hernoemd. */
+      door,
+      opdracht.gebruikerId,
+      opdracht.notitie ?? null,
+      rij.publicatie_status,
+      statusNa,
+    ],
+  );
+
+  return {
+    voorstelId: rij.id,
+    besluit: opdracht.besluit,
+    statusVoor: rij.publicatie_status,
+    statusNa,
+    gebondenHash: rij.inhouds_hash,
+  };
+}
+
+export type PrecheckControle = {
+  readonly naam: string;
+  readonly oordeel: "PASS" | "FAIL";
+  readonly reden: string;
+};
+
+export type PrecheckUitslag = {
+  readonly uitslag: "PASS" | "FAIL";
+  readonly controles: readonly PrecheckControle[];
+};
+
+/**
+ * De laatste poort vóór uitrol (par. 16).
+ *
+ * Deze controle staat NA de goedkeuring en niet ervoor, en dat is geen
+ * dubbelop: tussen goedkeuren en uitrollen kan de wereld veranderen. De
+ * website kan een nieuwe versie hebben gekregen, de doelpagina kan
+ * verdwenen zijn, en de inhoud kan opnieuw zijn samengesteld. Een
+ * precheck die vóór de goedkeuring loopt bewijst niets over het moment
+ * waarop er daadwerkelijk iets wordt gepubliceerd.
+ */
+export async function publicatiePrecheck(
+  c: pg.PoolClient,
+  organisatieId: number,
+  voorstelId: string,
+  context: {
+    /** De routes die het sitekennisartefact nu als gepubliceerd kent. */
+    gepubliceerdeRoutes: readonly string[];
+    /** De websiteversie waarop de goedkeuring is gebaseerd. */
+    websiteVersie: string;
+    /** De websiteversie van het artefact dat NU geldt. */
+    huidigeWebsiteVersie: string;
+  },
+): Promise<PrecheckUitslag> {
+  const rij = await leesVoorstel(c, organisatieId, voorstelId);
+  const controles: PrecheckControle[] = [];
+  const voeg = (naam: string, ok: boolean, reden: string) =>
+    controles.push({ naam, oordeel: ok ? "PASS" : "FAIL", reden });
+
+  const binding = goedkeuringGeldig(rij);
+  voeg("goedkeuring geldig", binding.geldig, binding.reden);
+
+  voeg(
+    "menselijke beoordelaar",
+    rij.beoordeeld_door !== null,
+    rij.beoordeeld_door !== null
+      ? `goedgekeurd door account ${rij.beoordeeld_door}` +
+        (rij.beoordeeld_door_email ? ` (${rij.beoordeeld_door_email})` : "")
+      : "geen beoordelaar vastgelegd",
+  );
+
+  const doelBestaat = rij.doel_pad !== null && context.gepubliceerdeRoutes.includes(rij.doel_pad);
+  voeg(
+    "doelpagina bestaat nog",
+    doelBestaat,
+    doelBestaat
+      ? `${rij.doel_pad} staat in het sitekennisartefact`
+      : `${rij.doel_pad ?? "geen doelpad"} staat NIET in de ${context.gepubliceerdeRoutes.length} gepubliceerde routes`,
+  );
+
+  /* DE WEBSITE MAG NIET ONDER DE GOEDKEURING ZIJN VERSCHOVEN.
+     Is de site gewijzigd sinds de goedkeuring, dan kan de sectie waar
+     deze alinea in moest anders zijn of niet meer bestaan. Dat is geen
+     reden om te weigeren maar wel om opnieuw te kijken. */
+  const zelfdeSite = context.websiteVersie === context.huidigeWebsiteVersie;
+  voeg(
+    "website onveranderd sinds goedkeuring",
+    zelfdeSite,
+    zelfdeSite
+      ? `websiteversie ${context.huidigeWebsiteVersie.slice(0, 12)} ongewijzigd`
+      : `de website is gewijzigd: goedgekeurd op ${context.websiteVersie.slice(0, 12)}, ` +
+        `nu ${context.huidigeWebsiteVersie.slice(0, 12)}`,
+  );
+
+  const heeftTekst = (rij.nieuwe_tekst ?? "").trim().length > 0;
+  voeg(
+    "er is iets te publiceren",
+    heeftTekst && rij.wijziging_soort !== "geen",
+    heeftTekst
+      ? `wijzigingssoort ${rij.wijziging_soort}, ${(rij.nieuwe_tekst ?? "").length} tekens`
+      : "geen nieuwe tekst",
+  );
+
+  const uitslag: "PASS" | "FAIL" = controles.every((x) => x.oordeel === "PASS") ? "PASS" : "FAIL";
+
+  await c.query(
+    `update intel.inhoud_voorstellen
+        set precheck_op = now(),
+            precheck_uitslag = $3,
+            publicatie_status = case
+              when $3 = 'PASS' then 'PUBLICATION_PRECHECK'
+              else publicatie_status
+            end
+      where organisatie_id = $1 and id = $2::bigint`,
+    [organisatieId, rij.id, uitslag],
+  );
+
+  return { uitslag, controles };
+}
+
+/** De beoordelingsgeschiedenis van één voorstel, nieuwste eerst. */
+export async function beoordelingsgeschiedenis(
+  c: pg.PoolClient,
+  organisatieId: number,
+  voorstelId: string,
+): Promise<
+  readonly {
+    besluit: string;
+    door: string;
+    door_gebruiker_id: string;
+    notitie: string | null;
+    status_voor: string;
+    status_na: string;
+    inhouds_hash: string;
+    op: string;
+  }[]
+> {
+  return rijen(
+    c,
+    `select besluit, door, door_gebruiker_id::text, notitie, status_voor, status_na,
+            inhouds_hash, op::text
+       from intel.voorstel_beoordelingen
+      where organisatie_id = $1 and voorstel_id = $2::bigint
+      order by op desc, id desc`,
+    [organisatieId, voorstelId],
+  );
+}

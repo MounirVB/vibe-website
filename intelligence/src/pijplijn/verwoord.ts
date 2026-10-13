@@ -99,7 +99,10 @@ const MEERVOUD_EENHEID: Readonly<Record<string, string>> = {
 export function getalInWoorden(waarde: number, eenheid: string | null): string {
   const e = (eenheid ?? "").trim();
   const isGeld = e === "EUR";
-  const voorvoegsel = isGeld ? "EUR " : "";
+  /* '€200 miljard', niet 'EUR 200 miljard': dat is de vorm die de
+     opdracht in par. 8 als aanvaardbaar opschrijft, en het is ook de
+     vorm die op de website staat. Geen spatie na het teken. */
+  const voorvoegsel = isGeld ? "\u20ac" : "";
   const eenheidVorm =
     MEERVOUD_EENHEID[e] && waarde !== 1 ? MEERVOUD_EENHEID[e]! : e;
   const achtervoegsel = isGeld ? "" : e ? (e === "%" ? "%" : ` ${eenheidVorm}`) : "";
@@ -148,6 +151,16 @@ export type VerwoordInvoer = {
   readonly uitgever: string | null;
   /** De publicatiedatum van de bron, als ISO-dag. */
   readonly brondatum: string | null;
+  /**
+   * De bronzin zelf.
+   *
+   * Nodig omdat sommige zinsvormen een BESTEMMING of een object noemen
+   * ('in het elektriciteitsnet'). Of die er hoort te staan, kan alleen
+   * de bron zeggen. Zonder dit veld zette de netinvesteringsvorm die
+   * bestemming onder elk bedrag, ook onder € 3 miljard aan
+   * milieu-investeringen via MIA/Vamil.
+   */
+  readonly bronzin: string | null;
 };
 
 const MAAND_NL = [
@@ -189,6 +202,13 @@ export function verwoord(inv: VerwoordInvoer): string | null {
   const subjectMeervoud = subjectVorm?.meervoud ?? false;
   const bron = inv.uitgever ? `Volgens ${inv.uitgever}` : "Volgens de bron";
   const periode = s.periode ? ` ${s.periode}` : "";
+  /* DE TIJDGRENS HOORT IN DE ZIN, niet in een voetnoot. Par. 8: wie hem
+     weglaat maakt een andere bewering. */
+  /* Een kaal jaarbereik ('2027-2030') leest niet als bijwoordelijke
+     bepaling; 'in de periode 2027-2030' wel. */
+  const horizon = s.horizon
+    ? ` ${/^\d{4}-\d{4}$/.test(s.horizon) ? `in de periode ${s.horizon}` : s.horizon}`
+    : "";
   const waarde = waardeInZin(u);
 
   /* ---------- PERCENTAGE: een verandering van iets ---------- */
@@ -196,10 +216,10 @@ export function verwoord(inv: VerwoordInvoer): string | null {
     const grondtalVorm = FENOMEEN_ZINSVORM[grondtalSleutel!] ?? fenomeen;
     const voor = subject ? ` voor ${subject}` : "";
     if (s.richting === "stijging") {
-      return `${bron} stijgt ${grondtalVorm}${voor}${periode} met ${waarde}.`;
+      return `${bron} stijgt ${grondtalVorm}${voor}${horizon}${periode} met ${waarde}.`;
     }
     if (s.richting === "daling") {
-      return `${bron} daalt ${grondtalVorm}${voor}${periode} met ${waarde}.`;
+      return `${bron} daalt ${grondtalVorm}${voor}${horizon}${periode} met ${waarde}.`;
     }
     if (s.richting === "ongewijzigd") {
       return `${bron} blijft ${grondtalVorm}${voor}${periode} ongewijzigd.`;
@@ -215,10 +235,36 @@ export function verwoord(inv: VerwoordInvoer): string | null {
 
   /* ---------- BEDRAG ---------- */
   if (s.soort === "bedrag") {
+    /* HERKADERD BEDRAG: GEEN ZIN.
+       De poort weigert dit al (controle 11), maar deze functie hoort
+       zelfstandig te weigeren wat ze niet getrouw kan opschrijven.
+       Anders levert een aanroeper die de poort overslaat alsnog
+       'investeren de netbeheerders tot 2040 circa EUR33 miljard in het
+       elektriciteitsnet' voor een bron die zegt dat die EUR33 miljard
+       juist BESPAARD wordt. Twee sloten op dezelfde deur, net als bij
+       het ontbrekende grondtal hierboven. */
+    if (s.herkadering) return null;
     const door = subject ? `${subject} ` : "";
     if (s.fenomeen === "netinvestering") {
+      /* ZONDER SUBJECT GEEN ZIN.
+         'investeert in 2025 EUR 3 miljard in het elektriciteitsnet' is
+         geen Nederlandse zin: er is niemand die investeert. Gemeten op
+         uitspraak 55. Wie er investeert is geen stijlkwestie maar de
+         kern van het feit, dus ontbreekt het subject, dan komt er geen
+         zin en weigert de poort. */
+      if (!subject) return null;
       const werkwoord = vervoeg("investeren", subjectMeervoud);
-      return `${bron} ${werkwoord} ${door}${periode ? `${periode.trim()} ` : ""}${waarde} in het net.`
+      const tijd = [horizon.trim(), periode.trim()].filter(Boolean).join(" ");
+      /* DE BESTEMMING ALLEEN ALS DE BRON HEM NOEMT.
+         Deze tak zette 'in het elektriciteitsnet' onder ELK bedrag met
+         dit fenomeen. Uitspraak 56 ging over € 3 miljard aan
+         MILIEU-investeringen via MIA/Vamil; de zin maakte daar een
+         investering in het stroomnet van. Dat is geen verwoording meer
+         maar een verzonnen bestemming. Staat het woord niet in de bron,
+         dan blijft de bestemming weg. */
+      const noemtNet = /elektriciteitsnet|stroomnet|hoogspanningsnet/i.test(inv.bronzin ?? "");
+      const waarin = noemtNet ? " in het elektriciteitsnet" : "";
+      return `${bron} ${werkwoord} ${door}${tijd ? `${tijd} ` : ""}${waarde}${waarin}.`
         .replace(/\s+/g, " ");
     }
     if (s.richting === "stijging") {
@@ -227,7 +273,7 @@ export function verwoord(inv: VerwoordInvoer): string | null {
     if (s.richting === "daling") {
       return `${bron} daalt ${fenomeen}${subject ? ` voor ${subject}` : ""}${periode} met ${waarde}.`;
     }
-    return `${bron} ${vervoeg("bedragen", false)} ${fenomeen}${subject ? ` voor ${subject}` : ""}${periode} ${waarde}.`;
+    return `${bron} ${vervoeg("bedragen", false)} ${fenomeen}${subject ? ` voor ${subject}` : ""}${horizon}${periode} ${waarde}.`;
   }
 
   /* ---------- TERMIJN: een doorlooptijd of wachttijd ---------- */

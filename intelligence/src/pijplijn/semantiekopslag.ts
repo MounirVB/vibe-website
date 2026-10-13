@@ -157,7 +157,13 @@ export function verrijk(rij: SemantiekRij): Verrijking | null {
 
   const semantiek = leidSemantiekAf(rij.tekst, u);
   const houdbaarheid = HOUDBAARHEID_DAGEN[semantiek.soort] ?? null;
-  const invoer = { semantiek, uitdrukking: u, uitgever: rij.uitgever, brondatum: rij.brondatum };
+  const invoer = {
+    semantiek,
+    uitdrukking: u,
+    uitgever: rij.uitgever,
+    brondatum: rij.brondatum,
+    bronzin: rij.tekst,
+  };
 
   const poort = verwoordbaarheidspoort({
     semantiek,
@@ -246,7 +252,16 @@ export async function backfillSemantiek(
 ): Promise<BackfillRapport> {
   const vanaf = opties.vanafId ?? 0;
   const max = opties.max ?? 500;
-  const filter = opties.alles ? "" : "and u.semantiek_soort is null";
+  /* WAT 'NOG NIET GEDAAN' BETEKENT.
+     De eerste versie zocht alleen op `semantiek_soort is null`: nog geen
+     semantiek afgeleid. Een uitspraak die WEL semantiek heeft maar nog
+     geen verwoordbaarheidsoordeel viel daarmee buiten de backfill, en
+     dat is precies de uitspraak die uit de schaalcorrectie komt: de
+     semantiek is overgenomen, het oordeel is bewust leeggelaten omdat
+     de waarde veranderde. Zonder deze tweede voorwaarde kreeg zo'n
+     gecorrigeerde uitspraak nooit een zin en bleef de reparatie zonder
+     effect. Niet af is: geen semantiek OF geen oordeel. */
+  const filter = opties.alles ? "" : "and (u.semantiek_soort is null or u.verwoordbaar is null)";
 
   const rijenUit = await metOrganisatie(pool, { organisatieId }, (c) =>
     rijen<SemantiekRij>(c, LEESQUERY.replace("%FILTER%", filter), [organisatieId, vanaf, max]),
@@ -319,6 +334,7 @@ export async function schrijfSemantiek(
             bereik_max          = $11,
             schaalwoord         = $12,
             periode             = $13,
+            horizon             = $20,
             bron_vindplaats     = $14,
             verwoorde_zin       = $18,
             scope_waarschuwing  = $19,
@@ -348,6 +364,7 @@ export async function schrijfSemantiek(
       v.semantiek.herkomst,
       v.zin,
       v.semantiek.scopeWaarschuwing,
+      v.semantiek.horizon,
     ],
   );
 }

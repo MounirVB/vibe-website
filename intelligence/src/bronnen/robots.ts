@@ -195,21 +195,41 @@ export async function robotsVoorOrigin(origin: string): Promise<RobotsUitkomst> 
 }
 
 /** Mag deze concrete URL opgehaald worden volgens robots van zijn host? */
+/**
+ * Waarom het antwoord is wat het is.
+ *
+ * Het onderscheid tussen 'onleesbaar' en 'verboden_pad' is geen detail.
+ * Beide leiden tot NIET ophalen — RFC 9309 schrijft bij een onleesbaar
+ * beleid een volledig verbod voor en daar houden we ons aan — maar ze
+ * vragen een TEGENGESTELDE handeling:
+ *
+ *   verboden_pad  de uitgever zegt nee. Opschorten en hem vragen.
+ *   onleesbaar    we weten het niet. Straks opnieuw kijken.
+ *
+ * Gemeten op 12 oktober 2026 bij TenderNed: /robots.txt geeft 302 naar
+ * /cms/robots.txt, en die gaf bij vijf pogingen vier keer 200 en één
+ * keer 503. Dat is een wisselvallige server, geen uitgever die ons
+ * buitensluit. Zonder dit onderscheid zou die bron als 'toegang
+ * beperkt' worden opgeschort en zouden we een week lang niets ophalen
+ * van een bron die het gewoon doet.
+ */
+export type RobotsGrond = "toegestaan" | "geen_robots" | "onleesbaar" | "verboden_pad" | "ongeldige_url";
+
 export async function urlToegestaan(
   url: string,
-): Promise<{ toegestaan: boolean; reden: string }> {
+): Promise<{ toegestaan: boolean; reden: string; grond: RobotsGrond }> {
   let u: URL;
   try {
     u = new URL(url);
   } catch {
-    return { toegestaan: false, reden: "geen geldige URL" };
+    return { toegestaan: false, reden: "geen geldige URL", grond: "ongeldige_url" };
   }
   const uitkomst = await robotsVoorOrigin(u.origin);
   if (uitkomst.robotsStatus === "onbekend") {
-    return { toegestaan: false, reden: uitkomst.bewijs };
+    return { toegestaan: false, reden: uitkomst.bewijs, grond: "onleesbaar" };
   }
   if (!uitkomst.robots) {
-    return { toegestaan: true, reden: uitkomst.bewijs };
+    return { toegestaan: true, reden: uitkomst.bewijs, grond: "geen_robots" };
   }
   const ok = padToegestaan(uitkomst.robots, u.pathname + u.search);
   return {
@@ -217,6 +237,7 @@ export async function urlToegestaan(
     reden: ok
       ? `pad ${u.pathname} toegestaan volgens robots.txt van ${u.host}`
       : `pad ${u.pathname} is door robots.txt van ${u.host} verboden`,
+    grond: ok ? "toegestaan" : "verboden_pad",
   };
 }
 

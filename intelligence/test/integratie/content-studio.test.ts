@@ -26,10 +26,17 @@ import { after, before, describe, test } from "node:test";
 import { alsEigenaar, maakOrganisatie, maakWegwerpdatabase, type Wegwerpdatabase } from "../harnas.ts";
 import { metOrganisatie, rijen } from "../../src/kern/db.ts";
 import { bouwVoorstel, bewaarVoorstel } from "../../src/inhoud/voorstel.ts";
-import { hashVan, type SitekennisBestand } from "../../src/site/sitekennis.ts";
+import {
+  hashVan,
+  SITEKENNIS_SCHEMA,
+  telIndextermen,
+  type SitekennisBestand,
+} from "../../src/site/sitekennis.ts";
 
 /** Een artefact met twee pagina's: één die subsidies wegwijst, één die ze bezit. */
 function maakKennis(): SitekennisBestand {
+  /* De frequenties komen uit dezelfde teller als het echte artefact,
+     zodat de fixture geen eigen getallen verzint. */
   const paginas = [
     {
       route: "/kennis/subsidiemechanismen",
@@ -48,6 +55,11 @@ function maakKennis(): SitekennisBestand {
       secties: [{ kop: "Hoe een mechanisme werkt", tekst: "Een mechanisme verlaagt de investering." }],
       sectiekoppen: ["Hoe een mechanisme werkt"],
       interneLinks: ["/contact"],
+      termfrequenties: telIndextermen(
+        "Subsidiemechanismen Hoe subsidiemechanismen werken " +
+          "Dit antwoord beschrijft hoe mechanismen werken. Een subsidie kan een investering dekken. " +
+          "Hoe een mechanisme werkt Een mechanisme verlaagt de investering.",
+      ),
       onderwerpen: ["subsidie"],
       oplossingen: ["zonnestroom"],
     },
@@ -73,12 +85,19 @@ function maakKennis(): SitekennisBestand {
       ],
       sectiekoppen: ["Welke regelingen er zijn"],
       interneLinks: [],
+      termfrequenties: telIndextermen(
+        "Subsidies Subsidies voor energieopslag " +
+          "De SDE en de EIA zijn regelingen voor subsidie op energie-investeringen. " +
+          "Welke subsidieregeling past, hangt af van de investering. Een subsidieregeling " +
+          "kent jaarlijkse budgetten. Welke regelingen er zijn " +
+          "De SDE en EIA worden jaarlijks bijgesteld; elke subsidieregeling heeft een eigen budget.",
+      ),
       onderwerpen: ["subsidie"],
       oplossingen: ["zonnestroom"],
     },
   ];
   const kennis = {
-    schema: 2,
+    schema: SITEKENNIS_SCHEMA,
     websiteVersie: "c".repeat(64),
     routesGegenereerd: "2026-10-12",
     aantalPaginas: paginas.length,

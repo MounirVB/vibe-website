@@ -35,6 +35,38 @@ test("htmlNaarTekst houdt blokstructuur en decodeert entiteiten", () => {
   assert.match(tekst, /tarief € 12/);
 });
 
+test("htmlNaarTekst pakt DUBBEL geencodeerde entiteiten uit", () => {
+  /* Gemeten in de uitspraaklaag: twee van de 57 uitspraken droegen
+     '&amp;amp;amp;' en 'ge&amp;amp;iuml;nstalleerd'. De feed encodeert
+     dubbel; een enkele decodeerslag laat dan '&amp;iuml;' staan, en zo
+     stond het in de database. Op een pagina zou er letterlijk
+     '&amp;iuml;' komen te staan. */
+  assert.equal(
+    htmlNaarTekst("<p>De Autoriteit Consument &amp;amp; Markt (ACM)</p>"),
+    "De Autoriteit Consument & Markt (ACM)",
+  );
+  assert.equal(
+    htmlNaarTekst("<p>De warmtepomp moet ge&amp;iuml;nstalleerd zijn</p>"),
+    "De warmtepomp moet geïnstalleerd zijn",
+  );
+});
+
+test("htmlNaarTekst kent de Nederlandse letters met diakriet", () => {
+  /* Zonder deze entiteiten bleef '&iuml;' letterlijk staan in tekst die
+     vervolgens door de poorten en het bewijspaneel ging. */
+  assert.equal(htmlNaarTekst("<p>Caf&eacute;, co&ouml;peratie, &uuml;ber</p>"), "Café, coöperatie, über");
+  assert.equal(htmlNaarTekst("<p>3 &times; 2 m&sup2;</p>"), "3 × 2 m²");
+});
+
+test("het uitpakken stopt na drie slagen", () => {
+  /* Begrensd, zodat een reeks die zich blijft uitpakken niet eindeloos
+     doorloopt. Drie slagen dekt dubbel en driedubbel geencodeerd. */
+  const diep = "&amp;amp;amp;amp;amp;amp;amp;amp;lt;";
+  const uit = htmlNaarTekst(`<p>${diep}</p>`);
+  assert.ok(uit.length < diep.length, `niets uitgepakt: ${uit}`);
+  assert.ok(uit.includes("&"), `alles weggevallen: ${uit}`);
+});
+
 test("htmlNaarTekst gooit script- en styleblokken weg", () => {
   const html = "<p>echt</p><script>alert('nep')</script><style>.x{}</style>";
   assert.equal(htmlNaarTekst(html), "echt");
