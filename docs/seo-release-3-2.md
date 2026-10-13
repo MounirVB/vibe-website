@@ -314,13 +314,19 @@ structureel nooit. Dat is gerepareerd, met begrensde gelijktijdigheid als voorwa
 met een timeout van 20 s zou een 430-run een staart tot ~2,4 uur geven) en met de noemer altijd in
 de uitvoer.
 
-`intelligence/db/migraties/0034_indexatie_dagstand.sql` is **geschreven en NIET toegepast.**
+`intelligence/db/migraties/0034_indexatie_dagstand.sql` is **geschreven, in CI bewezen, en NIET op
+productie toegepast.**
 `intel.indexatie_status` kan per constructie geen trend bevatten: `unique (organisatie_id, url,
 bron)` met `on conflict … do update` zet `laatst_gecontroleerd_op = now()` en vernietigt daarmee de
 vorige stand. Over 33 migraties bestaat geen dagstandtabel. De migratie is additief en draagt
 identity-PK, foreign key, RLS met `*_eigen_organisatie`-policy en grants — zonder elk van die vier
-vuurt een bestaande invariant in `0008_invarianten.sql`. **Toepassen is een aparte, expliciete
-handeling tegen de productiedatabase en staat in het manifest.**
+vuurt een bestaande invariant in `0008_invarianten.sql`.
+
+**Gemeten in CI tegen een echte PostgreSQL 17.11:** `MIGRATIES PASS — 34/34 toegepast, drift 0`,
+`INVARIANTEN PASS — RLS, functierechten, auditspoor en bewijsplicht: 0 bevindingen`,
+integratietoetsen 185/185. De migratie is dus niet langer onbewezen in uitvoering; wat ontbreekt is
+uitsluitend de toepassing op **productie**, en die staat in het manifest omdat de productiedatabase
+privé-only is en een schemawijziging daar een eigen, expliciete handeling is.
 
 Gemeten en bevestigd: er staat **nul** code in deze repo die een sitemap bij Google indient of de
 Indexing API aanroept, en er is nu een poort die een `webmasters`-schrijfscope of een
@@ -398,7 +404,7 @@ Niets uit deze lijst zit in deze release.
 | 5 | **Navigatie voor `/energieadvies` en `/verduurzaming-bedrijfspanden`** | Gemeten: de enige 2 van de 10 `oplossing`-routes die in géén van de vier navigatieoppervlakken staan. Commit `6b47dc9` maakte alle vier nieuwe oplossingpagina's én is de laatste commit die `chrome.js` aanraakte — hij nam `/laadplein` en `/netcongestie` op en sloeg deze twee over, zonder reden. Repareren is per definitie een sitewide blok, dus een navigatiebesluit. |
 | 6 | **10.442 zusterlinks verwijderen** (52% van alle `<main>`-links, 337 pagina's) | Gesimuleerd gunstig, maar niet nagemeten tegen poort 8 en de linkgraaf ná generatie. |
 | 7 | **Verwant-blok op de vier bevroren masters** | Grootste gemeten hefboom (1.559 inkomende links die nergens heen gaan), maar expliciet tegen `herstel-bestaand.mjs` en `audit.mjs:346-352`. |
-| 8 | **Migratie 0034 toepassen** | Additief en veilig door constructie, maar **onbewezen in uitvoering**: er was geen database beschikbaar en de productiedatabase is privé-only. |
+| 8 | **Migratie 0034 op PRODUCTIE toepassen** | In CI bewezen tegen een echte PostgreSQL 17.11 (34/34 toegepast, drift 0, invarianten 0 bevindingen, integratietoetsen 185/185), maar de productiedatabase is privé-only (`postgres.railway.internal`, `railway connect` eist een SSH-sleutel). Een schemawijziging daar is een eigen, expliciete handeling en geen onderdeel van een websitedeploy. |
 | 9 | **`Cache-Control` op de subresources** | Googlebot haalt per render acht gedeelde bestanden opnieuw op; 2.082 KiB assets tegen 341 KiB documentbytes (6,1:1), de woff2 alleen 850 KiB (41%). Maar: ETag staat op 430/430 en hervalidatie werkt, en Googlebot stuurde **0** conditionele verzoeken — hij negeerde signalen die hij al had. De winst is dus een hypothese. Alle acht namen zijn ongehasht, en een lange `max-age` op `/_consent.js` is een nalevingsrisico. `railway cdn` niet blind omzetten: `available: true, enabled: false`, en `htmlLastPurgedEpoch` wijst erop dat hij ook HTML kan cachen. |
 | 10 | **De 107 onverwezen bestanden (51,75 MiB)** | Uitsluiten van de deploy maakt die paden 404; eerst de Railway-toegangslogs. Uit de repo verwijderen breekt 27 social cards en de maak-webp-masters. |
 
@@ -440,6 +446,12 @@ klein is: het pixelblok achter `vibeConsent.on('marketing', …)` en de `<noscri
 
 ## 9 · Wat niet is gemeten, en waarom
 
+0. **Het grootboek dat CI vond, en wij niet.** De eerste CI-run faalde op één stap:
+   `SITEKENNIS FAIL — gecommit 437d0608…, werkelijk 3d4ec1d0…`. `intelligence/data/sitekennis.json`
+   draagt een hash over de websitebestanden, en de inhoudscorrecties uit §5.3 maakten die ongeldig.
+   Lokaal was dat niet te zien omdat de stap `npm run poort` tot deze release in
+   `ci-lokaal.sh` ontbrak — precies het gat uit §5.1. De poort werkte dus zoals bedoeld, en het
+   gat dat hem lokaal onzichtbaar maakte is in dezelfde release gedicht.
 1. **Search Console: alles.** Geen credentials, geen API-client, geen export. Daarmee: de 7.728
    404-URL's, welke 35 geïndexeerd zijn, het propertytype, de 7.530 onverklaarde uitsluitingen, en
    metrieken 3, 4, 5, 7, 8, 9 en 10 van het monitoringrapport. Alle zeven schermbeeldcijfers uit de
