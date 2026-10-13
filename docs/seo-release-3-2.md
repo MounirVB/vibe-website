@@ -29,15 +29,18 @@ Vastgesteld 13 oktober 2026. Alles hieronder is in die sessie gemeten, behalve w
 | Service | `vibe-website` (`0e3c1eee-47ad-4e52-aaf6-7eb9892e0229`), builder RAILPACK, provider `staticfile` |
 | Resolveert | Railpack 0.40.1 → **Caddy 2.11.4** (uit de bouwlog van de actieve deploy) |
 | Gedeployde SHA bij aanvang | `078785a`, SUCCESS 2026-10-13T10:50:12Z |
-| Gedeployde SHA bij afsluiting | `edc10d2`, SUCCESS 2026-10-13T12:11:57Z (via `be8b0ed`) |
+| `main` schoof tijdens de sessie | `078785a` → `be8b0ed` (#21) → `edc10d2` (#22) → `46aa0fb` (#23) |
+| Basis van deze release | `46aa0fb` |
 | Canonieke inventaris | **430** URL's in `sitemap.xml` → `sitemap-nationaal.xml` (80) + `sitemap-regios.xml` (350) |
 | Latentie | mediaan 398 ms, p95 434 ms, max 1262 ms over 430 verzoeken |
 
-**De SHA schoof tijdens de sessie door, en dat is gecontroleerd onschadelijk.** `git diff
-078785a..edc10d2` raakt uitsluitend `intelligence/`, en die map staat in de `railpack.json`
-excludelijst. De `last-modified` van de geserveerde bestanden bleef op 2026-10-13T10:21:42 GMT
-staan. De geserveerde bytes zijn dus onveranderd en elke statische meting in dit document blijft
-geldig.
+**`main` schoof tijdens deze sessie drie keer door, en dat is gecontroleerd onschadelijk.**
+`git diff 078785a..46aa0fb` raakt **uitsluitend** `intelligence/` — nul bestanden buiten die map —
+en `intelligence/` staat in de `railpack.json` excludelijst. De `last-modified` van de geserveerde
+bestanden bleef op 2026-10-13T10:21:42 GMT staan. De geserveerde bytes zijn dus onveranderd en elke
+statische meting in dit document blijft geldig. Deze release is op `46aa0fb` herbaseerd en daarna
+opnieuw volledig gemeten; er was nul overlap met de bestanden uit #21, #22 en #23 en geen
+migratienummerbotsing.
 
 **Valkuil, vastgelegd omdat hij kost:** Railway's eigen deploymentmetadata zegt voor deze service
 `detectedProviders = ["node"]`. Dat is misleidend — de bouwlog van diezelfde deployment zegt
