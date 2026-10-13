@@ -382,8 +382,25 @@ export const REGISTER: Record<string, Handler> = {
       .map(([k, v]) => `${k} ${v}`)
       .join(", ");
 
+    /* WELKE signalen niet OK zijn, niet alleen HOEVEEL.
+       Deze melding zei "FOUT 2, NIET GEMETEN 5" en daarmee was in het
+       Railway-log niet te zien WAT er stuk was. Precies dat liep ik zelf
+       tegen het lijf bij de uitrol van 3.0.5: het aantal FOUT ging van 1
+       naar 2 en de enige manier om te achterhalen welke dat waren, was
+       databasetoegang — die er met opzet niet is. Een
+       gezondheidsmelding die je moet natrekken in een systeem waar je
+       niet bij kunt, is geen monitoring.
+
+       De `aanvaard`-vlag gaat mee, zodat een bekende grens niet als
+       nieuw probleem leest. */
+    const nietOk = signalen
+      .filter((x) => x.niveau !== "OK")
+      .map((x) => `${x.groep}/${x.naam}=${x.niveau}${x.aanvaard === true ? "(aanvaard)" : ""}`)
+      .join(" ");
+
     return (
       `signalen ${signalen.length} (${uitsplitsing}), zwaarste ${totaal}, ernst ${ernst.totaal}, ` +
+      (nietOk ? `niet-ok: ${nietOk}, ` : "") +
       `meldingen open ${meld.open} (geopend ${meld.geopend}, gesloten ${meld.gesloten}), ` +
       `bezorgd ${meld.bezorgd}, bezorgfouten ${meld.bezorgfouten}, ` +
       `bestemming ${meld.bestemming || "NIET_INGESTELD"}`
