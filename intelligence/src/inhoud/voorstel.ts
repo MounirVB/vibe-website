@@ -570,8 +570,15 @@ export async function bouwVoorstel(
       return {
         naam: "bronverwijzing",
         oordeel: "FAIL",
+        /* "GETAL OF DATUM" BELOOFDE MEER DAN DE CONTROLE EIST.
+           `harde` filtert op `waarde_numeriek !== null` en kijkt niet naar
+           een datumveld. Een uitspraak met alleen een geldigheidsdatum en
+           geen getal viel dus af met de mededeling dat een getal OF een
+           datum had volstaan. Wie daarop afgaat, zoekt een datum die al
+           aanwezig was. De reden noemt nu waar de controle werkelijk op
+           kijkt. */
         reden:
-          "er is geen enkele harde waarde vastgelegd; een voorstel zonder getal of datum voegt " +
+          "er is geen enkele numerieke waarde vastgelegd; een voorstel zonder getal voegt " +
           "aan een bestaande pagina niets toe dat te verifieren is",
         bewijs,
       };
@@ -1475,11 +1482,30 @@ export function weegAf(
     };
   }
   if ((k.bedrijfsrelevantie ?? 0) < 25) {
+    /* "DE CONTROLES ZIJN WEL GEHAALD" WAS NIET ALTIJD WAAR.
+       Hier stond die zin onvoorwaardelijk. Maar op dit punt zijn er vier
+       van de vijf controles getoetst — bronverwijzing, actualiteit, seo
+       en duplicatie — en `verwoordbaarheid` nog NIET: die tak begint pas
+       hieronder. Een kandidaat met verwoordbaarheid FAIL en een
+       bedrijfsrelevantie onder 25 kreeg dus UITSTELLEN met de mededeling
+       dat de controles gehaald waren, terwijl er één faalde.
+
+       De reden wordt nu uit de WERKELIJKE controlestanden afgeleid. Dat
+       verandert geen enkel eindoordeel en geen enkele drempel; het
+       verandert wat er over de kandidaat wordt beweerd. In een repo
+       waarvan een release "van verwoord feit naar getrouwe bewering"
+       heet, is dat geen cosmetiek. */
+    const gefaald = controles.filter((x) => x.oordeel === "FAIL").map((x) => x.naam);
+    const stand =
+      gefaald.length === 0
+        ? voorbehouden.length === 0
+          ? "de vijf controles zijn gehaald"
+          : `de controles zijn gehaald, met voorbehoud op ${voorbehouden.map((v) => v.naam).join(", ")}`
+        : `let op: ${gefaald.join(" en ")} faalt nog`;
     return {
       eindoordeel: "UITSTELLEN",
       oordeelReden:
-        `bedrijfsrelevantie ${k.bedrijfsrelevantie ?? 0} is te laag om redactietijd te vragen; ` +
-        `de controles zijn wel gehaald`,
+        `bedrijfsrelevantie ${k.bedrijfsrelevantie ?? 0} is te laag om redactietijd te vragen; ${stand}`,
     };
   }
 
