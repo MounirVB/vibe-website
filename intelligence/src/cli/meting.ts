@@ -169,6 +169,14 @@ try {
     bronnen_disabled: meting.brondekking.perKlasse.DISABLED,
     bronnen_onbekend: meting.brondekking.perKlasse.ONBEKEND,
     bronnen_laatste_ophaling: meting.brondekking.laatsteGeslaagdeOphaling,
+    /* WELKE bronnen, niet alleen hoeveel. Een logregel met
+       `bronnen_failed=1` dwingt tot databasetoegang om te achterhalen
+       welke bron dat is, en die toegang bestaat met opzet niet. */
+    bronnen_niet_gezond:
+      meting.brondekking.bronnen
+        .filter((b) => b.klasse === "FAILED" || b.klasse === "DEGRADED")
+        .map((b) => `${b.sleutel}=${b.klasse}(${b.reden})`)
+        .join("; ") || null,
     migratie_hoogste: meting.migraties.hoogste,
   });
 
