@@ -392,8 +392,44 @@ stand. Over 33 migraties bestond geen dagstandtabel.
 > | de keten is voltooid | de `&&`-keten liep door: het deploylog van `8cbf6b5` bevat de volledige uitvoer van `zaai` (`ZAAIEN GEREED`, 430 pagina's) **en** van `geo` (`GEOGRAFIE GESYNCHRONISEERD`, 12 provincies), en de container startte |
 > | dus | `migreer` eindigde met exitcode 0 tegen de productiedatabase, en liet geen migratie open |
 >
-> Label: **INFERRED op gemeten premissen.** Het schema zelf is niet gelezen — zie hieronder waarom
-> dat niet kon, en met welk commando je het in één regel tot MEASURED maakt.
+> ### MEASURED sinds 13 oktober 2026, 16:12:40 UTC — maar alleen het REGISTER
+>
+> De eigenaar heeft de leesmeting zelf gedraaid:
+>
+> ```
+> railway ssh --service vibe-intel-api "npm run migreer -- --droog"
+>   toegepast: 0 · overgeslagen: 34 · namen: [] · droog: true
+> ```
+>
+> **Wat dit BEWIJST — `MEASURED`:**
+>
+> - Alle **34** migratiebestanden staan geregistreerd als toegepast in `intel.migraties`. De
+>   runner leest letterlijk `select naam, hash, toegepast_op from intel.migraties`
+>   (`src/db/migraties.ts`) en vergelijkt dat met de bestanden op schijf.
+> - **Drift 0.** Van elke toegepaste migratie is de sha256 bewaard, en
+>   `drift: rij !== undefined && rij.hash !== m.hash` zou aanslaan bij één byte verschil. De
+>   runner weigert dan te draaien. Hij draaide schoon, dus geen enkel toegepast bestand wijkt af.
+> - **Niets staat open.** `toegepast: 0` met `namen: []` betekent dat er geen migratie meer te
+>   doen is — 0034 inbegrepen.
+> - De productiedatabase is bereikbaar en de applicatierol kan lezen.
+>
+> **Wat dit NIET bewijst — nog steeds niet geïnspecteerd:**
+>
+> De runner leest zijn **eigen grootboek**, niet het schema. Hij doet geen enkele query op
+> `information_schema` of `pg_class`. Daarom blijft ongemeten:
+>
+> - of `intel.indexatie_dagstand` fysiek bestaat met de tien kolommen, drie indexen, zes
+>   CHECK-constraints, RLS en de grants zoals de migratie ze beschrijft;
+> - of `live_http_status` en `live_gemeten_op` fysiek van `intel.pagina_register` verdwenen zijn.
+>
+> Een geregistreerde migratie en een geverifieerd schema zijn twee verschillende beweringen, en
+> deze meting dekt alleen de eerste. Wat de tweede ondersteunt is INDIRECT en blijft dat: de
+> migratie liep in één transactie (faalt er iets, dan is er niets half toegepast), en dezelfde
+> 34 migraties gaven op een wegwerpdatabase een schema dat `intel_priv.controleer_invarianten()`
+> met 0 bevindingen doorkwam.
+>
+> **Status: `MIGRATIEREGISTRATIE = MEASURED` · `FYSIEK SCHEMA = NIET GEÏNSPECTEERD`.**
+> Wie dat laatste wil sluiten, heeft een introspectiequery nodig, niet de migratierunner.
 >
 > **De twee `DROP COLUMN`-statements zijn daarmee ook uitgevoerd**, zonder dat daar expliciet om is
 > gevraagd. Wat dat verzacht, elk gemeten: beide kolommen waren leeg op een onafhankelijke database
@@ -437,13 +473,30 @@ pre-deploy-logcapture niet bewaard (vier filterquery's, nul regels); en de enige
 expliciet aftast — `indexatieRapport()` in `src/analytics/koppelingen.ts` — is alleen bereikbaar via
 `src/cli/analytics.ts`, dat in productie door niets wordt aangeroepen.
 
-**Eén regel maakt het MEASURED** (vereist een SSH-sleutel op de Railway-account):
+**Eén van die zes routes is inmiddels geopend.** De eigenaar heeft een SSH-sleutel aangemaakt en
+`railway ssh --service vibe-intel-api "npm run migreer -- --droog"` zelf gedraaid; de uitkomst
+staat hierboven. Dat is de route die werkt, en hij is read-only zolang `--droog` erbij staat.
+
+**Wat er nog ontbreekt voor een geverifieerd SCHEMA** is een introspectiequery, niet de
+migratierunner. Bijvoorbeeld:
 
 ```
-railway ssh --service vibe-intel-api "npm run migreer -- --droog"
+railway ssh --service vibe-intel-api "node -e \"
+  import('./src/kern/db.ts').then(async m => {
+    const p = m.maakPool();
+    const q = async (s) => (await m.rijen(p, s)).at(0);
+    console.log('dagstand bestaat :', await q(\\\"select to_regclass('intel.indexatie_dagstand') is not null as v\\\"));
+    console.log('kolommen         :', await q(\\\"select count(*) as v from information_schema.columns where table_schema='intel' and table_name='indexatie_dagstand'\\\"));
+    console.log('constraints      :', await q(\\\"select count(*) as v from pg_constraint where conrelid='intel.indexatie_dagstand'::regclass\\\"));
+    console.log('rls aan          :', await q(\\\"select relrowsecurity as v from pg_class where oid='intel.indexatie_dagstand'::regclass\\\"));
+    console.log('dode kolommen    :', await q(\\\"select count(*) as v from information_schema.columns where table_schema='intel' and table_name='pagina_register' and column_name in ('live_http_status','live_gemeten_op')\\\"));
+    process.exit(0);
+  })\""
 ```
 
-`--droog` past niets toe. `toegepast: 0, overgeslagen: 34` is het bewijs dat de stand klopt.
+Verwacht: `dagstand bestaat true` · `kolommen 10` · `constraints` ≥ 8 · `rls aan true` ·
+`dode kolommen 0`. Tot die uitvoer bestaat, blijft het fysieke schema **niet geïnspecteerd** en
+staat er nergens in dit document dat het wel is.
 
 **De gedeployde code hangt niet van de migratie af.** `koppelingen.ts:955` en `:1176` doen
 `select to_regclass('intel.indexatie_dagstand') is not null` en degraderen naar
