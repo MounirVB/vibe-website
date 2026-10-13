@@ -60,6 +60,7 @@ import { herkenOnderwerpen } from "../pijplijn/onderwerpen.ts";
 import { vindSchaalverlies } from "../pijplijn/schaalcorrectie.ts";
 import { paginaVan, type KennisPagina, type SitekennisBestand } from "../site/sitekennis.ts";
 import { FENOMEEN_ZINSVORM } from "../pijplijn/verwoord.ts";
+import { bouwNieuwePaginaVoorstel, type NieuwePaginaVoorstel } from "./nieuwepagina.ts";
 
 const log = maakLogger("voorstel");
 
@@ -81,6 +82,12 @@ export type Eindoordeel =
      daarmee in de studio naast een echte revisie te staan — onder een
      kop die beloofde dat alle vijf de controles waren gehaald. */
   | "KLAAR_VOOR_LINKREVIEW"
+  /* NIEUW IN 3.0.6. Geen bestaande pagina dekt dit onderwerp, en er IS
+     iets te schrijven. HERROUTEREN zou hier "hoort op een andere
+     pagina" zeggen zonder te kunnen zeggen welke — een doodlopend
+     antwoord. Dit is een VOORSTEL voor een nieuwe pagina; zie
+     inhoud/nieuwepagina.ts en migratie 0035. */
+  | "NIEUWE_PAGINA"
   | "NEEDS_RESEARCH"
   | "HERROUTEREN"
   | "UITSTELLEN"
@@ -89,6 +96,7 @@ export type Eindoordeel =
 export const EINDOORDEEL_LABEL: Record<Eindoordeel, string> = {
   KLAAR_VOOR_REVIEW: "Klaar voor beoordeling",
   KLAAR_VOOR_LINKREVIEW: "Linkvoorstel, klaar voor beoordeling",
+  NIEUWE_PAGINA: "Voorstel voor een NIEUWE pagina, klaar voor beoordeling",
   NEEDS_RESEARCH: "Feit moet eerst worden uitgezocht",
   HERROUTEREN: "Hoort op een andere pagina",
   UITSTELLEN: "Uitstellen",
@@ -177,6 +185,11 @@ export type Voorstel = {
    * een doodlopend antwoord; de reviewer moet dan zelf zoeken.
    */
   readonly herrouteerdVan: { readonly pad: string; readonly reden: string } | null;
+  /**
+   * Het voorstel voor een NIEUWE pagina, als geen bestaande pagina het
+   * onderwerp dekt. Null in alle andere gevallen.
+   */
+  readonly nieuwePagina: NieuwePaginaVoorstel | null;
   readonly controles: readonly Controle[];
   readonly eindoordeel: Eindoordeel;
   readonly oordeelReden: string;
@@ -263,6 +276,94 @@ export function leesbaarBedrag(waarde: number, eenheid: string | null): string {
  * niet in de index — dan valt deze functie terug op de opgeslagen
  * tekst; dat is dan een ondergrens en geen volledige telling.
  */
+/**
+ * De termen waarmee wordt gemeten of een pagina een onderwerp dekt.
+ *
+ * HET DEFECT DAT DIT OPLOST — gemeten op 13 oktober 2026.
+ *
+ * Er waren TWEE plekken die deze vraag stelden, met twee verschillende
+ * termensets. De SEO-poort mat met de termen uit de gebeurtenisTITEL;
+ * de herroutering gebruikte sinds 3.0.3 een bredere set met het
+ * fenomeen erbij. Dat verschil is in 3.0.3 bewust ingevoerd voor de
+ * herroutering, maar de poort zelf is nooit meegegaan.
+ *
+ * Het gevolg, met harde getallen:
+ *
+ *   gebeurtenis "Nettarieven 2027 stijgen ..."
+ *     termen uit de titel  ["nettarieven"]        -> 0 vermeldingen
+ *     clustersleutel       netbeheer (tf = 24)    -> 24 vermeldingen
+ *
+ *   gebeurtenis "Zo werkt het: de wachtlijst voor netcapaciteit"
+ *     termen uit de titel  ["netcapaciteit", ...] -> 0 vermeldingen
+ *     clustersleutel       netcongestie (tf = 14) -> 14 vermeldingen
+ *
+ * /kennis/netcongestie-uitgelegd heet "Netcongestie technisch
+ * uitgelegd", draagt netcongestie in zijn eigen onderwerpenlijst en
+ * noemt de term 14 keer — en de poort concludeerde dat de pagina het
+ * onderwerp NUL keer noemt, omdat de titel van het nieuwsbericht
+ * "netcapaciteit" zei. Dat is geen redactioneel oordeel maar een
+ * meetfout.
+ *
+ * EN DE CLUSTERSLEUTEL ALLEEN ALS DE PAGINA HEM ZELF DRAAGT.
+ *
+ * Dat is geen voorzichtigheid maar een gemeten noodzaak. Een eerste
+ * versie nam de clustersleutel onvoorwaardelijk mee, en de A/B-meting
+ * (npm run dekkingsmeting) liet zien wat dat doet:
+ *
+ *   hersteld        4   netcongestie -> /kennis/netcongestie-uitgelegd (3x)
+ *                       subsidie     -> /subsidies
+ *   VALS POSITIEF   9   netbeheer    -> /kennis/transportvermogen-versus-aansluitwaarde
+ *
+ * Die negen gaan over NETTARIEVEN. Ze zijn geclusterd onder het grove
+ * `netbeheer`, en de doelpagina noemt dat woord 24 keer — maar gaat over
+ * transportvermogen tegen aansluitwaarde en behandelt geen enkel
+ * tariefstelsel. De clustersleutel is daar een slechte proxy voor het
+ * werkelijke onderwerp, en een hoge telling mag tegenstrijdig
+ * onderwerpbewijs niet overstemmen.
+ *
+ * Daarom moeten TWEE onafhankelijke signalen het eens zijn: de
+ * termfrequentie-index van de pagina EN de onderwerpenlijst die
+ * site/sitekennis.ts uit de paginatekst afleidt. Draagt de pagina het
+ * cluster niet, dan telt de sleutel niet mee en blijft het voorstel
+ * geblokkeerd — waar het als NEW_PAGE_CANDIDATE thuishoort, want voor
+ * nettarieven bestaat geen pagina.
+ *
+ * Een pagina met een LEGE onderwerpenlijst krijgt dus geen krediet. Dat
+ * is de veilige kant: 371 van de 430 pagina's hebben die lijst leeg, en
+ * een leeg veld betekent "niets herkend", niet "dekt alles".
+ *
+ * ÉÉN functie, twee gebruikers, zodat ze niet opnieuw uiteen kunnen
+ * lopen. Dat is de les van de pg_restore-regressie in 3.0.5.
+ */
+export function dekkingstermen(opties: {
+  /** Termen uit de gebeurtenistitel, zonder herkomstprefix. */
+  readonly titeltermen: readonly string[];
+  /** De onderwerpclusters die de gebeurtenis draagt. */
+  readonly onderwerpSleutels: readonly string[];
+  /** Het fenomeen van de uitspraak, als dat bekend is. */
+  readonly fenomeen?: string | null;
+  /**
+   * De onderwerpen die de DOELPAGINA zelf draagt, uit het artefact.
+   *
+   * Een clustersleutel telt alleen als dekkingsterm wanneer hij hierin
+   * staat. Ontbreekt de lijst of is hij leeg, dan telt geen enkele
+   * clustersleutel mee.
+   */
+  readonly paginaOnderwerpen?: readonly string[];
+}): string[] {
+  const fenomeenTermen = opties.fenomeen
+    ? [
+        opties.fenomeen,
+        ...(FENOMEEN_ZINSVORM[opties.fenomeen] ?? "").split(/\s+/).filter((w) => w.length >= 5),
+      ]
+    : [];
+  const draagt = new Set(opties.paginaOnderwerpen ?? []);
+  const toegestaneClusters = opties.onderwerpSleutels.filter((c) => draagt.has(c));
+  return [
+    ...new Set([...opties.titeltermen, ...toegestaneClusters, ...fenomeenTermen]),
+  ].filter((t) => t.length >= 4);
+}
+
 function noemtHoeVaak(bron: PaginaBron | null, termen: readonly string[]): number {
   if (!bron || termen.length === 0) return 0;
   const alles = `${bron.titel ?? ""} ${bron.h1 ?? ""} ${bron.sectiekoppen.join(" ")} ${bron.tekst} ${bron.secties
@@ -410,7 +511,16 @@ export async function bouwVoorstel(
 
   const kennisPagina = k.doel_pad ? paginaVan(kennis, k.doel_pad) : null;
   const bron = kennisPagina ? alsPaginaBron(kennisPagina) : null;
-  const noemt = noemtHoeVaak(bron, termen);
+  /* DEZELFDE termenset als de herroutering; zie dekkingstermen(). Het
+     fenomeen is hier nog niet bekend — dat komt uit de uitspraken die
+     hieronder worden gewogen — dus de poort meet met de titeltermen EN
+     de clustersleutels. Dat laatste is de reparatie. */
+  const dekking = dekkingstermen({
+    titeltermen: termen,
+    onderwerpSleutels: onderwerpSleutels,
+    paginaOnderwerpen: kennisPagina?.onderwerpen,
+  });
+  const noemt = noemtHoeVaak(bron, dekking);
 
   const harde = uitspraken.filter((u) => u.waarde_numeriek !== null);
   const bevestigd = uitspraken.filter((u) => u.verificatie_status === "bevestigd");
@@ -784,10 +894,14 @@ export async function bouwVoorstel(
        fenomeen van de uitspraak is wat het feit identificeert en staat
        in het enkelvoud, dus dat zijn de zoekwoorden: de sleutel zelf
        plus de woorden uit zijn zinsvorm. */
-    const fenomeenTermen = fenomeen
-      ? [fenomeen, ...(FENOMEEN_ZINSVORM[fenomeen] ?? "").split(/\s+/).filter((w) => w.length >= 5)]
-      : [];
-    const zoektermen = [...new Set([...fenomeenTermen, ...termen])];
+    /* Voor de ZOEKstap nemen we de clusters niet mee: welke pagina hem
+       draagt is juist wat we zoeken. beterePagina() filtert per
+       kandidaatpagina met haar eigen onderwerpenlijst. */
+    const zoektermen = dekkingstermen({
+      titeltermen: termen,
+      onderwerpSleutels: [],
+      fenomeen,
+    });
     const alternatief = beterePagina(kennis, k.doel_pad, fenomeen, zoektermen, onderwerpSleutels);
     if (alternatief) {
       const altBron = alsPaginaBron(alternatief);
@@ -841,7 +955,37 @@ export async function bouwVoorstel(
       reden: `deelt onderwerp ${kp.onderwerpen.filter((o) => mijnOnderwerpen.has(o)).join(", ")}`,
     }));
 
-  const { eindoordeel, oordeelReden } = weegAf(controles, k, aanbevolenInterneLinks.length);
+  /* ---------- Geen passende pagina? Dan een VOORSTEL voor een nieuwe ----------
+     Alleen wanneer alle drie waar zijn:
+       · de seo-dekking faalt nog steeds, OOK na de herroutering
+       · er is minstens één verwoordbaar feit, dus er is iets te schrijven
+       · er is geen bestaande route met deze slug
+     Anders blijft het HERROUTEREN of een ander oordeel. Een voorstel
+     voor een pagina zonder feit zou een lege pagina voorstellen. */
+  const bestaandeRoutes = new Set(kennis.paginas.map((kp) => kp.route));
+  const nieuwePagina =
+    effectieveSeo.oordeel === "FAIL" && verwoordbareUitspraken.length > 0
+      ? bouwNieuwePaginaVoorstel({
+          onderwerpSleutel: k.cluster_sleutel ?? onderwerpSleutels[0] ?? null,
+          fenomeen: verwoordbareUitspraken[0]!.fenomeen,
+          feitZinnen: verwoordbareUitspraken.map((u) => u.verwoorde_zin ?? "").filter(Boolean),
+          naastgelegen: effectiefPad
+            ? [{ route: effectiefPad, vermeldingen: effectieveNoemt }]
+            : [],
+          bestaandeRoutes,
+        })
+      : null;
+  /* Bestaat de voorgestelde route al, dan is dit geen nieuwe pagina maar
+     een wijziging, en hoort het oordeel HERROUTEREN te blijven. */
+  const paginaVoorstel =
+    nieuwePagina && !bestaandeRoutes.has(`/${nieuwePagina.slug}`) ? nieuwePagina : null;
+
+  const { eindoordeel, oordeelReden } = weegAf(
+    controles,
+    k,
+    aanbevolenInterneLinks.length,
+    paginaVoorstel,
+  );
 
   /* ---------- De voorgestelde wijziging ---------- */
   const waarden = harde
@@ -1016,6 +1160,9 @@ export async function bouwVoorstel(
     risicoklasse:
       k.risico_klasse === "hoog" ? "hoog" : feiten.length === 0 ? "midden" : (k.risico_klasse as "laag" | "midden"),
     herrouteerdVan,
+    /* Alleen meesturen als het oordeel er ook om vraagt; de
+       databaseconstraint uit 0035 eist dat die twee kloppen. */
+    nieuwePagina: eindoordeel === "NIEUWE_PAGINA" ? paginaVoorstel : null,
     inhoudsHash: inhoudsHashVan({
       doelPad: effectiefPad,
       doelSectie: sectieKop,
@@ -1263,6 +1410,8 @@ function weegAf(
   controles: readonly Controle[],
   k: { risico_klasse: string; bedrijfsrelevantie: number | null },
   linkKansen: number,
+  /** Gevuld als er geen bestaande pagina is en er iets te schrijven is. */
+  paginaVoorstel: NieuwePaginaVoorstel | null = null,
 ): { eindoordeel: Eindoordeel; oordeelReden: string } {
   const faal = (naam: Controle["naam"]) => controles.find((x) => x.naam === naam && x.oordeel === "FAIL");
 
@@ -1272,8 +1421,30 @@ function weegAf(
   const act = faal("actualiteit");
   if (act) return { eindoordeel: "AFWIJZEN", oordeelReden: act.reden };
 
+  /* GEEN PASSENDE PAGINA IS GEEN HERROUTERING.
+     HERROUTEREN betekent "hoort op een andere pagina". Bestaat die
+     andere pagina niet, dan is dat een doodlopend antwoord: de reviewer
+     hoort dat het ergens anders hoort zonder te horen waar. Gemeten:
+     12 van 19 kandidaten kwamen daar terecht, waarvan negen over
+     nettarieven — een onderwerp zonder pagina.
+
+     `paginaVoorstel` is alleen gevuld als de aanroeper heeft
+     vastgesteld dat er geen alternatief bestaat EN er iets te schrijven
+     is. Dan is het antwoord een voorstel voor een nieuwe pagina. */
   const seoFaal = faal("seo");
-  if (seoFaal) return { eindoordeel: "HERROUTEREN", oordeelReden: seoFaal.reden };
+  if (seoFaal) {
+    if (paginaVoorstel) {
+      return {
+        eindoordeel: "NIEUWE_PAGINA",
+        oordeelReden:
+          `geen bestaande pagina dekt dit onderwerp: ${seoFaal.reden} ` +
+          `Daarom een voorstel voor een nieuwe pagina (${paginaVoorstel.slug}). ` +
+          `${paginaVoorstel.waaromGeenBestaandePagina}. Dit is een VOORSTEL: er wordt geen ` +
+          `pagina gemaakt zonder dat een mens erover besluit.`,
+      };
+    }
+    return { eindoordeel: "HERROUTEREN", oordeelReden: seoFaal.reden };
+  }
 
   const dup = faal("duplicatie");
   if (dup) return { eindoordeel: "UITSTELLEN", oordeelReden: dup.reden };
@@ -1469,13 +1640,16 @@ export async function bewaarVoorstel(
        (organisatie_id, kandidaat_id, gebeurtenis_id, doel_pad, doel_h1, doel_voorbehoud,
         doel_noemt_onderwerp, wijziging_soort, doel_sectie, nieuwe_tekst, diff,
         cta_tekst, cta_doel, cta_grondslag, eindoordeel, oordeel_reden,
-        huidige_tekst, interne_links, inhouds_hash, publicatie_status)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,
+        huidige_tekst, interne_links, inhouds_hash, nieuwe_pagina, publicatie_status)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
              case $15
                when 'KLAAR_VOOR_REVIEW' then 'READY_FOR_REVIEW'
                -- Een linkvoorstel wacht op een mens, maar in zijn EIGEN
                -- staat: het is geen feitelijke paginarevisie.
                when 'KLAAR_VOOR_LINKREVIEW' then 'READY_FOR_LINK_REVIEW'
+               -- En een paginavoorstel ook, in de zijne. Het is geen
+               -- pagina: het is een besluit dat een mens moet nemen.
+               when 'NIEUWE_PAGINA' then 'NEW_PAGE_CANDIDATE'
                else 'DRAFT'
              end)
      on conflict (organisatie_id, kandidaat_id) do update set
@@ -1495,6 +1669,7 @@ export async function bewaarVoorstel(
        eindoordeel          = excluded.eindoordeel,
        oordeel_reden        = excluded.oordeel_reden,
        inhouds_hash         = excluded.inhouds_hash,
+       nieuwe_pagina        = excluded.nieuwe_pagina,
        /* DE PUBLICATIESTATUS VOLGT DE INHOUD (par. 15).
           Dit is de kern van de goedkeuringsbinding. De voorstelmotor
           draait elke ronde opnieuw over dezelfde kandidaat en werkt deze
@@ -1513,6 +1688,7 @@ export async function bewaarVoorstel(
              then case excluded.eindoordeel
                        when 'KLAAR_VOOR_REVIEW' then 'READY_FOR_REVIEW'
                        when 'KLAAR_VOOR_LINKREVIEW' then 'READY_FOR_LINK_REVIEW'
+                       when 'NIEUWE_PAGINA' then 'NEW_PAGE_CANDIDATE'
                        else 'DRAFT'
                      end
            else intel.inhoud_voorstellen.publicatie_status
@@ -1618,6 +1794,7 @@ export async function bewaarVoorstel(
       v.wijziging.huidigeTekst || null,
       v.aanbevolenInterneLinks.map((l) => `${l.route} — ${l.reden}`),
       v.inhoudsHash,
+      v.nieuwePagina === null ? null : JSON.stringify(v.nieuwePagina),
     ],
   );
   if (!r) throw new Error("voorstel kon niet worden weggeschreven");

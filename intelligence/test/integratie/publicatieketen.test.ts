@@ -480,6 +480,7 @@ describe("publicatieketen met een geisoleerde fixture", () => {
         ctaDoel: "/contact",
       }),
       herrouteerdVan: null,
+      nieuwePagina: null,
       controles: [{ naam: "bronverwijzing", oordeel: "PASS", reden: "fixture", bewijs: [] }],
       eindoordeel: "KLAAR_VOOR_REVIEW",
       oordeelReden: "fixture voor de hashbinding: de motor schrijft deze rij elke ronde opnieuw",

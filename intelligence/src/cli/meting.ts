@@ -90,6 +90,14 @@ function tabel(m: ProductieMeting): void {
   }
 
   console.log("");
+  console.log("VERWOORDBAARHEID — DE WERKELIJKE FLESSENHALS");
+  for (const t of m.verwoordbaarheid) console.log(`    ${t.sleutel.padEnd(24)}${t.aantal}`);
+  regel("voorstellen met een verwoordbaar feit", m.voorstellenMetVerwoordbaarFeit);
+  regel("nieuwe-paginakandidaten (distincte slug)", m.nieuwePaginaKandidaten);
+  console.log("    → het plafond op volledige feitelijke revisies is het aantal hierboven,");
+  console.log("      niet het aantal kandidaten. Dit is geen matchingprobleem.");
+
+  console.log("");
   console.log("PRIMAIRE BLOKKEERREDEN PER VOORSTEL");
   for (const t of m.blokkeerredenen) console.log(`    ${t.sleutel.padEnd(34)}${t.aantal}`);
 
@@ -158,6 +166,9 @@ try {
     taken_met_credential_soorten: meting.credentiallek.soorten.join(",") || null,
     migraties_toegepast: meting.migraties.toegepast,
     blokkeerredenen: meting.blokkeerredenen.map((t) => `${t.sleutel}=${t.aantal}`).join(",") || null,
+    verwoordbaarheid: meting.verwoordbaarheid.map((t) => `${t.sleutel}=${t.aantal}`).join(",") || null,
+    voorstellen_met_verwoordbaar_feit: meting.voorstellenMetVerwoordbaarFeit,
+    nieuwe_pagina_kandidaten: meting.nieuwePaginaKandidaten,
     bronnen_totaal: meting.brondekking.totaal,
     bronnen_actief: meting.brondekking.actief,
     bronnen_toe: meting.brondekking.toe,

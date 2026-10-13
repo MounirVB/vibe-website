@@ -46,6 +46,7 @@
     "ai": "node src/cli/ai.ts",
     "gezondheid": "node src/cli/gezondheid.ts",
     "meting": "node src/cli/meting.ts",
+    "dekkingsmeting": "node src/cli/dekkingsmeting.ts",
     "benchmark": "node src/cli/benchmark.ts",
     "wachtwoordtoken": "node src/cli/wachtwoordtoken.ts"
   },
