@@ -84,6 +84,25 @@ function tabel(m: ProductieMeting): void {
   }
 
   console.log("");
+  console.log("PRIMAIRE BLOKKEERREDEN PER VOORSTEL");
+  for (const t of m.blokkeerredenen) console.log(`    ${t.sleutel.padEnd(34)}${t.aantal}`);
+
+  console.log("");
+  console.log("BRONDEKKING");
+  regel("bronnen totaal", m.brondekking.totaal);
+  regel("actief", m.brondekking.actief);
+  regel("  waarvan nu toe", m.brondekking.toe);
+  regel("  nog niet toe", m.brondekking.nietToe);
+  for (const [k, v] of Object.entries(m.brondekking.perKlasse)) regel(`  ${k}`, v);
+  regel("laatste geslaagde ophaling", m.brondekking.laatsteGeslaagdeOphaling ?? "nooit");
+  if (m.brondekking.perKlasse.FAILED > 0 || m.brondekking.perKlasse.DEGRADED > 0) {
+    console.log("");
+    for (const b of m.brondekking.bronnen.filter((x) => x.klasse === "FAILED" || x.klasse === "DEGRADED")) {
+      console.log(`    ${b.klasse.padEnd(18)}${b.sleutel.padEnd(34)}${b.reden}`);
+    }
+  }
+
+  console.log("");
   console.log("MIGRATIES");
   regel("toegepast", m.migraties.toegepast);
   regel("hoogste", m.migraties.hoogste ?? "(geen)");
@@ -131,6 +150,18 @@ try {
     taken_met_credential: meting.credentiallek.takenMetCredential,
     taken_met_credential_soorten: meting.credentiallek.soorten.join(",") || null,
     migraties_toegepast: meting.migraties.toegepast,
+    blokkeerredenen: meting.blokkeerredenen.map((t) => `${t.sleutel}=${t.aantal}`).join(",") || null,
+    bronnen_totaal: meting.brondekking.totaal,
+    bronnen_actief: meting.brondekking.actief,
+    bronnen_toe: meting.brondekking.toe,
+    bronnen_niet_toe: meting.brondekking.nietToe,
+    bronnen_success: meting.brondekking.perKlasse.SUCCESS,
+    bronnen_degraded: meting.brondekking.perKlasse.DEGRADED,
+    bronnen_failed: meting.brondekking.perKlasse.FAILED,
+    bronnen_access_restricted: meting.brondekking.perKlasse.ACCESS_RESTRICTED,
+    bronnen_disabled: meting.brondekking.perKlasse.DISABLED,
+    bronnen_onbekend: meting.brondekking.perKlasse.ONBEKEND,
+    bronnen_laatste_ophaling: meting.brondekking.laatsteGeslaagdeOphaling,
     migratie_hoogste: meting.migraties.hoogste,
   });
 

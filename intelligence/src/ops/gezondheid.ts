@@ -33,6 +33,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { leesSitekennis } from "../site/sitekennis.ts";
 import { meldBestemming } from "./melden.ts";
+import { meetBrondekking, vatBrondekkingSamen } from "./brondekking.ts";
 
 export type Niveau = "OK" | "LET OP" | "FOUT" | "NIET GEMETEN";
 
@@ -702,19 +703,70 @@ export async function meetGezondheid(
      Een e-mailadres of webhook bedenken zou betekenen dat we
      bedrijfsgegevens naar een partij sturen die niemand heeft
      goedgekeurd. */
+  /* GROEP `melden`, NIET `koppelingen` — sinds 3.0.5.
+     Dit signaal stond in het domein Connectoren. Het dashboard meldde
+     daardoor "Connectoren ACTION_REQUIRED" terwijl alle twintig actieve
+     bronnen gezond waren; het werkelijke punt was een ontbrekende
+     meldbestemming. Zie de toelichting bij het domein `monitoring` in
+     ops/ernst.ts.
+
+     EN HIJ IS AANVAARD ZOLANG HIJ BEWUST ONTBREEKT.
+     Een bestemming verzinnen is verboden: dat zou bedrijfsgegevens naar
+     een partij sturen die niemand heeft goedgekeurd. Het gevolg was wel
+     dat dit signaal permanent op ACTION_REQUIRED stond, en een dashboard
+     dat altijd rood is wordt niet meer gelezen. Daarom: zichtbaar
+     blijven, met de exacte voorwaarde in het advies, maar niet boven
+     DEGRADED — precies waar `aanvaard` voor bestaat.
+
+     Dat mag alleen omdat de INTERNE monitoring wél werkt: elke melding
+     wordt bewaard in intel.meldingen en intel.systeem_meldingen, en het
+     dashboard toont de open meldingen op /. Zou dat wegvallen, dan is
+     dit geen aanvaarde grens meer maar een blinde vlek. */
   const bestemming = meldBestemming();
   voeg({
-    groep: "koppelingen",
+    groep: "melden",
     naam: "alerteringsbestemming",
     niveau: bestemming.soort === "webhook" ? "OK" : "NIET GEMETEN",
+    aanvaard: bestemming.soort === "webhook" ? undefined : true,
     meting:
       bestemming.soort === "webhook"
         ? `webhook geconfigureerd${bestemming.token ? " met token" : " zonder token"}`
-        : `NIET_GECONFIGUREERD — ${bestemming.reden}`,
+        : `NIET_GECONFIGUREERD — ${bestemming.reden} Interne monitoring werkt wel: ` +
+          `meldingen staan in intel.meldingen en zijn zichtbaar op het dashboard.`,
     advies:
       bestemming.soort === "geen"
-        ? "zet INTEL_MELD_WEBHOOK op een door een mens goedgekeurde https-bestemming"
+        ? "om externe meldingen aan te zetten: INTEL_MELD_WEBHOOK op een door een mens " +
+          "goedgekeurde https-bestemming, eventueel met INTEL_MELD_WEBHOOK_TOKEN"
         : undefined,
+  });
+
+  /* ---------------- brondekking (par. 16-18) ----------------
+     'overgeslagen 19' is op zichzelf onleesbaar: het kan negentien
+     kapotte bronnen betekenen of negentien die netjes nog niet toe
+     waren. Dit signaal maakt dat verschil meetbaar. Alleen
+     opeenvolgende FOUTEN maken een bron ongezond; een ontbrekende
+     toestemming is ACCESS_RESTRICTED en blijft dat. Zie
+     ops/brondekking.ts. */
+  const dekking = await meetBrondekking(c, organisatieId);
+  voeg({
+    groep: "ingestie",
+    naam: "brondekking",
+    niveau:
+      dekking.actief === 0
+        ? "FOUT"
+        : dekking.perKlasse.FAILED > 0
+          ? "FOUT"
+          : dekking.perKlasse.DEGRADED > 0
+            ? "LET OP"
+            : "OK",
+    meting: vatBrondekkingSamen(dekking),
+    gemetenOp: dekking.laatsteGeslaagdeOphaling ?? undefined,
+    advies:
+      dekking.perKlasse.FAILED > 0
+        ? `${dekking.perKlasse.FAILED} bron(nen) faalden drie keer achtereen; npm run bronaudit`
+        : dekking.actief === 0
+          ? "er is geen enkele actieve bron; zonder ingestie komt er niets binnen"
+          : undefined,
   });
 
   const nietAangesloten = kop.filter((k) => k.status !== "geconfigureerd");

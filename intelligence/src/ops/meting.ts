@@ -27,7 +27,8 @@
 
 import type pg from "pg";
 
-import { rijen } from "../kern/db.ts";
+import { rijen, type Leesclient } from "../kern/db.ts";
+import { meetBrondekking, type Brondekking } from "./brondekking.ts";
 
 /** De vier wijzigingssoorten uit 0023, gegroepeerd naar wat ze betekenen. */
 export const FEITELIJKE_SOORTEN = ["alinea_toevoegen", "sectie_toevoegen"] as const;
@@ -66,10 +67,14 @@ export type ProductieMeting = {
     readonly soorten: readonly string[];
   };
   readonly migraties: { readonly toegepast: number; readonly hoogste: string | null };
+  /** De bronklassen uit par. 18; zie ops/brondekking.ts. */
+  readonly brondekking: Brondekking;
+  /** Per voorstel precies één primaire blokkeerreden; zie hieronder. */
+  readonly blokkeerredenen: readonly Telling[];
 };
 
 async function telling(
-  c: pg.PoolClient,
+  c: Leesclient,
   sql: string,
   params: readonly unknown[],
 ): Promise<readonly Telling[]> {
@@ -77,7 +82,7 @@ async function telling(
   return r.map((x) => ({ sleutel: x.sleutel ?? "(leeg)", aantal: Number(x.aantal) }));
 }
 
-async function getal(c: pg.PoolClient, sql: string, params: readonly unknown[]): Promise<number> {
+async function getal(c: Leesclient, sql: string, params: readonly unknown[]): Promise<number> {
   const r = await rijen<{ n: string }>(c, sql, [...params]);
   return Number(r[0]?.n ?? 0);
 }
@@ -89,7 +94,7 @@ async function getal(c: pg.PoolClient, sql: string, params: readonly unknown[]):
  * overal nul terug en lijkt de meting geslaagd terwijl ze niets zag.
  */
 export async function meetProductie(
-  c: pg.PoolClient,
+  c: Leesclient,
   organisatieId: number,
 ): Promise<ProductieMeting> {
   /* De definitie van 'volledig' staat hier één keer en wordt hieronder
@@ -280,6 +285,54 @@ export async function meetProductie(
     [],
   );
 
+  /* ------------------------------------------------- blokkeerredenen
+     PRECIES ÉÉN PRIMAIRE REDEN PER VOORSTEL, in de orde van weegAf.
+
+     Dat de orde meedoet is geen detail: gemeten op de ontwikkeldatabase
+     had 1 voorstel één gefaalde controle, 12 voorstellen twee, en 4
+     voorstellen drie. Wie simpelweg per gefaalde controle telt, telt
+     dezelfde kandidaat drie keer en krijgt een beeld dat niets zegt over
+     wat hem tegenhoudt. De besluitmotor hanteert een vaste prioriteit
+     (voorstel.ts, weegAf) en die wordt hier letterlijk gespiegeld.
+
+     Een voorstel dat KLAAR staat — feitelijk of als linkvoorstel — is
+     NIET geblokkeerd, ook al heeft het een gefaalde verwoordbaarheid.
+     Dat is precies het onderscheid dat 0032 heeft ingevoerd. */
+  const blokkeerredenen = await telling(
+    c,
+    `select reden as sleutel, count(*)::text as aantal from (
+       select case
+                when v.eindoordeel in ('KLAAR_VOOR_REVIEW', 'KLAAR_VOOR_LINKREVIEW')
+                  then 'NIET_GEBLOKKEERD'
+                when f.bronverwijzing then 'BRONBEWIJS_ONTBREEKT'
+                when f.actualiteit    then 'VEROUDERD'
+                when f.seo            then 'DOELPAGINA_DEKT_ONDERWERP_NIET'
+                when f.duplicatie     then 'DUPLICAAT'
+                when f.verwoordbaarheid then 'FEIT_NIET_VERWOORDBAAR'
+                when f.voorbehouden >= 2 then 'TE_VEEL_VOORBEHOUD'
+                else 'RELEVANTIE_TE_LAAG'
+              end as reden
+         from intel.inhoud_voorstellen v
+         cross join lateral (
+           select
+             coalesce(bool_or(ct.naam = 'bronverwijzing'   and ct.oordeel = 'FAIL'), false) as bronverwijzing,
+             coalesce(bool_or(ct.naam = 'actualiteit'      and ct.oordeel = 'FAIL'), false) as actualiteit,
+             coalesce(bool_or(ct.naam = 'seo'              and ct.oordeel = 'FAIL'), false) as seo,
+             coalesce(bool_or(ct.naam = 'duplicatie'       and ct.oordeel = 'FAIL'), false) as duplicatie,
+             coalesce(bool_or(ct.naam = 'verwoordbaarheid' and ct.oordeel = 'FAIL'), false) as verwoordbaarheid,
+             count(*) filter (where ct.oordeel = 'VOORBEHOUD') as voorbehouden
+           from intel.inhoud_voorstel_controles ct
+           where ct.voorstel_id = v.id and ct.organisatie_id = v.organisatie_id
+         ) f
+        where v.organisatie_id = $1
+     ) x group by 1 order by 2 desc, 1`,
+    [organisatieId],
+  );
+
+  /* De bronclassificatie hoort in de dagelijkse logregel, want 'overgeslagen
+     19' is op zichzelf onleesbaar. Zie ops/brondekking.ts. */
+  const brondekking = await meetBrondekking(c, organisatieId);
+
   return {
     organisatieId,
     kandidaten,
@@ -309,5 +362,7 @@ export async function meetProductie(
       soorten: soortRijen.map((x) => x.soort),
     },
     migraties: { toegepast: migratieTotaal, hoogste: hoogsteRij[0]?.naam ?? null },
+    brondekking,
+    blokkeerredenen,
   };
 }

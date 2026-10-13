@@ -150,7 +150,7 @@ export async function zonderOrganisatie<T>(
 }
 
 export async function eenRij<T extends pg.QueryResultRow>(
-  client: pg.PoolClient,
+  client: Leesclient,
   sql: string,
   waarden: readonly unknown[] = [],
 ): Promise<T | null> {
@@ -158,8 +158,20 @@ export async function eenRij<T extends pg.QueryResultRow>(
   return r.rows[0] ?? null;
 }
 
+/**
+ * Elk ding waar je een query op kunt doen.
+ *
+ * `rijen` en `eenRij` LEZEN alleen; ze hebben geen pool, geen
+ * transactie en geen rolwissel nodig. Het type eiste toch een
+ * pg.PoolClient, en daardoor kon een toets of een onderhoudscommando
+ * dat met een eigenaars-Client werkt deze helpers niet gebruiken —
+ * precies het geval dat opkwam toen ops/meting.ts intel.migraties moest
+ * lezen, wat de applicatierol niet mag.
+ */
+export type Leesclient = Pick<pg.PoolClient, "query">;
+
 export async function rijen<T extends pg.QueryResultRow>(
-  client: pg.PoolClient,
+  client: Leesclient,
   sql: string,
   waarden: readonly unknown[] = [],
 ): Promise<T[]> {
