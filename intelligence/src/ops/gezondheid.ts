@@ -240,13 +240,23 @@ export async function meetGezondheid(
     ongezond: number;
     laatste_ophaling: string | null;
     oudste_actieve: string | null;
+    sleutels_met_fouten: string;
   }>(
     c,
+    /* `sleutels_met_fouten` is erbij gekomen omdat dit signaal de enige in
+       zijn groep was die GEEN bronnen noemde. Het buursignaal op :293 doet
+       het al met dezelfde string_agg, en zonder de sleutels kan het
+       Railway-log de falende bron per constructie nooit aanwijzen — de
+       gezondheidstaak logt alleen groep/naam=NIVEAU. Wie dan wil weten
+       WELKE bron faalt, moet een tweede commando draaien dat hij niet kan
+       kennen. */
     `select count(*) filter (where actief)::int                                    as actief,
             count(*) filter (where actief and opeenvolgende_fouten >= $2)::int      as met_fouten,
             count(*) filter (where actief and gezondheid <> 'HEALTHY')::int         as ongezond,
             max(laatst_opgehaald_op)::text                                          as laatste_ophaling,
-            min(laatst_opgehaald_op) filter (where actief)::text                    as oudste_actieve
+            min(laatst_opgehaald_op) filter (where actief)::text                    as oudste_actieve,
+            coalesce(string_agg(sleutel, ', ' order by sleutel)
+                       filter (where actief and opeenvolgende_fouten >= $2), '')     as sleutels_met_fouten
        from intel.bronnen where organisatie_id = $1`,
     [organisatieId, DREMPELS.bronFoutenAchtereen],
   );
@@ -273,8 +283,21 @@ export async function meetGezondheid(
     groep: "ingestie",
     naam: "bronnen met opeenvolgende fouten",
     niveau: (b?.met_fouten ?? 0) === 0 ? "OK" : "FOUT",
-    meting: `${b?.met_fouten ?? 0} van ${b?.actief ?? 0} actieve bronnen met >= ${DREMPELS.bronFoutenAchtereen} fouten achtereen`,
-    advies: (b?.met_fouten ?? 0) > 0 ? "npm run bronnen voor de reden per bron" : undefined,
+    meting:
+      `${b?.met_fouten ?? 0} van ${b?.actief ?? 0} actieve bronnen met >= ${DREMPELS.bronFoutenAchtereen} fouten achtereen` +
+      (b?.sleutels_met_fouten ? `: ${b.sleutels_met_fouten.slice(0, 160)}` : ""),
+    /* HET ADVIES NOEMDE HET VERKEERDE COMMANDO, en dat is duurder dan geen
+       advies. `npm run bronnen` (src/cli/bronnen.ts) opent geen enkele
+       databaseverbinding — gemeten: nul treffers op kern/db, Pool en
+       INTEL_DB_URL in dat bestand. Het leest alleen het CODEregister en kan
+       dus per constructie niet zeggen welke bron NU faalt; het noemt
+       uitsluitend de redenen van bronnen die in de code al uit staan.
+       Het commando dat storingssoort, storing_sinds, storing_detail,
+       ophalen_opgeschort_tot en opeenvolgende_fouten uit intel.bronnen
+       haalt, is `npm run bronaudit` — en het buursignaal op de
+       brondekkingstak adviseert dat zelf al. Twee adviezen voor dezelfde
+       vraag, waarvan er één naar een doodlopend spoor stuurde. */
+    advies: (b?.met_fouten ?? 0) > 0 ? "npm run bronaudit voor de reden per bron" : undefined,
   });
   voeg({
     groep: "ingestie",
