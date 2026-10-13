@@ -295,6 +295,36 @@ en meldt 860 publieke bestanden tegen 330 interne (was 314).
 Elke tekstwijziging is tegen poort 11 doorgerekend. Hoogste jaccard **0,5304** bij drempel 0,60,
 marge **0,0696**, nul paren boven de drempel. De sectie `id="profiel"` is niet bekort.
 
+### De `lastmod` die een echte wijziging verzwéég
+
+Deze release vond zijn eigen defect bij het uitrollen. De inhoudscorrecties hierboven wijzigden de
+vingerafdruk van **346** routes, en toch bleef de sitemap **byte-identiek**: alle 350 regionale
+`lastmod`-waarden en alle 346 `dateModified`-velden hielden `2026-10-12`, de datum van de vorige
+release.
+
+Oorzaak: `genereer.mjs` gaf het vingerafdrukgrootboek
+`process.env.ROUTES_DATUM || reg._gegenereerd` als bouwdatum mee, en `_gegenereerd` schuift per
+ontwerp **alleen op als de ROUTESET verandert** (`bouw-routes.mjs:606`, een hash over elke route met
+haar staat). Dat is juist voor het register — het is precies waarom een ketenrun geen valse
+wijzigingsdatum geeft — maar het is de verkeerde klok voor een *inhouds*wijziging: de routeset bleef
+identiek (430 / 17 / 4.254) terwijl de inhoud van 346 pagina's veranderde.
+
+Het gevolg is de spiegel van het defect dat de vingerafdrukken oorspronkelijk oplosten. Daar
+*verzon* `lastmod` een wijziging; hier *verzwijgt* hij er een. Beide zijn onwaar, maar de tweede is
+schadelijker in deze release: de hele waarde van de gerepareerde bronvermelding hangt ervan af dat
+Google die 326 pagina's opnieuw leest.
+
+De bouwdatum voor de inhoud is nu `INHOUD_DATUM || ROUTES_DATUM || de dag van vandaag`, en het
+grootboek blijft de poortwachter: **alleen een route met een veranderde hash komt bij die datum.**
+Daardoor is een ketenrun zónder inhoudswijziging nog steeds byte-identiek. Gemeten, drie keer:
+een tweede gewone ketenrun → identiek; met de vier datums op 2028-04-12 → byte-identiek;
+met `INHOUD_DATUM=2029-01-01` → byte-identiek.
+
+De 346 grootboekregels die in deze release een verkeerde datum hadden gekregen, zijn gecorrigeerd
+naar `2026-10-13` — de dag waarop hun inhoud werkelijk veranderde. Resultaat in de sitemap:
+346 × `2026-10-13`, 4 × `2026-10-12` (de regiopagina's die niet veranderden), en in
+`sitemap-nationaal.xml` onveranderd 34 × `2026-10-10` en 46 × `2026-10-12`.
+
 Geen enkel getal is toegevoegd dat niet al in `data/bewijs/` of `data/geo/` stond. Geen lokale
 netcapaciteit, geen projectresultaat, geen besparing, geen subsidie, geen klantreferentie.
 

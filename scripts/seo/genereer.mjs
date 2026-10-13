@@ -81,10 +81,39 @@ const BRON = {
 /* De wijzigingsdatum komt uit de INHOUD, niet uit de klok. Zie de uitleg in
    lib/vingerafdruk.mjs: elke pagina wordt gerenderd met een plaatshouder op
    de datumplek, die uitvoer wordt gehasht, en alleen een pagina met een
-   veranderde hash krijgt de bouwdatum. */
+   veranderde hash krijgt de bouwdatum.
+
+   WELKE DATUM EEN GEWIJZIGDE PAGINA KRIJGT — HIER ZAT EEN GAT.
+
+   Dit was `process.env.ROUTES_DATUM || reg._gegenereerd`, en `_gegenereerd`
+   schuift per ontwerp alleen op als de ROUTESET verandert (bouw-routes.mjs:606:
+   een hash over elke route met haar staat). Dat is juist voor het register,
+   maar het is de verkeerde klok voor een INHOUDSwijziging: de routeset en de
+   inhoud veranderen onafhankelijk van elkaar.
+
+   Gemeten in SEO 3.2, en precies de reden dat dit nu anders is: de
+   inhoudscorrecties van deze release wijzigden de vingerafdruk van 346
+   routes, terwijl de routeset identiek bleef (430 INDEX / 17 NOINDEX /
+   4.254 PENDING). Alle 346 kregen daardoor `gewijzigd = 2026-10-12`, de
+   datum van de vorige release, en de sitemap bleef byte-identiek. De
+   bronvermelding op 326 gemeentepagina's was gerepareerd en de sitemap zei
+   tegen Google dat er niets was veranderd. Een lastmod die een echte
+   wijziging verzwijgt is net zo onwaar als een lastmod die een wijziging
+   verzint — alleen de verkeerde kant op, en daarom lastiger te zien.
+
+   De klok is hier veilig en bij `_gegenereerd` was hij dat niet, om één
+   reden: het grootboek is de poortwachter. Alleen een route met een
+   VERANDERDE hash komt bij deze datum. Is de inhoud gelijk, dan houdt
+   verwerk() de opgeslagen datum en raakt de klok de uitvoer niet. Een
+   ketenrun zonder inhoudswijziging is dus nog steeds byte-identiek, ook
+   achttien maanden later — dat is wat de klokpoort in poort.yml toetst.
+
+   INHOUD_DATUM bestaat zodat die poort een datum kan pinnen zonder de
+   routeset aan te raken; ROUTES_DATUM blijft werken voor wie beide in één
+   keer wil zetten. */
 const vingers = new Vingerafdrukken(
   resolve(wortel, 'data', 'seo', 'vingerafdrukken.json'),
-  process.env.ROUTES_DATUM || reg._gegenereerd
+  process.env.INHOUD_DATUM || process.env.ROUTES_DATUM || new Date().toISOString().slice(0, 10)
 );
 
 const geschreven = [];
