@@ -75,6 +75,17 @@ export const PLAN: readonly PlanRegel[] = [
      Uurlijks, want een storing die 24 uur onopgemerkt blijft is geen
      monitoring. */
   { soort: "gezondheid", prioriteit: 95, toelichting: "het volledige gezondheidsmodel meten en meldingen bijwerken" },
+  /* NIEUW IN 3.0.4, en de reden is praktisch: de productiedatabase is
+     privé-only (postgres.railway.internal) en `railway connect` eist een
+     SSH-sleutel. Daardoor waren de redactionele tellingen, de 0027-stand
+     en het aantal foutteksten met een credential van buiten NIET te
+     meten — en dus werden ze geschat of overgeslagen.
+
+     Deze taak draait IN Railway en zet de getallen via de
+     structuurlogger op stdout, waar het Railway-log ze oppikt. Dagelijks:
+     deze cijfers bewegen niet per uur, en een dagelijkse regel is
+     makkelijker terug te vinden dan 24. Strikt alleen-lezen. */
+  { soort: "meting", prioriteit: 96, dagelijks: true, toelichting: "de redactionele en databasestand meten en in het log zetten" },
 ];
 
 export type Handler = (
@@ -377,6 +388,84 @@ export const REGISTER: Record<string, Handler> = {
       `bezorgd ${meld.bezorgd}, bezorgfouten ${meld.bezorgfouten}, ` +
       `bestemming ${meld.bestemming || "NIET_INGESTELD"}`
     );
+  },
+
+  /**
+   * NIEUW IN 3.0.4 — de productiestand meten en loggen.
+   *
+   * STRIKT ALLEEN-LEZEN; zie ops/meting.ts, waar elke query een SELECT
+   * is. Eigen eigenaarspool omdat de meting intel.migraties en
+   * pg_constraint leest, en de applicatierol die eerste niet mag.
+   *
+   * DEZE TAAK FAALT WEL op een blootstelling of een poortmismatch. Dat
+   * is het verschil met `gezondheid`: die meet een bewegende
+   * operationele toestand en zou met werpen de dlq vullen. Dit zijn twee
+   * harde tegenspraken — een credential in een foutkolom, of een rij die
+   * READY_FOR_REVIEW heet terwijl een controle faalt — en die horen niet
+   * stil in een logregel te verdwijnen.
+   */
+  async meting(_pool, organisatieId) {
+    const { meetProductie } = await import("../ops/meting.ts");
+    const { maakPool: maakEigenPool, metOrganisatie: metOrg } = await import("./db.ts");
+    const { IntelFout } = await import("./fouten.ts");
+    const { maakLogger } = await import("./log.ts");
+
+    const eigenaarPool = maakEigenPool({ rol: null, max: 2 });
+    const m = await metOrg(eigenaarPool, { organisatieId }, (c) =>
+      meetProductie(c, organisatieId),
+    );
+
+    /* De logregel is het punt van deze taak: platte getallen, zodat een
+       log-zoekopdracht ze vindt. */
+    maakLogger("taak:meting").info("productiemeting", {
+      kandidaten: m.kandidaten,
+      voorstellen: m.voorstellen,
+      volledige_feitelijke_revisies: m.volledigeFeitelijkeRevisies,
+      gereed_feitelijk: m.gereedFeitelijk,
+      gereed_alleen_link: m.gereedAlleenLink,
+      gereed_onvolledig: m.gereedOnvolledig,
+      poort_mismatch: m.poortMismatch,
+      goedgekeurd: m.goedgekeurd,
+      in_publicatieketen: m.inPublicatieketen,
+      live_geverifieerd: m.gepubliceerd,
+      afgewezen: m.afgewezen,
+      mislukte_prechecks: m.mislukteprechecks,
+      geblokkeerd_door_poort: m.geblokkeerdDoorPoort,
+      uitspraken_totaal: m.uitspraken.totaal,
+      uitspraken_horizon_null: m.uitspraken.horizonNull,
+      tijdgrens_schendingen: m.uitspraken.tijdgrensSchendingen,
+      tijdgrens_constraint_gevalideerd: m.uitspraken.constraintGevalideerd,
+      taken_met_credential: m.credentiallek.takenMetCredential,
+      migraties_toegepast: m.migraties.toegepast,
+    });
+
+    const samenvatting =
+      `kandidaten ${m.kandidaten}, voorstellen ${m.voorstellen}, ` +
+      `volledige feitelijke revisies ${m.volledigeFeitelijkeRevisies} ` +
+      `(gereed ${m.gereedFeitelijk}), linkvoorstellen gereed ${m.gereedAlleenLink}, ` +
+      `goedgekeurd ${m.goedgekeurd}, live ${m.gepubliceerd}, ` +
+      `uitspraken ${m.uitspraken.totaal} (tijdgrensschendingen ${m.uitspraken.tijdgrensSchendingen}, ` +
+      `constraint ${m.uitspraken.constraintGevalideerd === null ? "ONBEKEND" : m.uitspraken.constraintGevalideerd ? "gevalideerd" : "not valid"}), ` +
+      `migraties ${m.migraties.toegepast}`;
+
+    if (m.credentiallek.takenMetCredential > 0) {
+      throw new IntelFout(
+        "configuratie",
+        `BLOOTSTELLING: ${m.credentiallek.takenMetCredential} fouttekst(en) bevatten een ` +
+          `credential-URL (soorten: ${m.credentiallek.soorten.join(", ")}). Roteer INTEL_DB_URL ` +
+          `via de geautoriseerde procedure. ${samenvatting}`,
+        { herhaalbaar: false },
+      );
+    }
+    if (m.poortMismatch > 0) {
+      throw new IntelFout(
+        "validatie",
+        `POORTMISMATCH: ${m.poortMismatch} voorstel(len) staan op READY_FOR_REVIEW terwijl een ` +
+          `opgeslagen controle op FAIL staat. ${samenvatting}`,
+        { herhaalbaar: false },
+      );
+    }
+    return samenvatting;
   },
 };
 

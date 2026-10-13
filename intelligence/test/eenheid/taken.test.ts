@@ -107,8 +107,12 @@ describe("de keten staat in de juiste orde", () => {
     );
   });
 
-  test("alleen de back-up is dagelijks; de rest is uurlijks", () => {
-    const dagelijks = PLAN.filter((p) => p.dagelijks).map((p) => p.soort);
-    assert.deepEqual(dagelijks, ["backup"]);
+  test("de dagelijkse taken zijn precies de back-up en de meting", () => {
+    /* Uurlijks is de norm; dagelijks moet je verantwoorden. De back-up
+       omdat een uurlijkse dump van een database die per uur een handvol
+       rijen bijschrijft verspilling is, en de meting omdat die cijfers
+       niet per uur bewegen en één regel per dag terug te vinden is. */
+    const dagelijks = PLAN.filter((p) => p.dagelijks).map((p) => p.soort).sort();
+    assert.deepEqual(dagelijks, ["backup", "meting"]);
   });
 });
