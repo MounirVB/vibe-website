@@ -55,14 +55,18 @@ import { promisify } from "node:util";
 import pg from "pg";
 import { laadEnvBestand, APP_WORTEL } from "../kern/config.ts";
 import { KRITIEKE_TABELLEN, vindPgGereedschap, type BackupManifest } from "../ops/backup.ts";
-import { RESTORETEST_MERK_OBJECT } from "../ops/gezondheid.ts";
 import { redacteerFout, redigeer, wachtwoordUit } from "../kern/geheimen.ts";
 import { draaiPgGereedschap, pgRestoreNaarDatabase } from "../ops/pgomgeving.ts";
 import { downloadUitGcs, gcsConfigUitOmgeving, lijstGcs, uploadNaarGcs } from "../ops/gcsopslag.ts";
-import { maakPool, metOrganisatie, sluitAllePools } from "../kern/db.ts";
+import { maakPool, metOrganisatie, sluitAllePools, type Pool, type Client as PoolClient } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
 import {
+  bewijsObjectnaam,
+  geefRestoretestSlotTerug,
+  neemRestoretestSlot,
   registreerRestoretest,
+  RESTORETEST_SLOT_SLEUTEL,
+  ruimWegwerpdatabasesOp,
   VEREISTE_RESTORETOETSEN,
   type RestoretestBewijs,
 } from "../ops/restorebewijs.ts";
@@ -155,6 +159,105 @@ let bronserverVersie: string | null = null;
 let restoreDuurMs: number | null = null;
 
 /**
+ * Het slot was bezet: er loopt al een restoretest.
+ *
+ * Een eigen type en geen gewone Error, zodat de `catch` onderaan dit
+ * geval kan ONDERSCHEIDEN van een echte mislukking. Zonder dat
+ * onderscheid zou een overgeslagen run als FAIL in het logboek komen —
+ * en dan zou het signaal rood staan omdat er TE VEEL proeven waren.
+ */
+class SlotBezet extends Error {
+  constructor() {
+    super("het restoretestslot is in gebruik");
+    this.name = "SlotBezet";
+  }
+}
+
+/* De verbinding die het slot houdt. Blijft open tot de finally. */
+let slotPool: Pool | null = null;
+let slotClient: PoolClient | null = null;
+
+/**
+ * Neemt het restoretestslot en ruimt achtergebleven wegwerpdatabases op.
+ *
+ * WAAROM HET SLOT IN DE CLI ZIT EN NIET IN DE WORKER-HANDLER.
+ * `LEASE_SECONDEN` is 300. Duurt een restore langer dan vijf minuten —
+ * en dat is bij een groeiende database een kwestie van tijd — dan loopt
+ * de lease af, geeft `geefVerlopenTerug()` de taak terug aan de
+ * wachtrij en pakt een worker hem opnieuw. Dan draaien er TWEE restores
+ * naast elkaar, elk met een eigen wegwerpdatabase op de
+ * productieserver. Zat het slot alleen in de handler, dan zou een
+ * HANDMATIGE run daar bovendien buiten vallen. Hier dekt het beide.
+ *
+ * DE OPRUIMING STAAT HIER OM TWEE REDENEN. Ten eerste: wordt dit proces
+ * GEDOOD (timeout, OOM, deploy), dan draait de finally niet en blijft de
+ * wegwerpdatabase staan. De volgende run ruimt hem dan op. Ten tweede:
+ * dit is het enige moment waarop we ZEKER weten dat er geen andere
+ * restoretest loopt, want we houden het slot.
+ *
+ * DE NAAMVORM IS DE VEILIGHEID. Er wordt uitsluitend gedropt wat matcht
+ * op `^restoretest_\\d+_\\d+$`. Die vorm kan de productiedatabase niet
+ * treffen — die heet `railway` — en kan ook geen enkele andere database
+ * in dit cluster treffen, want alleen dit bestand maakt namen van die
+ * vorm. De eigen wegwerpdatabase van DEZE run wordt overgeslagen.
+ */
+async function neemSlotEnRuimOp(): Promise<{ gepakt: boolean; opgeruimd: readonly string[] }> {
+  if (!process.env["INTEL_DB_URL"]) {
+    console.log("  slot          overgeslagen: geen INTEL_DB_URL, dus geen gedeeld slot mogelijk");
+    return { gepakt: true, opgeruimd: [] };
+  }
+  slotPool = maakPool({ max: 1 });
+  slotClient = await slotPool.connect();
+  /* Eén implementatie van het slot, in ops/restorebewijs.ts. Hier stond
+     een eigen `pg_try_advisory_lock` met de sleutel erbij, en dan moet
+     hetzelfde getal op twee plekken goed staan. */
+  if (!(await neemRestoretestSlot(slotClient))) return { gepakt: false, opgeruimd: [] };
+  console.log(`  slot          genomen (${RESTORETEST_SLOT_SLEUTEL}); geen tweede proef kan nu starten`);
+
+  /* Alleen zinvol bij de --doel-url-vorm: in de Docker-vorm staat de
+     wegwerpdatabase in een container die met --rm verdwijnt. */
+  if (!NAAR_BESTAANDE_SERVER) return { gepakt: true, opgeruimd: [] };
+
+  /* DE OPRUIMING GAAT OVER DE BEHEERVERBINDING, NIET OVER DE SLOTPOOL.
+     Gemeten: op de slotpool faalde hij met
+
+       LET OP: restoretest_777_777: must be owner of database ...
+
+     en dat is logisch. `maakPool()` neemt de applicatierol aan (GUC
+     `role` in de startupopties, kern/db.ts), en die rol bezit niets —
+     dat is het hele punt van die rol. `drop database` vraagt de
+     eigenaar. In productie zou dit óók gefaald zijn, ook al is
+     INTEL_DB_URL daar de superuser: de SET ROLE geeft dat recht weg.
+
+     De beheer-URL is per definitie de juiste verbinding: daarmee is een
+     paar regels verderop ook de wegwerpdatabase AANGEMAAKT. Een eigen,
+     kortlevende client, want hij hoeft de run niet te overleven — het
+     SLOT wel, en dat blijft op de slotpool.
+
+     De melding was wel luid, en dat is precies waarom dit gevonden is
+     in plaats van jaren stil mislukt. */
+  const beheerClient = new pg.Client({ connectionString: DOEL_BEHEER_URL });
+  await beheerClient.connect();
+  try {
+    /* De opruiming zelf staat in ops/restorebewijs.ts, zodat een toets de
+       ECHTE code gebruikt in plaats van een nagebouwde query — en zodat de
+       naamvorm die de veiligheid draagt op één plek staat. */
+    const { opgeruimd, mislukt: nietGelukt } = await ruimWegwerpdatabasesOp(beheerClient, WEGWERP_DB);
+    if (opgeruimd.length) {
+      console.log(
+        `  opgeruimd     ${opgeruimd.length} achtergebleven wegwerpdatabase(s): ${opgeruimd.join(", ")}`,
+      );
+    } else {
+      console.log("  opgeruimd     geen achtergebleven wegwerpdatabases");
+    }
+    for (const m of nietGelukt) console.error(`  LET OP: ${m}`);
+    return { gepakt: true, opgeruimd };
+  } finally {
+    await beheerClient.end().catch(() => undefined);
+  }
+}
+
+/**
  * Legt het bewijs van DEZE proef vast op alle drie de bestemmingen:
  * de bucket (duurzaam), het lokale merkbestand (terugval) en
  * intel.taken (gedeeld, en daarmee de enige die op ELKE service
@@ -184,7 +287,6 @@ async function legBewijsVast(uitslag: "PASS" | "FAIL", misluktLijst: readonly st
   }
 
   const gcsMerk = gcsConfigUitOmgeving();
-  const beoogdeUri = gcsMerk ? `gs://${gcsMerk.bucket}/${RESTORETEST_MERK_OBJECT}` : null;
 
   const kern = {
     op: new Date().toISOString(),
@@ -200,30 +302,47 @@ async function legBewijsVast(uitslag: "PASS" | "FAIL", misluktLijst: readonly st
     uit_bucket: uitGcsGehaald !== null,
   };
 
-  /* ---------- 1. de bucket: de enige duurzame plek ---------- */
-  /* OOK EEN FAIL GAAT HIERHEEN, en dat is nieuw. Tot nu toe werd alleen
-     een PASS geüpload, waardoor `restoretest/laatste.json` na een
-     mislukte proef nog de VORIGE PASS droeg. Dat is precies de
-     tegenstrijdige statusinformatie die een monitor niet mag krijgen:
-     het takenlogboek zou FAIL zeggen en de bucket PASS. 'laatste.json'
-     betekent de LAATSTE proef, niet de laatste geslaagde. */
+  /* ---------- 1. de bucket: een EIGEN, onveranderbaar object ---------- */
+  /* HIER STOND ÉÉN VAST PAD, EN DAT WERKTE PRECIES ÉÉN KEER.
+     `restoretest/laatste.json` werd overschreven, en overschrijven is in
+     GCS intern delete + create. De dienstaccount heeft bewust geen
+     delete-recht, dus de tweede en elke volgende upload kreeg HTTP 403 —
+     gemeten op 14 oktober 2026, 03:26 UTC, tijdens de eerste
+     productieproef met registratie. Het object is sinds 13 oktober
+     13:28 UTC bevroren. De code printte een waarschuwing en ging door,
+     dus het leek te werken.
+
+     Nu krijgt elke run zijn eigen naam, met `ifGenerationMatch=0` zodat
+     de onveranderbaarheid uit de AANROEP volgt en niet uit een
+     IAM-besluit. Een herhaalde poging van dezelfde run levert dezelfde
+     naam en dus HTTP 412 — en dat betekent "al vastgelegd", niet
+     "mislukt". Zie ops/restorebewijs.ts.
+
+     OOK EEN FAIL GAAT HIERHEEN. Tot 3.0.8 werd alleen een PASS
+     geüpload, waardoor het bewijs na een mislukking nog de VORIGE PASS
+     droeg: precies de tegenstrijdige statusinformatie die een monitor
+     niet mag krijgen. */
   let uriBevestigd: string | null = null;
   if (!gcsMerk) {
     console.log("geen bucket geconfigureerd; het bewijs staat alleen lokaal en in het takenlogboek");
   } else {
+    const objectnaam = bewijsObjectnaam(kern);
+    const beoogdeUri = `gs://${gcsMerk.bucket}/${objectnaam}`;
     try {
-      await uploadNaarGcs(
+      const uit = await uploadNaarGcs(
         gcsMerk,
-        RESTORETEST_MERK_OBJECT,
+        objectnaam,
         Buffer.from(JSON.stringify({ ...kern, bewijs_uri: beoogdeUri }, null, 2) + "\n", "utf8"),
         "application/json",
+        { alleenAlsNieuw: true },
       );
       uriBevestigd = beoogdeUri;
-      console.log(`bewijs in ${beoogdeUri}`);
+      console.log(`bewijs in ${beoogdeUri}${uit.bestondAl ? " (bestond al, identiek)" : ""}`);
     } catch (e) {
       console.error(
         `LET OP: het bewijs kon niet naar de bucket: ${redacteerFout(e)}. ` +
-          `De proef zelf is wel gedraaid; het duurzame bewijs ontbreekt.`,
+          `De proef zelf is wel gedraaid; het duurzame bewijs ontbreekt. ` +
+          `Het takenlogboek draagt het wel — zie hieronder.`,
       );
     }
   }
@@ -276,12 +395,37 @@ async function legBewijsVast(uitslag: "PASS" | "FAIL", misluktLijst: readonly st
       `LET OP: het bewijs kon NIET in intel.taken: ${redacteerFout(e)}. ` +
         `De proef is gedraaid, maar de gedeelde herstelstatus weet daar niets van.`,
     );
-  } finally {
-    await sluitAllePools().catch(() => undefined);
   }
+  /* GEEN sluitAllePools() hier. Die sluit ook de pool die het slot
+     vasthoudt; hij staat in de buitenste finally, ná het vrijgeven. */
 }
 
 try {
+  /* ---------------- het slot, vóór al het andere ---------------- */
+  console.log("");
+  console.log("SLOT EN OPRUIMING");
+  const slot = await neemSlotEnRuimOp();
+  if (!slot.gepakt) {
+    /* GEEN FOUT. Er loopt al een restoretest, en dan is overslaan
+       precies goed — twee restores naast elkaar betekent twee
+       wegwerpdatabases op de productieserver.
+
+       Exitcode 0, want dit is geen mislukking van de back-up en er mag
+       geen FAIL in het logboek komen voor een proef die niet gedraaid
+       heeft. Er wordt dus ook NIETS geregistreerd: een run die niet
+       gebeurde, is geen bewijs in welke richting ook. */
+    console.log("");
+    console.log("RESTORETEST OVERGESLAGEN — er loopt al een proef (het slot is in gebruik).");
+    console.log("Er is niets geregistreerd; de vorige stand blijft staan.");
+    process.exitCode = 0;
+    /* Via een eigen fouttype uit het try-blok, zodat de `finally`
+       hieronder zijn opruimwerk doet. De `catch` kent dit type en legt
+       er met opzet GEEN mislukking voor vast; zie daar. Een `if` om de
+       resterende 450 regels zou hetzelfde doen maar het hele bestand
+       een niveau diep indenteren. */
+    throw new SlotBezet();
+  }
+
   /* ---------------- de back-up kiezen ---------------- */
   let dumpPad = waarde("dump") ? resolve(waarde("dump")!) : null;
 
@@ -488,6 +632,30 @@ try {
      DEZELFDE aanroep gebruikt. Zie de toelichting daar: in 3.0.4 brak dit
      pad terwijl de toets groen bleef, omdat die zijn eigen argumenten
      bouwde. */
+  /* DE LAATSTE GRENDEL, EN DE ENIGE DIE OP HET WERKELIJKE DOEL KIJKT.
+     `grendel()` controleert de VORM van de wegwerpnaam voordat de
+     database bestaat. Dat is nuttig maar het zegt niets over de URL waar
+     pg_restore straks echt naartoe schrijft. Hier staat dus de eis die
+     telt: bij de --doel-url-vorm MOET het pad van `doelUrl` exact de
+     wegwerpdatabase zijn die wij een paar regels hoger hebben
+     aangemaakt.
+
+     Dit is de maatregel tegen het enige onherstelbare scenario van dit
+     bestand: pg_restore in de PRODUCTIEdatabase. Die heet `railway`;
+     deze toets laat alleen `restoretest_<pid>_<n>` door. Hij is
+     bovendien de plek waar een toekomstige wijziging — een andere manier
+     om doelUrl te bouwen, een redirect, een copy-paste — zou afgaan. */
+  if (NAAR_BESTAANDE_SERVER) {
+    const doelPad = new URL(doelUrl).pathname;
+    if (doelPad !== `/${WEGWERP_DB}`) {
+      throw new Error(
+        `WEIGERD: pg_restore zou naar '${doelPad}' schrijven in plaats van naar de ` +
+          `wegwerpdatabase '/${WEGWERP_DB}'. Er wordt niets teruggezet.`,
+      );
+    }
+    console.log(`  grendel        doel is ${doelPad}, de verse wegwerpdatabase`);
+  }
+
   const { stderr: restoreFout } = await pgRestoreNaarDatabase(
     gereedschap.pgRestore,
     dumpPad,
@@ -715,6 +883,13 @@ try {
     await legBewijsVast("PASS", []);
   }
 } catch (e) {
+  /* EEN OVERGESLAGEN RUN IS GEEN MISLUKTE RUN. Het slot was bezet, dus
+     er is niets gedraaid en er valt niets vast te leggen. Zou hier een
+     FAIL geregistreerd worden, dan zou het restoresignaal rood gaan
+     staan juist doordat er al een proef liep. */
+  if (e instanceof SlotBezet) {
+    // niets: de melding staat al in het try-blok, de exitcode op 0
+  } else {
   console.error("");
   console.error(`RESTORETEST AFGEBROKEN: ${redacteerFout(e)}`);
   process.exitCode = 1;
@@ -747,6 +922,7 @@ try {
   await legBewijsVast("FAIL", [`afgebroken: ${veiligeFout.slice(0, 300)}`]).catch((f: unknown) => {
     console.error(`LET OP: ook het vastleggen van de mislukking faalde: ${redacteerFout(f)}`);
   });
+  }
 } finally {
   if (containerGestart && !heeft("houd")) {
     await uitvoeren("docker", ["stop", CONTAINER]).catch(() => undefined);
@@ -800,4 +976,28 @@ try {
     await rm(`${uitGcsGehaald}.manifest.json`, { force: true });
     console.log(`de uit de bucket gehaalde kopie is weer verwijderd`);
   }
+
+  /* HET SLOT ALS LAATSTE LOS, en expliciet. Een advisory lock hangt aan
+     de SESSIE, en een sessie uit een pool wordt hergebruikt in plaats
+     van gesloten. Zou het slot niet vrijgegeven worden, dan bleef het
+     hangen aan een verbinding die later ander werk doet — en dan draait
+     er nooit meer een restoretest tot de service herstart. */
+  if (slotClient) {
+    await geefRestoretestSlotTerug(slotClient);
+    slotClient.release();
+    slotClient = null;
+  }
+  if (slotPool) {
+    await slotPool.end().catch(() => undefined);
+    slotPool = null;
+  }
+
+  /* SLUITEN ALS ALLERLAATSTE, en hier en niet in legBewijsVast().
+     Daar stond het, en `sluitAllePools()` beëindigt ALLE gememoïseerde
+     pools — inclusief de pool die het slot vasthoudt. Het gevolg was dat
+     de `pg_advisory_unlock` hierboven op een gesloten pool landde en
+     stil in een catch verdween. Functioneel ging het goed (een dode
+     sessie laat een advisory lock los), maar een opruiming die stil
+     mislukt is geen opruiming. */
+  await sluitAllePools().catch(() => undefined);
 }

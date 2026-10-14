@@ -28,18 +28,22 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import type pg from "pg";
 import { rijen } from "../kern/db.ts";
-import { downloadUitGcs, gcsConfigUitOmgeving, lijstGcs } from "./gcsopslag.ts";
+import { gcsConfigUitOmgeving, lijstGcs } from "./gcsopslag.ts";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { leesSitekennis } from "../site/sitekennis.ts";
 import { meldBestemming } from "./melden.ts";
 import { meetBrondekking, vatBrondekkingSamen } from "./brondekking.ts";
+import { NIET_HARTSLAGWAARDIGE_SOORTEN } from "../kern/taken.ts";
 import {
   bewijsIsVolledigGeslaagd,
+  inventariseerBucketBewijs,
   leesRestorebewijsUitTaken,
   restoreAanvaardbaar,
+  RESTOREBEWIJS_VOORVOEGSEL,
   RESTORETEST_TAAK_SOORT,
   type Bewijsbron,
+  type BucketInventaris,
 } from "./restorebewijs.ts";
 import { redigeer } from "../kern/geheimen.ts";
 
@@ -52,6 +56,18 @@ export type Niveau = "OK" | "LET OP" | "FOUT" | "NIET GEMETEN";
  * bestand (dat hem leest). Twee losse letterlijke strings zouden bij de
  * eerste wijziging uiteenlopen, en dan staat het signaal weer op NIET
  * GEMETEN zonder dat iemand weet waarom.
+ */
+/**
+ * Het OUDE, vaste bewijspad. Sinds 3.0.8 schrijft niets hier meer naar.
+ *
+ * Hij staat er nog omdat het object bestaat en niet verwijderd wordt:
+ * daar is geen delete-recht voor en ook geen toestemming. Hij is sinds
+ * 13 oktober 2026 13:28 UTC bevroren (483 bytes) en komt via
+ * `inventariseerBucketBewijs()` als gewone, oude kandidaat voorbij.
+ *
+ * NIET hergebruiken om naar te schrijven. Een vast pad in een bucket
+ * zonder delete-recht werkt precies één keer; zie
+ * RESTOREBEWIJS_VOORVOEGSEL in ops/restorebewijs.ts.
  */
 export const RESTORETEST_MERK_OBJECT = "restoretest/laatste.json";
 
@@ -537,15 +553,30 @@ export async function meetGezondheid(
     verlopen_lease: number;
   }>(
     c,
+    /* DE HARTSLAG KIJKT NIET NAAR ZELDZAME TAKEN, en dat is sinds 3.0.8
+       een expliciete uitzondering in plaats van een eigenschap die van
+       een lege kolom afhangt.
+
+       Deze meting bedoelt: draait de worker zijn RONDE nog? De drempel
+       is 26 uur. Een taak die één keer per WEEK afrondt antwoordt die
+       vraag niet — en zou hem wél beantwoorden als hij meetelde: na de
+       restoretest van zondagnacht zou de hartslag tot maandagochtend OK
+       melden, ook als de worker daarna meteen omviel. Een signaal dat
+       iets anders meet dan het beweert, is precies wat deze release
+       repareert; het hier opnieuw invoeren zou wrang zijn.
+
+       De tellingen van wachtend/bezig/dlq blijven WEL over alle soorten
+       gaan: een restoretestronde die in de dlq belandt, hoort gezien te
+       worden. Alleen de LEEFTIJD is uitgezonderd. */
     `select count(*) filter (where status = 'wachtend')::int  as wachtend,
             count(*) filter (where status = 'bezig')::int      as bezig,
             count(*) filter (where status = 'dlq')::int        as dlq,
-            max(gereed_op)::text                              as laatste_gereed,
+            max(gereed_op) filter (where not (soort = any($2)))::text as laatste_gereed,
             count(*) filter (
               where status = 'bezig' and zichtbaarheid_tot is not null and zichtbaarheid_tot < now()
             )::int                                            as verlopen_lease
        from intel.taken where organisatie_id = $1`,
-    [organisatieId],
+    [organisatieId, NIET_HARTSLAGWAARDIGE_SOORTEN],
   );
   const t = taken[0];
   const workerUren = urenSinds(t?.laatste_gereed ?? null);
@@ -1128,24 +1159,19 @@ export async function meetGezondheid(
      blijft meelezen als BEVESTIGING: spreken de twee elkaar tegen, dan
      is dat zelf de bevinding en wordt het signaal FOUT. Zie
      ops/restorebewijs.ts voor de vier regels en waarom elk nodig is. */
+  /* EN SINDS 3.0.8 ÉÉN OBJECT PER RUN IN PLAATS VAN ÉÉN VAST PAD.
+     Tot nu toe las dit signaal `restoretest/laatste.json`. Dat object is
+     sinds 13 oktober 13:28 UTC BEVROREN, want overschrijven vraagt
+     delete-recht en dat heeft de dienstaccount bewust niet — gemeten op
+     14 oktober 03:26 UTC toen de upload HTTP 403 gaf. Een vast pad in
+     zo'n bucket werkt precies één keer.
+
+     `inventariseerBucketBewijs()` somt daarom alles onder
+     `restoretest/` op en kiest de NIEUWSTE uitkomst, op TIJD en nooit op
+     uitslag — een oudere PASS mag een nieuwere FAIL niet maskeren. Het
+     bevroren `laatste.json` komt daar als gewone, oude kandidaat voorbij
+     en wordt niet verwijderd. */
   const merk = opties.backupMap ? join(opties.backupMap, ".laatste-restoretest.json") : null;
-  let bewijsRuw: string | null = null;
-  let bewijsBron = "";
-  if (gcs) {
-    try {
-      bewijsRuw = (await downloadUitGcs(gcs, RESTORETEST_MERK_OBJECT)).toString("utf8");
-      bewijsBron = `gs://${gcs.bucket}/${RESTORETEST_MERK_OBJECT}`;
-    } catch {
-      /* Geen merk in de bucket is geen fout van deze meting; we vallen
-         terug op de lokale kopie, en het takenlogboek hieronder kan het
-         antwoord alsnog dragen. */
-      bewijsRuw = null;
-    }
-  }
-  if (!bewijsRuw && merk && existsSync(merk)) {
-    bewijsRuw = await readFile(merk, "utf8");
-    bewijsBron = merk;
-  }
 
   /* ---- bron 1: het originele bewijs, waar het leesbaar is ---- */
   type MerkBewijs = {
@@ -1157,19 +1183,61 @@ export async function meetGezondheid(
     restore_ms?: number;
   };
   let merkJson: MerkBewijs | null = null;
-  if (bewijsRuw) {
+  let bewijsBron = "";
+  let bucketInventaris: BucketInventaris | null = null;
+
+  if (gcs) {
+    bucketInventaris = await inventariseerBucketBewijs(gcs);
+    if (bucketInventaris.nieuwste) {
+      merkJson = bucketInventaris.nieuwste.bewijs as MerkBewijs;
+      bewijsBron =
+        `gs://${gcs.bucket}/${bucketInventaris.nieuwste.objectnaam}` +
+        (bucketInventaris.nieuwste.opUitBewijs ? "" : " (tijd uit de objectdatum, niet uit het bewijs)");
+    }
+    /* ALLEEN BEDORVEN BEWIJS IS EEN FOUT. De drie uitkomsten van de
+       inventarisatie hebben met opzet drie verschillende ernsten; zie
+       het type BucketInventaris voor de twee bugs die hier eerder
+       zaten.
+
+         bedorven      een object dat BESTAAT maar niet te lezen is.
+                       Dan is er iets stuk in de opslag en hoort iemand
+                       te kijken  -> FOUT
+         nietOpgesomd  de bucket was niet te bereiken. De bron zegt
+                       niets; de restoremeting hieronder meldt dat al
+                       als 'geen leesbaar bewijs in de bucket'
+                       -> GEEN signaal
+         afgekapt      er zijn oudere objecten niet opgehaald. Een
+                       begrenzing, en er komt er elke week een bij
+                       -> alleen een vermelding in de meettekst */
+    if (bucketInventaris.bedorven.length > 0) {
+      voeg({
+        groep: "backup",
+        naam: "restorebewijs leesbaar",
+        niveau: "FOUT",
+        meting:
+          `${bucketInventaris.gevonden} bewijsobject(en) onder gs://${gcs.bucket}/${RESTOREBEWIJS_VOORVOEGSEL}, ` +
+          `maar ${bucketInventaris.bedorven.length} daarvan is niet te lezen: ` +
+          `${bucketInventaris.bedorven.join(" | ").slice(0, 400)}`,
+        advies: "kijk waarom deze objecten bedorven zijn vóór je op het restorebewijs vertrouwt",
+      });
+    }
+  }
+
+  /* De lokale kopie is de terugval voor een machine zonder bucket. Hij
+     telt alleen mee als de bucket niets opleverde; de bucket is het
+     originele, duurzame bewijs. */
+  if (merkJson === null && merk && existsSync(merk)) {
     try {
-      merkJson = JSON.parse(bewijsRuw) as MerkBewijs;
+      merkJson = JSON.parse(await readFile(merk, "utf8")) as MerkBewijs;
+      bewijsBron = merk;
     } catch {
-      /* Onleesbaar bewijs is GEEN bewijs, en ook geen stille 'geen
-         bewijs': dan is er iets stuk in de opslag. */
       merkJson = null;
       voeg({
         groep: "backup",
         naam: "restorebewijs leesbaar",
         niveau: "FOUT",
-        meting: `het restorebewijs in ${bewijsBron} is geen geldige JSON; het is daarmee geen bewijs`,
-        advies: "npm run restoretest -- --uit-gcs — en kijk waarom het object bedorven is",
+        meting: `het lokale restorebewijs in ${merk} is geen geldige JSON; het is daarmee geen bewijs`,
+        advies: "npm run restoretest -- --uit-gcs — en kijk waarom het bestand bedorven is",
       });
     }
   }
@@ -1234,6 +1302,18 @@ export async function meetGezondheid(
             : "")
         : "";
 
+  /* De twee NIET-foutieve uitkomsten van de inventarisatie staan in de
+     meettekst van dit signaal. Daar horen ze: ze zeggen iets over de
+     BETROUWBAARHEID van wat je hier leest, zonder een eigen ernst te
+     verzinnen. Een begrenzing die je niet meldt, leest als
+     volledigheid. */
+  const bucketNoten = [
+    bucketInventaris?.nietOpgesomd,
+    bucketInventaris && bucketInventaris.afgekapt > 0
+      ? `${bucketInventaris.afgekapt} ouder(e) bewijsobject(en) niet opgehaald; de ${bucketInventaris.gevonden - bucketInventaris.afgekapt} nieuwste zijn gelezen`
+      : null,
+  ].filter((x): x is string => typeof x === "string" && x.length > 0);
+
   voeg({
     groep: "backup",
     naam: "restoretest",
@@ -1241,7 +1321,8 @@ export async function meetGezondheid(
     meting:
       oordeel.grond +
       (details ? ` [${details}]` : "") +
-      ` — bron: ${oordeel.bronnen.join(" + ")}`,
+      ` — bron: ${oordeel.bronnen.join(" + ")}` +
+      (bucketNoten.length ? ` (${bucketNoten.join("; ")})` : ""),
     gemetenOp: taakBewijs?.op ?? merkJson?.op,
     advies:
       oordeel.niveau === "OK"

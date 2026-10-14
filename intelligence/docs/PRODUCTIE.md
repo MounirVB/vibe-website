@@ -27,8 +27,8 @@
 >   | frequentie | dagelijkse taak; `intel.taken` toont drie geslaagde runs (12, 13 en 14 oktober) |
 >   | RPO | 24 uur, met een signaaldrempel op **26 uur** (`DREMPELS.backupLeeftijdUren`) |
 >   | checksum | sha256 per dump, bij upload naar GCS opnieuw berekend en vergeleken; manifest met rijtellingen per tabel; `pg_restore --list` bewijst de structuur |
->   | restorebewijs | **PASS 0,5 dagen** oud, 10 toetsen, restore in 639 ms, bewijsobject in `gs://…/restoretest/laatste.json` |
->   | retentie | levensduurbeleid van de bucket: **35 dagen** live, **7 dagen** voor niet-actuele versies (`ops/gcsopslag.ts`) |
+>   | restorebewijs | **PASS**, 10/10 controles, restore in 2979 ms op de echte productieback-up (14 oktober 03:26 UTC, `--doel-url`-vorm); vastgelegd in `intel.taken` id 547 |
+>   | retentie | levensduurbeleid van de bucket: **35 dagen** live, **7 dagen** voor niet-actuele versies (overgenomen uit `ops/gcsopslag.ts`; zie hieronder — niet verifieerbaar) |
 >   | verwijderrecht | de dienstaccount heeft `objectCreator` + `objectViewer` en **GEEN delete** — een proces dat alles opruimt bestaat niet |
 >
 >   Wat Railway's eigen back-upschema's betreft blijft gelden dat die een
@@ -58,7 +58,7 @@
 >
 >   | bestemming | rol |
 >   |---|---|
->   | `gs://…/restoretest/laatste.json` | het originele bewijs, duurzaam — ook bij een FAIL, want 'laatste' betekent de laatste proef en niet de laatste geslaagde |
+>   | `gs://…/restoretest/<ISO-tijd>-<runid>.json` | het originele bewijs, duurzaam en **onveranderbaar** — ook bij een FAIL, want de lezer kiest de nieuwste en nooit de beste |
 >   | `intel.taken`, soort `restoretest` | de **gezaghebbende** stand: gedeeld, dus op elke service hetzelfde. Payload draagt tijdstip, uitslag, aantal controles, restoreduur, dumpnaam, sha256 en de URI van het originele bewijs |
 >   | `backups/.laatste-restoretest.json` | lokale terugval voor een machine zonder bucket |
 >
@@ -70,13 +70,82 @@
 >   en de restoreleeftijd (30 dagen) zijn **onafhankelijke** eisen: een
 >   verse dump bevredigt de restore-eis niet.
 >
->   **Niet gemeten op het moment van schrijven:** er heeft nog geen
->   restoretest met deze registratie gedraaid, dus `intel.taken` bevat
->   nog geen `restoretest`-rij en `vibe-intel-api` meldt het signaal
->   terecht als NIET GEMETEN. Daarvoor is één proefrun nodig, en die
->   vraagt in productie `--doel-url` (zie §3): dat maakt en dropt een
->   wegwerpdatabase op de productieSERVER en hoort dus niet zonder
->   toestemming te gebeuren.
+>   **En sinds 3.0.8 is het bucketbewijs ONVERANDERBAAR.** Dat moest,
+>   want het vaste pad werkte precies één keer. Gemeten op 14 oktober
+>   2026, 03:26 UTC, tijdens de eerste productieproef met registratie:
+>
+>   ```
+>   HTTP 403 — intel-backup-schrijver@…iam.gserviceaccount.com does not
+>   have storage.objects.delete access to the Google Cloud Storage object
+>   ```
+>
+>   Overschrijven is in GCS intern delete + create. Google bevestigde de
+>   rechten zelf via `testIamPermissions`:
+>
+>   | recht | stand |
+>   |---|---|
+>   | `storage.objects.create` | **toegekend** |
+>   | `storage.objects.get` | **toegekend** |
+>   | `storage.objects.list` | **toegekend** |
+>   | `storage.objects.delete` | **NIET toegekend** |
+>   | `storage.buckets.get` | **NIET toegekend** (403 op de bucketconfiguratie) |
+>
+>   Dat ontbrekende delete-recht is een gewenste eigenschap en is **niet
+>   aangevraagd**. In plaats daarvan schrijft elke run naar een eigen
+>   naam — `restoretest/<ISO-tijd>-<runid>.json` — met
+>   `ifGenerationMatch=0`, zodat onveranderbaarheid uit de aanroep volgt
+>   en niet uit een IAM-besluit dat morgen anders kan zijn. Een herhaalde
+>   poging van dezelfde run geeft dan HTTP **412** ("bestaat al") in
+>   plaats van een 403 die niet van een rechtenprobleem te onderscheiden
+>   is. `restoretest/laatste.json` blijft staan als bevroren legacy-object
+>   (483 bytes, 13 oktober 13:28 UTC) en wordt niet verwijderd.
+>
+>   **Retentie en kosten van het bewijs — wat meetbaar is en wat niet.**
+>
+>   | | stand op 14 oktober 2026 |
+>   |---|---|
+>   | objecten in de bucket | **25**, samen **9,1 MB** |
+>   | waarvan dumps | 11, oudste 2026-10-12, nieuwste 2026-10-14 |
+>   | waarvan restorebewijs | 1 (`laatste.json`, 483 bytes) |
+>   | groei van het bewijs | ~500 bytes per run, **één run per week** → ~26 kB per jaar |
+>   | levensduurbeleid | **NIET verifieerbaar**: `storage.buckets.get` geeft 403 |
+>
+>   De kosten van onveranderbaar bewijs zijn dus verwaarloosbaar; de
+>   dumps domineren de bucket volledig. Het risico zit elders en is
+>   eerlijk gezegd niet weg te meten: **als het levensduurbeleid
+>   werkelijk 35 dagen is, worden bewijsobjecten ouder dan 35 dagen
+>   verwijderd.** Voor het SIGNAAL is dat geen probleem — dat kijkt naar
+>   de nieuwste en de drempel is 30 dagen — maar het betekent dat de
+>   bucket geen langetermijnarchief van restorebewijs is. Dat archief is
+>   `intel.taken`: daar staat geen retentie op en er bestaat geen
+>   delete-recht voor de applicatierol.
+>
+>   **De cadans is sinds 3.0.8 automatisch:** `restoretestronde`,
+>   wekelijks op **zondag 03:00 UTC**, via de bestaande planner en worker
+>   (`PLAN` in `kern/taken.ts`). Vier kansen binnen één drempel van 30
+>   dagen, dus één gemiste week kan het bewijs nooit laten verlopen.
+>   Overlappende runs zijn uitgesloten met een advisory lock
+>   (`pg_try_advisory_lock`, het eerste in deze codebase); een tweede
+>   proef die start terwijl de eerste loopt, meldt dat en registreert
+>   niets.
+>
+>   **Drie bekende grenzen van deze opzet, niet gerepareerd:**
+>
+>   1. `worker/verlopen leases` gaat op LET OP bij een restore die langer
+>      dan `LEASE_SECONDEN` (300) duurt, met het advies "de volgende ronde
+>      legt ze terug" — maar `geefVerlopenTerug()` draait uitsluitend bij
+>      het **opstarten** van een worker. De productieproef deed 2979 ms,
+>      dus dit is voorlopig theoretisch; de adviestekst is wel onjuist.
+>   2. **Geen enkel signaal meet of de wekelijkse ronde ooit draait.**
+>      Valt de cadans stil, dan merkt alleen `backup/restoretest` dat, en
+>      pas na 30 dagen. Dat is de bedoelde werking — vier kansen binnen
+>      één drempel — maar het betekent dat een kapotte planning vier weken
+>      onzichtbaar is.
+>   3. `ops/gcsopslag.ts` heeft **geen tokencache**: elke `lijstGcs` en
+>      elke `downloadUitGcs` vraagt een eigen OAuth-token. De
+>      inventarisatie kost daarmee tot vier tokenaanvragen per uurlijkse
+>      gezondheidsmeting (`maxKandidaten` staat op 3, niet 5, juist
+>      hierom). Goedkoop in geld, niet gratis in latency en quota.
 > - **Er is geen meldbestemming voor alerts.** `npm run gezondheid` is een
 >   commando, geen alarm. Niemand wordt gebeld.
 > - **Vijf koppelingen zijn NIET AANGESLOTEN** (GSC, Bing, GA4, CRM,
@@ -265,11 +334,28 @@ Wat er over dit punt nog wél waar is, en preciezer:
   én (sinds 3.0.8) een registratierij in de productiedatabase.
   `INTEL_RESTORETEST_DOEL_URL` staat daarom op geen enkele service
   gezet — gemeten op worker en api;
-- `npm run restoretest` draait in **geen enkele poort**. De enige
-  geautomatiseerde aanroep is scenario 27 van `npm run e2e`, en die
-  gebruikt de Docker-vorm. Er is dus geen cadans die de drempel van 30
-  dagen zelf haalt; dat blijft handwerk tot iemand er een besluit over
-  neemt.
+- ~~`npm run restoretest` draait in **geen enkele poort**.~~
+  **ACHTERHAALD sinds 3.0.8.** Er is nu een cadans: de taaksoort
+  `restoretestronde` staat in `PLAN` en wordt wekelijks gepland op
+  **zondag 03:00 UTC**. De worker-handler start de CLI als subproces met
+  `INTEL_RESTORETEST_DOEL_URL` uit `INTEL_DB_URL`, met een tijdslimiet
+  van 20 minuten.
+
+  Waarom een subproces en geen functie: de CLI roept `sluitAllePools()`
+  aan nadat hij zijn bewijs heeft geregistreerd, en in proces zou dat de
+  pool van de wórker sluiten midden in zijn ronde. Een subproces heeft
+  eigen pools. Daarbij gebruikt het exact dezelfde implementatie, dus er
+  is geen tweede waarheid over wat een restoretest is.
+
+  Wat daarbij hoort en gemeten is: `worker/hartslag` meet
+  `max(gereed_op)` over `intel.taken` met een drempel van 26 uur. Een
+  taak die één keer per week afrondt zou die vraag verkeerd
+  beantwoorden, dus `restoretestronde` is daar expliciet uitgezonderd
+  (`NIET_HARTSLAGWAARDIGE_SOORTEN`). **Bevinding die daarbij opviel en
+  NIET is gewijzigd:** `backup` en `meting` zijn dagelijks en vallen
+  binnen die 26 uur, dus die kunnen de hartslag tot een dag rekken. Dat
+  is een bestaande eigenschap van die drempel, geen gevolg van deze
+  release.
 
 ### Een consequentie die in de vorige sessie verraste
 
