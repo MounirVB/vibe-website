@@ -26,11 +26,13 @@
 import { strict as assert } from "node:assert";
 import { after, before, describe, test } from "node:test";
 
-import { maakOrganisatie, maakWegwerpdatabase, type Wegwerpdatabase } from "../harnas.ts";
+import { alsEigenaar, maakOrganisatie, maakWegwerpdatabase, type Wegwerpdatabase } from "../harnas.ts";
 import { metOrganisatie, rijen } from "../../src/kern/db.ts";
 import {
   leesRestorebewijsUitTaken,
+  metRestoretestSlot,
   registreerRestoretest,
+  ruimWegwerpdatabasesOp,
   RESTORETEST_TAAK_SOORT,
   VEREISTE_RESTORETOETSEN,
   type RestoretestBewijs,
@@ -268,7 +270,86 @@ describe("restorebewijs in het takenlogboek", () => {
     );
   });
 
-  test("10. de registratie raakt GEEN back-uptaken aan", async () => {
+  test("10. het SLOT laat geen tweede proef naast de eerste draaien", async () => {
+    /* Voorwaarde 5: voorkom overlappende runs. De wachtrij voorkomt dat
+       twee workers dezelfde RIJ pakken, en de idempotentiesleutel
+       voorkomt twee rijen per week. Wat geen van beide voorkomt: een
+       lease die na 300 seconden verloopt terwijl de restore nog loopt.
+       Dan geeft de opruimer de taak terug en start er een TWEEDE
+       restore, met een tweede wegwerpdatabase op de productieserver.
+
+       Deze toets gebruikt twee ECHTE verbindingen: advisory locks zijn
+       sessiegebonden, dus met één verbinding zou de tweede poging het
+       slot gewoon opnieuw krijgen en zou de toets niets bewijzen. */
+    await alsEigenaar(db, async (eerste) => {
+      await alsEigenaar(db, async (tweede) => {
+        let binnenEerste = false;
+        const a = await metRestoretestSlot(eerste, async () => {
+          binnenEerste = true;
+          /* Terwijl de eerste het slot heeft: de tweede moet worden
+             afgewezen. */
+          const b = await metRestoretestSlot(tweede, async () => "mag niet gebeuren");
+          assert.equal(b.gedraaid, false, "een tweede proef kreeg het slot terwijl de eerste liep");
+          return "klaar";
+        });
+        assert.equal(binnenEerste, true, "het werk van de eerste is niet gedraaid");
+        assert.equal(a.gedraaid, true);
+
+        /* En na afloop moet het slot LOS zijn, anders draait er nooit
+           meer een restoretest op die verbinding. */
+        const c = await metRestoretestSlot(tweede, async () => "nu wel");
+        assert.equal(c.gedraaid, true, "het slot bleef hangen na de eerste run");
+      });
+    });
+  });
+
+  test("11. de opruiming dropt wegwerpdatabases en RAAKT NIETS ANDERS", async () => {
+    /* Voorwaarde 6: ruim tijdelijke resources ook bij fouten op. Wordt
+       het restoretestproces GEDOOD, dan draait zijn finally niet en
+       blijft de wegwerpdatabase op de productieserver staan. De
+       volgende ronde ruimt hem op.
+
+       Deze toets maakt twee databases met een wegwerpnaam en één met
+       een naam die eruit ziet maar het niet is, en controleert dat
+       alleen de eerste twee verdwijnen — en dat de database waarin
+       deze toets zelf draait blijft bestaan. */
+    const weg1 = "restoretest_991_1";
+    const weg2 = "restoretest_992_2";
+    const lijktErop = "restoretest_993_x";
+
+    await alsEigenaar(db, async (c) => {
+      for (const n of [weg1, weg2, lijktErop]) {
+        await c.query(`drop database if exists ${n}`);
+        await c.query(`create database ${n}`);
+      }
+
+      const uit = await ruimWegwerpdatabasesOp(c, weg2);
+
+      assert.deepEqual([...uit.opgeruimd], [weg1], "precies de wegwerpdatabase hoort te verdwijnen");
+      assert.deepEqual([...uit.mislukt], [], `onverwachte mislukkingen: ${uit.mislukt.join(" | ")}`);
+
+      const over = await c.query<{ datname: string }>(
+        `select datname from pg_database where datname like 'restoretest_99%' order by 1`,
+      );
+      assert.deepEqual(
+        over.rows.map((r) => r.datname),
+        [weg2, lijktErop],
+        "behouden database of de niet-wegwerpnaam is toch geraakt",
+      );
+
+      /* En het belangrijkste: de database waarin we dit draaien bestaat
+         nog. Zou de vormtoets ooit verzwakt worden, dan valt deze om. */
+      const zelf = await c.query<{ n: string }>(
+        `select count(*)::text as n from pg_database where datname = $1`,
+        [db.naam],
+      );
+      assert.equal(Number(zelf.rows[0]?.n), 1, "de eigen testdatabase is gedropt; de vormtoets is stuk");
+
+      for (const n of [weg2, lijktErop]) await c.query(`drop database if exists ${n}`);
+    });
+  });
+
+  test("12. de registratie raakt GEEN back-uptaken aan", async () => {
     /* "Een recente back-up is niet automatisch een bewezen herstelbare
        back-up." De twee soorten moeten gescheiden blijven: een
        restoretestregistratie mag nooit als back-uptaak meetellen, want
