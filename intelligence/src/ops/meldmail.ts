@@ -441,13 +441,38 @@ export async function meldmailRonde(
   let nieuw = 0;
   for (const b of plan) {
     const r = await c.query(
+      /* `volgende_poging_op` KRIJGT DE MEEGEGEVEN KLOK, NIET now().
+         Hier stond `now()`, en dat is een tweede klok in een module die
+         bovenaan zelf zegt: "geen klok behalve de meegegeven `nu`".
+
+         De selectie een paar regels verderop filtert op
+         `volgende_poging_op <= $3` met diezelfde `nu`. Zolang beide
+         dezelfde klok lezen valt dat samen; leest de insert de
+         DATABASEklok en de selectie een MEEGEGEVEN klok, dan verschuift
+         het ene ten opzichte van het andere.
+
+         Gemeten gevolg, 14 oktober 2026: de negen ketentoetsen pinnen
+         `nu` op 06:00:00Z. Zodra de echte klok daar voorbij was, kreeg
+         elk nieuw gepland bericht `volgende_poging_op` op de ECHTE tijd
+         (~10:00Z), en dat is niet `<= 06:00Z`. Het bericht werd dus
+         gepland en nooit geselecteerd: `stand.nieuw = 1`, verzonden 0.
+         Van 06:00Z af faalde de hele suite — 251 van 260 — en daarmee
+         `npm run poort` en elke CI-ronde.
+
+         In productie viel het niet op omdat `nu` daar `new Date()` is:
+         twee klokken die milliseconden uit elkaar liggen. De toets maakte
+         het verschil zichtbaar, en dat is precies waar die seam voor is.
+
+         NIET MIJN CODE EN NIET MIJN RELEASE. Gerepareerd omdat het elke
+         merge blokkeerde, in een eigen commit zodat het los terug te
+         draaien is. */
       `insert into intel.meld_berichten
          (organisatie_id, soort, bundel, vingerafdruk, ernst, onderwerp, melding_ids,
           html, tekst, volgende_poging_op)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9, now())
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9, $10::timestamptz)
        on conflict (organisatie_id, soort, bundel, vingerafdruk) do nothing`,
       [organisatieId, b.soort, b.bundel, b.vingerafdruk, b.ernst, b.onderwerp, b.meldingIds,
-       b.html, b.tekst],
+       b.html, b.tekst, nu.toISOString()],
     );
     nieuw += r.rowCount ?? 0;
   }
