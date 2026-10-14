@@ -422,9 +422,23 @@ export async function meldmailRonde(
       where organisatie_id = $1 and soort in ('CRITICAL','FOUT','BEGINSAMENVATTING')`,
     [organisatieId],
   );
+  /* EEN TESTMAIL IS GEEN ALARM, en mag 'de eerste keer' dus niet
+     opgebruiken.
+
+     Gemeten op productie, 14 oktober 2026 06:05Z. Na de gecontroleerde
+     testmail stonden er twee TEST-rijen in het logboek. Deze telling nam
+     ALLE rijen mee, dus de beginsamenvatting verviel en het plan sprong
+     naar het normale regime: DRIE losse mails (rendo, tenderned en het
+     dagoverzicht) waar er EEN samenvatting hoorde te gaan. Precies de
+     burst die de beginsamenvatting bestaat om te voorkomen, veroorzaakt
+     door de proef die eraan voorafging.
+
+     'Is er al ooit gealarmeerd' gaat over ALARMEN. Een test informeert
+     niemand over een storing en hoort die staat niet te veranderen. */
   const totaalEerder = await rijen<{ n: number }>(
     c,
-    "select count(*)::int as n from intel.meld_berichten where organisatie_id = $1",
+    `select count(*)::int as n from intel.meld_berichten
+      where organisatie_id = $1 and soort <> 'TEST'`,
     [organisatieId],
   );
 
