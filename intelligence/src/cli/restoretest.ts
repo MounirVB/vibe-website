@@ -56,9 +56,16 @@ import pg from "pg";
 import { laadEnvBestand, APP_WORTEL } from "../kern/config.ts";
 import { KRITIEKE_TABELLEN, vindPgGereedschap, type BackupManifest } from "../ops/backup.ts";
 import { RESTORETEST_MERK_OBJECT } from "../ops/gezondheid.ts";
-import { redacteerFout, redigeer } from "../kern/geheimen.ts";
+import { redacteerFout, redigeer, wachtwoordUit } from "../kern/geheimen.ts";
 import { draaiPgGereedschap, pgRestoreNaarDatabase } from "../ops/pgomgeving.ts";
 import { downloadUitGcs, gcsConfigUitOmgeving, lijstGcs, uploadNaarGcs } from "../ops/gcsopslag.ts";
+import { maakPool, metOrganisatie, sluitAllePools } from "../kern/db.ts";
+import { huidigeOrganisatie } from "../db/zaai.ts";
+import {
+  registreerRestoretest,
+  VEREISTE_RESTORETOETSEN,
+  type RestoretestBewijs,
+} from "../ops/restorebewijs.ts";
 
 const uitvoeren = promisify(execFile);
 laadEnvBestand();
@@ -134,6 +141,146 @@ let wegwerpDbGemaakt = false;
 /* Pad van een uit de bucket gehaalde dump; wordt na de test opgeruimd. */
 let uitGcsGehaald: string | null = null;
 
+/* ------------------------------------------------------------------
+   WAT ER OVER DE PROEF BEKEND IS, BUITEN HET TRY-BLOK.
+   Deze vier staan hier omdat het bewijs ook moet worden vastgelegd als
+   de proef AFBREEKT. Tot nu toe verdween een mislukte restoretest in een
+   console.error en een exitcode: niemand kon later nagaan dat hij was
+   gedraaid, laat staan waarom hij faalde. Een monitor die alleen
+   geslaagde proeven ziet, meet niet de herstelbaarheid maar het geluk.
+   ------------------------------------------------------------------ */
+let dumpObject: string | null = null;
+let dumpSha256: string | null = null;
+let bronserverVersie: string | null = null;
+let restoreDuurMs: number | null = null;
+
+/**
+ * Legt het bewijs van DEZE proef vast op alle drie de bestemmingen:
+ * de bucket (duurzaam), het lokale merkbestand (terugval) en
+ * intel.taken (gedeeld, en daarmee de enige die op ELKE service
+ * hetzelfde zegt).
+ *
+ * Wordt aangeroepen bij PASS, bij FAIL én bij een afgebroken proef —
+ * zolang bekend is WELKE back-up het betrof. Zonder dat laatste is er
+ * niets te registreren dat later nog iets betekent.
+ *
+ * OVER `bewijs_uri`, WANT DAAR ZIT EEN SUBTILITEIT.
+ * De bucketkopie draagt de URI waar hij zelf staat; dat is waar, want
+ * hij staat daar. Mislukt de upload, dan dragen de lokale kopie en de
+ * taakrij `null`, en dat is óók waar: er is dan geen duurzaam bewijs om
+ * naar te verwijzen. Elke kopie vertelt dus de waarheid over zijn eigen
+ * situatie. Dat is geen drift maar het tegendeel: één samenstelling,
+ * één keer, met precies één veld dat per bestemming verschilt en
+ * waarvan hier staat waarom.
+ */
+async function legBewijsVast(uitslag: "PASS" | "FAIL", misluktLijst: readonly string[]): Promise<void> {
+  if (dumpObject === null || dumpSha256 === null) {
+    console.error("");
+    console.error(
+      "LET OP: geen bewijs vastgelegd — de proef brak af vóór de back-up bekend was. " +
+        "Er is dus ook niets te registreren dat naar een dump verwijst.",
+    );
+    return;
+  }
+
+  const gcsMerk = gcsConfigUitOmgeving();
+  const beoogdeUri = gcsMerk ? `gs://${gcsMerk.bucket}/${RESTORETEST_MERK_OBJECT}` : null;
+
+  const kern = {
+    op: new Date().toISOString(),
+    uitslag,
+    toetsen_geslaagd: geslaagd,
+    toetsen_vereist: VEREISTE_RESTORETOETSEN,
+    toetsen_mislukt: [...misluktLijst],
+    restore_ms: restoreDuurMs,
+    dump_object: dumpObject,
+    dump_sha256: dumpSha256,
+    bronserver: bronserverVersie ?? "onbekend",
+    doelvorm: NAAR_BESTAANDE_SERVER ? ("wegwerpdatabase" as const) : ("docker" as const),
+    uit_bucket: uitGcsGehaald !== null,
+  };
+
+  /* ---------- 1. de bucket: de enige duurzame plek ---------- */
+  /* OOK EEN FAIL GAAT HIERHEEN, en dat is nieuw. Tot nu toe werd alleen
+     een PASS geüpload, waardoor `restoretest/laatste.json` na een
+     mislukte proef nog de VORIGE PASS droeg. Dat is precies de
+     tegenstrijdige statusinformatie die een monitor niet mag krijgen:
+     het takenlogboek zou FAIL zeggen en de bucket PASS. 'laatste.json'
+     betekent de LAATSTE proef, niet de laatste geslaagde. */
+  let uriBevestigd: string | null = null;
+  if (!gcsMerk) {
+    console.log("geen bucket geconfigureerd; het bewijs staat alleen lokaal en in het takenlogboek");
+  } else {
+    try {
+      await uploadNaarGcs(
+        gcsMerk,
+        RESTORETEST_MERK_OBJECT,
+        Buffer.from(JSON.stringify({ ...kern, bewijs_uri: beoogdeUri }, null, 2) + "\n", "utf8"),
+        "application/json",
+      );
+      uriBevestigd = beoogdeUri;
+      console.log(`bewijs in ${beoogdeUri}`);
+    } catch (e) {
+      console.error(
+        `LET OP: het bewijs kon niet naar de bucket: ${redacteerFout(e)}. ` +
+          `De proef zelf is wel gedraaid; het duurzame bewijs ontbreekt.`,
+      );
+    }
+  }
+
+  const bewijs: RestoretestBewijs = { ...kern, bewijs_uri: uriBevestigd };
+
+  /* ---------- 2. het lokale merkbestand: terugval ---------- */
+  await mkdir(DOELMAP, { recursive: true }).catch(() => undefined);
+  await writeFile(
+    join(DOELMAP, ".laatste-restoretest.json"),
+    JSON.stringify(bewijs, null, 2) + "\n",
+    "utf8",
+  ).catch((e: unknown) => {
+    console.error(`LET OP: het lokale merkbestand kon niet geschreven worden: ${redacteerFout(e)}`);
+  });
+
+  /* ---------- 3. intel.taken: gedeeld, dus gezaghebbend ---------- */
+  /* DIT IS DE REPARATIE. De bucket is alleen leesbaar waar INTEL_GCS_*
+     staat — in productie uitsluitend op vibe-intel-worker. Het
+     takenlogboek staat in de database die ELKE service al open heeft, en
+     zegt daar dus hetzelfde. Zonder deze rij meldde vibe-intel-api
+     'geen bewijs van een restoretest gevonden' terwijl er twaalf uur
+     eerder een geslaagde proef was.
+
+     Mislukt de registratie, dan is dat een WAARSCHUWING en geen falende
+     proef: de restore is wel gedaan. Maar het moet hard opvallen, want
+     zonder deze rij is de monitor terug bij af. */
+  if (!process.env["INTEL_DB_URL"]) {
+    console.error("");
+    console.error(
+      "LET OP: INTEL_DB_URL ontbreekt, dus het bewijs staat NIET in intel.taken. " +
+        "De gedeelde herstelstatus blijft daardoor leeg en elke service zonder bucket " +
+        "meldt 'geen bewijs'.",
+    );
+    return;
+  }
+  const pool = maakPool();
+  try {
+    const organisatieId = await huidigeOrganisatie(pool);
+    const uitkomst = await metOrganisatie(pool, { organisatieId }, (c) =>
+      registreerRestoretest(c, organisatieId, bewijs),
+    );
+    console.log(
+      `takenlogboek: ${uitkomst.nieuw ? "geregistreerd" : "bestond al"} als '${uitkomst.status}' ` +
+        `onder sleutel ${uitkomst.sleutel}`,
+    );
+  } catch (e) {
+    console.error("");
+    console.error(
+      `LET OP: het bewijs kon NIET in intel.taken: ${redacteerFout(e)}. ` +
+        `De proef is gedraaid, maar de gedeelde herstelstatus weet daar niets van.`,
+    );
+  } finally {
+    await sluitAllePools().catch(() => undefined);
+  }
+}
+
 try {
   /* ---------------- de back-up kiezen ---------------- */
   let dumpPad = waarde("dump") ? resolve(waarde("dump")!) : null;
@@ -189,6 +336,15 @@ try {
   if (!existsSync(manifestPad)) throw new Error(`manifest ontbreekt naast ${dumpPad}`);
   const manifest = JSON.parse(await readFile(manifestPad, "utf8")) as BackupManifest;
   const serverMajor = Number(/^(\d+)/.exec(manifest.serverVersie)?.[1] ?? "0");
+
+  /* Vanaf hier is bekend WELKE back-up getoetst wordt. Breekt de proef
+     hierna af, dan is er genoeg om een mislukking te registreren die
+     later nog betekenis heeft. Het voorvoegsel `uit-gcs-` gaat eraf: de
+     naam moet het object in de bucket aanwijzen, niet de tijdelijke
+     kopie op deze schijf. */
+  dumpObject = basename(dumpPad).replace(/^uit-gcs-/, "");
+  dumpSha256 = manifest.sha256;
+  bronserverVersie = manifest.serverVersie;
 
   console.log("");
   console.log("RESTORETEST — GEISOLEERDE DATABASE");
@@ -340,6 +496,7 @@ try {
     throw new Error(`pg_restore mislukte: ${redacteerFout(e).slice(0, 600)}`);
   });
   const restoreMs = Date.now() - begin;
+  restoreDuurMs = restoreMs;
   console.log(`  pg_restore gereed in ${restoreMs} ms${restoreFout?.trim() ? " (met meldingen)" : ""}`);
   console.log("");
 
@@ -511,84 +668,85 @@ try {
 
   console.log("");
   console.log("-".repeat(80));
+  /* DEZE REGEL IS LETTERLIJK AFHANKELIJK. `src/cli/e2e.ts:1039` leest
+     hem met /geslaagd (\d+)\s+mislukt (\d+)/ en bepaalt daarmee of
+     scenario 27 geslaagd is. Mijn eerste versie zette hier
+     "geslaagd 10 van 10 vereist   mislukt 0" tussen — en dan staat er
+     ` van` waar de regex `\s+mislukt` verwacht, dus matchte hij niet
+     meer en zou scenario 27 stil op FAIL staan. Het vereiste aantal
+     staat daarom op een EIGEN regel. */
   console.log(`geslaagd ${geslaagd}   mislukt ${mislukt.length}   restoreduur ${restoreMs} ms`);
+  console.log(`vereist  ${VEREISTE_RESTORETOETSEN} controles voor een volledige proef`);
+
+  /* HET AANTAL MOET KLOPPEN, NIET ALLEEN DE AFWEZIGHEID VAN FOUTEN.
+     Hier stond `if (mislukt.length)`, en dat is te zwak: een controle
+     die niet is UITGEVOERD staat niet in `mislukt`. Zou er hierboven
+     eentje worden overgeslagen — door een vroege return, een
+     weggecommentarieerde regel of een query die stil niets teruggaf —
+     dan meldde deze proef PASS met negen controles en noemde zich
+     daarmee bewijs. Een onvolledige proef is geen bewijs. */
+  if (geslaagd !== VEREISTE_RESTORETOETSEN && mislukt.length === 0) {
+    mislukt.push(
+      `ONVOLLEDIG — ${geslaagd} van ${VEREISTE_RESTORETOETSEN} vereiste controles uitgevoerd; ` +
+        `zijn er controles bijgekomen of weggevallen, dan hoort VEREISTE_RESTORETOETSEN in ` +
+        `ops/restorebewijs.ts mee te veranderen`,
+    );
+  }
+
   if (mislukt.length) {
     for (const m of mislukt) console.log(`  FAIL ${m}`);
     console.log("");
     console.log("EINDOORDEEL RESTORETEST = FAIL");
     process.exitCode = 1;
+    console.log("");
+    await legBewijsVast("FAIL", mislukt);
   } else {
     console.log("");
     console.log("EINDOORDEEL RESTORETEST = PASS");
     console.log("De back-up is aantoonbaar terug te zetten, inclusief goedkeuringen,");
     console.log("auditspoor, RLS, policies, triggers en constraints.");
-
-    /* Een merkbestand, zodat de monitor de LEEFTIJD van het laatste
-       bewijs kan meten. Zonder dit staat 'restoretest' in
-       `npm run gezondheid` eeuwig op NIET GEMETEN, en dat is precies
-       het soort blinde vlek dat deze exercitie moet wegnemen: een
-       back-up die nooit is teruggezet is een aanname. */
-    /* ÉÉN tekst, twee bestemmingen. Zou de bucketversie apart worden
-       samengesteld, dan kunnen de twee bewijzen uiteenlopen en weet
-       niemand welke de echte is. */
-    const bewijs =
-      JSON.stringify(
-        {
-          op: new Date().toISOString(),
-          uitslag: "PASS",
-          dump: dumpPad,
-          toetsen_geslaagd: geslaagd,
-          restore_ms: restoreMs,
-          bronserver: manifest.serverVersie,
-          /* Welke back-up is teruggezet. Zonder dit is het bewijs niet
-             te herleiden tot een object in de bucket. */
-          dump_object: basename(dumpPad).replace(/^uit-gcs-/, ""),
-          dump_sha256: manifest.sha256,
-        },
-        null,
-        2,
-      ) + "\n";
-    await writeFile(join(DOELMAP, ".laatste-restoretest.json"), bewijs, "utf8");
     console.log("");
-    console.log(`bewijs vastgelegd in ${join(DOELMAP, ".laatste-restoretest.json")}`);
 
-    /* EN NAAR DE BUCKET, WANT DAT IS DE ENIGE DUURZAME PLEK.
-       Het merkbestand hierboven staat op de schijf van de machine die de
-       test draaide. Op Railway is dat ephemere containerschijf; op een
-       laptop staat het buiten het bereik van de productiemonitor. Het
-       gevolg, gemeten op 13 oktober 2026: het signaal backup/restoretest
-       stond permanent op NIET GEMETEN en trok het ernstrapport naar
-       CRITICAL, ook nadat een restore van de echte productieback-up
-       aantoonbaar was geslaagd.
-
-       Daarom gaat hetzelfde bewijs ook naar gs://<bucket>/restoretest/
-       laatste.json, onder de naam die ops/gezondheid.ts leest. Mislukt
-       de upload, dan is dat een WAARSCHUWING en geen falende test: de
-       restore zelf is wel bewezen. */
-    const gcsMerk = gcsConfigUitOmgeving();
-    if (!gcsMerk) {
-      console.log("geen bucket geconfigureerd; het bewijs staat alleen lokaal");
-    } else {
-      try {
-        await uploadNaarGcs(
-          gcsMerk,
-          RESTORETEST_MERK_OBJECT,
-          Buffer.from(bewijs, "utf8"),
-          "application/json",
-        );
-        console.log(`bewijs ook in gs://${gcsMerk.bucket}/${RESTORETEST_MERK_OBJECT}`);
-      } catch (e) {
-        console.error(
-          `LET OP: het bewijs kon niet naar de bucket: ${redacteerFout(e)}. ` +
-            `De restore is wel geslaagd; de productiemonitor ziet dit bewijs nu niet.`,
-        );
-      }
-    }
+    /* Het bewijs gaat naar DRIE bestemmingen, en dat is sinds 3.0.8 de
+       hele reden dat dit werkt op een service zonder bucket. De
+       samenstelling en de verdeling staan in legBewijsVast(); zie daar
+       waarom de bucketkopie en de taakrij in precies één veld kunnen
+       verschillen. */
+    await legBewijsVast("PASS", []);
   }
 } catch (e) {
   console.error("");
   console.error(`RESTORETEST AFGEBROKEN: ${redacteerFout(e)}`);
   process.exitCode = 1;
+
+  /* OOK EEN AFGEBROKEN PROEF IS EEN FEIT OVER DE HERSTELBAARHEID.
+     Brak hij af nadat bekend was welke back-up het betrof — pg_restore
+     die omvalt, een doelserver die de rollen mist, een dump die niet bij
+     zijn manifest past — dan hoort dat in het logboek. Tot nu toe
+     verdween het in deze console.error, en zag de monitor alleen dat er
+     'geen nieuw bewijs' was, wat heel iets anders is dan 'de laatste
+     proef faalde'.
+
+     Mislukt het vastleggen zelf ook, dan mag dat de exitcode niet nóg
+     onduidelijker maken: die staat hierboven al op 1. */
+  /* EXTRA REDACTIE OP DIT ENE PAD, want deze tekst gaat nu de DATABASE
+     in — via `toetsen_mislukt` naar de kolom `laatste_fout`. Daar staat
+     een tripwire: ops/meting.ts telt rijen waarvan `laatste_fout` op een
+     credential-URL lijkt, en kern/taken.ts maakt daar een
+     niet-herhaalbare configuratiefout van. Eén lekkend wachtwoord in
+     deze tekst zou dus de dagelijkse metingtaak naar de dlq sturen —
+     bovenop het lek zelf. Migratie 0031 bestaat omdat dit een keer echt
+     is gebeurd.
+
+     `redacteerFout` kent alleen het wachtwoord uit INTEL_DB_URL als
+     letterlijk geheim; het SUPERUSER-wachtwoord uit
+     INTEL_RESTORETEST_DOEL_URL leunt op het generieke schemapatroon.
+     Dat patroon is goed, maar niet iets om een superuserwachtwoord
+     alleen aan toe te vertrouwen. Daarom hier expliciet mee. */
+  const veiligeFout = redigeer(redacteerFout(e), [wachtwoordUit(DOEL_BEHEER_URL ?? null)]);
+  await legBewijsVast("FAIL", [`afgebroken: ${veiligeFout.slice(0, 300)}`]).catch((f: unknown) => {
+    console.error(`LET OP: ook het vastleggen van de mislukking faalde: ${redacteerFout(f)}`);
+  });
 } finally {
   if (containerGestart && !heeft("houd")) {
     await uitvoeren("docker", ["stop", CONTAINER]).catch(() => undefined);
