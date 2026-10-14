@@ -286,6 +286,108 @@ describe("de meldketen tegen een database", () => {
     assert.ok(later.gedekt >= 1, "na een geslaagde poging hoort de dekking er wel te komen");
   });
 
+  test("2f. EEN WACHTENDE VERZENDING SPRINGT NIET OP 'REEDS GEMELD'", async () => {
+    /* De korte variant van de dekking is `on conflict ... do update set
+       geaccepteerd_op = ...`. Die zou een bundelbericht dat de provider
+       HEEFT GEWEIGERD en dat op een nieuwe poging wacht, stil op
+       geaccepteerd zetten. Dan is er nooit een mail over die storing
+       gegaan en denkt het systeem van wel. `do nothing` is daarom geen
+       luiheid maar de eis.
+
+       De stand hieronder valt niet uit een gewone rondevolgorde te
+       halen: een geaccepteerde samenvatting NAAST een onverzonden
+       bundelbericht met dezelfde vingerafdruk. Op productie kan zij
+       wel ontstaan, uit een versieverschil — de rijen van 08:00Z zijn
+       door een versie geschreven die de dekking nog niet kende. Daarom
+       wordt de dekkingsrij hier teruggezet naar 'wacht op een poging',
+       in plaats van de vingerafdruk na te bouwen: die komt zo uit de
+       code zelf en niet uit mijn aanname erover.
+
+       GEMETEN DAT DEZE TOETS BIJT: met `do update set geaccepteerd_op`
+       in de dekkingsinsert valt hij om, samen met 2g. Een toets die
+       groen is omdat hij niets raakt, bewijst niets. */
+    const eerste = await ronde(RENDO, async () => GOED);
+    assert.ok(eerste.gedekt >= 1, "ronde 1 hoort dekking vast te leggen");
+
+    await alsEigenaar(db, (c) =>
+      c.query(
+        `update intel.meld_berichten
+            set geaccepteerd_op = null, provider_id = null, pogingen = 1,
+                laatste_fout = 'HTTP 503: service unavailable',
+                volgende_poging_op = '2026-10-14T06:30:00Z'
+          where organisatie_id = $1 and soort = 'FOUT'`,
+        [org],
+      ),
+    );
+
+    let verstuurd = 0;
+    const stand = await ronde(
+      RENDO,
+      async () => { verstuurd += 1; return GOED; },
+      new Date("2026-10-14T07:00:00Z"),
+    );
+    assert.equal(stand.gedekt, 0, "een wachtend bericht mag niet alsnog als gedekt gelden");
+    assert.equal(verstuurd, 1, "de geweigerde verzending hoort opnieuw geprobeerd te worden");
+    assert.equal(stand.geaccepteerd, 1);
+
+    const rij = (await berichten()).find((x) => x.soort === "FOUT")!;
+    assert.equal(rij.pogingen, 2, "de tweede poging hoort geteld te zijn");
+    assert.ok(rij.geaccepteerd, "en die poging is door de provider aangenomen");
+  });
+
+  test("2g. AL VERSTUURDE bundelmails blijven staan, en hun auditspoor ook", async () => {
+    /* DE WERKELIJKE PRODUCTIESTAND, 14 oktober 2026. De samenvatting
+       ging 07:03:08Z de deur uit; deze dekking was om 08:00:58Z nog niet
+       live, dus die ronde verstuurde bron:rendo-nieuws en
+       bron:tenderned-laatste-publicatie alsnog als aparte mails, met
+       een eigen provider-id en een echte poging. Die mails zijn
+       verzonden; dat valt niet terug te draaien.
+
+       Wat deze toets vastlegt is wat de dekking in DIE stand doet:
+       niets. De inhaalslag eist dat er nog geen enkele alarmrij
+       bestaat, dus zij slaat niet aan, en `do nothing` laat de rij
+       verder ongemoeid. Geen herschreven tijdstempel, geen overschreven
+       provider-id, geen tweede rij ernaast.
+
+       Twee onafhankelijke mechanismen dus, en ze zijn ook los gemeten:
+       zonder de grendel valt 2e om, en met `do update` in plaats van
+       `do nothing` vallen 2f en deze toets om. */
+    const eerste = await ronde(RENDO, async () => GOED);
+    assert.ok(eerste.gedekt >= 1);
+
+    /* De dekkingsrij omgezet in wat zij op productie is: een echt
+       verstuurde mail met haar eigen provider-id. */
+    await alsEigenaar(db, (c) =>
+      c.query(
+        `update intel.meld_berichten
+            set provider_id = 'een-echte-verzending', pogingen = 1,
+                aangeboden_op = '2026-10-14T08:00:58Z',
+                geaccepteerd_op = '2026-10-14T08:00:58Z'
+          where organisatie_id = $1 and soort = 'FOUT'`,
+        [org],
+      ),
+    );
+    const voor = await berichten();
+
+    let verstuurd = 0;
+    const stand = await ronde(
+      RENDO,
+      async () => { verstuurd += 1; return GOED; },
+      new Date("2026-10-14T09:00:00Z"),
+    );
+    assert.equal(verstuurd, 0, `er is ${verstuurd}x opnieuw verstuurd`);
+    assert.equal(stand.gedekt, 0, "wat al echt verstuurd is, hoeft niet gedekt te worden");
+
+    const na = await berichten();
+    assert.equal(na.length, voor.length, "er mag geen rij naast de echte verzending komen");
+    const fout = na.filter((x) => x.soort === "FOUT");
+    assert.ok(fout.length >= 1);
+    for (const r of fout) {
+      assert.equal(r.provider_id, "een-echte-verzending", "het auditspoor is herschreven");
+      assert.equal(r.pogingen, 1, "en de poging staat er nog");
+    }
+  });
+
   test("2d. een NIEUWE storing komt na de dekking nog gewoon door", async () => {
     await ronde(RENDO, async () => GOED);
     let nieuweMails = 0;
