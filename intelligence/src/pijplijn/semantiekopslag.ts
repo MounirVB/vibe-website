@@ -104,7 +104,33 @@ export function verrijk(rij: SemantiekRij): Verrijking | null {
   let schaalverlies: { bewaard: number; bron: Uitdrukking } | null = null;
 
   if (bewaard === null) {
-    u = kandidaten[0];
+    /* GEEN BEWAARDE WAARDE IS GEEN VRIJBRIEF OM DE EERSTE TE PAKKEN.
+       ----------------------------------------------------------------
+       Hier stond `u = kandidaten[0]`. Een uitspraak zonder numerieke
+       grootheid — een DATUMuitspraak bijvoorbeeld, of een rij waarvan
+       de extractie geen getal opleverde — kreeg daarmee de EERSTE
+       getaluitdrukking uit zijn bronzin opgeplakt. Er is geen enkele
+       grond waarom dat de juiste zou zijn: de koppeling tussen de
+       uitspraak en dat getal is nooit vastgesteld.
+
+       Dat is precies wat de toelichting vier regels hoger verbiedt
+       ("vinden we die niet, dan is de koppeling niet vast te stellen en
+       verzinnen we er geen") en wat de EXACT-OF-NIETS-regel hieronder
+       voor de andere tak al afdwingt. Alleen de tweede poort
+       (CONTEXT_ONVOLLEDIG) hield het geval tot nu toe tegen, en dat is
+       toeval en geen grendel: één poort die om een andere reden
+       afkeurt, is geen controle op deze koppeling.
+
+       `null` is hier het bestaande kanaal: de aanroeper telt die rij
+       als `zonderUitdrukking` en laat hem ongewijzigd staan. Strikt
+       beperkender — er verdwijnt geen verrijking die ergens op rustte.
+
+       GEMETEN NEVENFEIT: in de productieronde van 13 oktober stond
+       `bekeken 20, verrijkt 0, zonder uitdrukking 20`. Alle twintig
+       vielen al af op `kandidaten.length === 0`, dus deze tak werd in
+       die ronde niet geraakt. Deze wijziging verandert dat cijfer
+       vandaag dus niet; hij sluit een gat dat openstond. */
+    return null;
   } else {
     /* EXACT, OF NIETS.
        ----------------------------------------------------------------

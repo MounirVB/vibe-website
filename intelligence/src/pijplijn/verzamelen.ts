@@ -23,6 +23,7 @@ import { bepaalWijziging, inhoudHash, kort, normaliseerTekst } from "../kern/tek
 import { haalBron } from "../bronnen/haal.ts";
 import { classificeerStoring, type Storingssoort } from "../bronnen/storingssoort.ts";
 import { bronOpSleutel } from "../bronnen/register.ts";
+import { vergeetRobotsCache } from "../bronnen/robots.ts";
 import type { Gezondheid, RuwItem } from "../bronnen/soorten.ts";
 import { onderzoekInjectie } from "./injectie.ts";
 
@@ -499,6 +500,45 @@ export async function verzamel(
   organisatieId: number,
   opties: { forceer?: boolean; alleenBron?: string } = {},
 ): Promise<VerzamelRapport> {
+  /* DE ROBOTSCACHE GELDT ÉÉN RONDE, NIET DE HELE PROCESDUUR.
+
+     `robotsPerOrigin` in bronnen/robots.ts bewaarde zijn belofte
+     onvoorwaardelijk, dus ook een NEGATIEVE uitkomst, en
+     `vergeetRobotsCache()` had nul aanroepers in de hele repo. De worker
+     is een oneindige lus (cli/worker.ts), en daarmee ontstond een
+     toestand waar niet meer uit te komen was:
+
+       robots.txt geeft één keer 503
+         -> uitkomst 'onbekend' -> grond 'onleesbaar' -> NIET ophalen
+         -> opeenvolgende_fouten +1 elke ronde
+         -> het signaal 'bronnen met opeenvolgende fouten' op FOUT
+         -> en de origin wordt NOOIT meer gelezen, ook niet als hij
+            inmiddels weer 200 geeft
+
+     De teller reset namelijk alleen bij een niet-fout resultaat (:382),
+     en dat resultaat kan niet meer voorkomen. Gemeten met een stubfetch:
+     een origin die na een 503 weer een geldige robots.txt teruggeeft,
+     bleef drie pogingen lang 'onleesbaar' met het aantal fetches op 3 —
+     er werd niet opnieuw gelezen. In de ophaalhistorie van de
+     ontwikkeldatabase staat ditzelfde patroon: tenderned-publicaties en
+     tenderned-laatste-publicatie faalden op 12 oktober elf rondes
+     achtereen op 'robots.txt geeft HTTP 503 na 3 poging(en)'.
+
+     FAALT-DICHT BLIJFT VOLLEDIG INTACT. Elke ronde doet nog steeds een
+     echte robots-lezing met drie pogingen en oplopende wachttijd, en een
+     onleesbaar beleid blijft ophalen BLOKKEREN (RFC 9309). Wat verandert
+     is uitsluitend de GELDIGHEIDSDUUR van dat oordeel: één ophaalronde
+     in plaats van de hele procesduur. Daarmee blijft ook het
+     oorspronkelijke doel van de cache overeind — hoogstens één
+     robots-lezing per origin per ronde.
+
+     Hier en niet in robotsVoorOrigin(): alleen de negatieve uitkomst
+     niet cachen zou een origin die blijft falen per bron opnieuw laten
+     lezen, en haalRobots() gebruikt geen wachtVoorHost(). Eén keer per
+     ronde wissen houdt het aantal lezingen begrensd door het aantal
+     origins. */
+  vergeetRobotsCache();
+
   const nu = new Date();
   const perBron: BronUitkomst[] = [];
 

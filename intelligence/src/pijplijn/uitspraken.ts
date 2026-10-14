@@ -142,8 +142,21 @@ function zoekGetallen(zin: string): RuweUitspraak[] {
   // Het eerste alternatief MOET zijn decimaaldeel meenemen. Zonder
   // `(?:,\\d+)?` matcht '1.250,5 kW' op '250,5' in plaats van op
   // '1.250,5' — een factor vijf eraf, en niets dat dat zou opvallen.
+  //
+  // `(?<![\\d.,])` is de LINKERGRENS, en hij staat hier om dezelfde reden
+  // als in pijplijn/uitdrukking.ts — zie de uitleg bij GETALGRENS daar.
+  // Een punt die niet door exact drie cijfers wordt gevolgd past op geen
+  // van beide alternatieven, waarna de motor opschuift en het staartje
+  // matcht: '19.5%' werd '5 %' en '164.09 euro' werd '09 euro'.
+  //
+  // DAT DEZE TWEE BESTANDEN HET PATROON DELEN WAS HET ECHTE PROBLEEM.
+  // verrijk() vergelijkt de uitkomst van uitdrukking.ts met die van dit
+  // bestand als KRUISCONTROLE. Zolang beide dezelfde fout maakten, kwamen
+  // ze op hetzelfde verkeerde getal uit en bevestigden ze elkaar. Een
+  // kruiscontrole tussen twee kopieën van dezelfde fout is geen controle.
+  // Wijzig dit patroon daarom nooit zonder uitdrukking.ts mee te nemen.
   const patroon = new RegExp(
-    `(\\d{1,3}(?:\\.\\d{3})+(?:,\\d+)?|\\d+(?:,\\d+)?)\\s*(${eenheidAlternatieven})(?![\\p{L}])`,
+    `(?<![\\d.,])(\\d{1,3}(?:\\.\\d{3})+(?:,\\d+)?|\\d+(?:,\\d+)?)\\s*(${eenheidAlternatieven})(?![\\p{L}])`,
     "giu",
   );
 
@@ -183,8 +196,15 @@ function zoekGetallen(zin: string): RuweUitspraak[] {
      bewijskwaliteit die dit systeem kent. Zonder deze reparatie zou een
      wijzigingsvoorstel '200 euro' op een publieke pagina zetten waar de
      bron 200 miljard zegt. */
+  /* De linkergrens `(?<![\d.,])` staat op BEIDE alternatieven, om dezelfde
+     reden als bij het eenheidspatroon hierboven — en dit patroon is een
+     tweede vindplaats die bij de eerste reparatie werd overgeslagen. Een
+     eenheidstoets ving dat: '164.09 euro' leverde hier nog '9 EUR', want
+     `(?:\.\d{3})*` staat nul groepen toe, dus '164' matcht zonder de punt,
+     waarna de motor opschuift en '09' als bedrag leest. Een factor 18
+     eraf, met de hoogste bewijskwaliteit die dit systeem kent. */
   const euroPatroon =
-    /(?:€\s*(\d{1,3}(?:\.\d{3})*(?:,\d+)?)|(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*euro\b)\s*(duizend|miljoen|miljard|mln\.?|mld\.?)?/giu;
+    /(?:€\s*(?<![\d.,])(\d{1,3}(?:\.\d{3})*(?:,\d+)?)|(?<![\d.,])(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*euro\b)\s*(duizend|miljoen|miljard|mln\.?|mld\.?)?/giu;
   while ((m = euroPatroon.exec(zin)) !== null) {
     const basis = getalVan(m[1] ?? m[2] ?? "");
     if (basis === null) continue;

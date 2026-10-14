@@ -144,6 +144,37 @@ export function getalVan(ruw: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/*
+ * DE LINKERGRENS IS GEEN DETAIL — ZONDER HEM STAAT ER EEN ANDER GETAL.
+ *
+ * `GETAL` kent twee alternatieven: een getal MET duizendpunten
+ * (1.250,5) en een getal zonder (250). Een punt die NIET door exact
+ * drie cijfers wordt gevolgd, past op geen van beide. De regexmotor
+ * geeft dan niet op: hij schuift op en matcht het staartje. Gemeten
+ * met exact deze patronen:
+ *
+ *     "een rendement van 19.5%"        ->  5 %        (werkelijk 19,5)
+ *     "de prijs is 164.09 euro"        ->  09 euro    (werkelijk 164,09)
+ *     "groei van 7.5% naar 12.25%"     ->  5 % en 25 %
+ *
+ * Een factor vier tot twintig eraf, en niets dat dat zou opvallen —
+ * want `uitspraken.ts` draagt hetzelfde patroon, dus de kruiscontrole
+ * in verrijk() vergelijkt twee keer DEZELFDE verkeerde waarde en vindt
+ * ze gelijk. Dat is precies de klasse fout die Release 3.0.2 en 3.0.3
+ * moesten uitbannen: niet een ontbrekend getal, maar een onwaar getal
+ * met een bron eronder.
+ *
+ * `(?<![\d.,])` weigert een match die direct op een cijfer, een punt of
+ * een komma volgt. Een dubbelzinnig getal levert daarmee NIETS in
+ * plaats van iets verkeerds — strikt beperkender, nooit ruimer. De drie
+ * gevallen hierboven geven na deze wijziging een lege lijst, en
+ * `1.250,5 kW`, `250 kW` en `2.500 EUR` blijven onveranderd matchen.
+ *
+ * Let op bij wijzigen: de grens hoort in het PATROON en niet in
+ * getalVan(), want het defect zit in WELKE tekens de match omspant, niet
+ * in hoe de gevonden string wordt omgerekend.
+ */
+const GETALGRENS = String.raw`(?<![\d.,])`;
 const GETAL = String.raw`\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?`;
 
 function eenheidAlternatieven(): string {
@@ -223,7 +254,7 @@ export function leesUitdrukkingen(zin: string): Uitdrukking[] {
   /* 'tussen 50 en 80 euro', '50 tot 80 kW', '50-80%'. De eenheid staat
      achter het tweede getal; soms ook achter het eerste. */
   const bereikPatroon = new RegExp(
-    String.raw`(?:tussen\s+)?(${GETAL})\s*(?:${eh})?\s*(?:tot(?:\s+en\s+met)?|en|-|–|t\/m)\s*(${GETAL})\s*(€|EUR|euro|${eh})?`,
+    String.raw`(?:tussen\s+)?${GETALGRENS}(${GETAL})\s*(?:${eh})?\s*(?:tot(?:\s+en\s+met)?|en|-|–|t\/m)\s*(${GETAL})\s*(€|EUR|euro|${eh})?`,
     "giu",
   );
   let m: RegExpExecArray | null;
@@ -265,8 +296,8 @@ export function leesUitdrukkingen(zin: string): Uitdrukking[] {
      'EUR 235 miljoen' buiten de parser en verdween het bedrag — stil,
      net als bij de schaalwoorden op de eenhedenroute. */
   const bedragPatroon = new RegExp(
-    String.raw`(?:(?:€|EUR)\s*(${GETAL})|(${GETAL})\s*(?:euro|EUR)\b)\s*(duizend|miljoen|miljard|biljoen|mln\.?|mld\.?)?` +
-      String.raw`|(?:(?:€|EUR)\s*)?(${GETAL})\s*(duizend|miljoen|miljard|biljoen|mln\.?|mld\.?)\s*(?:euro|EUR)\b`,
+    String.raw`(?:(?:€|EUR)\s*${GETALGRENS}(${GETAL})|${GETALGRENS}(${GETAL})\s*(?:euro|EUR)\b)\s*(duizend|miljoen|miljard|biljoen|mln\.?|mld\.?)?` +
+      String.raw`|(?:(?:€|EUR)\s*)?${GETALGRENS}(${GETAL})\s*(duizend|miljoen|miljard|biljoen|mln\.?|mld\.?)\s*(?:euro|EUR)\b`,
     "giu",
   );
   while ((m = bedragPatroon.exec(zin)) !== null) {
@@ -296,7 +327,7 @@ export function leesUitdrukkingen(zin: string): Uitdrukking[] {
   /* Dit is de route die '200 miljoen kWh' liet vallen. Het schaalwoord
      staat nu tussen het getal en de eenheid, en is optioneel. */
   const eenheidPatroon = new RegExp(
-    String.raw`(${GETAL})\s*(duizend|miljoen|miljard|biljoen|mln\.?|mld\.?)?\s*(${eh})(?![\p{L}])`,
+    String.raw`${GETALGRENS}(${GETAL})\s*(duizend|miljoen|miljard|biljoen|mln\.?|mld\.?)?\s*(${eh})(?![\p{L}])`,
     "giu",
   );
   while ((m = eenheidPatroon.exec(zin)) !== null) {

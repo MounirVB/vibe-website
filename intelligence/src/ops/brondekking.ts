@@ -191,9 +191,25 @@ export async function meetBrondekking(
 /** Een korte, leesbare samenvatting voor een logregel of een signaal. */
 export function vatBrondekkingSamen(d: Brondekking): string {
   const k = d.perKlasse;
+  /* DE SLEUTELS VAN DE FAILED-BRONNEN HOREN IN DE SAMENVATTING.
+     Deze functie gaf uitsluitend aantallen, terwijl `d.bronnen` met
+     sleutel, klasse en reden in dezelfde structuur beschikbaar is. Het
+     signaal dat deze string als `meting` gebruikt, is een FOUT-signaal;
+     een rood signaal dat niet zegt WELKE bron rood is, kost een tweede
+     commando dat de lezer moet kennen. Beide buursignalen in dezelfde
+     groep noemen hun sleutels wel.
+     Alleen FAILED, en niet elke niet-SUCCES-klasse: ACCESS_RESTRICTED en
+     DISABLED zijn verantwoorde grenzen en geen storing — dat is de regel
+     uit de kop van dit bestand. */
+  const gefaald = d.bronnen
+    .filter((b) => b.klasse === "FAILED")
+    .map((b) => b.sleutel)
+    .sort();
+  const staart = gefaald.length ? ` — FAILED: ${gefaald.join(", ").slice(0, 160)}` : "";
   return (
     `${d.totaal} bronnen: ${d.actief} actief (${d.toe} toe, ${d.nietToe} nog niet toe), ` +
     `SUCCESS ${k.SUCCESS}, DEGRADED ${k.DEGRADED}, FAILED ${k.FAILED}, ` +
-    `ACCESS_RESTRICTED ${k.ACCESS_RESTRICTED}, DISABLED ${k.DISABLED}, ONBEKEND ${k.ONBEKEND}`
+    `ACCESS_RESTRICTED ${k.ACCESS_RESTRICTED}, DISABLED ${k.DISABLED}, ONBEKEND ${k.ONBEKEND}` +
+    staart
   );
 }
