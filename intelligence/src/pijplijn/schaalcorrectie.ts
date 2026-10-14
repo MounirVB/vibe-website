@@ -34,6 +34,12 @@ const SCHAALFACTOR: Readonly<Record<string, number>> = {
   mln: 1e6,
   miljard: 1e9,
   mld: 1e9,
+  /* 'biljoen' stond hier NIET, terwijl uitdrukking.ts het wel kent en
+     rijmtMetUitdrukking() er ook op toetst. Een biljoen-schaalverlies
+     werd dus nooit gevlagd, terwijl de ontleder het getal wel als 1e12
+     kon lezen — en juist die asymmetrie tussen twee lagen is de klasse
+     fout die PR #28 in de getalpatronen moest repareren. */
+  biljoen: 1e12,
 };
 
 export type Schaalverlies = {
@@ -103,6 +109,141 @@ export function vindSchaalverlies(tekst: string, waarde: number): Schaalverlies 
   return null;
 }
 
+/* ------------------------------------------------------------------
+   HET BEWIJSOORDEEL — mag deze correctie een bewaard feit veranderen?
+
+   De opdracht is: corrigeer uitsluitend feiten waarvoor GEZAGHEBBEND
+   bronbewijs beschikbaar is, en laat onzekere correcties geblokkeerd.
+   Tot 3.0.7 was `toepassen` alles-of-niets: elke gedetecteerde correctie
+   werd aangebracht.
+
+   De vier criteria zijn alle vier MEETBAAR, en elk levert zijn eigen
+   reden op. Niets hiervan verzwakt de detectie — het oordeel staat
+   ERNA en kan alleen minder toepassen, nooit meer.
+
+   WAAROM CRITERIUM a BESTAAT. De verkenning van 14 oktober 2026 heeft
+   gemeten dat meten op een AFGEKAPT venster een valse positief geeft:
+
+     vindSchaalverlies("De opgave bedraagt 1235 miljard eenheden
+                        volgens het rapport.", 235)            -> null
+     dezelfde aanroep op heel.slice(20)                        -> treffer
+
+   De linkergrens in vindSchaalverlies kan niet kijken naar tekens die
+   door het venster zijn weggesneden; aan het begin van een string
+   slaagt de lookbehind altijd. Dat is exact dezelfde klasse fout als de
+   parserbug van PR #28, nu veroorzaakt door de MEETMETHODE. Daarom
+   herrekent dit oordeel op de VOLLEDIGE tekst en legt het vast dat het
+   dat gedaan heeft.
+
+   WAT DIT NIET DOET: het beoordeelt de SCHAAL, niet de bewering. Of een
+   bedrag voorwaardelijk is ("kunnen beperken") of een ondergrens is
+   ("ruim"), is een verwoordbaarheidsvraag en staat in semantiek.ts. Een
+   correctie haalt een onwaar GETAL uit de rijenstroom; ze maakt geen
+   publiceerbaar feit.
+   ------------------------------------------------------------------ */
+
+export type Bewijsklasse = "GEZAGHEBBEND" | "ONZEKER";
+
+export type Bewijsoordeel = {
+  readonly klasse: Bewijsklasse;
+  readonly redenen: readonly string[];
+};
+
+/* De eenheidsklassen staan hier LOKAAL en worden niet uit
+   uitdrukking.ts geimporteerd. De kop van dit bestand legt uit waarom:
+   een ontleder mag zijn eigen uitvoer niet goedkeuren, en deze module
+   houdt daarom nul import naar de ontleedlaag. Het is een korte lijst
+   die bij afwijken aantoonbaar faalt in schaalbewijs.test.ts. */
+const EENHEID_GELD = new Set(["EUR", "EUR/MWh", "ct/kWh"]);
+const EENHEID_ENERGIE = new Set(["kWh", "MWh", "GWh"]);
+const EENHEID_VERMOGEN = new Set(["kW", "MW", "GW", "kWp", "MWp", "Wp", "kVA", "MVA"]);
+
+/** Fenomenen waarbij een bedrag zonder tijdgrens een andere bewering is. */
+const TIJDGEBONDEN_FENOMENEN = new Set([
+  "netinvestering",
+  "subsidiebudget",
+  "subsidiebedrag",
+  "opdrachtwaarde",
+]);
+
+export function beoordeelSchaalbewijs(invoer: {
+  /** De VOLLEDIGE tekst van de uitspraak, niet een venster eruit. */
+  readonly tekst: string;
+  readonly oudeWaarde: number;
+  readonly eenheid: string | null;
+  readonly fenomeen: string | null;
+  readonly horizon: string | null;
+  readonly periode: string | null;
+  readonly isPrimaireBron: boolean;
+}): Bewijsoordeel {
+  const redenen: string[] = [];
+  let klasse: Bewijsklasse = "GEZAGHEBBEND";
+  const faal = (reden: string) => {
+    klasse = "ONZEKER";
+    redenen.push(reden);
+  };
+
+  /* a. HERREKENEN OP DE VOLLEDIGE TEKST. */
+  const opHeel = vindSchaalverlies(invoer.tekst, invoer.oudeWaarde);
+  if (!opHeel) {
+    faal(
+      "op de VOLLEDIGE uitspraaktekst is geen schaalverlies te meten; een treffer op een " +
+        "afgekapt venster bewijst niets, want aan het begin van een venster slaagt de " +
+        "linkergrens altijd",
+    );
+  } else {
+    redenen.push(
+      `het schaalwoord '${opHeel.schaalwoord}' staat in de volledige brontekst direct naast ` +
+        `het getal: "${opHeel.vindplaats}"`,
+    );
+  }
+
+  /* b. DE EENHEID. Een percentage of een lege eenheid met een
+     schaalwoord is geen schaalverlies maar een leesfout. */
+  const e = (invoer.eenheid ?? "").trim();
+  if (!e) {
+    faal("de uitspraak heeft geen eenheid; zonder eenheid is een factor 1000 niet te duiden");
+  } else if (EENHEID_GELD.has(e)) {
+    redenen.push(`eenheid '${e}' is een geldeenheid`);
+  } else if (EENHEID_ENERGIE.has(e) || EENHEID_VERMOGEN.has(e)) {
+    redenen.push(`eenheid '${e}' is een energie- of vermogenseenheid`);
+  } else {
+    faal(
+      `eenheid '${e}' is geen geld-, energie- of vermogenseenheid; een schaalwoord naast zo'n ` +
+        "getal is eerder een leesfout dan een verloren factor",
+    );
+  }
+
+  /* c. DE BRON. Een overnemer kan een getal verkeerd hebben
+     overgeschreven; dan corrigeren we een fout naar een andere fout. */
+  if (invoer.isPrimaireBron) {
+    redenen.push("de uitspraak hangt aan een PRIMAIRE bron");
+  } else {
+    faal(
+      "de uitspraak hangt niet aan een primaire bron; bij een overnemer is niet vast te stellen " +
+        "of het schaalwoord in de oorspronkelijke publicatie net zo stond",
+    );
+  }
+
+  /* d. DE TIJDGRENS, alleen waar hij de bewering verandert. */
+  if (invoer.fenomeen && TIJDGEBONDEN_FENOMENEN.has(invoer.fenomeen)) {
+    if (invoer.horizon || invoer.periode) {
+      redenen.push(
+        `tijdgebonden fenomeen '${invoer.fenomeen}' met ` +
+          `${invoer.horizon ? `horizon '${invoer.horizon}'` : `periode '${invoer.periode}'`}`,
+      );
+    } else {
+      faal(
+        `fenomeen '${invoer.fenomeen}' is tijdgebonden en heeft geen horizon en geen periode; ` +
+          "een gecorrigeerd bedrag zonder tijdgrens leest als een jaarbedrag en is dan een " +
+          "andere bewering dan de bron doet",
+      );
+    }
+  }
+
+  return { klasse, redenen };
+}
+
 type UitspraakRij = {
   id: number;
   gebeurtenis_id: number | null;
@@ -113,6 +254,9 @@ type UitspraakRij = {
   fenomeen: string | null;
   schaalwoord: string | null;
   uitdrukking: string | null;
+  horizon: string | null;
+  periode: string | null;
+  is_primaire_bron: boolean;
 };
 
 export type SchaalcorrectieRapport = {
@@ -130,7 +274,14 @@ export type SchaalcorrectieRapport = {
     readonly vindplaats: string;
     readonly vervangerId: number | null;
     readonly reden: string;
+    /** GEZAGHEBBEND of ONZEKER; alleen het eerste wordt toegepast. */
+    readonly bewijsklasse: Bewijsklasse;
+    readonly bewijsredenen: readonly string[];
+    readonly horizon: string | null;
+    readonly periode: string | null;
   }[];
+  /** Hoeveel correcties zijn GEBLOKKEERD omdat het bewijs onzeker is. */
+  readonly geblokkeerd: number;
 };
 
 /**
@@ -154,15 +305,25 @@ export async function herstelSchaal(
   return metOrganisatie(pool, { organisatieId }, async (c: PoolClient) => {
     const alle = await rijen<UitspraakRij>(
       c,
+      /* `horizon`, `periode` en `is_primaire_bron` zijn erbij gekomen voor
+         beoordeelSchaalbewijs: zonder die drie kan het oordeel criterium
+         c en d niet meten en zou het alles GEZAGHEBBEND noemen. */
       `select u.id, u.gebeurtenis_id, u.tekst, u.waarde_numeriek::text as waarde_numeriek,
-              u.eenheid, u.verificatie_status, u.fenomeen, u.schaalwoord, u.uitdrukking
+              u.eenheid, u.verificatie_status, u.fenomeen, u.schaalwoord, u.uitdrukking,
+              u.horizon, u.periode,
+              coalesce(bool_or(b.is_primaire_bron), false) as is_primaire_bron
          from intel.uitspraken u
+         left join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id and ub.rol = 'primair'
+         left join intel.brondocument_versies bv on bv.id = ub.versie_id
+         left join intel.brondocumenten bd on bd.id = bv.brondocument_id
+         left join intel.bronnen b on b.id = bd.bron_id
         where u.organisatie_id = $1
           and u.waarde_numeriek is not null
           /* Al gerectificeerd? Dan is deze rij geschiedenis. */
           and not exists (
             select 1 from intel.uitspraak_correcties k
              where k.vervangen_id = u.id and k.soort = 'rectificatie')
+        group by u.id
         order by u.id`,
       [organisatieId],
     );
@@ -170,11 +331,25 @@ export async function herstelSchaal(
     const regels: SchaalcorrectieRapport["regels"][number][] = [];
     let aangebracht = 0;
     let overgeslagen = 0;
+    let geblokkeerd = 0;
 
     for (const u of alle) {
       const oud = Number(u.waarde_numeriek);
       const verlies = vindSchaalverlies(u.tekst, oud);
       if (!verlies) continue;
+
+      /* HET BEWIJSOORDEEL. Staat NA de detectie, dus het kan alleen
+         minder toepassen en nooit meer. ONZEKER blijft open, komt met
+         zijn redenen in het rapport en wordt NIET geschreven. */
+      const bewijs = beoordeelSchaalbewijs({
+        tekst: u.tekst,
+        oudeWaarde: oud,
+        eenheid: u.eenheid,
+        fenomeen: u.fenomeen,
+        horizon: u.horizon,
+        periode: u.periode,
+        isPrimaireBron: u.is_primaire_bron,
+      });
 
       /* Bestaat de gecorrigeerde uitspraak al, dan niets toevoegen.
          De tekst hoort in deze vergelijking, en dat is geen detail:
@@ -202,8 +377,36 @@ export async function herstelSchaal(
           eenheid: u.eenheid,
           schaalwoord: verlies.schaalwoord,
           vindplaats: verlies.vindplaats,
+          bewijsklasse: bewijs.klasse,
+          bewijsredenen: bewijs.redenen,
+          horizon: u.horizon,
+          periode: u.periode,
           vervangerId: bestaat[0]!.id,
           reden: `overgeslagen: uitspraak ${bestaat[0]!.id} draagt deze waarde al`,
+        });
+        continue;
+      }
+
+      /* DE GRENDEL. Een onzeker bewijs wordt NIET geschreven, ook niet
+         met toepassen:true. De regel komt in het rapport zodat een mens
+         ziet wat er open blijft en waarom — geblokkeerd is niet
+         hetzelfde als onopgemerkt. */
+      if (bewijs.klasse === "ONZEKER") {
+        geblokkeerd++;
+        regels.push({
+          uitspraakId: u.id,
+          gebeurtenisId: u.gebeurtenis_id,
+          oudeWaarde: oud,
+          nieuweWaarde: verlies.nieuweWaarde,
+          eenheid: u.eenheid,
+          schaalwoord: verlies.schaalwoord,
+          vindplaats: verlies.vindplaats,
+          bewijsklasse: bewijs.klasse,
+          bewijsredenen: bewijs.redenen,
+          horizon: u.horizon,
+          periode: u.periode,
+          vervangerId: null,
+          reden: `GEBLOKKEERD, bewijs onzeker: ${bewijs.redenen.join(" | ")}`,
         });
         continue;
       }
@@ -217,6 +420,10 @@ export async function herstelSchaal(
           eenheid: u.eenheid,
           schaalwoord: verlies.schaalwoord,
           vindplaats: verlies.vindplaats,
+          bewijsklasse: bewijs.klasse,
+          bewijsredenen: bewijs.redenen,
+          horizon: u.horizon,
+          periode: u.periode,
           vervangerId: null,
           reden: "droog: niets geschreven",
         });
@@ -294,6 +501,10 @@ export async function herstelSchaal(
         eenheid: u.eenheid,
         schaalwoord: verlies.schaalwoord,
         vindplaats: verlies.vindplaats,
+        bewijsklasse: bewijs.klasse,
+        bewijsredenen: bewijs.redenen,
+        horizon: u.horizon,
+        periode: u.periode,
         vervangerId,
         reden: grondslag,
       });
@@ -304,6 +515,7 @@ export async function herstelSchaal(
       gevonden: regels.length,
       aangebracht,
       overgeslagen,
+      geblokkeerd,
       regels,
     };
   });

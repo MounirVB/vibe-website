@@ -44,6 +44,11 @@ export type PlanRegel = {
    worker eerst pakt: ophalen voedt clusteren, clusteren voedt
    semantiek, semantiek voedt beoordelen, beoordelen voedt voorstel.
    Een lager getal gaat voor. */
+/** `sleutel=aantal`, hoogste eerst; voor de trappen in de metinglogregel. */
+function trapRegel(t: readonly { readonly sleutel: string; readonly aantal: number }[]): string {
+  return t.map((x) => `${x.sleutel}=${x.aantal}`).join(" ") || "geen";
+}
+
 export const PLAN: readonly PlanRegel[] = [
   { soort: "ophalen", prioriteit: 10, toelichting: "alle actieve bronnen; de collector respecteert zelf elk bronninterval" },
   { soort: "clusteren", prioriteit: 20, toelichting: "nieuwe bronversies naar gebeurtenissen en uitspraken" },
@@ -200,18 +205,35 @@ export const REGISTER: Record<string, Handler> = {
        in een zin die over miljarden gaat), en `vindplaats` is het
        letterlijke bronfragment. Dat hoort in de regel, niet in een
        tabel die niemand kan lezen. */
+    /* WAT ERBIJ IS GEKOMEN IN 3.0.7, en waarom elk veld.
+
+       `bewijsklasse` — alleen GEZAGHEBBEND wordt ooit toegepast; zonder
+       dit veld is van buiten niet te zien welke regels geblokkeerd
+       staan en welke op een mens wachten.
+
+       `gebeurtenis` — uitspraak 12 en 13 op productie hebben IDENTIEKE
+       tekst (zelfde zin, waarden 235 en 33). Zonder het gebeurtenis-id
+       zijn twee regels met hetzelfde fragment nauwelijks te scheiden.
+
+       `horizon`/`periode` — de tijdgrens bepaalt of een bedrag een
+       jaarbedrag of een meerjarenopgave is, en dat is criterium d van
+       het bewijsoordeel. Het stond in `regels` maar niet in het log. */
     const schaalDetail =
       schaal.regels.length > 0
-        ? "; te besluiten: " +
+        ? `; geblokkeerd ${schaal.geblokkeerd}; te besluiten: ` +
           schaal.regels
             .slice(0, 6)
             .map(
               (r) =>
-                `uitspraak ${r.uitspraakId} ${r.oudeWaarde}->${r.nieuweWaarde}` +
-                `${r.eenheid ? ` ${r.eenheid}` : ""} (${r.schaalwoord}: "${r.vindplaats.slice(0, 70)}")`,
+                `uitspraak ${r.uitspraakId}/gebeurtenis ${r.gebeurtenisId ?? "-"} ` +
+                `${r.oudeWaarde}->${r.nieuweWaarde}${r.eenheid ? ` ${r.eenheid}` : ""} ` +
+                `[${r.bewijsklasse}]` +
+                `${r.horizon ? ` horizon '${r.horizon}'` : r.periode ? ` periode '${r.periode}'` : " GEEN TIJDGRENS"}` +
+                ` (${r.schaalwoord}: "${r.vindplaats.slice(0, 70)}")` +
+                (r.bewijsklasse === "ONZEKER" ? ` — ${r.bewijsredenen.join(" | ").slice(0, 160)}` : ""),
             )
-            .join(" | ") +
-          (schaal.regels.length > 6 ? ` | +${schaal.regels.length - 6} meer` : "")
+            .join(" ;; ") +
+          (schaal.regels.length > 6 ? ` ;; +${schaal.regels.length - 6} meer` : "")
         : "";
 
     return (
@@ -497,6 +519,12 @@ export const REGISTER: Record<string, Handler> = {
       mislukte_prechecks: m.mislukteprechecks,
       geblokkeerd_door_poort: m.geblokkeerdDoorPoort,
       uitspraken_totaal: m.uitspraken.totaal,
+      /* DE TWEE TRAPPEN. Het antwoord op "hoeveel van de uitspraken is
+         feitelijk compleet en verwoordbaar" stond nergens in een
+         logregel, en de productiedatabase is privaat. Platte sleutels,
+         zodat een logzoekopdracht ze vindt. */
+      verwoordbaar: trapRegel(m.verwoordbaarheid),
+      toepassingsgebied: trapRegel(m.toepassingsgebied),
       uitspraken_horizon_null: m.uitspraken.horizonNull,
       tijdgrens_schendingen: m.uitspraken.tijdgrensSchendingen,
       tijdgrens_constraint_gevalideerd: m.uitspraken.constraintGevalideerd,
@@ -509,7 +537,9 @@ export const REGISTER: Record<string, Handler> = {
       `volledige feitelijke revisies ${m.volledigeFeitelijkeRevisies} ` +
       `(gereed ${m.gereedFeitelijk}), linkvoorstellen gereed ${m.gereedAlleenLink}, ` +
       `goedgekeurd ${m.goedgekeurd}, live ${m.gepubliceerd}, ` +
-      `uitspraken ${m.uitspraken.totaal} (tijdgrensschendingen ${m.uitspraken.tijdgrensSchendingen}, ` +
+      `uitspraken ${m.uitspraken.totaal} [verwoordbaar: ${trapRegel(m.verwoordbaarheid)}] ` +
+      `[gebied: ${trapRegel(m.toepassingsgebied)}] ` +
+      `(tijdgrensschendingen ${m.uitspraken.tijdgrensSchendingen}, ` +
       `constraint ${m.uitspraken.constraintGevalideerd === null ? "ONBEKEND" : m.uitspraken.constraintGevalideerd ? "gevalideerd" : "not valid"}), ` +
       `migraties ${m.migraties.toegepast}`;
 

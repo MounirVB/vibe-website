@@ -204,7 +204,14 @@ function basisConcept(overschrijf: Partial<ConceptTeToetsen> = {}): ConceptTeToe
         rol: "kern",
       },
     ],
-    bronteksten: ["Een heel andere brontekst over andere onderwerpen en formuleringen dan ons concept."],
+    /* NEDERLAND moet in de basisfixture VASTGESTELD zijn, anders kapt de
+       poort `toepassingsgebied_is_nederlands` (3.0.7) elk concept af op
+       ONBEKEND en meet geen van de toetsen hieronder nog zijn eigen
+       poort. 'Nederland' is hier het gebiedssignaal; de zin blijft
+       lexicaal ver van de body, zodat poort 5 niet meespreekt. */
+    bronteksten: [
+      "Een heel andere brontekst in Nederland over andere onderwerpen en formuleringen dan ons concept.",
+    ],
     injectieInBron: false,
     bestaandePaden: new Set(["/contact"]),
     siteBasisUrl: "https://www.vibeenergy.nl",
@@ -261,7 +268,8 @@ test("poort kernclaim_heeft_bewijs: geen enkele kernclaim blokkeert ook", () => 
 });
 
 test("poort geen_bronherpublicatie: te veel lijken op de bron blokkeert", () => {
-  const tekst = "# Kop\n\nDe netbeheerder meldt dat de tarieven met 20 % stijgen door netinvesteringen.";
+  const tekst =
+    "# Kop\n\nDe netbeheerder in Nederland meldt dat de tarieven met 20 % stijgen door netinvesteringen.";
   const s = vatPoortenSamen(
     toetsConcept(basisConcept({ bodyMarkdown: tekst, bronteksten: [tekst] })),
   );
