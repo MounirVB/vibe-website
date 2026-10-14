@@ -38,7 +38,7 @@
 import { laadEnvBestand } from "../kern/config.ts";
 import { eenRij, maakPool, metOrganisatie, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
-import { PLAN } from "../kern/taken.ts";
+import { PLAN, wekelijksVenster } from "../kern/taken.ts";
 import { zetInWachtrij } from "../kern/wachtrij.ts";
 
 laadEnvBestand();
@@ -99,10 +99,25 @@ try {
     for (const p of PLAN) {
       /* Een dagelijkse taak krijgt de DATUM als venster; de uurlijkse de
          datum met het uur erbij. De sleutel bepaalt dus de frequentie. */
-      const venster = p.dagelijks ? VENSTER.slice(0, 10) : VENSTER;
+      /* En een WEKELIJKSE taak krijgt alleen een venster op zijn eigen
+         weekdag, ná zijn eigen uur. Buiten dat moment geeft
+         wekelijksVenster() null terug en wordt er niets gepland — wat
+         iets anders is dan 'bestaat al', dus het staat er ook anders. */
+      const venster = p.wekelijks
+        ? wekelijksVenster(NU, p.wekelijks)
+        : p.dagelijks
+          ? VENSTER.slice(0, 10)
+          : VENSTER;
+      if (venster === null) {
+        overgeslagen += 1;
+        console.log(
+          `  NIET NU      ${p.soort.padEnd(17)} wekelijks: weekdag ${p.wekelijks?.weekdagUtc} vanaf ${p.wekelijks?.vanafUurUtc}:00 UTC`,
+        );
+        continue;
+      }
       const sleutel = `${p.soort}:${venster}`;
       if (DROOG) {
-        console.log(`  ZOU PLANNEN  ${p.soort.padEnd(12)} sleutel ${sleutel}`);
+        console.log(`  ZOU PLANNEN  ${p.soort.padEnd(17)} sleutel ${sleutel}`);
         aangemaakt += 1;
         continue;
       }
@@ -116,10 +131,10 @@ try {
       );
       if (uit.nieuw) {
         aangemaakt += 1;
-        console.log(`  GEPLAND      ${p.soort.padEnd(12)} taak ${uit.id}  (${sleutel})`);
+        console.log(`  GEPLAND      ${p.soort.padEnd(17)} taak ${uit.id}  (${sleutel})`);
       } else {
         overgeslagen += 1;
-        console.log(`  BESTAAT AL   ${p.soort.padEnd(12)} ${uit.reden}`);
+        console.log(`  BESTAAT AL   ${p.soort.padEnd(17)} ${uit.reden}`);
       }
     }
 

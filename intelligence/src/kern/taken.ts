@@ -38,7 +38,48 @@ export type PlanRegel = {
   readonly toelichting: string;
   /** Eén keer per dag in plaats van per uur; zie de venstersleutel. */
   readonly dagelijks?: true;
+  /**
+   * Eén keer per week, op een vaste UTC-weekdag en vanaf een vast uur.
+   *
+   * Zelfde mechanisme als `dagelijks`, alleen grover: de
+   * idempotentiesleutel draagt de DATUM van die ene weekdag, dus de
+   * eerste plannerrun ná het uur maakt de taak aan en alle latere runs
+   * van die dag slaan hem over.
+   */
+  readonly wekelijks?: {
+    /** 0 = zondag, zoals Date#getUTCDay(). */
+    readonly weekdagUtc: number;
+    /** Vanaf dit UTC-uur mag hij gepland worden, niet eerder. */
+    readonly vanafUurUtc: number;
+  };
 };
+
+/**
+ * Het venster van een wekelijkse planregel, of `null` als het nu niet
+ * mag.
+ *
+ * Pure functie met opzet: of 'zondag 03:00 UTC' klopt, hoort toetsbaar
+ * te zijn zonder planner en zonder database.
+ *
+ * DE SLEUTEL IS DE DATUM, NIET HET UUR. Was het uur de sleutel, dan zou
+ * een planner die om 03:00 even niet draait de hele week overslaan. Nu
+ * maakt de run van 04:00 de taak alsnog aan, onder dezelfde sleutel, en
+ * maakt elke volgende run van die dag er géén tweede.
+ *
+ * WAT HIJ WÉL OVERSLAAT: een zondag waarop de planner de hele dag
+ * stillag. Dat is aanvaard en niet gerepareerd, want de drempel waarop
+ * het signaal reageert is 30 dagen — ruim vier weken. Eén gemiste week
+ * raakt die grens niet, en een strakke uitvoering op de afgesproken dag
+ * is te verkiezen boven een taak die op willekeurige dagen opduikt.
+ */
+export function wekelijksVenster(
+  nu: Date,
+  regel: NonNullable<PlanRegel["wekelijks"]>,
+): string | null {
+  if (nu.getUTCDay() !== regel.weekdagUtc) return null;
+  if (nu.getUTCHours() < regel.vanafUurUtc) return null;
+  return nu.toISOString().slice(0, 10);
+}
 
 /* De keten in de juiste orde. De prioriteit bepaalt welke taak een
    worker eerst pakt: ophalen voedt clusteren, clusteren voedt
@@ -91,6 +132,28 @@ export const PLAN: readonly PlanRegel[] = [
      deze cijfers bewegen niet per uur, en een dagelijkse regel is
      makkelijker terug te vinden dan 24. Strikt alleen-lezen. */
   { soort: "meting", prioriteit: 96, dagelijks: true, toelichting: "de redactionele en databasestand meten en in het log zetten" },
+  /* WEKELIJKS, ZONDAG 03:00 UTC — de enige taak met die cadans.
+     Waarom niet dagelijks: een restoretest zet een volledige dump terug
+     in een verse wegwerpdatabase op de productieSERVER. Dat is zwaarder
+     dan al het andere hier en het antwoord verandert niet van dag tot
+     dag. De drempel waarop het signaal reageert is 30 dagen, dus
+     wekelijks geeft vier kansen binnen één drempel: één gemiste week
+     kan het bewijs nooit laten verlopen.
+
+     Waarom zondag 03:00 en niet een werkdag: de dagelijkse back-up
+     loopt om 00:00 UTC, dus om 03:00 is de dump van die nacht er zeker
+     en is hij nog vers. En een zondagnacht is het moment waarop een
+     tijdelijke database op de productieserver de minste andere
+     activiteit raakt.
+
+     Prioriteit 99: na alles. De restoretest voegt niets toe aan de
+     keten van die ronde en mag er nooit vóór komen. */
+  {
+    soort: "restoretestronde",
+    prioriteit: 99,
+    wekelijks: { weekdagUtc: 0, vanafUurUtc: 3 },
+    toelichting: "de back-up aantoonbaar terugzetten in een geisoleerde wegwerpdatabase",
+  },
 ];
 
 export type Handler = (
@@ -562,6 +625,131 @@ export const REGISTER: Record<string, Handler> = {
     }
     return samenvatting;
   },
+
+  /**
+   * De WEKELIJKSE restoretest: de back-up aantoonbaar terugzetten.
+   *
+   * DEZE HANDLER DOET HET WERK NIET ZELF, HIJ START DE CLI.
+   * Dat is geen gemakzucht maar de enige veilige vorm, om twee redenen
+   * die beide in de code staan:
+   *
+   *   1. `cli/restoretest.ts` roept `sluitAllePools()` aan als hij zijn
+   *      bewijs heeft geregistreerd. In proces zou dat de pool van de
+   *      WORKER sluiten, midden in zijn ronde. Een subproces heeft zijn
+   *      eigen pools en kan die sluiten zonder iets anders te raken.
+   *   2. De CLI is 800 regels met moduleniveau-state (`geslaagd`,
+   *      `mislukt`, `containerGestart`, `WEGWERP_DB` per pid). Die tot
+   *      functie maken is een herschrijving van code die net in
+   *      productie is bewezen; een subproces gebruikt exact dezelfde
+   *      implementatie zonder dat risico. Eén waarheid over wat een
+   *      restoretest is.
+   *
+   * Een subproces starten is hier huisidioom: `ops/backup.ts`,
+   * `ops/pgomgeving.ts` en `publicatie/pr.ts` doen hetzelfde.
+   *
+   * DE ISOLATIE EN HET SLOT ZITTEN IN DE CLI, NIET HIER. De CLI neemt
+   * een advisory lock voordat hij iets doet, ruimt achtergebleven
+   * wegwerpdatabases op, weigert elk doel dat niet de verse
+   * wegwerpdatabase is, en dropt die daarna — ook als de proef faalt.
+   * Deze handler voegt daar niets aan toe behalve de omgeving en een
+   * tijdslimiet.
+   *
+   * WAAROM `INTEL_RESTORETEST_DOEL_URL` HIER UIT `INTEL_DB_URL` KOMT.
+   * In de container staat geen Docker, dus de Docker-vorm kan niet. De
+   * `--doel-url`-vorm maakt een NIEUWE database op een bestaande server
+   * en dropt die daarna; op Railway is die server dezelfde als de
+   * productieserver. Dat is bewust toegestaan en expliciet goedgekeurd:
+   * een back-up van productie moet ook DAAR terug te zetten zijn. De
+   * productiedatabase zelf (`railway`) wordt niet aangeraakt — de
+   * grendel vóór pg_restore eist dat het doelpad exact de
+   * wegwerpdatabase is.
+   *
+   * GEEN ONGECONTROLEERDE RETRIES. De planregel zet `max_pogingen` niet,
+   * dus de wachtrijstandaard geldt; wat de retries hier werkelijk
+   * begrenst is het slot: een tweede poging die start terwijl de eerste
+   * nog loopt, vindt het slot bezet, meldt dat en stopt zonder iets te
+   * registreren.
+   */
+  async restoretestronde(_pool, _organisatieId, payload) {
+    const [{ execFile }, { promisify }, { APP_WORTEL }, { IntelFout }] = await Promise.all([
+      import("node:child_process"),
+      import("node:util"),
+      import("./config.ts"),
+      import("./fouten.ts"),
+    ]);
+    const draai = promisify(execFile);
+
+    const doelUrl = process.env["INTEL_RESTORETEST_DOEL_URL"] ?? process.env["INTEL_DB_URL"];
+    if (!doelUrl) {
+      throw new IntelFout(
+        "configuratie",
+        "geen INTEL_RESTORETEST_DOEL_URL en geen INTEL_DB_URL; zonder beheer-URL kan er geen " +
+          "geisoleerde wegwerpdatabase gemaakt worden en dus geen restoretest draaien",
+        { herhaalbaar: false },
+      );
+    }
+
+    /* 20 minuten. Ruim boven de gemeten duur (de productieproef van 14
+       oktober 2026 deed de hele keten in enkele tienden van een minuut,
+       met pg_restore in 2979 ms) en ruim onder 'oneindig'. Loopt hij
+       toch vast, dan wordt het subproces gedood; de volgende ronde
+       ruimt de achtergebleven wegwerpdatabase op, want dat is precies
+       waarvoor die opruiming in de CLI staat. */
+    const limietMs = 20 * 60 * 1000;
+    const begin = Date.now();
+    let uit = "";
+    let fout = "";
+    let gedood = false;
+    try {
+      const r = await draai(process.execPath, ["src/cli/restoretest.ts", "--uit-gcs"], {
+        cwd: APP_WORTEL,
+        env: { ...process.env, INTEL_RESTORETEST_DOEL_URL: doelUrl },
+        timeout: limietMs,
+        maxBuffer: 8 * 1024 * 1024,
+      });
+      uit = r.stdout;
+      fout = r.stderr;
+    } catch (e) {
+      const f = e as { stdout?: string; stderr?: string; killed?: boolean; code?: number };
+      uit = f.stdout ?? "";
+      fout = f.stderr ?? "";
+      gedood = f.killed === true;
+      /* De CLI heeft zijn eigen mislukking al in intel.taken en in de
+         bucket vastgelegd; deze fout is de WACHTRIJkant ervan. Beide
+         horen te bestaan: het logboek draagt het bewijs, de taak draagt
+         dat de ronde niet goed ging. */
+      /* `poort` en niet `netwerk`: dit is een VERIFICATIE die dicht
+         ging, geen hapering. Opnieuw proberen met dezelfde dump levert
+         hetzelfde, en een retry-lus zou alleen meer wegwerpdatabases op
+         de productieserver maken. Daarom ook expliciet niet
+         herhaalbaar. */
+      throw new IntelFout(
+        "poort",
+        `de restoretest ${gedood ? `werd afgebroken na ${limietMs / 60000} minuten` : `eindigde met exitcode ${f.code ?? "?"}`}. ` +
+          `Laatste uitvoer: ${(uit + fout).slice(-500)}`,
+        { herhaalbaar: false },
+      );
+    }
+
+    /* De samenvattingsregel van de CLI is het antwoord. Hij is ook wat
+       e2e-scenario 27 leest, dus de vorm staat vast. */
+    const m = /geslaagd (\d+)\s+mislukt (\d+)/.exec(uit);
+    const overgeslagen = /RESTORETEST OVERGESLAGEN/.test(uit);
+    if (overgeslagen) {
+      return `overgeslagen: het restoretestslot was in gebruik, er liep al een proef (venster ${String(payload["venster"] ?? "?")})`;
+    }
+    if (!m) {
+      throw new IntelFout(
+        "validatie",
+        `de restoretest gaf geen samenvattingsregel; uitvoer eindigde op: ${(uit + fout).slice(-400)}`,
+        { herhaalbaar: false },
+      );
+    }
+    return (
+      `restoretest gereed in ${Date.now() - begin} ms: ${m[1]} controles geslaagd, ${m[2]} mislukt ` +
+      `(venster ${String(payload["venster"] ?? "?")}). Het bewijs staat in intel.taken en in de bucket.`
+    );
+  },
 };
 
 /**
@@ -572,6 +760,36 @@ export const REGISTER: Record<string, Handler> = {
  * defect dat 3.0.4 repareert.
  */
 export const TAAKSOORTEN: readonly string[] = Object.keys(REGISTER);
+
+/**
+ * Soorten waarvan een AFGERONDE taak niet als worker-hartslag mag
+ * gelden.
+ *
+ * `ops/gezondheid.ts` meet `worker/hartslag` als `max(gereed_op)` over
+ * intel.taken, en vergelijkt dat met een drempel van 26 uur. Die meting
+ * bedoelt: draait de worker zijn RONDE nog? Een taak die één keer per
+ * WEEK afrondt, antwoordt die vraag niet — en zou hem wel beantwoorden
+ * als hij meetelde: na de restoretest van zondagnacht zou de hartslag
+ * tot maandagochtend OK melden, ook als de worker daarna meteen omviel.
+ *
+ * Dat is precies het soort signaal-dat-iets-anders-meet waar release
+ * 3.0.7 en 3.0.8 over gaan, en het is de reden dat deze lijst bestaat
+ * in plaats van dat één soortnaam in een query is gezet: komt er een
+ * tweede zeldzame taak bij, dan hoort hij hier en niet in SQL.
+ *
+ * WAT HIER MET OPZET NIET IN STAAT: `backup` en `meting`. Die zijn
+ * DAGELIJKS, en een dagelijkse taak binnen een drempel van 26 uur is
+ * grensgeval — hij kan de hartslag tot een dag rekken. Dat is een
+ * bestaande eigenschap van die drempel en geen gevolg van deze release;
+ * het staat in het rapport als bevinding, niet als stille wijziging.
+ */
+export const NIET_HARTSLAGWAARDIGE_SOORTEN: readonly string[] = [
+  "restoretestronde",
+  /* Het bewijsLOGBOEK. Die rijen zetten geen gereed_op, dus ze kunnen
+     de hartslag al niet raken — maar ze staan hier zodat de bedoeling
+     niet van die ene eigenschap afhangt. */
+  "restoretest",
+];
 
 /** De geplande soorten, voor een toets die PLAN en REGISTER vergelijkt. */
 export const GEPLANDE_SOORTEN: readonly string[] = PLAN.map((p) => p.soort);

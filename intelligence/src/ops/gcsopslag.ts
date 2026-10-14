@@ -142,11 +142,32 @@ export async function uploadNaarGcs(
   objectnaam: string,
   inhoud: Buffer,
   contentType: string,
-): Promise<{ generatie: string; bytes: number; sha256: string }> {
+  opties: {
+    /**
+     * Schrijf UITSLUITEND als dit object nog niet bestaat.
+     *
+     * Dit zet `ifGenerationMatch=0` op de upload. Daarmee is
+     * onveranderbaarheid een eigenschap van de AANROEP in plaats van een
+     * gevolg van een ontbrekend recht, en dat is een wezenlijk verschil:
+     * de dienstaccount mist `storage.objects.delete` (gemeten 14 oktober
+     * 2026 via testIamPermissions — toegekend zijn alleen
+     * objects.create, objects.get en objects.list), maar een IAM-besluit
+     * kan morgen anders zijn terwijl deze preconditie blijft staan.
+     *
+     * Het tweede voordeel is diagnostisch. Zonder preconditie geeft een
+     * overschrijving HTTP 403 met de tekst "does not have
+     * storage.objects.delete access", en die is niet te onderscheiden
+     * van een echt rechtenprobleem. Mét preconditie geeft GCS 412, en
+     * dat betekent precies één ding: dit object bestaat al.
+     */
+    readonly alleenAlsNieuw?: boolean;
+  } = {},
+): Promise<{ generatie: string; bytes: number; sha256: string; bestondAl: boolean }> {
   const token = await toegangstoken(config);
   const url =
     `https://storage.googleapis.com/upload/storage/v1/b/${encodeURIComponent(config.bucket)}/o` +
-    `?uploadType=media&name=${encodeURIComponent(objectnaam)}`;
+    `?uploadType=media&name=${encodeURIComponent(objectnaam)}` +
+    (opties.alleenAlsNieuw ? "&ifGenerationMatch=0" : "");
 
   const antwoord = await fetch(url, {
     method: "POST",
@@ -157,6 +178,39 @@ export async function uploadNaarGcs(
     },
     body: new Uint8Array(inhoud),
   });
+
+  /* 412 IS GEEN FOUT MAAR EEN ANTWOORD: het object staat er al. Dat
+     gebeurt bij een herhaalde poging van dezelfde run, en dan is de
+     juiste uitkomst "al vastgelegd" en niet "mislukt".
+
+     De bytes worden wél nagerekend. Staat er onder dezelfde naam iets
+     ANDERS dan wat wij zouden schrijven, dan claimen twee verschillende
+     runs hetzelfde objectpad, en dat is een echt conflict waar iemand
+     naar moet kijken — nooit stil accepteren. */
+  if (antwoord.status === 412 && opties.alleenAlsNieuw) {
+    const bestaand = await downloadUitGcs(config, objectnaam);
+    const somBestaand = createHash("sha256").update(bestaand).digest("hex");
+    const somOnze = createHash("sha256").update(inhoud).digest("hex");
+    if (somBestaand !== somOnze) {
+      throw new IntelFout(
+        "netwerk",
+        `GCS-object ${objectnaam} bestaat al MET ANDERE INHOUD (${somBestaand} tegen ${somOnze}); ` +
+          `twee runs claimen hetzelfde bewijspad`,
+      );
+    }
+    log.info("gcs-object bestond al met identieke inhoud", {
+      bucket: config.bucket,
+      object: objectnaam,
+      bytes: bestaand.byteLength,
+    });
+    return {
+      generatie: "bestond al",
+      bytes: bestaand.byteLength,
+      sha256: somBestaand,
+      bestondAl: true,
+    };
+  }
+
   if (!antwoord.ok) {
     const tekst = (await antwoord.text()).slice(0, 300);
     throw new IntelFout("netwerk", `GCS-upload mislukte (HTTP ${antwoord.status}): ${tekst}`);
@@ -181,7 +235,7 @@ export async function uploadNaarGcs(
     bytes: inhoud.byteLength,
     generatie: meta.generation ?? "onbekend",
   });
-  return { generatie: meta.generation ?? "onbekend", bytes: inhoud.byteLength, sha256 };
+  return { generatie: meta.generation ?? "onbekend", bytes: inhoud.byteLength, sha256, bestondAl: false };
 }
 
 /** Haalt een object op. Gooit als het er niet staat. */
