@@ -103,6 +103,14 @@ export type ProductieMeting = {
    * paginamatching zoeken, en daar is hij niet.
    */
   readonly verwoordbaarheid: readonly Telling[];
+  /**
+   * Hoeveel uitspraken per TOEPASSINGSGEBIED (3.0.7).
+   *
+   * Dit is de directe maat voor de jurisdictiecontrole: zonder deze
+   * telling is van productie niet te zien of de controle iets doet, en
+   * hoeveel feiten erdoor buiten de stroom vallen.
+   */
+  readonly toepassingsgebied: readonly Telling[];
   /** Voorstellen met minstens één verwoordbare uitspraak. */
   readonly voorstellenMetVerwoordbaarFeit: number;
   /** Paginavoorstellen, geteld als DISTINCTE slug; zie par. 19. */
@@ -389,6 +397,13 @@ export async function meetProductie(
       group by 1 order by 2 desc, 1`,
     [organisatieId],
   );
+  const toepassingsgebied = await telling(
+    c,
+    `select coalesce(toepassingsgebied, '(niet vastgesteld)') as sleutel, count(*)::text as aantal
+       from intel.uitspraken where organisatie_id = $1
+      group by 1 order by 2 desc, 1`,
+    [organisatieId],
+  );
   const voorstellenMetVerwoordbaarFeit = await getal(
     c,
     `select count(*)::text as n from intel.inhoud_voorstellen v
@@ -446,6 +461,7 @@ export async function meetProductie(
     brondekking,
     blokkeerredenen,
     verwoordbaarheid,
+    toepassingsgebied,
     voorstellenMetVerwoordbaarFeit,
     nieuwePaginaKandidaten,
   };

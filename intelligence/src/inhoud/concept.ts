@@ -286,10 +286,18 @@ export function bouwConcept(
   regels.push("## Waar dit geldt");
   regels.push("");
   if (geoMetBewijs.length === 0) {
+    /* HIER STOND EEN STILLE GEVOLGTREKKING, EN DIE WAS EEN DEFECT.
+       De tekst was: "De bron noemt geen specifiek gebied. Deze
+       ontwikkeling wordt daarom als landelijk behandeld". Dat maakt van
+       een LEEG geoveld de bewering dat het feit in heel Nederland geldt
+       — ook wanneer de bron over Vlaanderen gaat. Een leeg veld is geen
+       bewijs. De poort `toepassingsgebied_is_nederlands` houdt een
+       buitenlandse brontekst nu tegen, en deze tekst doet geen uitspraak
+       meer die het bewijs niet draagt. */
     regels.push(
-      "De bron noemt geen specifiek gebied. Deze ontwikkeling wordt daarom als landelijk " +
-        "behandeld; er is geen bewijs dat hij voor een bepaalde gemeente of netbeheerdergebied " +
-        "anders uitpakt.",
+      "De bron noemt geen specifiek gebied binnen Nederland. Er is daarom geen bewijs dat " +
+        "deze ontwikkeling voor een bepaalde gemeente of netbeheerdergebied anders uitpakt — " +
+        "en ook geen bewijs dat hij overal hetzelfde uitpakt.",
     );
   } else {
     regels.push(

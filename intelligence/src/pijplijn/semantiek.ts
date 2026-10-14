@@ -39,6 +39,7 @@ import {
   rijmtMetUitdrukking,
   type Uitdrukking,
 } from "./uitdrukking.ts";
+import { bepaalToepassingsgebied, type Toepassingsgebied } from "./jurisdictie.ts";
 
 export type SemantiekSoort =
   | "bedrag"
@@ -69,6 +70,24 @@ export type Semantiek = {
   /** De tijdgrens: 'tot 2040', 'vanaf 2026', '2027-2030'. */
   readonly horizon: string | null;
   readonly geoBereik: string | null;
+  /**
+   * WAAR GELDT DIT FEIT? Vastgesteld door pijplijn/jurisdictie.ts.
+   *
+   * Dit veld bestaat omdat de poort tien controles had en geen enkele
+   * daarvan naar plaats, land of rechtsgebied keek. Gemeten gevolg: "De
+   * Belgische netbeheerder Fluvius verhoogt het nettarief in 2027 met
+   * 8%" kwam er als VERWOORDBAAR uit, met de zin "Volgens Fluvius stijgt
+   * het nettarief voor de netbeheerders in 2027 met 8%". Het woord
+   * 'Belgische' matchte niets, en de lezer kreeg een Belgisch tarief als
+   * feit over zijn eigen netgebied.
+   *
+   * Dit is de ENIGE plek waar het gebied wordt bepaald. Andere lagen
+   * LEZEN het; voorstel.ts:804-817 legt al vast waarom: twee oordelen
+   * over dezelfde vraag lopen altijd uiteen, er hoort er een te zijn.
+   */
+  readonly toepassingsgebied: Toepassingsgebied;
+  /** Waarom dat gebied. Verplicht in de database zodra het gebied staat. */
+  readonly toepassingsgebiedGrondslag: string;
   readonly voorwaarden: readonly string[];
   readonly vergelijkingsbasis: string | null;
   readonly herkomst: Herkomst;
@@ -404,7 +423,19 @@ export function soortVan(eenheid: string | null, fenomeen: string | null): Seman
  * twee mogen nooit door elkaar: een afgeleide semantiek maakt een
  * uitspraak niet geverifieerd.
  */
-export function leidSemantiekAf(zin: string, u: Uitdrukking): Semantiek {
+export function leidSemantiekAf(
+  zin: string,
+  u: Uitdrukking,
+  /**
+   * De uitgever van de bronversie, en of die bron PRIMAIR is.
+   *
+   * Optioneel, zodat bestaande aanroepers blijven werken. Ontbreekt hij,
+   * dan kan regel 7 van de jurisdictie niet gelden en komt een zin
+   * zonder gebiedssignaal op ONBEKEND uit. Dat is de veilige kant: geen
+   * herkomst is geen bewijs van Nederlandse herkomst.
+   */
+  bron?: { readonly uitgever?: string | null; readonly isPrimaireBron?: boolean },
+): Semantiek {
   const grondslag: string[] = [];
   const f = herkenFenomeen(zin, u.eenheid);
   if (f) grondslag.push(`fenomeen '${f.sleutel}' via "${f.via}"`);
@@ -455,6 +486,16 @@ export function leidSemantiekAf(zin: string, u: Uitdrukking): Semantiek {
   const herkadering = HERKADERING.exec(zin)?.[0]?.toLowerCase() ?? null;
   if (herkadering) grondslag.push(`de zin herkadert het bedrag met '${herkadering}'`);
 
+  /* HET TOEPASSINGSGEBIED. Zie jurisdictie.ts voor de beslisregel en
+     voor wat er bewust NIET meeweegt (TLD, uitgeversnaam als geografie,
+     bronnen.geo_bereik). */
+  const jur = bepaalToepassingsgebied({
+    tekst: zin,
+    uitgever: bron?.uitgever ?? null,
+    isPrimaireBron: bron?.isPrimaireBron ?? false,
+  });
+  for (const r of jur.grondslag) grondslag.push(`toepassingsgebied: ${r}`);
+
   return {
     soort,
     herkadering,
@@ -466,6 +507,8 @@ export function leidSemantiekAf(zin: string, u: Uitdrukking): Semantiek {
     periode: u.periode,
     horizon: u.horizon,
     geoBereik: null,
+    toepassingsgebied: jur.gebied,
+    toepassingsgebiedGrondslag: jur.grondslag.join("; "),
     voorwaarden: [],
     /* De basis van de vergelijking is niet uit het vocabulaire te halen
        (het is meestal een periode: 'dezelfde periode vorig jaar'), dus
@@ -487,7 +530,15 @@ export type Verwoordbaarheid =
   | "TEGENSTRIJDIG"
   | "VEROUDERD"
   | "BRONGEBRUIK_BEPERKT"
-  | "VERIFICATIE_NODIG";
+  | "VERIFICATIE_NODIG"
+  /**
+   * Het feit geldt niet in Nederland, of waar het geldt is niet
+   * vastgesteld. Een eigen waarde en geen CONTEXT_ONVOLLEDIG, want de
+   * verwoordbaarheidstrap in ops/meting.ts moet het onderscheid kunnen
+   * tonen: 'we weten te weinig over dit feit' is iets anders dan 'dit
+   * feit gaat niet over ons land'.
+   */
+  | "BUITEN_TOEPASSINGSGEBIED";
 
 export const VERWOORDBAAR_LABEL: Record<Verwoordbaarheid, string> = {
   VERWOORDBAAR: "Te verwoorden",
@@ -496,6 +547,7 @@ export const VERWOORDBAAR_LABEL: Record<Verwoordbaarheid, string> = {
   VEROUDERD: "Achterhaald",
   BRONGEBRUIK_BEPERKT: "Brongebruik beperkt",
   VERIFICATIE_NODIG: "Verificatie nodig",
+  BUITEN_TOEPASSINGSGEBIED: "Buiten Nederland, of gebied onbekend",
 };
 
 export type PoortInvoer = {
@@ -759,6 +811,36 @@ export function verwoordbaarheidspoort(inv: PoortInvoer): PoortUitslag {
 
      Voor een BUDGET geldt hetzelfde met de herhaling: per jaar of in
      totaal verandert het bedrag met een factor. */
+  /* 9b. WAAR GELDT HET? Deze controle staat VOOR de tijdgrens, want
+     'waar' gaat aan 'tot wanneer' vooraf: een Belgisch tarief met een
+     perfecte horizon is nog steeds geen Nederlands feit.
+
+     NEDERLAND en EU gaan door. EU mag, want een EU-verordening of een
+     verplichting voor lidstaten werkt door in Nederland; een Belgisch
+     tarief doet dat niet. BELGIE en ONBEKEND worden geweigerd, en
+     ONBEKEND net zo hard als BELGIE: 'geen gebiedssignaal' is geen
+     bewijs van Nederlandse herkomst. Dat was precies het mechanisme
+     waarmee het defect bestond. */
+  const gebied = inv.semantiek.toepassingsgebied;
+  if (gebied !== "NEDERLAND" && gebied !== "EU") {
+    voeg("toepassingsgebied", false, `toepassingsgebied '${gebied}'`);
+    return {
+      uitslag: "BUITEN_TOEPASSINGSGEBIED",
+      reden:
+        gebied === "BELGIE"
+          ? `deze uitspraak gaat over Belgie en niet over Nederland. Grondslag: ` +
+            `${inv.semantiek.toepassingsgebiedGrondslag}. Een Belgisch tarief, een Vlaamse ` +
+            `subsidie of een Waalse verplichting betekent hier niets, en een lezer kan dat ` +
+            `aan de verwoorde zin niet zien.`
+          : `het toepassingsgebied van deze uitspraak is niet vastgesteld. Grondslag: ` +
+            `${inv.semantiek.toepassingsgebiedGrondslag || "geen enkel gebiedssignaal in de bronzin"}. ` +
+            `Een leeg gebied is geen bewijs dat het feit over Nederland gaat; juist die aanname ` +
+            `maakte een Belgisch tarief tot een Nederlands feit.`,
+      controles,
+    };
+  }
+  voeg("toepassingsgebied", true, `toepassingsgebied '${gebied}'`);
+
   const TIJDGEBONDEN_FENOMENEN = new Set([
     "netinvestering",
     "subsidiebudget",

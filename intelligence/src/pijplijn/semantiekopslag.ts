@@ -68,6 +68,7 @@ export type SemantiekRij = {
   mag_citeren: boolean;
   dagen_oud: number | null;
   uitgever: string | null;
+  is_primaire_bron: boolean;
   brondatum: string | null;
   vervangen_door: number | null;
   vervangen_soort: string | null;
@@ -164,7 +165,10 @@ export function verrijk(rij: SemantiekRij): Verrijking | null {
     const bron = schaalverlies.bron;
     return {
       id: rij.id,
-      semantiek: leidSemantiekAf(rij.tekst, bron),
+      semantiek: leidSemantiekAf(rij.tekst, bron, {
+        uitgever: rij.uitgever,
+        isPrimaireBron: rij.is_primaire_bron,
+      }),
       /* De uitdrukking van de BRON bewaren, met de bewaarde waarde
          ernaast: zo is het verschil in de database te zien. */
       uitdrukking: { ...bron, waarde: schaalverlies.bewaard },
@@ -181,7 +185,10 @@ export function verrijk(rij: SemantiekRij): Verrijking | null {
 
   if (!u) return null;
 
-  const semantiek = leidSemantiekAf(rij.tekst, u);
+  const semantiek = leidSemantiekAf(rij.tekst, u, {
+    uitgever: rij.uitgever,
+    isPrimaireBron: rij.is_primaire_bron,
+  });
   const houdbaarheid = HOUDBAARHEID_DAGEN[semantiek.soort] ?? null;
   const invoer = {
     semantiek,
@@ -237,6 +244,11 @@ const LEESQUERY = `
          exists (select 1 from intel.uitspraak_bronnen ub
                   where ub.uitspraak_id = u.id and ub.rol = 'primair') as heeft_bewijs,
          coalesce(bool_and(b.mag_citeren), false) as mag_citeren,
+         -- Nodig voor regel 7 van de jurisdictie: een tekst ZONDER
+         -- gebiedssignaal wordt alleen Nederlands als de uitgever een
+         -- Nederlandse autoriteit is EN de bron primair. Zonder dit veld
+         -- kan de poort per definitie geen gebied beslissen.
+         coalesce(bool_or(b.is_primaire_bron), false) as is_primaire_bron,
          min(extract(day from (now() - d.gepubliceerd_op)))::int as dagen_oud,
          min(d.uitgever) as uitgever,
          min(d.gepubliceerd_op)::date::text as brondatum,
@@ -361,6 +373,8 @@ export async function schrijfSemantiek(
             schaalwoord         = $12,
             periode             = $13,
             horizon             = $20,
+            toepassingsgebied   = $21,
+            toepassingsgebied_grondslag = $22,
             bron_vindplaats     = $14,
             verwoorde_zin       = $18,
             scope_waarschuwing  = $19,
@@ -391,6 +405,12 @@ export async function schrijfSemantiek(
       v.zin,
       v.semantiek.scopeWaarschuwing,
       v.semantiek.horizon,
+      v.semantiek.toepassingsgebied,
+      /* De database eist >= 15 tekens zodra het gebied staat (0037).
+         jurisdictie.ts geeft altijd minstens een regel, ook bij
+         ONBEKEND, dus dit is geen lege vangnettekst maar de gemeten
+         grondslag. */
+      v.semantiek.toepassingsgebiedGrondslag,
     ],
   );
 }
@@ -436,6 +456,7 @@ export async function vindCorrecties(
       c,
       `with met_datum as (
          select u.id, u.fenomeen, u.subject, u.eenheid, u.waarde_numeriek,
+                u.toepassingsgebied,
                 min(d.gepubliceerd_op) as brondatum
            from intel.uitspraken u
            join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id and ub.rol = 'primair'
@@ -444,7 +465,8 @@ export async function vindCorrecties(
           where u.organisatie_id = $1
             and u.fenomeen is not null
             and u.verificatie_status = 'bevestigd'
-          group by u.id, u.fenomeen, u.subject, u.eenheid, u.waarde_numeriek)
+          group by u.id, u.fenomeen, u.subject, u.eenheid, u.waarde_numeriek,
+                   u.toepassingsgebied)
        select o.id as oud_id, n.id as nieuw_id, o.fenomeen,
               o.waarde_numeriek::text as oud_waarde, n.waarde_numeriek::text as nieuw_waarde,
               o.brondatum::date::text as oud_datum, n.brondatum::date::text as nieuw_datum,
@@ -454,6 +476,17 @@ export async function vindCorrecties(
            on n.fenomeen = o.fenomeen
           and coalesce(n.subject,'') = coalesce(o.subject,'')
           and coalesce(n.eenheid,'') = coalesce(o.eenheid,'')
+          -- HET GEBIED HOORT IN DE SLEUTEL. Zonder deze regel kan een
+          -- Belgisch nettarief een Nederlands nettarief als 'vervangen'
+          -- markeren, waarna de poort op de NEDERLANDSE uitspraak
+          -- VEROUDERD geeft. Het goede feit sneuvelt dan en het
+          -- verkeerde blijft staan. Een onbepaald gebied vervangt niets
+          -- en wordt door niets vervangen: coalesce op een sentinel die
+          -- nooit aan zichzelf gelijk is, kan niet in SQL, dus de
+          -- vergelijking eist dat BEIDE gebieden bekend en gelijk zijn.
+          and n.toepassingsgebied is not null
+          and o.toepassingsgebied is not null
+          and n.toepassingsgebied = o.toepassingsgebied
           and n.brondatum > o.brondatum
           and n.id <> o.id
         -- Alleen de EERSTVOLGENDE nieuwere; anders ketent elke oudere
@@ -463,6 +496,7 @@ export async function vindCorrecties(
            where tussen.fenomeen = o.fenomeen
              and coalesce(tussen.subject,'') = coalesce(o.subject,'')
              and coalesce(tussen.eenheid,'') = coalesce(o.eenheid,'')
+             and tussen.toepassingsgebied = o.toepassingsgebied
              and tussen.brondatum > o.brondatum
              and tussen.brondatum < n.brondatum)
           and not exists (

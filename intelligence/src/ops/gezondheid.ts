@@ -315,11 +315,35 @@ export async function meetGezondheid(
     aantal: number;
     actieve: number;
     sleutels: string;
+    details: string | null;
   }>(
     c,
+    /* `details` is erbij gekomen omdat de SLEUTEL alleen niet genoeg is om
+       te besluiten. Gemeten op productie, 14 oktober 2026 01:05Z: dit
+       signaal zei `TOEGANG_BEPERKT=FOUT [1 bron(nen), waarvan 1 actief:
+       rendo-nieuws]`. Daarmee weet je WELKE bron, maar niet WELKE
+       weigering — 403, 401 of een robotsverbod — en die drie vragen elk
+       een andere handeling. Zonder dat onderscheid is de enige uitweg
+       databasetoegang, en die bestaat met opzet niet.
+
+       Aanleiding: robots.txt van rendogroep.nl heeft een LEGE Disallow en
+       de feed gaf HTTP 200 met geldige RSS vanaf twee onafhankelijke
+       uitgangen. De uitgever sluit ons dus niet uit, en toch stond de
+       bron als TOEGANG_BEPERKT opgeschort. Of dat klopt, is zonder
+       `storing_detail` niet vast te stellen.
+
+       ALLEEN VOOR ACTIEVE BRONNEN. Bij een geparkeerde bron is de grens
+       aanvaard en hoeft niemand iets; de details zouden de regel dan
+       alleen langer maken. */
     `select storingssoort as soort, count(*)::int as aantal,
             count(*) filter (where actief)::int as actieve,
-            string_agg(sleutel, ', ' order by sleutel) as sleutels
+            string_agg(sleutel, ', ' order by sleutel) as sleutels,
+            string_agg(
+              sleutel || ' -> ' || coalesce(storing_detail, 'geen detail bewaard')
+                || coalesce(' | sinds ' || to_char(storing_sinds, 'YYYY-MM-DD"T"HH24:MI"Z"'), '')
+                || coalesce(' | opgeschort tot ' || to_char(ophalen_opgeschort_tot, 'YYYY-MM-DD"T"HH24:MI"Z"'), ''),
+              ' ;; ' order by sleutel)
+              filter (where actief)                                        as details
        from intel.bronnen
       where organisatie_id = $1 and storingssoort is not null
       group by storingssoort order by storingssoort`,
@@ -337,7 +361,16 @@ export async function meetGezondheid(
       groep: "ingestie",
       naam: `storingssoort ${st.soort}`,
       niveau: st.soort === "LEEG_MAAR_GEZOND" ? "OK" : aanvaard ? "LET OP" : "FOUT",
-      meting: `${st.aantal} bron(nen), waarvan ${st.actieve} actief: ${st.sleutels.slice(0, 160)}`,
+      meting:
+        `${st.aantal} bron(nen), waarvan ${st.actieve} actief: ${st.sleutels.slice(0, 160)}` +
+        /* De details alleen bij een FOUT, want daar moet iemand iets.
+           `storing_detail` komt uit classificeerStoring en bestaat uit
+           gemeten statussen (http=403 robots=toegestaan ...); er staat
+           geen credential in. Toch afgekapt, zodat een onverwacht lange
+           detailtekst de regel niet onleesbaar maakt. */
+        (!aanvaard && st.soort !== "LEEG_MAAR_GEZOND" && st.details
+          ? ` — detail: ${st.details.slice(0, 320)}`
+          : ""),
       aanvaard,
     });
   }

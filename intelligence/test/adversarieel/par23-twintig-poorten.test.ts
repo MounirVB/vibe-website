@@ -40,7 +40,22 @@ import { join } from "node:path";
 function poort(zin: string, over: Record<string, unknown> = {}) {
   const u = leesUitdrukkingen(zin)[0];
   if (!u) return { uitslag: "GEEN_UITDRUKKING" as const, reden: "geen leesbare uitdrukking", zin: null };
-  const s = leidSemantiekAf(zin, u);
+  /* HET TOEPASSINGSGEBIED MOET VASTGESTELD ZIJN, anders meet deze toets
+     de verkeerde controle. De jurisdictiecontrole (sinds 3.0.7) staat
+     VOOR de tijdgrens en zou elke fixturezin zonder gebiedssignaal op
+     BUITEN_TOEPASSINGSGEBIED afkappen — en dan komt de controle die hier
+     wordt getoetst nooit aan de beurt.
+
+     De ACM is een Nederlandse autoriteit uit NL_AUTORITEITEN, dus regel 7
+     van jurisdictie.ts geldt en deze zinnen krijgen NEDERLAND. Alleen
+     voor het BEPALEN; de verwoorder houdt zijn eigen uitgever, want
+     daarover gaan de asserties hieronder.
+
+     De jurisdictiecontrole heeft zijn eigen toetsen: eenheid in
+     test/eenheid/jurisdictie.test.ts en integratie in
+     test/integratie/jurisdictiepoort.test.ts. */
+  const GEBIEDSBRON = { uitgever: "Autoriteit Consument & Markt", isPrimaireBron: true };
+  const s = leidSemantiekAf(zin, u, GEBIEDSBRON);
   const inv = { semantiek: s, uitdrukking: u, uitgever: "Netbeheer Nederland", brondatum: "2026-01-01", bronzin: zin };
   const p = verwoordbaarheidspoort({
     semantiek: s,
