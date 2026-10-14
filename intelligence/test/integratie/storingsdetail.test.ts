@@ -108,13 +108,30 @@ describe("de weigeringsvorm staat in de gezondheidsmelding", () => {
       sleutel: "weigert403",
       actief: true,
       soort: "TOEGANG_BEPERKT",
-      detail: "http=403 robots=toegestaan tdm=geen_voorbehoud",
+      /* Exact de vorm die productie op 14 oktober 2026 logde. */
+      detail: "resultaat=fout http=403 foutsoort=http herhaalbaar=false items=0 robots=toegestaan tdm=geen_voorbehoud",
     });
     const m = await meting("TOEGANG_BEPERKT");
     assert.match(m, /^FOUT\|/, `een actieve beperking hoort FOUT te zijn: ${m}`);
     assert.match(m, /weigert403/, "de sleutel hoort erin te staan");
-    assert.match(m, /http=403/, `de WEIGERINGSVORM hoort erin te staan, niet alleen de sleutel: ${m}`);
-    assert.match(m, /opgeschort tot 2026-10-19/, "hoe lang hij stilstaat bepaalt of iemand kan wachten");
+
+    /* DE VIER VERPLICHTE VELDEN, elk apart. Gemeten op productie
+       14 oktober 2026 03:02Z eindigde deze regel op '| sinds]': het
+       detail stond vooraan en de afkapping sneed de tijdvelden eraf. De
+       velden staan nu op een vaste plek vóór de vrije tekst, dus
+       afkappen kan ze niet meer raken. Vier losse asserties, want een
+       enkele op de hele regel zou drie ontbrekende velden missen. */
+    assert.match(m, /http=403/, `http-status ontbreekt: ${m}`);
+    assert.match(m, /foutsoort=http/, `foutsoort ontbreekt: ${m}`);
+    assert.match(m, /sinds=2026-10-12T\d\d:\d\dZ/, `storing_sinds ontbreekt of is afgekapt: ${m}`);
+    assert.match(m, /tot=2026-10-19T\d\d:\d\dZ/, `opschortingsdatum ontbreekt of is afgekapt: ${m}`);
+
+    /* DE TIJD MOET ECHT UTC ZIJN. to_char rendert in de sessietijdzone
+       en het Z-achtervoegsel beweert UTC; zonder `at time zone 'UTC'`
+       las 19:04Z als 21:04Z. Twee uur mis is het verschil tussen
+       'wacht tot vanavond' en 'wacht tot overmorgen'. */
+    assert.match(m, /sinds=2026-10-12T19:04Z/, `de tijd hoort in UTC te staan, niet in de sessiezone: ${m}`);
+    assert.match(m, /tot=2026-10-19T19:04Z/, `idem voor de opschortingsdatum: ${m}`);
   });
 
   test("2. 401 en robots_verbod zijn in de melding te ONDERSCHEIDEN van 403", async () => {
@@ -142,6 +159,23 @@ describe("de weigeringsvorm staat in de gezondheidsmelding", () => {
       m403.includes("robots=verboden"),
       "de twee weigeringsvormen moeten aantoonbaar verschillende meldingen geven",
     );
+  });
+
+  test("2b. een absurd lang detail eet de verplichte velden NIET op", async () => {
+    /* De regressie die punt 6 van de afrondingsopdracht beschrijft. Het
+       afkappen gebeurt nu PER BRON en pas NA de vier velden, dus een
+       detailtekst van duizend tekens kan alleen zijn eigen staart
+       verliezen. */
+    await bron({
+      sleutel: "langdetail",
+      actief: true,
+      soort: "TOEGANG_BEPERKT",
+      detail: `http=403 foutsoort=http ${"x".repeat(1200)}`,
+    });
+    const m = await meting("TOEGANG_BEPERKT");
+    assert.match(m, /langdetail http=403 foutsoort=http sinds=/, `de vaste velden horen intact te zijn: ${m.slice(0, 400)}`);
+    assert.match(m, /langdetail[^;]*tot=2026-10-19T/, "de opschortingsdatum hoort ook bij een lang detail te staan");
+    assert.ok(m.includes("…"), "een te lange vrije staart hoort zichtbaar afgekapt te zijn");
   });
 
   test("3. een GEPARKEERDE beperking is LET OP en krijgt GEEN detail", async () => {
