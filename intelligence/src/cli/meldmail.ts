@@ -148,7 +148,11 @@ try {
       open: openMeldingen.filter((m) => m.ernst),
       gesloten,
       gemeldeBundels: new Set(eerder.map((x) => x.bundel)),
-      ooitGemeld: logboek.length > 0,
+      /* Zelfde regel als in meldmailRonde: een TEST is geen alarm en
+         gebruikt 'de eerste keer' niet op. Zou --plan hier anders
+         rekenen dan de ronde, dan laat de droogloop iets anders zien dan
+         er gebeurt, en dat is erger dan geen droogloop. */
+      ooitGemeld: logboek.some((r) => r.soort !== "TEST"),
       nu: new Date(),
       monitorUrl: (process.env["INTEL_MONITOR_URL"] ?? "").trim() || null,
     });

@@ -161,6 +161,44 @@ describe("de meldketen tegen een database", () => {
     assert.equal(b[0]!.melding_ids.length, 3, "alle drie de signalen horen in het auditspoor");
   });
 
+  test("1b. een TESTMAIL in het logboek verbruikt 'de eerste keer' NIET", async () => {
+    /* GEMETEN OP PRODUCTIE, 14 oktober 2026 06:05Z. Na de gecontroleerde
+       testmail stonden er twee TEST-rijen in het logboek. De telling nam
+       ALLE rijen mee, dus de beginsamenvatting verviel en het plan
+       sprong naar het normale regime:
+
+         FOUT     bron:rendo-nieuws                 meldingen 9, 27, 31
+         FOUT     bron:tenderned-laatste-publicatie melding 47
+         WARNING  dagoverzicht                      meldingen 2, 1
+
+       Drie losse mails waar er EEN samenvatting hoorde te gaan. Dat is
+       precies de burst die de beginsamenvatting bestaat om te
+       voorkomen, veroorzaakt door de proef die eraan voorafging. */
+    await alsEigenaar(db, (c) =>
+      c.query(
+        `insert into intel.meld_berichten
+           (organisatie_id, soort, bundel, vingerafdruk, onderwerp,
+            aangeboden_op, geaccepteerd_op, pogingen)
+         values ($1,'TEST','test', repeat('b',32), 'een eerdere testmail in het logboek',
+                 now(), now(), 1)`,
+        [org],
+      ),
+    );
+    let verstuurd = 0;
+    const stand = await ronde(RENDO, async () => {
+      verstuurd += 1;
+      return GOED;
+    });
+    assert.equal(
+      verstuurd,
+      1,
+      `met alleen een TEST in het logboek hoort er nog EEN samenvatting te gaan, kreeg ${verstuurd} mails`,
+    );
+    const soorten = (await berichten()).map((x) => x.soort).sort();
+    assert.deepEqual(soorten, ["BEGINSAMENVATTING", "TEST"], soorten.join(", "));
+    assert.equal(stand.gepland, 1, "en er hoort EEN bericht gepland te zijn, niet drie");
+  });
+
   test("2. een tweede ronde met DEZELFDE toestand verstuurt NIETS nieuws", async () => {
     await ronde(RENDO, async () => GOED);
     const voor = (await berichten()).length;
@@ -430,7 +468,8 @@ describe("de meldketen tegen een database", () => {
         `insert into intel.meld_berichten
            (organisatie_id, soort, bundel, vingerafdruk, onderwerp,
             aangeboden_op, geaccepteerd_op, pogingen)
-         values ($1,'TEST','test', repeat('a',32), 'een eerder bericht in het logboek',
+         values ($1,'HERSTEL','signaal:eerder/iets', repeat('a',32),
+                 'een eerder afgehandeld alarm in het logboek',
                  now(), now(), 1)`,
         [org],
       );
