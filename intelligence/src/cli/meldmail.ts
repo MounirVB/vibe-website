@@ -203,16 +203,28 @@ try {
       /* Eerst vastleggen, dan versturen. Een bericht dat verstuurd is maar
          niet geregistreerd staat is auditinformatie die we kwijt zijn; het
          omgekeerde is alleen een rij met een fout erbij. */
+      /* DE GRENDEL GELDT OOK VOOR EEN TEST. `on conflict do nothing` plus
+         de unieke index: is er in deze minuut al een testbericht, dan
+         wordt er niets ingevoegd en gaat er niets de deur uit. Dat is de
+         reparatie van 14 oktober 2026, toen een dubbele containerstart
+         twee testmails verstuurde. */
       const id = await metOrganisatie(pool, { organisatieId }, async (c) => {
         const r = await c.query<{ id: number }>(
           `insert into intel.meld_berichten
-             (organisatie_id, soort, bundel, vingerafdruk, ernst, onderwerp, aangeboden_op)
-           values ($1,'TEST','test',$2,null,$3, now())
+             (organisatie_id, soort, bundel, vingerafdruk, ernst, onderwerp, html, tekst,
+              aangeboden_op)
+           values ($1,'TEST','test',$2,null,$3,$4,$5, now())
+           on conflict (organisatie_id, soort, bundel, vingerafdruk) do nothing
            returning id`,
-          [organisatieId, vinger, opmaak.onderwerp],
+          [organisatieId, vinger, opmaak.onderwerp, opmaak.html, opmaak.tekst],
         );
-        return r.rows[0]!.id;
+        return r.rows[0]?.id ?? null;
       });
+      if (id === null) {
+        uit(`\n  TESTMAIL OVERGESLAGEN — er is in deze minuut al een testbericht aangeboden.\n`);
+        uit("  Dat is de deduplicatiegrendel, niet een fout. Wacht een minuut voor een nieuwe test.\n\n");
+        process.exitCode = 0;
+      } else {
 
       uit(`\n  TESTMAIL naar ${b.ontvanger}\n`);
       uit(`    onderwerp  ${opmaak.onderwerp}\n`);
@@ -239,6 +251,7 @@ try {
         uit(`    fout       ${uitkomst.fout}\n`);
         uit(`    herhaalbaar ${uitkomst.herhaalbaar ? "ja" : "nee"}\n\n`);
         process.exitCode = 3;
+      }
       }
     }
   }
