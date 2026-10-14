@@ -79,7 +79,7 @@ function rij(over: Partial<Meldingrij> = {}): Meldingrij {
   };
 }
 
-const PLAN = (over: Partial<Parameters<typeof bouwMeldplan>[0]> = {}) =>
+const VOLLEDIG = (over: Partial<Parameters<typeof bouwMeldplan>[0]> = {}) =>
   bouwMeldplan({
     open: [],
     gesloten: [],
@@ -88,6 +88,9 @@ const PLAN = (over: Partial<Parameters<typeof bouwMeldplan>[0]> = {}) =>
     nu: new Date("2026-10-14T04:05:00Z"),
     ...over,
   });
+
+/** De berichten die ECHT uitgaan. `gedekt` vraag je met VOLLEDIG op. */
+const PLAN = (over: Partial<Parameters<typeof bouwMeldplan>[0]> = {}) => VOLLEDIG(over).berichten;
 
 describe("de alerteerder — classificatie en bundeling", () => {
   test("1. de DRIE rendo-signalen worden EEN bundel", () => {
@@ -234,15 +237,30 @@ describe("de alerteerder — de vier soorten", () => {
     assert.equal(plan[0]!.bundel, "dagoverzicht");
     assert.equal(plan[0]!.meldingIds.length, 6);
 
-    /* De DAG zit in de vingerafdruk: morgen is het een nieuw bericht. */
+    /* DE DAG ZIT NIET MEER IN DE VINGERAFDRUK. De opdracht is: de
+       dagelijkse rapportage mag blijven, maar mag dezelfde ONGEWIJZIGDE
+       waarschuwingen niet onnodig herhalen. Dezelfde set op een andere
+       dag is dus hetzelfde bericht, en de unieke index houdt hem tegen. */
     const morgen = bouwMeldplan({
       open, gesloten: [], gemeldeBundels: new Set(), ooitGemeld: true,
       nu: new Date("2026-10-15T04:05:00Z"),
-    });
-    assert.notEqual(
+    }).berichten;
+    assert.equal(
       plan[0]!.vingerafdruk,
       morgen[0]!.vingerafdruk,
-      "een nieuwe dag hoort een nieuw overzicht te geven",
+      "een ONGEWIJZIGDE set waarschuwingen hoort geen nieuw overzicht te geven",
+    );
+
+    /* En een GEWIJZIGDE set wel. */
+    const meer = bouwMeldplan({
+      open: [...open, rij({ id: 499, sleutel: "w9/x", bundel: "signaal:w9/x", ernst: "WARNING", niveau: "LET OP" })],
+      gesloten: [], gemeldeBundels: new Set(), ooitGemeld: true,
+      nu: new Date("2026-10-14T04:05:00Z"),
+    }).berichten;
+    assert.notEqual(
+      plan[0]!.vingerafdruk,
+      meer[0]!.vingerafdruk,
+      "een extra waarschuwing hoort wel een nieuw overzicht te geven",
     );
   });
 

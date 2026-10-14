@@ -138,7 +138,7 @@ export function bouwMeldplan(invoer: {
   readonly ooitGemeld: boolean;
   readonly nu: Date;
   readonly monitorUrl?: string | null;
-}): GeplandBericht[] {
+}): { berichten: GeplandBericht[]; gedekt: GeplandBericht[] } {
   const uit: GeplandBericht[] = [];
 
   /* Groeperen per bundel. */
@@ -157,6 +157,7 @@ export function bouwMeldplan(invoer: {
     rijenIn: readonly Meldingrij[],
     titel: string,
     extraVingerafdruk: string[] = [],
+    bundelnamen: readonly string[] = [],
   ): GeplandBericht => {
     const vinger = vingerafdrukVan(
       ernst,
@@ -182,6 +183,8 @@ export function bouwMeldplan(invoer: {
         kerenGezien: m.keren_gezien,
         gesloten: m.gesloten_op ? nederlandseTijd(m.gesloten_op) : null,
       })),
+      bundels: bundelnamen.length || 1,
+      bundelnamen: bundelnamen.length > 1 ? bundelnamen : undefined,
       meldingId: `${soort}-${vinger.slice(0, 12)}`,
       monitorUrl: invoer.monitorUrl ?? null,
       nu: nederlandseTijd(invoer.nu),
@@ -199,61 +202,77 @@ export function bouwMeldplan(invoer: {
     };
   };
 
-  /* ---- 1. DE EERSTE KEER: EEN SAMENVATTING ---- */
-  const teMelden = [...perBundel.entries()].filter(([, r]) =>
-    r.some((m) => m.ernst === "CRITICAL" || m.ernst === "FOUT"),
-  );
-  if (!invoer.ooitGemeld && teMelden.length > 0) {
-    const alles = teMelden.flatMap(([, r]) => r);
-    const ernst = zwaarste(alles.map((m) => m.ernst as Meldernst | null));
+  /* De berichten van het NORMALE regime, als functie, zodat de
+     beginsamenvatting precies kan zeggen WELKE berichten hij dekt. */
+  const normaalRegime = (): GeplandBericht[] => {
+    const lijst: GeplandBericht[] = [];
+    for (const [bundel, rijenIn] of perBundel) {
+      const ernst = zwaarste(rijenIn.map((m) => m.ernst as Meldernst | null));
+      if (ernst !== "CRITICAL" && ernst !== "FOUT") continue;
+      lijst.push(
+        bericht(
+          ernst,
+          bundel,
+          ernst,
+          rijenIn,
+          ernst === "CRITICAL"
+            ? `kritieke storing: ${bundelOmschrijving(bundel, rijenIn)}`
+            : `storing: ${bundelOmschrijving(bundel, rijenIn)}`,
+        ),
+      );
+    }
+    const waarschuwingen = invoer.open.filter((m) => m.ernst === "WARNING");
+    if (waarschuwingen.length > 0) {
+      /* GEEN DAGSLEUTEL MEER IN DE VINGERAFDRUK.
+         Met de dag erin ging er elke dag opnieuw een overzicht uit, ook
+         als er niets was veranderd. De opdracht is: de dagelijkse
+         rapportage mag blijven, maar mag dezelfde ONGEWIJZIGDE
+         waarschuwingen niet onnodig herhalen. Zonder de dag is de
+         vingerafdruk puur de TOESTAND: verandert de set waarschuwingen,
+         dan gaat er een nieuw overzicht uit; verandert hij niet, dan
+         houdt de unieke index het tegen. */
+      lijst.push(
+        bericht(
+          "WARNING",
+          "dagoverzicht",
+          "WARNING",
+          waarschuwingen,
+          `overzicht: ${waarschuwingen.length} waarschuwing(en)`,
+        ),
+      );
+    }
+    return lijst;
+  };
+
+  /* ---- 1. DE EERSTE KEER: EEN SAMENVATTING ----
+     Hij dekt storingen EN waarschuwingen, want anders zou het
+     dagoverzicht er direct na de samenvatting alsnog achteraan komen. */
+  const metErnst = invoer.open.filter((m) => m.ernst);
+  if (!invoer.ooitGemeld && metErnst.length > 0) {
+    const namen = [...new Set(metErnst.map((m) => m.bundel ?? `signaal:${m.sleutel}`))];
+    const ernst = zwaarste(metErnst.map((m) => m.ernst as Meldernst | null));
+    const leesbaar = namen.map((b) =>
+      b.startsWith("bron:") ? `bron ${b.slice("bron:".length)}` : b.replace(/^signaal:/, ""),
+    );
     uit.push(
       bericht(
         "BEGINSAMENVATTING",
         "stand",
         ernst,
-        alles,
-        `${teMelden.length} openstaande storing(en) bij het aanzetten van de alerteerder`,
+        metErnst,
+        `${namen.length} openstaande storing(en) bij het aanzetten van de alerteerder`,
+        [],
+        leesbaar,
       ),
     );
-    /* En niets anders deze ronde: de samenvatting dekt de hele stand.
-       De volgende ronde pakt het normale regime op, en dan bestaat er
-       per bundel nog geen CRITICAL/FOUT-bericht, dus die komen dan. */
-    return uit;
+    /* EN WAT HIJ DEKT. Die berichten worden NIET nu verstuurd; ze worden
+       pas als 'gemeld' vastgelegd zodra de provider de samenvatting
+       heeft GEACCEPTEERD. Mislukt de samenvatting, dan is er niets
+       gemeld en komt het normale regime de volgende ronde gewoon op. */
+    return { berichten: uit, gedekt: normaalRegime() };
   }
 
-  /* ---- 2. CRITICAL en FOUT, per bundel ---- */
-  for (const [bundel, rijenIn] of perBundel) {
-    const ernst = zwaarste(rijenIn.map((m) => m.ernst as Meldernst | null));
-    if (ernst !== "CRITICAL" && ernst !== "FOUT") continue;
-    uit.push(
-      bericht(
-        ernst,
-        bundel,
-        ernst,
-        rijenIn,
-        ernst === "CRITICAL"
-          ? `kritieke storing: ${bundelOmschrijving(bundel, rijenIn)}`
-          : `storing: ${bundelOmschrijving(bundel, rijenIn)}`,
-      ),
-    );
-  }
-
-  /* ---- 3. WARNING: EEN overzicht per dag ---- */
-  const waarschuwingen = invoer.open.filter((m) => m.ernst === "WARNING");
-  if (waarschuwingen.length > 0) {
-    /* De dagsleutel zit in de vingerafdruk, dus er kan er maar EEN per
-       dag bestaan — ook als de inhoud in de loop van de dag verandert. */
-    uit.push(
-      bericht(
-        "WARNING",
-        "dagoverzicht",
-        "WARNING",
-        waarschuwingen,
-        `dagoverzicht: ${waarschuwingen.length} waarschuwing(en)`,
-        [`dag=${dagsleutel(invoer.nu)}`],
-      ),
-    );
-  }
+  uit.push(...normaalRegime());
 
   /* ---- 4. HERSTEL: alleen voor wat eerder GEMELD was ---- */
   const perGeslotenBundel = new Map<string, Meldingrij[]>();
@@ -280,7 +299,7 @@ export function bouwMeldplan(invoer: {
     );
   }
 
-  return uit;
+  return { berichten: uit, gedekt: [] };
 }
 
 /* ------------------------------------------------------------------
@@ -313,6 +332,8 @@ export type MeldmailStand = {
   readonly mislukt: number;
   readonly uitgesteld: number;
   readonly opgegeven: number;
+  /** Berichten die de beginsamenvatting dekt en die dus NIET apart uitgaan. */
+  readonly gedekt: number;
 };
 
 /**
@@ -385,7 +406,8 @@ export async function meldmailRonde(
       bestemming:
         `GECONFIGUREERD MAAR NIET ACTIEF — resend -> ${bestemming.ontvanger}; ` +
         "INTEL_MAIL_ACTIEF staat niet aan, dus er wordt niets gepland of verstuurd",
-      gepland: 0, nieuw: 0, aangeboden: 0, geaccepteerd: 0, mislukt: 0, uitgesteld: 0, opgegeven: 0,
+      gepland: 0, nieuw: 0, aangeboden: 0, geaccepteerd: 0, mislukt: 0, uitgesteld: 0,
+      opgegeven: 0, gedekt: 0,
     };
   }
 
@@ -395,7 +417,8 @@ export async function meldmailRonde(
   if (bestemming.soort === "geen") {
     return {
       bestemming: `UIT — ${bestemming.reden}`,
-      gepland: 0, nieuw: 0, aangeboden: 0, geaccepteerd: 0, mislukt: 0, uitgesteld: 0, opgegeven: 0,
+      gepland: 0, nieuw: 0, aangeboden: 0, geaccepteerd: 0, mislukt: 0, uitgesteld: 0,
+      opgegeven: 0, gedekt: 0,
     };
   }
 
@@ -419,7 +442,8 @@ export async function meldmailRonde(
   const eerder = await rijen<{ bundel: string }>(
     c,
     `select distinct bundel from intel.meld_berichten
-      where organisatie_id = $1 and soort in ('CRITICAL','FOUT','BEGINSAMENVATTING')`,
+      where organisatie_id = $1 and soort in ('CRITICAL','FOUT','BEGINSAMENVATTING')
+        and geaccepteerd_op is not null`,
     [organisatieId],
   );
   /* EEN TESTMAIL IS GEEN ALARM, en mag 'de eerste keer' dus niet
@@ -437,12 +461,60 @@ export async function meldmailRonde(
      niemand over een storing en hoort die staat niet te veranderen. */
   const totaalEerder = await rijen<{ n: number }>(
     c,
+    /* GEACCEPTEERD, niet 'er bestaat een rij'.
+       Twee eisen vallen hier samen. Een TEST informeert niemand over een
+       storing en verbruikt 'de eerste keer' niet (gemeten 14 oktober
+       2026: twee TEST-rijen lieten de samenvatting vervallen en drie
+       losse mails plannen). En een MISLUKTE samenvatting mag die staat
+       ook niet omzetten: gevonden door toets 2c, want anders plant de
+       volgende ronde het normale regime ERNAAST de hertry van de
+       samenvatting, en gaan beide uit.
+
+       'Is er al ooit gealarmeerd' betekent dus: heeft de provider ooit
+       een alarm van ons AANGENOMEN. */
     `select count(*)::int as n from intel.meld_berichten
-      where organisatie_id = $1 and soort <> 'TEST'`,
+      where organisatie_id = $1 and soort <> 'TEST' and geaccepteerd_op is not null`,
     [organisatieId],
   );
 
-  const plan = bouwMeldplan({
+  /* DEKT EEN AL GEACCEPTEERDE SAMENVATTING DE HUIDIGE STAND?
+     De samenvatting kan zijn verstuurd door een versie die de dekking
+     nog niet vastlegde — precies het geval op 14 oktober 2026, toen de
+     ronde van 07:00Z hem verstuurde en deze code er nog niet was. Door
+     het als VRAAG over de huidige stand te stellen in plaats van als
+     moment in de verzendlus, is die dekking ook achteraf vast te
+     stellen. */
+  const samenvattingen = await rijen<{ melding_ids: number[] }>(
+    c,
+    `select melding_ids from intel.meld_berichten
+      where organisatie_id = $1 and soort = 'BEGINSAMENVATTING'
+        and geaccepteerd_op is not null
+      order by geaccepteerd_op desc
+      limit 1`,
+    [organisatieId],
+  );
+  /* EENMALIG, en dat is de hele grendel.
+     De samenvattingsrij bewaart WELKE meldingen erin zaten, maar niet de
+     per-bundel vingerafdrukken van dat moment. De toestand van toen is
+     dus niet te reconstrueren, en daarom mag deze inhaalslag alleen
+     gelden zolang er nog GEEN ENKELE alarmrij bestaat: dan is de huidige
+     stand per definitie nog de stand die de samenvatting beschreef.
+
+     Zonder die tweede voorwaarde zou ook een ESCALATIE als gedekt worden
+     weggezet, want die heeft dezelfde melding-IDs. Toets 2e vond dat. */
+  const gedekteIds = new Set((samenvattingen[0]?.melding_ids ?? []).map(Number));
+  const alarmrijen = await rijen<{ n: number }>(
+    c,
+    `select count(*)::int as n from intel.meld_berichten
+      where organisatie_id = $1 and soort in ('CRITICAL','FOUT','WARNING')`,
+    [organisatieId],
+  );
+  const alGedekt =
+    open.length > 0 &&
+    (alarmrijen[0]?.n ?? 0) === 0 &&
+    open.every((m) => gedekteIds.has(Number(m.id)));
+
+  const { berichten: plan, gedekt } = bouwMeldplan({
     open,
     gesloten,
     gemeldeBundels: new Set(eerder.map((x) => x.bundel)),
@@ -450,6 +522,43 @@ export async function meldmailRonde(
     nu,
     monitorUrl: (process.env["INTEL_MONITOR_URL"] ?? "").trim() || null,
   });
+
+  /* DE DEKKING VASTLEGGEN wanneer de samenvatting al EERDER is
+     geaccepteerd. Zit de samenvatting nog IN dit plan, dan gebeurt het
+     pas na acceptatie, verder naar beneden. */
+  let gedektVastgelegd = 0;
+  /* DE DEKKING IS EEN VASTLEGGING, GEEN ONDERDRUKKING.
+     Dat onderscheid is de hele oplossing. Zodra de dekkingsrijen
+     BESTAAN met de vingerafdruk die het normale regime zou gebruiken,
+     doet de unieke index `meldberichten_eenmalig` al het werk: dezelfde
+     toestand levert dezelfde vingerafdruk en wordt niet verstuurd, en
+     een GEWIJZIGDE toestand levert een andere vingerafdruk en gaat dus
+     gewoon uit. Toets 2e vond dat: een eerdere versie onderdrukte ook de
+     escalatie, omdat ze op melding-IDs keek in plaats van op toestand.
+
+     De rijen worden gemarkeerd als geaccepteerd, want dat zijn ze: de
+     ontvanger heeft deze storingen in de samenvatting gelezen en de
+     provider heeft die aangenomen. */
+  const teDekken = alGedekt ? plan.filter((x) => x.soort !== "HERSTEL") : [];
+  if (teDekken.length > 0) {
+    for (const d of teDekken) {
+      const r = await c.query(
+        `insert into intel.meld_berichten
+           (organisatie_id, soort, bundel, vingerafdruk, ernst, onderwerp, melding_ids,
+            html, tekst, aangeboden_op, geaccepteerd_op, pogingen, provider)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$10,0,'resend')
+         on conflict (organisatie_id, soort, bundel, vingerafdruk) do nothing`,
+        [organisatieId, d.soort, d.bundel, d.vingerafdruk, d.ernst, d.onderwerp,
+         d.meldingIds, d.html, d.tekst, nu],
+      );
+      gedektVastgelegd += r.rowCount ?? 0;
+    }
+    if (gedektVastgelegd > 0) {
+      log.info("de eerder geaccepteerde beginsamenvatting dekt deze berichten", {
+        gedekt: gedektVastgelegd, bundels: teDekken.map((d) => `${d.soort}:${d.bundel}`),
+      });
+    }
+  }
 
   /* Vastleggen. `on conflict do nothing` IS de deduplicatie. */
   let nieuw = 0;
@@ -567,6 +676,44 @@ export async function meldmailRonde(
       log.info("meldbericht geaccepteerd door de provider", {
         bericht: rij.id, soort: rij.soort, bundel: rij.bundel, provider_id: uitkomst.providerId,
       });
+
+      /* DE DEKKING, EN PAS NU.
+         Een beginsamenvatting beschrijft de hele stand, met elk signaal
+         en zijn meting erin. Zonder deze stap plant de VOLGENDE ronde
+         alsnog per bundel een FOUT-mail plus het dagoverzicht — drie
+         berichten over storingen die de ontvanger al heeft gelezen.
+
+         De dekking wordt vastgelegd als GEWONE berichtrijen met de
+         vingerafdruk die het normale regime zou hebben gebruikt, en
+         gemarkeerd als geaccepteerd met het provider-id van de
+         samenvatting. Daarmee doet de bestaande unieke index al het
+         werk: dezelfde toestand levert dezelfde vingerafdruk en wordt
+         niet opnieuw verstuurd, terwijl een ANDERE toestand (een nieuwe
+         storing, een escalatie, een gewijzigde meting) een andere
+         vingerafdruk geeft en dus wel gewoon uitgaat.
+
+         STRIKT NA ACCEPTATIE. Mislukt de samenvatting, dan staat deze
+         code niet in het pad en is er dus niets als gemeld
+         geregistreerd — dan komt het normale regime de volgende ronde
+         gewoon op. */
+      if (rij.soort === "BEGINSAMENVATTING" && gedekt.length > 0) {
+        for (const d of gedekt) {
+          const r = await c.query(
+            `insert into intel.meld_berichten
+               (organisatie_id, soort, bundel, vingerafdruk, ernst, onderwerp, melding_ids,
+                html, tekst, aangeboden_op, geaccepteerd_op, pogingen, provider, provider_id)
+             values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$10,0,$11,$12)
+             on conflict (organisatie_id, soort, bundel, vingerafdruk) do nothing`,
+            [organisatieId, d.soort, d.bundel, d.vingerafdruk, d.ernst, d.onderwerp,
+             d.meldingIds, d.html, d.tekst, nu, uitkomst.provider, uitkomst.providerId],
+          );
+          gedektVastgelegd += r.rowCount ?? 0;
+        }
+        log.info("de beginsamenvatting dekt deze berichten; ze gaan niet apart uit", {
+          bericht: rij.id, gedekt: gedektVastgelegd,
+          bundels: gedekt.map((d) => `${d.soort}:${d.bundel}`),
+        });
+      }
       continue;
     }
 
@@ -608,6 +755,7 @@ export async function meldmailRonde(
     mislukt,
     uitgesteld: uitgesteld[0]?.n ?? 0,
     opgegeven,
+    gedekt: gedektVastgelegd,
   };
 }
 
