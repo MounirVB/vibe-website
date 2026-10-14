@@ -494,6 +494,22 @@ export const REGISTER: Record<string, Handler> = {
       meldRonde(c, organisatieId, signalen),
     );
 
+    /* DE E-MAILKETEN, NA DE STAAT EN NIET ERVOOR.
+       meldRonde() heeft hierboven vastgesteld WELKE storingen lopen en
+       welke net dicht zijn. Pas daarna is er iets te melden. De twee
+       stappen staan apart zodat een fout in het mailen de
+       staatsregistratie niet kan beschadigen: de meldingen staan dan al
+       in de database.
+
+       verrijkMeldingen() zet de bundel en de ernst op de open rijen —
+       de brug tussen het signaal (dat de bundel kent) en de rij (die hem
+       moet bewaren). */
+    const { verrijkMeldingen, meldmailRonde } = await import("../ops/meldmail.ts");
+    const mail = await metOrg(eigenaarPool, { organisatieId }, async (c) => {
+      await verrijkMeldingen(c, organisatieId, signalen);
+      return meldmailRonde(c, organisatieId);
+    });
+
     const perNiveau: Record<string, number> = {};
     for (const s of signalen) perNiveau[s.niveau] = (perNiveau[s.niveau] ?? 0) + 1;
     const uitsplitsing = Object.entries(perNiveau)
@@ -536,7 +552,13 @@ export const REGISTER: Record<string, Handler> = {
       (nietOk ? `niet-ok: ${nietOk}, ` : "") +
       `meldingen open ${meld.open} (geopend ${meld.geopend}, gesloten ${meld.gesloten}), ` +
       `bezorgd ${meld.bezorgd}, bezorgfouten ${meld.bezorgfouten}, ` +
-      `bestemming ${meld.bestemming || "NIET_INGESTELD"}`
+      `bestemming ${meld.bestemming || "NIET_INGESTELD"}, ` +
+      /* DE MAILKETEN, apart leesbaar. 'aangeboden' en 'geaccepteerd' zijn
+         twee verschillende dingen en worden ook zo gelogd; zie de
+         kolomtoelichting bij intel.meld_berichten. */
+      `mail[${mail.bestemming}] gepland ${mail.gepland}, nieuw ${mail.nieuw}, ` +
+      `aangeboden ${mail.aangeboden}, geaccepteerd ${mail.geaccepteerd}, ` +
+      `mislukt ${mail.mislukt}, uitgesteld ${mail.uitgesteld}, opgegeven ${mail.opgegeven}`
     );
   },
 
