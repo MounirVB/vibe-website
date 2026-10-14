@@ -41,6 +41,7 @@ import { alsEigenaar, maakOrganisatie, maakWegwerpdatabase, type Wegwerpdatabase
 import { leesUitdrukkingen } from "../../src/pijplijn/uitdrukking.ts";
 import { leidSemantiekAf, verwoordbaarheidspoort } from "../../src/pijplijn/semantiek.ts";
 import { vindCorrecties } from "../../src/pijplijn/semantiekopslag.ts";
+import { weegAf, type Controle } from "../../src/inhoud/voorstel.ts";
 
 const BELGISCH = "De Belgische netbeheerder Fluvius verhoogt het nettarief in 2027 met 8%.";
 const NEDERLANDS = "Netbeheerder Liander verhoogt het nettarief in Nederland in 2027 met 8%.";
@@ -152,6 +153,58 @@ describe("de jurisdictiecontrole in de verwoordbaarheidspoort", () => {
         [org, NEDERLANDS],
       ),
     );
+  });
+
+  test("4b. een Belgische claim kan NOOIT als feitelijke revisie worden goedgekeurd", () => {
+    /* DE END-TO-END GRENDEL. De poort maakt de uitspraak niet
+       verwoordbaar, dus er is geen `verwoorde_zin`. Controle 5 van de
+       redactionele weging faalt daarop, en weegAf() kan dan alleen nog
+       op de LINK-route of op NEEDS_RESEARCH uitkomen — nooit op
+       KLAAR_VOOR_REVIEW, en nooit op NIEUWE_PAGINA.
+
+       Dat onderscheid is precies wat de opdracht vraagt: een
+       linkvoorstel draagt geen feitelijke bewering uit de bron, een
+       feitelijke revisie wel. Een Belgisch tarief mag dus wel tot 'zet
+       hier een interne link' leiden en nooit tot 'dit is een
+       Nederlands feit'. */
+    const PASS = (naam: Controle["naam"]): Controle => ({ naam, oordeel: "PASS", reden: "ok", bewijs: [] });
+    const controles: Controle[] = [
+      PASS("bronverwijzing"),
+      PASS("actualiteit"),
+      PASS("duplicatie"),
+      PASS("seo"),
+      {
+        naam: "verwoordbaarheid",
+        oordeel: "FAIL",
+        reden: "geen verwoordbare uitspraak: toepassingsgebied BELGIE",
+        bewijs: [],
+      },
+    ];
+    const kandidaat = { risico_klasse: "laag", bedrijfsrelevantie: 40 };
+
+    for (const linkKansen of [0, 3]) {
+      const r = weegAf(controles, kandidaat, linkKansen, null);
+      assert.notEqual(
+        r.eindoordeel,
+        "KLAAR_VOOR_REVIEW",
+        `een Belgische claim hoort nooit de feitelijke route te halen (linkKansen=${linkKansen}): ${r.oordeelReden}`,
+      );
+      assert.notEqual(
+        r.eindoordeel,
+        "NIEUWE_PAGINA",
+        "en ook geen nieuwe pagina, want daar zou de claim de reden voor zijn",
+      );
+      assert.ok(
+        r.eindoordeel === "KLAAR_VOOR_LINKREVIEW" || r.eindoordeel === "NEEDS_RESEARCH",
+        `verwacht de linkroute of NEEDS_RESEARCH, kreeg ${r.eindoordeel}`,
+      );
+    }
+
+    /* EN DE CONTROLE MOET IETS DOORLATEN: met verwoordbaarheid op PASS
+       is dezelfde kandidaat wel een feitelijke revisie. Zonder deze
+       assertie zou een weegAf die ALTIJD afwijst ook groen staan. */
+    const goed = weegAf([...controles.slice(0, 4), PASS("verwoordbaarheid")], kandidaat, 0, null);
+    assert.equal(goed.eindoordeel, "KLAAR_VOOR_REVIEW", goed.oordeelReden);
   });
 
   test("5. een BELGISCH tarief markeert een NEDERLANDS tarief niet als vervangen", async () => {

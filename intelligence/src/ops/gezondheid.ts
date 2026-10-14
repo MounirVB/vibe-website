@@ -41,6 +41,7 @@ import {
   RESTORETEST_TAAK_SOORT,
   type Bewijsbron,
 } from "./restorebewijs.ts";
+import { redigeer } from "../kern/geheimen.ts";
 
 export type Niveau = "OK" | "LET OP" | "FOUT" | "NIET GEMETEN";
 
@@ -414,10 +415,27 @@ export async function meetGezondheid(
     `select storingssoort as soort, count(*)::int as aantal,
             count(*) filter (where actief)::int as actieve,
             string_agg(sleutel, ', ' order by sleutel) as sleutels,
+            /* DE VIER VERPLICHTE VELDEN EERST, DE VRIJE TEKST ACHTERAAN.
+               De eerste versie plakte storing_detail vooraan en kapte
+               het geheel af; gemeten op productie 14 oktober 2026 03:02Z
+               eindigde de regel op '| sinds]' en waren storing_sinds en
+               de opschortingsdatum weg. Nu zijn http-status, foutsoort,
+               sinds en tot uit het detail GETROKKEN en staan ze op een
+               vaste plek, zodat afkappen alleen nog de staart raakt en
+               nooit een van de vier. */
             string_agg(
-              sleutel || ' -> ' || coalesce(storing_detail, 'geen detail bewaard')
-                || coalesce(' | sinds ' || to_char(storing_sinds, 'YYYY-MM-DD"T"HH24:MI"Z"'), '')
-                || coalesce(' | opgeschort tot ' || to_char(ophalen_opgeschort_tot, 'YYYY-MM-DD"T"HH24:MI"Z"'), ''),
+              sleutel
+                || ' ' || coalesce(substring(storing_detail from 'http=[0-9]{3}'), 'http=-')
+                || ' ' || coalesce(substring(storing_detail from 'foutsoort=[a-z_]+'), 'foutsoort=-')
+                /* AT TIME ZONE 'UTC' IS HIER GEEN DETAIL. to_char rendert in
+                   de SESSIETIJDZONE, en het Z-achtervoegsel beweert UTC.
+                   Zonder deze omzetting las een opschorting van
+                   19:04Z als 21:04Z — twee uur mis voor wie moet
+                   besluiten of hij kan wachten. Gevonden door
+                   storingsdetail.test.ts. */
+                || ' sinds=' || coalesce(to_char(storing_sinds at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI"Z"'), '-')
+                || ' tot=' || coalesce(to_char(ophalen_opgeschort_tot at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI"Z"'), '-')
+                || coalesce(' (' || storing_detail || ')', ''),
               ' ;; ' order by sleutel)
               filter (where actief)                                        as details
        from intel.bronnen
@@ -458,12 +476,26 @@ export async function meetGezondheid(
       meting:
         `${st.aantal} bron(nen), waarvan ${st.actieve} actief: ${st.sleutels.slice(0, 160)}` +
         /* De details alleen bij een FOUT, want daar moet iemand iets.
-           `storing_detail` komt uit classificeerStoring en bestaat uit
-           gemeten statussen (http=403 robots=toegestaan ...); er staat
-           geen credential in. Toch afgekapt, zodat een onverwacht lange
-           detailtekst de regel niet onleesbaar maakt. */
+
+           AFKAPPEN GEBEURT PER BRON, niet over het geheel. Dat is het
+           verschil met de eerste versie: één lange detailtekst sneed
+           daar de velden van de volgende bron eraf. Nu houdt elke bron
+           zijn vier verplichte velden, en verliest alleen zijn eigen
+           vrije staart.
+
+           EN HET GAAT DOOR DE REDACTIE. `storing_detail` komt uit
+           classificeerStoring en bestaat uit gemeten statussen, dus er
+           hoort geen credential in te staan. `redigeer` is de grendel
+           die dat ook afdwingt als de inhoud ooit verandert: een
+           monitoringregel gaat naar een log en mag per constructie geen
+           geheim kunnen dragen. */
         (!aanvaard && st.soort !== "LEEG_MAAR_GEZOND" && st.details
-          ? ` — detail: ${st.details.slice(0, 320)}`
+          ? ` — detail: ${redigeer(
+              st.details
+                .split(" ;; ")
+                .map((d) => (d.length > 200 ? `${d.slice(0, 200)}…` : d))
+                .join(" ;; "),
+            )}`
           : ""),
       aanvaard,
     });
