@@ -73,7 +73,13 @@ describe("classificeerStoring", () => {
   it("leest de HTTP-statussen die een eigen antwoord vragen", () => {
     const soortVan = (httpStatus: number) => classificeerStoring({ ...basis, httpStatus }).soort;
     assert.equal(soortVan(401), "NIET_GEAUTORISEERD");
-    assert.equal(soortVan(403), "TOEGANG_BEPERKT");
+    /* 403 ZONDER BEWIJS IS TOEGANG_ONBEKEND, NIET TOEGANG_BEPERKT.
+       Deze regel verwachtte TOEGANG_BEPERKT, en dat was de oude vlakke
+       afbeelding: elke 403 beweerde dat de UITGEVER ons weigert. Een
+       kale 403 zonder aanwijzingen, zonder verboden robots.txt en
+       zonder TDM-voorbehoud draagt dat bewijs niet. Zie 0037 en de
+       vier gevallen in de toets hieronder. */
+    assert.equal(soortVan(403), "TOEGANG_ONBEKEND");
     assert.equal(soortVan(429), "SNELHEIDSBEGRENSD");
     assert.equal(soortVan(404), "ONGELDIG_ENDPOINT");
     assert.equal(soortVan(410), "AFGESCHAFT");
@@ -175,5 +181,107 @@ describe("classificeerStoring", () => {
         `${soort} stelt een omzeiling voor: ${handeling}`,
       );
     }
+  });
+  /* ========================================================
+     DE VIER OORZAKEN VAN EEN 403 (0037)
+     --------------------------------------------------------
+     Een 403 kan vier dingen betekenen met vier remedies. De oude
+     afbeelding koos er altijd één — TOEGANG_BEPERKT, "vraag de uitgever
+     om toestemming" — en dat was bij rendo-nieuws aantoonbaar onwaar:
+     die uitgever staat crawlen toe met een LEGE `Disallow:`, en het was
+     Cloudflare dat een hostingnetwerk weigerde.
+
+     Elke toets hieronder geeft ALLEEN aantoonbare signalen mee. De
+     laatste twee bewaken de belangrijkste eigenschap: twijfel wordt
+     ONBEKEND, en een CDN-blokkade verlaagt geen ernst.
+     ======================================================== */
+  const met = (extra: Record<string, unknown>) =>
+    classificeerStoring({ ...basis, httpStatus: 403, ...extra }).soort;
+
+  it("403 met www-authenticate is een AUTHENTICATIE-eis", () => {
+    assert.equal(
+      met({ aanwijzingen: { server: "nginx", cdnHeaders: [], wwwAuthenticate: 'Basic realm="api"', titel: null } }),
+      "NIET_GEAUTORISEERD",
+    );
+  });
+
+  it("403 met een VERBIEDENDE robots.txt is beleid van de uitgever", () => {
+    assert.equal(met({ robotsStatus: "verboden" }), "TOEGANG_BEPERKT");
+    assert.equal(met({ tdmStatus: "voorbehoud" }), "TOEGANG_BEPERKT");
+  });
+
+  it("403 met CDN-bewijs is een CDN_BLOKKADE, niet een verbod van de uitgever", () => {
+    /* Het gemeten geval: server cloudflare, cf-ray aanwezig, titel
+       "Attention Required! | Cloudflare", en robots.txt staat alles toe. */
+    assert.equal(
+      met({
+        robotsStatus: "toegestaan",
+        tdmStatus: "geen_voorbehoud",
+        aanwijzingen: {
+          server: "cloudflare",
+          cdnHeaders: ["cf-ray"],
+          wwwAuthenticate: null,
+          titel: "Attention Required! | Cloudflare",
+        },
+      }),
+      "CDN_BLOKKADE",
+    );
+    /* Ook zonder eigen CDN-header: server plus blokkadetitel is genoeg. */
+    assert.equal(
+      met({
+        aanwijzingen: { server: "sucuri/cloudproxy", cdnHeaders: [], wwwAuthenticate: null, titel: "Access Denied" },
+      }),
+      "CDN_BLOKKADE",
+    );
+  });
+
+  it("BELEID gaat vóór CDN: een uitgever die ons verbiedt wordt niet als firewall weggezet", () => {
+    assert.equal(
+      met({
+        robotsStatus: "verboden",
+        aanwijzingen: { server: "cloudflare", cdnHeaders: ["cf-ray"], wwwAuthenticate: null, titel: "Attention Required!" },
+      }),
+      "TOEGANG_BEPERKT",
+    );
+  });
+
+  it("403 ZONDER bewijs is TOEGANG_ONBEKEND — twijfel wordt geen conclusie", () => {
+    assert.equal(met({}), "TOEGANG_ONBEKEND");
+    assert.equal(met({ aanwijzingen: null }), "TOEGANG_ONBEKEND");
+    /* Een gewone webserver zonder blokkadetitel is GEEN CDN-bewijs. */
+    assert.equal(
+      met({ aanwijzingen: { server: "nginx", cdnHeaders: [], wwwAuthenticate: null, titel: "403 Forbidden" } }),
+      "TOEGANG_ONBEKEND",
+    );
+    /* `via` en `x-cache` zetten ook gewone caches: geen bewijs. */
+    assert.equal(
+      met({ aanwijzingen: { server: "nginx", cdnHeaders: [], wwwAuthenticate: null, titel: null } }),
+      "TOEGANG_ONBEKEND",
+    );
+  });
+
+  it("geen enkele nieuwe soort is milder dan TOEGANG_BEPERKT", () => {
+    /* De harde eis: een CDN-blokkade mag geen ontsnappingsroute worden
+       waarmee een geblokkeerde bron stiller wordt. Opschorten duurt
+       minstens even lang, en een onbekende oorzaak wordt vaker
+       gecontroleerd in plaats van langer genegeerd. */
+    const opschort = (soort: string) =>
+      classificeerStoring({ ...basis, httpStatus: 403, robotsStatus: soort === "TOEGANG_BEPERKT" ? "verboden" : "toegestaan",
+        aanwijzingen: soort === "CDN_BLOKKADE"
+          ? { server: "cloudflare", cdnHeaders: ["cf-ray"], wwwAuthenticate: null, titel: "Attention Required!" }
+          : null }).opschortenMinuten;
+    assert.equal(opschort("CDN_BLOKKADE"), opschort("TOEGANG_BEPERKT"), "een CDN-blokkade mag niet korter opschorten");
+    assert.ok((opschort("TOEGANG_ONBEKEND") ?? 0) > 0, "een onbekende oorzaak hoort wel opgeschort te worden");
+  });
+
+  it("het DETAIL draagt het bewijs, zodat de classificatie na te rekenen is", () => {
+    const r = classificeerStoring({
+      ...basis,
+      httpStatus: 403,
+      aanwijzingen: { server: "cloudflare", cdnHeaders: ["cf-ray"], wwwAuthenticate: null, titel: "Attention Required!" },
+    });
+    assert.match(r.detail, /server=cloudflare/);
+    assert.match(r.detail, /cdn=cf-ray/);
+    assert.match(r.detail, /Attention Required/);
   });
 });

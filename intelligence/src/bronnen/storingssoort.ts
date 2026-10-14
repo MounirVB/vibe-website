@@ -1,12 +1,14 @@
 /* ============================================================
    BRONNEN — storingstaxonomie
    ------------------------------------------------------------
-   Waarom een bron niet levert, in negen soorten. Het punt van deze
+   Waarom een bron niet levert, in elf soorten. Het punt van deze
    module is dat elke soort een ANDER antwoord vraagt:
 
      opnieuw proberen        TIJDELIJKE_STORING, NETWERKFOUT
      langzamer proberen      SNELHEIDSBEGRENSD
      niet meer proberen      TOEGANG_BEPERKT, NIET_GEAUTORISEERD, AFGESCHAFT
+     firewall laten openen   CDN_BLOKKADE
+     eerst oorzaak zoeken    TOEGANG_ONBEKEND
      code repareren          ONTLEDING_MISLUKT
      adres repareren         ONGELDIG_ENDPOINT
      niets doen              LEEG_MAAR_GEZOND
@@ -32,9 +34,17 @@
    met een andere User-Agent opnieuw benaderd en niet via een proxy
    gehaald. Dat is een expliciete opdrachteis en het is ook gewoon de
    afspraak met een uitgever.
+
+   Dat geldt ONVERKORT voor CDN_BLOKKADE, en daar is het verleidelijker:
+   bij rendo-nieuws geeft een andere netwerkherkomst gewoon HTTP 200.
+   Precies daarom staat het hier. Een firewall die ons weigert, is een
+   toegangscontrole; er omheen routeren is een omzeiling, ook als de
+   robots.txt van die uitgever het crawlen toestaat. De remedie is de
+   uitzondering VRAGEN. Een eenheidstoets bewaakt dat geen enkele
+   handelingstekst een technische uitweg voorstelt.
    ============================================================ */
 
-/** De negen soorten. Zie migratie 0028 voor de check constraint. */
+/** De elf soorten. Zie migratie 0028 en 0037 voor de check constraint. */
 export type Storingssoort =
   | "TIJDELIJKE_STORING"
   | "TOEGANG_BEPERKT"
@@ -44,7 +54,27 @@ export type Storingssoort =
   | "LEEG_MAAR_GEZOND"
   | "AFGESCHAFT"
   | "NIET_GEAUTORISEERD"
-  | "NETWERKFOUT";
+  | "NETWERKFOUT"
+  /**
+   * Een CDN of WAF weigert ONS NETWERK; de uitgever heeft niets
+   * verboden. Aantoonbaar aan CDN-bewijs in het antwoord.
+   *
+   * Dit is een EIGEN soort en geen variant van TOEGANG_BEPERKT, omdat de
+   * remedie verschilt: bij TOEGANG_BEPERKT vraag je de uitgever om
+   * toestemming, bij een CDN-blokkade vraag je om een uitzondering op
+   * een firewallregel — en vaak staat de uitgever het crawlen al toe.
+   * Gemeten geval dat dit nodig maakte: rendo-nieuws geeft 403 vanaf
+   * Railway en 200 vanaf een Nederlandse egress, met DEZELFDE
+   * user-agent, en de robots.txt van de uitgever draagt een LEGE
+   * `Disallow:` — expliciete toestemming voor alles.
+   */
+  | "CDN_BLOKKADE"
+  /**
+   * Een 403 waarvan de oorzaak NIET is vast te stellen. Bewust een eigen
+   * soort: hem bij TOEGANG_BEPERKT stoppen zou beweren dat de uitgever
+   * ons weigert, en dat is dan niet gemeten.
+   */
+  | "TOEGANG_ONBEKEND";
 
 export const STORINGSSOORT_LABEL: Readonly<Record<Storingssoort, string>> = {
   TIJDELIJKE_STORING: "Tijdelijke storing",
@@ -56,6 +86,8 @@ export const STORINGSSOORT_LABEL: Readonly<Record<Storingssoort, string>> = {
   AFGESCHAFT: "Afgeschaft",
   NIET_GEAUTORISEERD: "Niet geautoriseerd",
   NETWERKFOUT: "Netwerkfout",
+  CDN_BLOKKADE: "CDN-blokkade",
+  TOEGANG_ONBEKEND: "Toegang geweigerd, oorzaak onbekend",
 };
 
 /** Welke handeling deze soort vraagt. Voor het auditrapport. */
@@ -69,6 +101,16 @@ export const STORINGSSOORT_HANDELING: Readonly<Record<Storingssoort, string>> = 
   AFGESCHAFT: "de bron vervangen of uitzetten",
   NIET_GEAUTORISEERD: "een officiele sleutel aanvragen; niet omheen werken",
   NETWERKFOUT: "opnieuw proberen; bij herhaling de host en TLS natrekken",
+  /* NIET 'toestemming vragen': de uitgever heeft meestal niets verboden.
+     Wat hier nodig is, is een uitzondering op een firewallregel voor ons
+     netwerk of onze user-agent. Dat is een ANDER gesprek met een andere
+     partij — vaak de hostingpartij en niet de redactie. */
+  CDN_BLOKKADE:
+    "een uitzondering vragen op de firewallregel van de uitgever; " +
+    "die staat het crawlen in zijn robots.txt vaak al toe",
+  TOEGANG_ONBEKEND:
+    "de oorzaak vaststellen voordat er een remedie wordt gekozen; " +
+    "het antwoord draagt geen bewijs van beleid, CDN of authenticatie",
 };
 
 /**
@@ -95,6 +137,14 @@ const OPSCHORTEN: Readonly<Record<Storingssoort, number | null>> = {
   ONTLEDING_MISLUKT: null,
   LEEG_MAAR_GEZOND: null,
   NETWERKFOUT: null,
+  /* 7 dagen, gelijk aan TOEGANG_BEPERKT: een firewallregel wordt niet
+     binnen een uur opgeheven, en blijven kloppen op een WAF is precies
+     wat hem strenger maakt. */
+  CDN_BLOKKADE: 7 * 24 * 60,
+  /* 24 uur en niet 7 dagen: bij een ONBEKENDE oorzaak mag de aanname
+     niet zijn dat het lang duurt. Vaker kijken levert bovendien eerder
+     het bewijs op waarmee hij alsnog te classificeren is. */
+  TOEGANG_ONBEKEND: 24 * 60,
 };
 
 export type StoringInvoer = {
@@ -109,7 +159,78 @@ export type StoringInvoer = {
   readonly tdmStatus: string | null;
   /** De reden die de ophaallaag meegaf bij 'overgeslagen'. */
   readonly overgeslagenReden: string | null;
+  /**
+   * AANTOONBARE aanwijzingen uit het antwoord, als de HTTP-laag ze
+   * meegaf. Zonder deze velden kan een 403 niet worden onderscheiden en
+   * valt hij naar TOEGANG_ONBEKEND — dat is met opzet: een ontbrekende
+   * meting mag geen conclusie worden.
+   */
+  readonly aanwijzingen?: {
+    readonly server: string | null;
+    readonly cdnHeaders: readonly string[];
+    readonly wwwAuthenticate: string | null;
+    readonly titel: string | null;
+  } | null;
 };
+
+/**
+ * Namen die in een `server`-header een CDN of WAF aanwijzen. Alleen
+ * leveranciers die als reverse proxy vóór de oorspronkelijke server
+ * staan; geen gewone webservers (nginx, apache) want die zeggen niets
+ * over een blokkade.
+ */
+const CDN_SERVERS = ["cloudflare", "sucuri", "akamai", "incapsula", "imperva", "cloudfront", "fastly"];
+
+/** Titels van bekende blokkadepagina's. Bewijs, geen vermoeden. */
+const CDN_TITELS = [
+  "attention required",
+  "just a moment",
+  "access denied",
+  "sucuri website firewall",
+  "request blocked",
+  "you have been blocked",
+];
+
+/**
+ * Onderscheidt de vier oorzaken van een 403 op UITSLUITEND aantoonbare
+ * signalen. Twijfel levert TOEGANG_ONBEKEND; er wordt nooit een oorzaak
+ * aangenomen.
+ *
+ * De orde is niet willekeurig. Authenticatie staat vooraan omdat
+ * `www-authenticate` een expliciete, door de server GESTELDE eis is.
+ * Daarna het beleid van de uitgever, want dat is zijn eigen verklaring.
+ * Pas daarna de CDN-aanwijzingen, zodat een uitgever die ons werkelijk
+ * verbiedt niet als 'slechts een firewall' wordt weggezet.
+ */
+function classificeer403(inv: StoringInvoer): Storingssoort {
+  const a = inv.aanwijzingen ?? null;
+
+  /* 1. AUTHENTICATIE — de server stelt zelf een eis. */
+  if (a?.wwwAuthenticate) return "NIET_GEAUTORISEERD";
+
+  /* 2. BELEID VAN DE UITGEVER — hij heeft het zelf verklaard.
+        `robots=verboden` betekent dat we zijn robots.txt hebben GELEZEN
+        en dat die dit pad verbiedt. Een TDM-voorbehoud is net zo
+        expliciet. Dat is beleid, en dan is 'toegang beperkt' waar. */
+  if (inv.robotsStatus === "verboden") return "TOEGANG_BEPERKT";
+  if (inv.tdmStatus === "voorbehoud") return "TOEGANG_BEPERKT";
+
+  /* 3. CDN OF WAF — een tussenlaag weigert ons, de uitgever zweeg.
+        Twee onafhankelijke soorten bewijs: een CDN-eigen header, of de
+        `server`-header plus een bekende blokkadetitel. Eén CDN-header is
+        al genoeg: die zet niemand anders. */
+  if (a) {
+    const serverIsCdn = CDN_SERVERS.some((n) => (a.server ?? "").includes(n));
+    const titelIsBlokkade = CDN_TITELS.some((t) => (a.titel ?? "").toLowerCase().includes(t));
+    if (a.cdnHeaders.length > 0 || (serverIsCdn && titelIsBlokkade)) return "CDN_BLOKKADE";
+  }
+
+  /* 4. ONBEKEND. Geen authenticatie-eis, geen verklaard beleid, geen
+        CDN-bewijs — of helemaal geen aanwijzingen omdat een oudere
+        ophaallaag ze niet meegaf. Dan is de eerlijke uitkomst dat we het
+        niet weten, en NIET dat de uitgever ons weigert. */
+  return "TOEGANG_ONBEKEND";
+}
 
 export type StoringUitslag = {
   /** null betekent: geen storing. */
@@ -138,6 +259,12 @@ export function classificeerStoring(inv: StoringInvoer): StoringUitslag {
     inv.robotsStatus ? `robots=${inv.robotsStatus}` : null,
     inv.tdmStatus ? `tdm=${inv.tdmStatus}` : null,
     inv.overgeslagenReden ? `overgeslagen: ${inv.overgeslagenReden}` : null,
+    /* Het BEWIJS achter de classificatie hoort in het detail, anders is
+       'CDN_BLOKKADE' voor een lezer niet na te rekenen. */
+    inv.aanwijzingen?.server ? `server=${inv.aanwijzingen.server}` : null,
+    inv.aanwijzingen?.cdnHeaders?.length ? `cdn=${inv.aanwijzingen.cdnHeaders.join("+")}` : null,
+    inv.aanwijzingen?.wwwAuthenticate ? "www-authenticate aanwezig" : null,
+    inv.aanwijzingen?.titel ? `titel="${inv.aanwijzingen.titel}"` : null,
   ]
     .filter(Boolean)
     .join(" ");
@@ -222,7 +349,15 @@ export function classificeerStoring(inv: StoringInvoer): StoringUitslag {
 
   const s = inv.httpStatus;
   if (s === 401) return uit("NIET_GEAUTORISEERD");
-  if (s === 403) return uit("TOEGANG_BEPERKT");
+  /* 403 IS DRIE VERSCHILLENDE DINGEN MET DRIE REMEDIES.
+     Dit was een vlakke afbeelding naar TOEGANG_BEPERKT, en die beweerde
+     dus bij elke 403 dat de UITGEVER ons weigert. Gemeten tegenvoorbeeld:
+     rendo-nieuws geeft 403 vanaf Railway en 200 vanaf een Nederlandse
+     egress met dezelfde user-agent, en de robots.txt van die uitgever
+     draagt een LEGE `Disallow:` — hij staat crawlen expliciet toe. De
+     oorzaak was Cloudflare dat een hostingnetwerk weigert. Dat vraagt
+     een firewalluitzondering, niet een toestemmingsverzoek. */
+  if (s === 403) return uit(classificeer403(inv));
   if (s === 429) return uit("SNELHEIDSBEGRENSD");
   if (s === 404 || s === 410) return uit(s === 410 ? "AFGESCHAFT" : "ONGELDIG_ENDPOINT");
   if (s !== null && s >= 500) return uit("TIJDELIJKE_STORING");

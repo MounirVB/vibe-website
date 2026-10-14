@@ -78,7 +78,76 @@ export type HaalUitkomst =
       bericht: string;
       herhaalbaar: boolean;
       duurMs: number;
+      /**
+       * AANTOONBARE aanwijzingen uit het antwoord zelf, voor de
+       * storingsclassificatie. Alleen wat er werkelijk in de respons
+       * stond — nooit een gok.
+       *
+       * Bestaat omdat een 403 drie heel verschillende dingen kan
+       * betekenen (uitgever verbiedt, CDN blokkeert ons netwerk,
+       * authenticatie ontbreekt) met drie verschillende remedies, en de
+       * classificatie die onderscheid niet kon maken: `StoringInvoer`
+       * kende alleen de statuscode.
+       */
+      aanwijzingen?: Antwoordaanwijzingen;
     };
+
+/**
+ * Wat er aan BEWIJS in een antwoord zat. Elk veld is rechtstreeks uit de
+ * respons gelezen; er wordt niets afgeleid en niets aangenomen.
+ */
+export type Antwoordaanwijzingen = {
+  /** De `server`-header, lowercase. */
+  readonly server: string | null;
+  /** Namen van aanwezige CDN-specifieke headers, bijvoorbeeld cf-ray. */
+  readonly cdnHeaders: readonly string[];
+  /** De `www-authenticate`-header; aanwezigheid bewijst een authenticatie-eis. */
+  readonly wwwAuthenticate: string | null;
+  /** Een korte, geschoonde titel uit de foutpagina, als die er was. */
+  readonly titel: string | null;
+};
+
+/**
+ * Headers die ALLEEN door een CDN of WAF worden gezet. Aanwezigheid is
+ * bewijs dat het antwoord van een tussenlaag komt en niet van de
+ * oorspronkelijke server.
+ *
+ * Bewust geen `via` of `x-cache`: die zetten ook gewone caches en
+ * proxies, en dan zou een onschuldige cache als blokkade gelden.
+ */
+const CDN_HEADERS = [
+  "cf-ray",
+  "cf-mitigated",
+  "cf-chl-bypass",
+  "x-sucuri-id",
+  "x-sucuri-block",
+  "x-akamai-request-id",
+  "akamai-grn",
+  "x-iinfo",
+  "x-cdn",
+  "x-amz-cf-id",
+  "server-timing-cdn",
+] as const;
+
+/**
+ * Leest de aanwijzingen uit een respons. Nooit meer dan er staat.
+ *
+ * Geexporteerd om toetsbaar te zijn zonder netwerk: `haalOp` staat
+ * uitsluitend https toe, dus een testserver op http://127.0.0.1 wordt
+ * terecht geweigerd (`doel_geweigerd`). Die regel blijft staan; deze
+ * functie is daarom los te toetsen op een echt `Response`-object.
+ */
+export function leesAanwijzingen(respons: Response, body: string | null): Antwoordaanwijzingen {
+  const aanwezig: string[] = [];
+  for (const h of CDN_HEADERS) if (respons.headers.get(h) !== null) aanwezig.push(h);
+  const titel = body ? (body.match(/<title[^>]*>([^<]{0,120})<\/title>/i) ?? [])[1] ?? null : null;
+  return {
+    server: (respons.headers.get("server") ?? "").toLowerCase() || null,
+    cdnHeaders: aanwezig,
+    wwwAuthenticate: respons.headers.get("www-authenticate"),
+    titel: titel ? titel.replace(/\s+/g, " ").trim().slice(0, 120) : null,
+  };
+}
 
 export function hostToegestaan(url: string, toegestaneHosts: readonly string[]): boolean {
   try {
@@ -339,6 +408,21 @@ export async function haalOp(opties: HaalOpties): Promise<HaalUitkomst> {
     }
 
     if (!respons.ok) {
+      /* De foutPAGINA meelezen, begrensd, uitsluitend om te classificeren.
+         Een CDN-blokkade is aan zijn eigen pagina te herkennen
+         ("Attention Required! | Cloudflare"), en zonder die titel zou de
+         classificatie moeten gokken. Hard begrensd op 8 kB: dit is
+         diagnostiek, geen inhoud, en de body wordt nooit als
+         brondocument gebruikt. Faalt het lezen, dan gaan we zonder
+         titel verder — een onleesbare foutpagina mag de classificatie
+         niet laten omvallen. */
+      let foutBody: string | null = null;
+      try {
+        const g = await leesBegrensd(respons, Math.min(8192, opties.maxBytes));
+        if (!("teGroot" in g)) foutBody = g.body;
+      } catch {
+        foutBody = null;
+      }
       return {
         soort: "fout",
         httpStatus: respons.status,
@@ -346,6 +430,7 @@ export async function haalOp(opties: HaalOpties): Promise<HaalUitkomst> {
         bericht: `HTTP ${respons.status} ${respons.statusText}`,
         herhaalbaar: httpHerhaalbaar(respons.status),
         duurMs: Date.now() - start,
+        aanwijzingen: leesAanwijzingen(respons, foutBody),
       };
     }
 
