@@ -148,6 +148,25 @@ const GEEN_BRONSLEUTEL: ReadonlySet<string> = new Set([
  * `signaal:<groep>/<naam>` — dan staat het signaal op zichzelf.
  */
 export function bundelVan(s: Signaal): string {
+  /* HET VASTGELEGDE FEIT GAAT VOOR DE TEKSTVONDST (3.0.9, tweede helft).
+     De regex hieronder leest de bronsleutel uit de MEETTEKST, en die
+     tekst wordt bij alle drie de ingestiesignalen afgekapt op 160
+     tekens (ops/brondekking.ts, en twee plekken in ops/gezondheid.ts).
+     Een signaal dat werkelijk over VIJF bronnen gaat kan daardoor maar
+     EEN sleutel tonen — gemeten geval: `ingestie/toestemming niet
+     vastgesteld` somt vijf sleutels op. De regex pakt dan de eerste en
+     maakt er `bron:<die ene>` van, waarmee twee signalen onder een
+     gedeelde noemer belanden zonder dat die gedeelde oorzaak vaststaat.
+     Dat is de verkeerde kant op falen.
+
+     Daarom zet de gezondheidsmeting sinds 3.0.9 `Signaal.bron` ALLEEN
+     als er aantoonbaar precies een bron in het spel is — uit de
+     TELLING, niet uit de tekst. Is dat veld gezet, dan is het het
+     antwoord. Is het leeg, dan blijft de bestaande regexweg gelden:
+     dat is geen verslechtering, want die weg was er al en hij is beter
+     dan niets. */
+  if (s.bron && s.bron.trim()) return `bron:${s.bron.trim()}`;
+
   /* ALLEEN IN DE INGESTIEGROEP ZOEKEN NAAR EEN BRONSLEUTEL.
      Gemeten tijdens het bouwen: het signaal backup/aanwezigheid kreeg
      bundel `bron:back-upmap`, omdat de regex het woord 'back-upmap' uit
