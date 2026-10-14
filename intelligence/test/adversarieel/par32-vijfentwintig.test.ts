@@ -716,9 +716,43 @@ describe("par. 32 — adversarieel, deel B (database)", () => {
     const signalen = await alsEigenaar(db, (c) => meetGezondheid(c as never, org));
     const backup = signalen.filter((s) => s.groep === "backup");
     assert.ok(backup.length > 0, "er horen backupsignalen te zijn");
+
+    /* DEZE TOETS GAAT OVER BEWIJS, EN IS DAAROM AANGESCHERPT IN PLAATS
+       VAN VERSOEPELD.
+
+       Hij eiste `backup.every(s => s.niveau !== "OK")`. Sinds 3.0.9
+       bestaat er in deze groep een signaal dat NIET over bewijs gaat:
+       `restoretestplanning` meet of de wekelijkse ronde gedraaid heeft.
+       Op een verse database is die ronde nog niet verschuldigd, en dan
+       is OK het eerlijke antwoord — er is werkelijk niets mis met de
+       planning.
+
+       De eis blijft overeind en wordt strenger geformuleerd: elk
+       backupsignaal dat NIET op de uitzonderingslijst staat moet
+       niet-OK zijn. Daarmee valt een NIEUW bewijssignaal automatisch
+       onder de eis (faalt dicht), en staat de uitzondering er met naam
+       en reden. */
+    const NIET_OVER_BEWIJS: ReadonlyMap<string, string> = new Map([
+      ["restoretestplanning", "meet de CADANS, niet het bewijs; op een verse database is de ronde nog niet verschuldigd"],
+      ["bewijsconsistentie", "vergelijkt twee bewijsbronnen met elkaar; zonder bewijs komt hij niet eens voor"],
+    ]);
+
+    const overBewijs = backup.filter((s) => !NIET_OVER_BEWIJS.has(s.naam));
     assert.ok(
-      backup.every((s) => s.niveau !== "OK"),
-      `zonder bewijs mag geen enkel backupsignaal OK zijn: ${backup.map((s) => `${s.naam}=${s.niveau}`).join(", ")}`,
+      overBewijs.length > 0,
+      `alle backupsignalen stonden op de uitzonderingslijst; dan toetst dit niets: ${backup.map((s) => s.naam).join(", ")}`,
+    );
+    assert.ok(
+      overBewijs.every((s) => s.niveau !== "OK"),
+      `zonder bewijs mag geen enkel bewijssignaal OK zijn: ${overBewijs.map((s) => `${s.naam}=${s.niveau}`).join(", ")}`,
+    );
+
+    /* En de uitzondering moet ECHT een uitzondering zijn: staat
+       `restoretestplanning` er niet, dan is het signaal verdwenen en
+       dekt deze lijst iets dat niet bestaat. */
+    assert.ok(
+      backup.some((s) => s.naam === "restoretestplanning"),
+      "het planningssignaal is weg; dan is de uitzonderingslijst een dode letter",
     );
   });
 

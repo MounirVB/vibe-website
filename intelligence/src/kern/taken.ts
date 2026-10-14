@@ -380,8 +380,8 @@ export const REGISTER: Record<string, Handler> = {
    * volgende deploy weg. Zou deze taak dan 'gereed' melden, dan zou de
    * wachtrij succes rapporteren voor iets dat geen retentie oplevert.
    */
-  async backup(_pool, organisatieId) {
-    const [{ maakBackup, KRITIEKE_TABELLEN }, { gcsConfigUitOmgeving, uploadNaarGcs }, { readFile }, { basename, join }, { APP_WORTEL, configLezen }] =
+  async backup(_pool, organisatieId, payload) {
+    const [{ maakBackup, KRITIEKE_TABELLEN }, { gcsConfigUitOmgeving, uploadNaarGcs, lijstGcs }, { readFile }, { basename, join }, { APP_WORTEL, configLezen }] =
       await Promise.all([
         import("../ops/backup.ts"),
         import("../ops/gcsopslag.ts"),
@@ -391,6 +391,48 @@ export const REGISTER: Record<string, Handler> = {
       ]);
     const { maakPool: maakEigenPool, zonderOrganisatie, rijen: leesRijen } = await import("./db.ts");
     const config = configLezen();
+
+    /* ---- IDEMPOTENT PER KALENDERDAG, MAAR NIET TEN KOSTE VAN HERSTEL ----
+       Een herstart tijdens een lopende back-up legt de taak terug
+       (geefVerlopenTerug, alleen bij het OPSTARTEN van een worker) en
+       dan maakt deze handler een tweede dump met een tweede tijdstempel
+       in de naam. De wachtrij voorkomt dat niet: de idempotentiesleutel
+       verhindert een tweede RIJ, niet een tweede UITVOERING. En een
+       lease-afloopcyclus omzeilt `max_pogingen` en de dlq volledig,
+       want die worden alleen gelezen als de handler WERPT.
+
+       Daarom de vraag die telt: ligt er voor deze KALENDERDAG al een
+       dump MET manifest? Zo ja, dan is de back-up af. Ligt er een dump
+       ZONDER manifest, dan is een eerdere poging halverwege afgebroken
+       en is wat er ligt geen back-up — dan moet deze poging juist wél
+       doorgaan. Zie backupStandVoorPeriode() in ops/restorebewijs.ts.
+
+       GEMETEN: exact drie back-uptaken, een per dag, alle met
+       pogingen = 1. De wachtrij heeft dit nooit gedaan; het mechanisme
+       is echt en de gebeurtenis niet aangetoond.
+
+       `forceer` is de ontsnappingsklep, zoals bij de ophaalhandler: een
+       door een mens geduwde taak is onblokkeerbaar. Zonder bucket valt
+       hij terug op het oude gedrag — altijd maken — en dat is ook het
+       pad van `npm run backup` met de hand. */
+    const periode = String(payload["venster"] ?? "").slice(0, 10) || new Date().toISOString().slice(0, 10);
+    const gcsVooraf = gcsConfigUitOmgeving();
+    if (gcsVooraf && payload["forceer"] !== true) {
+      const { backupStandVoorPeriode } = await import("../ops/restorebewijs.ts");
+      const stand = backupStandVoorPeriode(
+        await lijstGcs(gcsVooraf, "vibe-intel-").catch(() => []),
+        periode,
+      );
+      if (stand.alAf) return `overgeslagen: ${stand.grond}`;
+      if (stand.halfAfgebroken.length > 0) {
+        const { maakLogger } = await import("./log.ts");
+        maakLogger("taak:backup").waarschuwing("back-up wordt opnieuw gemaakt", {
+          periode,
+          grond: stand.grond.slice(0, 200),
+          half_afgebroken: stand.halfAfgebroken.length,
+        });
+      }
+    }
 
     const eigenaarPool = maakEigenPool({ rol: null, max: 2 });
     const info = await zonderOrganisatie(eigenaarPool, (c) =>
