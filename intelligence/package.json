@@ -49,7 +49,8 @@
     "dekkingsmeting": "node src/cli/dekkingsmeting.ts",
     "benchmark": "node src/cli/benchmark.ts",
     "wachtwoordtoken": "node src/cli/wachtwoordtoken.ts",
-    "browser": "node --test --test-concurrency=1 \"test/browser/*.browser.test.ts\""
+    "browser": "node --test --test-concurrency=1 \"test/browser/*.browser.test.ts\"",
+    "meldmail": "node src/cli/meldmail.ts"
   },
   "dependencies": {
     "express": "^4.21.2",
