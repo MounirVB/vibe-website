@@ -572,9 +572,28 @@ export async function meldmailRonde(
   };
 }
 
-/** De vingerafdruk van een losse testmail; buiten de meldlogica. */
+/**
+ * De vingerafdruk van een losse testmail.
+ *
+ * STABIEL PER MINUUT, EN DAT IS GEEN DETAIL. De eerste versie nam de
+ * volledige ISO-tijd, en dus was elke poging een ander bericht — de
+ * unieke index kon er niets tegen doen.
+ *
+ * Gemeten op 14 oktober 2026 om 05:10Z: de ops-runner startte het
+ * commando TWEE KEER (een containerstart viel samen met de redeploy van
+ * een variabelewijziging) en er gingen TWEE testmails naar
+ * marketing@vibeenergy.nl, met berichten 1 en 2 en twee verschillende
+ * provider-ids. Precies de duplicatie die par. 4.5 verbiedt, en de
+ * TEST-weg was de enige die de grendel omzeilde.
+ *
+ * Met de minuut als korrel vangt `meldberichten_eenmalig` de tweede
+ * poging af: twee containerstarts binnen dezelfde minuut leveren
+ * dezelfde vingerafdruk, en de insert doet dan niets. Een test die je
+ * een minuut later echt opnieuw wilt, kan nog gewoon.
+ */
 export function testVingerafdruk(nu: Date): string {
-  return sha256hex(`test|${nu.toISOString()}`).slice(0, 32);
+  const minuut = nu.toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM
+  return sha256hex(`test|${minuut}`).slice(0, 32);
 }
 
 export { normaliseerMeting };
