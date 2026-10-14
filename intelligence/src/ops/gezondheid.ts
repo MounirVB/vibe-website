@@ -34,6 +34,13 @@ import { fileURLToPath } from "node:url";
 import { leesSitekennis } from "../site/sitekennis.ts";
 import { meldBestemming } from "./melden.ts";
 import { meetBrondekking, vatBrondekkingSamen } from "./brondekking.ts";
+import {
+  bewijsIsVolledigGeslaagd,
+  leesRestorebewijsUitTaken,
+  restoreAanvaardbaar,
+  RESTORETEST_TAAK_SOORT,
+  type Bewijsbron,
+} from "./restorebewijs.ts";
 
 export type Niveau = "OK" | "LET OP" | "FOUT" | "NIET GEMETEN";
 
@@ -1073,6 +1080,22 @@ export async function meetGezondheid(
      Sinds 3.0.5 schrijft cli/restoretest.ts het bewijs ook naar de
      bucket (RESTORETEST_MERK_OBJECT), en leest dit signaal dáár eerst.
      De lokale kopie blijft de terugval voor een machine zonder bucket. */
+  /* EN SINDS 3.0.8 IS ER EEN DERDE, GEDEELDE BRON — want de bucket is
+     óók plaatsgebonden. Gemeten op 14 oktober 2026, dezelfde minuut,
+     dezelfde commit:
+
+       vibe-intel-worker  OK            laatste PASS 0,5 dagen geleden
+       vibe-intel-api     NIET GEMETEN  geen bewijs gevonden -> CRITICAL
+
+     Alleen de worker draagt INTEL_GCS_*. Het bewijs bestond, de api kon
+     er niet bij, en het back-updomein werd daar CRITICAL op een signaal
+     dat die service helemaal niet kan meten.
+
+     `intel.taken` staat in de database die elke service al open heeft en
+     zegt daar dus hetzelfde. Dat is de GEZAGHEBBENDE bron. De bucket
+     blijft meelezen als BEVESTIGING: spreken de twee elkaar tegen, dan
+     is dat zelf de bevinding en wordt het signaal FOUT. Zie
+     ops/restorebewijs.ts voor de vier regels en waarom elk nodig is. */
   const merk = opties.backupMap ? join(opties.backupMap, ".laatste-restoretest.json") : null;
   let bewijsRuw: string | null = null;
   let bewijsBron = "";
@@ -1082,8 +1105,8 @@ export async function meetGezondheid(
       bewijsBron = `gs://${gcs.bucket}/${RESTORETEST_MERK_OBJECT}`;
     } catch {
       /* Geen merk in de bucket is geen fout van deze meting; we vallen
-         terug op de lokale kopie en melden hieronder NIET GEMETEN als die
-         er ook niet is. */
+         terug op de lokale kopie, en het takenlogboek hieronder kan het
+         antwoord alsnog dragen. */
       bewijsRuw = null;
     }
   }
@@ -1091,43 +1114,110 @@ export async function meetGezondheid(
     bewijsRuw = await readFile(merk, "utf8");
     bewijsBron = merk;
   }
+
+  /* ---- bron 1: het originele bewijs, waar het leesbaar is ---- */
+  type MerkBewijs = {
+    op?: string;
+    uitslag?: string;
+    toetsen_geslaagd?: number;
+    toetsen_vereist?: number;
+    toetsen_mislukt?: readonly string[];
+    restore_ms?: number;
+  };
+  let merkJson: MerkBewijs | null = null;
   if (bewijsRuw) {
-    const j = JSON.parse(bewijsRuw) as {
-      op?: string;
-      uitslag?: string;
-      toetsen_geslaagd?: number;
-      restore_ms?: number;
-    };
-    const dagen = (urenSinds(j.op ?? null) ?? Infinity) / 24;
-    voeg({
-      groep: "backup",
-      naam: "restoretest",
-      niveau:
-        j.uitslag !== "PASS"
-          ? "FOUT"
-          : dagen <= DREMPELS.restoretestLeeftijdDagen
-            ? "OK"
-            : "LET OP",
-      meting:
-        `laatste ${j.uitslag ?? "?"} ${Number.isFinite(dagen) ? `${dagen.toFixed(1)} dagen geleden` : "op een onbekend moment"}` +
-        `, ${j.toetsen_geslaagd ?? "?"} toetsen, restore in ${j.restore_ms ?? "?"} ms (bewijs: ${bewijsBron})`,
-      gemetenOp: j.op,
-      advies:
-        dagen > DREMPELS.restoretestLeeftijdDagen
-          ? `ouder dan ${DREMPELS.restoretestLeeftijdDagen} dagen; npm run restoretest`
-          : undefined,
-    });
-  } else {
-    voeg({
-      groep: "backup",
-      naam: "restoretest",
-      niveau: "NIET GEMETEN",
-      meting:
-        "geen bewijs van een restoretest gevonden" +
-        (gcs ? ` (niet in gs://${gcs.bucket}/${RESTORETEST_MERK_OBJECT}, niet lokaal)` : " (geen bucket)"),
-      advies: `npm run restoretest -- --uit-gcs — hoort minstens elke ${DREMPELS.restoretestLeeftijdDagen} dagen`,
-    });
+    try {
+      merkJson = JSON.parse(bewijsRuw) as MerkBewijs;
+    } catch {
+      /* Onleesbaar bewijs is GEEN bewijs, en ook geen stille 'geen
+         bewijs': dan is er iets stuk in de opslag. */
+      merkJson = null;
+      voeg({
+        groep: "backup",
+        naam: "restorebewijs leesbaar",
+        niveau: "FOUT",
+        meting: `het restorebewijs in ${bewijsBron} is geen geldige JSON; het is daarmee geen bewijs`,
+        advies: "npm run restoretest -- --uit-gcs — en kijk waarom het object bedorven is",
+      });
+    }
   }
+
+  /* `toetsen_vereist` ontbreekt in bewijs van vóór 3.0.8. Dan is
+     volledigheid niet VAST TE STELLEN, en dat mag geen stille aanname
+     van volledigheid worden — maar ook geen FOUT, want het bewijs is
+     gewoon ouder dan de eis. Daarom: oud bewijs geldt als volledig
+     zolang er geen controle faalde; nieuw bewijs moet het aantal
+     kloppend hebben. Dat staat zo in de meettekst. */
+  const merkVolledig =
+    merkJson === null
+      ? false
+      : merkJson.toetsen_vereist === undefined
+        ? (merkJson.toetsen_mislukt?.length ?? 0) === 0
+        : bewijsIsVolledigGeslaagd({
+            uitslag: merkJson.uitslag ?? "",
+            toetsen_geslaagd: merkJson.toetsen_geslaagd ?? -1,
+            toetsen_vereist: merkJson.toetsen_vereist,
+            toetsen_mislukt: merkJson.toetsen_mislukt ?? [],
+          });
+
+  const bucketBron: Bewijsbron = {
+    uitslag: merkJson === null ? null : merkJson.uitslag === "PASS" ? "PASS" : "FAIL",
+    volledig: merkVolledig,
+    dagen: merkJson === null ? null : ((urenSinds(merkJson.op ?? null) ?? NaN) / 24 || null),
+    bron: bewijsBron || (gcs ? `gs://${gcs.bucket}/${RESTORETEST_MERK_OBJECT}` : "het originele bewijs"),
+  };
+
+  /* ---- bron 2: het takenlogboek, gedeeld en dus gezaghebbend ---- */
+  const taakBewijs = await leesRestorebewijsUitTaken(c, organisatieId);
+  const taakBron: Bewijsbron = {
+    uitslag: taakBewijs === null ? null : taakBewijs.status === "gereed" ? "PASS" : "FAIL",
+    /* Een rij met status 'gereed' IS per definitie volledig: zo schrijft
+       registreerRestoretest() hem. Een onvolledige proef komt daar als
+       'mislukt' terecht, met het tekort in `laatste_fout`. */
+    volledig: taakBewijs?.status === "gereed",
+    dagen: taakBewijs === null ? null : ((urenSinds(taakBewijs.op) ?? NaN) / 24 || null),
+    bron: `intel.taken (soort '${RESTORETEST_TAAK_SOORT}')`,
+  };
+
+  const oordeel = restoreAanvaardbaar({
+    takenlogboek: taakBron,
+    bucket: bucketBron,
+    drempelDagen: DREMPELS.restoretestLeeftijdDagen,
+  });
+
+  /* De meettekst moet de LEZER vertellen waar dit op rust. Een
+     herstelstatus zonder bewijsbron is een mening. */
+  const details =
+    taakBewijs !== null
+      ? `${taakBewijs.bewijs.toetsen_geslaagd ?? "?"}/${taakBewijs.bewijs.toetsen_vereist ?? "?"} controles` +
+        `, restore in ${taakBewijs.bewijs.restore_ms ?? "?"} ms` +
+        `, dump ${taakBewijs.bewijs.dump_object ?? "onbekend"}` +
+        (taakBewijs.bewijs.dump_sha256 ? ` (sha256 ${taakBewijs.bewijs.dump_sha256.slice(0, 12)}…)` : "") +
+        (taakBewijs.bewijs.bewijs_uri ? `, origineel bewijs ${taakBewijs.bewijs.bewijs_uri}` : "") +
+        (taakBewijs.reden ? ` — ${taakBewijs.reden.slice(0, 200)}` : "")
+      : merkJson !== null
+        ? `${merkJson.toetsen_geslaagd ?? "?"} controles, restore in ${merkJson.restore_ms ?? "?"} ms` +
+          (merkJson.toetsen_vereist === undefined
+            ? " (bewijs van vóór 3.0.8: het vereiste aantal staat er niet in)"
+            : "")
+        : "";
+
+  voeg({
+    groep: "backup",
+    naam: "restoretest",
+    niveau: oordeel.niveau,
+    meting:
+      oordeel.grond +
+      (details ? ` [${details}]` : "") +
+      ` — bron: ${oordeel.bronnen.join(" + ")}`,
+    gemetenOp: taakBewijs?.op ?? merkJson?.op,
+    advies:
+      oordeel.niveau === "OK"
+        ? undefined
+        : oordeel.tegenstrijdig
+          ? "zoek uit welke bron liegt vóór je op de back-up vertrouwt; registreer daarna opnieuw met npm run restoretest"
+          : `npm run restoretest -- --uit-gcs — hoort minstens elke ${DREMPELS.restoretestLeeftijdDagen} dagen, en legt het bewijs in intel.taken vast`,
+  });
 
   /* ---------------- externe kopie ---------------- */
   /* DIT IS HET SIGNAAL DAT HET VERSCHIL MEET tussen "er is een back-up

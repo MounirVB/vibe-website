@@ -46,8 +46,37 @@
 >   **`vibe-intel-worker`** draaien. Alleen die service draagt
 >   `INTEL_GCS_*` en voert de back-uptaak uit; op `vibe-intel-api` meldde
 >   dezelfde code `CRITICAL — map /app/backups bestaat niet` omdat hij de
->   bucket niet kan zien. Sinds deze release leest het signaal daarom ook
+>   bucket niet kan zien. Sinds 3.0.7 leest het signaal daarom ook
 >   `intel.taken`, dat op elke service hetzelfde zegt.
+>
+>   **En sinds 3.0.8 geldt dat ook voor het RESTOREbewijs.** Dat was het
+>   laatste back-upsignaal dat nog van de meetplaats afhing: het bewijs
+>   lag alleen in de bucket, dus `vibe-intel-api` meldde
+>   `NIET GEMETEN — geen bewijs van een restoretest gevonden` en dat werd
+>   in een kritiek domein `CRITICAL`. `npm run restoretest` legt het
+>   bewijs nu op **drie** plekken vast:
+>
+>   | bestemming | rol |
+>   |---|---|
+>   | `gs://…/restoretest/laatste.json` | het originele bewijs, duurzaam — ook bij een FAIL, want 'laatste' betekent de laatste proef en niet de laatste geslaagde |
+>   | `intel.taken`, soort `restoretest` | de **gezaghebbende** stand: gedeeld, dus op elke service hetzelfde. Payload draagt tijdstip, uitslag, aantal controles, restoreduur, dumpnaam, sha256 en de URI van het originele bewijs |
+>   | `backups/.laatste-restoretest.json` | lokale terugval voor een machine zonder bucket |
+>
+>   De regel staat in `ops/restorebewijs.ts`: status `gereed` alleen bij
+>   PASS **met alle** `VEREISTE_RESTORETOETSEN` geslaagd; ontbrekend,
+>   verlopen (> 30 dagen), onvolledig of mislukt bewijs is nooit OK; en
+>   spreken de bucket en het logboek elkaar tegen, dan is dát de
+>   bevinding — niet de gunstigste van de twee. De back-up-RPO (26 uur)
+>   en de restoreleeftijd (30 dagen) zijn **onafhankelijke** eisen: een
+>   verse dump bevredigt de restore-eis niet.
+>
+>   **Niet gemeten op het moment van schrijven:** er heeft nog geen
+>   restoretest met deze registratie gedraaid, dus `intel.taken` bevat
+>   nog geen `restoretest`-rij en `vibe-intel-api` meldt het signaal
+>   terecht als NIET GEMETEN. Daarvoor is één proefrun nodig, en die
+>   vraagt in productie `--doel-url` (zie §3): dat maakt en dropt een
+>   wegwerpdatabase op de productieSERVER en hoort dus niet zonder
+>   toestemming te gebeuren.
 > - **Er is geen meldbestemming voor alerts.** `npm run gezondheid` is een
 >   commando, geen alarm. Niemand wordt gebeld.
 > - **Vijf koppelingen zijn NIET AANGESLOTEN** (GSC, Bing, GA4, CRM,
@@ -212,11 +241,35 @@ adversariële toets).
 **Wat NIET herbouwbaar is:** menselijke besluiten. Goedkeuringen,
 publicatiebesluiten, afwijzingen met motivatie en de auditketen bestaan
 alleen in de database. Vóór de eerste echte goedkeuring in productie
-moet er dus een back-up met een **geverifieerde restore** staan. Die
-bestaat nu niet, want er is geen productiedatabase.
+moet er dus een back-up met een **geverifieerde restore** staan.
 
-> **Niet gedraaid:** er is geen restoretest uitgevoerd, want er is niets
-> om te restoren. Dit is een openstaand punt, geen afgevinkt punt.
+~~Die bestaat nu niet, want er is geen productiedatabase.~~
+~~**Niet gedraaid:** er is geen restoretest uitgevoerd, want er is niets
+om te restoren.~~
+
+**ACHTERHAALD — gemeten 14 oktober 2026.** Er is een productiedatabase
+(`postgres.railway.internal`, 38 migraties toegepast) en er IS een
+geverifieerde restore gedraaid: PASS, 10 controles, restore in 639 ms,
+bewijs in `gs://vibe-energy-intel-backups/restoretest/laatste.json`.
+
+Wat er over dit punt nog wél waar is, en preciezer:
+
+- die proef draaide **vanaf een laptop** met `--uit-gcs`, tegen een
+  Docker-container. Dat bewijst de hele keten dump → upload → terughalen
+  → restore, en het is geldig bewijs. Het zegt alleen niets over
+  terugzetten **op de productieserver zelf**;
+- voor die tweede vorm bestaat `--doel-url`. Hij maakt een
+  wegwerpdatabase op een bestaande server en dropt die daarna, met een
+  grendel op de doelnaam. In productie zou die server de productieserver
+  zijn, dus **één run raakt twee productieresources**: de wegwerpdatabase
+  én (sinds 3.0.8) een registratierij in de productiedatabase.
+  `INTEL_RESTORETEST_DOEL_URL` staat daarom op geen enkele service
+  gezet — gemeten op worker en api;
+- `npm run restoretest` draait in **geen enkele poort**. De enige
+  geautomatiseerde aanroep is scenario 27 van `npm run e2e`, en die
+  gebruikt de Docker-vorm. Er is dus geen cadans die de drempel van 30
+  dagen zelf haalt; dat blijft handwerk tot iemand er een besluit over
+  neemt.
 
 ### Een consequentie die in de vorige sessie verraste
 
