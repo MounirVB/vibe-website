@@ -422,9 +422,22 @@ export async function meldmailRonde(
       where organisatie_id = $1 and soort in ('CRITICAL','FOUT','BEGINSAMENVATTING')`,
     [organisatieId],
   );
+  /* EEN TESTMAIL IS GEEN ALARM, en mag 'de eerste keer' dus niet
+     opgebruiken.
+
+     Gemeten op productie, 14 oktober 2026 06:05Z. Na de gecontroleerde
+     testmail stonden er twee TEST-rijen in het logboek. `ooitGemeld`
+     telde ALLE rijen, dus de beginsamenvatting verviel en het plan sprong
+     naar het normale regime: DRIE losse mails waar er EEN samenvatting
+     hoorde te gaan. Precies de burst die de beginsamenvatting bestaat om
+     te voorkomen, veroorzaakt door de proef die eraan voorafging.
+
+     'Is er al ooit gealarmeerd' gaat over ALARMEN. Een test informeert
+     niemand over een storing en hoort die staat niet te veranderen. */
   const totaalEerder = await rijen<{ n: number }>(
     c,
-    "select count(*)::int as n from intel.meld_berichten where organisatie_id = $1",
+    `select count(*)::int as n from intel.meld_berichten
+      where organisatie_id = $1 and soort <> 'TEST'`,
     [organisatieId],
   );
 
@@ -444,10 +457,21 @@ export async function meldmailRonde(
       `insert into intel.meld_berichten
          (organisatie_id, soort, bundel, vingerafdruk, ernst, onderwerp, melding_ids,
           html, tekst, volgende_poging_op)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9, now())
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        on conflict (organisatie_id, soort, bundel, vingerafdruk) do nothing`,
       [organisatieId, b.soort, b.bundel, b.vingerafdruk, b.ernst, b.onderwerp, b.meldingIds,
-       b.html, b.tekst],
+       b.html, b.tekst,
+       /* DE MEEGEGEVEN KLOK, NIET now() VAN DE DATABASE.
+          Gevonden op 14 oktober 2026 06:07Z: de insert zette
+          `volgende_poging_op = now()` terwijl de selectie hieronder
+          `volgende_poging_op <= $nu` gebruikt. Met een vaste klok in een
+          toets werd het bericht dus wel GEPLAND maar nooit AANGEBODEN,
+          zodra de echte tijd voorbij die klok lag. De suite slaagde
+          eerder alleen omdat de wandklok toevallig vroeger was — een
+          latente flake die CI op elk moment rood had gemaakt.
+
+          Een ronde hoort één klok te hebben. */
+       nu],
     );
     nieuw += r.rowCount ?? 0;
   }

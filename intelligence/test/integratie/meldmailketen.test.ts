@@ -161,6 +161,42 @@ describe("de meldketen tegen een database", () => {
     assert.equal(b[0]!.melding_ids.length, 3, "alle drie de signalen horen in het auditspoor");
   });
 
+  test("1b. een TESTMAIL in het logboek verbruikt 'de eerste keer' NIET", async () => {
+    /* GEMETEN OP PRODUCTIE, 14 oktober 2026 06:05Z. Na de gecontroleerde
+       testmail stonden er twee TEST-rijen in het logboek. `ooitGemeld`
+       telde ALLE rijen, dus de beginsamenvatting verviel en het plan
+       sprong naar het normale regime: DRIE losse mails waar er EEN
+       samenvatting hoorde te gaan.
+
+       Dat is precies de burst die de beginsamenvatting bestaat om te
+       voorkomen, veroorzaakt door de proef die eraan voorafging. 'Is er
+       al ooit gealarmeerd' gaat over ALARMEN; een test informeert
+       niemand over een storing. */
+    await alsEigenaar(db, (c) =>
+      c.query(
+        `insert into intel.meld_berichten
+           (organisatie_id, soort, bundel, vingerafdruk, onderwerp,
+            aangeboden_op, geaccepteerd_op, pogingen)
+         values ($1,'TEST','test', repeat('b',32), 'een eerdere testmail in het logboek',
+                 now(), now(), 1)`,
+        [org],
+      ),
+    );
+    let verstuurd = 0;
+    const stand = await ronde(RENDO, async () => {
+      verstuurd += 1;
+      return GOED;
+    });
+    assert.equal(
+      verstuurd,
+      1,
+      `met alleen een TEST in het logboek hoort er nog EEN samenvatting te gaan, kreeg ${verstuurd} mails`,
+    );
+    const soorten = (await berichten()).map((x) => x.soort).sort();
+    assert.deepEqual(soorten, ["BEGINSAMENVATTING", "TEST"], soorten.join(", "));
+    assert.equal(stand.gepland, 1, "en er hoort EEN bericht gepland te zijn, niet drie");
+  });
+
   test("2. een tweede ronde met DEZELFDE toestand verstuurt NIETS nieuws", async () => {
     await ronde(RENDO, async () => GOED);
     const voor = (await berichten()).length;
@@ -423,14 +459,20 @@ describe("de meldketen tegen een database", () => {
           [org, `vloed${i}/s`, `meting ${i}`, `signaal:vloed${i}/s`],
         );
       }
-      /* Een AFGEHANDELD bericht in het logboek, zodat dit geen
+      /* Een AFGEHANDELD ALARM in het logboek, zodat dit geen
          beginsamenvatting wordt EN deze rij zelf geen verzendkandidaat
-         is. */
+         is.
+
+         Let op: het moet een ECHT alarm zijn en geen TEST. Een TEST
+         verbruikt 'de eerste keer' niet (zie toets 1b), dus met een
+         TEST-rij zou deze toets in het beginsamenvattingsregime blijven
+         en EEN bericht meten in plaats van de vloedbescherming. */
       await c.query(
         `insert into intel.meld_berichten
            (organisatie_id, soort, bundel, vingerafdruk, onderwerp,
             aangeboden_op, geaccepteerd_op, pogingen)
-         values ($1,'TEST','test', repeat('a',32), 'een eerder bericht in het logboek',
+         values ($1,'HERSTEL','signaal:eerder/iets', repeat('a',32),
+                 'een eerder afgehandeld alarm in het logboek',
                  now(), now(), 1)`,
         [org],
       );
