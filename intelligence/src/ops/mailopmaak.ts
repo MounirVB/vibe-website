@@ -48,6 +48,10 @@ export type Berichtgegevens = {
   readonly titel: string;
   readonly bundel: string;
   readonly meldingen: readonly Berichtmelding[];
+  /** Over hoeveel ONDERSCHEIDEN bundels gaat dit bericht? */
+  readonly bundels?: number;
+  /** De namen van die bundels, leesbaar; voor de regel 'Betrokken'. */
+  readonly bundelnamen?: readonly string[];
   readonly meldingId: string;
   readonly monitorUrl: string | null;
   readonly nu: string;
@@ -111,7 +115,9 @@ export function bouwMailBericht(g: Berichtgegevens): MailOpmaak {
 
   const betrokken = g.bundel.startsWith("bron:")
     ? `bron ${g.bundel.slice("bron:".length)}`
-    : [...new Set(g.meldingen.map((m) => m.groep))].join(", ") || "platform";
+    : g.bundelnamen && g.bundelnamen.length > 1
+      ? g.bundelnamen.join(", ")
+      : [...new Set(g.meldingen.map((m) => m.groep))].join(", ") || "platform";
 
   const eerste = g.meldingen
     .map((m) => m.eersteDetectie)
@@ -122,12 +128,21 @@ export function bouwMailBericht(g: Berichtgegevens): MailOpmaak {
     .sort()
     .at(-1) ?? "onbekend";
 
+  /* DE STATUSREGEL MOET KLOPPEN OVER HET AANTAL BUNDELS.
+     Er stond onvoorwaardelijk "N signalen in deze bundel", ook in een
+     beginsamenvatting die over MEERDERE bundels gaat. Gemeten op de
+     productiestand van 14 oktober 2026: vier signalen uit TWEE bundels
+     (rendo-nieuws en tenderned-laatste-publicatie) lazen als "4 signalen
+     in deze bundel", en dat suggereert een storing waar er twee zijn. */
+  const bundels = g.bundels ?? 1;
   const status =
     g.soort === "HERSTEL"
       ? "opgelost — alle signalen in deze bundel zijn weer OK gemeten"
-      : g.meldingen.length === 1
-        ? `loopt nog; ${g.meldingen[0]!.kerenGezien}× gezien sinds de eerste detectie`
-        : `loopt nog; ${g.meldingen.length} signalen in deze bundel`;
+      : bundels > 1
+        ? `loopt nog; ${g.meldingen.length} signalen in ${bundels} afzonderlijke storingen`
+        : g.meldingen.length === 1
+          ? `loopt nog; ${g.meldingen[0]!.kerenGezien}× gezien sinds de eerste detectie`
+          : `loopt nog; ${g.meldingen.length} signalen in deze ene storing`;
 
   /* Alleen een oorzaak als er bewijs voor is: het advies uit de meting.
 

@@ -144,7 +144,7 @@ try {
         [organisatieId],
       ),
     );
-    const plan = bouwMeldplan({
+    const { berichten: plan, gedekt } = bouwMeldplan({
       open: openMeldingen.filter((m) => m.ernst),
       gesloten,
       gemeldeBundels: new Set(eerder.map((x) => x.bundel)),
@@ -152,11 +152,15 @@ try {
          gebruikt 'de eerste keer' niet op. Zou --plan hier anders
          rekenen dan de ronde, dan laat de droogloop iets anders zien dan
          er gebeurt, en dat is erger dan geen droogloop. */
-      ooitGemeld: logboek.some((r) => r.soort !== "TEST"),
+      ooitGemeld: logboek.some((r) => r.soort !== "TEST" && r.geaccepteerd !== null),
       nu: new Date(),
       monitorUrl: (process.env["INTEL_MONITOR_URL"] ?? "").trim() || null,
     });
     uit(`\n  PLAN — ${plan.length} bericht(en), NIETS GESCHREVEN EN NIETS VERSTUURD\n`);
+    if (gedekt.length > 0) {
+      uit(`  en ${gedekt.length} bericht(en) die de samenvatting DEKT en dus niet apart uitgaan:\n`);
+      for (const d of gedekt) uit(`    ${d.soort.padEnd(10)} ${d.bundel}\n`);
+    }
     for (const p of plan) {
       uit(`\n    soort        ${p.soort}\n`);
       uit(`    bundel       ${p.bundel}\n`);

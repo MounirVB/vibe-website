@@ -156,9 +156,13 @@ describe("de meldketen tegen een database", () => {
     assert.equal(verstuurd, 1, "en EEN verzending");
     assert.equal(stand.geaccepteerd, 1);
     const b = await berichten();
-    assert.equal(b.length, 1);
-    assert.equal(b[0]!.soort, "BEGINSAMENVATTING");
-    assert.equal(b[0]!.melding_ids.length, 3, "alle drie de signalen horen in het auditspoor");
+    const sam = b.filter((x) => x.soort === "BEGINSAMENVATTING");
+    assert.equal(sam.length, 1, "precies EEN samenvatting");
+    assert.equal(sam[0]!.melding_ids.length, 3, "alle drie de signalen horen in het auditspoor");
+    /* Plus de dekkingsrijen: die zijn NIET verstuurd maar vastgelegd, en
+       daarom staan ze als geaccepteerd met het provider-id van de
+       samenvatting. */
+    assert.ok(b.length > 1, "de dekking hoort ook in het logboek te staan");
   });
 
   test("1b. een TESTMAIL in het logboek verbruikt 'de eerste keer' NIET", async () => {
@@ -195,7 +199,13 @@ describe("de meldketen tegen een database", () => {
       `met alleen een TEST in het logboek hoort er nog EEN samenvatting te gaan, kreeg ${verstuurd} mails`,
     );
     const soorten = (await berichten()).map((x) => x.soort).sort();
-    assert.deepEqual(soorten, ["BEGINSAMENVATTING", "TEST"], soorten.join(", "));
+    assert.ok(soorten.includes("BEGINSAMENVATTING"), soorten.join(", "));
+    assert.ok(soorten.includes("TEST"), soorten.join(", "));
+    assert.equal(
+      soorten.filter((x) => x === "BEGINSAMENVATTING").length,
+      1,
+      "precies EEN samenvatting",
+    );
     assert.equal(stand.gepland, 1, "en er hoort EEN bericht gepland te zijn, niet drie");
   });
 
@@ -225,6 +235,93 @@ describe("de meldketen tegen een database", () => {
       `een onveranderde toestand hoort geen nieuw bericht te geven; ging van ${voorDerde} naar ${naDerde.length}`,
     );
     assert.ok(voor <= na.length);
+  });
+
+  test("2b. de samenvatting DEKT de vervolgberichten: geen detailmails de ronde erna", async () => {
+    /* Zonder dekking plant de volgende ronde per bundel alsnog een
+       FOUT-mail plus het dagoverzicht — berichten over storingen die de
+       ontvanger al in de samenvatting heeft gelezen. */
+    let mails = 0;
+    const eerste = await ronde(RENDO, async () => {
+      mails += 1;
+      return GOED;
+    });
+    assert.equal(mails, 1, "ronde 1: EEN samenvatting");
+    assert.ok(eerste.gedekt >= 1, `de samenvatting hoort dekking vast te leggen, kreeg ${eerste.gedekt}`);
+
+    /* Ronde 2 en 3 met DEZELFDE toestand: niets meer. */
+    await ronde(RENDO, async () => {
+      mails += 1;
+      return GOED;
+    }, new Date("2026-10-14T07:00:00Z"));
+    await ronde(RENDO, async () => {
+      mails += 1;
+      return GOED;
+    }, new Date("2026-10-14T08:00:00Z"));
+    assert.equal(mails, 1, `na de samenvatting hoort er niets meer uit te gaan, kreeg ${mails} mails`);
+
+    /* De dekking staat als geaccepteerde rij in het logboek, met het
+       provider-id van de samenvatting — niet als los verstuurd bericht. */
+    const b = await berichten();
+    const dek = b.filter((x) => x.soort === "FOUT");
+    assert.ok(dek.length >= 1, "de gedekte FOUT-berichten horen in het logboek te staan");
+    for (const d of dek) {
+      assert.ok(d.geaccepteerd, "en als geaccepteerd, want de samenvatting IS geaccepteerd");
+      assert.equal(d.provider_id, "re_nagebootst_1", "met het provider-id van de samenvatting");
+    }
+  });
+
+  test("2c. bij een MISLUKTE samenvatting wordt NIETS als gemeld geregistreerd", async () => {
+    /* De eis is expliciet: uitsluitend nadat de provider de samenvatting
+       daadwerkelijk heeft geaccepteerd. Mislukt hij, dan moet het normale
+       regime de volgende ronde gewoon opkomen. */
+    const stand = await ronde(RENDO, async () => STUK_HERHAALBAAR);
+    assert.equal(stand.geaccepteerd, 0);
+    assert.equal(stand.gedekt, 0, "een mislukte samenvatting dekt niets");
+    const b = await berichten();
+    assert.equal(b.filter((x) => x.soort === "FOUT").length, 0, "en er staat geen dekking in het logboek");
+
+    /* Lukt hij later wel, dan dekt hij alsnog. */
+    const later = await ronde(RENDO, async () => GOED, new Date("2026-10-14T06:30:00Z"));
+    assert.ok(later.gedekt >= 1, "na een geslaagde poging hoort de dekking er wel te komen");
+  });
+
+  test("2d. een NIEUWE storing komt na de dekking nog gewoon door", async () => {
+    await ronde(RENDO, async () => GOED);
+    let nieuweMails = 0;
+    const extra: readonly Signaal[] = [
+      ...RENDO,
+      {
+        groep: "database",
+        naam: "bereikbaarheid",
+        niveau: "FOUT",
+        meting: "geen verbinding met de database",
+      },
+    ];
+    await ronde(extra, async () => {
+      nieuweMails += 1;
+      return GOED;
+    }, new Date("2026-10-14T07:00:00Z"));
+    assert.equal(nieuweMails, 1, `een nieuwe KRITIEKE storing hoort gewoon te mailen, kreeg ${nieuweMails}`);
+    const soorten = (await berichten()).map((x) => x.soort);
+    assert.ok(soorten.includes("CRITICAL"), `verwachtte een CRITICAL, kreeg: ${soorten.join(", ")}`);
+  });
+
+  test("2e. een ESCALATIE van dezelfde bundel komt door", async () => {
+    await ronde(RENDO, async () => GOED);
+    let mails = 0;
+    /* Dezelfde bundel, maar een ANDERE meting: http=403 wordt 401. Dat is
+       een wezenlijk andere storing en hoort een nieuw bericht te geven. */
+    const veranderd = RENDO.map((x) =>
+      x.naam === "storingssoort TOEGANG_BEPERKT"
+        ? { ...x, meting: "1 bron(nen), waarvan 1 actief: rendo-nieuws — detail: rendo-nieuws http=401" }
+        : x,
+    );
+    await ronde(veranderd, async () => {
+      mails += 1;
+      return GOED;
+    }, new Date("2026-10-14T07:00:00Z"));
+    assert.equal(mails, 1, `een gewijzigde toestand hoort te mailen, kreeg ${mails}`);
   });
 
   test("3. twee GELIJKTIJDIGE workers leveren EEN bericht, niet twee", async () => {
