@@ -1,12 +1,28 @@
 /* ============================================================
-   VIBE ENERGY — Brochure-API
+   VIBE ENERGY — Brochure- en meldingen-API
    ------------------------------------------------------------
    POST /api/brochure
    Valideert de aanvraag, mailt de lead naar sales@vibeenergy.nl
    en stuurt de bezoeker een mail met de brochurelink, via Resend.
 
+   POST /api/meld
+   Zet een operationele melding van het intelligenceplatform om in een
+   e-mail naar marketing@vibeenergy.nl. Vraagt een bearer-token.
+
+   WAAROM DE ALARMERING HIER ZIT EN NIET IN EEN NIEUWE DIENST.
+   `intelligence/src/ops/melden.ts` kan al meldingen afleveren op een
+   https-webhook (INTEL_MELD_WEBHOOK), met pogingen, foutregistratie en
+   deduplicatie in de database. Wat ontbrak was een BESTEMMING. En deze
+   service heeft al wat daarvoor nodig is: een werkende Resend-sleutel,
+   een geverifieerd afzenderdomein (de brochuremail gaat sinds augustus
+   2026 vanaf no-reply@vibeenergy.nl) en een idempotentiesleutel per
+   bericht. Een tweede provider erbij zou een tweede sleutel, een tweede
+   domeinverificatie en een tweede faalwijze betekenen voor precies
+   dezelfde handeling.
+
    ENV:
      RESEND_API_KEY  (verplicht in productie; nooit in git/client)
+     MELD_TOKEN      (verplicht voor /api/meld; zonder token weigert hij)
      APP_ORIGIN      toegestane CORS-origins, kommagescheiden
                      (default: https://www.vibeenergy.nl,https://vibeenergy.nl)
      RESEND_STUB=1   alleen voor tests: geen echte Resend-calls
@@ -24,6 +40,17 @@ const STUB = process.env.RESEND_STUB === "1";
 const SITE = "https://www.vibeenergy.nl";
 const FROM = "Vibe Energy <no-reply@vibeenergy.nl>";
 const SALES = "sales@vibeenergy.nl"; // vast, niet overschrijfbaar vanuit de client
+
+/* De bestemming van operationele meldingen. VAST, net als SALES.
+   Een aanroeper die zijn eigen ontvanger mag opgeven, maakt van deze
+   service een open mailrelay — en bij een alarmeringspad is dat extra
+   wrang, want dan kan iemand met het token mail namens vibeenergy.nl
+   naar een willekeurig adres sturen. */
+const MARKETING = "marketing@vibeenergy.nl";
+const MELD_TOKEN = process.env.MELD_TOKEN || "";
+/* Waar een mens de melding in context kan zien. Het dashboard is
+   geauthenticeerd, dus een link erheen geeft niets weg. */
+const MONITOR_URL = process.env.INTEL_DASHBOARD_URL || "https://vibe-intel-api-production.up.railway.app";
 
 const ALLOWED_ORIGINS = (process.env.APP_ORIGIN || "https://www.vibeenergy.nl,https://vibeenergy.nl")
   .split(",").map((s) => s.trim()).filter(Boolean);
@@ -215,6 +242,135 @@ app.post("/api/brochure", async (req, res) => {
   }, `brochure-visitor-${dedupeKey}`);
 
   return res.json({ ok: true, id: sales.id, visitorMail: !!visitor.ok });
+});
+
+/* ============================================================
+   OPERATIONELE MELDINGEN
+   ============================================================ */
+
+/** Vergelijkt twee tokens in constante tijd. */
+function tokenKlopt(gegeven) {
+  if (!MELD_TOKEN || typeof gegeven !== "string" || gegeven.length === 0) return false;
+  const a = Buffer.from(gegeven);
+  const b = Buffer.from(MELD_TOKEN);
+  /* timingSafeEqual eist gelijke lengte, en de lengte zelf is geen
+     geheim dat het beschermen waard is — maar vergelijken zonder deze
+     controle gooit. */
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
+const NIVEAUKLEUR = {
+  KRITIEK: "#B00020",
+  FOUT: "#C2410C",
+  WAARSCHUWING: "#8A6100",
+  HERSTEL: "#1C7B4D",
+};
+
+const NIVEAUWOORD = {
+  KRITIEK: "Kritieke storing",
+  FOUT: "Storing",
+  WAARSCHUWING: "Waarschuwingen — dagelijkse samenvatting",
+  HERSTEL: "Opgelost",
+};
+
+function meldHtml({ niveau, titel, items, bundel }) {
+  const kleur = NIVEAUKLEUR[niveau] || "#0f2230";
+  const kop = NIVEAUWOORD[niveau] || "Melding";
+  const regels = items
+    .map(
+      (i) => `<tr>
+<td style="padding:10px 12px;border-top:1px solid #e3e8ec;vertical-align:top">
+  <div style="font-weight:700;color:#06121C">${esc(i.signaal)}</div>
+  <div style="color:#5b6b76;font-size:13px;margin-top:2px">${esc(i.niveau)} · sinds ${esc(
+    (i.sinds || "").slice(0, 16).replace("T", " "),
+  )} · ${esc(String(i.keren_gezien ?? "?"))}× gezien</div>
+  <div style="margin-top:6px">${esc(i.meting || "")}</div>
+  ${i.advies ? `<div style="margin-top:6px;color:#0b5a7a"><strong>Handeling:</strong> ${esc(i.advies)}</div>` : ""}
+</td></tr>`,
+    )
+    .join("");
+
+  return `<div style="font-family:Arial,Helvetica,sans-serif;color:#0f2230;max-width:640px;margin:0 auto">
+<div style="background:#06121C;padding:22px 26px">
+  <span style="color:#00ADEF;font-weight:700;letter-spacing:.04em;font-size:17px">VIBE ENERGY</span>
+  <span style="color:#7e8c96;font-size:13px;margin-left:10px">Intelligence — operationele monitoring</span>
+</div>
+<div style="padding:22px 26px">
+  <div style="display:inline-block;background:${kleur};color:#fff;font-weight:700;font-size:12px;letter-spacing:.06em;padding:5px 10px;border-radius:3px">${esc(
+    niveau,
+  )}</div>
+  <h2 style="margin:14px 0 4px;color:#06121C;font-size:19px">${esc(kop)}</h2>
+  <p style="margin:0 0 4px;font-size:15px">${esc(titel)}</p>
+  ${
+    bundel
+      ? `<p style="margin:10px 0 0;padding:10px 12px;background:#f1f6f9;border-left:3px solid #00ADEF;font-size:14px">
+  Deze ${items.length} signalen horen bij <strong>één onderliggend probleem</strong>: ${esc(bundel)}.</p>`
+      : ""
+  }
+  <table style="width:100%;border-collapse:collapse;margin:18px 0;font-size:14px">${regels}</table>
+  <p style="margin:18px 0 0">
+    <a href="${esc(MONITOR_URL)}" style="display:inline-block;background:#00ADEF;color:#041018;font-weight:700;text-decoration:none;padding:11px 20px;border-radius:4px">Monitoring openen &rarr;</a>
+  </p>
+  <p style="margin:18px 0 0;color:#5b6b76;font-size:12px;line-height:1.6">
+    Verzonden door Vibe Energy Intelligence. Dit is een automatisch bericht over de
+    operationele toestand van het platform; er staan geen klant- of persoonsgegevens in.
+    Antwoorden op dit bericht komt niet bij een mens terecht.
+  </p>
+</div></div>`;
+}
+
+app.post("/api/meld", async (req, res) => {
+  /* GEEN CORS, GEEN BROWSER. Dit endpoint is voor de worker en de
+     planner in het privénetwerk; een origin-header hoort hier niet. */
+  const auth = String(req.headers.authorization || "");
+  const gegeven = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  if (!MELD_TOKEN) {
+    /* Expliciet 503 en niet 401: het verschil tussen "jij mag niet" en
+       "dit pad is niet ingericht" is voor de aanroeper bruikbaar, en
+       melden.ts legt de reden vast in laatste_bezorgfout. */
+    return res.status(503).json({ ok: false, error: "meld_not_configured" });
+  }
+  if (!tokenKlopt(gegeven)) return res.status(401).json({ ok: false, error: "unauthorized" });
+
+  const b = req.body || {};
+  const niveau = String(b.niveau || "").toUpperCase();
+  if (!Object.prototype.hasOwnProperty.call(NIVEAUKLEUR, niveau)) {
+    return res.status(422).json({ ok: false, error: "niveau" });
+  }
+  const titel = String(b.titel || "").trim().slice(0, 300);
+  if (!titel) return res.status(422).json({ ok: false, error: "titel" });
+
+  const items = Array.isArray(b.items) ? b.items.slice(0, 50) : [];
+  if (!items.length) return res.status(422).json({ ok: false, error: "items" });
+
+  const bundel = b.bundel ? String(b.bundel).slice(0, 120) : null;
+  /* De afdruk komt van de aanroeper en is zijn deduplicatiesleutel. Valt
+     hij weg, dan maken we er zelf een uit de inhoud: twee identieke
+     berichten mogen nooit twee mails worden, ook niet als de aanroeper
+     dat veld vergeet. */
+  const afdruk = String(
+    b.afdruk ||
+      crypto.createHash("sha256").update(JSON.stringify({ niveau, titel, items })).digest("hex"),
+  ).slice(0, 80);
+
+  const voorvoegsel =
+    niveau === "WAARSCHUWING" ? "[SAMENVATTING]" : niveau === "HERSTEL" ? "[HERSTEL]" : `[${niveau}]`;
+
+  const uit = await resendSend(
+    {
+      from: FROM,
+      to: [MARKETING],
+      subject: `${voorvoegsel} Vibe Energy Intelligence — ${titel}`.slice(0, 180),
+      html: meldHtml({ niveau, titel, items, bundel }),
+    },
+    `meld-${afdruk}`,
+  );
+
+  if (!uit.ok) {
+    return res.status(uit.status === 503 ? 503 : 502).json({ ok: false, error: "mail_failed" });
+  }
+  return res.json({ ok: true, id: uit.id, items: items.length });
 });
 
 app.use((_req, res) => res.status(404).json({ ok: false, error: "not_found" }));

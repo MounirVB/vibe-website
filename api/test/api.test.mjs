@@ -134,6 +134,120 @@ await waitUp();
 r = await post(VALID);
 check("geen API key -> 503 not_configured", r.status === 503, `status=${r.status}`);
 srv.kill();
+await sleep(200);
+
+/* ============================================================
+   RONDE 4 — /api/meld: operationele alarmering
+   ------------------------------------------------------------
+   Dit endpoint mailt naar marketing@vibeenergy.nl. Het is het pad
+   waarlangs INTEL_MELD_WEBHOOK zijn meldingen aflevert, en daarmee het
+   enige pad in deze service dat NIET door een bezoeker wordt
+   aangeroepen maar door de worker in het privenetwerk.
+
+   Wat hier getoetst wordt is wat er misgaat als het misgaat: een
+   endpoint dat mail namens vibeenergy.nl kan versturen en dat zonder
+   token open zou staan, is een open relay.
+   ============================================================ */
+const MELD_T = "toets-meldtoken-niet-geheim";
+async function meld(body, headers = {}, base = BASE) {
+  const r = await fetch(`${base}/api/meld`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...headers },
+    body: typeof body === "string" ? body : JSON.stringify(body),
+  });
+  let json = null;
+  try { json = await r.json(); } catch {}
+  return { status: r.status, json };
+}
+const MELDING = {
+  dienst: "vibe-energy-intelligence",
+  niveau: "FOUT",
+  titel: "ingestie/brondekking — 1 bron FAILED",
+  items: [{ signaal: "ingestie/brondekking", niveau: "FOUT", meting: "FAILED: rendo-nieuws", advies: "npm run bronaudit", sinds: "2026-10-13T15:00:00Z", keren_gezien: 14 }],
+  afdruk: "afdruk-een",
+};
+
+/* ---- 4a: zonder MELD_TOKEN staat het pad DICHT ---- */
+srv = startServer();
+await waitUp();
+let m = await meld(MELDING);
+check("meld zonder MELD_TOKEN -> 503 (pad niet ingericht, geen open relay)", m.status === 503 && m.json?.error === "meld_not_configured", `status=${m.status}`);
+srv.kill();
+await sleep(200);
+
+/* ---- 4b..: met token ---- */
+srv = startServer({ MELD_TOKEN: MELD_T });
+await waitUp();
+
+m = await meld(MELDING);
+check("meld zonder bearer -> 401", m.status === 401, `status=${m.status}`);
+
+m = await meld(MELDING, { Authorization: "Bearer fout-token-met-andere-lengte" });
+check("meld met verkeerd token -> 401", m.status === 401, `status=${m.status}`);
+
+m = await meld(MELDING, { Authorization: `Bearer ${MELD_T}` });
+check("meld met geldig token -> 200", m.status === 200 && m.json?.ok === true && m.json?.items === 1, JSON.stringify(m.json));
+
+let s4 = await sent();
+const laatste = s4[s4.length - 1];
+check("de ontvanger is VAST marketing@vibeenergy.nl", Array.isArray(laatste?.to) && laatste.to.length === 1 && laatste.to[0] === "marketing@vibeenergy.nl", JSON.stringify(laatste?.to));
+check("het onderwerp draagt het niveau", /^\[FOUT\] Vibe Energy Intelligence —/.test(laatste?.subject || ""), laatste?.subject);
+check("de afzender is het geverifieerde domein", String(laatste?.from || "").includes("no-reply@vibeenergy.nl"), laatste?.from);
+check("de idempotentiesleutel komt uit de afdruk", laatste?.idempotencyKey === "meld-afdruk-een", laatste?.idempotencyKey);
+check("de mail is Nederlands en noemt de handeling", /Handeling/.test(laatste?.html || "") && /operationele/.test(laatste?.html || ""));
+check("de mail bevat geen persoonsgegevens-belofte zonder dekking", /geen klant- of persoonsgegevens/.test(laatste?.html || ""));
+
+/* ---- een AANROEPER MAG DE ONTVANGER NIET KIEZEN ---- */
+m = await meld({ ...MELDING, afdruk: "afdruk-twee", to: ["aanvaller@example.com"], MARKETING: "aanvaller@example.com" }, { Authorization: `Bearer ${MELD_T}` });
+s4 = await sent();
+const na = s4[s4.length - 1];
+check("een opgegeven ontvanger wordt genegeerd", m.status === 200 && na.to[0] === "marketing@vibeenergy.nl", JSON.stringify(na.to));
+
+/* ---- validatie ---- */
+check("onbekend niveau -> 422", (await meld({ ...MELDING, niveau: "EXPLODEER" }, { Authorization: `Bearer ${MELD_T}` })).status === 422);
+check("lege titel -> 422", (await meld({ ...MELDING, titel: "" }, { Authorization: `Bearer ${MELD_T}` })).status === 422);
+check("geen items -> 422", (await meld({ ...MELDING, items: [] }, { Authorization: `Bearer ${MELD_T}` })).status === 422);
+
+/* ---- BUNDELING: drie signalen, een probleem ---- */
+m = await meld({
+  niveau: "KRITIEK",
+  titel: "rendo-nieuws is onbereikbaar",
+  bundel: "bron rendo-nieuws",
+  afdruk: "afdruk-bundel",
+  items: [
+    { signaal: "ingestie/brondekking", niveau: "FOUT", meting: "FAILED: rendo-nieuws", advies: null, sinds: "2026-10-13T15:00:00Z", keren_gezien: 14 },
+    { signaal: "ingestie/bronnen met opeenvolgende fouten", niveau: "FOUT", meting: "1 van 20", advies: null, sinds: "2026-10-13T13:04:00Z", keren_gezien: 16 },
+    { signaal: "ingestie/storingssoort TOEGANG_BEPERKT", niveau: "FOUT", meting: "1 bron", advies: null, sinds: "2026-10-13T16:02:00Z", keren_gezien: 13 },
+  ],
+}, { Authorization: `Bearer ${MELD_T}` });
+s4 = await sent();
+const bundel = s4[s4.length - 1];
+check("een bundel levert EEN mail met alle drie de signalen", m.status === 200 && m.json.items === 3, JSON.stringify(m.json));
+check("de mail benoemt het ene onderliggende probleem", /\u00e9\u00e9n onderliggend probleem/.test(bundel.html) && /rendo-nieuws/.test(bundel.html), bundel.html.slice(0, 0));
+check("het onderwerp van een kritieke bundel begint met KRITIEK", /^\[KRITIEK\]/.test(bundel.subject), bundel.subject);
+
+/* ---- HERSTEL en SAMENVATTING hebben hun eigen voorvoegsel ---- */
+m = await meld({ ...MELDING, niveau: "HERSTEL", titel: "ingestie/brondekking is weer OK", afdruk: "afdruk-herstel" }, { Authorization: `Bearer ${MELD_T}` });
+s4 = await sent();
+check("herstelmail -> [HERSTEL]", m.status === 200 && /^\[HERSTEL\]/.test(s4[s4.length - 1].subject), s4[s4.length - 1].subject);
+
+m = await meld({ ...MELDING, niveau: "WAARSCHUWING", titel: "6 waarschuwing(en)", afdruk: "afdruk-dag" }, { Authorization: `Bearer ${MELD_T}` });
+s4 = await sent();
+check("dagsamenvatting -> [SAMENVATTING]", m.status === 200 && /^\[SAMENVATTING\]/.test(s4[s4.length - 1].subject), s4[s4.length - 1].subject);
+
+/* ---- GEEN CORS op dit pad ---- */
+const meldPre = await fetch(`${BASE}/api/meld`, { method: "OPTIONS", headers: { Origin: ORIGIN_OK } });
+check("preflight op /api/meld geeft geen POST-toegang zonder token", meldPre.status === 204 || meldPre.status === 404);
+
+srv.kill();
+await sleep(200);
+
+/* ---- Resend-fout op het meldpad geeft GEEN vals succes ---- */
+srv = startServer({ MELD_TOKEN: MELD_T, RESEND_STUB_FAIL: "1" });
+await waitUp();
+m = await meld({ ...MELDING, afdruk: "afdruk-faal" }, { Authorization: `Bearer ${MELD_T}` });
+check("mailfout op het meldpad -> 502, geen vals succes", m.status === 502 && m.json?.ok === false, JSON.stringify(m.json));
+srv.kill();
 
 console.log(`\n${passed} PASS, ${failed} FAIL`);
 process.exit(failed ? 1 : 0);

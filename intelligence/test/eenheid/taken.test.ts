@@ -113,6 +113,11 @@ describe("de keten staat in de juiste orde", () => {
        rijen bijschrijft verspilling is, en de meting omdat die cijfers
        niet per uur bewegen en één regel per dag terug te vinden is. */
     const dagelijks = PLAN.filter((p) => p.dagelijks).map((p) => p.soort).sort();
-    assert.deepEqual(dagelijks, ["backup", "meting"]);
+    /* `meldsamenvatting` is er in 3.0.9 bij gekomen, en dagelijks is
+       voor die taak de hele reden van bestaan: niveau NIET GEMETEN
+       betekent "iets is niet gemeten", en dat elk uur als alarm
+       versturen maakt van een alerteerder een ruisbron. Zie de
+       toelichting bij de planregel. */
+    assert.deepEqual(dagelijks, ["backup", "meldsamenvatting", "meting"]);
   });
 });

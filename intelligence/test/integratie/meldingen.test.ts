@@ -144,7 +144,9 @@ describe("meldingen", () => {
     const r = await metOrganisatie(db.pool, { organisatieId }, (c) =>
       bezorgMeldingen(c, organisatieId),
     );
-    assert.deepEqual(r, { bezorgd: 0, fouten: 0 });
+    /* `berichten` is in 3.0.9 toegevoegd: dat is het aantal MAILS, en
+       dat verschilt van het aantal meldingen zodra er gebundeld wordt. */
+    assert.deepEqual(r, { bezorgd: 0, fouten: 0, berichten: 0 });
   });
 
   test("http wordt geweigerd als bestemming", () => {
@@ -174,9 +176,47 @@ describe("meldingen", () => {
     }
   });
 
+  test("de BACK-OFF houdt een directe tweede poging tegen", async () => {
+    /* NIEUW IN 3.0.9, en gevonden doordat de toets hieronder omviel.
+       De vorige toets ("een MISLUKTE bezorging...") heeft net een
+       poging gedaan en `laatste_poging_op` op nu gezet. De bezorgquery
+       laat een melding pas terugkomen als zijn wachttijd om is: 1, 4,
+       16, 64 minuten. Een tweede poging in dezelfde seconde hoort dus
+       NIETS te doen.
+
+       Tot 3.0.8 bestond die wachttijd niet en werd er elke ronde
+       opnieuw geprobeerd — bij een uurlijkse taak was de teller na vijf
+       uur leeg en gebeurde er daarna nooit meer iets. */
+    process.env["INTEL_MELD_WEBHOOK"] = "https://voorbeeld.invalid/hook";
+    try {
+      let geprobeerd = 0;
+      const r = await metOrganisatie(db.pool, { organisatieId }, (c) =>
+        bezorgMeldingen(c, organisatieId, {
+          maxPogingen: 9,
+          nu: async () => {
+            geprobeerd += 1;
+            return new Response("ok", { status: 200 });
+          },
+        }),
+      );
+      assert.equal(geprobeerd, 0, "er is toch een poging gedaan terwijl de wachttijd niet om was");
+      assert.equal(r.berichten, 0);
+    } finally {
+      delete process.env["INTEL_MELD_WEBHOOK"];
+    }
+  });
+
   test("een GESLAAGDE bezorging markeert de melding als bezorgd", async () => {
     process.env["INTEL_MELD_WEBHOOK"] = "https://voorbeeld.invalid/hook";
     try {
+      /* De wachttijd laten verstrijken. In productie gebeurt dat door
+         te WACHTEN; hier door het tijdstip terug te zetten, want een
+         toets die vier minuten slaapt is geen toets. */
+      await metOrganisatie(db.pool, { organisatieId }, (c) =>
+        c.query("update intel.meldingen set laatste_poging_op = now() - interval '2 hours' where organisatie_id = $1", [
+          organisatieId,
+        ]),
+      );
       const r = await metOrganisatie(db.pool, { organisatieId }, (c) =>
         bezorgMeldingen(c, organisatieId, {
           maxPogingen: 9,

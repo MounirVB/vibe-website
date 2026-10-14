@@ -34,10 +34,13 @@ import { fileURLToPath } from "node:url";
 import { leesSitekennis } from "../site/sitekennis.ts";
 import { meldBestemming } from "./melden.ts";
 import { meetBrondekking, vatBrondekkingSamen } from "./brondekking.ts";
-import { NIET_HARTSLAGWAARDIGE_SOORTEN } from "../kern/taken.ts";
+import { NIET_HARTSLAGWAARDIGE_SOORTEN, PLAN } from "../kern/taken.ts";
 import {
+  beoordeelPlanning,
   bewijsIsVolledigGeslaagd,
   inventariseerBucketBewijs,
+  leesLaatsteRonde,
+  RESTORETESTRONDE_TAAK_SOORT,
   leesRestorebewijsUitTaken,
   restoreAanvaardbaar,
   RESTOREBEWIJS_VOORVOEGSEL,
@@ -99,6 +102,18 @@ export type Signaal = {
    * geparkeerd hebben, en dan kijkt niemand er meer naar.
    */
   readonly aanvaard?: boolean;
+  /**
+   * De bronsleutel waar dit signaal over gaat, als dat er precies EEN
+   * is.
+   *
+   * BESTAAT VOOR DE BUNDELING VAN MELDINGEN, en met opzet als FEIT en
+   * niet als tekstvondst. De meetteksten van de ingestiesignalen worden
+   * afgekapt op 160 tekens; een signaal over vijf bronnen kan er
+   * daardoor een tonen. Wie de bundel uit die tekst zou halen, zou dan
+   * beweren dat twee signalen dezelfde oorzaak hebben zonder dat dat
+   * vaststaat. Alleen de meting zelf weet of het er een is.
+   */
+  readonly bron?: string;
 };
 
 /* De drempels, met hun onderbouwing. */
@@ -376,6 +391,10 @@ export async function meetGezondheid(
     groep: "ingestie",
     naam: "bronnen met opeenvolgende fouten",
     niveau: (b?.met_fouten ?? 0) === 0 ? "OK" : "FOUT",
+    /* DE BRON ALS FEIT, UIT DE TELLING. Alleen als het er precies EEN
+       is; de meettekst eronder wordt afgekapt op 160 tekens en is dus
+       geen betrouwbare bron voor deze vraag. Zie migratie 0040. */
+    bron: (b?.met_fouten ?? 0) === 1 ? (b?.sleutels_met_fouten || undefined) : undefined,
     meting:
       `${b?.met_fouten ?? 0} van ${b?.actief ?? 0} actieve bronnen met >= ${DREMPELS.bronFoutenAchtereen} fouten achtereen` +
       (b?.sleutels_met_fouten ? `: ${b.sleutels_met_fouten.slice(0, 160)}` : ""),
@@ -489,6 +508,9 @@ export async function meetGezondheid(
       groep: "ingestie",
       naam: `storingssoort ${st.soort}`,
       niveau: st.soort === "LEEG_MAAR_GEZOND" ? "OK" : aanvaard ? "LET OP" : "FOUT",
+      /* Alleen bij EEN bron; `st.sleutels` is een string_agg en wordt
+         in de meting afgekapt. Zie migratie 0040. */
+      bron: st.aantal === 1 ? (st.sleutels || undefined) : undefined,
       meting:
         `${st.aantal} bron(nen), waarvan ${st.actieve} actief: ${st.sleutels.slice(0, 160)}` +
         /* De details alleen bij een FOUT, want daar moet iemand iets.
@@ -603,7 +625,28 @@ export async function meetGezondheid(
     naam: "verlopen leases",
     niveau: (t?.verlopen_lease ?? 0) === 0 ? "OK" : "LET OP",
     meting: `${t?.verlopen_lease ?? 0} taak/taken met een verlopen lease`,
-    advies: (t?.verlopen_lease ?? 0) > 0 ? "een worker is omgevallen; de volgende ronde legt ze terug" : undefined,
+    /* HET ADVIES WAS ONJUIST, EN DAT IS NAGETROKKEN.
+       Hier stond "een worker is omgevallen; de volgende ronde legt ze
+       terug". Er bestaat geen ronde die dat doet: `geefVerlopenTerug()`
+       wordt op precies één plek aangeroepen, bij het OPSTARTEN van een
+       worker (src/cli/worker.ts:123, "Eerst opruimen"). Blijft de
+       worker draaien, dan blijft de verlopen lease staan tot iemand de
+       service herstart — en dan wacht een lezer op een opruiming die
+       nooit komt.
+
+       De tweede helft is nieuw en net zo belangrijk: een lease van 300
+       seconden die verloopt terwijl een taak nog LOOPT is bij een
+       restoretest verwachte toestand, geen storing. Daarom staat die
+       mogelijkheid er expliciet bij in plaats van dat de lezer op een
+       dood spoor wordt gezet. */
+    advies:
+      (t?.verlopen_lease ?? 0) > 0
+        ? "een lease van " +
+          "300 s is verlopen. Twee mogelijkheden: (1) de taak loopt nog — bij een restoretest " +
+          "is dat normaal, het slot verhindert dan een tweede uitvoering; (2) de worker is " +
+          "omgevallen, en dan komt de taak pas terug bij de VOLGENDE START van de worker " +
+          "(geefVerlopenTerug in cli/worker.ts), niet vanzelf. Herstart de worker als de taak niet loopt."
+        : undefined,
   });
   voeg({
     groep: "worker",
@@ -972,6 +1015,13 @@ export async function meetGezondheid(
           : dekking.perKlasse.DEGRADED > 0
             ? "LET OP"
             : "OK",
+    /* Alleen als er precies EEN bron FAILED is. Bij meer is dit geen
+       bron-probleem maar een dekkingsprobleem, en dan bundelen zou
+       beweren dat ze dezelfde oorzaak hebben. */
+    bron:
+      dekking.perKlasse.FAILED === 1
+        ? dekking.bronnen.find((x) => x.klasse === "FAILED")?.sleutel
+        : undefined,
     meting: vatBrondekkingSamen(dekking),
     gemetenOp: dekking.laatsteGeslaagdeOphaling ?? undefined,
     advies:
@@ -1331,6 +1381,66 @@ export async function meetGezondheid(
           ? "zoek uit welke bron liegt vóór je op de back-up vertrouwt; registreer daarna opnieuw met npm run restoretest"
           : `npm run restoretest -- --uit-gcs — hoort minstens elke ${DREMPELS.restoretestLeeftijdDagen} dagen, en legt het bewijs in intel.taken vast`,
   });
+
+  /* ---------------- de planning van de restoretest ---------------- */
+  /* WAAROM DIT EEN APART SIGNAAL IS. Het signaal hierboven kijkt naar
+     BEWIJS, met een drempel van 30 dagen. Dat is de juiste drempel voor
+     bewijs maar de verkeerde voor de PLANNING: valt de wekelijkse ronde
+     stil, dan is dat vier weken onzichtbaar. Dit signaal kijkt naar de
+     UITVOERING, en een gemiste zondag valt daarmee diezelfde
+     zondagochtend op.
+
+     GEMIST en MISLUKT zijn FOUT. Back-up is een kritiek domein, dus dat
+     wordt CRITICAL — en dat is proportioneel: een
+     back-upverificatie die stilvalt is de klasse storing die zich
+     maanden verbergt. LOOPT, GEREED en NOG_NIET_VERSCHULDIGD zijn OK;
+     bij de laatste twee is er werkelijk niets aan de hand. */
+  const planregel = PLAN.find((p) => p.soort === RESTORETESTRONDE_TAAK_SOORT)?.wekelijks;
+  if (planregel) {
+    const ronde = await leesLaatsteRonde(c, organisatieId);
+    const planning = beoordeelPlanning({ nu: new Date(), regel: planregel, laatsteRonde: ronde });
+    const slecht = planning.toestand === "GEMIST" || planning.toestand === "MISLUKT";
+    voeg({
+      groep: "backup",
+      naam: "restoretestplanning",
+      niveau: slecht ? "FOUT" : "OK",
+      meting:
+        `${planning.toestand} — ${planning.grond}. Afspraak: wekelijks op weekdag ` +
+        `${planregel.weekdagUtc} vanaf ${String(planregel.vanafUurUtc).padStart(2, "0")}:00 UTC`,
+      advies: slecht
+        ? "kijk of de planner draait (cron 0 * * * *) en of de worker de soort 'restoretestronde' aankan; npm run planner -- --droog laat zien wat hij zou plannen"
+        : undefined,
+    });
+
+    /* ---- en de consistentie tussen de twee bronnen ---- */
+    /* De eigenaar vroeg expliciet of de registratie in intel.taken
+       OVEREENKOMT met het GCS-bewijs. Dat is iets anders dan de vraag of
+       er bewijs is: twee bronnen die hetzelfde zeggen zijn een
+       bevestiging, twee die iets anders zeggen zijn een bevinding.
+       `restoreAanvaardbaar()` hierboven maakt van een echte tegenspraak
+       al FOUT; dit signaal maakt zichtbaar WAAROP ze overeenkomen. */
+    if (taakBewijs && merkJson) {
+      const zelfdeDump =
+        typeof merkJson.toetsen_geslaagd === "number" &&
+        taakBewijs.bewijs.dump_object !== undefined &&
+        bucketInventaris?.nieuwste?.bewijs.dump_object === taakBewijs.bewijs.dump_object;
+      voeg({
+        groep: "backup",
+        naam: "bewijsconsistentie",
+        niveau: oordeel.tegenstrijdig ? "FOUT" : zelfdeDump ? "OK" : "LET OP",
+        meting: oordeel.tegenstrijdig
+          ? `takenlogboek en bucket spreken elkaar tegen — zie het restoretestsignaal`
+          : zelfdeDump
+            ? `takenlogboek en bucket beschrijven dezelfde proef op ${taakBewijs.bewijs.dump_object}`
+            : `takenlogboek noemt dump ${taakBewijs.bewijs.dump_object ?? "onbekend"}, ` +
+              `het nieuwste bucketbewijs ${bucketInventaris?.nieuwste?.bewijs.dump_object ?? "onbekend"} — ` +
+              `dat kan kloppen (een van de twee is ouder) maar het is geen bevestiging`,
+        advies: oordeel.tegenstrijdig
+          ? "zoek uit welke bron liegt vóór je op de back-up vertrouwt"
+          : undefined,
+      });
+    }
+  }
 
   /* ---------------- externe kopie ---------------- */
   /* DIT IS HET SIGNAAL DAT HET VERSCHIL MEET tussen "er is een back-up

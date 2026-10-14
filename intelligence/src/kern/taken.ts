@@ -132,6 +132,16 @@ export const PLAN: readonly PlanRegel[] = [
      deze cijfers bewegen niet per uur, en een dagelijkse regel is
      makkelijker terug te vinden dan 24. Strikt alleen-lezen. */
   { soort: "meting", prioriteit: 96, dagelijks: true, toelichting: "de redactionele en databasestand meten en in het log zetten" },
+  /* DAGELIJKS, EN DAT IS HET HELE PUNT. Niveau NIET GEMETEN betekent
+     "iets is niet gemeten" en dat is geen storing. Er staan er
+     structureel zes open — vijf ontbrekende connectoren en de
+     meldbestemming zelf — en die elk uur als alarm versturen maakt van
+     een alerteerder een ruisbron. Dan leest niemand de kritieke
+     meldingen meer.
+
+     Prioriteit 97: na de gezondheidsmeting (95), want hij leest wat die
+     net heeft bijgewerkt. */
+  { soort: "meldsamenvatting", prioriteit: 97, dagelijks: true, toelichting: "de waarschuwingen van vandaag in een dagelijkse samenvatting" },
   /* WEKELIJKS, ZONDAG 03:00 UTC — de enige taak met die cadans.
      Waarom niet dagelijks: een restoretest zet een volledige dump terug
      in een verse wegwerpdatabase op de productieSERVER. Dat is zwaarder
@@ -380,8 +390,8 @@ export const REGISTER: Record<string, Handler> = {
    * volgende deploy weg. Zou deze taak dan 'gereed' melden, dan zou de
    * wachtrij succes rapporteren voor iets dat geen retentie oplevert.
    */
-  async backup(_pool, organisatieId) {
-    const [{ maakBackup, KRITIEKE_TABELLEN }, { gcsConfigUitOmgeving, uploadNaarGcs }, { readFile }, { basename, join }, { APP_WORTEL, configLezen }] =
+  async backup(_pool, organisatieId, payload) {
+    const [{ maakBackup, KRITIEKE_TABELLEN }, { gcsConfigUitOmgeving, uploadNaarGcs, lijstGcs }, { readFile }, { basename, join }, { APP_WORTEL, configLezen }] =
       await Promise.all([
         import("../ops/backup.ts"),
         import("../ops/gcsopslag.ts"),
@@ -391,6 +401,46 @@ export const REGISTER: Record<string, Handler> = {
       ]);
     const { maakPool: maakEigenPool, zonderOrganisatie, rijen: leesRijen } = await import("./db.ts");
     const config = configLezen();
+
+    /* ---- IDEMPOTENT PER PERIODE, MAAR NIET TEN KOSTE VAN HERSTEL ----
+       Een herstart tijdens een lopende back-up legt de taak terug
+       (geefVerlopenTerug bij het opstarten van een worker) en dan maakt
+       deze handler een tweede dump, met een tweede tijdstempel in de
+       naam. De wachtrij voorkomt dat niet: de idempotentiesleutel
+       verhindert een tweede RIJ, niet een tweede UITVOERING.
+
+       Daarom hier de vraag die telt: ligt er voor deze dag al een dump
+       MET manifest? Zo ja, dan is de back-up af en doen we niets. Ligt
+       er een dump ZONDER manifest, dan is een eerdere poging halverwege
+       afgebroken en is wat er ligt geen back-up — dan moet deze poging
+       juist wél doorgaan. Zie backupStandVoorPeriode() in
+       ops/restorebewijs.ts.
+
+       ALLEEN ALS ER EEN BUCKET IS. Zonder bucket is er niets te
+       inventariseren en valt hij terug op het oude gedrag: altijd
+       maken. Dat is ook het pad van `npm run backup` met de hand. */
+    const periode = String(payload["venster"] ?? "").slice(0, 10) || new Date().toISOString().slice(0, 10);
+    const gcsVooraf = gcsConfigUitOmgeving();
+    if (gcsVooraf && payload["forceer"] !== true) {
+      const { backupStandVoorPeriode } = await import("../ops/restorebewijs.ts");
+      const stand = backupStandVoorPeriode(
+        await lijstGcs(gcsVooraf, "vibe-intel-").catch(() => []),
+        periode,
+      );
+      if (stand.alAf) return `overgeslagen: ${stand.grond}`;
+      if (stand.halfAfgebroken.length > 0) {
+        /* Een eigen logger, want deze module houdt er geen bij: elke
+           handler importeert dynamisch wat hij nodig heeft, zodat
+           taken.ts geen importcyclus maakt met de lagen die hij
+           aanroept. */
+        const { maakLogger } = await import("./log.ts");
+        maakLogger("taak:backup").waarschuwing("back-up wordt opnieuw gemaakt", {
+          periode,
+          grond: stand.grond.slice(0, 200),
+          half_afgebroken: stand.halfAfgebroken.length,
+        });
+      }
+    }
 
     const eigenaarPool = maakEigenPool({ rol: null, max: 2 });
     const info = await zonderOrganisatie(eigenaarPool, (c) =>
@@ -624,6 +674,37 @@ export const REGISTER: Record<string, Handler> = {
       );
     }
     return samenvatting;
+  },
+
+  /**
+   * De dagelijkse samenvatting van de waarschuwingen.
+   *
+   * Stuurt EEN bericht met alles wat niet direct gealarmeerd wordt. Dat
+   * er niets te melden is, is de normale uitkomst; dan gaat er ook geen
+   * mail.
+   *
+   * ZONDER BESTEMMING DOET HIJ NIETS EN FAALT HIJ NIET. Zolang
+   * INTEL_MELD_WEBHOOK niet gezet is, geeft bezorgDagsamenvatting()
+   * nul terug. Een taak die daarop faalt zou elke dag in de dlq
+   * belanden voor een afspraak die nog niet gemaakt is.
+   */
+  async meldsamenvatting(pool, organisatieId) {
+    const [{ bezorgDagsamenvatting, meldBestemming }, { metOrganisatie: inOrganisatie }] =
+      await Promise.all([import("../ops/melden.ts"), import("./db.ts")]);
+
+    const bestemming = meldBestemming();
+    if (bestemming.soort === "geen") {
+      return `geen samenvatting verstuurd: ${bestemming.reden.slice(0, 160)}`;
+    }
+
+    const uit = await inOrganisatie(pool, { organisatieId }, (c) =>
+      bezorgDagsamenvatting(c, organisatieId),
+    );
+    if (uit.berichten === 0) return "geen waarschuwingen open; geen samenvatting verstuurd";
+    return (
+      `dagsamenvatting verstuurd naar ${new URL(bestemming.url).host}: ` +
+      `${uit.berichten} bericht(en) over ${uit.bezorgd} melding(en), ${uit.fouten} mislukt`
+    );
   },
 
   /**

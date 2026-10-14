@@ -621,6 +621,304 @@ export async function leesRestorebewijsUitTaken(
 }
 
 /* ------------------------------------------------------------------
+   IDEMPOTENTIE VAN DE DAGELIJKSE BACK-UP
+   ------------------------------------------------------------------
+   HET MECHANISME, UIT DE CODE AFGELEID.
+
+   `pakTaak()` zet een taak op 'bezig' met een lease van 300 seconden.
+   Verloopt die terwijl de taak nog loopt, dan zet `geefVerlopenTerug()`
+   hem terug op 'wachtend' — maar die functie draait op precies één
+   plek: bij het OPSTARTEN van een worker (cli/worker.ts, "Eerst
+   opruimen"). Een herstart tijdens een lopende back-up legt de taak dus
+   terug, een worker pakt hem opnieuw, en de handler maakt een TWEEDE
+   dump. De naam hangt aan de tijd (`vibe-intel-<stempel>.dump`), dus
+   dat is een tweede object in de bucket en niet een overschrijving.
+
+   WAT ER GEMETEN IS. Op 14 oktober 2026 stonden er exact drie
+   back-uptaken, één per dag, alle met `pogingen = 1`. De wachtrij heeft
+   dit dus NOOIT gedaan. Er staat wel een dump van 03:48 in de bucket
+   die bij geen enkele taak hoort; die is met de beschikbare gegevens
+   niet toe te schrijven. Het mechanisme is echt, de gebeurtenis is niet
+   aangetoond.
+
+   WAT DEZE FUNCTIE DOET, EN WAT ZE MET OPZET NIET DOET.
+
+   Ze beantwoordt één vraag: ligt er voor deze periode al een dump MET
+   zijn manifest ernaast? Dat onderscheid is de hele reden dat dit niet
+   "bestaat er een bestand van vandaag" is:
+
+     dump + manifest    de back-up van vandaag is af      -> overslaan
+     dump zonder manifest  een eerdere poging is halverwege
+                           afgebroken; wat er ligt is geen
+                           back-up                        -> OPNIEUW DOEN
+     geen dump          nog niets gedaan                  -> doen
+
+   Daarmee blokkeert de idempotentie geen noodzakelijke herstelpoging,
+   en dat was de expliciete eis. Alle zes de faalwijzen die de
+   back-uphandler kan opleveren laten of géén object achter (mislukte
+   pg_dump, nul bytes, lege inhoudsopgave, geen bestemming) of een dump
+   zónder manifest (mislukte manifestupload, afwijkende sha). Geen enkele
+   daarvan ziet eruit als een geldig paar.
+
+   WAT ER NIET WORDT GECONTROLEERD, EN DAT HOORT ER BIJ TE STAAN. Deze
+   functie kijkt naar AANWEZIGHEID, niet naar inhoud: ze rekent de
+   sha256 van de dump niet na tegen het manifest. Dat zou een download
+   van ongeveer een megabyte per dag kosten voor een vraag die de
+   restoretest elke week al stelt, en `uploadNaarGcs()` verifieert elk
+   object bovendien bij het schrijven door het terug te halen. Het
+   resterende gat is dus smal maar echt: een manifest dat hoort bij
+   ANDERE bytes dan de dump ernaast zou hier als geldig paar lezen. De
+   wekelijkse restoretest vangt dat, want die vergelijkt de som wél.
+
+   KALENDERDAG, EN NIET "DE LAATSTE 24 UUR". Met een 24-uursvenster zou
+   een run om 00:05 worden overgeslagen omdat de dump van gisteren 23,9
+   uur oud is, en dan is de volgende kans pas de dag erna — een gat van
+   bijna 48 uur, waarmee de RPO-drempel van 26 uur wordt overschreden.
+   ------------------------------------------------------------------ */
+
+export type Backupstand = {
+  readonly alAf: boolean;
+  readonly grond: string;
+  /** De namen van dumps van deze periode zonder manifest; die zijn onbruikbaar. */
+  readonly halfAfgebroken: readonly string[];
+};
+
+/**
+ * Ligt er voor `periode` (een datum als `2026-10-14`) al een bruikbare
+ * back-up in de bucket?
+ *
+ * `objecten` is de lijst uit `lijstGcs(gcs, "vibe-intel-")`. Pure
+ * functie met opzet: de regel die beslist of een back-up wordt
+ * OVERGESLAGEN is te belangrijk om alleen via een bucket te kunnen
+ * toetsen.
+ */
+export function backupStandVoorPeriode(
+  objecten: readonly { readonly naam: string }[],
+  periode: string,
+): Backupstand {
+  const voorvoegsel = `vibe-intel-${periode}`;
+  const namen = new Set(objecten.map((o) => o.naam));
+  const dumps = objecten
+    .map((o) => o.naam)
+    .filter((n) => n.startsWith(voorvoegsel) && n.endsWith(".dump"));
+
+  if (dumps.length === 0) {
+    return { alAf: false, grond: `geen dump voor ${periode} in de bucket`, halfAfgebroken: [] };
+  }
+
+  const metManifest = dumps.filter((n) => namen.has(`${n}.manifest.json`));
+  const zonder = dumps.filter((n) => !namen.has(`${n}.manifest.json`));
+
+  if (metManifest.length === 0) {
+    return {
+      alAf: false,
+      grond:
+        `er ligt ${zonder.length} dump voor ${periode} ZONDER manifest; dat is geen bruikbare ` +
+        `back-up, dus deze poging is een noodzakelijke herstelpoging`,
+      halfAfgebroken: zonder,
+    };
+  }
+
+  return {
+    alAf: true,
+    grond:
+      `${metManifest[0]} ligt met zijn manifest in de bucket; de back-up van ${periode} is af` +
+      (zonder.length ? ` (en ${zonder.length} half afgebroken dump(s) ernaast)` : ""),
+    halfAfgebroken: zonder,
+  };
+}
+
+/* ------------------------------------------------------------------
+   DE PLANNING ZELF BEWAKEN
+   ------------------------------------------------------------------
+   WAAROM DIT APART VAN HET RESTOREBEWIJS STAAT.
+
+   Het signaal `backup/restoretest` kijkt naar BEWIJS en reageert op een
+   drempel van 30 dagen. Dat is de juiste drempel voor bewijs — vier
+   weken geeft vier kansen — maar het is de verkeerde drempel voor de
+   PLANNING. Valt de wekelijkse ronde stil, dan is dat vier weken
+   onzichtbaar, en dat is precies de blinde vlek die een monitor niet
+   mag hebben.
+
+   Dit signaal kijkt daarom naar de UITVOERING: is de ronde van deze
+   week verschuldigd, loopt hij, is hij gemist, of is hij mislukt. Een
+   gemiste zondag is daarmee zichtbaar vanaf diezelfde zondagochtend.
+   ------------------------------------------------------------------ */
+
+/**
+ * De eerste zondag waarop de wekelijkse ronde verschuldigd is.
+ *
+ * Zonder deze grens zou elke zondag in de geschiedenis als GEMIST
+ * lezen: de planregel bestaat pas sinds release 3.0.8 (14 oktober
+ * 2026), en de eerste zondag daarna is 18 oktober. Een monitor die
+ * klaagt over een afspraak die nog niet bestond, is een monitor die
+ * niemand vertrouwt.
+ */
+export const RESTORETESTRONDE_VANAF = "2026-10-18";
+
+/**
+ * Hoeveel uur na het verschuldigde moment een ronde nog mag ontbreken.
+ *
+ * De planner draait op cron `0 * * * *`, dus hij is er binnen het uur;
+ * de worker pakt de taak binnen zijn ronde. Zes uur is ruim genoeg voor
+ * een trage deploy of een herstart, en nog steeds dezelfde dag — een
+ * gemiste zondag valt dus op zondagochtend op en niet op maandag.
+ */
+export const RESTORETESTRONDE_MARGE_UREN = 6;
+
+export type Planningstoestand =
+  /** De ronde van deze week is nog niet aan de orde, of valt nog binnen de marge. */
+  | "NOG_NIET_VERSCHULDIGD"
+  /** Er staat een ronde in de wachtrij of hij is bezig. */
+  | "LOOPT"
+  /** Het verschuldigde moment is voorbij en er is geen ronde. */
+  | "GEMIST"
+  /** De laatste ronde is mislukt of in de dlq beland. */
+  | "MISLUKT"
+  /** De ronde van deze week is geslaagd afgerond. */
+  | "GEREED";
+
+/**
+ * Het laatste moment waarop de wekelijkse ronde verschuldigd werd, of
+ * null als dat vóór `vanaf` ligt.
+ *
+ * Pure functie met een expliciete `nu`: of 'de zondag van deze week is
+ * al geweest' klopt, hoort toetsbaar te zijn zonder de klok te zetten.
+ */
+export function laatsteVerschuldigdMoment(
+  nu: Date,
+  regel: { readonly weekdagUtc: number; readonly vanafUurUtc: number },
+  vanaf: string = RESTORETESTRONDE_VANAF,
+): Date | null {
+  /* Terugrekenen naar de meest recente weekdag op of vóór nu. */
+  const d = new Date(
+    Date.UTC(nu.getUTCFullYear(), nu.getUTCMonth(), nu.getUTCDate(), regel.vanafUurUtc, 0, 0, 0),
+  );
+  const dagenTerug = (d.getUTCDay() - regel.weekdagUtc + 7) % 7;
+  d.setUTCDate(d.getUTCDate() - dagenTerug);
+  /* Is dat moment vandaag maar nog niet geweest, dan is de vorige week
+     het laatste verschuldigde moment. */
+  if (d.getTime() > nu.getTime()) d.setUTCDate(d.getUTCDate() - 7);
+
+  const grens = new Date(`${vanaf}T00:00:00Z`);
+  return d.getTime() < grens.getTime() ? null : d;
+}
+
+export type Planningsoordeel = {
+  readonly toestand: Planningstoestand;
+  readonly grond: string;
+  /** Het venster van de ronde die hierbij hoort, als die bestaat. */
+  readonly venster: string | null;
+};
+
+/**
+ * Beoordeelt de staat van de wekelijkse restoretestplanning.
+ *
+ * `laatsteRonde` is de nieuwste rij met soort `restoretestronde`, welke
+ * status die ook heeft — niet de nieuwste GESLAAGDE. Dat onderscheid is
+ * het hele punt: zou deze functie op status filteren, dan zou een
+ * mislukte ronde van vannacht onvindbaar zijn achter een geslaagde van
+ * vorige week, en dan meldt de monitor GEREED terwijl de proef faalde.
+ */
+export function beoordeelPlanning(inv: {
+  readonly nu: Date;
+  readonly regel: { readonly weekdagUtc: number; readonly vanafUurUtc: number };
+  readonly laatsteRonde: {
+    readonly status: string;
+    readonly venster: string | null;
+    readonly aangemaaktOp: string | null;
+  } | null;
+  readonly margeUren?: number;
+  readonly vanaf?: string;
+}): Planningsoordeel {
+  const marge = inv.margeUren ?? RESTORETESTRONDE_MARGE_UREN;
+  const verschuldigd = laatsteVerschuldigdMoment(inv.nu, inv.regel, inv.vanaf);
+  const r = inv.laatsteRonde;
+
+  /* Een ronde die LOOPT gaat voor alles: dan is er niets gemist en
+     niets mislukt, er is iets aan de gang. */
+  if (r && (r.status === "wachtend" || r.status === "bezig")) {
+    return {
+      toestand: "LOOPT",
+      grond: `er staat een ronde ${r.status === "bezig" ? "in uitvoering" : "in de wachtrij"}${r.venster ? ` (venster ${r.venster})` : ""}`,
+      venster: r.venster,
+    };
+  }
+
+  if (verschuldigd === null) {
+    return {
+      toestand: "NOG_NIET_VERSCHULDIGD",
+      grond: `de eerste wekelijkse ronde is verschuldigd op ${inv.vanaf ?? RESTORETESTRONDE_VANAF} 0${inv.regel.vanafUurUtc}:00 UTC`,
+      venster: null,
+    };
+  }
+
+  const verschuldigdDatum = verschuldigd.toISOString().slice(0, 10);
+  const urenSindsVerschuldigd = (inv.nu.getTime() - verschuldigd.getTime()) / 3_600_000;
+
+  /* Een mislukte of in de dlq gelande ronde van DIT venster is het
+     ergste wat deze functie kan vaststellen, en gaat dus voor de
+     gemist-vraag. */
+  if (r && (r.status === "mislukt" || r.status === "dlq") && (r.venster ?? "") >= verschuldigdDatum) {
+    return {
+      toestand: "MISLUKT",
+      grond: `de ronde van ${r.venster} is ${r.status === "dlq" ? "definitief mislukt (dlq)" : "mislukt"}`,
+      venster: r.venster,
+    };
+  }
+
+  if (r && r.status === "gereed" && (r.venster ?? "") >= verschuldigdDatum) {
+    return {
+      toestand: "GEREED",
+      grond: `de ronde van ${r.venster} is geslaagd afgerond`,
+      venster: r.venster,
+    };
+  }
+
+  /* Binnen de marge is er nog niets mis: de planner draait op het uur
+     en de worker pakt de taak in zijn ronde. */
+  if (urenSindsVerschuldigd <= marge) {
+    return {
+      toestand: "NOG_NIET_VERSCHULDIGD",
+      grond:
+        `de ronde van ${verschuldigdDatum} is ${urenSindsVerschuldigd.toFixed(1)} uur geleden verschuldigd ` +
+        `en valt nog binnen de marge van ${marge} uur`,
+      venster: null,
+    };
+  }
+
+  return {
+    toestand: "GEMIST",
+    grond:
+      `er is geen ronde voor ${verschuldigdDatum}; het verschuldigde moment is ` +
+      `${urenSindsVerschuldigd.toFixed(1)} uur geleden` +
+      (r ? `. De laatste ronde is '${r.status}'${r.venster ? ` van ${r.venster}` : ""}` : " en er heeft nooit een ronde gedraaid"),
+    venster: null,
+  };
+}
+
+/** Leest de NIEUWSTE ronde uit het takenlogboek, welke status die ook heeft. */
+export async function leesLaatsteRonde(
+  c: pg.PoolClient,
+  organisatieId: number,
+): Promise<{ status: string; venster: string | null; aangemaaktOp: string | null } | null> {
+  const r = await rijen<{ status: string; venster: string | null; aangemaakt: string | null }>(
+    c,
+    `select status,
+            payload->>'venster'                                            as venster,
+            to_char(aangemaakt_op at time zone 'utc', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as aangemaakt
+       from intel.taken
+      where organisatie_id = $1 and soort = $2
+      order by aangemaakt_op desc, id desc
+      limit 1`,
+    [organisatieId, RESTORETESTRONDE_TAAK_SOORT],
+  );
+  const rij = r[0];
+  if (!rij) return null;
+  return { status: rij.status, venster: rij.venster, aangemaaktOp: rij.aangemaakt };
+}
+
+/* ------------------------------------------------------------------
    OPRUIMING VAN ACHTERGEBLEVEN WEGWERPDATABASES
    ------------------------------------------------------------------ */
 

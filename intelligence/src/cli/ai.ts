@@ -7,6 +7,8 @@
      npm run ai -- --tarief --model <m> --in <p> --uit <p> \
                    --valuta USD --bron <https://...> --gemeten 2026-10-10
      npm run ai -- --reset-onderbreker
+     npm run ai -- --plafond --kosten-per-maand <bedrag> --valuta EUR \
+                   [--aanroepen-per-maand <n>]
 
    `--valideer` doet een GET op /v1/models. Dat is geen generatie: er
    komt geen token aan te pas en er staat niets op de rekening. Er
@@ -79,6 +81,91 @@ try {
       console.log("morgen een ander model zijn, met andere uitkomsten en andere prijzen.");
     }
     process.exit(0);
+  }
+
+  /* ---------------- maandplafond vastleggen ---------------- */
+  /* WAAROM DIT COMMANDO BESTAAT, EN WAAROM HET GEEN STANDAARDBEDRAG
+     HEEFT.
+
+     De technische begrenzing BESTAAT al en wordt afgedwongen:
+     `budgetStand()` wordt vóór elke betaalde modelaanroep gecontroleerd
+     (inhoud/concept.ts) en weigert zolang er geen MONETAIR maandplafond
+     is. Wat ontbrak is een manier om dat plafond te zetten. Gemeten op
+     productie, 14 oktober 2026: de dagplafonds staan (200 aanroepen,
+     400k tokens, 2000 ophalingen, actief), en alle drie de
+     MAANDkolommen zijn NULL.
+
+     Een bedrag is een besluit van de eigenaar en niet van dit
+     programma. Daarom: geen default, geen suggestie, en een expliciete
+     valuta — een bedrag zonder valuta is geen bedrag. Het commando
+     weigert liever dan te gokken.
+
+     DRIE SOORTEN BEGRENZING, EN DIT IS ER EEN VAN:
+       1 administratief budget   een afspraak; staat nergens in code
+       2 interne limiet          DIT. Weigert de aanroep vóórdat hij
+                                 geld kost
+       3 provider-limiet         een bestedingslimiet in het
+                                 OpenAI-account zelf; niet vanuit code
+                                 te zetten en de enige die ook een
+                                 aanroep buiten dit platform stopt */
+  if (heeft("plafond")) {
+    const kosten = waarde("kosten-per-maand");
+    const valuta = (waarde("valuta") ?? "").toUpperCase();
+    const aanroepen = waarde("aanroepen-per-maand");
+
+    const bezwaren: string[] = [];
+    if (!kosten) bezwaren.push("--kosten-per-maand ontbreekt; zonder bedrag is er geen plafond");
+    if (kosten && !/^\d+(\.\d{1,4})?$/.test(kosten)) {
+      bezwaren.push(`--kosten-per-maand '${kosten}' is geen bedrag (bv 50 of 50.0000)`);
+    }
+    if (kosten && Number(kosten) <= 0) {
+      bezwaren.push("een plafond van nul of minder is geen plafond; zet --aanroepen-per-maand 0 als u alles wilt stoppen");
+    }
+    if (valuta !== "EUR") bezwaren.push("--valuta moet EUR zijn; een bedrag zonder valuta is geen bedrag");
+    if (aanroepen && !/^\d+$/.test(aanroepen)) bezwaren.push(`--aanroepen-per-maand '${aanroepen}' is geen geheel getal`);
+
+    if (bezwaren.length) {
+      console.error("");
+      console.error("PLAFOND NIET GEZET:");
+      for (const b of bezwaren) console.error(`  - ${b}`);
+      console.error("");
+      console.error("Voorbeeld: npm run ai -- --plafond --kosten-per-maand 50 --valuta EUR");
+      process.exitCode = 1;
+    } else {
+      await metOrganisatie(beheerPool, { organisatieId }, async (c) => {
+        await c.query(
+          `update intel.kostenplafonds
+              set max_kosten_per_maand = $2::numeric,
+                  max_ai_aanroepen_per_maand = coalesce($3::int, max_ai_aanroepen_per_maand),
+                  actief = true
+            where organisatie_id = $1`,
+          [organisatieId, kosten, aanroepen ?? null],
+        );
+      });
+      console.log("");
+      console.log(`MAANDPLAFOND GEZET: ${kosten} EUR per maand${aanroepen ? `, max ${aanroepen} aanroepen` : ""}`);
+      console.log("");
+      /* WAT ER NOG NODIG IS. Een plafond zonder tarief is nog geen
+         handhaafbaar plafond: zonder prijs per miljoen tokens blijven
+         kosten ONBEKEND, en dan weigert budgetStand() een betaalde
+         aanroep alsnog — terecht. Dat hoort hier te staan, want anders
+         denkt iemand dat hij klaar is. */
+      const prijzen = await metOrganisatie(pool, { organisatieId }, (c) =>
+        rijen<{ n: string }>(c, "select count(*)::text as n from intel.ai_prijzen"),
+      );
+      if (Number(prijzen[0]?.n ?? "0") === 0) {
+        console.log("LET OP: er staat nog GEEN tarief in intel.ai_prijzen.");
+        console.log("Zonder tarief zijn de kosten per aanroep ONBEKEND, en dan weigert de");
+        console.log("geldpoort een betaalde aanroep nog steeds — ook met dit plafond.");
+        console.log("Zet er een met: npm run ai -- --tarief --model <m> --in <p> --uit <p> \\");
+        console.log("                 --valuta USD --bron <https://...> --gemeten <datum>");
+        console.log("");
+      }
+      console.log("DIT IS DE INTERNE LIMIET, NIET DE REKENING.");
+      console.log("Een bestedingslimiet bij de provider zelf (platform.openai.com, Limits)");
+      console.log("stopt ook aanroepen die buiten dit platform gedaan worden. Die kan dit");
+      console.log("commando niet zetten.");
+    }
   }
 
   /* ---------------- tarief vastleggen ---------------- */

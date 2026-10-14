@@ -146,10 +146,67 @@
 >      inventarisatie kost daarmee tot vier tokenaanvragen per uurlijkse
 >      gezondheidsmeting (`maxKandidaten` staat op 3, niet 5, juist
 >      hierom). Goedkoop in geld, niet gratis in latency en quota.
-> - **Er is geen meldbestemming voor alerts.** `npm run gezondheid` is een
->   commando, geen alarm. Niemand wordt gebeld.
+> - ~~**Er is geen meldbestemming voor alerts.**~~ **GEDEELTELIJK
+>   ACHTERHAALD — 3.0.9.** De bestemming is aangewezen
+>   (`marketing@vibeenergy.nl`) en het hele pad is gebouwd en getoetst,
+>   maar **nog niet aangezet**: `INTEL_MELD_WEBHOOK` staat op geen enkele
+>   service. Zolang dat zo is, verstuurt het platform niets — dat is de
+>   afspraak, geen tekort.
+>
+>   | | |
+>   |---|---|
+>   | weg | `POST /api/meld` op `vibe-website-api`, met bearer-token, dat de JSON van `bezorgMeldingen()` omzet in een Nederlandse zakelijke mail |
+>   | provider | **Resend**, hergebruikt; dezelfde sleutel en hetzelfde geverifieerde afzenderdomein (`no-reply@vibeenergy.nl`) als de brochuremail sinds augustus 2026. Geen tweede provider, geen abonnement |
+>   | ontvanger | `marketing@vibeenergy.nl`, **vast op de server**. Een aanroeper die zijn eigen ontvanger mag opgeven, maakt van dit pad een open mailrelay |
+>   | aanzetten | `INTEL_MELD_WEBHOOK=https://vibe-website-api-production.up.railway.app/api/meld` plus `INTEL_MELD_TOKEN` gelijk aan `MELD_TOKEN` op de api |
+>
+>   **Vier niveaus, drie ritmes.** KRITIEK (FOUT of NIET GEMETEN in een
+>   kritiek domein: database, authenticatie, backup) en FOUT gaan
+>   direct; NIET GEMETEN daarbuiten gaat in **één dagelijkse
+>   samenvatting** (taaksoort `meldsamenvatting`, prioriteit 97); een
+>   melding die sluit levert één HERSTEL-bericht. Retries met
+>   exponentiële back-off van 1, 4, 16 en 64 minuten — vóór 3.0.9 werd
+>   er elke ronde opnieuw geprobeerd, dus bij een uurlijkse taak was de
+>   teller na vijf uur leeg en gebeurde er daarna nooit meer iets.
+>
+>   **Bundeling.** Meldingen die over dezelfde bron gaan worden één
+>   bericht. De bronsleutel is een **vastgelegd feit** (`bron_sleutel`,
+>   migratie 0040) dat de gezondheidsmeting alleen zet als er
+>   aantoonbaar precies één bron in het spel is — niet een vondst in de
+>   meettekst, want die wordt op 160 tekens afgekapt en dan zou een
+>   signaal over vijf bronnen er één tonen.
+>
+>   **De tien die openstonden worden geen tien mails.** Gemeten
+>   routering van de stand van 14 oktober: drie directe berichten (de
+>   drie RENDO-signalen als één bundel, plus `ingestie/storingssoort
+>   TIJDELIJKE_STORING` en `backup/aanwezigheid`) en één
+>   dagsamenvatting met de overige vijf. **Vier mails voor tien
+>   meldingen.** Boven drie losse berichten in één ronde wordt het
+>   bovendien één achterstandsoverzicht.
 > - **Vijf koppelingen zijn NIET AANGESLOTEN** (GSC, Bing, GA4, CRM,
 >   AI-model). Elke funnelstap blijft daarmee ONBEKEND, en dat is geen nul.
+> - ~~**Er is geen AI-maandplafond.**~~ **PRECIEZER GEMETEN — 3.0.9.**
+>   De technische begrenzing BESTAAT en wordt afgedwongen:
+>   `budgetStand()` wordt vóór elke betaalde modelaanroep gecontroleerd
+>   (`inhoud/concept.ts`), en `ops/aibeheer.ts` **weigert** een betaalde
+>   aanroep zolang er geen monetair maandplafond is óf zolang er
+>   aanroepen met onbekende kosten in de maand staan. Onbeperkte
+>   AI-kosten zijn dus nu al onmogelijk — niet omdat er een plafond
+>   staat, maar omdat er geen staat.
+>
+>   | soort begrenzing | stand |
+>   |---|---|
+>   | administratief budget | **bestaat niet**; een bedrag is een besluit van de eigenaar en staat nergens in code |
+>   | interne softwarematige limiet | **actief**. Dag: 200 aanroepen, 400k uittokens, 2000 ophalingen. Maand: alle drie de kolommen **NULL** → elke betaalde aanroep wordt geweigerd |
+>   | door de provider afgedwongen | **niet gezet en niet vanuit code te zetten**; een bestedingslimiet in het OpenAI-account zelf is de enige die ook aanroepen buiten dit platform stopt |
+>
+>   Wat er nodig is om de interne limiet te ACTIVEREN in plaats van te
+>   blokkeren: (1) een bedrag, via het nieuwe
+>   `npm run ai -- --plafond --kosten-per-maand <bedrag> --valuta EUR`;
+>   (2) een tarief in `intel.ai_prijzen` (nu **0 rijen**), want zonder
+>   prijs per miljoen tokens blijven de kosten ONBEKEND en weigert de
+>   poort alsnog; (3) een model op de allowlist, die nu leeg is. Gemeten:
+>   0 AI-aanroepen ooit, 0 geschatte kosten.
 > - **Er is nul inhoud gepubliceerd.** Dat is de bedoelde uitkomst van het
 >   publicatiecontract, geen tekort.
 >

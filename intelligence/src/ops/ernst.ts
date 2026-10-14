@@ -108,6 +108,18 @@ const GROEP_DOMEIN: Readonly<Record<string, Domein>> = {
  */
 const KRITIEKE_DOMEINEN = new Set<Domein>(["database", "authenticatie", "backup"]);
 
+/**
+ * Hoort een signaalGROEP bij een kritiek domein?
+ *
+ * Bestaat zodat `ops/melden.ts` kan beslissen of een storing als
+ * KRITIEK gealarmeerd wordt zonder zijn eigen lijst domeinen bij te
+ * houden. Twee lijsten van "wat is kritiek" lopen uiteen; deze functie
+ * houdt het er op een.
+ */
+export function isKritiekeGroep(groep: string): boolean {
+  return KRITIEKE_DOMEINEN.has(domeinVan(groep));
+}
+
 export type DomeinUitslag = {
   readonly domein: Domein;
   readonly ernst: Ernst;
