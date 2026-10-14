@@ -35,6 +35,12 @@ function basisRij(over: Partial<SemantiekRij> = {}): SemantiekRij {
     mag_citeren: false,
     dagen_oud: 30,
     uitgever: "Netbeheer Nederland",
+    /* Een primaire bron, zodat regel 7 van de jurisdictie kan gelden.
+       De zin noemt 'netbeheerders' en die naam is zelf een NL-signaal,
+       dus deze fixture komt op NEDERLAND uit en de poort blokkeert hem
+       niet op het gebied. Dat is wat deze toetsen willen: ze meten de
+       ANDERE controles. */
+    is_primaire_bron: true,
     brondatum: "2025-11-24",
     vervangen_door: null,
     vervangen_soort: null,
@@ -45,7 +51,22 @@ function basisRij(over: Partial<SemantiekRij> = {}): SemantiekRij {
 function poortVoor(zin: string, over: Partial<Parameters<typeof verwoordbaarheidspoort>[0]> = {}) {
   const u = leesUitdrukkingen(zin)[0];
   assert.ok(u, `geen uitdrukking in: ${zin}`);
-  const s = leidSemantiekAf(zin, u);
+  /* HET TOEPASSINGSGEBIED MOET VASTGESTELD ZIJN, anders meet deze toets
+     de verkeerde controle. De jurisdictiecontrole (sinds 3.0.7) staat
+     VOOR de tijdgrens en zou elke fixturezin zonder gebiedssignaal op
+     BUITEN_TOEPASSINGSGEBIED afkappen — en dan komt de controle die hier
+     wordt getoetst nooit aan de beurt.
+
+     De ACM is een Nederlandse autoriteit uit NL_AUTORITEITEN, dus regel 7
+     van jurisdictie.ts geldt en deze zinnen krijgen NEDERLAND. Alleen
+     voor het BEPALEN; de verwoorder houdt zijn eigen uitgever, want
+     daarover gaan de asserties hieronder.
+
+     De jurisdictiecontrole heeft zijn eigen toetsen: eenheid in
+     test/eenheid/jurisdictie.test.ts en integratie in
+     test/integratie/jurisdictiepoort.test.ts. */
+  const GEBIEDSBRON = { uitgever: "Autoriteit Consument & Markt", isPrimaireBron: true };
+  const s = leidSemantiekAf(zin, u, GEBIEDSBRON);
   const inv = {
     semantiek: s,
     uitdrukking: u,

@@ -15,6 +15,7 @@
    ============================================================ */
 
 import { normaliseerTekst, verschilRatio } from "../kern/tekst.ts";
+import { bepaalToepassingsgebied } from "../pijplijn/jurisdictie.ts";
 
 export type PoortUitkomst = {
   readonly poort: string;
@@ -224,6 +225,43 @@ export function toetsConcept(c: ConceptTeToetsen): PoortUitkomst[] {
       ),
     );
   } else uit.push(geslaagd("geen_bronherpublicatie"));
+
+  /* 5b. WAAR GELDT DIT? — de zestiende poort.
+
+     De verwoordbaarheidspoort in semantiek.ts beslist dit al per
+     UITSPRAAK, en dat is de plek waar het gebied wordt BEPAALD. Maar
+     toetsConcept() wordt uitsluitend vanuit inhoud/concept.ts
+     aangeroepen, en die route leest `verwoordbaar` niet (gemeten: de
+     conceptroute zet rauwe waarden in de tekst). Er zijn dus twee
+     publicatieroutes met elk een eigen poortenstelsel, en zonder deze
+     poort is de conceptroute open.
+
+     EEN AFLEIDING, TWEE LEZERS. Deze poort gebruikt dezelfde module als
+     semantiek.ts — pijplijn/jurisdictie.ts — en maakt geen tweede
+     afleiding. voorstel.ts legt die les al vast: twee oordelen over
+     dezelfde vraag lopen altijd uiteen, er hoort er een te zijn.
+
+     EU MAG DOOR. Een EU-verordening of een verplichting voor lidstaten
+     werkt door in Nederland; een Belgisch tarief betekent hier niets.
+     ONBEKEND wordt net zo hard geweigerd als BELGIE: een leeg gebied is
+     geen bewijs van Nederlandse herkomst, en juist die aanname maakte
+     een Belgisch tarief tot een Nederlands feit. */
+  const gebieden = c.bronteksten.map((t, i) => ({ i, oordeel: bepaalToepassingsgebied({ tekst: t }) }));
+  const buiten = gebieden.filter(
+    (g) => g.oordeel.gebied !== "NEDERLAND" && g.oordeel.gebied !== "EU",
+  );
+  if (buiten.length > 0) {
+    uit.push(
+      gefaald(
+        "toepassingsgebied_is_nederlands",
+        buiten.map(
+          (g) =>
+            `bronversie ${g.i + 1} heeft toepassingsgebied ${g.oordeel.gebied}: ` +
+            `${g.oordeel.grondslag.join("; ") || "geen enkel gebiedssignaal in de brontekst"}`,
+        ),
+      ),
+    );
+  } else uit.push(geslaagd("toepassingsgebied_is_nederlands"));
 
   // 6. Kernclaims hebben bewijs
   const kern = c.uitspraken.filter((u) => u.rol === "kern");

@@ -22,11 +22,14 @@
    die ons uitsluit: de classificatie wordt op de GEMETEN uitkomst
    getoetst, niet door opnieuw te proberen.
 
-   EEN SCENARIO HAALT HET NIET, EN DAT STAAT ERBIJ
-   Scenario 12 (verkeerde jurisdictie) kan dit platform niet
-   detecteren: er is geen jurisdictiemodel. Wat er WEL is, is een
-   host-allowlist. Toets 12 toetst die allowlist en benoemt het gat
-   expliciet, in plaats van een dekking te suggereren die er niet is.
+   SCENARIO 12 WAS EEN GAT, EN IS HET NIET MEER
+   Tot 3.0.6 kon dit platform een verkeerde jurisdictie niet detecteren:
+   er was geen jurisdictiemodel, en toets 12 legde dat vast met een
+   assertie die MOEST omklappen zodra de controle er kwam. Dat is in
+   3.0.7 gebeurd. Toets 12 toetst nu beide grenzen: de host-allowlist
+   (waar een verzoek heen mag) en het toepassingsgebied (waar een feit
+   geldt). Dat zijn twee verschillende vragen en ze hebben elk hun eigen
+   grendel.
    ============================================================ */
 
 import { strict as assert } from "node:assert";
@@ -86,7 +89,16 @@ function concept(over: Partial<ConceptTeToetsen> = {}): ConceptTeToetsen {
         rol: "kern",
       },
     ],
-    bronteksten: ["De wachttijd voor een nieuwe grootverbruikaansluiting liep op tot 24 maanden."],
+    /* De basis is een GEZOND NEDERLANDS feit, en dat is sinds 3.0.7 ook
+       letterlijk zo: de poort `toepassingsgebied_is_nederlands` eist een
+       vastgesteld gebied, en een brontekst zonder gebiedssignaal komt op
+       ONBEKEND uit. Deze zin noemt de ACM en Nederland, en wijkt
+       lexicaal genoeg af van de body om poort 5
+       (geen_bronherpublicatie) niet te raken. */
+    bronteksten: [
+      "Volgens de Autoriteit Consument & Markt bedroeg de doorlooptijd voor het realiseren " +
+        "van een nieuwe grootverbruikaansluiting in Nederland maximaal 24 maanden.",
+    ],
     injectieInBron: false,
     bestaandePaden: new Set(["/kennis/netcongestie"]),
     siteBasisUrl: "https://www.vibeenergy.nl",
@@ -287,10 +299,14 @@ describe("par. 32 — adversarieel, deel A (zuivere functies)", () => {
   });
 
   /* ---------------- 12 ---------------- */
-  test("12. een host buiten de allowlist wordt geweigerd — en jurisdictie wordt NIET gedetecteerd", () => {
-    /* WAT ER WEL IS: een bron mag alleen de hosts raken die bij hem
-       zijn vastgelegd. Een omleiding naar een andere host is een
-       weigering, niet een volgende poging. */
+  test("12. een buitenlands feit wordt geweigerd, en een host buiten de allowlist ook", () => {
+    /* TWEE GRENZEN, TWEE VRAGEN.
+
+       De host-allowlist zegt waar een VERZOEK heen mag. Het
+       toepassingsgebied zegt waar een FEIT geldt. Een Belgisch
+       tariefbericht komt via een volstrekt toegestane host binnen — dus
+       de allowlist kan hem per constructie niet tegenhouden. Tot 3.0.6
+       hield niets hem tegen. */
     const toegestaan = ["netbeheernederland.nl"];
     assert.equal(hostToegestaan("https://netbeheernederland.nl/a", toegestaan), true);
     assert.equal(
@@ -299,24 +315,48 @@ describe("par. 32 — adversarieel, deel A (zuivere functies)", () => {
       "een omleiding naar een niet-vastgelegde host hoort te worden geweigerd",
     );
 
-    /* WAT ER NIET IS: een jurisdictiemodel. Een Belgisch tariefbericht
-       dat via een TOEGESTANE host binnenkomt, wordt door geen enkele
-       poort op dat punt afgewezen. Deze assertie legt het gat vast
-       zodat het niet per ongeluk als gedekt gaat gelden. */
-    const belgisch = vatPoortenSamen(
+    /* En nu de tweede grens: dezelfde zin die in 3.0.6 nog door alle
+       poorten kwam, blokkeert nu op de juiste grond. */
+    blokkeertOp(
+      concept({
+        bodyMarkdown:
+          "# Netcongestie\n\nDe wachttijd liep op tot 24 maanden.\n\n- Bron — <https://netbeheernederland.nl/a>",
+        bronteksten: [
+          "In Vlaanderen liep de wachttijd voor een nieuwe aansluiting op tot 24 maanden, aldus Fluvius.",
+        ],
+      }),
+      "toepassingsgebied_is_nederlands",
+    );
+
+    /* DE CONTROLE MOET OOK IETS DOORLATEN, anders meet hij niets. De
+       basisfixture is een Nederlands feit en komt door alle zestien. */
+    const nederlands = vatPoortenSamen(toetsConcept(concept()));
+    assert.equal(
+      nederlands.geslaagd,
+      true,
+      `een Nederlandse brontekst hoort er nog door te komen: ${nederlands.blokkades.join(" | ")}`,
+    );
+  });
+
+  /* ---------------- 12b ---------------- */
+  test("12b. een EU-verplichting mag WEL door, want die werkt in Nederland door", () => {
+    /* Het onderscheid dat de controle bruikbaar maakt. Een
+       EU-verordening geldt in alle lidstaten en dus ook hier; een
+       Belgisch tarief betekent hier niets. Zou EU ook blokkeren, dan
+       kostte de controle echte dekking zonder dat er een onwaar feit
+       mee werd voorkomen. */
+    const eu = vatPoortenSamen(
       toetsConcept(
         concept({
-          bodyMarkdown: "# Netcongestie\n\nDe wachttijd liep op tot 24 maanden.\n\n- Bron — <https://netbeheernederland.nl/a>",
           bronteksten: [
-            "In Vlaanderen liep de wachttijd voor een nieuwe aansluiting op tot 24 maanden, aldus Fluvius.",
+            "Een nieuwe EU-verordening verplicht lidstaten om de wachttijd voor een netaansluiting binnen 24 maanden te houden.",
           ],
         }),
       ),
     );
-    assert.equal(
-      belgisch.geslaagd,
-      true,
-      "GAT: er is geen jurisdictietoets. Komt die er, dan hoort deze assertie om te klappen.",
+    assert.ok(
+      !eu.blokkades.some((b) => b.startsWith("toepassingsgebied_is_nederlands")),
+      `een EU-verplichting hoort niet op het toepassingsgebied te blokkeren: ${eu.blokkades.join(" | ")}`,
     );
   });
 
