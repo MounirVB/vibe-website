@@ -26,7 +26,7 @@
      * NL_AUTORITEITEN wordt tegen het ECHTE bronregister gelegd. Een
        uitgeversnaam die nergens in src/bronnen/register.ts staat, is een
        verzinsel; die toets maakt dat onmogelijk.
-     * De waardenlijsten worden tegen 0037_toepassingsgebied.sql gelegd.
+     * De waardenlijsten worden tegen 0038_toepassingsgebied.sql gelegd.
        Het type in TypeScript en de CHECK in de database moeten dezelfde
        vier waarden kennen, anders slaagt de pijplijn op iets dat de
        database weigert.
@@ -54,7 +54,7 @@ const DEFECTZIN = "De Belgische netbeheerder Fluvius verhoogt het nettarief in 2
 const ZONDER_SIGNAAL = "Het nettarief voor grootverbruikers stijgt in 2027 met 8%.";
 
 /**
- * Minimum uit uitspraken_gebied_heeft_grondslag (0037). De code moet
+ * Minimum uit uitspraken_gebied_heeft_grondslag (0038). De code moet
  * minstens zo veel grondslag leveren als de database eist, anders komt
  * de pijplijn niet door zijn eigen insert.
  */
@@ -370,9 +370,9 @@ test("geen enkel vakmedium staat in de autoriteitenlijst", () => {
   }
 });
 
-test("de vier waarden van het type staan ook in 0037_toepassingsgebied.sql", () => {
+test("de vier waarden van het type staan ook in 0038_toepassingsgebied.sql", () => {
   const sql = readFileSync(
-    join(HIER, "..", "..", "db", "migraties", "0037_toepassingsgebied.sql"),
+    join(HIER, "..", "..", "db", "migraties", "0038_toepassingsgebied.sql"),
     "utf8",
   );
   const vier: readonly Toepassingsgebied[] = ["NEDERLAND", "BELGIE", "EU", "ONBEKEND"];

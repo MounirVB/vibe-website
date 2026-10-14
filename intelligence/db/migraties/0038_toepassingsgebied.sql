@@ -1,5 +1,5 @@
 -- ============================================================
--- VIBE ENERGY INTELLIGENCE — 0037 het toepassingsgebied van een uitspraak
+-- VIBE ENERGY INTELLIGENCE — 0038 het toepassingsgebied van een uitspraak
 -- ------------------------------------------------------------
 -- WAAROM:       De verwoordbaarheidspoort (verwoordbaarheidspoort() in
 --               src/pijplijn/semantiek.ts) doet tien controles, en GEEN
@@ -191,7 +191,7 @@ comment on constraint uitspraken_verwoordbaar on intel.uitspraken is
 --   NULL, want de kolom wordt hierboven aangemaakt. Die twee rijen
 --   schenden de grendel dus, en zonder 'not valid' breekt de loper af:
 --
---     migratie 0037_toepassingsgebied.sql mislukt: check constraint
+--     migratie 0038_toepassingsgebied.sql mislukt: check constraint
 --     "uitspraken_verwoordbaar_vraagt_gebied" of relation "uitspraken"
 --     is violated by some row
 --

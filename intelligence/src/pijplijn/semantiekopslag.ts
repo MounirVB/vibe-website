@@ -406,7 +406,7 @@ export async function schrijfSemantiek(
       v.semantiek.scopeWaarschuwing,
       v.semantiek.horizon,
       v.semantiek.toepassingsgebied,
-      /* De database eist >= 15 tekens zodra het gebied staat (0037).
+      /* De database eist >= 15 tekens zodra het gebied staat (0038).
          jurisdictie.ts geeft altijd minstens een regel, ook bij
          ONBEKEND, dus dit is geen lege vangnettekst maar de gemeten
          grondslag. */

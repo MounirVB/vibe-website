@@ -19,7 +19,7 @@
 
      1 DE POORT (semantiek.ts) weigert de uitspraak verwoordbaar te
        maken. Dit is de plek waar het gebied wordt BEPAALD.
-     2 DE DATABASE (migratie 0037) weigert VERWOORDBAAR zonder een
+     2 DE DATABASE (migratie 0038) weigert VERWOORDBAAR zonder een
        gebied uit (NEDERLAND, EU). Ook een los script komt daar niet
        langs.
      3 DE ZESTIENDE POORT (poorten.ts) dekt de CONCEPTROUTE, die
@@ -113,7 +113,7 @@ describe("de jurisdictiecontrole in de verwoordbaarheidspoort", () => {
 
   test("4. de DATABASE weigert VERWOORDBAAR met toepassingsgebied BELGIE", async () => {
     /* Grendel 2. De poort is code; dit is de regel waar ook een los
-       script niet omheen komt. Migratie 0037, in de stijl van
+       script niet omheen komt. Migratie 0038, in de stijl van
        uitspraken_tijdgebonden_vraagt_tijd. */
     await assert.rejects(
       () =>
