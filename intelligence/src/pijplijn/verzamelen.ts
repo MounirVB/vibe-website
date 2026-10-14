@@ -401,6 +401,7 @@ async function verzamelBron(
     robotsStatus: rij.robots_status,
     tdmStatus: rij.tdm_status,
     overgeslagenReden: uitkomst.resultaat === "overgeslagen" ? uitkomst.reden : null,
+    aanwijzingen: uitkomst.resultaat === "fout" ? (uitkomst.aanwijzingen ?? null) : null,
   });
   /* `storing_sinds` meet hoe LANG al, dus bij een onveranderde soort
      blijft de oorspronkelijke begintijd staan. Anders zou elke ronde

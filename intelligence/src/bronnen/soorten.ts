@@ -1,3 +1,4 @@
+import type { Antwoordaanwijzingen } from "./http.ts";
 /* ============================================================
    BRONNEN — het contract
    ------------------------------------------------------------
@@ -170,6 +171,13 @@ export type OphaalResultaat =
       foutBericht: string;
       herhaalbaar: boolean;
       duurMs: number;
+      /**
+       * Aantoonbare aanwijzingen uit het antwoord, voor de
+       * storingsclassificatie. Doorgegeven vanaf de HTTP-laag; zonder
+       * deze velden kan een 403 niet worden onderscheiden en valt hij
+       * naar TOEGANG_ONBEKEND. Zie bronnen/http.ts en migratie 0037.
+       */
+      aanwijzingen?: Antwoordaanwijzingen | null;
     };
 
 /**

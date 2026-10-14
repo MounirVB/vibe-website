@@ -48,7 +48,7 @@ import { toetsConcept, vatPoortenSamen, type ConceptTeToetsen } from "../../src/
 import { vindSchaalverlies } from "../../src/pijplijn/schaalcorrectie.ts";
 import { eenheidSoort, leesUitdrukkingen, rijmtMetUitdrukking } from "../../src/pijplijn/uitdrukking.ts";
 import { onderzoekInjectie, omhulBrontekst } from "../../src/pijplijn/injectie.ts";
-import { classificeerStoring } from "../../src/bronnen/storingssoort.ts";
+import { classificeerStoring, STORINGSSOORT_HANDELING } from "../../src/bronnen/storingssoort.ts";
 import { hostToegestaan } from "../../src/bronnen/http.ts";
 import { meldBestemming } from "../../src/ops/melden.ts";
 import { beoordeel, publicatiePrecheck } from "../../src/inhoud/beoordeling.ts";
@@ -466,21 +466,76 @@ describe("par. 32 — adversarieel, deel B (database)", () => {
   });
 
   /* ---------------- 14 ---------------- */
-  test("14. een 403 wordt TOEGANG_BEPERKT, en de handeling is 'toegang vragen' — niet 'opnieuw proberen'", () => {
-    const u = classificeerStoring({
-      resultaat: "fout",
+  test("14. een 403 schort ALTIJD op en zegt nooit 'opnieuw proberen' — wat de oorzaak ook is", () => {
+    /* DEZE TOETS IS AANGESCHERPT, NIET VERSOEPELD.
+       Hij eiste eerst letterlijk `403 -> TOEGANG_BEPERKT`. Dat was te
+       grof: die soort zegt in zijn handelingstekst dat de UITGEVER ons
+       weigert, en bij rendo-nieuws is gemeten dat dat onwaar is —
+       Cloudflare weigert een hostingnetwerk terwijl RENDO's robots.txt
+       een LEGE Disallow heeft, dus expliciet toestemming geeft.
+
+       Wat de toets werkelijk bewaakte — een 403 mag nooit worden
+       weggewacht of herhaald — geldt nu voor ALLE VIER de oorzaken, en
+       het oude geval staat er nog steeds in: met een robots-verbod als
+       bewijs IS het TOEGANG_BEPERKT. */
+    const basis = {
+      resultaat: "fout" as const,
       httpStatus: 403,
       foutSoort: null,
       herhaalbaar: false,
       aantalItems: 0,
-      robotsStatus: "toegestaan",
-      tdmStatus: "geen_voorbehoud",
+      robotsStatus: "toegestaan" as const,
+      tdmStatus: "geen_voorbehoud" as const,
       overgeslagenReden: null,
+    };
+
+    /* Zonder enig bewijs: GEEN conclusie over de oorzaak. */
+    const u = classificeerStoring(basis);
+    assert.equal(
+      u.soort,
+      "TOEGANG_ONBEKEND",
+      "een kale 403 zonder aanwijzingen mag geen oorzaak toegewezen krijgen",
+    );
+
+    /* Met het bewijs dat de UITGEVER het zelf verbiedt: TOEGANG_BEPERKT,
+       precies zoals deze toets oorspronkelijk eiste. */
+    const beleid = classificeerStoring({ ...basis, robotsStatus: "verboden" });
+    assert.equal(beleid.soort, "TOEGANG_BEPERKT");
+
+    /* Met het bewijs dat een CDN in de weg staat: CDN_BLOKKADE. */
+    const cdn = classificeerStoring({
+      ...basis,
+      aanwijzingen: { cdnHeaders: ["cf-ray"], server: "cloudflare", titel: null, wwwAuthenticate: null },
     });
-    assert.equal(u.soort, "TOEGANG_BEPERKT");
+    assert.equal(cdn.soort, "CDN_BLOKKADE");
+
+    /* En met een eis van de server zelf: NIET_GEAUTORISEERD. */
+    const auth = classificeerStoring({
+      ...basis,
+      aanwijzingen: { cdnHeaders: [], server: null, titel: null, wwwAuthenticate: 'Bearer realm="x"' },
+    });
+    assert.equal(auth.soort, "NIET_GEAUTORISEERD");
+
+    /* DE KERN. Geen van de vier mag blijven kloppen, en geen van de vier
+       mag 'opnieuw proberen' adviseren — dat is wat par. 24 verbiedt. */
+    for (const g of [u, beleid, cdn, auth]) {
+      assert.ok(
+        (g.opschortenMinuten ?? 0) > 0,
+        `${g.soort} schort niet op; blijven kloppen op een 403 is precies wat par. 24 verbiedt`,
+      );
+      const handeling = STORINGSSOORT_HANDELING[g.soort!];
+      assert.doesNotMatch(
+        handeling,
+        /opnieuw proberen|nogmaals|retry/i,
+        `de handeling bij ${g.soort} adviseert herhalen: "${handeling}"`,
+      );
+    }
+
+    /* Een CDN-blokkade mag niet MILDER zijn dan een uitgeversverbod: een
+       firewall die ons weigert is geen reden om vaker te kloppen. */
     assert.ok(
-      (u.opschortenMinuten ?? 0) > 0,
-      "een toegangsbeperking hoort het ophalen OP TE SCHORTEN; blijven kloppen is precies wat par. 24 verbiedt",
+      (cdn.opschortenMinuten ?? 0) >= (beleid.opschortenMinuten ?? 0),
+      "CDN_BLOKKADE schort korter op dan TOEGANG_BEPERKT; dat is een verzwakking",
     );
 
     /* En een robots-verbod is geen storing die je wegwacht. */

@@ -137,6 +137,75 @@ function urenSinds(d: Date | string | null): number | null {
  * een leeg lokaal archief is een aanvaarde grens zolang de bucket een
  * verse dump heeft, en een echt probleem zodra dat niet zo is.
  */
+/**
+ * Mag een LEEG lokaal back-uparchief als aanvaarde grens gelden?
+ *
+ * Pure functie, met opzet los van `meetGezondheid()`: deze beslissing
+ * bepaalt of het back-updomein DEGRADED of CRITICAL wordt, en die regel
+ * hoort toetsbaar te zijn zonder database en zonder bucket.
+ *
+ * DE ARCHITECTUUR DIE HIJ VOLGT, GEMETEN OP 14 OKTOBER 2026.
+ * Op Railway is `APP_WORTEL/backups` ephemere containerschijf: na elke
+ * deploy leeg. De bucket is de waarheid. En alléén vibe-intel-worker
+ * draagt INTEL_GCS_* en voert de dagelijkse back-uptaak uit; de api en de
+ * planner hebben geen back-uprol.
+ *
+ * Daardoor meldde `npm run gezondheid` op vibe-intel-api
+ * `CRITICAL — map /app/backups bestaat niet`, terwijl dezelfde code op de
+ * worker `externe kopie OK — 11 dumps, nieuwste 1,1 uur oud` en
+ * `restoretest OK` gaf. Een signaal dat van de meetPLAATS afhangt, is
+ * geen signaal over het platform.
+ *
+ * TWEE WEGEN NAAR 'AANVAARD', EN BEIDE VRAGEN BEWIJS:
+ *
+ *   1. de bucket zelf is gezond (een verse dump is aantoonbaar aanwezig);
+ *   2. of het TAKENLOGBOEK toont een GESLAAGDE back-uptaak binnen
+ *      dezelfde RPO-grens. `intel.taken` is gedeeld, dus dat antwoord is
+ *      op elke service hetzelfde.
+ *
+ * WAT HIJ NOOIT DOET: de ernst verlagen zonder bewijs. Geen geslaagde
+ * taak, een te oude taak, of een bucket die wél meetbaar is maar niet
+ * gezond — in alle drie die gevallen weegt het lokale gat onverminderd.
+ */
+export function backupAanvaardbaar(inv: {
+  /** Het niveau van de bucketmeting, of null als deze service de bucket niet kan zien. */
+  readonly externNiveau: Niveau | null;
+  /** Uren sinds de laatste GESLAAGDE back-uptaak, of null als er geen is. */
+  readonly taakUren: number | null;
+  readonly drempelUren: number;
+}): { readonly aanvaard: boolean; readonly viaTakenlogboek: boolean; readonly grond: string } {
+  const taakVers = inv.taakUren !== null && inv.taakUren <= inv.drempelUren;
+
+  if (inv.externNiveau === "OK") {
+    return { aanvaard: true, viaTakenlogboek: false, grond: "de bucket draagt een verse dump" };
+  }
+  /* Een bucket die MEETBAAR is maar niet gezond, mag nooit vergoelijkt
+     worden door het takenlogboek: dan is er iets echt mis en is een
+     geslaagde taak van gisteren juist verwarrend. */
+  if (inv.externNiveau !== null) {
+    return {
+      aanvaard: false,
+      viaTakenlogboek: false,
+      grond: `de bucket is meetbaar maar niet gezond (${inv.externNiveau})`,
+    };
+  }
+  if (taakVers) {
+    return {
+      aanvaard: true,
+      viaTakenlogboek: true,
+      grond: `niet meetbaar vanaf deze service, maar het takenlogboek toont een geslaagde back-uptaak van ${inv.taakUren?.toFixed(1)} uur oud`,
+    };
+  }
+  return {
+    aanvaard: false,
+    viaTakenlogboek: false,
+    grond:
+      inv.taakUren === null
+        ? "geen enkele geslaagde back-uptaak in het logboek"
+        : `de laatste geslaagde back-uptaak is ${inv.taakUren.toFixed(1)} uur oud, ouder dan de RPO van ${inv.drempelUren} uur`,
+  };
+}
+
 async function meetExterneBackup(
   gcs: ReturnType<typeof gcsConfigUitOmgeving>,
 ): Promise<Signaal> {
@@ -331,7 +400,25 @@ export async function meetGezondheid(
        hebben we hem geaccepteerd: dat is een bekende grens. Staat hij
        nog ACTIEF en loopt hij tegen een beperking aan, dan is dat nieuw
        en moet er iemand naar kijken. */
-    const beperking = st.soort === "TOEGANG_BEPERKT" || st.soort === "NIET_GEAUTORISEERD";
+    /* WELKE SOORTEN AANVAARD MOGEN WORDEN ALS ZE GEPARKEERD STAAN.
+       TOEGANG_BEPERKT en NIET_GEAUTORISEERD stonden hier al: een
+       vastgestelde grens die we hebben geaccepteerd.
+
+       CDN_BLOKKADE komt erbij (0037). Een geparkeerde CDN-blokkade is net
+       zo'n bekende, verantwoorde grens — en de remedie ligt bovendien
+       buiten ons bereik: een firewallregel van de uitgever.
+
+       TOEGANG_ONBEKEND komt er met OPZET NIET bij. Een grens die je niet
+       hebt vastgesteld, kun je niet aanvaarden; dan is 'aanvaard' een
+       manier om onwetendheid groen te maken. Die soort blijft dus FOUT,
+       ook als de bron uitstaat, tot iemand de oorzaak vaststelt.
+
+       Let op wat hier NIET gebeurt: niets hiervan verlaagt de ernst van
+       een ACTIEVE bron. `aanvaard` vereist `st.actieve === 0`. Voor
+       rendo-nieuws — één ACTIEVE bron met een CDN-blokkade — blijft het
+       signaal onverminderd FOUT. */
+    const beperking =
+      st.soort === "TOEGANG_BEPERKT" || st.soort === "NIET_GEAUTORISEERD" || st.soort === "CDN_BLOKKADE";
     const aanvaard = beperking && st.actieve === 0;
     voeg({
       groep: "ingestie",
@@ -824,10 +911,56 @@ export async function meetGezondheid(
      ze onverminderd zwaar. */
   const gcs = gcsConfigUitOmgeving();
   const externeStand = await meetExterneBackup(gcs);
-  /* Aanvaarden mag alleen als de bucket aantoonbaar een VERSE dump heeft.
-     Een onbereikbare of lege bucket mag een leeg lokaal archief niet
-     vergoelijken. */
-  const externVers = externeStand.niveau === "OK";
+
+  /* DE DERDE BRON VAN WAARHEID: HET TAKENLOGBOEK.
+     ------------------------------------------------------------------
+     Gemeten op 14 oktober 2026, en dit was een echt defect in de
+     MONITORING en niet in de back-up: `npm run gezondheid` op
+     vibe-intel-api meldde `CRITICAL — map /app/backups bestaat niet` en
+     `externe kopie NIET GEMETEN`, terwijl de back-ups volledig in orde
+     waren. Op vibe-intel-worker, met dezelfde code, meldde hij
+     `restoretest OK` en `externe kopie OK — 11 dumps, nieuwste 1,1 uur
+     oud`.
+
+     De oorzaak is dat ALLEEN de worker INTEL_GCS_* draagt en de
+     back-uptaak uitvoert. De api heeft geen back-uprol. Toch sprak zijn
+     meting over de back-ups van het hele platform — en kwam uit op
+     CRITICAL omdat hij ze niet kon zien.
+
+     Een signaal dat van de meetPLAATS afhangt, is geen signaal over het
+     platform. Daarom nu een derde bron die op ELKE service hetzelfde
+     zegt: intel.taken is gedeeld. Daar staat of de dagelijkse
+     back-uptaak is GESLAAGD, ongeacht welke container de vraag stelt.
+
+     DIT VERLAAGT GEEN ERNST ZONDER BEWIJS. De taak moet AANTOONBAAR
+     geslaagd zijn (status 'gereed') en binnen dezelfde RPO-grens vallen
+     als de bucketmeting. Is er geen geslaagde taak, of is hij te oud,
+     dan weegt het lokale gat onverminderd zwaar. */
+  const backupTaak = await rijen<{ laatste: string | null }>(
+    c,
+    `select max(gereed_op)::text as laatste
+       from intel.taken
+      where organisatie_id = $1 and soort = 'backup' and status = 'gereed'`,
+    [organisatieId],
+  );
+  const taakUren = urenSinds(backupTaak[0]?.laatste ?? null);
+  const besluit = backupAanvaardbaar({
+    externNiveau: gcs ? externeStand.niveau : null,
+    taakUren,
+    drempelUren: DREMPELS.backupLeeftijdUren,
+  });
+  const taakVers = besluit.viaTakenlogboek;
+
+  /* Aanvaarden mag alleen als er AANTOONBAAR een verse back-up is — uit
+     de bucket óf uit het takenlogboek. Een onbereikbare of lege bucket
+     mag een leeg lokaal archief niet vergoelijken, maar een api-service
+     die de bucket niet KAN zien mag ook geen valse CRITICAL opleveren
+     terwijl het logboek een geslaagde taak van een uur oud toont. */
+  /* Eén bron van waarheid voor deze beslissing: backupAanvaardbaar().
+     Hier stond `externeStand.niveau === "OK" || taakVers`, en dat is
+     dezelfde regel twee keer opgeschreven — precies het soort duplicaat
+     dat stil uiteen loopt. */
+  const externVers = besluit.aanvaard;
 
   if (!opties.backupMap || !existsSync(opties.backupMap)) {
     voeg({
@@ -973,7 +1106,27 @@ export async function meetGezondheid(
      De meting zelf staat sinds 3.0.5 in meetExterneBackup(), want de
      uitkomst is hierboven al nodig om te beslissen of een leeg LOKAAL
      archief een aanvaarde grens is of een echt probleem. */
-  voeg(externeStand);
+  /* GEEN GCS-CONFIGURATIE OP DEZE SERVICE IS GEEN BACK-UPGAT.
+     Draait deze meting op een service zonder back-uprol — alleen
+     vibe-intel-worker draagt INTEL_GCS_* en voert de back-uptaak uit —
+     dan kan hij de bucket niet zien. De oude tekst zei dan dat de
+     variabelen "ontbreken", wat als een configuratiefout van het
+     platform leest. Het takenlogboek weet beter, en is op elke service
+     hetzelfde. */
+  if (!gcs && taakVers) {
+    voeg({
+      ...externeStand,
+      aanvaard: true,
+      meting:
+        `niet meetbaar vanaf deze service (geen INTEL_GCS_*; alleen de worker heeft de back-uprol). ` +
+        `Het takenlogboek toont wel een GESLAAGDE back-uptaak van ${taakUren?.toFixed(1)} uur oud ` +
+        `— binnen de RPO van ${DREMPELS.backupLeeftijdUren} uur. Draai 'npm run gezondheid' op ` +
+        `vibe-intel-worker voor de bucketmeting zelf.`,
+      advies: undefined,
+    });
+  } else {
+    voeg(externeStand);
+  }
 
   return uit;
 }

@@ -15,11 +15,39 @@
 >
 > **Wat nog NIET waar is, en waarom dat hier staat:**
 >
-> - **Er is geen duurzame back-upretentie.** De logische back-up is
->   bewezen (dump van productie, teruggezet in een wegwerpdatabase op de
->   productieserver, 10/10 verificaties), maar hij schrijft naar een
->   ephemere containerschijf. Railway's eigen back-upschema's vereisen een
->   **Pro-workspace**; de workspace is `hobby` en is niet opgewaardeerd.
+> - ~~**Er is geen duurzame back-upretentie.**~~ **ACHTERHAALD — gemeten
+>   14 oktober 2026.** Deze regel zei dat de back-up alleen naar een
+>   ephemere containerschijf schrijft. Dat is niet meer waar: er is een
+>   externe bestemming in Google Cloud Storage, en de garanties zijn
+>   nagemeten op `vibe-intel-worker`:
+>
+>   | | gemeten |
+>   |---|---|
+>   | externe kopie | **11 dumps** in `gs://vibe-energy-intel-backups`, nieuwste **1,1 uur** oud (974 kB) |
+>   | frequentie | dagelijkse taak; `intel.taken` toont drie geslaagde runs (12, 13 en 14 oktober) |
+>   | RPO | 24 uur, met een signaaldrempel op **26 uur** (`DREMPELS.backupLeeftijdUren`) |
+>   | checksum | sha256 per dump, bij upload naar GCS opnieuw berekend en vergeleken; manifest met rijtellingen per tabel; `pg_restore --list` bewijst de structuur |
+>   | restorebewijs | **PASS 0,5 dagen** oud, 10 toetsen, restore in 639 ms, bewijsobject in `gs://…/restoretest/laatste.json` |
+>   | retentie | levensduurbeleid van de bucket: **35 dagen** live, **7 dagen** voor niet-actuele versies (`ops/gcsopslag.ts`) |
+>   | verwijderrecht | de dienstaccount heeft `objectCreator` + `objectViewer` en **GEEN delete** — een proces dat alles opruimt bestaat niet |
+>
+>   Wat Railway's eigen back-upschema's betreft blijft gelden dat die een
+>   Pro-workspace vragen en dat de workspace `hobby` is. Dat is hier
+>   alleen niet langer het hele verhaal: de retentie loopt niet via
+>   Railway maar via de bucket.
+>
+>   **Niet onafhankelijk geverifieerd:** of het levensduurbeleid van de
+>   bucket werkelijk op 35/7 dagen staat. Dat is overgenomen uit de
+>   toelichting in `ops/gcsopslag.ts`; het uitlezen van bucketconfiguratie
+>   vraagt een recht dat `objectViewer` niet heeft. De 11 aanwezige dumps
+>   zijn met dat beleid consistent, maar bewijzen het niet.
+>
+>   **Let op bij het meten.** `npm run gezondheid` moet op
+>   **`vibe-intel-worker`** draaien. Alleen die service draagt
+>   `INTEL_GCS_*` en voert de back-uptaak uit; op `vibe-intel-api` meldde
+>   dezelfde code `CRITICAL — map /app/backups bestaat niet` omdat hij de
+>   bucket niet kan zien. Sinds deze release leest het signaal daarom ook
+>   `intel.taken`, dat op elke service hetzelfde zegt.
 > - **Er is geen meldbestemming voor alerts.** `npm run gezondheid` is een
 >   commando, geen alarm. Niemand wordt gebeld.
 > - **Vijf koppelingen zijn NIET AANGESLOTEN** (GSC, Bing, GA4, CRM,

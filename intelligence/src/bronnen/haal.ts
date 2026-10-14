@@ -219,6 +219,11 @@ export async function haalBron(
       foutBericht: uitkomst.bericht,
       herhaalbaar: uitkomst.herhaalbaar,
       duurMs: uitkomst.duurMs,
+      /* De aanwijzingen MOETEN hier mee. Ze worden in http.ts uit het
+         antwoord gelezen en in storingssoort.ts gebruikt; viel deze
+         regel weg, dan kwam elke 403 als TOEGANG_ONBEKEND uit en was de
+         hele classificatie van 0037 dode code. */
+      aanwijzingen: uitkomst.aanwijzingen ?? null,
     };
   }
 
