@@ -379,7 +379,12 @@ export async function meldmailRonde(
   organisatieId: number,
   opties: {
     readonly nu?: Date;
-    readonly verstuur?: (b: { onderwerp: string; html: string; tekst: string }) => Promise<MailUitkomst>;
+    readonly verstuur?: (
+      b: { onderwerp: string; html: string; tekst: string },
+      /* De idempotentiesleutel. Een toets die hem negeert blijft geldig;
+         een toets die de crashwindow nabootst heeft hem nodig. */
+      idempotentieSleutel?: string,
+    ) => Promise<MailUitkomst>;
     readonly maxPerRonde?: number;
     readonly maxPogingen?: number;
   } = {},
@@ -623,6 +628,27 @@ export async function meldmailRonde(
     tekst: string | null;
   }>(
     c,
+    /* FOR UPDATE SKIP LOCKED — DE EERSTE VAN TWEE GRENDELS.
+       Zonder deze regel selecteren twee gelijktijdige rondes dezelfde
+       rij, bieden hem beide aan de provider aan en gaat er TWEE keer
+       dezelfde mail uit. Gemeten op 15 oktober 2026: `verzonden 2` voor
+       een rij, beide rondes `aangeboden 1`, en het tweede provider-id
+       overschreef het eerste. De unieke index kan daar niets tegen doen:
+       die bewaakt het BESTAAN van een rij, niet het AANTAL VERZENDINGEN.
+
+       WAAROM SKIP LOCKED EN NIET GEWOON FOR UPDATE. Met `for update`
+       zou de tweede ronde BLOKKEREN tot de eerste commit — en de eerste
+       transactie loopt door tot na de netwerkaanroep bij de provider.
+       Een trage provider zou de tweede ronde dan minuten laten wachten
+       om vervolgens alsnog niets te doen. Met `skip locked` slaat de
+       tweede ronde de rij over en gaat verder met de volgende; dat is
+       hier precies goed, want een overgeslagen rij is geen verloren rij
+       maar een rij die iemand anders al in behandeling heeft.
+
+       WAT DIT NIET IS. Dit is geen vergrendeling over de hele ronde: het
+       slot geldt per rij en valt weg bij commit of rollback. Een crash
+       laat dus geen vastgelopen bericht achter — zie de claim hieronder
+       en de kop van ops/mail.ts over de crashwindow. */
     `select id, soort, bundel, vingerafdruk, pogingen, onderwerp, html, tekst
        from intel.meld_berichten
       where organisatie_id = $1
@@ -630,7 +656,8 @@ export async function meldmailRonde(
         and pogingen < $2
         and (volgende_poging_op is null or volgende_poging_op <= $3)
       order by aangemaakt_op
-      limit $4`,
+      limit $4
+      for update skip locked`,
     [organisatieId, maxPogingen, nu.toISOString(), maxPerRonde],
   );
 
@@ -658,15 +685,77 @@ export async function meldmailRonde(
       continue;
     }
 
+    /* DE CLAIM — DE TWEEDE GRENDEL, EN DE ATOMAIRE.
+
+       `skip locked` hierboven dekt twee rondes die langs DEZE selectie
+       komen. Deze claim dekt elke andere aanroeper: hij herhaalt de
+       voorwaarden als UPDATE-predicaat, en een UPDATE die op een
+       rijvergrendeling wacht herbeoordeelt onder READ COMMITTED zijn
+       WHERE op de NIEUWE rijversie. Wie als tweede komt ziet dus
+       `geaccepteerd_op` gevuld of `pogingen` verhoogd, krijgt
+       `rowCount = 0`, en biedt niets aan. Zonder vergelijking in code,
+       zonder leesronde vooraf: de database beslist.
+
+       DE POGING WORDT HIER GETELD, EN NERGENS ANDERS. Eerst stond
+       `pogingen + 1` in beide uitkomsttakken. Dat kan niet meer samen
+       met deze claim — dan zou een geslaagde verzending twee pogingen
+       kosten en het retrybudget halveren. De takken hieronder schrijven
+       daarom alleen nog de UITKOMST.
+
+       EEN CRASH LAAT GEEN VASTGELOPEN BERICHT ACHTER. De claim zit in
+       dezelfde transactie als de ronde; valt het proces weg, dan rolt
+       hij terug en staat de rij er precies zo als hij stond —
+       onverzonden, met dezelfde `pogingen`. De volgende ronde pakt hem
+       gewoon op. Er is dus geen lease nodig en geen opruimtaak voor
+       halfverwerkte rijen. */
+    const geclaimd = await c.query(
+      `update intel.meld_berichten
+          set aangeboden_op = coalesce(aangeboden_op, now()),
+              pogingen = pogingen + 1
+        where id = $1
+          and geaccepteerd_op is null
+          and pogingen < $2
+          and (volgende_poging_op is null or volgende_poging_op <= $3)`,
+      [rij.id, maxPogingen, nu.toISOString()],
+    );
+    if ((geclaimd.rowCount ?? 0) === 0) {
+      log.waarschuwing("meldbericht was al door een andere ronde geclaimd; niet aangeboden", {
+        bericht: rij.id, soort: rij.soort, bundel: rij.bundel,
+      });
+      continue;
+    }
+
+    /* DE IDEMPOTENTIESLEUTEL — TEGEN DE CRASHWINDOW, NIET TEGEN DE RACE.
+       De race is hierboven al dicht. Wat overblijft is het venster
+       tussen de 200 van de provider en onze commit: accepteert Resend
+       het bericht en valt onze transactie daarna weg, dan weet de
+       database van niets en biedt een volgende ronde hetzelfde bericht
+       opnieuw aan. Alleen de provider kan die tweede mail nog
+       tegenhouden.
+
+       WAAROM `pogingen` VAN VOOR DE CLAIM IN DE SLEUTEL ZIT. Hij moet
+       stabiel zijn over precies die crashwindow en NIET over een
+       vastgelegde mislukking:
+         * crash na acceptatie -> de claim rolt mee terug, `rij.pogingen`
+           is bij de volgende ronde weer dezelfde, dus dezelfde sleutel,
+           dus geeft Resend het oorspronkelijke antwoord en gaat er geen
+           tweede mail uit;
+         * een GEMETEN mislukking -> `pogingen` is wel gecommit en dus
+           hoger, dus een nieuwe sleutel, dus een echte nieuwe poging.
+       Zou de sleutel alleen van de rij afhangen, dan zou een eerder
+       foutantwoord 24 uur lang herhaald worden en zou de retrylogica
+       stilvallen. */
+    const idempotentieSleutel = `intel-meld-${organisatieId}-${rij.id}-p${rij.pogingen}`;
+
     aangeboden += 1;
-    const uitkomst = opties.verstuur ? await opties.verstuur(inhoud) : await verstuurMail(inhoud);
+    const uitkomst = opties.verstuur
+      ? await opties.verstuur(inhoud, idempotentieSleutel)
+      : await verstuurMail(inhoud, { idempotentieSleutel });
 
     if (uitkomst.geaccepteerd) {
       await c.query(
         `update intel.meld_berichten
-            set aangeboden_op = coalesce(aangeboden_op, now()),
-                geaccepteerd_op = now(),
-                pogingen = pogingen + 1,
+            set geaccepteerd_op = now(),
                 provider = $2, provider_id = $3,
                 laatste_fout = null, volgende_poging_op = null
           where id = $1`,
@@ -717,18 +806,18 @@ export async function meldmailRonde(
       continue;
     }
 
+    /* De claim heeft `pogingen` al verhoogd en `aangeboden_op` gezet;
+       dit is dezelfde waarde als wat er nu in de rij staat. */
     const pogingen = rij.pogingen + 1;
     /* Een niet-herhaalbare fout (verkeerd adres, ongeldige sleutel) lost
        zich niet op door te wachten: die krijgt geen volgende poging. */
     const volgende = uitkomst.herhaalbaar ? volgendePoging(pogingen, nu) : null;
     await c.query(
       `update intel.meld_berichten
-          set aangeboden_op = coalesce(aangeboden_op, now()),
-              pogingen = $2,
-              laatste_fout = $3,
-              volgende_poging_op = $4
+          set laatste_fout = $2,
+              volgende_poging_op = $3
         where id = $1`,
-      [rij.id, pogingen, redigeer(uitkomst.fout ?? "onbekende fout").slice(0, 300), volgende],
+      [rij.id, redigeer(uitkomst.fout ?? "onbekende fout").slice(0, 300), volgende],
     );
     mislukt += 1;
     if (!volgende || pogingen >= maxPogingen) opgegeven += 1;

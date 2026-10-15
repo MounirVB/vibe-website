@@ -15,13 +15,12 @@
      enige dat de nieuwe mail kan verklaren.
 
    2 GELIJKTIJDIGHEID OP EEN BESTAANDE ONVERZONDEN RIJ staat NIET in dit
-     bestand, maar in test/bevinding/dubbele-verzending.test.ts. Die
-     toets reproduceert een GEMETEN defect en staat dus rood; binnen
-     `npm test` zou hij de drie verplichte checks van main rood maken en
-     daarmee elke andere tak blokkeren, en groen maken kan alleen door
-     de assertie af te zwakken. Hij draait met `npm run bevinding` —
-     zelfde constructie als `npm run browser`. De analyse staat in de
-     kop van dat bestand.
+     bestand, maar in test/integratie/meldketen-gelijktijdigheid.test.ts,
+     samen met de crashwindow en de herstart. Die toets reproduceerde
+     eerst een gemeten defect — twee rondes verstuurden dezelfde rij twee
+     keer — en staat groen sinds de twee grendels in ops/meldmail.ts
+     (`for update skip locked` plus een voorwaardelijke claim). De
+     analyse staat in de kop van dat bestand.
 
    3 GEEN PROCESGEHEUGEN IN DE MELDKETEN. Dat de ontdubbeling een
      workerherstart overleeft, is nu een GEVOLG van waar de staat staat

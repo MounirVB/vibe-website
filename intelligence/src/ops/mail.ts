@@ -163,6 +163,29 @@ export function nederlandseTijd(iso: string | Date | null | undefined): string {
 
 const REGELEINDE = /[\r\n\u2028\u2029\u0000]/;
 
+/* IDEMPOTENTIE BIJ DE PROVIDER — WAT DIT WEL EN NIET GARANDEERT
+   Resend accepteert een header `Idempotency-Key`: maximaal 256 tekens,
+   geldig 24 uur. Dezelfde sleutel met DEZELFDE payload binnen dat
+   venster geeft volgens de documentatie "the same response, without
+   actually sending the email again". Dezelfde sleutel met een ANDERE
+   payload geeft 409 `invalid_idempotent_request`, en een nog lopend
+   verzoek met dezelfde sleutel geeft 409 `concurrent_idempotent_requests`,
+   met de toevoeging dat later opnieuw proberen veilig is.
+
+   WAAROM DIT NODIG IS NAAST EEN DATABASEGRENDEL. Een vergrendeling in de
+   database voorkomt dat twee rondes hetzelfde bericht AANBIEDEN. Zij kan
+   niet voorkomen dat de provider een bericht aanneemt en onze transactie
+   daarna terugdraait — een crash, een verbroken verbinding, een statement
+   timeout tussen de 200 en de commit. Dan weet de database niets van de
+   acceptatie en biedt een volgende ronde hetzelfde bericht opnieuw aan.
+   Alleen de provider kan die tweede mail nog tegenhouden, en dat doet hij
+   op deze sleutel.
+
+   De vorm is streng: alleen wat meldmail.ts zelf opbouwt. Dit is geen
+   gebruikersinvoer die we moeten accommoderen, en een headerwaarde met
+   een regeleinde erin is een injectie. */
+const IDEMPOTENTIESLEUTEL = /^[A-Za-z0-9._:-]{8,256}$/;
+
 export function onderwerpVeilig(ruw: string): string {
   const schoon = redigeer(ruw).replace(/[\r\n\u2028\u2029\u0000]+/g, " ").replace(/\s+/g, " ").trim();
   /* 998 is de RFC-grens voor een headerregel; 180 is wat een mens leest. */
@@ -191,7 +214,18 @@ export async function verstuurMail(
     readonly html: string;
     readonly tekst: string;
   },
-  opties: { readonly fetchImpl?: typeof fetch; readonly timeoutMs?: number } = {},
+  opties: {
+    readonly fetchImpl?: typeof fetch;
+    readonly timeoutMs?: number;
+    /**
+     * De idempotentiesleutel voor de provider. Zie IDEMPOTENTIE hieronder.
+     *
+     * Weglaten mag: dan gedraagt deze functie zich als voorheen. De
+     * losse testmail van cli/meldmail.ts geeft hem niet mee, omdat die
+     * zijn eigen grendel in de vingerafdruk per minuut heeft.
+     */
+    readonly idempotentieSleutel?: string | null;
+  } = {},
 ): Promise<MailUitkomst> {
   const b = mailBestemming();
   if (b.soort === "geen") {
@@ -220,6 +254,21 @@ export async function verstuurMail(
     };
   }
 
+  /* EEN SLEUTEL IS EEN HEADERWAARDE, DUS DEZELFDE GRENDEL ALS HIERBOVEN.
+     Hij wordt in meldmail.ts uit gehele getallen opgebouwd en kan dus
+     geen regeleinde bevatten — maar dat is een eigenschap van de
+     aanroeper, en die mag deze module niet aannemen. */
+  const sleutel = opties.idempotentieSleutel ?? null;
+  if (sleutel !== null && !IDEMPOTENTIESLEUTEL.test(sleutel)) {
+    return {
+      geaccepteerd: false,
+      providerId: null,
+      provider: "resend",
+      fout: "de idempotentiesleutel heeft een ongeldige vorm; geweigerd wegens headerinjectie",
+      herhaalbaar: false,
+    };
+  }
+
   const doe = opties.fetchImpl ?? fetch;
   try {
     const antwoord = await doe(RESEND_URL, {
@@ -227,6 +276,7 @@ export async function verstuurMail(
       headers: {
         "content-type": "application/json",
         authorization: `Bearer ${b.sleutel}`,
+        ...(sleutel === null ? {} : { "idempotency-key": sleutel }),
       },
       body: JSON.stringify({
         from: b.afzender,
@@ -242,8 +292,22 @@ export async function verstuurMail(
     if (!antwoord.ok) {
       /* 4xx is onze fout (verkeerd adres, niet-geverifieerd domein,
          ongeldige sleutel) en lost zich niet op door te wachten. 5xx en
-         429 wel. */
-      const herhaalbaar = antwoord.status >= 500 || antwoord.status === 429;
+         429 wel.
+
+         EEN 409 IS TWEE DINGEN, EN MAAR EEN ERVAN IS HERHAALBAAR.
+         `concurrent_idempotent_requests` betekent dat er nog een verzoek
+         met dezelfde sleutel loopt; de documentatie zegt uitdrukkelijk
+         dat later opnieuw proberen veilig is. `invalid_idempotent_request`
+         betekent dat dezelfde sleutel eerder met een ANDERE payload is
+         gebruikt, en dan is wachten zinloos: "Retrying this request is
+         useless without changing the idempotency key or payload." Dat
+         laatste is bij ons een programmeerfout — de inhoud van een rij
+         staat vast — en hoort dus hard op te vallen in plaats van vijf
+         keer herhaald te worden. */
+      const herhaalbaar =
+        antwoord.status >= 500 ||
+        antwoord.status === 429 ||
+        (antwoord.status === 409 && ruw.includes("concurrent_idempotent_requests"));
       return {
         geaccepteerd: false,
         providerId: null,
