@@ -50,6 +50,7 @@
     "benchmark": "node src/cli/benchmark.ts",
     "wachtwoordtoken": "node src/cli/wachtwoordtoken.ts",
     "browser": "node --test --test-concurrency=1 \"test/browser/*.browser.test.ts\"",
+    "bevinding": "node --test --test-concurrency=1 \"test/bevinding/*.test.ts\"",
     "meldmail": "node src/cli/meldmail.ts"
   },
   "dependencies": {
