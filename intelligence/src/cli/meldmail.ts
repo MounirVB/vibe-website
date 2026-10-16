@@ -32,6 +32,7 @@ import {
   testVingerafdruk,
   verrijkMeldingen,
   type Meldingrij,
+  idempotentieSleutelVan,
 } from "../ops/meldmail.ts";
 
 laadEnvBestand();
@@ -237,7 +238,16 @@ try {
       uit(`\n  TESTMAIL naar ${b.ontvanger}\n`);
       uit(`    onderwerp  ${opmaak.onderwerp}\n`);
       uit(`    bericht-id ${id}\n`);
-      const uitkomst = await verstuurMail(opmaak);
+      /* DEZELFDE SLEUTEL ALS DE UURRONDE ZOU GEBRUIKEN.
+         Valt dit proces weg tussen de 200 van de provider en de update
+         hieronder, dan blijft de rij als onverzonden staan en pakt de
+         volgende uurronde hem op. Die berekent de sleutel uit dezelfde
+         payload en hetzelfde pogingnummer (0), dus houdt de provider de
+         tweede mail tegen. Zonder deze sleutel was de testmail het ene
+         bericht waarvoor de aangekondigde garantie niet gold. */
+      const uitkomst = await verstuurMail(opmaak, {
+        idempotentieSleutel: idempotentieSleutelVan(organisatieId, opmaak, 0),
+      });
       await metOrganisatie(pool, { organisatieId }, (c) =>
         c.query(
           `update intel.meld_berichten

@@ -48,12 +48,14 @@ describe("de meldketen — gelijktijdigheid, crashwindow en herstart", () => {
   let db: Wegwerpdatabase;
   let org = 0;
 
-  /* De nagebootste sleutel wordt samengesteld in plaats van opgeschreven:
-     ops/geheimenscan.mjs vlagt de VORM `RESEND_API_KEY: "<lange waarde>"`
-     in broncode als geheim, en terecht. Zelfde aanpak als in
-     test/integratie/meldmailketen.test.ts. */
+  /* De nepsleutel staat er letterlijk, met de gedocumenteerde
+     per-regelmarkering van ops/geheimenscan.mjs erboven (zie
+     docs/SECURITYREVIEW.md). Dat is beter dan de waarde samenstellen om
+     de scanner te ontwijken: zo'n constructie maakt die regel voor ALLE
+     toekomstige waarden onzichtbaar, ook voor een echte sleutel. */
   const ENV: Record<string, string> = {
-    [["RESEND", "API", "KEY"].join("_")]: ["re", "nagebootst", "nooit", "een", "echte"].join("_"),
+    // geheimenscan: ok — nepsleutel voor de toets, nooit een echte
+    RESEND_API_KEY: "re_nagebootst_nooit_een_echte",
     INTEL_MAIL_ONTVANGER: "marketing@vibeenergy.nl",
     INTEL_MAIL_AFZENDER: "alerts@vibeenergy.nl",
     INTEL_MAIL_ACTIEF: "1",
@@ -293,8 +295,8 @@ describe("de meldketen — gelijktijdigheid, crashwindow en herstart", () => {
     );
     assert.match(
       sleutels[0]!,
-      /^intel-meld-\d+-\d+-p0$/,
-      "de sleutel hoort organisatie, rij en het pogingnummer VOOR de poging te dragen",
+      /^intel-[a-z0-9]+-\d+-[0-9a-f]{16}-a0$/,
+      "de sleutel hoort omgeving, organisatie, een payloadhash en het antwoordnummer te dragen",
     );
   });
 
@@ -351,8 +353,8 @@ describe("de meldketen — gelijktijdigheid, crashwindow en herstart", () => {
       "na een VASTGELEGDE mislukking hoort de sleutel te veranderen; anders geeft de " +
         "provider 24 uur lang hetzelfde foutantwoord terug",
     );
-    assert.match(sleutels[0]!, /-p0$/, "de eerste poging draagt p0");
-    assert.match(sleutels[1]!, /-p1$/, "de tweede poging draagt p1");
+    assert.match(sleutels[0]!, /-a0$/, "de eerste poging draagt a0");
+    assert.match(sleutels[1]!, /-a1$/, "na EEN bekend antwoord draagt de tweede a1");
 
     const naRetry = await berichten();
     assert.equal(naRetry[0]!.pogingen, 2, "twee aanbiedingen zijn twee pogingen");
@@ -385,9 +387,10 @@ describe("de meldketen — gelijktijdigheid, crashwindow en herstart", () => {
     );
     assert.match(
       zonderCommentaar,
-      /set aangeboden_op = coalesce\(aangeboden_op, now\(\)\),\s*\n\s*pogingen = pogingen \+ 1\s*\n\s*where id = \$1\s*\n\s*and geaccepteerd_op is null/,
-      "de claim hoort de voorwaarden als UPDATE-predicaat te herhalen; zonder dat predicaat " +
-        "claimt een tweede aanroeper dezelfde rij",
+      /pogingen = pogingen \+ 1\s*\n\s*where id = \$1\s*\n\s*and organisatie_id = \$2\s*\n\s*and geaccepteerd_op is null\s*\n\s*and pogingen = \$3/,
+      "de claim hoort een compare-and-set te zijn op organisatie EN op het pogingnummer dat de " +
+        "selectie zag; zonder die binding claimt een tweede aanroeper dezelfde rij zodra de " +
+        "eerste op een niet-herhaalbare fout eindigt",
     );
     /* EN DE POGING WORDT MAAR EEN KEER GETELD. Zou een uitkomsttak hem
        opnieuw verhogen, dan kost een geslaagde verzending twee pogingen
@@ -401,7 +404,99 @@ describe("de meldketen — gelijktijdigheid, crashwindow en herstart", () => {
     );
   });
 
-  test("5. HERSTART: een nieuwe verbindingspool verstuurt niets opnieuw", async () => {
+  test("5. ONBEKENDE UITKOMST: geen antwoord geeft DEZELFDE sleutel en kost geen poging", async () => {
+    /* HET GEVAL WAARVOOR DE SLEUTEL BESTAAT, en het geval dat de eerste
+       versie van deze reparatie juist MISTE. De provider neemt de mail
+       aan, maar ons antwoord komt niet aan: `AbortSignal.timeout` vuurt,
+       of de verbinding valt weg. `verstuurMail` geeft dan
+       `uitkomstBekend: false` — geen uitzondering, dus GEEN rollback,
+       dus de claim met `pogingen + 1` zou gewoon committen. Met het
+       pogingnummer in de sleutel kreeg de volgende ronde daardoor een
+       NIEUWE sleutel en stuurde de provider een tweede mail. Gemeten op
+       16 oktober 2026.
+
+       Daarom telt een onbekende uitkomst niet als poging: de verhoging
+       wordt teruggedraaid, de rij krijgt een korte wachttijd, en de
+       volgende aanbieding draagt dezelfde sleutel. */
+    await zetKlaar();
+    const sleutels: string[] = [];
+    const geenAntwoord = async (_b: unknown, s?: string): Promise<MailUitkomst> => {
+      sleutels.push(s ?? "(geen sleutel)");
+      return {
+        geaccepteerd: false,
+        providerId: null,
+        provider: "resend",
+        fout: "The operation was aborted due to timeout",
+        herhaalbaar: true,
+        uitkomstBekend: false,
+      };
+    };
+    const lukt = async (_b: unknown, s?: string): Promise<MailUitkomst> => {
+      sleutels.push(s ?? "(geen sleutel)");
+      return {
+        geaccepteerd: true,
+        providerId: "re_nagebootst_na_onbekend",
+        provider: "resend",
+        fout: null,
+        herhaalbaar: false,
+      };
+    };
+
+    const eerste = await ronde(geenAntwoord, NU);
+    assert.equal(eerste.aangeboden, 1, "de rij is aangeboden");
+    assert.equal(eerste.mislukt, 1, "en als mislukt geteld, want geaccepteerd is hij niet");
+    const naOnbekend = await berichten();
+    assert.equal(
+      naOnbekend[0]!.pogingen,
+      0,
+      "een ONBEKENDE uitkomst mag geen poging kosten; anders verandert de sleutel",
+    );
+    assert.ok(naOnbekend[0]!.volgende, "er staat wel een korte wachttijd");
+    assert.match(naOnbekend[0]!.laatste_fout ?? "", /uitkomst onbekend/);
+    assert.equal(naOnbekend[0]!.geaccepteerd, null);
+
+    const tweede = await ronde(lukt, new Date(NU.getTime() + 2 * 60_000));
+    assert.equal(tweede.geaccepteerd, 1, "de volgende ronde biedt hem opnieuw aan");
+    assert.equal(sleutels.length, 2);
+    assert.equal(
+      sleutels[1],
+      sleutels[0],
+      "na een onbekende uitkomst hoort DEZELFDE sleutel mee te gaan; anders stuurt de " +
+        "provider een tweede mail voor een bericht dat hij misschien al heeft aangenomen",
+    );
+    assert.match(sleutels[1]!, /-a0$/, "het antwoordnummer is niet opgeschoven");
+  });
+
+  test("6. DEZE RONDE EIST EEN TRANSACTIE en weigert zonder", async () => {
+    /* Beide grendels hangen eraan: in autocommit valt een
+       rijvergrendeling weg aan het eind van het statement, en dan
+       selecteren twee rondes alsnog dezelfde rij — gemeten: twee
+       aanbiedingen met twee verschillende sleutels. Alle huidige
+       aanroepers gaan via metOrganisatie, maar niets verbood het
+       andersom. Nu faalt het hard in plaats van stil. */
+    await zetKlaar();
+    const client = await db.pool.connect();
+    try {
+      await client.query("select set_config('app.organisatie_id', $1, false)", [String(org)]);
+      await assert.rejects(
+        meldmailRonde(client, org, {
+          nu: NU,
+          verstuur: async () => {
+            throw new Error("hier had de ronde nooit mogen komen");
+          },
+        }),
+        /savepoint|transaction/i,
+        "zonder transactie hoort de ronde te weigeren, niet te verzenden",
+      );
+    } finally {
+      client.release();
+    }
+    const na = await berichten();
+    assert.equal(na[0]!.pogingen, 0, "en er is niets aangeboden");
+    assert.equal(na[0]!.aangeboden, null);
+  });
+
+  test("7. HERSTART: een nieuwe verbindingspool verstuurt niets opnieuw", async () => {
     /* De ontdubbeling mag niet in procesgeheugen zitten. Een tweede
        pool is geen echte herstart — dat kan een toets niet nabootsen —
        maar hij verlaat wel de verbinding en de poolstaat van de eerste
