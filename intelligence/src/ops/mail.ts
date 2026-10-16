@@ -163,6 +163,29 @@ export function nederlandseTijd(iso: string | Date | null | undefined): string {
 
 const REGELEINDE = /[\r\n\u2028\u2029\u0000]/;
 
+/* IDEMPOTENTIE BIJ DE PROVIDER — WAT DIT WEL EN NIET GARANDEERT
+   Resend accepteert een header `Idempotency-Key`: maximaal 256 tekens,
+   geldig 24 uur. Dezelfde sleutel met DEZELFDE payload binnen dat
+   venster geeft volgens de documentatie "the same response, without
+   actually sending the email again". Dezelfde sleutel met een ANDERE
+   payload geeft 409 `invalid_idempotent_request`, en een nog lopend
+   verzoek met dezelfde sleutel geeft 409 `concurrent_idempotent_requests`,
+   met de toevoeging dat later opnieuw proberen veilig is.
+
+   WAAROM DIT NODIG IS NAAST EEN DATABASEGRENDEL. Een vergrendeling in de
+   database voorkomt dat twee rondes hetzelfde bericht AANBIEDEN. Zij kan
+   niet voorkomen dat de provider een bericht aanneemt en onze transactie
+   daarna terugdraait — een crash, een verbroken verbinding, een statement
+   timeout tussen de 200 en de commit. Dan weet de database niets van de
+   acceptatie en biedt een volgende ronde hetzelfde bericht opnieuw aan.
+   Alleen de provider kan die tweede mail nog tegenhouden, en dat doet hij
+   op deze sleutel.
+
+   De vorm is streng: alleen wat meldmail.ts zelf opbouwt. Dit is geen
+   gebruikersinvoer die we moeten accommoderen, en een headerwaarde met
+   een regeleinde erin is een injectie. */
+const IDEMPOTENTIESLEUTEL = /^[A-Za-z0-9._:-]{8,256}$/;
+
 export function onderwerpVeilig(ruw: string): string {
   const schoon = redigeer(ruw).replace(/[\r\n\u2028\u2029\u0000]+/g, " ").replace(/\s+/g, " ").trim();
   /* 998 is de RFC-grens voor een headerregel; 180 is wat een mens leest. */
@@ -177,6 +200,27 @@ export type MailUitkomst = {
   readonly fout: string | null;
   /** Mag het opnieuw geprobeerd worden? Een 4xx-configuratiefout niet. */
   readonly herhaalbaar: boolean;
+  /**
+   * WETEN WE WAT DE PROVIDER HEEFT GEDAAN?
+   *
+   * `true` bij elk antwoord — ook bij een 4xx of 5xx: dan weten we dat
+   * hij het NIET heeft aangenomen. `false` als het verzoek geen antwoord
+   * opleverde: een time-out, een afgebroken verbinding, een proxy die
+   * wegvalt. Dan is de uitkomst ONBEKEND: mogelijk is de mail wel
+   * verstuurd.
+   *
+   * WAAROM DIT VELD BESTAAT. Op dat onderscheid hangt de hele
+   * idempotentie. Een onbekende uitkomst moet met DEZELFDE sleutel
+   * worden herhaald, zodat de provider de tweede mail tegenhoudt; een
+   * bekende afwijzing hoort een NIEUWE sleutel te krijgen, anders geeft
+   * de provider 24 uur lang zijn oude antwoord terug. Gemeten op
+   * 16 oktober 2026: zonder dit onderscheid gaf een time-out na
+   * acceptatie een nieuwe sleutel en dus een tweede mail.
+   *
+   * Afwezig betekent `true`. Zo blijven bestaande aanroepers en toetsen
+   * geldig: alleen de catch onderaan zet hem op `false`.
+   */
+  readonly uitkomstBekend?: boolean;
 };
 
 /**
@@ -191,7 +235,18 @@ export async function verstuurMail(
     readonly html: string;
     readonly tekst: string;
   },
-  opties: { readonly fetchImpl?: typeof fetch; readonly timeoutMs?: number } = {},
+  opties: {
+    readonly fetchImpl?: typeof fetch;
+    readonly timeoutMs?: number;
+    /**
+     * De idempotentiesleutel voor de provider. Zie IDEMPOTENTIE hieronder.
+     *
+     * Weglaten mag: dan gedraagt deze functie zich als voorheen. De
+     * losse testmail van cli/meldmail.ts geeft hem niet mee, omdat die
+     * zijn eigen grendel in de vingerafdruk per minuut heeft.
+     */
+    readonly idempotentieSleutel?: string | null;
+  } = {},
 ): Promise<MailUitkomst> {
   const b = mailBestemming();
   if (b.soort === "geen") {
@@ -220,6 +275,21 @@ export async function verstuurMail(
     };
   }
 
+  /* EEN SLEUTEL IS EEN HEADERWAARDE, DUS DEZELFDE GRENDEL ALS HIERBOVEN.
+     Hij wordt in meldmail.ts uit gehele getallen opgebouwd en kan dus
+     geen regeleinde bevatten — maar dat is een eigenschap van de
+     aanroeper, en die mag deze module niet aannemen. */
+  const sleutel = opties.idempotentieSleutel ?? null;
+  if (sleutel !== null && !IDEMPOTENTIESLEUTEL.test(sleutel)) {
+    return {
+      geaccepteerd: false,
+      providerId: null,
+      provider: "resend",
+      fout: "de idempotentiesleutel heeft een ongeldige vorm; geweigerd wegens headerinjectie",
+      herhaalbaar: false,
+    };
+  }
+
   const doe = opties.fetchImpl ?? fetch;
   try {
     const antwoord = await doe(RESEND_URL, {
@@ -227,6 +297,7 @@ export async function verstuurMail(
       headers: {
         "content-type": "application/json",
         authorization: `Bearer ${b.sleutel}`,
+        ...(sleutel === null ? {} : { "idempotency-key": sleutel }),
       },
       body: JSON.stringify({
         from: b.afzender,
@@ -242,14 +313,65 @@ export async function verstuurMail(
     if (!antwoord.ok) {
       /* 4xx is onze fout (verkeerd adres, niet-geverifieerd domein,
          ongeldige sleutel) en lost zich niet op door te wachten. 5xx en
-         429 wel. */
-      const herhaalbaar = antwoord.status >= 500 || antwoord.status === 429;
+         429 wel.
+
+         EEN 409 IS TWEE DINGEN, EN MAAR EEN ERVAN IS HERHAALBAAR.
+         `concurrent_idempotent_requests` betekent dat er nog een verzoek
+         met dezelfde sleutel loopt; de documentatie zegt uitdrukkelijk
+         dat later opnieuw proberen veilig is. `invalid_idempotent_request`
+         betekent dat dezelfde sleutel eerder met een ANDERE payload is
+         gebruikt, en dan is wachten zinloos: "Retrying this request is
+         useless without changing the idempotency key or payload."
+
+         DAT GEVAL HOORT BIJ ONS NIET MEER TE KUNNEN. Sinds de sleutel
+         een hash van de payload is (ops/meldmail.ts) geeft een andere
+         payload per definitie een andere sleutel. Komt deze 409 toch
+         voorbij, dan is er een aanname gebroken en is dat de melding
+         waard.
+
+         LET OP WAT `herhaalbaar: false` WEL EN NIET DOET. Het slaat de
+         back-off over, maar het stopt niets: de verzendselectie leest
+         `volgende_poging_op is null` als 'nu te verzenden', dus een
+         niet-herhaalbare fout wordt de volgende ronde opnieuw
+         aangeboden, tot `pogingen` de grens raakt. Gemeten op
+         16 oktober 2026: zes rondes achter elkaar, aangeboden
+         1,1,1,1,1,0, terwijl de eerste ronde al `opgegeven 1` meldde.
+         Dat gedrag staat ongewijzigd in de basis (fb65932) en is hier
+         met opzet NIET veranderd: 'definitief' echt terminaal maken
+         raakt elke bestaande foutklasse en is een eigen besluit. */
+      /* LEES HET VELD, NIET DE PROZA. Een substringtoets op het hele
+         antwoord slaat ook aan als de naam in `message` staat terwijl
+         `name` iets anders zegt — gemeten met
+         {"name":"invalid_idempotent_request","message":"subject
+         contained: concurrent_idempotent_requests"}, en dat werd dan
+         onterecht als herhaalbaar geclassificeerd. */
+      let foutnaam: string | null = null;
+      try {
+        const d = JSON.parse(ruw) as { name?: unknown };
+        if (typeof d.name === "string") foutnaam = d.name;
+      } catch {
+        /* Geen leesbare JSON: dan valt de classificatie terug op de
+           statuscode alleen. Beter dan raden op losse tekst. */
+      }
+      const herhaalbaar =
+        antwoord.status >= 500 ||
+        antwoord.status === 429 ||
+        (antwoord.status === 409 && foutnaam === "concurrent_idempotent_requests");
       return {
         geaccepteerd: false,
         providerId: null,
         provider: "resend",
-        /* De sleutel kan in een foutecho terugkomen; redigeer eerst. */
-        fout: redigeer(`HTTP ${antwoord.status}: ${ruw.slice(0, 300)}`, [b.sleutel]),
+        /* REDIGEREN EN DAARNA AFKAPPEN, NIET OMGEKEERD.
+           Dit stond er andersom, en dat lekte: een sleutel die in het
+           antwoord precies op de 300-grens ligt wordt doormidden
+           geknipt, en het restfragment matcht daarna noch de letterlijke
+           vervanging (die eist de hele waarde) noch het patroon
+           `re_[A-Za-z0-9_-]{16,}` (dat 16+ tekens eist). Gemeten op
+           16 oktober 2026: met de sleutel op index 295 eindigde de
+           fouttekst op "...re_A1" en belandde dat fragment in
+           intel.meld_berichten.laatste_fout. De invoer wordt eerst
+           begrensd, zodat een enorm antwoord de scan niet opblaast. */
+        fout: redigeer(`HTTP ${antwoord.status}: ${ruw.slice(0, 8_000)}`, [b.sleutel]).slice(0, 300),
         herhaalbaar,
       };
     }
@@ -265,9 +387,20 @@ export async function verstuurMail(
     log.info("meldbericht aangeboden en geaccepteerd", { provider: "resend", provider_id: id });
     return { geaccepteerd: true, providerId: id, provider: "resend", fout: null, herhaalbaar: false };
   } catch (e) {
-    /* Netwerkfout of time-out: herhaalbaar. redacteerFout haalt een
-       eventuele credential-URL uit de tekst. */
+    /* Netwerkfout of time-out: herhaalbaar, en de uitkomst is ONBEKEND.
+       Er is geen antwoord, dus het kan zijn dat de provider de mail wel
+       heeft aangenomen. Dat verschil is wat de aanroeper nodig heeft om
+       dezelfde idempotentiesleutel te hergebruiken in plaats van een
+       nieuwe te nemen. redacteerFout haalt een eventuele credential-URL
+       uit de tekst. */
     const fout = redigeer(redacteerFout(e), [b.sleutel]);
-    return { geaccepteerd: false, providerId: null, provider: "resend", fout, herhaalbaar: true };
+    return {
+      geaccepteerd: false,
+      providerId: null,
+      provider: "resend",
+      fout,
+      herhaalbaar: true,
+      uitkomstBekend: false,
+    };
   }
 }

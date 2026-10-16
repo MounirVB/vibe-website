@@ -313,6 +313,65 @@ export function bouwMeldplan(invoer: {
 
 export const BACKOFF_MINUTEN: readonly number[] = [1, 5, 15, 60, 240];
 
+/**
+ * Het omgevingsdeel van de idempotentiesleutel.
+ *
+ * PER AANROEP GELEZEN, niet bij het laden van de module. Zelfde reden
+ * als bij `mailBestemming()`: een toets of een CLI die de omgeving zet
+ * nadat de module is geimporteerd hoort dat te zien, en een vastgezette
+ * waarde op moduleniveau zou bovendien de structurele grendel op
+ * procesgeheugen omzeilen.
+ *
+ * Alles buiten [a-z0-9] valt weg, zodat de sleutel gegarandeerd aan de
+ * vorm uit ops/mail.ts voldoet en nooit een headerinjectie kan worden.
+ */
+function omgevingsdeel(): string {
+  const ruw = (process.env["INTEL_OMGEVING"] ?? "onbekend").toLowerCase();
+  const schoon = ruw.replace(/[^a-z0-9]/g, "");
+  return schoon.length > 0 ? schoon.slice(0, 16) : "onbekend";
+}
+
+/**
+ * De idempotentiesleutel voor een aanbieding aan de provider.
+ *
+ * EEN PLEK, WANT TWEE PLEKKEN IS GEEN GRENDEL. De uurronde en de losse
+ * testmail uit cli/meldmail.ts bieden beide aan; zouden ze een andere
+ * sleutel opbouwen, dan houdt de provider een dubbele mail niet tegen
+ * in precies het geval dat ze elkaar opvolgen — en dat geval is gemeten:
+ * een afgebroken CLI-run laat een onverzonden rij achter die de
+ * volgende uurronde oppakt.
+ *
+ * DRIE KEUZES, ELK UIT EEN GEMETEN FOUT (16 oktober 2026):
+ *
+ * 1 INHOUDGEBONDEN, NIET POSITIONEEL. Eerst stond `rij.id` in de
+ *   sleutel. Die is een `bigserial` die in elke database bij 1 begint,
+ *   en Resend houdt sleutels per API-credential bij — dat credential is
+ *   gedeeld. Twee databases met dezelfde stand gaven dus letterlijk
+ *   dezelfde sleutel, en na een restore hergebruikt de sequence oude
+ *   id's. Gevolg: een NIEUW alarm met een oude sleutel wordt door de
+ *   provider onderdrukt terwijl wij het als geaccepteerd registreren —
+ *   een gemiste storingsmail, en dat is erger dan een dubbele.
+ * 2 MET EEN OMGEVINGSDISCRIMINATOR. Twee installaties kunnen dezelfde
+ *   stand hebben en dus dezelfde payload; INTEL_OMGEVING scheidt ze.
+ * 3 ROTEREN OP EEN BEKEND ANTWOORD, NIET OP ELKE POGING. `antwoorden`
+ *   is het aantal eerdere pogingen MET een bekend antwoord. Een
+ *   onbekende uitkomst laat dat getal staan, dus komt dezelfde sleutel
+ *   terug en houdt de provider de tweede mail tegen. Een bekende
+ *   afwijzing schuift het op, dus krijgt de volgende poging een nieuwe
+ *   sleutel en geeft de provider niet 24 uur lang zijn oude antwoord
+ *   terug.
+ */
+export function idempotentieSleutelVan(
+  organisatieId: number,
+  inhoud: { readonly onderwerp: string; readonly html: string; readonly tekst: string },
+  antwoorden: number,
+): string {
+  const payloadhash = sha256hex(
+    `${inhoud.onderwerp}\x00${inhoud.html}\x00${inhoud.tekst}`,
+  ).slice(0, 16);
+  return `intel-${omgevingsdeel()}-${organisatieId}-${payloadhash}-a${antwoorden}`;
+}
+
 export function volgendePoging(pogingen: number, nu: Date): Date | null {
   const m = BACKOFF_MINUTEN[pogingen];
   if (m === undefined) return null;
@@ -379,7 +438,12 @@ export async function meldmailRonde(
   organisatieId: number,
   opties: {
     readonly nu?: Date;
-    readonly verstuur?: (b: { onderwerp: string; html: string; tekst: string }) => Promise<MailUitkomst>;
+    readonly verstuur?: (
+      b: { onderwerp: string; html: string; tekst: string },
+      /* De idempotentiesleutel. Een toets die hem negeert blijft geldig;
+         een toets die de crashwindow nabootst heeft hem nodig. */
+      idempotentieSleutel?: string,
+    ) => Promise<MailUitkomst>;
     readonly maxPerRonde?: number;
     readonly maxPogingen?: number;
   } = {},
@@ -421,6 +485,23 @@ export async function meldmailRonde(
       opgegeven: 0, gedekt: 0,
     };
   }
+
+  /* DEZE RONDE EIST EEN TRANSACTIE, EN DAT WAS EEN STILLE AANNAME.
+     Beide grendels van de verzendlus hangen eraan: een rijvergrendeling
+     uit `for update skip locked` valt in autocommit weg aan het eind
+     van het statement, en dan selecteren twee rondes alsnog dezelfde
+     rij. Gemeten op 16 oktober 2026 met een client zonder `begin`: twee
+     aanbiedingen, twee verschillende sleutels, dus twee mails.
+
+     Alle huidige aanroepers gaan via `metOrganisatie`, dat een
+     transactie opent — maar niets verbood het andersom, en de
+     `rijen`-helper documenteert juist dat hij geen transactie nodig
+     heeft. `savepoint` is buiten een transactieblok een harde fout, dus
+     dit is de kortste manier om de eis te laten gelden in plaats van te
+     hopen. Hij staat vooraan: ook de planinserts horen in dezelfde
+     transactie te vallen als de verzending. */
+  await c.query("savepoint meldmail_ronde");
+  await c.query("release savepoint meldmail_ronde");
 
   const open = await rijen<Meldingrij>(
     c,
@@ -623,6 +704,27 @@ export async function meldmailRonde(
     tekst: string | null;
   }>(
     c,
+    /* FOR UPDATE SKIP LOCKED — DE EERSTE VAN TWEE GRENDELS.
+       Zonder deze regel selecteren twee gelijktijdige rondes dezelfde
+       rij, bieden hem beide aan de provider aan en gaat er TWEE keer
+       dezelfde mail uit. Gemeten op 15 oktober 2026: `verzonden 2` voor
+       een rij, beide rondes `aangeboden 1`, en het tweede provider-id
+       overschreef het eerste. De unieke index kan daar niets tegen doen:
+       die bewaakt het BESTAAN van een rij, niet het AANTAL VERZENDINGEN.
+
+       WAAROM SKIP LOCKED EN NIET GEWOON FOR UPDATE. Met `for update`
+       zou de tweede ronde BLOKKEREN tot de eerste commit — en de eerste
+       transactie loopt door tot na de netwerkaanroep bij de provider.
+       Een trage provider zou de tweede ronde dan minuten laten wachten
+       om vervolgens alsnog niets te doen. Met `skip locked` slaat de
+       tweede ronde de rij over en gaat verder met de volgende; dat is
+       hier precies goed, want een overgeslagen rij is geen verloren rij
+       maar een rij die iemand anders al in behandeling heeft.
+
+       WAT DIT NIET IS. Dit is geen vergrendeling over de hele ronde: het
+       slot geldt per rij en valt weg bij commit of rollback. Een crash
+       laat dus geen vastgelopen bericht achter — zie de claim hieronder
+       en de kop van ops/mail.ts over de crashwindow. */
     `select id, soort, bundel, vingerafdruk, pogingen, onderwerp, html, tekst
        from intel.meld_berichten
       where organisatie_id = $1
@@ -630,7 +732,8 @@ export async function meldmailRonde(
         and pogingen < $2
         and (volgende_poging_op is null or volgende_poging_op <= $3)
       order by aangemaakt_op
-      limit $4`,
+      limit $4
+      for update skip locked`,
     [organisatieId, maxPogingen, nu.toISOString(), maxPerRonde],
   );
 
@@ -658,15 +761,92 @@ export async function meldmailRonde(
       continue;
     }
 
+    /* DE CLAIM — DE TWEEDE GRENDEL, EN DE ATOMAIRE.
+
+       `skip locked` hierboven dekt twee rondes die langs DEZE selectie
+       komen. Deze claim dekt elke andere aanroeper: hij herhaalt de
+       voorwaarden als UPDATE-predicaat, en een UPDATE die op een
+       rijvergrendeling wacht herbeoordeelt onder READ COMMITTED zijn
+       WHERE op de NIEUWE rijversie. Wie als tweede komt ziet dus
+       `geaccepteerd_op` gevuld of `pogingen` verhoogd, krijgt
+       `rowCount = 0`, en biedt niets aan. Zonder vergelijking in code,
+       zonder leesronde vooraf: de database beslist.
+
+       HET IS EEN COMPARE-AND-SET, EN DAT IS NIET DECORATIEF. Het
+       predicaat bindt `pogingen` aan de waarde die de SELECTIE zag.
+       Zonder die binding liet de claim een tweede aanbieding door zodra
+       de eerste ronde op een NIET-herhaalbare fout eindigde: dan is
+       `geaccepteerd_op` nog leeg en `volgende_poging_op` null, dus het
+       oude predicaat klopte opnieuw. Gemeten op 16 oktober 2026:
+       rowCount 1 voor de tweede claimer. `organisatie_id` staat erbij
+       omdat de tenantgrens niet aan RLS alleen mag hangen: het
+       productiepad (kern/taken.ts) draait op een verbinding zonder
+       rolwissel, en de eigenaar van de tabel omzeilt RLS.
+
+       DE POGING WORDT HIER GETELD, EN NERGENS ANDERS. Eerst stond
+       `pogingen + 1` in beide uitkomsttakken. Dat kan niet meer samen
+       met deze claim — dan zou een geslaagde verzending twee pogingen
+       kosten en het retrybudget halveren. De takken hieronder schrijven
+       daarom alleen nog de UITKOMST.
+
+       EEN CRASH LAAT GEEN VASTGELOPEN BERICHT ACHTER. De claim zit in
+       dezelfde transactie als de ronde; valt het proces weg, dan rolt
+       hij terug en staat de rij er precies zo als hij stond —
+       onverzonden, met dezelfde `pogingen`. De volgende ronde pakt hem
+       gewoon op. Er is dus geen lease nodig en geen opruimtaak voor
+       halfverwerkte rijen. */
+    const geclaimd = await c.query(
+      `update intel.meld_berichten
+          set aangeboden_op = coalesce(aangeboden_op, now()),
+              pogingen = pogingen + 1
+        where id = $1
+          and organisatie_id = $2
+          and geaccepteerd_op is null
+          and pogingen = $3
+          and (volgende_poging_op is null or volgende_poging_op <= $4)`,
+      [rij.id, organisatieId, rij.pogingen, nu.toISOString()],
+    );
+    if ((geclaimd.rowCount ?? 0) === 0) {
+      log.waarschuwing("meldbericht was al door een andere ronde geclaimd; niet aangeboden", {
+        bericht: rij.id, soort: rij.soort, bundel: rij.bundel,
+      });
+      continue;
+    }
+
+    /* DE IDEMPOTENTIESLEUTEL — TEGEN DE CRASHWINDOW, NIET TEGEN DE RACE.
+       De race is hierboven al dicht. Wat overblijft is het venster
+       tussen de 200 van de provider en onze commit: accepteert Resend
+       het bericht en valt onze transactie daarna weg, dan weet de
+       database van niets en biedt een volgende ronde hetzelfde bericht
+       opnieuw aan. Alleen de provider kan die tweede mail nog
+       tegenhouden.
+
+       DE KORREL EN DE OPBOUW STAAN BIJ `idempotentieSleutelVan`. Kort:
+       inhoudgebonden (een payloadhash, niet de rij-id), met een
+       omgevingsdiscriminator, en roterend op het aantal BEKENDE
+       antwoorden in plaats van op elke poging. `rij.pogingen` is hier
+       precies dat aantal, want een onbekende uitkomst draait de
+       verhoging hieronder terug.
+
+       DE PAYLOADHASH LOST OOK HET VANGNET OP. Een rij zonder bewaarde
+       inhoud krijgt zijn tekst uit het PLAN, en dat plan rendert de klok
+       van de ronde. Die tekst verschilt dus per ronde. Met een
+       positionele sleutel zou dat een 409 `invalid_idempotent_request`
+       geven en het bericht permanent blokkeren; met een payloadhash
+       verandert de sleutel mee en gaat het bericht gewoon uit. Dat kost
+       voor die (oude) rijen de bescherming tegen een dubbele mail, en
+       dat is de juiste ruil: liever een dubbel alarm dan geen. */
+    const idempotentieSleutel = idempotentieSleutelVan(organisatieId, inhoud, rij.pogingen);
+
     aangeboden += 1;
-    const uitkomst = opties.verstuur ? await opties.verstuur(inhoud) : await verstuurMail(inhoud);
+    const uitkomst = opties.verstuur
+      ? await opties.verstuur(inhoud, idempotentieSleutel)
+      : await verstuurMail(inhoud, { idempotentieSleutel });
 
     if (uitkomst.geaccepteerd) {
       await c.query(
         `update intel.meld_berichten
-            set aangeboden_op = coalesce(aangeboden_op, now()),
-                geaccepteerd_op = now(),
-                pogingen = pogingen + 1,
+            set geaccepteerd_op = now(),
                 provider = $2, provider_id = $3,
                 laatste_fout = null, volgende_poging_op = null
           where id = $1`,
@@ -717,18 +897,66 @@ export async function meldmailRonde(
       continue;
     }
 
+    /* EEN ONBEKENDE UITKOMST IS GEEN POGING.
+       Geen antwoord van de provider betekent: misschien is de mail wel
+       verstuurd. Dan moet de volgende ronde het met DEZELFDE sleutel
+       overdoen, zodat de provider de tweede mail tegenhoudt — en dat kan
+       alleen als `pogingen` niet opschuift, want dat getal zit in de
+       sleutel. Daarom wordt de verhoging van de claim hier
+       teruggedraaid en krijgt de rij alleen een korte wachttijd.
+
+       DIT VERBRUIKT DUS GEEN RETRYBUDGET, EN DAT IS EEN KEUZE. Een
+       aanhoudende netwerkstoring laat deze rij elke ronde opnieuw
+       proberen in plaats van hem na vijf keer op te geven. Voor een
+       ALERTEERDER is dat de goede kant om op te falen: blijven proberen
+       een storingsmail af te leveren kost een HTTP-verzoek per uur,
+       terwijl opgeven betekent dat niemand van de storing hoort. De
+       sleutel blijft gelijk, dus binnen het venster van de provider
+       levert dat geen tweede mail op.
+
+       De wachttijd is de eerste trede van de ladder (1 minuut). Die
+       trede was tot nu toe onbereikbaar, want `volgendePoging` wordt
+       alleen met `pogingen >= 1` aangeroepen; hier krijgt hij zijn eigen
+       betekenis: 'probeer het de volgende ronde gewoon weer'. */
+    if (uitkomst.uitkomstBekend === false) {
+      const wacht = new Date(nu.getTime() + (BACKOFF_MINUTEN[0] ?? 1) * 60_000);
+      await c.query(
+        `update intel.meld_berichten
+            set pogingen = $2,
+                laatste_fout = $3,
+                volgende_poging_op = $4
+          where id = $1`,
+        [
+          rij.id,
+          rij.pogingen,
+          redigeer(`uitkomst onbekend: ${uitkomst.fout ?? "geen antwoord"}`).slice(0, 300),
+          wacht,
+        ],
+      );
+      mislukt += 1;
+      log.waarschuwing(
+        "meldbericht aangeboden, uitkomst ONBEKEND; zelfde sleutel bij de volgende poging",
+        {
+          bericht: rij.id, soort: rij.soort, bundel: rij.bundel,
+          pogingen: rij.pogingen,
+          fout: (uitkomst.fout ?? "").slice(0, 160),
+        },
+      );
+      continue;
+    }
+
+    /* De claim heeft `pogingen` al verhoogd en `aangeboden_op` gezet;
+       dit is dezelfde waarde als wat er nu in de rij staat. */
     const pogingen = rij.pogingen + 1;
     /* Een niet-herhaalbare fout (verkeerd adres, ongeldige sleutel) lost
        zich niet op door te wachten: die krijgt geen volgende poging. */
     const volgende = uitkomst.herhaalbaar ? volgendePoging(pogingen, nu) : null;
     await c.query(
       `update intel.meld_berichten
-          set aangeboden_op = coalesce(aangeboden_op, now()),
-              pogingen = $2,
-              laatste_fout = $3,
-              volgende_poging_op = $4
+          set laatste_fout = $2,
+              volgende_poging_op = $3
         where id = $1`,
-      [rij.id, pogingen, redigeer(uitkomst.fout ?? "onbekende fout").slice(0, 300), volgende],
+      [rij.id, redigeer(uitkomst.fout ?? "onbekende fout").slice(0, 300), volgende],
     );
     mislukt += 1;
     if (!volgende || pogingen >= maxPogingen) opgegeven += 1;
