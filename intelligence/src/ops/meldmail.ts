@@ -389,8 +389,12 @@ export type MeldmailStand = {
   readonly aangeboden: number;
   readonly geaccepteerd: number;
   readonly mislukt: number;
+  /** STAND: de hele openstaande voorraad (niet geaccepteerd, niet opgegeven, onder de grens). */
   readonly uitgesteld: number;
+  /** RONDEGEBEURTENIS: hoeveel berichten deze ronde definitief zijn afgesloten. */
   readonly opgegeven: number;
+  /** STAND: hoeveel berichten er in totaal zijn opgegeven. Issue #45. */
+  readonly opgegevenTotaal: number;
   /** Berichten die de beginsamenvatting dekt en die dus NIET apart uitgaan. */
   readonly gedekt: number;
 };
@@ -471,6 +475,7 @@ export async function meldmailRonde(
         `GECONFIGUREERD MAAR NIET ACTIEF — resend -> ${bestemming.ontvanger}; ` +
         "INTEL_MAIL_ACTIEF staat niet aan, dus er wordt niets gepland of verstuurd",
       gepland: 0, nieuw: 0, aangeboden: 0, geaccepteerd: 0, mislukt: 0, uitgesteld: 0,
+      opgegevenTotaal: 0,
       opgegeven: 0, gedekt: 0,
     };
   }
@@ -482,6 +487,7 @@ export async function meldmailRonde(
     return {
       bestemming: `UIT — ${bestemming.reden}`,
       gepland: 0, nieuw: 0, aangeboden: 0, geaccepteerd: 0, mislukt: 0, uitgesteld: 0,
+      opgegevenTotaal: 0,
       opgegeven: 0, gedekt: 0,
     };
   }
@@ -729,6 +735,7 @@ export async function meldmailRonde(
        from intel.meld_berichten
       where organisatie_id = $1
         and geaccepteerd_op is null
+        and opgegeven_op is null
         and pogingen < $2
         and (volgende_poging_op is null or volgende_poging_op <= $3)
       order by aangemaakt_op
@@ -803,6 +810,7 @@ export async function meldmailRonde(
           and organisatie_id = $2
           and geaccepteerd_op is null
           and pogingen = $3
+          and opgegeven_op is null
           and (volgende_poging_op is null or volgende_poging_op <= $4)`,
       [rij.id, organisatieId, rij.pogingen, nu.toISOString()],
     );
@@ -951,27 +959,83 @@ export async function meldmailRonde(
     /* Een niet-herhaalbare fout (verkeerd adres, ongeldige sleutel) lost
        zich niet op door te wachten: die krijgt geen volgende poging. */
     const volgende = uitkomst.herhaalbaar ? volgendePoging(pogingen, nu) : null;
+
+    /* OPGEVEN IS EEN BESLUIT, EN HET WORDT NU OPGESLAGEN. Issue #45.
+       De voorwaarde zelf is niet nieuw — hij stond al in de teller
+       hieronder — maar hij had geen gevolg in de database. Daardoor las
+       de selectie `volgende_poging_op is null` als 'nu te verzenden' en
+       werd een definitieve fout elke ronde opnieuw aangeboden, sneller
+       dan een herhaalbare: gemeten aangeboden 1,1,1,1,1,0 over zes
+       rondes, met `opgegeven 1` al in de eerste.
+
+       Twee oorzaken, een gevolg. `!volgende` dekt de definitieve
+       afwijzing en de uitgelopen back-offladder; `pogingen >=
+       maxPogingen` is de grens. Welke van de twee het was staat in
+       `laatste_fout`, en de rij blijft staan — dat is de belofte in de
+       kop van dit bestand, die tot nu toe niet waar was.
+
+       NIET HIER, MAAR BOVEN: een ONBEKENDE uitkomst komt hier nooit
+       langs (die doet `continue` met zijn eigen tak) en wordt dus nooit
+       opgegeven. Dat is de invariant uit PR #44: zonder antwoord weten
+       we niet of de mail is aangekomen, dus moet dezelfde sleutel
+       opnieuw worden geprobeerd in plaats van de rij af te sluiten. */
+    const terminaal = !volgende || pogingen >= maxPogingen;
     await c.query(
       `update intel.meld_berichten
           set laatste_fout = $2,
-              volgende_poging_op = $3
+              volgende_poging_op = $3,
+              opgegeven_op = case when $4 then now() else opgegeven_op end
         where id = $1`,
-      [rij.id, redigeer(uitkomst.fout ?? "onbekende fout").slice(0, 300), volgende],
+      [
+        rij.id,
+        redigeer(uitkomst.fout ?? "onbekende fout").slice(0, 300),
+        volgende,
+        terminaal,
+      ],
     );
     mislukt += 1;
-    if (!volgende || pogingen >= maxPogingen) opgegeven += 1;
-    log.waarschuwing("meldbericht niet geaccepteerd", {
+    if (terminaal) opgegeven += 1;
+    log.waarschuwing(terminaal ? "meldbericht OPGEGEVEN; er volgt geen poging meer" : "meldbericht niet geaccepteerd", {
       bericht: rij.id, soort: rij.soort, pogingen,
       herhaalbaar: uitkomst.herhaalbaar,
+      opgegeven: terminaal,
+      reden: terminaal ? (volgende ? "pogingengrens bereikt" : "definitieve afwijzing") : "wacht op een volgende poging",
       fout: (uitkomst.fout ?? "").slice(0, 160),
     });
   }
 
+  /* `uitgesteld` is een STAND en geen rondegebeurtenis: de hele
+     openstaande voorraad. De grens `pogingen < $2` blijft erin staan —
+     die sloot een vastgelopen rij al uit — en `opgegeven_op is null`
+     komt erbij. Zonder die term zou een rij die deze ronde definitief
+     is afgewezen in dezelfde ronde zowel in `opgegeven` als in
+     `uitgesteld` meetellen, en dat is precies de dubbeltelling die
+     issue #45 noemt.
+
+     NIET herdefinieerd als 'wacht op een later moment', hoe logisch dat
+     ook klinkt: de overloop van `maxPerRonde` krijgt bij het plannen
+     `volgende_poging_op = nu`, dus die rijen wachten niet op later maar
+     zijn nu verzendbaar. Toets 18 van meldmailketen.test.ts meet juist
+     die overloop. */
   const uitgesteld = await rijen<{ n: number }>(
     c,
     `select count(*)::int as n from intel.meld_berichten
-      where organisatie_id = $1 and geaccepteerd_op is null and pogingen < $2`,
+      where organisatie_id = $1 and geaccepteerd_op is null
+        and opgegeven_op is null and pogingen < $2`,
     [organisatieId, maxPogingen],
+  );
+
+  /* En de voorraad die wél is opgegeven. `opgegeven` hierboven is een
+     rondegebeurtenis — wat deze ronde is afgesloten — en dat is iets
+     anders dan hoeveel er in totaal ligt. Twee velden met verschillende
+     soorten semantiek naast elkaar in een logregel is hoe `uitgesteld`
+     en `opgegeven` onvergelijkbaar werden; daarom staat het er nu bij,
+     met een naam die zegt dat het een stand is. */
+  const opgegevenTotaal = await rijen<{ n: number }>(
+    c,
+    `select count(*)::int as n from intel.meld_berichten
+      where organisatie_id = $1 and opgegeven_op is not null`,
+    [organisatieId],
   );
 
   return {
@@ -983,6 +1047,7 @@ export async function meldmailRonde(
     mislukt,
     uitgesteld: uitgesteld[0]?.n ?? 0,
     opgegeven,
+    opgegevenTotaal: opgegevenTotaal[0]?.n ?? 0,
     gedekt: gedektVastgelegd,
   };
 }
