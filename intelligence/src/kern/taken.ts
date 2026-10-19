@@ -600,7 +600,10 @@ export const REGISTER: Record<string, Handler> = {
          kolomtoelichting bij intel.meld_berichten. */
       `mail[${mail.bestemming}] gepland ${mail.gepland}, nieuw ${mail.nieuw}, ` +
       `aangeboden ${mail.aangeboden}, geaccepteerd ${mail.geaccepteerd}, ` +
-      `mislukt ${mail.mislukt}, uitgesteld ${mail.uitgesteld}, opgegeven ${mail.opgegeven}`
+      `mislukt ${mail.mislukt}, uitgesteld ${mail.uitgesteld}, opgegeven ${mail.opgegeven}` +
+      /* De STAND erbij, want `opgegeven` is wat deze ronde is afgesloten en
+         dat zegt niets over hoeveel er in totaal ligt. Issue #45. */
+      ` (totaal opgegeven ${mail.opgegevenTotaal})`
     );
   },
 
