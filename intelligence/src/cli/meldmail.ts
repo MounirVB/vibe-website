@@ -62,11 +62,12 @@ try {
       geaccepteerd: string | null;
       provider_id: string | null;
       laatste_fout: string | null;
+      opgegeven: string | null;
     }>(
       c,
       `select soort, bundel, ernst, onderwerp, pogingen,
               aangeboden_op::text as aangeboden, geaccepteerd_op::text as geaccepteerd,
-              provider_id, laatste_fout
+              provider_id, laatste_fout, opgegeven_op::text as opgegeven
          from intel.meld_berichten
         where organisatie_id = $1
         order by aangemaakt_op desc
@@ -115,11 +116,17 @@ try {
     uit(`\n  LOGBOEK (${logboek.length} recente berichten)\n`);
     if (logboek.length === 0) uit("    leeg — er is nog nooit een meldbericht aangeboden\n");
     for (const r of logboek) {
-      const stand = r.geaccepteerd
-        ? `GEACCEPTEERD ${nederlandseTijd(r.geaccepteerd)}`
-        : r.aangeboden
-          ? `AANGEBODEN, ${r.pogingen} poging(en)`
-          : "nog niet aangeboden";
+      /* OPGEGEVEN STAAT VOOROP. Zonder deze tak leest een definitief
+         afgesloten bericht als 'AANGEBODEN, 5 poging(en)' en is het niet
+         te onderscheiden van een bericht dat nog in de wachtrij staat.
+         Dit is de enige plek waar een mens die toestand ziet. */
+      const stand = r.opgegeven
+        ? `OPGEGEVEN ${nederlandseTijd(r.opgegeven)} na ${r.pogingen} poging(en)`
+        : r.geaccepteerd
+          ? `GEACCEPTEERD ${nederlandseTijd(r.geaccepteerd)}`
+          : r.aangeboden
+            ? `AANGEBODEN, ${r.pogingen} poging(en)`
+            : "nog niet aangeboden";
       uit(`    ${r.soort.padEnd(18)} ${r.bundel.padEnd(26)} ${stand}\n`);
       if (r.provider_id) uit(`      provider-id: ${r.provider_id}\n`);
       if (r.laatste_fout) uit(`      laatste fout: ${r.laatste_fout.slice(0, 160)}\n`);
@@ -248,14 +255,31 @@ try {
       const uitkomst = await verstuurMail(opmaak, {
         idempotentieSleutel: idempotentieSleutelVan(organisatieId, opmaak, 0),
       });
+      /* DEZELFDE REGEL ALS DE RONDE, ANDERS IS DE TESTWEG DE UITZONDERING.
+         Een mislukte testmail bleef hier achter als pogingen=1,
+         geaccepteerd_op null en volgende_poging_op null — en dat is
+         precies de toestand die de verzendselectie als 'nu te verzenden'
+         leest. De volgende uurronde pakte zo'n rij dus op. Was de
+         afwijzing DEFINITIEF, dan hoort hij net als in de ronde te
+         worden afgesloten; was de uitkomst ONBEKEND, dan juist niet,
+         want dan moet hij met dezelfde sleutel opnieuw. Issue #45. */
+      const definitief = uitkomst.uitkomstBekend !== false && !uitkomst.herhaalbaar;
       await metOrganisatie(pool, { organisatieId }, (c) =>
         c.query(
           `update intel.meld_berichten
               set pogingen = pogingen + 1,
                   geaccepteerd_op = case when $2 then now() else null end,
-                  provider = $3, provider_id = $4, laatste_fout = $5
+                  provider = $3, provider_id = $4, laatste_fout = $5,
+                  opgegeven_op = case when $6 then now() else opgegeven_op end
             where id = $1`,
-          [id, uitkomst.geaccepteerd, uitkomst.provider, uitkomst.providerId, uitkomst.fout],
+          [
+            id,
+            uitkomst.geaccepteerd,
+            uitkomst.provider,
+            uitkomst.providerId,
+            uitkomst.fout,
+            !uitkomst.geaccepteerd && definitief,
+          ],
         ),
       );
       if (uitkomst.geaccepteerd) {

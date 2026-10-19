@@ -135,12 +135,14 @@ describe("de meldketen tegen een database", () => {
         aangeboden: string | null; geaccepteerd: string | null; afgeleverd: string | null;
         gelezen: string | null; provider_id: string | null; laatste_fout: string | null;
         volgende: string | null; melding_ids: number[];
+        opgegeven: string | null;
       }>(
         c,
         `select soort, bundel, vingerafdruk, pogingen,
                 aangeboden_op::text as aangeboden, geaccepteerd_op::text as geaccepteerd,
                 afgeleverd_op::text as afgeleverd, gelezen_op::text as gelezen,
-                provider_id, laatste_fout, volgende_poging_op::text as volgende, melding_ids
+                provider_id, laatste_fout, volgende_poging_op::text as volgende, melding_ids,
+                opgegeven_op::text as opgegeven
            from intel.meld_berichten where organisatie_id = $1 order by id`,
         [org],
       ),
@@ -502,11 +504,30 @@ describe("de meldketen tegen een database", () => {
     assert.ok(zelfde.pogingen >= 2, "de poging telt op en wordt niet teruggezet");
   });
 
-  test("7. een DEFINITIEVE fout krijgt GEEN volgende poging", async () => {
+  test("7. een DEFINITIEVE fout krijgt GEEN volgende poging EN wordt opgegeven", async () => {
+    /* DEZE TOETS WAS BIJNA EEN VALSE GROENE. Hij bewees 'geen volgende
+       poging' met alleen `volgende === null` — en dat is precies de
+       toestand die de verzendselectie als 'nu te verzenden' leest. De
+       rij werd dus elke ronde opnieuw aangeboden terwijl deze toets
+       groen bleef (issue #45). Sinds 0040 is er een eigen kolom voor
+       het besluit, en die hoort hier getoetst te worden; `volgende`
+       alleen onderscheidt terminaal niet van nu-verzendbaar. */
     await ronde(RENDO, async () => STUK_DEFINITIEF);
     const b = await berichten();
     assert.equal(b[0]!.volgende, null, "een niet-geverifieerd domein lost zich niet op door te wachten");
     assert.match(b[0]!.laatste_fout ?? "", /422/);
+    assert.ok(
+      b[0]!.opgegeven,
+      "en de rij hoort afgesloten te zijn; zonder deze assertie bewijst `volgende === null` niets",
+    );
+
+    /* En dan ook echt: een tweede ronde biedt niets meer aan. */
+    let opnieuw = 0;
+    await ronde(RENDO, async () => {
+      opnieuw += 1;
+      return STUK_DEFINITIEF;
+    });
+    assert.equal(opnieuw, 0, "een opgegeven bericht wordt niet opnieuw aangeboden");
   });
 
   test("8. AFGELEVERD en GELEZEN blijven LEEG; alleen geaccepteerd wordt geclaimd", async () => {
