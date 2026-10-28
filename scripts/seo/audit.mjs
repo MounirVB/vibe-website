@@ -859,7 +859,17 @@ poort('16 Nieuwskanaal', true, () => {
 
   /* De hub en de navigatie moeten met elkaar in de pas lopen. */
   if (hub && hub.staat === 'INDEX') {
-    if (!artikelen.length) fouten.push('de hub /nieuws staat op INDEX zonder gepubliceerd artikel [NIEUW — blokkeert]');
+    /* Release 3.3: een hub zonder artikelen mag op INDEX staan, maar ALLEEN
+       met een expliciete vrijgave in publicatiebesluit.json. Zonder die
+       handtekening is een lege INDEX-hub nog steeds een fout — dan is hij
+       namelijk per ongeluk ontstaan. Zie data/seo/nieuws-architectuur.json,
+       _correctie_op_dit_contract_3. */
+    const vrijgegevenLeeg = Boolean(besluit.vrijgegeven && besluit.vrijgegeven.nieuws);
+    if (!artikelen.length && !vrijgegevenLeeg) {
+      fouten.push(
+        'de hub /nieuws staat op INDEX zonder gepubliceerd artikel en zonder vrijgave in publicatiebesluit.json [NIEUW — blokkeert]'
+      );
+    }
     const h = htmlVan('nieuws');
     if (!h) {
       fouten.push('de hub /nieuws staat op INDEX zonder bestand [NIEUW — blokkeert]');
@@ -869,16 +879,60 @@ poort('16 Nieuwskanaal', true, () => {
           fouten.push(`de hub linkt niet naar '${r.route}'`);
         }
       }
+
+      /* De lege staat mag geen restpagina zijn. Deze drie toetsen zijn er
+         zodat 'leeg' niet stilletjes 'kapot' of 'misleidend' gaat betekenen:
+         de norm moet er staan, de pagina moet een uitgang hebben, en hij mag
+         geen bericht suggereren dat er niet is. */
+      if (!artikelen.length) {
+        if (!/id="redactienorm"/.test(h)) {
+          fouten.push('de lege hub /nieuws mist de sectie met de redactienorm [NIEUW — blokkeert]');
+        }
+        const uitgangen = alle(/href="\/([a-z0-9-]+)"/gi, h).filter((p) => p !== 'nieuws');
+        if (uitgangen.length < 2) {
+          fouten.push(
+            `de lege hub /nieuws heeft ${uitgangen.length} interne uitgang(en) in de pagina; een lege overzichtspagina moet de lezer ergens heen sturen [NIEUW — blokkeert]`
+          );
+        }
+        if (/data-nieuws-datum/.test(h)) {
+          fouten.push('de lege hub /nieuws toont een berichtdatum terwijl er geen bericht is [NIEUW — blokkeert]');
+        }
+      }
     }
     /* De zichtbare navigatie komt uit vibe/chrome.js en die kan het register
        niet lezen. Staat de hub op INDEX, dan hoort de link daar met de hand
        bij te komen — anders is het kanaal alleen voor crawlers bereikbaar en
        niet voor bezoekers. */
     const chrome = resolve(wortel, 'vibe', 'chrome.js');
-    if (existsSync(chrome) && !/href="\/nieuws"|'\/nieuws'/.test(readFileSync(chrome, 'utf8'))) {
-      fouten.push(
-        'vibe/chrome.js heeft geen /nieuws-link terwijl de hub op INDEX staat; de zichtbare navigatie mist het kanaal [NIEUW — blokkeert]'
-      );
+    if (existsSync(chrome)) {
+      /* TWEE DINGEN DIE DEZE TOETS EERDER FOUT DEED.
+
+         1 · HIJ LAS ZIJN EIGEN PATROON IN COMMENTAAR. De oude regex was
+             /href="\/nieuws"|'\/nieuws'/ over het RUWE bestand. Een
+             commentaarregel die uitlegt dat deze poort op de string '/nieuws'
+             toetst, voldeed daarmee zelf aan de toets. Gemeten met het
+             vijandige scenario 'de zichtbare /nieuws-link verdwijnt uit
+             chrome.js': beide echte links weg, poort 16 bleef GROEN.
+             Commentaar wordt daarom eerst weggeknipt.
+
+         2 · HIJ NAM GENOEGEN MET EEN VAN DE TWEE. chrome.js draagt de link op
+             twee plekken — de lijst die het MOBIELE menu voedt, en de
+             hardgecodeerde FOOTERKOLOM. Eén regex die 'ergens een /nieuws'
+             accepteert, keurt dus ook een menu goed waarin de link op mobiel
+             of in de footer ontbreekt. Beide worden nu apart geëist. */
+      const bron = readFileSync(chrome, 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, ' ')
+        .replace(/^[ \t]*\/\/.*$/gm, ' ');
+      if (!/\[\s*'nieuws'\s*,/.test(bron)) {
+        fouten.push(
+          'vibe/chrome.js: het mobiele menu mist het /nieuws-item terwijl de hub op INDEX staat [NIEUW — blokkeert]'
+        );
+      }
+      if (!/href="\/nieuws"/.test(bron)) {
+        fouten.push(
+          'vibe/chrome.js: de footerkolom mist de /nieuws-link terwijl de hub op INDEX staat [NIEUW — blokkeert]'
+        );
+      }
     }
   } else if (hub) {
     /* PENDING hub: dan mag niets ernaar linken. */

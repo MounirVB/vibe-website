@@ -240,6 +240,92 @@ function bouwArtikel({ j, route, motor, schrijf, geo }) {
   );
 }
 
+/* ===================================================== de lege staat =====
+   Wat een bezoeker ziet zolang er geen bericht is vrijgegeven.
+
+   DRIE DINGEN DIE HIER BEWUST NIET STAAN
+   1 · Geen "binnenkort meer" of een beloofde verschijningsdatum. We weten niet
+       wanneer er een bericht komt; dat opschrijven zou een verzinsel zijn.
+   2 · Geen voorbeeldbericht, geen placeholder-kaart, geen grijze skeletrij.
+       Een lezer mag geen bericht zien dat niet bestaat.
+   3 · Geen cijfer. Poort 10 laat de hub ongemoeid (die filtert op subsoort
+       'nieuws', niet 'nieuws-hub'), maar een cijfer zonder zichtbare bron
+       hoort op geen enkele pagina van deze site.
+
+   Wat er WEL staat is de redactienorm: welke bronsoorten dragen, dat elk cijfer
+   een peildatum krijgt en dat een mens elk bericht vrijgeeft. Dat is op dag nul
+   waar en het is het enige wat deze pagina eerlijk kan beloven. Daarnaast de
+   onderwerpen die het kanaal bestrijkt, elk gelinkt aan de nationale pagina die
+   de intentie bezit — zo is de pagina ook leeg een echte ingang en geen
+   doodlopend eind. */
+const LEGE_STAAT_ONDERWERPEN = [
+  ['netcongestie', 'Wachttijden, transportschaarste en wat netbeheerders daarover vaststellen.'],
+  ['subsidies', 'Regelingen, budgetten en openstellingen — altijd met de datum waarop we ze hebben nagekeken.'],
+  ['energieadvies', 'Wat een marktontwikkeling betekent voor een businesscase op locatie.'],
+  ['kennis', 'De achtergrond bij een bericht: hoe het mechanisme werkt, los van het nieuws van vandaag.'],
+];
+
+function legeStaat(motor, route) {
+  const uit = [];
+
+  uit.push(
+    directAntwoord({
+      vraag: 'Staan hier al berichten?',
+      antwoord:
+        'Nee. Het nieuwskanaal van Vibe Energy is open, maar er is nog geen bericht redactioneel ' +
+        'vrijgegeven. Dat is een bewuste keuze: een bericht verschijnt hier pas als een mens het heeft ' +
+        'goedgekeurd en als elk cijfer erin herleidbaar is tot een bron met de datum waarop die is ' +
+        'geraadpleegd. Liever geen bericht dan een bericht dat die toets niet doorstaat.',
+      voorbehoud:
+        'Deze pagina wordt niet automatisch gevuld. Er draait geen proces dat zichzelf publiceert.',
+    })
+  );
+
+  uit.push(
+    tekstsectie({
+      id: 'redactienorm',
+      kop: 'Wanneer een bericht hier verschijnt',
+      lead: 'Vier voorwaarden, en ze gelden alle vier tegelijk.',
+      prose: `        <ol>
+          <li><strong>Een mens heeft het vrijgegeven.</strong> Een bericht gaat nooit vanzelf live,
+            ook niet als het technisch in orde is. De goedkeuring draagt een naam en een datum.</li>
+          <li><strong>Er is een dragende bron.</strong> Wetgeving, een toezichthouder, een netbeheerder
+            of een statistiekbureau. Een persbericht van een marktpartij is een belanghebbende en
+            telt op zichzelf niet als vaststelling &mdash; ook niet als wij die marktpartij zijn.</li>
+          <li><strong>Elk cijfer draagt zijn peildatum.</strong> Een bedrag, een percentage of een
+            vermogen zonder de datum waarop het is nagekeken veroudert onzichtbaar. Die datum staat
+            zichtbaar op de pagina, niet alleen in de broncode.</li>
+          <li><strong>Het bericht leent zijn onderwerp.</strong> Een nieuwsbericht claimt zelf geen
+            commercieel onderwerp; het verwijst naar de pagina die dat onderwerp behandelt. Zo blijft
+            duidelijk wat een ontwikkeling is en wat een propositie.</li>
+        </ol>`,
+      variant: 've-sec--paper ve-sec--line-y',
+    })
+  );
+
+  const onderwerpen = LEGE_STAAT_ONDERWERPEN.filter(([r]) => motor.isIndex(r));
+  if (onderwerpen.length) {
+    uit.push(
+      kaarten({
+        id: 'onderwerpen',
+        kop: 'Waar dit kanaal over gaat',
+        lead:
+          'De onderwerpen die we volgen. Elk bericht hoort straks bij een van deze pagina&rsquo;s, ' +
+          'die het onderwerp nu al behandelen.',
+        kaarten: onderwerpen.map(([r, tekst]) => ({
+          kop: esc(naamVan(r, r)),
+          tekst,
+          route: r,
+          label: 'Lees de achtergrond',
+        })),
+      })
+    );
+    motor.tel(route, motor.filter(onderwerpen.map(([r]) => ({ route: r, naam: naamVan(r, r) }))));
+  }
+
+  return uit;
+}
+
 /* ============================================================== de hub */
 function bouwHub({ gepubliceerd, motor, schrijf }) {
   const route = NIEUWS_WORTEL;
@@ -272,17 +358,30 @@ function bouwHub({ gepubliceerd, motor, schrijf }) {
   const indexItems = motor.filter(alles.map((a) => ({ route: a.route, naam: a.j.og_titel || a.j.h1 })));
   motor.tel(route, indexItems);
 
+  /* De lege staat. Het kanaal staat open voordat er een bericht is; zie
+     data/seo/nieuws-architectuur.json, _correctie_op_dit_contract_3. De pagina
+     draagt dan niet zijn lijst maar zijn NORM, en die is op dag nul al waar.
+     Nergens staat een verzonnen bericht, een aankondiging met een datum die we
+     niet kennen, of een cijfer zonder bron. */
+  const leeg = !gepubliceerd.length;
+
   const secties = [
     opening({
       kruimels: [],
       kruimelLabel: 'Nieuws',
       h1: 'Nieuws en marktontwikkelingen',
-      lead:
-        'Ontwikkelingen in netcongestie, tarieven, regelgeving en subsidies die iets veranderen aan ' +
-        'de businesscase van een zakelijke energie-installatie. Elk bericht noemt zijn bron en de ' +
-        'datum waarop die is geraadpleegd.',
+      lead: leeg
+        ? 'Ontwikkelingen in netcongestie, nettarieven, regelgeving en subsidies die iets veranderen ' +
+          'aan de businesscase van een zakelijke energie-installatie. Er staan nog geen berichten op ' +
+          'deze pagina. Hieronder staat waar dit kanaal over gaat en onder welke voorwaarden een ' +
+          'bericht hier verschijnt.'
+        : 'Ontwikkelingen in netcongestie, tarieven, regelgeving en subsidies die iets veranderen aan ' +
+          'de businesscase van een zakelijke energie-installatie. Elk bericht noemt zijn bron en de ' +
+          'datum waarop die is geraadpleegd.',
     }),
   ];
+
+  if (leeg) secties.push(...legeStaat(motor, route));
 
   /* Een ankerlijst als er meer dan één onderwerp is. Dit zijn de categorieën,
      zonder er eigen URL's van te maken. */
@@ -323,10 +422,17 @@ function bouwHub({ gepubliceerd, motor, schrijf }) {
   const onderwerpItems = motor.filter(groepen.map(([e]) => ({ route: e, naam: naamVan(e, e) })));
   motor.tel(route, onderwerpItems);
 
+  /* Bij nul berichten zijn beide groepen leeg en geeft verwant() een lege
+     string terug. Dan valt hij terug op de onderwerpen uit de lege staat, zodat
+     de pagina ook zonder bericht een crawlbare uitgang houdt en poort 8
+     (weespagina's) geen doodlopend eind vindt. */
+  const terugval = leeg
+    ? motor.filter(LEGE_STAAT_ONDERWERPEN.map(([r]) => ({ route: r, naam: naamVan(r, r) })))
+    : [];
   secties.push(
     verwant([
       { kop: 'Alle berichten', items: indexItems },
-      { kop: 'Onderwerpen', items: onderwerpItems },
+      { kop: 'Onderwerpen', items: leeg ? terugval : onderwerpItems },
     ])
   );
 
@@ -345,9 +451,14 @@ function bouwHub({ gepubliceerd, motor, schrijf }) {
     pagina({
       route,
       titel: 'Nieuws en marktontwikkelingen | Vibe Energy',
-      beschrijving:
-        'Ontwikkelingen in netcongestie, nettarieven, regelgeving en subsidies die de businesscase ' +
-        'van een zakelijke energie-installatie veranderen. Met bron en peildatum.',
+      /* De beschrijving belooft geen berichten zolang die er niet zijn. Een
+         snippet die een lijst suggereert op een pagina zonder lijst is een
+         valse belofte in het zoekresultaat. */
+      beschrijving: leeg
+        ? 'Het nieuwskanaal van Vibe Energy over netcongestie, nettarieven, regelgeving en subsidies. ' +
+          'Nog geen berichten; hier staat wanneer er een verschijnt.'
+        : 'Ontwikkelingen in netcongestie, nettarieven, regelgeving en subsidies die de businesscase ' +
+          'van een zakelijke energie-installatie veranderen. Met bron en peildatum.',
       ogTitel: 'Nieuws en marktontwikkelingen',
       dataPagina: 'nieuws',
       kruimels: [],
@@ -389,14 +500,13 @@ export function bouwNieuws({ register, motor, schrijf }) {
   /* De artikelen eerst: de hub linkt ernaar en moet weten wat INDEX is. */
   for (const a of gepubliceerd) bouwArtikel({ ...a, motor, schrijf, geo });
 
+  /* Tot Release 3.3 was een INDEX-hub zonder artikel hier een FOUT. Dat is
+     herzien: de hub rendert nu ook leeg, met de redactienorm als inhoud. De
+     beslissing of de hub überhaupt op INDEX staat ligt niet hier maar in
+     bouw-routes.mjs, dat daarvoor het publicatiebesluit leest. Deze functie
+     voert dat besluit alleen uit. */
   const hubIsIndex = register.get(NIEUWS_WORTEL)?.staat === 'INDEX';
-  if (hubIsIndex) {
-    if (!gepubliceerd.length) {
-      fouten.push('de hub /nieuws staat op INDEX maar er is geen enkel gepubliceerd artikel');
-    } else {
-      bouwHub({ gepubliceerd, motor, schrijf });
-    }
-  }
+  if (hubIsIndex) bouwHub({ gepubliceerd, motor, schrijf });
 
   if (fouten.length) {
     for (const f of fouten) console.error(`NIEUWSFOUT: ${f}`);

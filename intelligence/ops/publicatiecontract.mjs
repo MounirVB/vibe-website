@@ -286,10 +286,25 @@ const hub = routes.find((r) => r.route === "nieuws");
 {
   const artikelenOpIndex = nieuwsRoutes.filter((r) => r.staat === "INDEX").length;
   const hubIndex = hub?.staat === "INDEX";
+
+  /* Release 3.3: de hub mag ook LEEG op INDEX staan, maar dan uitsluitend met
+     een expliciete sleutel 'nieuws' in publicatiebesluit.json. De toets blijft
+     dus in beide richtingen strikt — hij erkent alleen een tweede, even
+     expliciete grond. Zie data/seo/nieuws-architectuur.json,
+     _correctie_op_dit_contract_3.
+
+     Let op de haakjes: `hubIndex === artikelenOpIndex > 0` leest door
+     operatorprioriteit als `hubIndex === (artikelenOpIndex > 0)`. Dat was al zo
+     en is hier expliciet gemaakt, zodat de toevoeging niet stil van betekenis
+     verandert. */
+  const besluitPad6 = resolve(WORTEL, "data", "seo", "publicatiebesluit.json");
+  const besluit6 = existsSync(besluitPad6) ? JSON.parse(readFileSync(besluitPad6, "utf8")) : { vrijgegeven: {} };
+  const legeHubVrijgegeven = Boolean(besluit6.vrijgegeven?.nieuws);
+  const hubMag = artikelenOpIndex > 0 || legeHubVrijgegeven;
   toets(
-    "de nieuwshub staat alleen op INDEX als er een gepubliceerd artikel is",
-    hubIndex === artikelenOpIndex > 0,
-    `hub ${hub?.staat ?? "niet in register"}, ${artikelenOpIndex} artikel(en) op INDEX`,
+    "de nieuwshub staat alleen op INDEX met een gepubliceerd artikel of een vrijgave in publicatiebesluit.json",
+    hubIndex === hubMag,
+    `hub ${hub?.staat ?? "niet in register"}, ${artikelenOpIndex} artikel(en) op INDEX, lege-hubvrijgave ${legeHubVrijgegeven ? "ja" : "nee"}`,
   );
 
   /* De zichtbare navigatie zit in vibe/chrome.js en kan het register

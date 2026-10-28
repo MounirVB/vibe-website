@@ -71,6 +71,21 @@
     ['sectoren',               'hub',          'Alle sectoren',           'Automotive, transport, productie, retail, zorg en meer']
   ];
 
+  /* LET OP — deze lijst voedt ALLEEN het mobiele menu. De footerkolom 'Vibe
+     Energy' verderop in dit bestand schrijft dezelfde zeven links nog een keer
+     met de hand uit. Wie hier een item toevoegt en daar niet, krijgt een menu
+     dat op mobiel en desktop uiteenloopt. Dat geldt ook voor /nieuws hieronder.
+
+     Waarom dit bestand de nieuwslink met de hand draagt terwijl de
+     gegenereerde pagina's hem uit het routeregister krijgen: chrome.js draait
+     in de browser en kan data/seo/routes.json niet lezen. Poort 16 in
+     scripts/seo/audit.mjs toetst daarom op de nieuwsroute in BEIDE lijsten
+     hieronder zodra de hub op INDEX staat. Zie data/seo/nieuws-architectuur.json,
+     sleutel _activeringsstap_die_een_mens_moet_doen.
+
+     Schrijf in dit bestand geen commentaar dat het gezochte patroon zelf
+     bevat. Poort 16 knipt commentaar weg voordat hij toetst, juist omdat een
+     uitleg over de toets de toets eerder stil groen hield. */
   var BEDRIJF = [
     ['over-ons',     'Over Vibe'],
     ['projecten',    'Projecten'],
@@ -78,6 +93,7 @@
     ['toepassingen', 'Toepassingen'],
     ['subsidies',    'Subsidies'],
     ['regios',       "Regio's"],
+    ['nieuws',       'Nieuws'],
     ['contact',      'Plan een gesprek']
   ];
 
@@ -251,6 +267,7 @@
               '<li><a href="/toepassingen">Toepassingen</a></li>' +
               '<li><a href="/subsidies">Subsidies</a></li>' +
               '<li><a href="/regios">Regio\'s</a></li>' +
+              '<li><a href="/nieuws">Nieuws</a></li>' +
               '<li><a href="/contact">Plan een gesprek</a></li>' +
             '</ul>' +
             '<p class="ve-footer__kop" style="margin-top:1.75rem">Juridisch</p>' +

@@ -53,6 +53,11 @@ function kies() {
     { route: 'kennis', waarom: 'nieuwe hub' },
     { route: 'subsidies', waarom: 'nieuwe subsidiepagina' },
     { route: 'regios', waarom: 'regiowortel' },
+    /* RELEASE 3.3 — de nieuwshub in zijn LEGE STAAT. Een pagina zonder
+       kaartenlijst heeft een andere verticale opbouw dan elke andere hub;
+       juist daar kan een sectie inzakken of een kop zweven zonder dat een
+       bestandscontrole iets ziet. */
+    { route: 'nieuws', waarom: 'R3.3 nieuwshub — lege staat, geen kaartenlijst' },
     { route: 'regios/gelderland', waarom: 'provinciehub MET eigen werk — één map diep' },
     { route: 'regios/gelderland/duiven', waarom: 'gemeentehub MET eigen project — twee mappen diep' },
     pak((r) => r.subsoort === 'sector'),
