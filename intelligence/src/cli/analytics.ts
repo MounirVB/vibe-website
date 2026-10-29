@@ -17,7 +17,7 @@
    regel leest als "niet van toepassing" terwijl hij "niet gemeten"
    betekent, en dat verschil is hier het hele punt.
    ============================================================ */
-import { APP_WORTEL, configLezen, laadEnvBestand, REPO_WORTEL } from "../kern/config.ts";
+import { laadEnvBestand } from "../kern/config.ts";
 import { maakPool, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
 import {
@@ -27,11 +27,11 @@ import {
   indexatieRapport,
   koppelingStatussen,
   meetLive,
-  omgekeerdePariteit,
+  segmentStanden,
+  vergelijkVensters,
   type RapportRegel,
 } from "../analytics/koppelingen.ts";
-import { scanSite } from "../site/paginascan.ts";
-import { leesSitekennis } from "../site/sitekennis.ts";
+import { meetIndexeerbaar } from "../site/indexeerbaar.ts";
 
 laadEnvBestand();
 
@@ -47,65 +47,20 @@ function getal(naam: string, standaard: number): number {
   return Number.isFinite(n) && n >= 0 ? n : standaard;
 }
 
-/**
- * Het getal voor TECHNICALLY_INDEXABLE. Eerst de echte scan van de
- * website, dan het gecommitte sitekennisartefact, dan niets.
- *
- * Diezelfde volgorde staat in db/zaai.ts, en om dezelfde reden: in de
- * productiecontainer is rootDirectory `intelligence`, dus de HTML van de
- * site bestaat daar niet. Een scan die nul pagina's vindt mag nooit als
- * "de site heeft nul indexeerbare pagina's" worden gerapporteerd — dat
- * is het verschil tussen een meting en een blinde vlek.
- */
-async function technischIndexeerbaar(): Promise<{
-  getal: { aantal: number; bron: string } | null;
-  pariteit: string[];
-  pariteitBron: string | null;
-}> {
-  /* De wortel komt uit de configuratie, maar die werpt zonder
-     INTEL_DB_URL. Deze meting heeft geen database nodig, dus hij mag er
-     ook niet op stuklopen: dan valt de enige metriek weg die zonder
-     database wél te meten is. */
-  const siteWortel = (() => {
-    try {
-      return configLezen().siteWortel;
-    } catch {
-      return REPO_WORTEL;
-    }
-  })();
-  const scan = await scanSite(siteWortel).catch(() => null);
-  if (scan && scan.paginas.length > 0) {
-    const aantal = scan.paginas.filter((p) => p.indexeerbaar && !p.isRedirectStub).length;
-    const omgekeerd = omgekeerdePariteit(
-      scan.paginas.map((p) => ({
-        pad: p.pad,
-        inSitemap: p.inSitemap,
-        indexeerbaar: p.indexeerbaar,
-        isRedirectStub: p.isRedirectStub,
-      })),
-    );
-    return {
-      getal: { aantal, bron: `repo-scan van ${siteWortel}` },
-      pariteit: [...omgekeerd.alle],
-      pariteitBron: "repo-scan",
-    };
-  }
-  const kennis = await leesSitekennis(APP_WORTEL);
-  if (kennis.ok) {
-    /* Het artefact bevat UITSLUITEND gepubliceerde (dus indexeerbare)
-       pagina's; het heeft geen noindex-rijen om te tellen en kan de
-       omgekeerde pariteit daarom niet toetsen. Dat melden we. */
-    return {
-      getal: {
-        aantal: kennis.kennis.aantalPaginas,
-        bron: `sitekennisartefact (websiteversie ${kennis.kennis.websiteVersie.slice(0, 12)})`,
-      },
-      pariteit: [],
-      pariteitBron: null,
-    };
-  }
-  return { getal: null, pariteit: [], pariteitBron: null };
-}
+/* HET GETAL VOOR TECHNICALLY_INDEXABLE STAAT NU IN
+   src/site/indexeerbaar.ts.
+
+   Het was hier een privéfunctie en daardoor alleen bereikbaar als een
+   mens deze CLI aanriep. De dagelijkse wachtrijtaak `indexatie`
+   (kern/taken.ts) heeft precies dezelfde meting nodig om de dagstand te
+   kunnen vastleggen, en zonder die dagstand is een vergelijking over
+   7, 28 of 90 dagen per constructie onmogelijk. Een tweede
+   implementatie zou uiteenlopen, en dan verschilt de bewaarde dagstand
+   van wat deze CLI toont.
+
+   De volgorde van de twee bronnen (repo-scan, dan het
+   sitekennisartefact) en de reden daarvoor staan in die module. */
+const technischIndexeerbaar = meetIndexeerbaar;
 
 function printRapport(regels: readonly RapportRegel[]): void {
   process.stdout.write("\nINDEXATIERAPPORT — tien metrieken, altijd tien regels\n");
@@ -218,6 +173,47 @@ async function main(): Promise<number> {
       process.stdout.write(
         `  ${ti.pariteit.length} TEGENSTRIJDIGE pagina('s): ${ti.pariteit.join(", ")}\n`,
       );
+    }
+
+    /* DE SEGMENTATIE. §11 van de opdracht vraagt nieuws / kennis /
+       commercieel apart. De restpost wordt benoemd en niet weggelaten;
+       zie SEGMENT_VAN_SOORT voor waarom juridisch en overig erbuiten
+       vallen. */
+    process.stdout.write("\nSEGMENTATIE — pagina's per segment\n\n");
+    process.stdout.write(
+      `  ${"segment".padEnd(20)} ${"pagina's".padStart(9)} ${"in sitemap".padStart(11)} ${"in repo".padStart(8)}  soorten\n`,
+    );
+    for (const s of await segmentStanden(pool, organisatieId)) {
+      process.stdout.write(
+        `  ${s.segment.padEnd(20)} ${String(s.paginas).padStart(9)} ${String(s.inSitemap).padStart(11)} ` +
+          `${String(s.bestaatInRepo).padStart(8)}  ${s.soorten.join(", ") || "-"}\n`,
+      );
+    }
+    process.stdout.write(
+      "  Dit is TECHNISCH BEREIKBAAR en IN DE SITEMAP, niet GEINDEXEERD.\n" +
+        "  Of een zoekmachine ze heeft opgenomen is zonder Search Console niet te meten.\n",
+    );
+
+    /* DE VERGELIJKING OVER 7, 28 EN 90 DAGEN. Met één dagstand luidt
+       het antwoord NIET GEMETEN, en dat is het eerlijke antwoord. */
+    const trend = await vergelijkVensters(pool, organisatieId);
+    process.stdout.write(
+      `\nVERGELIJKING OVER 7 / 28 / 90 DAGEN — ${trend.dagstandenTotaal} dagstand(en)` +
+        `${trend.oudsteDatum ? `, oudste ${trend.oudsteDatum}` : ""}\n\n`,
+    );
+    for (const t of trend.trends) {
+      const cellen = t.vensters
+        .map((v) =>
+          v.verschil === null
+            ? `${v.dagen}d:ONBEKEND`
+            : `${v.dagen}d:${v.verschil > 0 ? "+" : ""}${v.verschil}`,
+        )
+        .join("  ");
+      process.stdout.write(`  ${t.metriek.padEnd(28)} ${t.label.padEnd(13)} ${cellen}\n`);
+    }
+    const eersteReden = trend.trends[0]?.vensters[0]?.toelichting ?? "";
+    if (eersteReden.startsWith("NIET GEMETEN")) {
+      process.stdout.write(`\n  ${eersteReden}\n`);
     }
 
     process.stdout.write("\nFUNNEL\n\n");
