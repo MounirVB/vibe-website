@@ -18,6 +18,7 @@
    niet als bronfeit gepresenteerd.
    ============================================================ */
 
+import type pg from "pg";
 import { configLezen } from "../kern/config.ts";
 import { eenRij, metOrganisatie, rijen, type Pool } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
@@ -148,6 +149,12 @@ type UitspraakRij = {
 
 function soortVanBesluit(besluit: string): OpgebouwdConcept["soort"] {
   switch (besluit) {
+    /* NEWS_ITEM is het besluit van de nieuwsselectie (migratie 0041).
+       Het levert dezelfde SOORT op als NEW_ARTICLE — een eigen pagina
+       onder nieuws/<slug> — maar op de tegenovergestelde grond: een
+       nieuwsbericht VEREIST een onderwerp-eigenaar waar NEW_ARTICLE er
+       juist geen mag hebben. Zie pijplijn/nieuwsselectie.ts. */
+    case "NEWS_ITEM":
     case "NEW_ARTICLE":
       return "nieuw_artikel";
     case "UPDATE_EXISTING":
@@ -196,10 +203,30 @@ export function bouwConcept(
   const uitgevers = [...new Set(uitspraken.map((u) => u.uitgever))];
 
   const soort = soortVanBesluit(invoer.besluit);
+  /* HET NIEUWSPAD IS `/nieuws/<slug>` EN NIET `/nieuws-<slug>`.
+     Dit was een koppelteken, en dat koppelteken sloot het hele
+     nieuwskanaal af. Gemeten op b2de0c4:
+
+       bouwConcept()                -> '/nieuws-acm-stelt-tarieven-vast'
+       slugVanPad(dat pad)          -> null
+       isNieuwsPad(dat pad)         -> false
+       publiceerViaRegister()       -> weigert, 'valt buiten data/inhoud/nieuws/'
+
+     site/nieuwsregister.ts eist `^nieuws\/([a-z0-9][a-z0-9-]*)$` (regel
+     142) en publicatie/pr.ts eist `^data\/inhoud\/nieuws\/[a-z0-9][a-z0-9-]*\.json$`
+     (regel 60). Een pad met koppelteken haalt geen van beide. Elk
+     NEW_ARTICLE werd daarom geweigerd bij publiceer(), en dat is de
+     werkelijke reden dat data/inhoud/nieuws/ niet bestaat en er nul
+     artikelen zijn — niet een redactionele keuze.
+
+     De routereservering in data/seo/nieuws-architectuur.json is
+     `nieuws/<slug>`; dat contract is hier leidend, niet deze functie.
+     Een kennisupdate houdt zijn koppelteken-terugval: die route is geen
+     nieuwsroute en wordt bewust NIET naar schijf geschreven. */
   const pad =
     soort === "pagina_update" || soort === "kennis_update"
       ? (invoer.doelPaginaPad ?? `/kennis-${slug(invoer.gebeurtenisTitel)}`)
-      : `/nieuws-${slug(invoer.gebeurtenisTitel)}`;
+      : `/nieuws/${slug(invoer.gebeurtenisTitel)}`;
 
   // Liever de volledige kop zonder merksuffix dan een kop die
   // middenin een woord afgekapt wordt.
@@ -253,10 +280,48 @@ export function bouwConcept(
   regels.push("## Wat er is vastgelegd");
   regels.push("");
   if (metWaarde.length === 0) {
-    regels.push(
-      "Er zijn voor deze ontwikkeling nog geen harde waarden uit een primaire bron vastgelegd. " +
-        "Zodra die er zijn, wordt dit onderdeel aangevuld.",
-    );
+    /* GEEN GETALLEN, MAAR WEL BEWIJS — en dat verschil hoort zichtbaar
+       te zijn.
+
+       Hier stond één regel: "Er zijn nog geen harde waarden vastgelegd."
+       Dat is waar voor een gebeurtenis zonder bewijs, maar MISLEIDEND
+       voor een gebeurtenis met een bevestigde kwalitatieve uitspraak —
+       een datumbesluit, een regelwijziging. Die heeft wél bewijs; het
+       heeft alleen geen getal.
+
+       WAAROM HIER NIET DE BRONZIN STAAT. `uitspraken.tekst` is de ZIN
+       UIT DE BRON. Die in de paginatekst zetten is herpublicatie, en
+       poort 5 (`geen_bronherpublicatie`) vangt dat terecht. De
+       verwoorde vorm hoort uit de semantieklaag te komen
+       (`uitspraken.verwoorde_zin`, migratie 0025) — maar die laag
+       beoordeelt alleen uitspraken MET een numerieke uitdrukking.
+       Gemeten: van de 53 bevestigde uitspraken hebben er 2 een
+       verwoorde_zin, en 17 hebben verwoordbaar = NULL omdat
+       backfillSemantiek ze oversloeg wegens 'zonder uitdrukking'.
+
+       Dus: dit concept kan het feit niet zelf verwoorden zonder te
+       verzinnen of te herpubliceren. Dan hoort het dat te ZEGGEN, en
+       een mens vult het aan. Dat is wat §5 van de opdracht vraagt:
+       markeer onzekere informatie expliciet voor redactionele
+       beoordeling. Het concept blijft daarmee op ter_review staan, wat
+       de juiste uitkomst is. */
+    if (bevestigd.length === 0) {
+      regels.push(
+        "Er zijn voor deze ontwikkeling nog geen harde waarden uit een primaire bron vastgelegd. " +
+          "Zodra die er zijn, wordt dit onderdeel aangevuld.",
+      );
+    } else {
+      const soorten = [...new Set(bevestigd.map((u) => u.soort))].join(", ");
+      regels.push(
+        `**TE VERWOORDEN DOOR DE REDACTIE.** Deze ontwikkeling rust op ` +
+          `${bevestigd.length} bevestigde uitspraak/uitspraken van het soort ${soorten}, ` +
+          `vastgelegd door ${uitgevers.join(" en ")}. Er zit geen numerieke waarde in, ` +
+          "en de semantische laag heeft er daarom geen verwoordbare vorm van gemaakt. " +
+          "Het feit staat in de bron die onderaan dit bericht genoemd is; " +
+          "een redacteur hoort het hier in eigen woorden neer te zetten. " +
+          "Dit bericht is niet publiceerbaar zolang dat niet gebeurd is.",
+      );
+    }
   } else {
     for (const u of metWaarde.slice(0, 10)) {
       const waarde = `${nlGetal(u.waarde_numeriek)} ${u.eenheid ?? ""}`.trim();
@@ -356,10 +421,40 @@ export function bouwConcept(
     ctaSleutel: oplossing.cta,
     // Kernclaims zijn de bevestigde uitspraken met een waarde; die
     // dragen de pagina. De rest is ondersteunend.
+    /* WAT EEN KERNCLAIM IS: BEVESTIGD, NIET BEVESTIGD-MET-GETAL.
+       Hier stond `metWaarde` — bevestigd ÉN waarde_numeriek !== null.
+       Gevolg: een gebeurtenis waarvan het bewijs kwalitatief of een
+       datum is, kreeg nul kernclaims, en poort 6
+       (`kernclaim_heeft_bewijs`) blokkeerde het concept met "geen enkele
+       uitspraak is als kernclaim gebonden".
+
+       Gemeten op uitspraak 11 (gebeurtenis 53, 'Ondernemers krijgen in
+       2026 meer tijd voor subsidieaanvraag SDE++'): soort 'datum',
+       verificatie_status 'bevestigd', bewijs_kwaliteit 5,
+       waarde_numeriek NULL — de zin noemt een aanvraagperiode van 27
+       oktober tot 26 november 2026. Een volkomen concreet, bevestigd,
+       gedateerd feit, en precies het soort bericht dat dit kanaal moet
+       dragen. Het werd geweigerd omdat er geen GETAL in een kolom stond.
+
+       Schaal van het probleem, gemeten: van 53 bevestigde uitspraken
+       hebben 17 geen numerieke waarde. Voor al die gebeurtenissen was
+       een publiceerbaar concept onmogelijk.
+
+       De vraag die poort 6 STELT is "is er bevestigd bewijs onder dit
+       artikel". Een getal was daar een proxy voor, en een verkeerde.
+       De numerieke discipline zit in poort 7
+       (`geen_verzonnen_getallen`), die onafhankelijk eist dat ELK getal
+       in de tekst uit een gebonden uitspraak komt. Die poort wordt
+       hierdoor niet zwakker: hij leest `waardeNumeriek` van de gebonden
+       uitspraken, en een kwalitatieve uitspraak voegt daar niets aan toe.
+
+       Niet-bevestigde uitspraken blijven ondersteunend. Zou een
+       ongeverifieerde uitspraak kern worden, dan zou poort 6 juist
+       terecht blokkeren. */
     uitspraakBindingen: [
-      ...metWaarde.map((u) => ({ uitspraakId: u.id, rol: "kern" as const })),
+      ...bevestigd.map((u) => ({ uitspraakId: u.id, rol: "kern" as const })),
       ...uitspraken
-        .filter((u) => !metWaarde.some((m) => m.id === u.id))
+        .filter((u) => !bevestigd.some((m) => m.id === u.id))
         .map((u) => ({ uitspraakId: u.id, rol: "ondersteunend" as const })),
     ],
     invoerVersies: [...new Set(uitspraken.map((u) => u.versie_id))],
@@ -479,6 +574,28 @@ export async function maakConcept(
     const invoer: ConceptInvoer = { ...k, gebeurtenisTitel: k.gebeurtenis_titel, gebeurdOp: k.gebeurd_op };
     let concept = bouwConcept(invoer, uitspraken, geo, bestaandePaden);
 
+    /* De injectiestand van de bronversies waar dit concept uit komt.
+       Dezelfde vraag die motor.ts regel 374-378 stelt, maar gebonden aan
+       de versies van DIT concept in plaats van aan de gebeurtenis. Komt
+       er geen enkele versie uit (een concept zonder uitspraken), dan is
+       er ook geen verdachte bron — `any(array[])` op een lege array
+       geeft false, en dat is hier het juiste antwoord. */
+    const injectie = await eenRij<{ verdacht: boolean }>(
+      c,
+      `select exists (
+                select 1 from intel.brondocument_versies bv
+                 where bv.injectie_verdacht and bv.id = any($1::bigint[])
+              ) as verdacht`,
+      [concept.invoerVersies],
+    );
+    const injectieInBron = injectie?.verdacht ?? false;
+    if (injectieInBron) {
+      log.waarschuwing("concept komt uit een injectieverdachte bronversie", {
+        kandidaat: kandidaatId,
+        versies: concept.invoerVersies,
+      });
+    }
+
     // Optioneel: het model mag de tekst herschrijven. Faalt dat of
     // voegt het een getal toe, dan valt de poort erop en blijft het
     // deterministische concept staan.
@@ -542,7 +659,14 @@ export async function maakConcept(
           await meldSucces(c, organisatieId);
           const herschreven = { ...concept, bodyMarkdown: antwoord.tekst.trim() };
           // Alleen overnemen als het geen nieuwe getallen introduceert.
-          const proef = toetsVoorConcept(herschreven, invoer, uitspraken, bestaandePaden, config.siteBasisUrl);
+          const proef = toetsVoorConcept(
+            herschreven,
+            invoer,
+            uitspraken,
+            bestaandePaden,
+            config.siteBasisUrl,
+            injectieInBron,
+          );
           const samenvatting = vatPoortenSamen(proef);
           const nieuweGetallen = samenvatting.blokkades.some((b) =>
             b.startsWith("geen_verzonnen_getallen"),
@@ -584,6 +708,7 @@ export async function maakConcept(
       uitspraken,
       bestaandePaden,
       config.siteBasisUrl,
+      injectieInBron,
     );
     const samenvatting = vatPoortenSamen(resultaten);
     const afdruk = inhoudAfdruk(concept);
@@ -623,7 +748,26 @@ export async function maakConcept(
         JSON.stringify(concept.bronnenSectie),
         concept.ctaSleutel,
         invoer.risicoKlasse,
-        modelGebruikt === "deterministisch" ? "mens" : "ai",
+        /* AUTEURSCHAP, EERLIJK GEREGISTREERD.
+           Hier stond `modelGebruikt === "deterministisch" ? "mens" : "ai"`.
+           Gevolg, gemeten: alle 7 inhoudsversies in de database staan op
+           auteur_soort='mens' met model='deterministisch'. Geen mens
+           heeft ook maar één van die teksten geschreven — bouwConcept()
+           deed dat.
+
+           Een deterministische opbouw is geen MENS maar een MACHINE
+           zonder model. Het enum kent twee waarden ('ai','mens'), en van
+           die twee is 'ai' de juiste: de vraag die het veld beantwoordt
+           is "heeft een mens dit geschreven", en het antwoord is nee.
+           Dat is geen muggenzifterij maar de voorwaarde onder §9 van de
+           opdracht: menselijke goedkeuring moet HERLEIDBAAR zijn, en dat
+           kan niet als het auditspoor de machine als mens opvoert.
+
+           Dit veld wordt in heel src/ alleen geschreven en nooit
+           gelezen, dus er verandert geen gedrag — alleen de waarheid van
+           de registratie. `aangemaakt_door` blijft NULL, en dat is
+           consistent: er is geen menselijke auteur om naar te wijzen. */
+        "ai",
         modelGebruikt,
         afdruk,
         concept.invoerVersies,
@@ -676,12 +820,199 @@ export async function maakConcept(
   });
 }
 
+/* ============================================================
+   HERTOETSEN — dezelfde poorten over een BESTAANDE versie
+   ------------------------------------------------------------
+   WAAROM DIT BESTAAT. Het redactionele dashboard moet een concept
+   kunnen laten AANPASSEN (§8 van de opdracht). Een aangepaste tekst die
+   de oude poortuitslag houdt, is het gevaarlijkste wat er is: de
+   redacteur zet een getal in de tekst, `poorten_geslaagd` blijft op
+   true staan, en publiceer() laat het door omdat het die kolom leest.
+
+   Daarom loopt een bewerking door EXACT dezelfde poorten als de
+   generatie. Niet een tweede, mildere set — dat is de les uit
+   voorstel.ts: twee oordelen over dezelfde vraag lopen altijd uiteen.
+
+   DE AFDRUK WORDT OPNIEUW BEREKEND. Een goedkeuring bindt aan de
+   afdruk (inhoud_versies_goedkeuring_bindt), dus een gewijzigde tekst
+   hoort een nieuwe afdruk te krijgen. Staat de versie al op
+   goedgekeurd, dan weigert de database die update — en dat is precies
+   goed: een goedgekeurde tekst wijzig je niet, je maakt een nieuwe
+   versie.
+   ============================================================ */
+
+export type HertoetsUitkomst = {
+  readonly versieId: number;
+  readonly poortenGeslaagd: boolean;
+  readonly blokkades: readonly string[];
+  readonly adviezen: readonly string[];
+  readonly afdruk: string;
+};
+
+/**
+ * Toetst een bestaande inhoudsversie opnieuw tegen alle poorten en
+ * schrijft de uitslag terug.
+ *
+ * Geeft `null` als de versie niet bestaat in deze organisatie.
+ */
+export async function hertoetsInhoudVersie(
+  c: pg.PoolClient,
+  organisatieId: number,
+  versieId: number,
+): Promise<HertoetsUitkomst | null> {
+  const config = configLezen();
+
+  const v = await eenRij<{
+    pad: string;
+    titel: string;
+    meta_omschrijving: string | null;
+    canonieke_url: string;
+    direct_antwoord: string | null;
+    body_markdown: string;
+    structured_data: unknown;
+    interne_links: string[] | null;
+    bronnen_sectie: { uitgever: string; url: string }[] | null;
+    risico_klasse: "laag" | "midden" | "hoog";
+    goedgekeurd_door: number | null;
+    invoer_versies: number[] | null;
+    doel_pagina_beheer: "handmatig" | "intelligence" | null;
+  }>(
+    c,
+    `select v.pad, v.titel, v.meta_omschrijving, v.canonieke_url, v.direct_antwoord,
+            v.body_markdown, v.structured_data, v.interne_links, v.bronnen_sectie,
+            v.risico_klasse, v.goedgekeurd_door, v.invoer_versies,
+            pr.beheer as doel_pagina_beheer
+       from intel.inhoud_versies v
+       left join intel.pagina_register pr
+              on pr.organisatie_id = v.organisatie_id and pr.id = v.pagina_id
+      where v.organisatie_id = $1 and v.id = $2`,
+    [organisatieId, versieId],
+  );
+  if (!v) return null;
+
+  /* De GEBONDEN uitspraken, met hun rol zoals die is vastgelegd. Niet
+     opnieuw afleiden: de binding is een feit in intel.inhoud_uitspraken
+     en hoort niet per hertoets te verschuiven. */
+  const gebonden = await rijen<{
+    id: number;
+    tekst: string;
+    soort: string;
+    waarde_numeriek: string | null;
+    eenheid: string | null;
+    geldig_vanaf: string | null;
+    geldig_tot: string | null;
+    verificatie_status: string;
+    rol: "kern" | "ondersteunend" | "context";
+  }>(
+    c,
+    `select u.id, u.tekst, u.soort, u.waarde_numeriek, u.eenheid,
+            u.geldig_vanaf, u.geldig_tot, u.verificatie_status, iu.rol
+       from intel.inhoud_uitspraken iu
+       join intel.uitspraken u on u.id = iu.uitspraak_id
+      where iu.organisatie_id = $1 and iu.inhoud_versie_id = $2
+      order by u.id`,
+    [organisatieId, versieId],
+  );
+
+  const paden = await rijen<{ pad: string }>(
+    c,
+    "select pad from intel.pagina_register where organisatie_id = $1 and bestaat_in_repo",
+    [organisatieId],
+  );
+
+  const injectie = await eenRij<{ verdacht: boolean }>(
+    c,
+    `select exists (
+              select 1 from intel.brondocument_versies bv
+               where bv.injectie_verdacht and bv.id = any($1::bigint[])
+            ) as verdacht`,
+    [v.invoer_versies ?? []],
+  );
+
+  const resultaten = toetsConcept({
+    pad: v.pad,
+    titel: v.titel,
+    metaOmschrijving: v.meta_omschrijving,
+    canoniekeUrl: v.canonieke_url,
+    directAntwoord: v.direct_antwoord,
+    bodyMarkdown: v.body_markdown,
+    structuredData: v.structured_data,
+    interneLinks: v.interne_links ?? [],
+    bronnenSectie: v.bronnen_sectie ?? [],
+    risicoKlasse: v.risico_klasse,
+    goedgekeurdDoor: v.goedgekeurd_door,
+    uitspraken: gebonden.map((u) => ({
+      id: u.id,
+      tekst: u.tekst,
+      soort: u.soort,
+      waardeNumeriek: u.waarde_numeriek === null ? null : Number(u.waarde_numeriek),
+      eenheid: u.eenheid,
+      geldigVanaf: u.geldig_vanaf,
+      geldigTot: u.geldig_tot,
+      verificatieStatus: u.verificatie_status,
+      rol: u.rol,
+    })),
+    bronteksten: gebonden.map((u) => u.tekst),
+    injectieInBron: injectie?.verdacht ?? false,
+    bestaandePaden: new Set(paden.map((p) => p.pad)),
+    siteBasisUrl: config.siteBasisUrl,
+    doelPaginaBeheer: v.doel_pagina_beheer,
+  });
+
+  const samenvatting = vatPoortenSamen(resultaten);
+  const afdruk = inhoudAfdruk({
+    titel: v.titel,
+    directAntwoord: v.direct_antwoord ?? "",
+    bodyMarkdown: v.body_markdown,
+    structuredData: v.structured_data,
+  });
+
+  await c.query(
+    `update intel.inhoud_versies
+        set poortresultaten = $2,
+            poorten_geslaagd = $3,
+            blokkades = $4,
+            inhoud_afdruk = $5
+      where id = $1`,
+    [versieId, JSON.stringify(resultaten), samenvatting.geslaagd, samenvatting.blokkades, afdruk],
+  );
+
+  log.info("inhoudsversie hertoetst", {
+    versie: versieId,
+    geslaagd: samenvatting.geslaagd,
+    blokkades: samenvatting.blokkades.length,
+  });
+
+  return {
+    versieId,
+    poortenGeslaagd: samenvatting.geslaagd,
+    blokkades: samenvatting.blokkades,
+    adviezen: samenvatting.adviezen,
+    afdruk,
+  };
+}
+
 function toetsVoorConcept(
   concept: OpgebouwdConcept,
   invoer: ConceptInvoer,
   uitspraken: readonly UitspraakRij[],
   bestaandePaden: ReadonlySet<string>,
   siteBasisUrl: string,
+  /* GEMETEN, NIET AANGENOMEN.
+     Hier stond `injectieInBron: false` als constante in de aanroep
+     hieronder. Gevolg: poort 10 (`injectiebron_vereist_mens`) meldde in
+     de conceptroute ALTIJD 'geslaagd', ook wanneer het concept uit een
+     bronversie kwam die de injectiedetector verdacht had verklaard.
+
+     De besluitmotor leest dat feit wél — motor.ts regel 374-378 doet
+     `exists (... where v.injectie_verdacht)` — dus de waarheid stond in
+     de database en werd op deze ene plek weggegooid. De
+     database-invariant `injectiebron_zonder_mens` (0009 regel 397) vangt
+     het alsnog, maar pas bij status goedgekeurd/gepubliceerd. Een
+     redacteur die het poortoverzicht van een concept leest, zag tot nu
+     toe een valse PASS op precies de poort die hem had moeten
+     waarschuwen. */
+  injectieInBron: boolean,
 ) {
   const gebonden: GebondenUitspraak[] = uitspraken.map((u) => ({
     id: u.id,
@@ -711,7 +1042,7 @@ function toetsVoorConcept(
     uitspraken: gebonden,
     // De bronzinnen zelf, om herpublicatie te kunnen meten.
     bronteksten: uitspraken.map((u) => u.tekst),
-    injectieInBron: false,
+    injectieInBron,
     bestaandePaden,
     siteBasisUrl,
     doelPaginaBeheer: invoer.doelPaginaBeheer,

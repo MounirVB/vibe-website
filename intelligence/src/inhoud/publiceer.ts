@@ -36,6 +36,7 @@ import { bronOpSleutel } from "../bronnen/register.ts";
 import {
   heeftRouteregister,
   leesRouteregister,
+  leesRouteStaten,
   routeVoorCluster,
 } from "../site/routeregister.ts";
 import {
@@ -267,12 +268,18 @@ export async function publiceer(
       goedgekeurd_door: number | null;
       goedgekeurd_op: string | null;
       goedkeurder_naam: string | null;
+      interne_links: string[] | null;
     }>(
       c,
       `select v.id, v.pad, v.titel, v.meta_omschrijving, v.canonieke_url,
               v.body_markdown, v.structured_data, v.status, v.poorten_geslaagd,
               v.blokkades, v.soort, v.inhoud_afdruk, v.goedgekeurde_afdruk,
               v.direct_antwoord, v.kandidaat_id, v.goedgekeurd_door,
+              -- DE INTERNE LINKS, die hier tot R2 niet werden gelezen.
+              -- Zie de toelichting bij splitsInterneLinks() in dit bestand.
+              -- GEEN BACKTICKS IN DIT COMMENTAAR: deze query staat in een
+              -- template literal en een backtick sluit die af.
+              v.interne_links,
               v.goedgekeurd_op::date::text as goedgekeurd_op,
               g.naam as goedkeurder_naam,
               pr.beheer as pagina_beheer
@@ -438,6 +445,89 @@ export async function publiceer(
    De registerroute: schrijf een record, geen pagina.
    ------------------------------------------------------------------ */
 
+/**
+ * De interne links van een inhoudsversie naar de twee linkvelden van
+ * het contract, met alleen routes die écht op INDEX staan.
+ *
+ * WAAROM DIT BESTAAT. Hier stond in publiceerViaRegister() letterlijk:
+ *
+ *     oplossingLinks: [],
+ *     kennisLinks: [],
+ *     regioLinks: [],
+ *
+ * Drie lege arrays, hard. Terwijl `intel.inhoud_versies.interne_links`
+ * gevuld IS: bouwConcept() berekent hem uit OPLOSSING_PER_CLUSTER en
+ * filtert op bestaande paden, en poort 11 (`interne_links_bestaan`)
+ * toetst hem nog. Gemeten: alle 7 inhoudsversies dragen
+ * `["/contact","/projecten"]`. Die werden dus berekend, opgeslagen,
+ * getoetst — en bij de publicatienaad weggegooid.
+ *
+ * Geen enkele poort ving dat, en dat is logisch: `weigerNieuws()` eist
+ * dat ELKE `oplossing_link` op INDEX staat, en een lege lijst haalt die
+ * eis triviaal. Het resultaat was een artikel zonder één interne link,
+ * terwijl §6 en §7 van de opdracht die juist vragen en het contract het
+ * conversiepad erop bouwt (poort 13 van audit.mjs).
+ *
+ * ALLEEN INDEX, EN DAT IS GEEN OVERDAAD. Zou hier een route meegaan die
+ * op PENDING staat, dan zet weigerNieuws() het hele artikel op PENDING
+ * — slechter dan geen link. Daarom wordt elke route eerst tegen
+ * data/seo/routes.json gehouden; wat niet op INDEX staat valt af, mét
+ * een regel in het log zodat het niet stil gebeurt.
+ *
+ * DE EIGENAAR GAAT ER UIT. `onderwerp_eigenaar` is een eigen veld in
+ * het record en de generator rendert dat al als het conversiepad. Hem
+ * ook nog als oplossing_link meegeven zou dezelfde link twee keer op de
+ * pagina zetten.
+ *
+ * REGIOLINKS BLIJVEN LEEG, en dat is een besluit en geen vergeten geval.
+ * `regio_links` verwacht CBS-gemeente- of provinciecodes, en die zitten
+ * in `intel.gebeurtenis_geo` met een grondslag per gebied. Een
+ * nieuwsbericht dat een gebied noemt zonder dat de BRON dat gebied
+ * noemt, is precies de stille gevolgtrekking die docs/ARCHITECTUUR.md
+ * §4 verbiedt ("er is geen geometrische insluiting, juist omdat ...").
+ * Een gebiedsgebonden feit hoort een REGIONAL_PATCH te worden, en die
+ * route bestaat al. Zodra een nieuwsbericht een eigen geogrondslag
+ * krijgt, hoort hij hier te worden gevuld uit gebeurtenis_geo met
+ * grondslag 'bron_expliciet' of 'code_match' — nooit 'afgeleid'.
+ */
+export function splitsInterneLinks(
+  interneLinks: readonly string[],
+  staatVanRoute: ReadonlyMap<string, string>,
+  onderwerpEigenaar: string | null,
+): { oplossingLinks: string[]; kennisLinks: string[]; afgevallen: string[] } {
+  const oplossingLinks: string[] = [];
+  const kennisLinks: string[] = [];
+  const afgevallen: string[] = [];
+  const eigenaar = (onderwerpEigenaar ?? "").replace(/^\/+/, "");
+  /* ONTDUBBELEN NA HET NORMALISEREN, niet ervoor.
+     Eerst stond hier `new Set(interneLinks)` op de RUWE strings. '/contact'
+     en 'contact' zijn dan twee verschillende elementen die beide naar
+     dezelfde route normaliseren, en de link kwam twee keer in het
+     record. Gevonden door de eigen toets in
+     test/eenheid/nieuwsketen-grendels.test.ts. */
+  const gezien = new Set<string>();
+
+  for (const ruw of interneLinks) {
+    const route = ruw.replace(/^\/+/, "").replace(/\.html$/, "");
+    if (route === "" || route === eigenaar) continue;
+    if (gezien.has(route)) continue;
+    gezien.add(route);
+    const staat = staatVanRoute.get(route);
+    if (staat !== "INDEX") {
+      afgevallen.push(`${route} (${staat ?? "bestaat niet in routes.json"})`);
+      continue;
+    }
+    if (route.startsWith("kennis/")) kennisLinks.push(route);
+    else oplossingLinks.push(route);
+  }
+
+  return {
+    oplossingLinks: oplossingLinks.sort(),
+    kennisLinks: kennisLinks.sort(),
+    afgevallen,
+  };
+}
+
 type VersieRij = {
   id: number;
   pad: string;
@@ -452,6 +542,8 @@ type VersieRij = {
   kandidaat_id: number | null;
   goedgekeurd_op: string | null;
   goedkeurder_naam: string | null;
+  /** Berekend door bouwConcept(), getoetst door poort 11. */
+  interne_links: string[] | null;
 };
 
 /**
@@ -563,6 +655,28 @@ async function publiceerViaRegister(
       bron_datum: g.bron_datum ?? "",
     }));
 
+  /* De interne links, nu wél. De routestaten komen uit hetzelfde
+     bestand dat weigerNieuws() straks leest (data/seo/routes.json), dus
+     wat hier door de filter komt haalt daar dezelfde eis. */
+  const staten = await leesRouteStaten(config.siteWortel);
+  const staatVanRoute = new Map(staten.routes.map((r) => [r.route, r.staat]));
+  const links = splitsInterneLinks(v.interne_links ?? [], staatVanRoute, onderwerpEigenaar);
+  if (links.afgevallen.length > 0) {
+    log.waarschuwing("interne links afgevallen omdat ze niet op INDEX staan", {
+      versie: v.id,
+      afgevallen: links.afgevallen,
+    });
+  }
+  if (!staten.aanwezig) {
+    /* Zonder routestaten is niet vast te stellen of een link op INDEX
+       staat. Dan liever geen link dan een link die het artikel op
+       PENDING zet — maar het moet wel zichtbaar zijn. */
+    log.waarschuwing("geen routestaten; interne links worden overgeslagen", {
+      versie: v.id,
+      reden: staten.reden,
+    });
+  }
+
   const vandaag = new Date().toISOString().slice(0, 10);
   const record = bouwNieuwsRecord({
     pad: v.pad,
@@ -577,8 +691,9 @@ async function publiceerViaRegister(
     goedgekeurdDoor: v.goedkeurder_naam,
     goedgekeurdOp: v.goedgekeurd_op,
     onderwerpEigenaar,
-    oplossingLinks: [],
-    kennisLinks: [],
+    oplossingLinks: staten.aanwezig ? links.oplossingLinks : [],
+    kennisLinks: staten.aanwezig ? links.kennisLinks : [],
+    // Blijft leeg, en waarom staat in de toelichting bij splitsInterneLinks().
     regioLinks: [],
     bronnen,
     claims,
@@ -834,19 +949,130 @@ export async function draaiTerug(
   });
 }
 
-/** Zet een versie op goedgekeurd. Vier ogen worden door de database afgedwongen. */
+/**
+ * Zet een versie op goedgekeurd.
+ *
+ * DE KOPREGEL HIER LUIDDE: "Vier ogen worden door de database
+ * afgedwongen." Dat was een valse verzekering, en wel om twee gemeten
+ * redenen.
+ *
+ * 1 GEEN RECHTENCONTROLE. Deze functie nam elke `gebruikerId` aan die
+ *   hij kreeg. Gemeten: `grep -c 'rol_rechten\|RECHT_'` over
+ *   inhoud/publiceer.ts, cli/publiceer.ts en publicatie/pr.ts geeft
+ *   0, 0 en 0. `npm run publiceer -- --versie N --goedkeuren <id>` was
+ *   dus een volledige publicatieketen voor iedereen met de CLI en
+ *   INTEL_DB_URL — ongeacht of dat id een bevoegde, bestaande,
+ *   actieve gebruiker was.
+ *
+ *   Dat is precies het defect dat inhoud/beoordeling.ts regel 105-122
+ *   al eens heeft opgelost, voor de ANDERE goedkeurlaan. Daar staat
+ *   de les letterlijk: "Elke andere aanroeper van beoordeel() — een
+ *   CLI, een taak, een volgende route — had geen enkele
+ *   rechtencontrole." Die laan toetst sindsdien zelf. Deze laan deed
+ *   dat nooit, en het is juist DEZE die tot een bestand op schijf en
+ *   een pull request leidt; de bewaakte laan publiceert niets.
+ *
+ * 2 DE VIER-OGENCONSTRAINT WERKT LEEG. Hij luidt
+ *   `goedgekeurd_door is null or (goedgekeurd_door is distinct from
+ *   aangemaakt_door and goedgekeurd_door is distinct from
+ *   bewerkt_door)`. Beide kolommen bestaan (0004 regel 200, 0009 regel
+ *   206) maar worden in heel src/ nergens geschreven — gemeten: 7
+ *   rijen in intel.inhoud_versies, 0 met aangemaakt_door, 0 met
+ *   bewerkt_door. En `x is distinct from null` is TRUE voor elke x,
+ *   dus de constraint slaagt voor iedere rij zonder iets te toetsen.
+ *
+ *   Zolang alleen een AI concepten maakt is dat verdedigbaar: er is
+ *   geen menselijke auteur, dus geen zelfgoedkeuring. Maar zodra een
+ *   redacteur een concept KAN AANPASSEN — en dat is wat het
+ *   redactionele dashboard moet kunnen — wordt zelfgoedkeuring
+ *   mogelijk en vangt deze constraint hem niet. Daarom schrijft de
+ *   bewerkroute nu `bewerkt_door` (zie `bewerkVersie`), en toetst deze
+ *   functie het expliciet in plaats van op de database te vertrouwen.
+ *
+ * WAT DIT NIET VERANDERT. De append-only regel in
+ * intel.publicatiebesluiten stond er al en blijft; dit voegt de
+ * bevoegdheidstoets en de echte vier-ogentoets ervoor toe.
+ */
 export async function keurGoed(
   c: pg.PoolClient,
   inhoudVersieId: number,
   gebruikerId: number,
   motivatie: string,
 ): Promise<void> {
-  const v = await eenRij<{ inhoud_afdruk: string | null; organisatie_id: number }>(
+  const v = await eenRij<{
+    inhoud_afdruk: string | null;
+    organisatie_id: number;
+    risico_klasse: string | null;
+    aangemaakt_door: number | null;
+    bewerkt_door: number | null;
+    status: string;
+  }>(
     c,
-    "select inhoud_afdruk, organisatie_id from intel.inhoud_versies where id = $1",
+    `select inhoud_afdruk, organisatie_id, risico_klasse,
+            aangemaakt_door, bewerkt_door, status
+       from intel.inhoud_versies where id = $1`,
     [inhoudVersieId],
   );
   if (!v) throw new IntelFout("configuratie", `inhoudsversie ${inhoudVersieId} bestaat niet`);
+
+  /* ---- de goedkeurder moet bestaan en actief zijn ----
+     Een verwijderde of geschorste rekening mag niets vrijgeven. De
+     database kent de kolom, dus dit is een vraag en geen aanname. */
+  const gebruiker = await eenRij<{ email: string; actief: boolean }>(
+    c,
+    "select email, actief from intel.gebruikers where id = $1 and organisatie_id = $2",
+    [gebruikerId, v.organisatie_id],
+  );
+  if (!gebruiker) {
+    throw new IntelFout(
+      "autorisatie",
+      `gebruiker ${gebruikerId} bestaat niet in organisatie ${v.organisatie_id}; ` +
+        "een goedkeuring zonder herleidbare identiteit is geen goedkeuring",
+    );
+  }
+  if (!gebruiker.actief) {
+    throw new IntelFout(
+      "autorisatie",
+      `gebruiker ${gebruiker.email} is niet actief en mag niets vrijgeven`,
+    );
+  }
+
+  /* ---- en hij moet het recht hebben ----
+     Dezelfde functie en dezelfde rechtnamen als beoordeel(), zodat er
+     één waarheid is over wie mag goedkeuren. */
+  const { rechtenVan, RECHT_BEOORDELEN, RECHT_HOOGRISICO } = await import("./beoordeling.ts");
+  const rechten = await rechtenVan(c, gebruikerId);
+  if (!rechten.has(RECHT_BEOORDELEN)) {
+    throw new IntelFout(
+      "autorisatie",
+      `${gebruiker.email} mag inhoudsversie ${inhoudVersieId} niet goedkeuren: ` +
+        `het recht ${RECHT_BEOORDELEN} ontbreekt`,
+    );
+  }
+  if (v.risico_klasse === "hoog" && !rechten.has(RECHT_HOOGRISICO)) {
+    throw new IntelFout(
+      "autorisatie",
+      `risicoklasse hoog vraagt het recht ${RECHT_HOOGRISICO} en ${gebruiker.email} heeft dat niet`,
+    );
+  }
+
+  /* ---- vier ogen, hier getoetst en niet aan de database overgelaten ----
+     De constraint blijft staan als tweede slot, maar hij kan niets
+     zeggen zolang de kolommen leeg zijn. Deze toets werkt ook als ze
+     leeg zijn: is er geen menselijke auteur of bewerker, dan is er ook
+     geen zelfgoedkeuring en gaat hij door. */
+  if (v.aangemaakt_door !== null && v.aangemaakt_door === gebruikerId) {
+    throw new IntelFout(
+      "autorisatie",
+      `${gebruiker.email} heeft deze versie zelf aangemaakt en mag hem niet goedkeuren (vier ogen)`,
+    );
+  }
+  if (v.bewerkt_door !== null && v.bewerkt_door === gebruikerId) {
+    throw new IntelFout(
+      "autorisatie",
+      `${gebruiker.email} heeft deze versie als laatste bewerkt en mag hem niet goedkeuren (vier ogen)`,
+    );
+  }
 
   await c.query(
     `update intel.inhoud_versies
