@@ -108,6 +108,22 @@ code { background: #eef2f6; padding: 1px 5px; border-radius: 4px; font-size: 13p
 .dringend { color: #a11; font-weight: 700; }
 pre.diff { background: #f4fbf4; border-left: 3px solid #3a7; padding: 8px 10px; overflow-x: auto;
            font-size: 13px; white-space: pre-wrap; border-radius: 4px; }
+/* ELKE <pre> BREEKT AF, NIET ALLEEN pre.diff.
+   Gemeten met browsertoets 26: de conceptdetailpagina scrollde 127px
+   horizontaal op een viewport van 390px. Oorzaak: de concepttekst en de
+   JSON-LD staan in een <pre>, en die rekt zonder afbreking door. Een
+   tabel kan dat niet opvangen — .tabelwrap scrollt wel, maar een <pre>
+   buiten een tabel duwt het hele document breder.
+   overflow-wrap:anywhere en niet break-word: een JSON-LD-regel of een
+   lange URL heeft geen afbreekpunten, en dan doet break-word niets.
+   GEEN BACKTICKS IN DIT COMMENTAAR: deze CSS staat in een template
+   literal en een backtick sluit die af. */
+pre { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 100%; }
+pre.concepttekst { background: var(--vlak, #fafafa); border: 1px solid var(--rand);
+                   border-radius: 8px; padding: 12px 14px; font-size: 13px; line-height: 1.55; }
+/* Een <details> in een tabelcel mag de cel niet oprekken. */
+td > details { max-width: 100%; }
+td > details > pre { font-size: 12px; margin: 6px 0 0; }
 .binnenkort { color: #a56a00; font-weight: 600; }
 table.paren { width: 100%; border-collapse: collapse; margin-top: 8px; }
 table.paren th { text-align: left; width: 210px; vertical-align: top; padding: 6px 10px 6px 0;
