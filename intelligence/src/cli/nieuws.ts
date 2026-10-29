@@ -49,6 +49,8 @@ async function main(): Promise<number> {
 
   process.stdout.write(`NIEUWSSELECTIE ${NIEUWSMOTOR_VERSIE}${droog ? " (DROOG)" : ""}\n\n`);
   process.stdout.write("CONTEXT\n");
+  process.stdout.write(`  toestand           ${ctx.toestand}\n`);
+  process.stdout.write(`  bron               ${ctx.herkomst.bron} — ${ctx.herkomst.bronReden}\n`);
   process.stdout.write(`  routeregister      ${ctx.herkomst.registerReden}\n`);
   process.stdout.write(`  routestaten        ${ctx.herkomst.statenReden}\n`);
   process.stdout.write(
@@ -69,8 +71,30 @@ async function main(): Promise<number> {
   process.stdout.write(
     `  bestaande nieuwsslugs ${ctx.bestaandeNieuwsSlugs.size}` +
       (ctx.herkomst.nieuwsmapAanwezig ? "" : " (map data/inhoud/nieuws/ bestaat nog niet)") +
-      "\n\n",
+      "\n",
   );
+  for (const b of ctx.herkomst.beperkingen) {
+    process.stdout.write(`  BEPERKING          ${b}\n`);
+  }
+  process.stdout.write("\n");
+
+  /* GEEN RONDE ZONDER CONTEXT.
+     Hiervoor draaide de ronde tóch, meldde "0 geschikt" en sloot af met
+     exitcode 0. Dat is de stille variant van een storing: niets in de
+     uitvoer onderscheidde "geen eigenaar" van "ik kan de site niet
+     zien", en een nul met exitcode 0 leest als een geslaagde meting.
+     Een exitcode 1 en een lege uitslag zijn hier het eerlijke antwoord. */
+  if (ctx.toestand === "CONTEXT_NIET_BESCHIKBAAR") {
+    process.stderr.write(
+      `CONTEXT NIET BESCHIKBAAR (${ctx.herkomst.onbruikbaarSoort})\n` +
+        `  ${ctx.herkomst.onbruikbaarReden}\n\n` +
+        "Er is NIETS beoordeeld, niets geschreven, niets goedgekeurd en niets gepubliceerd.\n" +
+        "Dit is geen uitkomst maar een storing: eigenaarschap is onbekend, niet afwezig.\n" +
+        "Herstel: draai 'npm run sitekennis' in een checkout met de website erin, of zet\n" +
+        "INTEL_SITE_WORTEL naar een worktree die data/inhoud en data/seo/routes.json bevat.\n",
+    );
+    return 1;
+  }
 
   const rapport = await nieuwsselectieronde(pool, organisatieId, {
     vandaag,
