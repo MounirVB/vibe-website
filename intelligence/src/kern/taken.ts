@@ -371,12 +371,27 @@ export const REGISTER: Record<string, Handler> = {
   /**
    * NIEUW IN R2 — de nieuwsselectie in de keten.
    *
-   * HET ARTEFACT IS EEN VOORWAARDE, net als bij `voorstel`. Zonder
-   * routeregister en routestaten kan deze laag niet vaststellen of een
-   * cluster een eigenaar heeft die op INDEX staat, en dat is precies de
-   * grond die weigerNieuws() straks toetst. Zou hij dan doorgaan, dan
-   * schreef hij kandidaten die niemand kan publiceren. Een ontbrekend
-   * artefact is een configuratiefout en dus niet-herhaalbaar.
+   * DE SITECONTEXT IS EEN VOORWAARDE, net als bij `voorstel`. Zonder
+   * sitecontext kan deze laag niet vaststellen of een cluster een
+   * eigenaar heeft die op INDEX staat, en dat is precies de grond die
+   * weigerNieuws() straks toetst. Zou hij dan doorgaan, dan schreef hij
+   * kandidaten die niemand kan publiceren.
+   *
+   * R2.1 — WAAROM DEZE POORT IS VERSCHOVEN. Hij toetste
+   * `registerAanwezig && statenAanwezig`, dus de aanwezigheid van twee
+   * BESTANDEN uit de repo-wortel. Die staan niet in de productiecontainer
+   * (`rootDirectory: intelligence`, dus `/app` IS die map), terwijl het
+   * gecommitte sitekennisartefact er wél staat en dezelfde vraag kan
+   * beantwoorden. Gemeten gevolg: deze taak zou in productie ALTIJD
+   * falen op een configuratiefout, ook met een geldige context op schijf.
+   *
+   * De poort toetst nu de TOESTAND en niet de vindplaats. Alleen
+   * CONTEXT_NIET_BESCHIKBAAR is een storing;
+   * GELDIGE_CONTEXT_ZONDER_EIGENAARS is een uitkomst en mag doorgaan,
+   * want "deze clusters hebben werkelijk geen eigenaar" is iets anders
+   * dan "ik kan de site niet zien". Een onbruikbare context blijft een
+   * configuratiefout en dus niet-herhaalbaar: opnieuw proberen leest
+   * hetzelfde bestand.
    *
    * SCHRIJFT GEEN CONCEPT EN KEURT NIETS GOED. Deze taak levert een
    * geordende werkvoorraad; `maakConcept` is een aparte stap en zet een
@@ -391,12 +406,12 @@ export const REGISTER: Record<string, Handler> = {
     const config = configLezen();
     const ctx = await leesNieuwsContext(config.siteWortel);
 
-    if (!ctx.herkomst.registerAanwezig || !ctx.herkomst.statenAanwezig) {
+    if (ctx.toestand === "CONTEXT_NIET_BESCHIKBAAR") {
       throw new IntelFout(
         "configuratie",
-        `nieuwscontext onbruikbaar: routeregister ${ctx.herkomst.registerAanwezig ? "ok" : "ONTBREEKT"} ` +
-          `(${ctx.herkomst.registerReden}), routestaten ${ctx.herkomst.statenAanwezig ? "ok" : "ONTBREEKT"} ` +
-          `(${ctx.herkomst.statenReden}). Er zijn GEEN kandidaten beoordeeld en geen bestaande gewijzigd.`,
+        `nieuwscontext NIET BESCHIKBAAR (${ctx.herkomst.onbruikbaarSoort}): ` +
+          `${ctx.herkomst.onbruikbaarReden} — ${ctx.herkomst.bronReden}. ` +
+          "Er zijn GEEN kandidaten beoordeeld en geen bestaande gewijzigd.",
         { herhaalbaar: false },
       );
     }
@@ -419,7 +434,13 @@ export const REGISTER: Record<string, Handler> = {
       .map(([g, n]) => `${n}x ${g}`)
       .join(" ;; ");
 
+    /* DE HERKOMST IN DE UITKOMSTREGEL. Een nul zonder herkomst is op
+       productie niet te wegen: hij kan betekenen dat de oogst klein was
+       of dat de context uit een ondergrens kwam. `intel.taken.resultaat`
+       is de enige plek waar een mens dat later terugvindt. */
     return (
+      `context ${ctx.toestand} via ${ctx.herkomst.bron} ` +
+      `(${ctx.herkomst.clustersMetEigenaar} cluster(s) met eigenaar) — ` +
       `beoordeeld ${r.beoordeeld}, geschikt ${r.geschikt}, ongeschikt ${r.ongeschikt}, ` +
       `geschreven ${r.kandidatenGeschreven}` +
       (gronden ? ` — zwaarste gronden: ${gronden}` : "") +
