@@ -1,7 +1,12 @@
 # Nieuws R2 — operationalisering van het nieuwskanaal
 
-**Branch** `feat/nieuws-r2-operationalisering` · **basis** `b2de0c4` · **kop** `7e94497`
-**5 commits · 25 bestanden · +5.458 / −98 regels · uitsluitend onder `intelligence/`**
+**Branch** `feat/nieuws-r2-operationalisering` · **basis** `b2de0c4` · **kop** `de16e87`
+**6 commits · 26 bestanden (13 gewijzigd, 13 nieuw) · uitsluitend onder `intelligence/`**
+
+> De telling stond hier eerst op *5 commits, 25 bestanden*. Dat was de stand
+> vóórdat dit document zelf werd gecommitteerd; het is het 26e bestand en de
+> zesde commit. De basis is nog steeds de kop van `main`, dus de branch is een
+> zuivere fast-forward: 6 vooruit, 0 achter.
 
 > GEEN MERGE. GEEN PRODUCTIEDEPLOYMENT. GEEN GEPUBLICEERD ARTIKEL.
 > `data/inhoud/nieuws/` bestaat na deze branch nog niet; er is nul
@@ -76,7 +81,7 @@ een bestand op schijf en een pull request — en had geen van die grendels.
 
 ## Pariteit — gemeten voor en na
 
-| Meting | b2de0c4 | 7e94497 |
+| Meting | b2de0c4 | de16e87 |
 |---|---|---|
 | INDEX-routes | 431 | **431** |
 | NOINDEX-stubs | 17 | **17** |
@@ -162,6 +167,33 @@ Cloud Run Job (Railway heeft geen OIDC-tokenendpoint, dus workload identity
 federation kan daar niet). Het manifest ligt al in
 `deploy/analytics-cloudrun-job.yaml`.
 
+De volledige vereiste — property, scope, de twee lagen dienstaccountrechten,
+de uitvoeromgeving en de volgorde van handelingen — staat in
+**[`docs/R2-GSC-TOEGANG.md`](R2-GSC-TOEGANG.md)**. Daar staan ook twee gemeten
+defecten in het bestaande manifest: `INTEL_GOOGLE_AUTH` wordt door geen enkele
+regel code gelezen, en de job geeft een `--ingest`-vlag mee die de CLI niet
+kent en dus stil negeert.
+
+## Netbeheer Nederland — onderzocht, NIET geïntegreerd
+
+Er is **geen** publicatiepoortuitzondering gemaakt.
+`BRONSOORT_UIT_UITGEVER` is onaangeroerd: `branchevereniging` blijft
+`MARKTPARTIJ`.
+
+Gemeten wat een categorie `BRANCHEORGANISATIE` zou doen: de oogst gaat van
+**2 naar 19** kandidaten met een dragende bron. Van de 17 die erbij komen zijn
+er negen opinie, standpunt, lobby of eigen voorstel, één over consumenten, en
+vier een *verslag van* een besluit van iemand anders — waaronder "ACM stelt de
+nettarieven voor 2026 vast", precies het geval waarvoor het contract al zegt
+"de primaire bron, niet een artikel dat erover schrijft".
+
+De werkelijke conclusie: **de grens ligt niet bij de uitgever maar bij het
+document.** Netbeheer Nederland is het samenwerkingsverband van álle
+netbeheerders — bij een tariefvaststelling spreken ze namens hen, bij "Inbreng
+voor het debat Netcongestie" zijn ze belangenbehartiger. Eén categorie per
+uitgever kan dat onderscheid niet maken. De volledige afweging met drie opties
+staat in **[`docs/R2-BRANCHEORGANISATIE.md`](R2-BRANCHEORGANISATIE.md)**.
+
 ## Resterende risico's
 
 1. **De oogst is één kandidaat, niet tien.** Bindend: van de 20 gebeurtenissen
@@ -188,7 +220,7 @@ federation kan daar niet). Het manifest ligt al in
 Deze branch is niet gemerged en niet gedeployed, dus er is niets terug te
 draaien. Voor het geval hij later wél wordt gemerged:
 
-- **Code:** `git revert 7e94497 3b4eb7a 70aa78e e92f7ff d6191b2` — alle vijf
+- **Code:** `git revert de16e87 7e94497 3b4eb7a 70aa78e e92f7ff d6191b2` — alle zes
   commits zijn additief op `intelligence/` en raken geen sitebestand.
 - **Database:** migratie 0041 is additief. De besluitcheck *verruimen*
   terugdraaien vraagt eerst `delete from intel.inhoud_kandidaten where besluit
