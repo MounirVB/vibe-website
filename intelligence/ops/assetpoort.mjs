@@ -39,36 +39,41 @@ import { fileURLToPath } from "node:url";
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WORTEL = resolve(HIER, "..", "..");
 
-/* De vastgelegde basislijn, met de reden erbij. */
+/* De vastgelegde basislijn, met de reden erbij.
+
+   28 oktober 2026 — DE BASISLIJN IS NUL GEWORDEN, en dat is precies de
+   uitkomst die de koptekst hierboven voorspelde ("Zodra iemand chrome.js
+   repareert faalt deze poort OOK"). Hij faalde inderdaad, met
+   "2 bevinding(en) MINDER dan de basislijn", en dat was terecht.
+
+   Alleen is het niet chrome.js dat is gerepareerd maar de CONTROLEUR. De
+   vorige reden wees de weg: "Oplossen betekent qa-assets.mjs leren over
+   samengestelde paden — Release 1-gebied, en een besluit van de eigenaar."
+   Dat besluit is genomen en uitgevoerd in dezelfde release als het
+   nieuwskanaal: scripts/qa-assets.mjs telt een KALE bestandsnaam die exact
+   zo gespeld ergens in de boom bestaat niet langer als defect, omdat een
+   statische controleur een runtime-concatenatie niet kan volgen.
+
+   Wat NIET is verzwakt: ontbreekt het bestand overal, dan faalt de poort
+   nog steeds, en bestaat het alleen met andere hoofdletters, dan meldt hij
+   een ECHTE case mismatch. Gemeten na de wijziging: 1703 referenties
+   gecontroleerd, 0 kapot, 0 case mismatches.
+
+   De basislijn gaat daarom naar 0. Vanaf nu blokkeert ELKE bevinding —
+   dat is strenger dan ervoor, niet soepeler. */
 const BASISLIJN = {
-  aantal: 2,
-  commit: "a2fbad7",
-  bevindingen: [
-    'vibe/chrome.js: "vibe-energy-logo-light.svg" — CASE MISMATCH',
-    'vibe/chrome.js: "vibe-energy-logo-dark.svg" — CASE MISMATCH',
-  ],
-  /* Deze tekst zei tot 13 oktober 2026: "Bestaand defect in Release 1, aanwezig op de
-     gedeployde commit a2fbad7 en dus live." Dat is nagemeten en onjuist. Niets aan de
-     basislijn zelf verandert — de twee bevindingen komen nog steeds — maar de REDEN
-     waarom ze verantwoord zijn, is een andere, en dat verschil bepaalt wie het hoort op
-     te lossen. */
+  aantal: 0,
+  commit: "af84195",
+  bevindingen: [],
   reden:
-    "GEEN LIVE DEFECT, maar een beperking van de statische assetcontroleur. Gemeten 13 oktober 2026: " +
-    "/assets/vibe-energy-logo-light.svg en /assets/vibe-energy-logo-dark.svg geven op " +
-    "www.vibeenergy.nl beide HTTP 200 met content-type image/svg+xml, en de bestandsnamen in " +
-    "assets/ zijn teken voor teken gelijk aan de referentie in vibe/chrome.js regel 124. Er is dus " +
-    "geen hoofdletterverschil; het label CASE MISMATCH is zelf onjuist. Het ontstaat zo: chrome.js " +
-    "regel 125 bouwt het pad tijdens runtime als '/assets/' + bestand, dus scripts/qa-assets.mjs ziet " +
-    "alleen de BARE bestandsnaam. Die lost hij eerst op ten opzichte van het verwijzende bestand " +
-    "(vibe/vibe-energy-logo-light.svg — bestaat niet) en daarna wortelrelatief " +
-    "(vibe-energy-logo-light.svg — bestaat niet, want het staat in assets/); pas de " +
-    "hoofdletterONgevoelige suffixzoeker op qa-assets.mjs regel 68 vindt assets/… en kiest daarom het " +
-    "label CASE MISMATCH in plaats van BESTAND ONTBREEKT. Een statische controleur kan een " +
-    "runtime-concatenatie niet zien. Niet veroorzaakt door het intelligenceplatform: " +
-    "git diff a2fbad7..HEAD -- vibe/chrome.js is leeg. De basislijn blijft op 2 omdat de melding blijft " +
-    "komen zolang qa-assets.mjs samengestelde paden niet begrijpt; een DERDE bevinding blokkeert " +
-    "onverminderd. Oplossen betekent qa-assets.mjs leren over samengestelde paden — Release 1-gebied, " +
-    "en een besluit van de eigenaar.",
+    "GEEN VERANTWOORDE BEVINDINGEN MEER. De twee bekende meldingen over " +
+    "vibe-energy-logo-light.svg en vibe-energy-logo-dark.svg waren nooit een live defect — beide " +
+    "URL's geven op www.vibeenergy.nl HTTP 200 — maar een beperking van scripts/qa-assets.mjs, die " +
+    "het pad '/assets/' + bestand uit vibe/chrome.js niet kon volgen en de kale bestandsnaam daarom " +
+    "ten onrechte als CASE MISMATCH labelde terwijl er geen hoofdletterverschil was. Die controleur is " +
+    "op 28 oktober 2026 gecorrigeerd: een kale bestandsnaam die exact zo gespeld in de boom bestaat, " +
+    "telt niet meer als defect; een ontbrekend bestand en een echte spellingsafwijking nog wel. " +
+    "Daarmee is de basislijn leeg en blokkeert elke nieuwe bevinding onmiddellijk.",
 };
 
 let uit = "";

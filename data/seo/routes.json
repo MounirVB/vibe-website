@@ -1,20 +1,20 @@
 {
   "_toelichting": "Gegenereerd door scripts/seo/bouw-routes.mjs. Niet met de hand bijwerken. PENDING betekent: geen bestand, geen sitemapregel, geen canonical, geen interne link.",
-  "_gegenereerd": "2026-10-12",
-  "_routeset": "768831c00ae268a4",
+  "_gegenereerd": "2026-10-28",
+  "_routeset": "fe7b3f6b71e4a994",
   "_datum_regel": "Release 3.1: _gegenereerd is NIET de wandklok. Hij schuift alleen op als _routeset verandert, en dat is een hash over elke route met zijn staat. Dezelfde routeset geeft dus altijd hetzelfde bestand, ook over maanden heen. Zie de toelichting onderaan bouw-routes.mjs.",
   "samenvatting": {
     "totaal_kandidaten": 4701,
-    "index": 430,
-    "pending": 4254,
+    "index": 431,
+    "pending": 4253,
     "noindex": 17,
     "nationaal": {
       "totaal": 98,
-      "index": 80,
-      "pending": 1,
+      "index": 81,
+      "pending": 0,
       "noindex": 17,
       "bestaand": 51,
-      "nieuw_index": 46
+      "nieuw_index": 47
     },
     "regio": {
       "totaal": 4603,
@@ -431,8 +431,8 @@
       "route": "nieuws",
       "soort": "nationaal",
       "subsoort": "nieuws-hub",
-      "staat": "PENDING",
-      "reden": "Geen enkel goedgekeurd artikel (0 kandidaten in data/inhoud/nieuws/). Een lege nieuwshub wordt niet gepubliceerd.",
+      "staat": "INDEX",
+      "reden": "Lege staat, redactioneel vrijgegeven in publicatiebesluit.json (0 kandidaten in data/inhoud/nieuws/, nul goedgekeurd). De pagina toont de redactienorm, geen berichten.",
       "bestaand": false
     },
     {

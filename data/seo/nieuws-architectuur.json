@@ -33,6 +33,14 @@
     "opgelost": "Wat uit Release 1 wel ongewijzigd geldt voor een nieuwsartikel: poort 1 tot en met 9, 11, 12, 14 en 15. Uitgebreid voor nieuws: poort 10 (cijfer met bron, blokkerend) en poort 13 (conversiepad). Nieuw in Release 2.1: poort 16 (nieuwskanaal)."
   },
 
+  "_correctie_op_dit_contract_3": {
+    "wat": "Onder routereservering stond: 'staat_in_release_2_1: PENDING — de hub komt pas op INDEX zodra er minstens een goedgekeurd artikel is. Een lege nieuwshub wordt niet gepubliceerd.' Die regel is op 28 oktober 2026 HERZIEN door de eigenaar van de site. De oude tekst blijft staan zodat het eerdere standpunt vindbaar is, maar hij geldt niet meer.",
+    "waarom_herzien": "De redactionele grond onder de oude regel was: een overzichtspagina zonder artikelen is een dunne pagina die niets toevoegt. Dat argument gaat op voor een hub die zijn waarde ONTLEENT aan zijn lijst. Het gaat niet op voor een kanaal dat zijn waarde ontleent aan de NORM die het aankondigt: welke bronsoorten dragen, dat elk cijfer een peildatum krijgt, en dat een mens elk bericht vrijgeeft. Die norm is nu de inhoud van de pagina en die is op dag nul al waar. Een 404 op /nieuws is bovendien zelf een defect in de ogen van een bezoeker die de link in de navigatie ziet staan of de URL geraden heeft.",
+    "wat_NIET_verandert": "Geen enkele publicatiepoort voor een ARTIKEL wordt versoepeld. weigerNieuws() blijft alle twaalf voorwaarden toetsen, GOEDGEKEURD blijft een menselijke handeling met naam en datum, en er wordt geen artikel verzonnen of automatisch gepubliceerd om de pagina te vullen. De herziening raakt UITSLUITEND de hub, en uitsluitend de vraag of die bij nul artikelen zichtbaar mag zijn.",
+    "hoe_afgedwongen": "De hub komt niet vanzelf op INDEX bij nul artikelen. Hij komt daar alleen door een expliciete sleutel 'nieuws' in data/seo/publicatiebesluit.json — dezelfde menselijke handtekening die de 326 regiopagina's vrijgaf. Haal die sleutel weg en de hub valt terug op PENDING en dus op 404. Het principe uit bouw-routes.mjs regel 10-12 — een route gaat NOOIT automatisch naar INDEX — blijft daarmee onaangetast.",
+    "opgelost": "scripts/seo/bouw-routes.mjs (de hubstaat leest nu ook het publicatiebesluit), scripts/seo/genereer-nieuws.mjs (bouwHub rendert een lege staat in plaats van een fout), scripts/seo/audit.mjs poort 16 (erkent de vrijgegeven lege hub), intelligence/ops/publicatiecontract.mjs (idem), scripts/seo/qa-nieuws.mjs (toetst de lege staat als eigen fase)."
+  },
+
   "_activeringsstap_die_een_mens_moet_doen": "vibe/chrome.js draagt de zichtbare navigatie en kan het routeregister niet lezen. Zodra de hub op INDEX komt, moet daar met de hand een /nieuws-link bij. Poort 16 FAALT zolang dat niet is gebeurd, zodat het kanaal niet live kan staan zonder dat een bezoeker het kan vinden.",
 
   "artikelschema": {

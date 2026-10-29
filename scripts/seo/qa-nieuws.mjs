@@ -80,6 +80,15 @@ function registerVan(route) {
   return reg.routes.find((r) => r.route === route) || null;
 }
 
+/* Het redactionele besluit, elke keer vers van schijf. Sinds Release 3.3
+   bepaalt de sleutel 'nieuws' of de LEGE hub op INDEX mag; deze QA eist geen
+   vaste uitkomst maar toetst dat register en besluit met elkaar kloppen. Zo
+   blijft het script geldig als de vrijgave later wordt ingetrokken. */
+function besluitNu() {
+  const p = resolve(wortel, 'data', 'seo', 'publicatiebesluit.json');
+  return existsSync(p) ? JSON.parse(readFileSync(p, 'utf8')) : { vrijgegeven: {} };
+}
+
 /** De werkboomstaat van de gegenereerde uitvoer, zodat opruimen te meten is. */
 function werkboomstaat() {
   return execFileSync('git', ['status', '--porcelain'], { cwd: wortel, encoding: 'utf8' })
@@ -261,7 +270,11 @@ try {
     ['claim zonder bron-URL wordt geweigerd', { claims: [{ tekst: '1 kW', bron: 'x', bron_datum: '2026-10-10' }] }],
     ['onbekende onderwerp-eigenaar wordt geweigerd', { onderwerp_eigenaar: 'bestaat-niet-als-route' }],
     ['onbekende regiocode wordt geweigerd', { regio_links: ['GM9999'] }],
-    ['oplossing_link naar een PENDING-route wordt geweigerd', { oplossing_links: ['nieuws'] }],
+    /* Sinds Release 3.3 is 'nieuws' zelf INDEX (de vrijgegeven lege hub), dus
+       die route kan hier niet langer als PENDING voorbeeld dienen. Een
+       provincie×familie-route is permanent PENDING op zoekintentiegronden en
+       is daarmee het stabiele voorbeeld. */
+    ['oplossing_link naar een PENDING-route wordt geweigerd', { oplossing_links: ['regios/drenthe/ems'] }],
   ];
 
   for (const [naam, patch] of weigeringen) {
@@ -275,9 +288,42 @@ try {
     );
   }
 
-  /* De hub blijft PENDING zolang er geen enkel goedgekeurd artikel is. */
+  /* De hub zonder goedgekeurd artikel. Tot Release 3.3 moest hij PENDING
+     blijven; sindsdien mag hij op INDEX staan met een LEGE STAAT, maar alleen
+     met een expliciete vrijgave in publicatiebesluit.json. De toets volgt die
+     vrijgave in plaats van een vaste uitkomst te eisen — zo blijft hij geldig
+     of de vrijgave er nu wel of niet is, en betrapt hij een hub die op INDEX
+     komt zonder grond. */
   const hubLeeg = registerVan('nieuws');
-  toets('hub blijft PENDING zonder goedgekeurd artikel', hubLeeg && hubLeeg.staat === 'PENDING', hubLeeg?.staat);
+  const vrijgave = Boolean(besluitNu().vrijgegeven?.nieuws);
+  const verwacht = vrijgave ? 'INDEX' : 'PENDING';
+  toets(
+    vrijgave
+      ? 'hub staat op INDEX zonder artikel omdat de lege staat is vrijgegeven'
+      : 'hub blijft PENDING zonder goedgekeurd artikel en zonder vrijgave',
+    hubLeeg && hubLeeg.staat === verwacht,
+    `${hubLeeg?.staat} (vrijgave: ${vrijgave ? 'ja' : 'nee'})`
+  );
+
+  /* En de lege staat moet dan ook echt een pagina zijn, geen restant. */
+  if (vrijgave) {
+    const r = draai('genereer.mjs');
+    toets('genereer draait met een lege nieuwshub', r.ok, r.ok ? '' : r.uit.slice(-300));
+    const leegHtml = existsSync(resolve(wortel, 'nieuws.html'))
+      ? readFileSync(resolve(wortel, 'nieuws.html'), 'utf8')
+      : '';
+    toets('lege hub is geschreven', !!leegHtml);
+    toets('lege hub draagt de redactienorm', /id="redactienorm"/.test(leegHtml));
+    toets('lege hub toont geen berichtdatum', !/data-nieuws-datum/.test(leegHtml));
+    toets('lege hub belooft geen berichten in de description',
+      /<meta name="description" content="[^"]*[Nn]og geen berichten/.test(leegHtml));
+    toets('lege hub is zelfverwijzend canoniek',
+      /<link rel="canonical" href="https:\/\/www\.vibeenergy\.nl\/nieuws"/.test(leegHtml));
+    toets('lege hub is indexeerbaar', !/noindex/.test(leegHtml));
+    toets('lege hub heeft een conversiepad', /href="\/contact"/.test(leegHtml));
+    toets('lege hub linkt naar minstens twee andere pagina\'s',
+      new Set([...leegHtml.matchAll(/href="\/([a-z0-9-]+)"/g)].map((m) => m[1]).filter((p) => p !== 'nieuws')).size >= 2);
+  }
 
   /* ---------------------------------------------------------------- FASE B
      De geldige fixture gaat door de hele keten. */
@@ -346,16 +392,25 @@ try {
   toets('gegenereerde pagina heeft /nieuws in de navigatie', /<noscript[\s\S]*?href="\/nieuws"[\s\S]*?<\/noscript>/.test(regioHtml));
   toets('bestaande pagina heeft /nieuws in de navigatie', /<noscript[\s\S]*?href="\/nieuws"[\s\S]*?<\/noscript>/.test(indexHtml));
 
-  /* De poort moet dit alles goedkeuren — behalve poort 16, die terecht
-     klaagt dat vibe/chrome.js de zichtbare navigatielink mist. Dat is geen
-     fout van dit script maar het opleverpunt dat bij activering hoort. */
+  /* De poort moet dit alles goedkeuren. Tot Release 3.3 hoorde poort 16 hier
+     te KLAGEN dat vibe/chrome.js de zichtbare navigatielink miste — dat was
+     het openstaande opleverpunt. Die link is bij de activering van de lege hub
+     gezet, dus de toets is omgedraaid: hij eist nu dat de bevinding WEG is én
+     dat de link er echt staat. Niet geschrapt, want de eis zelf blijft: het
+     kanaal mag niet live staan zonder dat een bezoeker het kan vinden. */
   const p = draai('audit.mjs');
   const poort16 = /16 Nieuwskanaal\s+(PASS|FAIL)\s+(.*)/.exec(p.uit);
   toets('poort 16 meet het artikel', !!poort16 && /1 gepubliceerd artikel/.test(poort16[2]), poort16 ? poort16[2] : 'poort 16 niet gevonden');
+  const chromeJs = readFileSync(resolve(wortel, 'vibe', 'chrome.js'), 'utf8');
   toets(
-    'poort 16 eist de zichtbare navigatielink in vibe/chrome.js',
-    /chrome\.js heeft geen \/nieuws-link/.test(p.uit),
-    'zonder deze bevinding kan het kanaal live staan zonder dat een bezoeker het kan vinden'
+    'vibe/chrome.js draagt de zichtbare /nieuws-link',
+    /href="\/nieuws"|'\/nieuws'/.test(chromeJs),
+    'zonder deze link kan het kanaal live staan zonder dat een bezoeker het kan vinden'
+  );
+  toets(
+    'poort 16 klaagt niet meer over de ontbrekende navigatielink',
+    !/chrome\.js heeft geen \/nieuws-link/.test(p.uit),
+    'de bevinding hoort te verdwijnen zodra de link er staat'
   );
 
   /* ---------------------------------------------------------------- FASE C */
@@ -376,7 +431,24 @@ try {
   const alleOk = r1.ok && r2.ok && r3.ok && r4.ok;
   toets('keten draait na opruimen', alleOk, alleOk ? '' : [r1, r2, r3, r4].filter((x) => !x.ok).map((x) => x.uit.slice(-200)).join(' | '));
   toets('artikelbestand is opgeruimd', !existsSync(resolve(wortel, `${FIXTURE_ROUTE}.html`)));
-  toets('hubbestand is opgeruimd', !existsSync(resolve(wortel, 'nieuws.html')));
+  /* Sinds Release 3.3 hoort nieuws.html NA het opruimen te BESTAAN — als lege
+     staat — zolang de vrijgave in publicatiebesluit.json staat. Is er geen
+     vrijgave, dan hoort het bestand juist weg te zijn. De toets volgt het
+     besluit in plaats van een vaste uitkomst. */
+  const vrijgaveNa = Boolean(besluitNu().vrijgegeven?.nieuws);
+  const hubBestaatNa = existsSync(resolve(wortel, 'nieuws.html'));
+  toets(
+    vrijgaveNa
+      ? 'hubbestand staat er weer als lege staat'
+      : 'hubbestand is opgeruimd',
+    hubBestaatNa === vrijgaveNa,
+    `bestand ${hubBestaatNa ? 'aanwezig' : 'weg'}, vrijgave ${vrijgaveNa ? 'ja' : 'nee'}`
+  );
+  if (vrijgaveNa && hubBestaatNa) {
+    const na = readFileSync(resolve(wortel, 'nieuws.html'), 'utf8');
+    toets('de teruggezette hub is weer de lege staat', /id="redactienorm"/.test(na));
+    toets('de teruggezette hub noemt de fixture niet', !/qa-fixture/i.test(na));
+  }
   const staatNa = werkboomstaat();
   toets('werkboom is weer als voor de meting', staatNa === staatVoor, staatNa === staatVoor ? '' : `voor:\n${staatVoor}\nna:\n${staatNa}`);
 }

@@ -501,18 +501,33 @@ for (const route of nieuwsRoutes.sort()) {
   });
 }
 
-/* De hub. Een overzichtspagina zonder artikelen is een lege pagina, dus hij
-   komt pas op INDEX als er iets te overzien is. Zo blijft het kanaal volledig
-   geïmplementeerd en tegelijk onzichtbaar tot de redactie iets vrijgeeft. */
+/* De hub. Tot Release 3.3 gold hier: een overzichtspagina zonder artikelen is
+   een lege pagina, dus PENDING tot er iets te overzien valt. Die regel is
+   herzien — zie data/seo/nieuws-architectuur.json, _correctie_op_dit_contract_3.
+
+   De hub draagt namelijk niet alleen zijn lijst maar ook de NORM waaronder het
+   kanaal werkt, en die is op dag nul al waar. Maar hij promoveert zichzelf
+   daarmee niet: bij nul artikelen komt hij ALLEEN op INDEX door een expliciete
+   sleutel 'nieuws' in publicatiebesluit.json — dezelfde menselijke handtekening
+   die de regiopagina's vrijgaf. Zo blijft het principe uit regel 10-12 intact:
+   een route gaat nooit automatisch naar INDEX op een drempelgetal.
+
+   Merk op dat de vrijgave de ARTIKELEN niet raakt. weigerNieuws() hierboven
+   blijft onverkort gelden; een vrijgegeven hub met nul artikelen toont een lege
+   staat, hij publiceert niets wat de poorten niet heeft gehaald. */
+const nieuwsVrijgave = besluit.vrijgegeven?.[NIEUWS_WORTEL];
+const nieuwsKandidaten = nieuwsRoutes.filter((r) => r !== NIEUWS_WORTEL).length;
 zet({
   route: NIEUWS_WORTEL,
   soort: 'nationaal',
   subsoort: 'nieuws-hub',
-  staat: nieuwsIndex > 0 ? 'INDEX' : 'PENDING',
+  staat: nieuwsIndex > 0 || nieuwsVrijgave ? 'INDEX' : 'PENDING',
   reden:
     nieuwsIndex > 0
       ? `Overzicht van ${nieuwsIndex} gepubliceerd(e) artikel(en).`
-      : `Geen enkel goedgekeurd artikel (${nieuwsRoutes.filter((r) => r !== NIEUWS_WORTEL).length} kandidaten in data/inhoud/nieuws/). Een lege nieuwshub wordt niet gepubliceerd.`,
+      : nieuwsVrijgave
+        ? `Lege staat, redactioneel vrijgegeven in publicatiebesluit.json (${nieuwsKandidaten} kandidaten in data/inhoud/nieuws/, nul goedgekeurd). De pagina toont de redactienorm, geen berichten.`
+        : `Geen enkel goedgekeurd artikel (${nieuwsKandidaten} kandidaten in data/inhoud/nieuws/) en geen vrijgave in publicatiebesluit.json.`,
   bestaand: false,
 });
 

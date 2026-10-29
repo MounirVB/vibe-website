@@ -65,6 +65,27 @@ for (const file of codeFiles) {
     const relToFile = normalize(join(dirname(rel), ref));
     const target = existsExactCase(relToFile) ? relToFile : ref;
     if (!existsExactCase(target)) {
+      /* KALE BESTANDSNAAM UIT EEN SAMENGESTELD PAD.
+         Een referentie zonder enige schuine streep is vaak geen heel pad maar
+         het staartstuk van een pad dat in de code wordt samengeplakt, zoals
+         vibe/chrome.js: `'/assets/' + bestand`. Deze poort ziet alleen het
+         letterlijke stuk en kan de prefix niet volgen.
+
+         Dat leverde een dubbele fout op: de referentie werd als kapot gemeld
+         terwijl de URL live 200 geeft, EN de reden luidde "CASE MISMATCH"
+         terwijl er geen enkel hoofdletterverschil was — de kleine letters
+         kwamen exact overeen, alleen de MAP verschilde. Een poort die de
+         verkeerde oorzaak noemt stuurt de lezer naar een niet-bestaand defect.
+
+         Wat hier wel blijft werken: ontbreekt het bestand overal, dan faalt
+         hij nog steeds, en bestaat het alleen met andere hoofdletters, dan
+         meldt hij een ECHTE case mismatch. Alleen het geval "bestaat ergens,
+         exact zo gespeld" wordt niet langer als defect geteld, want deze poort
+         kan de map waarin het hoort niet kennen zonder de code uit te voeren. */
+      const kaal = !ref.includes("/");
+      const exactErgens = kaal && allFiles.some((f) => f.endsWith(sep + ref));
+      if (exactErgens) continue;
+
       const ciHit = allFiles.find((f) => f.toLowerCase().endsWith(("/" + ref).toLowerCase()));
       failures.push({
         file: rel,

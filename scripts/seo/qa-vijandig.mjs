@@ -498,6 +498,48 @@ const SCENARIOS = [
     },
   },
 
+  /* ---- Release 3.3: het nieuwskanaal krijgt eindelijk vijandig bewijs ----
+     Poort 16 was tot nu toe de enige poort zonder scenario hier. Dat was te
+     verdedigen zolang het kanaal PENDING stond en er niets live kon: er viel
+     niets stuk te maken. Nu /nieuws echt op INDEX staat, bewaken twee regels
+     iets dat een bezoeker merkt, en allebei zijn ze stil te breken. */
+  {
+    naam: 'lege nieuwshub op INDEX zonder vrijgave in het publicatiebesluit',
+    waarom:
+      'De lege hub mag alleen op INDEX staan omdat een mens hem in publicatiebesluit.json heeft vrijgegeven. ' +
+      'Valt die sleutel weg — door een merge, een terugdraaiing of een schoonmaakactie — dan staat er een ' +
+      'gepubliceerde pagina zonder enige grond, en dat is precies wat het register hoort te verbieden.',
+    poort: 16,
+    naKeten: true,
+    breek(map) {
+      /* NA de keten: het register zegt INDEX en nieuws.html bestaat. Alleen de
+         handtekening verdwijnt. Zo meet dit scenario de VRIJGAVE en niet per
+         ongeluk "INDEX zonder bestand", wat een andere regel is. */
+      const b = lees(map, 'data', 'seo', 'publicatiebesluit.json');
+      delete b.vrijgegeven.nieuws;
+      schrijf(map, 'data/seo/publicatiebesluit.json', b);
+    },
+  },
+
+  {
+    naam: 'de zichtbare /nieuws-link verdwijnt uit chrome.js',
+    waarom:
+      'De noscript-navigatie regelt zichzelf uit het register, maar de ZICHTBARE navigatie staat in vibe/chrome.js ' +
+      'en kan dat register niet lezen. Verdwijnt die link, dan is het kanaal nog wel crawlbaar maar voor een ' +
+      'bezoeker onvindbaar — een defect dat geen enkele linkcontrole opmerkt, want er is geen dode link.',
+    poort: 16,
+    naKeten: true,
+    breek(map) {
+      const p = resolve(map, 'vibe', 'chrome.js');
+      const s = readFileSync(p, 'utf8');
+      const uit = s
+        .replace(/^\s*\['nieuws',\s*'Nieuws'\],\n/m, '')
+        .replace(/^\s*'<li><a href="\/nieuws">Nieuws<\/a><\/li>' \+\n/m, '');
+      if (uit === s) throw new Error('de /nieuws-links in vibe/chrome.js zijn niet gevonden; is het bestand herschreven?');
+      writeFileSync(p, uit);
+    },
+  },
+
   {
     naam: 'een poort wordt op niet-verplicht gezet',
     waarom:
