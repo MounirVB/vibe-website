@@ -9,6 +9,7 @@
     "seo:bouw:online": "node scripts/seo/bouw.mjs",
     "seo:poort": "node scripts/seo/audit.mjs",
     "seo:vijandig": "node scripts/seo/qa-vijandig.mjs",
+    "seo:lastmod": "node scripts/seo/qa-lastmod.mjs",
     "seo:artefact": "node scripts/publiek-artefact.mjs",
     "qa:nieuws": "node scripts/seo/qa-nieuws.mjs"
   }
