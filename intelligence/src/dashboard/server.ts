@@ -64,6 +64,10 @@ import { koppelingStatussen, funnelBeeld } from "../analytics/koppelingen.ts";
 import { FASE_LABEL, type Fase } from "../commercieel/aanbesteding.ts";
 import { leesSitekennis } from "../site/sitekennis.ts";
 import { beoordeel, type Besluit } from "../inhoud/beoordeling.ts";
+import { hertoetsInhoudVersie } from "../inhoud/concept.ts";
+import { keurGoed } from "../inhoud/publiceer.ts";
+import { IntelFout } from "../kern/fouten.ts";
+import { redacteerFout } from "../kern/geheimen.ts";
 
 /**
  * Wat elke publicatiestatus betekent voor de lezer van het dashboard.
@@ -1526,6 +1530,527 @@ ${tabel(
       }),
     );
   }));
+
+  /* ----------------------------------------------------------------
+     CONCEPTDETAIL — het concept LEZEN, zijn bronnen OPENEN, zijn
+     SEO-metadata BEKIJKEN, en het daarna aanpassen, afwijzen of
+     goedkeuren.
+     ----------------------------------------------------------------
+     WAAROM DEZE PAGINA ER NIET WAS, EN WAAROM DAT ERGER IS DAN HET
+     LIJKT.
+
+     /studio toont een TABEL met id, pad, soort, status, poorten,
+     risico, kernclaims, bronnen en auteur. Gemeten: `body_markdown` en
+     `body_html` komen in heel dashboard/server.ts niet voor, en
+     `meta_omschrijving`, `canonieke_url` en `structured_data` evenmin.
+     Een beoordelaar kon de TEKST van een concept dus niet lezen en de
+     SEO-metadata niet bekijken — hij zag alleen of de poorten groen
+     waren.
+
+     Dat maakt elke goedkeuring een blinde. §9 van de opdracht eist een
+     EXPLICIETE goedkeuringshandeling door een bevoegde mens; een
+     handeling op inhoud die je niet kunt zien is dat niet.
+
+     DEZE PAGINA PUBLICEERT NIETS. Goedkeuren zet de status op
+     'goedgekeurd' en bindt de afdruk; daarna is er nog een
+     `npm run publiceer`, een generatorrun, een commit en een push
+     nodig — alle vier menselijk. */
+  app.get(
+    "/studio/:id",
+    async_(vereistInlog),
+    vereistRecht("inhoud.lezen"),
+    async_(async (req: MetGebruiker, res) => {
+      const id = String(req.params["id"] ?? "");
+      if (!/^\d+$/.test(id)) {
+        weiger(res, 400, "Ongeldig conceptnummer.");
+        return;
+      }
+      const csrf = maakCsrfToken(sessieGeheim());
+      zetCsrfKoekje(res, csrf);
+
+      const magGoedkeuren = req.gebruiker?.rechten.has("inhoud.goedkeuren") ?? false;
+      const magBewerken = req.gebruiker?.rechten.has("inhoud.concept") ?? false;
+
+      const d = await alsGebruiker(req, async (c) => {
+        const versie = await eenRij<{
+          id: number;
+          pad: string;
+          titel: string;
+          meta_omschrijving: string | null;
+          canonieke_url: string;
+          direct_antwoord: string | null;
+          body_markdown: string;
+          structured_data: unknown;
+          interne_links: string[] | null;
+          bronnen_sectie: { uitgever: string; url: string; datum: string | null }[] | null;
+          cta_sleutel: string | null;
+          soort: string;
+          status: string;
+          risico: string;
+          poorten: boolean;
+          blokkades: string[];
+          poortresultaten: unknown;
+          model: string | null;
+          auteur_soort: string;
+          inhoud_afdruk: string | null;
+          aangemaakt_door: number | null;
+          bewerkt_door: number | null;
+          goedgekeurd_door: number | null;
+          goedkeurder: string | null;
+          goedgekeurd_op: string | null;
+          kandidaat_id: number | null;
+          nieuwsscore: number | null;
+          nieuws_oordeel: string | null;
+          beoordeling: unknown;
+        }>(
+          c,
+          `select v.id, v.pad, v.titel, v.meta_omschrijving, v.canonieke_url,
+                  v.direct_antwoord, v.body_markdown, v.structured_data,
+                  v.interne_links, v.bronnen_sectie, v.cta_sleutel,
+                  v.soort, v.status, v.risico_klasse as risico,
+                  v.poorten_geslaagd as poorten, v.blokkades, v.poortresultaten,
+                  v.model, v.auteur_soort, v.inhoud_afdruk,
+                  v.aangemaakt_door, v.bewerkt_door, v.goedgekeurd_door,
+                  g.naam as goedkeurder,
+                  v.goedgekeurd_op::text as goedgekeurd_op,
+                  v.kandidaat_id,
+                  k.nieuwsscore, k.nieuws_oordeel, k.beoordeling
+             from intel.inhoud_versies v
+             left join intel.gebruikers g on g.id = v.goedgekeurd_door
+             left join intel.inhoud_kandidaten k on k.id = v.kandidaat_id
+            where v.id = $1`,
+          [Number(id)],
+        );
+        if (!versie) return { versie: null, uitspraken: [] as never[] };
+
+        /* DE GEBONDEN UITSPRAKEN MÉT HUN BRON-URL.
+           Dit is de 'bronnen controleren'-eis: een beoordelaar moet de
+           bron kunnen OPENEN, niet alleen een PASS/FAIL over bronnen
+           lezen. De URL komt van het brondocument, niet uit de tekst. */
+        const uitspraken = await rijen<{
+          id: number;
+          rol: string;
+          soort: string;
+          tekst: string;
+          waarde: string | null;
+          eenheid: string | null;
+          status: string;
+          kwaliteit: number | null;
+          uitgever: string | null;
+          bron_url: string | null;
+          bron_titel: string | null;
+          bron_datum: string | null;
+          injectie: boolean | null;
+        }>(
+          c,
+          `select u.id, iu.rol, u.soort, u.tekst,
+                  u.waarde_numeriek as waarde, u.eenheid,
+                  u.verificatie_status as status, u.bewijs_kwaliteit as kwaliteit,
+                  bd.uitgever, bd.canonieke_url as bron_url, bd.titel as bron_titel,
+                  coalesce(bd.gepubliceerd_op, bv.opgehaald_op)::date::text as bron_datum,
+                  bv.injectie_verdacht as injectie
+             from intel.inhoud_uitspraken iu
+             join intel.uitspraken u on u.id = iu.uitspraak_id
+             left join intel.uitspraak_bronnen ub
+                    on ub.uitspraak_id = u.id and ub.rol = 'primair'
+             left join intel.brondocument_versies bv on bv.id = ub.versie_id
+             left join intel.brondocumenten bd on bd.id = bv.brondocument_id
+            where iu.inhoud_versie_id = $1
+            order by iu.rol, u.id`,
+          [Number(id)],
+        );
+        return { versie, uitspraken };
+      });
+
+      if (!d.versie) {
+        weiger(res, 404, "Dit concept bestaat niet.");
+        return;
+      }
+      const v = d.versie;
+
+      /* De poortuitslag per poort, niet alleen het totaal. Een
+         beoordelaar hoort te zien WELKE poort blokkeert. */
+      const poorten = Array.isArray(v.poortresultaten)
+        ? (v.poortresultaten as {
+            poort: string;
+            geslaagd: boolean;
+            ernst: string;
+            bevindingen: string[];
+          }[])
+        : [];
+
+      const nieuwsAssen = (() => {
+        const b = v.beoordeling as { nieuws?: { assen?: unknown } } | null;
+        const assen = b?.nieuws?.assen;
+        return Array.isArray(assen)
+          ? (assen as {
+              as: string;
+              score: number;
+              max: number;
+              componenten: { naam: string; score: number; max: number; bewijs: string }[];
+            }[])
+          : [];
+      })();
+
+      const statusVlag =
+        v.status === "goedgekeurd"
+          ? vlag(v.status, "ok")
+          : v.status === "ingetrokken"
+            ? vlag(v.status, "fout")
+            : vlag(v.status, "waarschuwing");
+
+      /* HET FORMULIER DRAAGT DE AFDRUK DIE DE BEOORDELAAR ZAG.
+         Zelfde grendel als bij een voorstel: wijkt de afdruk bij het
+         indienen af van wat er dan in de rij staat, dan is de tekst
+         ondertussen gewijzigd en wordt het besluit geweigerd in plaats
+         van op de nieuwe tekst geplakt. */
+      const afdrukVeld = `<input type="hidden" name="inhoud_afdruk" value="${esc(v.inhoud_afdruk ?? "")}">`;
+      const csrfVeld = `<input type="hidden" name="${CSRF_VELD}" value="${esc(csrf)}">`;
+
+      res.type("text/html; charset=utf-8").send(
+        pagina({
+          titel: `Concept ${v.id}`,
+          huidigPad: "/studio",
+          gebruiker: req.gebruiker ?? null,
+          inhoud: `
+<p><a href="/studio">&larr; terug naar Content Studio</a></p>
+<h1>${esc(v.titel)}</h1>
+<p class="bij">
+  ${statusVlag}
+  ${v.poorten ? vlag("poorten geslaagd", "ok") : vlag(`${v.blokkades.length} blokkade(s)`, "fout")}
+  ${vlag(`risico ${v.risico}`, v.risico === "hoog" ? "fout" : "")}
+  ${vlag(`auteur ${v.auteur_soort}`, "")}
+  ${v.nieuwsscore !== null ? vlag(`nieuwswaarde ${v.nieuwsscore}/100`, "") : ""}
+</p>
+
+<h2>Redactionele stand</h2>
+${tabel(
+  ["Veld", "Waarde"],
+  [
+    ["Pad", `<code>${esc(v.pad)}</code>`],
+    ["Soort", esc(v.soort)],
+    ["Status", statusVlag],
+    ["Model", esc(v.model ?? "deterministisch")],
+    [
+      "Goedgekeurd door",
+      v.goedgekeurd_door === null
+        ? vlag("nog niet goedgekeurd", "waarschuwing")
+        : `${esc(v.goedkeurder ?? String(v.goedgekeurd_door))} op ${esc(v.goedgekeurd_op ?? "?")}`,
+    ],
+    [
+      "Vier ogen",
+      /* Dit veld bestond, werd nooit gevuld, en de constraint sloeg
+         daardoor nooit aan. Nu is zichtbaar of hij iets kan betekenen. */
+      v.aangemaakt_door === null && v.bewerkt_door === null
+        ? vlag("geen menselijke auteur of bewerker", "")
+        : `auteur ${esc(String(v.aangemaakt_door ?? "-"))}, laatst bewerkt door ${esc(String(v.bewerkt_door ?? "-"))}`,
+    ],
+    ["Inhoudsafdruk", `<code>${esc((v.inhoud_afdruk ?? "").slice(0, 16))}…</code>`],
+  ],
+)}
+
+<h2>De poorten, per poort</h2>
+${tabel(
+  ["Poort", "Uitslag", "Ernst", "Bevinding"],
+  poorten.map((p) => [
+    esc(p.poort),
+    p.geslaagd ? vlag("geslaagd", "ok") : vlag("gefaald", p.ernst === "blokkerend" ? "fout" : "waarschuwing"),
+    esc(p.ernst),
+    esc((p.bevindingen ?? []).join(" | ").slice(0, 240)),
+  ]),
+  "Geen poortuitslag opgeslagen. Draai npm run concept opnieuw.",
+)}
+
+<h2>SEO en GEO</h2>
+${tabel(
+  ["Veld", "Waarde"],
+  [
+    [
+      "SEO-titel",
+      `${esc(v.titel)} <span class="bij">(${v.titel.length} tekens; het bereik is 25-70)</span>`,
+    ],
+    [
+      "Meta description",
+      v.meta_omschrijving === null
+        ? vlag("ontbreekt", "fout")
+        : `${esc(v.meta_omschrijving)} <span class="bij">(${v.meta_omschrijving.length} tekens; het bereik is 70-160)</span>`,
+    ],
+    ["URL-slug", `<code>${esc(v.pad.replace(/^.*\//, ""))}</code>`],
+    ["Canonical", `<code>${esc(v.canonieke_url)}</code>`],
+    [
+      "Direct antwoord",
+      v.direct_antwoord === null
+        ? vlag("ontbreekt", "fout")
+        : `${esc(v.direct_antwoord)} <span class="bij">(${v.direct_antwoord.length} tekens)</span>`,
+    ],
+    [
+      "Interne links",
+      (v.interne_links ?? []).length === 0
+        ? vlag("geen", "waarschuwing")
+        : (v.interne_links ?? [])
+            .map((l) => `<code>${esc(l)}</code>`)
+            .join(" "),
+    ],
+    ["CTA", esc(v.cta_sleutel ?? "-")],
+    [
+      "Structured data",
+      v.structured_data === null
+        ? vlag("ontbreekt", "waarschuwing")
+        : `<details><summary>${esc(
+            (v.structured_data as Record<string, unknown>)?.["@type"]
+              ? String((v.structured_data as Record<string, unknown>)["@type"])
+              : "JSON-LD",
+          )}</summary><pre>${esc(JSON.stringify(v.structured_data, null, 2))}</pre></details>`,
+    ],
+  ],
+)}
+
+${
+  nieuwsAssen.length > 0
+    ? `<h2>Nieuwswaarde — hoe de score is opgebouwd</h2>
+<p class="bij">${esc(v.nieuws_oordeel ?? "")}</p>
+${nieuwsAssen
+  .map(
+    (a) => `<h3>${esc(a.as)} — ${a.score}/${a.max}</h3>
+${tabel(
+  ["Component", "Score", "Bewijs"],
+  a.componenten.map((cp) => [esc(cp.naam), `${cp.score}/${cp.max}`, esc(cp.bewijs)]),
+)}`,
+  )
+  .join("")}`
+    : ""
+}
+
+<h2>De bronnen, om te controleren</h2>
+${tabel(
+  ["Rol", "Soort", "Waarde", "Status", "Kwaliteit", "Bron", "Datum"],
+  d.uitspraken.map((u) => [
+    esc(u.rol),
+    esc(u.soort),
+    u.waarde === null ? "<span class=\"bij\">geen getal</span>" : esc(`${u.waarde} ${u.eenheid ?? ""}`),
+    u.status === "bevestigd" ? vlag(u.status, "ok") : vlag(u.status, "waarschuwing"),
+    esc(String(u.kwaliteit ?? "-")),
+    u.bron_url
+      ? `<a href="${esc(u.bron_url)}" rel="noreferrer noopener nofollow" target="_blank">${esc(
+          (u.bron_titel ?? u.uitgever ?? u.bron_url).slice(0, 70),
+        )}</a>${u.injectie ? ` ${vlag("injectieverdacht", "fout")}` : ""}`
+      : vlag("geen primaire bron", "fout"),
+    esc(u.bron_datum ?? "-"),
+  ]),
+  "Geen uitspraken gebonden. Zonder bewijs kan dit concept niet gepubliceerd worden.",
+)}
+
+<h2>De tekst</h2>
+<pre class="concepttekst">${esc(v.body_markdown)}</pre>
+
+${
+  magBewerken && v.status !== "goedgekeurd" && v.status !== "gepubliceerd"
+    ? `<h2>Tekst aanpassen</h2>
+<p class="bij">Na opslaan lopen ALLE poorten opnieuw. Uw gebruiker wordt vastgelegd als
+laatste bewerker, en u kunt daarna dit concept zelf niet meer goedkeuren (vier ogen).</p>
+<form method="post" action="/studio/${v.id}/tekst">
+  ${csrfVeld}${afdrukVeld}
+  <textarea name="body_markdown" rows="18" style="width:100%;font-family:monospace">${esc(v.body_markdown)}</textarea>
+  <button type="submit">Opslaan en opnieuw toetsen</button>
+</form>`
+    : ""
+}
+
+${
+  v.status === "ter_review" || v.status === "concept"
+    ? magGoedkeuren
+      ? `<h2>Redactioneel besluit</h2>
+<p class="bij">Goedkeuren publiceert niets. Het zet de status op goedgekeurd en bindt die
+goedkeuring aan de afdruk van deze tekst. Publiceren vraagt daarna nog
+<code>npm run publiceer</code>, een generatorrun, een commit en een push — alle vier
+menselijke handelingen.</p>
+<form method="post" action="/studio/${v.id}/beoordeel">
+  ${csrfVeld}${afdrukVeld}
+  <label>Motivatie<br><textarea name="motivatie" rows="3" style="width:100%" placeholder="Waarom keurt u dit goed of af?"></textarea></label>
+  <p>
+    <button type="submit" name="besluit" value="GOEDGEKEURD">Goedkeuren</button>
+    <button type="submit" name="besluit" value="AFGEWEZEN">Afwijzen</button>
+  </p>
+</form>`
+      : `<p class="leeg">U hebt het recht <code>inhoud.goedkeuren</code> niet; daarom staat hier
+geen besluitformulier. Dat is geen weergavekeuze maar dezelfde grendel die de server
+afdwingt.</p>`
+    : ""
+}
+`,
+        }),
+      );
+    }),
+  );
+
+  /* ----------------------------------------------------------------
+     CONCEPT BEOORDELEN — goedkeuren of afwijzen
+     ----------------------------------------------------------------
+     DE ECHTE GRENDEL STAAT IN keurGoed(), NIET HIER. Die functie
+     toetst het recht tegen intel.rol_rechten, of de gebruiker bestaat
+     en actief is, en de vier-ogenregel. Deze middleware geeft alleen
+     een nette 403 in plaats van een exception — dezelfde verdeling als
+     bij /voorstellen/:id/beoordeel. */
+  app.post(
+    "/studio/:id/beoordeel",
+    async_(vereistInlog),
+    vereistRecht("inhoud.goedkeuren"),
+    async_(async (req: MetGebruiker, res) => {
+      const body = (req.body ?? {}) as Record<string, unknown>;
+      if (!csrfPaarGeldig(leesKoekje(req, CSRF_KOEKJE), body[CSRF_VELD], sessieGeheim())) {
+        weiger(res, 403, "Het formulier is verlopen. Open de pagina opnieuw.");
+        return;
+      }
+      const id = String(req.params["id"] ?? "");
+      if (!/^\d+$/.test(id)) {
+        weiger(res, 400, "Ongeldig conceptnummer.");
+        return;
+      }
+      const besluit = String(body["besluit"] ?? "");
+      if (!["GOEDGEKEURD", "AFGEWEZEN"].includes(besluit)) {
+        weiger(res, 400, "Onbekend besluit.");
+        return;
+      }
+      const motivatie = String(body["motivatie"] ?? "").slice(0, 2000);
+      if (besluit === "AFGEWEZEN" && motivatie.trim().length < 10) {
+        weiger(res, 400, "Geef een reden van minstens tien tekens bij een afwijzing.");
+        return;
+      }
+      const gezienAfdruk = String(body["inhoud_afdruk"] ?? "");
+      const gebruikerId = req.gebruiker?.id ?? null;
+      if (gebruikerId === null) {
+        weiger(res, 403, "Een besluit vraagt een ingelogd account.");
+        return;
+      }
+
+      try {
+        await alsGebruiker(req, async (c) => {
+          /* DE AFDRUK DIE OP HET SCHERM STOND. Wijkt hij af, dan is de
+             tekst ondertussen gewijzigd en geldt dit besluit niet voor
+             wat er nu staat. */
+          const nu = await eenRij<{ inhoud_afdruk: string | null; status: string }>(
+            c,
+            "select inhoud_afdruk, status from intel.inhoud_versies where id = $1",
+            [Number(id)],
+          );
+          if (!nu) throw new IntelFout("validatie", "dit concept bestaat niet");
+          if ((nu.inhoud_afdruk ?? "") !== gezienAfdruk) {
+            throw new IntelFout(
+              "validatie",
+              "de tekst is gewijzigd nadat u hem opende; open de pagina opnieuw zodat uw " +
+                "besluit aan de inhoud gebonden kan worden die u werkelijk hebt gelezen",
+            );
+          }
+          if (nu.status !== "ter_review" && nu.status !== "concept") {
+            throw new IntelFout(
+              "validatie",
+              `dit concept staat op '${nu.status}' en is niet meer te beoordelen`,
+            );
+          }
+
+          if (besluit === "GOEDGEKEURD") {
+            await keurGoed(c, Number(id), gebruikerId, motivatie || "goedgekeurd via het dashboard");
+          } else {
+            await c.query(
+              "update intel.inhoud_versies set status = 'ingetrokken' where id = $1",
+              [Number(id)],
+            );
+            await c.query(
+              `insert into intel.publicatiebesluiten
+                 (organisatie_id, inhoud_versie_id, besluit, door_gebruiker_id, actor_soort, motivatie)
+               values ((select organisatie_id from intel.inhoud_versies where id = $1),
+                       $1, 'afgewezen', $2, 'mens', $3)`,
+              [Number(id), gebruikerId, motivatie],
+            );
+          }
+        });
+      } catch (e) {
+        weiger(res, 400, redacteerFout(e));
+        return;
+      }
+      res.redirect(303, `/studio/${id}`);
+    }),
+  );
+
+  /* ----------------------------------------------------------------
+     CONCEPTTEKST AANPASSEN
+     ----------------------------------------------------------------
+     DIT IS DE ROUTE DIE DE VIER-OGENREGEL ECHT MAAKT. Zolang niemand
+     een concept kon bewerken, was `bewerkt_door` altijd NULL en sloeg
+     de constraint nooit aan. Vanaf nu legt een bewerking vast wie het
+     deed, en keurGoed() weigert daarna een goedkeuring door diezelfde
+     persoon.
+
+     EN DE POORTEN LOPEN OPNIEUW. Een aangepaste tekst met de oude
+     poortuitslag is het gevaarlijkste geval: publiceer() leest
+     `poorten_geslaagd`, dus een redacteur die een getal toevoegt zou
+     langs poort 7 komen. hertoetsInhoudVersie() draait alle poorten en
+     berekent de afdruk opnieuw. */
+  app.post(
+    "/studio/:id/tekst",
+    async_(vereistInlog),
+    vereistRecht("inhoud.concept"),
+    async_(async (req: MetGebruiker, res) => {
+      const body = (req.body ?? {}) as Record<string, unknown>;
+      if (!csrfPaarGeldig(leesKoekje(req, CSRF_KOEKJE), body[CSRF_VELD], sessieGeheim())) {
+        weiger(res, 403, "Het formulier is verlopen. Open de pagina opnieuw.");
+        return;
+      }
+      const id = String(req.params["id"] ?? "");
+      if (!/^\d+$/.test(id)) {
+        weiger(res, 400, "Ongeldig conceptnummer.");
+        return;
+      }
+      const tekst = String(body["body_markdown"] ?? "");
+      if (tekst.trim().length < 80) {
+        weiger(res, 400, "Een conceptteksttekst van minder dan tachtig tekens is geen artikel.");
+        return;
+      }
+      const gezienAfdruk = String(body["inhoud_afdruk"] ?? "");
+      const gebruikerId = req.gebruiker?.id ?? null;
+      if (gebruikerId === null) {
+        weiger(res, 403, "Bewerken vraagt een ingelogd account.");
+        return;
+      }
+
+      try {
+        await alsGebruiker(req, async (c) => {
+          const nu = await eenRij<{ inhoud_afdruk: string | null; status: string }>(
+            c,
+            "select inhoud_afdruk, status from intel.inhoud_versies where id = $1",
+            [Number(id)],
+          );
+          if (!nu) throw new IntelFout("validatie", "dit concept bestaat niet");
+          if ((nu.inhoud_afdruk ?? "") !== gezienAfdruk) {
+            throw new IntelFout(
+              "validatie",
+              "iemand anders heeft deze tekst ondertussen gewijzigd; open de pagina opnieuw",
+            );
+          }
+          if (nu.status === "goedgekeurd" || nu.status === "gepubliceerd") {
+            throw new IntelFout(
+              "validatie",
+              `dit concept staat op '${nu.status}'; een goedgekeurde tekst wijzig je niet, ` +
+                "daar hoort een nieuwe versie bij",
+            );
+          }
+
+          await c.query(
+            `update intel.inhoud_versies
+                set body_markdown = $2, bewerkt_door = $3
+              where id = $1`,
+            [Number(id), tekst, gebruikerId],
+          );
+          const uit = await hertoetsInhoudVersie(c, req.gebruiker!.organisatieId, Number(id));
+          if (!uit) throw new IntelFout("validatie", "hertoetsen mislukte");
+        });
+      } catch (e) {
+        weiger(res, 400, redacteerFout(e));
+        return;
+      }
+      res.redirect(303, `/studio/${id}`);
+    }),
+  );
 
   // ---------------- regio ----------------
 

@@ -354,11 +354,42 @@ describe("6. dubbele planning: zondag 03:00 UTC, één keer per week", () => {
     assert.equal(p.dagelijks, undefined, "hij mag niet ook dagelijks zijn");
   });
 
-  it("de WEKELIJKSE taken zijn precies de restoretestronde", () => {
+  it("de WEKELIJKSE taken zijn precies de restoretestronde en het weekrapport", () => {
     /* Zusje van 'de dagelijkse taken zijn precies de back-up en de
-       meting'. Uurlijks is de norm, wekelijks moet je verantwoorden. */
+       meting'. Uurlijks is de norm, wekelijks moet je verantwoorden.
+
+       `weekrapport` is er in R2 bijgekomen, en de verantwoording is
+       dat zijn LEZER wekelijks is: §13 vraagt een operationele
+       rapportage, en een rapportage is voor een mens die aan het begin
+       van zijn week beslist. Daarom maandag 06:00 UTC, waar de
+       restoretest juist zondag 03:00 staat omdat die niemand hoort te
+       storen — het omgekeerde criterium, bewust.
+
+       EN HIJ STAAT OOK IN NIET_HARTSLAGWAARDIGE_SOORTEN. Een taak die
+       één keer per week afrondt kan de vraag 'draait de worker zijn
+       ronde nog' niet beantwoorden; zou hij meetellen, dan meldde de
+       hartslag na maandagochtend tot dinsdag OK ook als de worker
+       daarna meteen omviel. De toets daarop staat hieronder.
+
+       DEZE TOETS BLIJFT EXACT, net als zijn dagelijkse zusje: een
+       verzameling die groeit zonder verantwoording verandert de cadans
+       van productie zonder dat het opvalt. */
     const wekelijks = PLAN.filter((p) => p.wekelijks).map((p) => p.soort).sort();
-    assert.deepEqual(wekelijks, [RESTORETESTRONDE_TAAK_SOORT]);
+    assert.deepEqual(wekelijks, [RESTORETESTRONDE_TAAK_SOORT, "weekrapport"].sort());
+  });
+
+  it("elke WEKELIJKSE taak is uitgesloten van de worker-hartslag", () => {
+    /* De regel achter NIET_HARTSLAGWAARDIGE_SOORTEN geldt voor ELKE
+       zeldzame taak, niet alleen voor de restoretest. Deze toets leidt
+       hem daarom af uit PLAN in plaats van een lijst te herhalen: komt
+       er ooit een derde wekelijkse taak bij, dan faalt hij meteen als
+       die niet is uitgesloten. */
+    for (const p of PLAN.filter((x) => x.wekelijks)) {
+      assert.ok(
+        NIET_HARTSLAGWAARDIGE_SOORTEN.includes(p.soort),
+        `wekelijkse taak '${p.soort}' mag niet als worker-hartslag gelden`,
+      );
+    }
   });
 });
 

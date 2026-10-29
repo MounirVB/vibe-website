@@ -123,7 +123,17 @@ type VoorstelRij = {
 export const RECHT_BEOORDELEN = "inhoud.goedkeuren";
 export const RECHT_HOOGRISICO = "inhoud.hoogrisico.goedkeuren";
 
-async function rechtenVan(c: pg.PoolClient, gebruikerId: number): Promise<Set<string>> {
+/**
+ * De rechten van één gebruiker.
+ *
+ * GEEXPORTEERD IN R2, en met opzet niet gekopieerd. `keurGoed()` in
+ * inhoud/publiceer.ts bleek precies hetzelfde gat te hebben dat de
+ * toelichting hierboven voor beoordeel() beschrijft: geen enkele
+ * rechtencontrole, terwijl dat juist de laan is die tot een publicatie
+ * leidt. Een tweede implementatie van deze query zou de volgende keer
+ * weer uit de pas lopen; dat is de les die voorstel.ts al vastlegt.
+ */
+export async function rechtenVan(c: pg.PoolClient, gebruikerId: number): Promise<Set<string>> {
   const r = await rijen<{ recht: string }>(
     c,
     `select distinct rr.recht

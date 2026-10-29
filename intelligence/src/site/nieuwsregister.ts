@@ -149,6 +149,47 @@ export function isNieuwsPad(pad: string): boolean {
 }
 
 /**
+ * Een sectie zoals de generator van Release 1 hem verwacht.
+ *
+ * `soort` IS VERPLICHT, EN DAT WAS EEN GEMETEN DEFECT.
+ * markdownNaarSecties() leverde `{kop, alineas}` zonder `soort`. De
+ * generator van Release 1 beslist daar juist op, in
+ * scripts/seo/genereer-nationaal.mjs, sectieHtml(), regel 99-126:
+ *
+ *     switch (s.soort) {
+ *       case 'tekst': ...
+ *       case 'kaarten': ...
+ *       case 'specs': ...
+ *       default: throw new Error(`onbekende sectiesoort: ${s.soort}`);
+ *     }
+ *
+ * `undefined` valt dus in de default en WERPT. En dat gebeurt op het
+ * slechtst mogelijke moment: weigerNieuws() kijkt niet naar secties, dus
+ * het artikel staat dan al op INDEX (bouw-routes.mjs regel 494) en de
+ * bouwketen klapt erna om. bouw.mjs komt daardoor niet verder dan stap 6
+ * van 9 — herstel-bestaand, sitemap en audit draaien niet meer, en het
+ * routeregister en de sitemap lopen uit de pas.
+ *
+ * WAAROM qa-nieuws.mjs DIT NIET ZAG. Die poort bouwt zijn eigen fixture
+ * en geeft daarin `soort: 'tekst'` met de hand mee. Hij toetste dus een
+ * sectievorm die dit platform niet produceert — een groene poort over
+ * een bestand dat de generator nooit heeft gezien.
+ *
+ * 'tekst' en niet 'kaarten' of 'specs': dat is de enige soort die een
+ * kop met vrije alinea's rendert, en dat is precies wat een
+ * markdownsectie is.
+ */
+export type Sectie = {
+  readonly soort: "tekst";
+  readonly kop: string;
+  readonly alineas: string[];
+};
+
+function nieuweSectie(kop: string): Sectie {
+  return { soort: "tekst", kop, alineas: [] };
+}
+
+/**
  * Markdown naar de sectievorm van het contract.
  *
  * Een `## kop` begint een nieuwe sectie; alles eronder wordt een alinea
@@ -166,11 +207,9 @@ export function isNieuwsPad(pad: string): boolean {
  * grotendeels dezelfde tekst is precies wat poort 11 zoekt. De twee
  * functies zijn dus symmetrisch: wat de lead wordt, wordt geen sectie.
  */
-export function markdownNaarSecties(
-  markdown: string,
-): { kop: string; alineas: string[] }[] {
-  const secties: { kop: string; alineas: string[] }[] = [];
-  let huidig: { kop: string; alineas: string[] } | null = null;
+export function markdownNaarSecties(markdown: string): Sectie[] {
+  const secties: Sectie[] = [];
+  let huidig: Sectie | null = null;
   let lijst: string[] = [];
   let leadGehad = false;
 
@@ -179,7 +218,7 @@ export function markdownNaarSecties(
   const sluitLijst = () => {
     if (!lijst.length) return;
     const ul = `<ul class="ve-lijst">${lijst.map((i) => `<li>${i}</li>`).join("")}</ul>`;
-    (huidig ??= { kop: "Toelichting", alineas: [] }).alineas.push(ul);
+    (huidig ??= nieuweSectie("Toelichting")).alineas.push(ul);
     lijst = [];
   };
 
@@ -201,12 +240,12 @@ export function markdownNaarSecties(
     }
     if (t.startsWith("## ")) {
       sluitSectie();
-      huidig = { kop: inline(t.slice(3)), alineas: [] };
+      huidig = nieuweSectie(inline(t.slice(3)));
       continue;
     }
     if (t.startsWith("### ")) {
       sluitLijst();
-      (huidig ??= { kop: "Toelichting", alineas: [] }).alineas.push(`<h3>${inline(t.slice(4))}</h3>`);
+      (huidig ??= nieuweSectie("Toelichting")).alineas.push(`<h3>${inline(t.slice(4))}</h3>`);
       continue;
     }
     if (t.startsWith("- ")) {
@@ -220,7 +259,7 @@ export function markdownNaarSecties(
       leadGehad = true;
       continue;
     }
-    (huidig ??= { kop: "Toelichting", alineas: [] }).alineas.push(inline(t));
+    (huidig ??= nieuweSectie("Toelichting")).alineas.push(inline(t));
   }
   sluitSectie();
   return secties;

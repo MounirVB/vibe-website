@@ -487,6 +487,285 @@ export type IndexatieMetriek = (typeof INDEXATIE_METRIEKEN)[number];
  */
 export type MetriekLabel = "MEASURED" | "INFERRED" | "UNVERIFIED" | "NOT_AVAILABLE";
 
+/* ============================================================
+   VERGELIJKING OVER 7, 28 EN 90 DAGEN
+   ------------------------------------------------------------
+   WAAROM DIT ER NIET WAS, en waarom dat geen vergeten query was.
+
+   Gemeten op b2de0c4: er is in dit hele subsysteem geen enkele
+   periodevergelijking. Niet omdat niemand eraan dacht, maar omdat er
+   NIETS OM TE VERGELIJKEN was. `intel.indexatie_status` heeft
+   `unique (organisatie_id, url, bron)` en zet bij een upsert
+   `laatst_gecontroleerd_op = now()`: het vorige meetpunt wordt gewist.
+   `intel.indexatie_dagstand` (migratie 0034) kan het wél bewaren, maar
+   `--bewaar` stond in geen enkele planregel en de tabel had 0 rijen.
+
+   Een vergelijking bouwen bovenop een tabel die nooit gevuld wordt, zou
+   een functie zijn die altijd leeg teruggeeft. De echte reparatie is
+   daarom tweeledig: de dagelijkse taak `indexatie` in kern/taken.ts
+   vult de tabel, en deze functie leest hem.
+
+   DRIE VENSTERS, EN HET ANTWOORD MAG 'NIET GEMETEN' ZIJN.
+   Met één dagstand is er geen trend. Dat wordt gezegd, met het aantal
+   beschikbare dagstanden erbij, zodat zichtbaar is wanneer het antwoord
+   wél komt. Een delta van 0 bij één meetpunt zou beweren dat er niets
+   is veranderd, en dat is niet gemeten.
+
+   EEN NOT_AVAILABLE-METRIEK KRIJGT GEEN DELTA. Zijn `aantal` is null.
+   Twee nullen aftrekken geeft geen 0 maar opnieuw ONBEKEND; dat is de
+   les uit 0009 ("een ontbrekende rij is geen nul") toegepast op een
+   verschil.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   SEGMENTATIE — nieuws, kennis en commercieel apart
+   ------------------------------------------------------------
+   De opdracht vraagt deze drie segmenten. De kolom bestond al:
+   `intel.pagina_register.soort` (migratie 0004), met een index
+   (0004 regel 56-57). Gemeten op b2de0c4 gebruikte geen van de
+   queries in dit subsysteem hem — alle tien rapportmetrieken waren
+   sitebreed.
+
+   DE AFBEELDING STAAT HIER EXPLICIET, en dat is geen opsmuk. Gemeten
+   soorten in het register: regio 349, oplossing 23, project 17,
+   kennis 17, sector 16, overig 16, systeem 7, juridisch 3, home 1 —
+   samen 449. 'nieuws' komt er nog niet in voor, en dat is juist: er is
+   nog geen nieuwspagina.
+
+   WAAROM juridisch EN overig IN GEEN SEGMENT VALLEN. `juridisch` zijn
+   privacy, cookiebeleid en algemene voorwaarden: geen zoekintentie om
+   te volgen. `overig` zijn de doorverwijsstubs en de foutpagina. Ze
+   onder 'commercieel' schuiven zou het commerciële segment laten
+   groeien met pagina's die niets verkopen, en dan meet een stijging
+   iets anders dan hij lijkt. Ze worden daarom GETELD en benoemd als
+   buiten de segmentatie, niet weggelaten — een restpost die je niet
+   ziet, is een restpost die je verkeerd uitlegt.
+   ------------------------------------------------------------ */
+
+export const SEGMENT_VAN_SOORT: Readonly<Record<string, "nieuws" | "kennis" | "commercieel">> = {
+  nieuws: "nieuws",
+  kennis: "kennis",
+  /* Alles wat een commerciële zoekintentie bezit of ondersteunt. */
+  oplossing: "commercieel",
+  systeem: "commercieel",
+  sector: "commercieel",
+  project: "commercieel",
+  regio: "commercieel",
+  home: "commercieel",
+};
+
+export type SegmentStand = {
+  readonly segment: "nieuws" | "kennis" | "commercieel" | "buiten_segmentatie";
+  readonly paginas: number;
+  readonly inSitemap: number;
+  readonly bestaatInRepo: number;
+  /** Welke `soort`-waarden hierin vallen, zodat de telling na te rekenen is. */
+  readonly soorten: readonly string[];
+};
+
+/**
+ * De stand per segment.
+ *
+ * TECHNISCH BEREIKBAAR EN IN DE SITEMAP, NIET GEÏNDEXEERD. Deze functie
+ * meet uitsluitend wat in het register staat; of een zoekmachine de
+ * pagina heeft opgenomen is zonder Search Console niet te meten en
+ * staat hier dus niet. Dat onderscheid is precies wat bewaakScheiding()
+ * elders afdwingt.
+ */
+export async function segmentStanden(
+  pool: Pool,
+  organisatieId: number,
+): Promise<readonly SegmentStand[]> {
+  const uit = await metOrganisatie(pool, { organisatieId }, async (c) =>
+    rijen<{ soort: string; paginas: string; in_sitemap: string; in_repo: string }>(
+      c,
+      `select coalesce(soort, 'onbekend') as soort,
+              count(*)::text                                as paginas,
+              count(*) filter (where in_sitemap)::text       as in_sitemap,
+              count(*) filter (where bestaat_in_repo)::text  as in_repo
+         from intel.pagina_register
+        where organisatie_id = $1
+        group by 1`,
+      [organisatieId],
+    ),
+  );
+
+  const leeg = (): { paginas: number; inSitemap: number; inRepo: number; soorten: string[] } => ({
+    paginas: 0,
+    inSitemap: 0,
+    inRepo: 0,
+    soorten: [],
+  });
+  const bakken = new Map<SegmentStand["segment"], ReturnType<typeof leeg>>([
+    ["nieuws", leeg()],
+    ["kennis", leeg()],
+    ["commercieel", leeg()],
+    ["buiten_segmentatie", leeg()],
+  ]);
+
+  for (const r of uit) {
+    const segment = SEGMENT_VAN_SOORT[r.soort] ?? "buiten_segmentatie";
+    const bak = bakken.get(segment)!;
+    bak.paginas += Number(r.paginas);
+    bak.inSitemap += Number(r.in_sitemap);
+    bak.inRepo += Number(r.in_repo);
+    bak.soorten.push(r.soort);
+  }
+
+  return [...bakken].map(([segment, b]) => ({
+    segment,
+    paginas: b.paginas,
+    inSitemap: b.inSitemap,
+    bestaatInRepo: b.inRepo,
+    soorten: b.soorten.sort(),
+  }));
+}
+
+export const VERGELIJKVENSTERS = [7, 28, 90] as const;
+export type Venster = (typeof VERGELIJKVENSTERS)[number];
+
+export type VensterVergelijking = {
+  readonly dagen: Venster;
+  /** De oudste dagstand binnen dit venster, of null. */
+  readonly vanDatum: string | null;
+  readonly vanAantal: number | null;
+  readonly totDatum: string | null;
+  readonly totAantal: number | null;
+  /** null = niet te berekenen. Nooit 0 als stand-in. */
+  readonly verschil: number | null;
+  /** Hoeveel dagstanden er in dit venster bestaan. */
+  readonly meetpunten: number;
+  readonly toelichting: string;
+};
+
+export type MetriekTrend = {
+  readonly metriek: IndexatieMetriek;
+  readonly label: MetriekLabel;
+  readonly vensters: readonly VensterVergelijking[];
+};
+
+/**
+ * Vergelijkt elke metriek over 7, 28 en 90 dagen.
+ *
+ * Leest UITSLUITEND intel.indexatie_dagstand. Raakt geen enkele externe
+ * dienst en heeft dus geen credential nodig; de GSC-metrieken komen er
+ * als NOT_AVAILABLE uit omdat ze zo bewaard zijn, niet omdat deze
+ * functie ze niet kon ophalen.
+ */
+export async function vergelijkVensters(
+  pool: Pool,
+  organisatieId: number,
+  opties: { vandaag?: string } = {},
+): Promise<{ trends: MetriekTrend[]; dagstandenTotaal: number; oudsteDatum: string | null }> {
+  const rijenUit = await metOrganisatie(pool, { organisatieId }, async (c) =>
+    rijen<{ datum: string; metriek: string; aantal: number | null; label: string }>(
+      c,
+      `select datum::text, metriek, aantal, label
+         from intel.indexatie_dagstand
+        where organisatie_id = $1
+        order by metriek, datum`,
+      [organisatieId],
+    ),
+  );
+
+  const alleDatums = [...new Set(rijenUit.map((r) => r.datum))].sort();
+  const vandaag = opties.vandaag ?? alleDatums.at(-1) ?? new Date().toISOString().slice(0, 10);
+
+  const perMetriek = new Map<string, { datum: string; aantal: number | null; label: string }[]>();
+  for (const r of rijenUit) {
+    const lijst = perMetriek.get(r.metriek) ?? [];
+    lijst.push({ datum: r.datum, aantal: r.aantal, label: r.label });
+    perMetriek.set(r.metriek, lijst);
+  }
+
+  const dagenVoor = (d: number): string => {
+    const t = Date.parse(`${vandaag}T00:00:00Z`);
+    return new Date(t - d * 86_400_000).toISOString().slice(0, 10);
+  };
+
+  /* ALTIJD TIEN METRIEKEN, net als het rapport zelf. Een metriek die
+     nog nooit is bewaard hoort te verschijnen met 'nul dagstanden' en
+     niet weg te vallen; anders leest een korte lijst als 'de rest is in
+     orde'. */
+  const trends: MetriekTrend[] = INDEXATIE_METRIEKEN.map((metriek) => {
+    const standen = perMetriek.get(metriek) ?? [];
+    const laatste = standen.at(-1) ?? null;
+
+    const vensters = VERGELIJKVENSTERS.map((dagen): VensterVergelijking => {
+      const grens = dagenVoor(dagen);
+      const binnen = standen.filter((s) => s.datum >= grens);
+      const oudste = binnen[0] ?? null;
+
+      if (standen.length === 0) {
+        return {
+          dagen,
+          vanDatum: null,
+          vanAantal: null,
+          totDatum: null,
+          totAantal: null,
+          verschil: null,
+          meetpunten: 0,
+          toelichting:
+            "NIET GEMETEN — deze metriek is nog nooit als dagstand bewaard. " +
+            "Draai de dagelijkse taak 'indexatie' (of npm run analytics -- --bewaar).",
+        };
+      }
+      if (binnen.length < 2) {
+        return {
+          dagen,
+          vanDatum: oudste?.datum ?? null,
+          vanAantal: oudste?.aantal ?? null,
+          totDatum: laatste?.datum ?? null,
+          totAantal: laatste?.aantal ?? null,
+          verschil: null,
+          meetpunten: binnen.length,
+          toelichting:
+            `NIET GEMETEN — ${binnen.length} dagstand(en) binnen ${dagen} dagen. ` +
+            "Twee meetpunten zijn een trend; één is dat nooit.",
+        };
+      }
+      if (oudste === null || oudste.aantal === null || laatste === null || laatste.aantal === null) {
+        return {
+          dagen,
+          vanDatum: oudste?.datum ?? null,
+          vanAantal: oudste?.aantal ?? null,
+          totDatum: laatste?.datum ?? null,
+          totAantal: laatste?.aantal ?? null,
+          verschil: null,
+          meetpunten: binnen.length,
+          toelichting:
+            `ONBEKEND — minstens één van de twee meetpunten heeft geen getal ` +
+            `(label ${laatste?.label ?? "?"}). Een verschil tussen twee onbekenden is geen nul.`,
+        };
+      }
+      return {
+        dagen,
+        vanDatum: oudste.datum,
+        vanAantal: oudste.aantal,
+        totDatum: laatste.datum,
+        totAantal: laatste.aantal,
+        verschil: laatste.aantal - oudste.aantal,
+        meetpunten: binnen.length,
+        toelichting:
+          `${oudste.aantal} op ${oudste.datum} naar ${laatste.aantal} op ${laatste.datum} ` +
+          `over ${binnen.length} meetpunten`,
+      };
+    });
+
+    return {
+      metriek,
+      label: (laatste?.label ?? "NOT_AVAILABLE") as MetriekLabel,
+      vensters,
+    };
+  });
+
+  return {
+    trends,
+    dagstandenTotaal: alleDatums.length,
+    oudsteDatum: alleDatums[0] ?? null,
+  };
+}
+
 export type RapportRegel = {
   readonly metriek: IndexatieMetriek;
   /** null = NIET GEMETEN. Dat is iets anders dan 0. */

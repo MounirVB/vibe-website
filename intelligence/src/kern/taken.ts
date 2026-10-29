@@ -100,6 +100,22 @@ export const PLAN: readonly PlanRegel[] = [
      komen. */
   { soort: "semantiek", prioriteit: 25, toelichting: "nieuwe uitspraken een semantiek- en verwoordbaarheidsoordeel geven" },
   { soort: "beoordelen", prioriteit: 30, toelichting: "de besluitmotor over nieuwe gebeurtenissen" },
+  /* NIEUW IN R2. Moet ná beoordelen, en wel om een inhoudelijke reden:
+     de nieuwsselectie leest `bedrijfsrelevantie` en `relevantie_categorie`
+     die clusteren/semantiek hebben gezet, en toetst dezelfde drempels
+     die de besluitmotor hanteert. Draaide hij ervoor, dan beoordeelde
+     hij een stand die de rest van de ronde nog gaat veranderen.
+
+     DIT IS GEEN TWEEDE BESLUITMOTOR. Hij schrijft onder zijn eigen
+     motor_versie (nieuwsmotor-v1) en raakt de kandidaten van
+     besluitmotor-v1 niet aan. Zie de kop van pijplijn/nieuwsselectie.ts
+     voor waarom een nieuwsbericht een eigen besluit is: NEW_ARTICLE
+     vereist dat GEEN pagina het cluster bezit, een nieuwsbericht
+     vereist juist WEL een eigenaar om zijn intentie van te lenen.
+
+     PUBLICEERT NIETS. De kandidaat komt op 'open' en wacht op een
+     mens. */
+  { soort: "nieuwsselectie", prioriteit: 35, toelichting: "gebeurtenissen op nieuwswaarde wegen en NEWS_ITEM-kandidaten schrijven" },
   { soort: "regio", prioriteit: 40, toelichting: "gebieden binden en regiovoorstellen maken" },
   { soort: "signaleren", prioriteit: 50, toelichting: "commerciele signalen uit SALES_SIGNAL-kandidaten" },
   /* NIEUW IN 3.0.4. Moet ná beoordelen, want hij werkt de kandidaten af
@@ -132,6 +148,33 @@ export const PLAN: readonly PlanRegel[] = [
      deze cijfers bewegen niet per uur, en een dagelijkse regel is
      makkelijker terug te vinden dan 24. Strikt alleen-lezen. */
   { soort: "meting", prioriteit: 96, dagelijks: true, toelichting: "de redactionele en databasestand meten en in het log zetten" },
+  /* NIEUW IN R2, DAGELIJKS — en dit is de taak die een TREND mogelijk
+     maakt in plaats van hem te berekenen.
+
+     Het indexatierapport (analytics/koppelingen.ts, tien metrieken met
+     MEASURED/INFERRED/UNVERIFIED/NOT_AVAILABLE) bestond volledig, en
+     `bewaarDagstand()` schrijft hem naar intel.indexatie_dagstand
+     (migratie 0034). Maar `--bewaar` stond in GEEN enkele planregel.
+     Gemeten: intel.indexatie_dagstand heeft 0 rijen.
+
+     Dat is geen ontbrekende functie maar een ontbrekende CADANS.
+     intel.indexatie_status heeft `unique (organisatie_id, url, bron)`
+     en zet bij een upsert `laatst_gecontroleerd_op = now()` — het
+     vorige meetpunt wordt dus gewist. Zonder dagstand is een
+     vergelijking over 7, 28 of 90 dagen PER CONSTRUCTIE onmogelijk,
+     hoe goed de query ook is. Twee dagstanden zijn een trend; één rij
+     die zichzelf overschrijft is dat nooit.
+
+     DAGELIJKS en niet uurlijks: de dagstand draagt een DATUM in zijn
+     unieke sleutel, dus een tweede run op dezelfde dag overschrijft de
+     stand van die dag in plaats van een tweede punt te maken. Uurlijks
+     plannen zou 23 nutteloze runs opleveren.
+
+     GEEN CREDENTIAL NODIG. Deze taak meet uitsluitend wat van hier te
+     meten is: het routeregister, de sitemap en de eigen HTTP-meting.
+     De GSC-metrieken blijven NOT_AVAILABLE met hun reden — dat is de
+     eerlijke uitkomst en geen fout. */
+  { soort: "indexatie", prioriteit: 97, dagelijks: true, toelichting: "de indexatiedagstand vastleggen, zodat er een trend kan ontstaan" },
   /* WEKELIJKS, ZONDAG 03:00 UTC — de enige taak met die cadans.
      Waarom niet dagelijks: een restoretest zet een volledige dump terug
      in een verse wegwerpdatabase op de productieSERVER. Dat is zwaarder
@@ -153,6 +196,20 @@ export const PLAN: readonly PlanRegel[] = [
     prioriteit: 99,
     wekelijks: { weekdagUtc: 0, vanafUurUtc: 3 },
     toelichting: "de back-up aantoonbaar terugzetten in een geisoleerde wegwerpdatabase",
+  },
+  /* WEKELIJKS, MAANDAG 06:00 UTC — de operationele rapportage uit §13.
+     Maandagochtend en niet zondagnacht: dit rapport is voor een MENS,
+     en een redactie leest hem aan het begin van de week waarin ze
+     beslist. De restoretest staat op zondag 03:00 omdat die juist
+     niemand hoort te storen; dat is het omgekeerde criterium.
+     Prioriteit 98: ná de dagelijkse meting en indexatiedagstand, zodat
+     hij de stand van die ronde meeneemt, maar vóór de restoretest die
+     niets aan de cijfers toevoegt. */
+  {
+    soort: "weekrapport",
+    prioriteit: 98,
+    wekelijks: { weekdagUtc: 1, vanafUurUtc: 6 },
+    toelichting: "de tien operationele cijfers van de afgelopen week in het log zetten",
   },
 ];
 
@@ -309,6 +366,65 @@ export const REGISTER: Record<string, Handler> = {
     const { neemBesluiten } = await import("../besluit/motor.ts");
     const r = await neemBesluiten(pool, organisatieId, {});
     return `beoordeeld ${r.beoordeeld}, kandidaten ${r.kandidatenGeschreven}`;
+  },
+
+  /**
+   * NIEUW IN R2 — de nieuwsselectie in de keten.
+   *
+   * HET ARTEFACT IS EEN VOORWAARDE, net als bij `voorstel`. Zonder
+   * routeregister en routestaten kan deze laag niet vaststellen of een
+   * cluster een eigenaar heeft die op INDEX staat, en dat is precies de
+   * grond die weigerNieuws() straks toetst. Zou hij dan doorgaan, dan
+   * schreef hij kandidaten die niemand kan publiceren. Een ontbrekend
+   * artefact is een configuratiefout en dus niet-herhaalbaar.
+   *
+   * SCHRIJFT GEEN CONCEPT EN KEURT NIETS GOED. Deze taak levert een
+   * geordende werkvoorraad; `maakConcept` is een aparte stap en zet een
+   * inhoudsversie op 'ter_review'.
+   */
+  async nieuwsselectie(pool, organisatieId, payload) {
+    const { leesNieuwsContext } = await import("../site/nieuwscontext.ts");
+    const { nieuwsselectieronde } = await import("../pijplijn/nieuwsselectie.ts");
+    const { configLezen } = await import("./config.ts");
+    const { IntelFout } = await import("./fouten.ts");
+
+    const config = configLezen();
+    const ctx = await leesNieuwsContext(config.siteWortel);
+
+    if (!ctx.herkomst.registerAanwezig || !ctx.herkomst.statenAanwezig) {
+      throw new IntelFout(
+        "configuratie",
+        `nieuwscontext onbruikbaar: routeregister ${ctx.herkomst.registerAanwezig ? "ok" : "ONTBREEKT"} ` +
+          `(${ctx.herkomst.registerReden}), routestaten ${ctx.herkomst.statenAanwezig ? "ok" : "ONTBREEKT"} ` +
+          `(${ctx.herkomst.statenReden}). Er zijn GEEN kandidaten beoordeeld en geen bestaande gewijzigd.`,
+        { herhaalbaar: false },
+      );
+    }
+
+    const r = await nieuwsselectieronde(pool, organisatieId, {
+      eigenaren: ctx.eigenaren,
+      bronsoortPerSleutel: ctx.bronsoortPerSleutel,
+      bestaandeNieuwsSlugs: ctx.bestaandeNieuwsSlugs,
+      ...(tekstOf(payload, "vandaag") ? { vandaag: tekstOf(payload, "vandaag")! } : {}),
+    });
+
+    /* DE AFWIJSGRONDEN IN DE LOGREGEL, en dat is dezelfde les als bij
+       `gezondheid` en `semantiek`: een telling zonder reden is op
+       productie niet na te trekken, want de database is privaat. De
+       drie zwaarste gronden passen in een regel en zeggen wat eraan te
+       doen is. */
+    const gronden = Object.entries(r.perAfwijsgrond)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([g, n]) => `${n}x ${g}`)
+      .join(" ;; ");
+
+    return (
+      `beoordeeld ${r.beoordeeld}, geschikt ${r.geschikt}, ongeschikt ${r.ongeschikt}, ` +
+      `geschreven ${r.kandidatenGeschreven}` +
+      (gronden ? ` — zwaarste gronden: ${gronden}` : "") +
+      (r.top.length ? ` — hoogste: ${r.top[0]!.score}/100 g${r.top[0]!.gebeurtenisId}` : "")
+    );
   },
 
   async regio(pool, organisatieId) {
@@ -694,6 +810,135 @@ export const REGISTER: Record<string, Handler> = {
   },
 
   /**
+   * NIEUW IN R2 — de wekelijkse operationele rapportage (§13).
+   *
+   * DEZE TAAK FAALT NIET OP SLECHT NIEUWS. Een week met nul nieuwe
+   * bronitems of drie taken in de dlq is een MELDING, niet een fout in
+   * het rapporteren. Werpen zou de backoff laten draaien en de dlq
+   * vullen met een taak die juist moet melden dat de dlq vol is.
+   *
+   * Hij faalt WEL als het rapport zelf incompleet is: meetWeek() werpt
+   * als er niet precies tien cijfers uitkomen. Een rapport met negen
+   * regels leest als 'de tiende is niet van toepassing'.
+   *
+   * GEEN MAIL TENZIJ EXPLICIET GEVRAAGD. De cijfers gaan naar de
+   * structuurlogger, net als bij `meting`; op Railway is dat logboek de
+   * bestaande infrastructuur. Wie een wekelijkse mail wil, zet
+   * INTEL_WEEKRAPPORT_MAIL — anders zou het plannen van deze taak
+   * stilzwijgend post gaan versturen.
+   *
+   * Eigen eigenaarspool: het rapport leest intel.taken, en de
+   * applicatierol mag die tabel wel, maar de meting hierboven gebruikt
+   * hetzelfde patroon en het houdt de leesweg uniform.
+   */
+  async weekrapport(_pool, organisatieId, payload) {
+    const { meetWeek, logWeekrapport, rapportAlsTekst } = await import("../ops/weekrapport.ts");
+    const { maakPool: maakEigenPool, metOrganisatie: metOrg } = await import("./db.ts");
+    const { maakLogger } = await import("./log.ts");
+
+    const eigenaarPool = maakEigenPool({ rol: null, max: 2 });
+    const rapport = await metOrg(eigenaarPool, { organisatieId }, (c) =>
+      meetWeek(c, organisatieId, {
+        ...(tekstOf(payload, "tot") ? { totDatum: tekstOf(payload, "tot")! } : {}),
+      }),
+    );
+
+    logWeekrapport(rapport);
+
+    /* De volledige tekst in één logregel erbij, zodat hij uit het
+       Railway-log te knippen is zonder databasetoegang. Dat is dezelfde
+       reden waarom de meting- en gezondheidstaken hun bevindingen
+       uitschrijven: de productiedatabase is privaat. */
+    maakLogger("taak:weekrapport").info("weekrapport tekst", {
+      tekst: rapportAlsTekst(rapport),
+    });
+
+    if (process.env["INTEL_WEEKRAPPORT_MAIL"]) {
+      /* BEWUST NIET GEÏMPLEMENTEERD ZONDER EEN EXPLICIET BESLUIT.
+         De meldmaillaag bestaat (ops/meldmail.ts) en zou dit kunnen
+         versturen, maar een wekelijkse mail is een nieuw uitgaand
+         kanaal met een eigen bezorgboekhouding en een eigen
+         idempotentiesleutel. Dat hoort een eigen ronde te zijn, niet
+         een bijproduct van een rapportagetaak. De variabele is hier
+         alleen om te MELDEN dat hij gezet is. */
+      maakLogger("taak:weekrapport").waarschuwing(
+        "INTEL_WEEKRAPPORT_MAIL is gezet, maar verzenden is nog niet aangesloten",
+        {
+          wat_er_wel_is: "het rapport staat volledig in het log hierboven",
+          wat_er_nodig_is:
+            "een eigen bezorgronde in ops/meldmail.ts met een idempotentiesleutel per week",
+        },
+      );
+    }
+
+    const perLabel: Record<string, number> = {};
+    for (const c of rapport.cijfers) perLabel[c.label] = (perLabel[c.label] ?? 0) + 1;
+
+    return (
+      `week ${rapport.vanDatum} t/m ${rapport.totDatum}: ${rapport.cijfers.length} cijfers ` +
+      `(${Object.entries(perLabel).map(([k, v]) => `${v} ${k}`).join(", ")})` +
+      (rapport.aandacht.length > 0
+        ? ` — AANDACHT: ${rapport.aandacht.join(" ;; ")}`
+        : " — geen aandachtspunten")
+    );
+  },
+
+  /**
+   * NIEUW IN R2 — de indexatiedagstand vastleggen.
+   *
+   * FAALT WEL bij een weigering van bewaarDagstand(). Dat is het
+   * verschil met `gezondheid`: die meet een bewegende toestand en zou
+   * met werpen de dlq vullen. Hier is een weigering een TEGENSPRAAK —
+   * bewaakScheiding() weigert een rapport waarin TECHNICALLY_INDEXABLE
+   * en GOOGLE_INDEXED door elkaar lopen, en een NOT_AVAILABLE-regel met
+   * een getal erin. Dat hoort niet stil in een logregel te verdwijnen,
+   * want dan zou de dagstand een verzonnen indexatiecijfer gaan dragen.
+   */
+  async indexatie(pool, organisatieId) {
+    const { bewaarDagstand, indexatieRapport } = await import("../analytics/koppelingen.ts");
+    const { meetIndexeerbaar } = await import("../site/indexeerbaar.ts");
+    const { IntelFout } = await import("./fouten.ts");
+    const { maakLogger } = await import("./log.ts");
+
+    const ti = await meetIndexeerbaar();
+    const { regels } = await indexatieRapport(pool, organisatieId, {
+      ...(ti.getal ? { technischIndexeerbaar: ti.getal } : {}),
+    });
+
+    const uit = await bewaarDagstand(pool, organisatieId, regels);
+    if (!uit.ok) {
+      throw new IntelFout(
+        "validatie",
+        `de indexatiedagstand is NIET bewaard: ${uit.reden}`,
+        { herhaalbaar: false },
+      );
+    }
+
+    const per = (l: string) => regels.filter((r) => r.label === l).length;
+    maakLogger("taak:indexatie").info("indexatiedagstand", {
+      datum: uit.datum,
+      regels: uit.geschreven,
+      measured: per("MEASURED"),
+      inferred: per("INFERRED"),
+      unverified: per("UNVERIFIED"),
+      not_available: per("NOT_AVAILABLE"),
+      technisch_indexeerbaar: ti.getal?.aantal ?? null,
+      technisch_indexeerbaar_bron: ti.getal?.bron ?? "NIET GEMETEN",
+      omgekeerde_pariteit: ti.pariteit.length,
+    });
+
+    return (
+      `dagstand ${uit.datum}: ${uit.geschreven} regels ` +
+      `(${per("MEASURED")} MEASURED, ${per("INFERRED")} INFERRED, ` +
+      `${per("UNVERIFIED")} UNVERIFIED, ${per("NOT_AVAILABLE")} NOT_AVAILABLE), ` +
+      `technisch indexeerbaar ${ti.getal?.aantal ?? "NIET GEMETEN"}` +
+      (ti.pariteit.length > 0
+        ? `, ${ti.pariteit.length} TEGENSTRIJDIGE sitemapregel(s): ${ti.pariteit.slice(0, 5).join(", ")}`
+        : "")
+    );
+  },
+
+  /**
    * De WEKELIJKSE restoretest: de back-up aantoonbaar terugzetten.
    *
    * DEZE HANDLER DOET HET WERK NIET ZELF, HIJ START DE CLI.
@@ -852,6 +1097,12 @@ export const TAAKSOORTEN: readonly string[] = Object.keys(REGISTER);
  */
 export const NIET_HARTSLAGWAARDIGE_SOORTEN: readonly string[] = [
   "restoretestronde",
+  /* NIEUW IN R2, en om exact dezelfde reden als restoretestronde: het
+     weekrapport rondt één keer per WEEK af. Zou hij meetellen, dan
+     meldde de hartslag na maandagochtend tot dinsdag OK — ook als de
+     worker daarna meteen omviel. Een wekelijkse taak kan de vraag
+     "draait de worker zijn ronde nog" niet beantwoorden. */
+  "weekrapport",
   /* Het bewijsLOGBOEK. Die rijen zetten geen gereed_op, dus ze kunnen
      de hartslag al niet raken — maar ze staan hier zodat de bedoeling
      niet van die ene eigenschap afhangt. */
