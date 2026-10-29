@@ -48,6 +48,7 @@ import { fileURLToPath } from 'node:url';
 import { HOST, HOST_APEX, url, href } from './lib/paden.mjs';
 import { graaf, organisatie, website, webpagina, kruimelpad } from './lib/schema.mjs';
 import { noscriptNav, zetNavToets } from './lib/sjabloon.mjs';
+import { Vingerafdrukken } from './lib/vingerafdruk.mjs';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 const wortel = resolve(hier, '..', '..');
@@ -303,3 +304,56 @@ console.log(DROOG ? '=== DROOGLOOP, niets geschreven ===' : '=== HERSTELD ===');
 console.log(`bestanden bekeken : ${bestanden.length}`);
 console.log(`bestanden gewijzigd: ${rapport.length}`);
 for (const r of rapport) console.log(`  ${r.bestand.padEnd(36)} ${r.acties.join(' | ')}`);
+
+/* ============================================================================
+   DE INHOUDSVINGERAFDRUK VAN DE HANDGESCHREVEN PAGINAS
+   ----------------------------------------------------------------------------
+   WAAROM DIT HIER STAAT EN NIET IN sitemap.mjs OF genereer.mjs.
+
+   Dit script BEZIT deze 51 bestanden: het leest elke .html in de wortel die
+   niet door de generator is geschreven, en het schrijft ze. Wie het bestand
+   schrijft, hoort de vingerafdruk ervan vast te leggen — anders legt iemand
+   anders een hash vast over bytes die dit script daarna nog verandert.
+
+   En de ORDE dwingt het af. bouw.mjs draait genereer (5) -> herstel-bestaand
+   (6) -> sitemap (7). Zou genereer.mjs deze hashes zetten, dan zou stap 6 de
+   bestanden daarna nog wijzigen en was het grootboek binnen dezelfde bouw al
+   verouderd. Hier, na de schrijflus, zijn de bytes definitief.
+
+   WAT DIT OPLOST. sitemap.mjs viel voor deze routes terug op
+   `git log -1 --format=%cs` van het bestand. Die datum verschuift bij een
+   squash-merge zonder dat er een letter verandert, en de sitemap die IN die
+   commit landt kan de nieuwe datum niet bevatten. Gemeten op b2de0c4: 34
+   lastmod-regels liepen daardoor een commit achter, en de
+   reproduceerbaarheidspoort in CI faalde op main zelf.
+
+   ALLEEN INDEX-ROUTES. De 17 NOINDEX-stubs staan per constructie niet in de
+   sitemap, dus een vingerafdruk zou daar een rij zijn die niets beslist.
+
+   DROOGLOOP SCHRIJFT NIET. Met --droog zijn de bestanden niet bijgewerkt, dus
+   een hash eroverheen zou de stand VOOR het herstel vastleggen.
+   ============================================================================ */
+if (!DROOG) {
+  const vingers = new Vingerafdrukken(
+    resolve(wortel, 'data', 'seo', 'vingerafdrukken.json'),
+    process.env.INHOUD_DATUM || process.env.ROUTES_DATUM || new Date().toISOString().slice(0, 10)
+  );
+
+  let bijgewerkt = 0;
+  for (const f of bestanden) {
+    const r = f === 'index.html' ? '' : f.replace(/\.html$/, '');
+    if (!indexRoutes.has(r)) continue;
+    /* De bytes ZOALS ZE NU OP SCHIJF STAAN, en niet de variabele uit de lus
+       hierboven: een bestand dat niets te herstellen had is nooit
+       weggeschreven, en dan is de schijf de waarheid. */
+    vingers.datumVoorInhoud(r, readFileSync(resolve(wortel, f), 'utf8'));
+    bijgewerkt += 1;
+  }
+  vingers.schrijf();
+
+  console.log('');
+  console.log(`inhoudsvingerafdrukken bijgewerkt: ${bijgewerkt} handgeschreven INDEX-paginas`);
+  console.log(
+    `  ongewijzigd ${vingers.telling.ongewijzigd}   gewijzigd ${vingers.telling.gewijzigd}   nieuw ${vingers.telling.nieuw}`
+  );
+}

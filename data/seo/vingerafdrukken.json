@@ -1,10 +1,54 @@
 {
-  "_toelichting": "Inhoudsvingerafdruk per gegenereerde route. De hash is sha256 over de gerenderde pagina MET een plaatshouder op de datumplek; gewijzigd is de datum waarop die hash voor het laatst veranderde. Dit bestand hoort gecommit te worden: het is de reden dat dateModified niet aan de klok hangt. Niet met de hand bijwerken.",
-  "_schrijver": "scripts/seo/genereer.mjs via scripts/seo/lib/vingerafdruk.mjs",
-  "aantal": 397,
+  "_toelichting": "Inhoudsvingerafdruk per INDEX-route. Voor een GEGENEREERDE route is de hash sha256 over de gerenderde pagina MET een plaatshouder op de datumplek; voor een HANDGESCHREVEN wortelpagina is het sha256 over het bestand zelf, want daar staat geen datum in en is hashen dus niet circulair. gewijzigd is de datum waarop die hash voor het laatst veranderde. Dit bestand hoort gecommit te worden: het is de reden dat lastmod en dateModified niet aan de klok en niet aan de git-commitdatum hangen. Niet met de hand bijwerken.",
+  "_schrijvers": [
+    "scripts/seo/genereer.mjs — de gegenereerde routes",
+    "scripts/seo/herstel-bestaand.mjs — de handgeschreven wortelpaginas"
+  ],
+  "_samenvoegen": "Elke schrijver werkt uitsluitend zijn EIGEN routes bij en laat de rest staan. Een route die uit de site verdwijnt blijft daarom achter; dat is onschadelijk, want sitemap.mjs zoekt alleen INDEX-routes op.",
+  "aantal": 431,
   "routes": {
+    "": {
+      "hash": "dcc0feb9f6fe57a2",
+      "gewijzigd": "2026-10-28"
+    },
+    "algemene-voorwaarden": {
+      "hash": "9f1bdd66a277c6ee",
+      "gewijzigd": "2026-10-28"
+    },
+    "contact": {
+      "hash": "b98ecd6e4259e6a2",
+      "gewijzigd": "2026-10-28"
+    },
+    "cookiebeleid": {
+      "hash": "5bb38a071a78105e",
+      "gewijzigd": "2026-10-28"
+    },
     "energieadvies": {
       "hash": "0897caa772c612e0",
+      "gewijzigd": "2026-10-28"
+    },
+    "energy-hubs": {
+      "hash": "0d361d781ae1e9d1",
+      "gewijzigd": "2026-10-28"
+    },
+    "industrie-logistiek": {
+      "hash": "e71de8eadb3bd7ff",
+      "gewijzigd": "2026-10-28"
+    },
+    "industrie-recreatie": {
+      "hash": "176c707a2e90c96b",
+      "gewijzigd": "2026-10-28"
+    },
+    "industrie-residentieel": {
+      "hash": "cc331ebf80b0774e",
+      "gewijzigd": "2026-10-28"
+    },
+    "industrie-vastgoed": {
+      "hash": "924c96b174fea54b",
+      "gewijzigd": "2026-10-28"
+    },
+    "industrie-vve": {
+      "hash": "f05eccf87036920f",
       "gewijzigd": "2026-10-28"
     },
     "kennis": {
@@ -83,12 +127,92 @@
       "hash": "bd897412e1821f4f",
       "gewijzigd": "2026-10-28"
     },
+    "microgrids": {
+      "hash": "eac83bc6513a6f33",
+      "gewijzigd": "2026-10-28"
+    },
     "netcongestie": {
       "hash": "975b74a927441143",
       "gewijzigd": "2026-10-28"
     },
     "nieuws": {
       "hash": "a52cd0419bd0076b",
+      "gewijzigd": "2026-10-28"
+    },
+    "over-ons": {
+      "hash": "e8a5a799eb090542",
+      "gewijzigd": "2026-10-28"
+    },
+    "privacy": {
+      "hash": "4354ac86f2a2641c",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-arnhem-60": {
+      "hash": "6df503413578a872",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-bart-crumstraat": {
+      "hash": "6ff0d8c0f9545758",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-burchtstraat": {
+      "hash": "b72421d5d7fe9787",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-dormio-medemblik": {
+      "hash": "efce0e350c4610d7",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-formupgrade": {
+      "hash": "d75ce18f59871bbd",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-hazenweg-61": {
+      "hash": "d0220d8623c6c694",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-hedin-alkmaar": {
+      "hash": "c4a5204dc95b32c7",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-hedin-amsterdam": {
+      "hash": "cbee7ad90df846cb",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-ketsheuvel": {
+      "hash": "7aeddea388c0918b",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-kwakkenbergflat": {
+      "hash": "d26b64cb64189b96",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-nieuw-schoonoord": {
+      "hash": "a72b513270437e84",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-piersonstraat": {
+      "hash": "2a734d21a6170a13",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-purmerend": {
+      "hash": "b32be233bdfad5f6",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-ratio-16": {
+      "hash": "897682a96aa15241",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-schouwburgring": {
+      "hash": "f2d299292da43a70",
+      "gewijzigd": "2026-10-28"
+    },
+    "project-van-beethovenstraat": {
+      "hash": "43da531f0caa1752",
+      "gewijzigd": "2026-10-28"
+    },
+    "projecten": {
+      "hash": "a17ad0e2bd1b1283",
       "gewijzigd": "2026-10-28"
     },
     "regios": {
@@ -1543,6 +1667,18 @@
       "hash": "a765b045f56f8701",
       "gewijzigd": "2026-10-28"
     },
+    "systeem-energieopslag": {
+      "hash": "c7c0afafcd16b646",
+      "gewijzigd": "2026-10-28"
+    },
+    "systeem-laadpalen": {
+      "hash": "a03d153b34332a96",
+      "gewijzigd": "2026-10-28"
+    },
+    "systeem-zonnepanelen": {
+      "hash": "8e920525239cbef6",
+      "gewijzigd": "2026-10-28"
+    },
     "toepassingen": {
       "hash": "adcc04a9b14f24ce",
       "gewijzigd": "2026-10-28"
@@ -1589,6 +1725,10 @@
     },
     "verduurzaming-bedrijfspanden": {
       "hash": "a6bd715ff9484676",
+      "gewijzigd": "2026-10-28"
+    },
+    "vibe-control": {
+      "hash": "94c2e693932b2160",
       "gewijzigd": "2026-10-28"
     }
   }

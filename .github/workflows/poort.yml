@@ -120,6 +120,24 @@ jobs:
           fi
           echo "git status is leeg: de gecommitte uitvoer klopt met de generator."
 
+      - name: QA lastmod — is de wijzigingsdatum deterministisch?
+        # De stap hierboven ("De generator moet REPRODUCEERBAAR zijn")
+        # vergelijkt de gebouwde uitvoer met de GECOMMITTE uitvoer. Dat zegt
+        # alleen iets over de dag waarop hij draait: viel de vorige bouw op
+        # dezelfde datum, dan is hij groen zonder iets te hebben bewezen.
+        #
+        # Gemeten op b2de0c4 ging dat mis. 34 van de 431 sitemapregels haalden
+        # hun lastmod uit `git log -1 --format=%cs` van het bestand, en die
+        # commit was zelf een squash met een nieuwe datum die de sitemap erin
+        # niet kon bevatten. Deze poort stond daarmee ROOD op main zelf.
+        #
+        # Deze stap toetst de EIGENSCHAP en niet de dag: hij bouwt proefrepo's
+        # met een echte git-historie, doet daar een lege commit en een squash
+        # in, en eist dat de sitemap byte-identiek blijft. Plus de omgekeerde
+        # kant: een ECHTE inhoudswijziging moet de lastmod wel verschuiven, en
+        # alleen die van die ene pagina.
+        run: node scripts/seo/qa-lastmod.mjs
+
       - name: QA nieuwskanaal
         run: node scripts/seo/qa-nieuws.mjs
 
