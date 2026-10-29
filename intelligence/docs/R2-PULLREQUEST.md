@@ -1,12 +1,16 @@
 # Nieuws R2 — operationalisering van het nieuwskanaal
 
-**Branch** `feat/nieuws-r2-operationalisering` · **basis** `b2de0c4` · **kop** `de16e87`
-**6 commits · 26 bestanden (13 gewijzigd, 13 nieuw) · uitsluitend onder `intelligence/`**
+**Branch** `feat/nieuws-r2-operationalisering` · **basis** `b2de0c4`
+**13 gewijzigde en 15 nieuwe bestanden · uitsluitend onder `intelligence/`**
 
-> De telling stond hier eerst op *5 commits, 25 bestanden*. Dat was de stand
-> vóórdat dit document zelf werd gecommitteerd; het is het 26e bestand en de
-> zesde commit. De basis is nog steeds de kop van `main`, dus de branch is een
-> zuivere fast-forward: 6 vooruit, 0 achter.
+> **De kop-SHA staat hier bewust niet.** Dit document is zelf gecommitteerd,
+> dus elke correctie erin verschuift de SHA die het zou noemen — de eerste
+> versie noemde `7e94497` en was daarmee bij het openen van de PR al onjuist.
+> GitHub draagt de actuele kop boven de PR; dit document draagt de BASIS, en
+> die beweegt niet. Gemeten: de basis is nog steeds de kop van `main`, dus de
+> branch is een zuivere fast-forward — 0 achter.
+>
+> Om dezelfde reden noemt de pariteitstabel hieronder de basis en niet de kop.
 
 > GEEN MERGE. GEEN PRODUCTIEDEPLOYMENT. GEEN GEPUBLICEERD ARTIKEL.
 > `data/inhoud/nieuws/` bestaat na deze branch nog niet; er is nul
@@ -81,7 +85,7 @@ een bestand op schijf en een pull request — en had geen van die grendels.
 
 ## Pariteit — gemeten voor en na
 
-| Meting | b2de0c4 | de16e87 |
+| Meting | b2de0c4 (basis) | deze branch |
 |---|---|---|
 | INDEX-routes | 431 | **431** |
 | NOINDEX-stubs | 17 | **17** |
@@ -220,7 +224,7 @@ staat in **[`docs/R2-BRANCHEORGANISATIE.md`](R2-BRANCHEORGANISATIE.md)**.
 Deze branch is niet gemerged en niet gedeployed, dus er is niets terug te
 draaien. Voor het geval hij later wél wordt gemerged:
 
-- **Code:** `git revert de16e87 7e94497 3b4eb7a 70aa78e e92f7ff d6191b2` — alle zes
+- **Code:** `git revert` over alle commits van deze branch (`git log --oneline b2de0c4..HEAD`) — alle
   commits zijn additief op `intelligence/` en raken geen sitebestand.
 - **Database:** migratie 0041 is additief. De besluitcheck *verruimen*
   terugdraaien vraagt eerst `delete from intel.inhoud_kandidaten where besluit
