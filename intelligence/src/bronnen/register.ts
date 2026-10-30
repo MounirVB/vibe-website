@@ -373,7 +373,8 @@ export const BRONNEN: readonly Bron[] = [
         "robots.txt van www.acm.nl geeft HTTP 200 met 53 regels voor 'vibeenergyintelligence' of '*', " +
         "staat /nl/publicaties/* EXPLICIET toe en sluit geen enkele AI- of TDM-crawler uit " +
         "(volledig uitgesloten zijn: fasterfox, 008, mj12bot, proximic, youdaobot, baiduspider, " +
-        "cazoodlebot, jyxobot). Crawl-delay 10 seconden, geeerbiedigd via minIntervalSeconden. " +
+        "cazoodlebot, jyxobot). Crawl-delay 10 seconden; die staat hieronder EXPLICIET, want " +
+        "STANDAARD geeft 5 en dat is twee keer zo snel als de ACM vraagt. " +
         "De ACM is een Nederlands bestuursorgaan en haar besluiten zijn openbare documenten. " +
         "LET OP: bepaalToestemming() geeft hier grondslag 'syndicatieformaat', en dat draagt het " +
         "LEZEN van de feed — niet het oogsten van de besluittekst. Wat die stap draagt is de " +
@@ -382,6 +383,12 @@ export const BRONNEN: readonly Bron[] = [
       containers: ["main", "article"],
       minimumTekens: 400,
     },
+    /* GEMETEN, NIET AANGENOMEN. robots.txt van www.acm.nl zegt
+       'Crawl-delay: 10'. STANDAARD hierboven geeft 5, en dat gold ook al
+       voor de feed zelf — we vroegen dus twee keer zo snel als de ACM
+       vraagt. Met de volledige tekst erbij gaat het van 1 verzoek per
+       ronde naar 1 + 10, dus het telt nu echt. */
+    minIntervalSeconden: 10,
     verificatie: {
       status: "geverifieerd",
       bewijs:

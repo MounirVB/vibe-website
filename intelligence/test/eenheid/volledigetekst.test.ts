@@ -23,6 +23,7 @@ import {
   type VolledigeTekstBeleid,
 } from "../../src/bronnen/volledigetekst.ts";
 import { hostToegestaan, schemaEnDoelToegestaan } from "../../src/bronnen/http.ts";
+import { BRONNEN } from "../../src/bronnen/register.ts";
 
 const BELEID: VolledigeTekstBeleid = {
   grondslag: "toets",
@@ -373,5 +374,49 @@ describe("de beveiligingen op het volledige-tekstpad", () => {
     const { items, rapport } = await verrijkMetVolledigeTekst(bron, [item]);
     assert.equal(rapport.bekeken, 0, "geen enkele ophaling");
     assert.equal(items[0], item, "het item komt er ongewijzigd uit");
+  });
+});
+
+/* ============================================================
+   HET REGISTER — wat er per bron is afgesproken
+   ------------------------------------------------------------
+   Deze toetsen bewaken de twee afspraken die buiten de code om
+   stilletjes kunnen verschuiven: welke bronnen volledige tekst mogen,
+   en of we de snelheid aanhouden die de bron zelf vraagt.
+   ============================================================ */
+
+describe("het register en de volledige tekst", () => {
+  test("alleen de twee bronnen van bevoegd gezag mogen volledige tekst", () => {
+    const met = BRONNEN.filter((b) => b.volledigeTekst).map((b) => b.sleutel).sort();
+    assert.deepEqual(met, ["acm-besluiten", "rijksoverheid-nieuws"]);
+  });
+
+  test("elke bron met volledige tekst heeft een opgeschreven grondslag", () => {
+    for (const b of BRONNEN.filter((x) => x.volledigeTekst)) {
+      const g = b.volledigeTekst!.grondslag;
+      assert.ok(g.length > 100, `${b.sleutel}: een grondslag van ${g.length} tekens is geen afweging`);
+      assert.match(g, /gemeten/i, `${b.sleutel}: de grondslag hoort te zeggen wannneer hij is gemeten`);
+    }
+  });
+
+  test("acm-besluiten houdt de crawl-delay van 10 seconden aan", () => {
+    /* GEMETEN 2026-10-31: robots.txt van www.acm.nl zegt
+       'Crawl-delay: 10'. STANDAARD in het register geeft 5. Zonder deze
+       toets zet een latere opschoning de bron terug op de standaard en
+       vragen we weer twee keer zo snel als de ACM vraagt — zonder dat
+       iets rood wordt. */
+    const acm = BRONNEN.find((b) => b.sleutel === "acm-besluiten")!;
+    assert.ok(
+      acm.minIntervalSeconden >= 10,
+      `verwacht minstens 10 seconden, register geeft ${acm.minIntervalSeconden}`,
+    );
+  });
+
+  test("de bron zonder crawl-delay houdt de standaard", () => {
+    /* GEMETEN 2026-10-31: robots.txt van www.rijksoverheid.nl heeft geen
+       crawl-delay (null) en nul regels voor ons. Dan is de standaard
+       genoeg, en dat hoort zichtbaar te zijn — niet per ongeluk hoog. */
+    const rijk = BRONNEN.find((b) => b.sleutel === "rijksoverheid-nieuws")!;
+    assert.equal(rijk.minIntervalSeconden, 5);
   });
 });
