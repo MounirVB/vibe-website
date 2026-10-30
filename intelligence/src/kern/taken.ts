@@ -130,7 +130,12 @@ export const PLAN: readonly PlanRegel[] = [
 
      Hij staat op 24, dus NA clusteren (20) en VOOR beoordelen (30): de
      besluitmotor hoort met geclassificeerde documenten te werken. */
-  { soort: "documentclassificatie", prioriteit: 24, toelichting: "documentversies zonder of met een verouderde soort classificeren" },
+  /* NIEUW IN R3. Staat op 22, dus ná clusteren (20) en documentclassificatie
+     hieronder maar VOOR beoordelen (30) en nieuwsselectie (35). De orde is
+     de hele veiligheid: de claimpoort weigert die twee lagen zolang er
+     claims op herbeoordeling wachten, dus hij moet daarvoor klaar zijn. */
+  { soort: "documentclassificatie", prioriteit: 21, toelichting: "documentversies zonder of met een verouderde soort classificeren" },
+  { soort: "herbeoordeling", prioriteit: 22, toelichting: "historische claims wegen onder de huidige documentsoort- en modaliteitsregels" },
   { soort: "nieuwsselectie", prioriteit: 35, toelichting: "gebeurtenissen op nieuwswaarde wegen en NEWS_ITEM-kandidaten schrijven" },
   { soort: "regio", prioriteit: 40, toelichting: "gebieden binden en regiovoorstellen maken" },
   { soort: "signaleren", prioriteit: 50, toelichting: "commerciele signalen uit SALES_SIGNAL-kandidaten" },
@@ -378,10 +383,54 @@ export const REGISTER: Record<string, Handler> = {
     );
   },
 
+  /**
+   * R3 — DE CLAIMPOORT STAAT HIERVOOR.
+   *
+   * De besluitmotor weegt bewijs: `uitspraken_bevestigd > 0` is zijn
+   * enige bewijsvoorwaarde (motor.ts regel 233) en
+   * `besteBewijskwaliteit >= 4` zijn NEW_ARTICLE-poort (regel 268).
+   * Beide lezen kolommen die vóór de herbeoordeling de OUDE waarde
+   * dragen, waarin de bewijskracht van de uitgever kwam. Draaien op een
+   * gemengde populatie zou een lobbyclaim als bewijs laten tellen.
+   */
   async beoordelen(pool, organisatieId) {
     const { neemBesluiten } = await import("../besluit/motor.ts");
+    const { eisHerbeoordeling } = await import("../pijplijn/claimpoort.ts");
+    const { metOrganisatie } = await import("./db.ts");
+    await metOrganisatie(pool, { organisatieId }, (c) =>
+      eisHerbeoordeling(c, organisatieId, "de besluitmotor"),
+    );
     const r = await neemBesluiten(pool, organisatieId, {});
     return `beoordeeld ${r.beoordeeld}, kandidaten ${r.kandidatenGeschreven}`;
+  },
+
+  /**
+   * NIEUW IN R3 — de historische claims herbeoordelen.
+   *
+   * SCHRIJFT ALLEEN OP intel.uitspraken, en legt elke wijziging vast in
+   * het append-only auditlogboek. Hij raakt geen koppeling, geen
+   * gebeurtenis, geen kandidaat en geen concept aan.
+   *
+   * STAAT OP PRIORITEIT 22: ná de documentclassificatie (24 zou te laat
+   * zijn — hij heeft de documentsoort nodig) maar vóór beoordelen (30)
+   * en nieuwsselectie (35), de twee lagen die de claimpoort passeren.
+   * Zo is de populatie al schoon voordat er iets besloten wordt.
+   */
+  async herbeoordeling(pool, organisatieId) {
+    const { herbeoordeelClaims } = await import("../pijplijn/herbeoordeling.ts");
+    const { metOrganisatie } = await import("./db.ts");
+    const r = await metOrganisatie(pool, { organisatieId }, (c) =>
+      herbeoordeelClaims(c, organisatieId, {}),
+    );
+    return (
+      `bekeken ${r.bekeken}, herbeoordeeld ${r.herbeoordeeld}, ` +
+      `bevestiging behouden ${r.bevestigingBehouden}, ingetrokken ${r.bevestigingIngetrokken}, ` +
+      `bewijskracht verlaagd ${r.bewijskrachtVerlaagd}` +
+      (r.menselijkOvergeslagen > 0 ? `, menselijk oordeel overgeslagen ${r.menselijkOvergeslagen}` : "") +
+      (r.getroffenGebeurtenissen.length > 0
+        ? ` — ${r.getroffenGebeurtenissen.length} gebeurtenis(sen) geraakt`
+        : "")
+    );
   },
 
   /**
@@ -430,7 +479,7 @@ export const REGISTER: Record<string, Handler> = {
     return (
       `motor ${DOCUMENTSOORT_VERSIE} — bekeken ${r.bekeken}, geclassificeerd ${r.geclassificeerd}` +
       (top ? ` — ${top}` : "") +
-      ` — bronverificatie: ${v.teruggevonden} teruggevonden, ` +
+      ` — bronverificatie: ${v.teruggevonden} teruggevonden, ${v.ambigu} ambigu, ` +
       `${v.nietTeruggevonden} niet teruggevonden, ${v.nietVanToepassing} n.v.t.`
     );
   },
@@ -469,6 +518,16 @@ export const REGISTER: Record<string, Handler> = {
     const { nieuwsselectieronde } = await import("../pijplijn/nieuwsselectie.ts");
     const { configLezen } = await import("./config.ts");
     const { IntelFout } = await import("./fouten.ts");
+
+    const { eisHerbeoordeling } = await import("../pijplijn/claimpoort.ts");
+    const { metOrganisatie } = await import("./db.ts");
+    /* R3 — dezelfde grendel als bij de besluitmotor, en om dezelfde
+       reden: deze laag telt bevestigde uitspraken en leest de beste
+       bewijskwaliteit. Op een gemengde populatie zijn die twee getallen
+       geen bewijs maar een restant van de oude regel. */
+    await metOrganisatie(pool, { organisatieId }, (c) =>
+      eisHerbeoordeling(c, organisatieId, "de nieuwsselectie"),
+    );
 
     const config = configLezen();
     const ctx = await leesNieuwsContext(config.siteWortel);
@@ -545,6 +604,15 @@ export const REGISTER: Record<string, Handler> = {
     const { voorstelronde } = await import("../inhoud/voorstel.ts");
     const { APP_WORTEL } = await import("./config.ts");
     const { IntelFout } = await import("./fouten.ts");
+
+    /* R3 — de voorstellenlaag leest verificatie_status als bewijssignaal
+       (voorstel.ts regel 526: 'alle bevestigd' geeft PASS op controle 1),
+       dus ook hier geldt de claimpoort. */
+    const { eisHerbeoordeling } = await import("../pijplijn/claimpoort.ts");
+    const { metOrganisatie: metOrg } = await import("./db.ts");
+    await metOrg(pool, { organisatieId }, (c) =>
+      eisHerbeoordeling(c, organisatieId, "de voorstellenlaag"),
+    );
 
     const uitslag = await leesSitekennis(APP_WORTEL);
     if (!uitslag.ok) {

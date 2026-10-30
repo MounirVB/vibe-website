@@ -53,7 +53,8 @@
     "browser": "node --test --test-concurrency=1 \"test/browser/*.browser.test.ts\"",
     "meldmail": "node src/cli/meldmail.ts",
     "weekrapport": "node src/cli/weekrapport.ts",
-    "documentsoort": "node src/cli/documentsoort.ts"
+    "documentsoort": "node src/cli/documentsoort.ts",
+    "herbeoordeel": "node src/cli/herbeoordeel.ts"
   },
   "dependencies": {
     "express": "^4.21.2",
