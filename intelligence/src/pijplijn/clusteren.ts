@@ -314,6 +314,12 @@ async function verwerkVersie(
     betrouwbaarheid: v.betrouwbaarheid,
     documentsoort: soortUitslag.soort,
     gezag: soortUitslag.gezag,
+    /* De publicatiedatum van het document als peildatum voor de
+       modaliteit. `gepubliceerd_op` is een onveranderlijk feit over het
+       document, dus het modaliteitsoordeel blijft reproduceerbaar. */
+    peildatum: v.gepubliceerd_op === null
+      ? undefined
+      : v.gepubliceerd_op.toISOString().slice(0, 10),
   });
 
   // Bronnen tellen, tegenspraak zoeken en materialiteit herberekenen.

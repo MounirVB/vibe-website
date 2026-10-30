@@ -293,8 +293,17 @@ const ANDER_GEZAG: readonly { readonly naam: string; readonly patroon: RegExp }[
   { naam: "TenneT", patroon: /\btennet\b/iu },
 ];
 
-/** Vormt deze uitgever zelf het genoemde gezag? Dan is het geen navertelling. */
-const EIGEN_GEZAG_NAMEN: Readonly<Record<string, readonly string[]>> = {
+/**
+ * Vormt deze uitgever zelf het genoemde gezag? Dan is het geen navertelling.
+ *
+ * GEEXPORTEERD omdat `bronverificatie.ts` de OMGEKEERDE kaart nodig
+ * heeft — welke bronsleutels vormen gezag X — en die daaruit AFLEIDT.
+ * Een tweede, met de hand bijgehouden kaart liep uiteen: een audit vond
+ * dat `koop-gemeenteblad-vergunningen` hier onder 'de minister' staat
+ * maar in die kaart ontbrak, juist de bron met de regionale
+ * bekendmakingen. Eén kaart, twee leesrichtingen.
+ */
+export const EIGEN_GEZAG_NAMEN: Readonly<Record<string, readonly string[]>> = {
   "acm-besluiten": ["ACM"],
   "rijksoverheid-nieuws": ["de minister", "het kabinet", "de Tweede Kamer"],
   "rvo-opendata-artikelen": ["RVO"],

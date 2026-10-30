@@ -151,16 +151,95 @@ const VASTGESTELD: readonly Signaal[] = [
   {
     naam: "feitelijke-telling",
     patroon:
-      /\b(waren\s+er|stonden\s+(?:er\s+)?\d|bedroeg|is\s+toegenomen|is\s+gedaald|zijn\s+\d+\s+\w+\s+(toegekend|afgewezen|ontvangen)|kunnen\s+van\s+\d{1,2}\s+\w+)\b/iu,
+      /\b(waren\s+er|stonden\s+(?:er\s+)?\d|bedroeg(en)?|is\s+toegenomen|is\s+gedaald|zijn\s+\d+\s+\w+\s+(toegekend|afgewezen|ontvangen)|kunnen\s+van\s+\d{1,2}\s+\w+)\b/iu,
     reden: "de zin rapporteert een gemeten of geregistreerde stand",
   },
+  /**
+   * Verslag in de verleden tijd over een AFGESLOTEN periode.
+   *
+   * GEMETEN GAT, gevonden bij de acceptatie van R3 op de 59
+   * productieclaims. Deze vier rijen van RVO — bevoegd gezag,
+   * FEITELIJKE_MEDEDELING, bevestigd en met bewijskracht 4 — kwamen uit
+   * op modaliteit VASTGESTELD met zekerheid 0,20 en droegen dus niet:
+   *
+   *   'Bedrijven maakten in 2025 voor ruim EUR 3 miljard aan
+   *    milieu-investeringen gebruik van het belastingvoordeel van de
+   *    Milieu-investeringsaftrek (MIA) en de Vamil.'
+   *
+   * Dat is een gemeten uitkomst over een afgesloten jaar, gepubliceerd
+   * door de instantie die de regeling uitvoert. Er stond geen enkel
+   * vaststellingssignaal in: 'maakten gebruik van' zat in geen patroon,
+   * en 'ruim' trok er als afronding nog 0,15 af. Een eerlijk feit bleef
+   * daardoor onder de drempel liggen, en dat kost een redacteur een
+   * bruikbare kandidaat.
+   *
+   * DE REGEL IS EEN AFGESLOTEN PERIODE, NIET EEN WERKWOORDENLIJST. Een
+   * zin die een jaartal noemt dat al voorbij is, samen met een
+   * getalsvorm, rapporteert een stand. 'Tot 2040 investeren de
+   * netbeheerders meer dan EUR 200 miljard' noemt juist een TOEKOMSTIG
+   * jaartal en valt hier dus niet onder — dat is precies het verschil
+   * dat deze toets moet maken.
+   *
+   * De verledentijdvormen staan erbij voor zinnen zonder jaartal
+   * ('vorig jaar', 'afgelopen kwartaal'). Ze zijn bewust kort: een lange
+   * werkwoordenlijst wordt een onderhoudslast en nooit volledig.
+   */
+  {
+    naam: "verslag-verleden-tijd",
+    patroon:
+      /\b(vorig\s+jaar|afgelopen\s+(jaar|kwartaal|maand)|eind\s+20\d\d)\b[^.]{0,80}\d|\b(maakt?en|kwamen|lagen?|steeg|stegen|daalde[n]?|groeide[n]?|nam(en)?\s+(toe|af)|werden\s+\w+(d|t|en))\b[^.]{0,60}\d/iu,
+    reden: "de zin brengt verslag uit over een afgesloten periode",
+  },
 ];
+
+/**
+ * Een jaartal dat al voorbij is, samen met een getal.
+ *
+ * Apart van de patronen hierboven omdat hij de HUIDIGE DATUM nodig
+ * heeft: 'in 2025' is een verslag, 'in 2027' een vooruitzicht, en het
+ * verschil hangt af van wanneer je kijkt. Zie de toelichting bij
+ * `verslag-verleden-tijd`.
+ */
+function noemtAfgeslotenJaar(tekst: string, peildatum: string | undefined): boolean {
+  if (peildatum === undefined) return false;
+  const huidigJaar = Number(peildatum.slice(0, 4));
+  if (!Number.isFinite(huidigJaar) || huidigJaar < 2000) return false;
+  for (const m of tekst.matchAll(/\b(20\d\d)\b/gu)) {
+    const jaar = Number(m[1]);
+    /* STRIKT KLEINER. Het lopende jaar is niet afgesloten: 'in 2026
+       stijgen de tarieven' kan nog een vooruitzicht zijn. */
+    if (jaar < huidigJaar && /\d/u.test(tekst)) return true;
+  }
+  return false;
+}
 
 export type ModaliteitInvoer = {
   /** De claimtekst; in dit platform is dat de zin waaruit hij komt. */
   readonly tekst: string;
   /** De documentsoort, als aanvullend signaal. Nooit beslissend. */
   readonly documentsoort?: string;
+  /**
+   * ISO-datum waartegen een jaartal 'afgesloten' of 'toekomstig' is:
+   * de PUBLICATIEDATUM VAN HET BRONDOCUMENT, niet vandaag.
+   *
+   * WAAROM NIET DE KLOK. Een modaliteit die van `new Date()` afhangt
+   * geeft dezelfde claim morgen een ander oordeel — precies de
+   * onreproduceerbaarheid die Release 1 uit de SEO-laag heeft gehaald
+   * (zie scripts/seo/lib/vingerafdruk.mjs). En het is ook inhoudelijk
+   * verkeerd: of een zin over 2026 vooruitkijkt of terugkijkt, hangt af
+   * van wanneer de SCHRIJVER hem opschreef, niet van wanneer wij hem
+   * lezen. Een RVO-bericht van oktober 2026 dat 'in 2025' zegt,
+   * rapporteert een afgesloten jaar — en dat blijft over tien jaar waar.
+   *
+   * De brondatum is een onveranderlijk feit over het document
+   * (`brondocumenten.gepubliceerd_op`, met `opgehaald_op` als terugval),
+   * dus het oordeel is volledig reproduceerbaar.
+   *
+   * Ontbreekt hij, dan vuurt het jaartalsignaal niet. Dat is de veilige
+   * kant: zonder peildatum is 'in 2025' niet te wegen, en een claim die
+   * niet te wegen is hoort geen feit te worden.
+   */
+  readonly peildatum?: string;
 };
 
 export type ModaliteitUitslag = {
@@ -209,6 +288,14 @@ export function bepaalModaliteit(inv: ModaliteitInvoer): ModaliteitUitslag {
   const voorstel = treffers(VOORSTEL, t);
   const verwachting = treffers(VERWACHTING, t);
   const vastgesteld = treffers(VASTGESTELD, t);
+  const afgeslotenJaar = noemtAfgeslotenJaar(t, inv.peildatum);
+  if (afgeslotenJaar) {
+    vastgesteld.push({
+      naam: "afgesloten-jaar",
+      reden: "de zin noemt een jaartal dat al voorbij is, samen met een getal",
+      fragment: (/\b20\d\d\b/u.exec(t) ?? [""])[0],
+    });
+  }
   const benaderingTreffer = BENADERING.exec(t);
   const benaderd = benaderingTreffer !== null;
   const signalen: string[] = [];

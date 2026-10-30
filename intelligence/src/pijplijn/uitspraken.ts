@@ -357,6 +357,14 @@ export async function schrijfUitspraken(
      */
     documentsoort: Documentsoort;
     gezag: Gezag;
+    /**
+     * De publicatiedatum van het brondocument (ISO), als peildatum voor
+     * de modaliteit. Zie de toelichting bij ModaliteitInvoer.peildatum:
+     * of een zin over een jaartal terugkijkt of vooruitkijkt, hangt af
+     * van wanneer de schrijver hem opschreef — niet van onze klok.
+     * Ontbreekt hij, dan vuurt het jaartalsignaal niet.
+     */
+    peildatum?: string | undefined;
   },
 ): Promise<UitspraakSchrijfRapport> {
   const ruwe = extraheerUitspraken(invoer.titel, invoer.tekst);
@@ -442,6 +450,7 @@ export async function schrijfUitspraken(
     const mod = bepaalModaliteit({
       tekst: u.tekst,
       documentsoort: invoer.documentsoort,
+      ...(invoer.peildatum === undefined ? {} : { peildatum: invoer.peildatum }),
     });
 
     const nieuw = await eenRij<{ id: number }>(
