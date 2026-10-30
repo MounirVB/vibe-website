@@ -34,7 +34,17 @@ import { maakLogger } from "../kern/log.ts";
 import { sha256hex } from "../kern/tekst.ts";
 import { bronOpSleutel } from "../bronnen/register.ts";
 import { NIET_DRAGENDE_DOCUMENTSOORTEN } from "../pijplijn/documentsoort.ts";
-import { claimDraagt, waaromNietDragend } from "../pijplijn/claimpoort.ts";
+import {
+  bewijsDraagt,
+  claimDraagt,
+  legBewijsblokkadeVast,
+  toetsGebondenBewijs,
+  waaromNietDragend,
+} from "../pijplijn/claimpoort.ts";
+/* GEEN KRINGVERWIJZING. inhoud/concept.ts importeert dit bestand niet;
+   de pijl loopt één kant op (publiceer -> concept). Nagegaan met grep
+   op 'publiceer.ts' in concept.ts: nul treffers. */
+import { inhoudAfdruk } from "./concept.ts";
 import {
   heeftRouteregister,
   leesRouteregister,
@@ -265,6 +275,21 @@ export function sitemapZonderPad(
   return { xml: nieuw, gewijzigd: nieuw !== sitemapXml };
 }
 
+/**
+ * De uitslag van een goedkeuringspoging.
+ *
+ * Een discriminated union en geen boolean met een losse reden: zo kan
+ * de typecontrole een aanroeper die `goedgekeurd` niet leest er niet
+ * langs laten met een plausibel ogende regel.
+ */
+export type GoedkeurUitslag =
+  | { readonly goedgekeurd: true }
+  | {
+      readonly goedgekeurd: false;
+      readonly reden: string;
+      readonly blokkades: readonly string[];
+    };
+
 export type PublicatieRapport = {
   readonly inhoudVersieId: number;
   readonly bestandspad: string;
@@ -351,6 +376,23 @@ export async function publiceer(
         v.id,
         `pagina ${v.pad} staat op handmatig beheer; dit platform schrijft dat bestand niet`,
       );
+    }
+
+    /* DE CLAIMS, NU OPNIEUW GELEZEN — niet de boolean hierboven.
+       `v.poorten_geslaagd` is bij de conceptbouw of bij een hertoets
+       geschreven. Tussen dat moment en deze publicatie zit de
+       goedkeuring, en dus menselijke tijd. Een herbeoordelingsronde die
+       daarna een bevestiging intrekt, maakt de boolean onwaar zonder
+       hem te veranderen.
+
+       Dit is de LAATSTE poort voor een bestand op schijf of een record
+       in het routeregister, en dus de plek waar de vraag niet uit een
+       kolom mag komen maar uit de rijen zelf. Zie de sectiekop in
+       pijplijn/claimpoort.ts voor het slot en de race. */
+    const bewijs = await toetsGebondenBewijs(c, organisatieId, v.id);
+    if (!bewijsDraagt(bewijs)) {
+      await legBewijsblokkadeVast(c, organisatieId, bewijs, "publicatie");
+      return weiger(v.id, `het bewijs draagt niet meer: ${bewijs.blokkades.join(" | ")}`);
     }
 
     // Zodra het routeregister van Release 1 bestaat, GENEREERT die
@@ -1109,13 +1151,27 @@ export async function draaiTerug(
  * WAT DIT NIET VERANDERT. De append-only regel in
  * intel.publicatiebesluiten stond er al en blijft; dit voegt de
  * bevoegdheidstoets en de echte vier-ogentoets ervoor toe.
+ *
+ * 3 EN TOEN TOETSTE HIJ GEEN ENKEL UITSPRAAKVELD. Toegevoegd na de
+ *   acceptatieaudit: deze functie wist alles over de GOEDKEURDER en
+ *   niets over het BEWIJS. Ze keek niet of de claims onder het concept
+ *   nog droegen, en niet of de afdruk waaraan ze bond bij de
+ *   opgeslagen tekst hoorde. Beide worden nu nagerekend, met een slot
+ *   op de uitspraakrijen tegen de race met een herbeoordeling.
+ *
+ * DAAROM GEEFT HIJ NU EEN UITSLAG TERUG IN PLAATS VAN VOID. Een
+ * onbevoegde goedkeurder is een uitzondering en blijft een exceptie.
+ * Bewijs dat niet meer draagt is een NORMALE uitkomst van het
+ * redactionele proces, en bovendien een die auditeerbaar moet worden
+ * vastgelegd — en dat kan niet met een exceptie, want die rolt de
+ * auditregel mee terug. De aanroeper moet de uitslag dus lezen.
  */
 export async function keurGoed(
   c: pg.PoolClient,
   inhoudVersieId: number,
   gebruikerId: number,
   motivatie: string,
-): Promise<void> {
+): Promise<GoedkeurUitslag> {
   const v = await eenRij<{
     inhoud_afdruk: string | null;
     organisatie_id: number;
@@ -1123,10 +1179,15 @@ export async function keurGoed(
     aangemaakt_door: number | null;
     bewerkt_door: number | null;
     status: string;
+    titel: string;
+    direct_antwoord: string | null;
+    body_markdown: string;
+    structured_data: unknown;
   }>(
     c,
     `select inhoud_afdruk, organisatie_id, risico_klasse,
-            aangemaakt_door, bewerkt_door, status
+            aangemaakt_door, bewerkt_door, status,
+            titel, direct_antwoord, body_markdown, structured_data
        from intel.inhoud_versies where id = $1`,
     [inhoudVersieId],
   );
@@ -1191,6 +1252,50 @@ export async function keurGoed(
     );
   }
 
+  /* ---- DE AFDRUK MOET BIJ DE TEKST HOREN ----
+     Een goedkeuring bindt aan `inhoud_afdruk`, en publiceer() vergelijkt
+     die later met `goedgekeurde_afdruk`. Die hele keten is waardeloos
+     als de afdruk zelf niet bij de opgeslagen tekst past: dan bindt de
+     goedkeuring aan een hash van iets anders. De hertoets herberekent
+     hem bij elke bewerking, maar een rechtstreekse databasewijziging
+     doet dat niet. Daarom hier narekenen in plaats van aannemen. */
+  const nu = inhoudAfdruk({
+    titel: v.titel,
+    directAntwoord: v.direct_antwoord ?? "",
+    bodyMarkdown: v.body_markdown,
+    structuredData: v.structured_data,
+  });
+  if (v.inhoud_afdruk !== nu) {
+    throw new IntelFout(
+      "validatie",
+      `de opgeslagen inhoudsafdruk (${v.inhoud_afdruk?.slice(0, 16) ?? "GEEN"}) hoort niet bij ` +
+        `de huidige tekst (${nu.slice(0, 16)}); hertoets deze versie voordat je hem goedkeurt`,
+    );
+  }
+
+  /* ---- EN HET BEWIJS MOET NU NOG DRAGEN ----
+     De kern van deze correctie. Zie de sectiekop in
+     pijplijn/claimpoort.ts: tussen de conceptbouw en dit moment zit
+     menselijke tijd, en in dat venster kan een bevestiging zijn
+     ingetrokken, een plafond zijn verlaagd of een bronbinding zijn
+     veranderd. De toets neemt een gedeeld slot op de uitspraakrijen, en
+     deze functie draait binnen de transactie van metOrganisatie(), dus
+     het slot valt samen met de statuswijziging eronder.
+
+     GEEN EXCEPTIE MAAR EEN UITSLAG, zodat de auditregel de commit
+     haalt. Een `throw` zou hem meeslepen in de rollback. */
+  const bewijs = await toetsGebondenBewijs(c, v.organisatie_id, inhoudVersieId);
+  if (!bewijsDraagt(bewijs)) {
+    await legBewijsblokkadeVast(c, v.organisatie_id, bewijs, "goedkeuring");
+    return {
+      goedgekeurd: false,
+      reden:
+        `de goedkeuring is geblokkeerd: het bewijs onder dit concept draagt niet meer ` +
+        `(${bewijs.blokkades.length} reden(en))`,
+      blokkades: bewijs.blokkades,
+    };
+  }
+
   await c.query(
     `update intel.inhoud_versies
         set status              = 'goedgekeurd',
@@ -1202,8 +1307,35 @@ export async function keurGoed(
   );
   await c.query(
     `insert into intel.publicatiebesluiten
-       (organisatie_id, inhoud_versie_id, besluit, door_gebruiker_id, actor_soort, motivatie)
-     values ($1, $2, 'goedgekeurd', $3, 'mens', $4)`,
-    [v.organisatie_id, inhoudVersieId, gebruikerId, motivatie],
+       (organisatie_id, inhoud_versie_id, besluit, door_gebruiker_id, actor_soort, motivatie,
+        poortresultaten)
+     values ($1, $2, 'goedgekeurd', $3, 'mens', $4, $5)`,
+    [
+      v.organisatie_id,
+      inhoudVersieId,
+      gebruikerId,
+      motivatie,
+      /* WAAROP IS GOEDGEKEURD, niet alleen DAT er is goedgekeurd. De
+         claimtoestand van dit moment hoort bij het besluit: zonder die
+         vastlegging is later niet na te gaan welk bewijs de goedkeuring
+         droeg. De tabel is append-only, dus dit is onwisbaar. */
+      JSON.stringify({
+        motorversies: bewijs.motorversies,
+        dragendeKern: bewijs.dragendeKern,
+        claims: bewijs.claims.map((k) => ({
+          uitspraakId: k.uitspraakId,
+          rol: k.rol,
+          verificatieStatus: k.verificatieStatus,
+          modaliteit: k.modaliteit,
+          modaliteitZekerheid: k.modaliteitZekerheid,
+          documentsoort: k.documentsoort,
+          bewijsKwaliteit: k.bewijsKwaliteit,
+          bewijskrachtPlafond: k.bewijskrachtPlafond,
+          primaireVersieId: k.primaireVersieId,
+          draagt: k.draagt,
+        })),
+      }),
+    ],
   );
+  return { goedgekeurd: true };
 }

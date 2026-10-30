@@ -50,6 +50,10 @@ describe("publiceren via het routeregister", () => {
   let siteWortel = "";
   let versieId = 0;
   let publicatieId = 0;
+  /* De bronversie en de claim van de hoofdfixture, zodat een tweede
+     inhoudsversie in dezelfde suite hetzelfde bewijs kan binden. */
+  let versieIdBron = 0;
+  let uitspraakIdBron = 0;
 
   before(async () => {
     db = await maakWegwerpdatabase("publiceer");
@@ -170,16 +174,24 @@ describe("publiceren via het routeregister", () => {
         `insert into intel.inhoud_versies
            (organisatie_id, kandidaat_id, pad, versie, soort, titel, meta_omschrijving,
             canonieke_url, direct_antwoord, body_markdown, status, risico_klasse,
-            auteur_soort, poorten_geslaagd, inhoud_afdruk, aangemaakt_door)
+            auteur_soort, poorten_geslaagd, inhoud_afdruk, aangemaakt_door, invoer_versies)
          values ($1,$2,'/nieuws/acm-nettarieven-2027',1,'nieuw_artikel',
                  'ACM stelt de nettarieven voor 2027 vast | Vibe Energy',
                  'De ACM heeft de nettarieven voor 2027 vastgesteld. Wat dat betekent voor een zakelijke aansluiting.',
                  'https://www.vibeenergy.nl/nieuws/acm-nettarieven-2027',
                  'De ACM heeft de nettarieven voor 2027 vastgesteld.',
                  'Dit is de lead van het bericht.\n\n## Wat er is besloten\n\nDe tarieven zijn vastgesteld.\n',
-                 'ter_review','laag','ai',true,'afdruk-1',$3)
+                 'ter_review','laag','ai',true,'afdruk-1',$3,array[$4::bigint])
          returning id`,
-        [org, kandidaat.rows[0]!.id, auteur],
+        /* INVOER_VERSIES HOORT ERBIJ, en dat was geen detail.
+           De claimpoort toetst sinds de acceptatiecorrectie of de
+           primaire bronversie van elke gebonden claim ook in de
+           vastgelegde invoer van het concept staat: anders is de
+           koppeling tussen concept, claim en bron gewijzigd en is de
+           bronnenlijst onder het artikel niet meer de lijst waaruit het
+           bewijs komt. bouwConcept() vult deze kolom altijd; deze
+           fixture deed dat niet en was dus geen getrouwe nabootsing. */
+        [org, kandidaat.rows[0]!.id, auteur, versie.rows[0]!.id],
       );
       versieId = iv.rows[0]!.id;
 
@@ -189,6 +201,8 @@ describe("publiceren via het routeregister", () => {
          values ($1,$2,$3,'kern')`,
         [org, versieId, uitspraak.rows[0]!.id],
       );
+      versieIdBron = versie.rows[0]!.id;
+      uitspraakIdBron = uitspraak.rows[0]!.id;
     });
   });
 
@@ -324,16 +338,33 @@ describe("publiceren via het routeregister", () => {
         `insert into intel.inhoud_versies
            (organisatie_id, pad, versie, soort, titel, meta_omschrijving, canonieke_url,
             body_markdown, status, risico_klasse, auteur_soort, poorten_geslaagd,
-            inhoud_afdruk, goedgekeurde_afdruk, goedgekeurd_door, goedgekeurd_op, aangemaakt_door)
+            inhoud_afdruk, goedgekeurde_afdruk, goedgekeurd_door, goedgekeurd_op, aangemaakt_door,
+            invoer_versies)
          values ($1,'/kennis/netcongestie-uitgelegd',1,'pagina_update','Patch | Vibe',
                  'Een patchvoorstel voor een bestaande pagina van Release 1.',
                  'https://www.vibeenergy.nl/kennis/netcongestie-uitgelegd',
                  'Lead.\n\n## Kop\n\nTekst.\n','goedgekeurd','laag','ai',true,
-                 'afdruk-2','afdruk-2',$2, now(), $3)
+                 'afdruk-2','afdruk-2',$2, now(), $3, array[$4::bigint])
          returning id`,
-        [org, goedkeurder, auteur],
+        [org, goedkeurder, auteur, versieIdBron],
       );
       tweede = iv.rows[0]!.id;
+      /* DEZE VERSIE KRIJGT OOK EEN DRAGENDE CLAIM, en dat is nodig om
+         te blijven toetsen waar deze zaak over gaat. De claimpoort
+         staat vóór publiceerViaRegister(), dus zonder gebonden bewijs
+         zou de weigering nu 'geen enkele uitspraak gebonden' luiden in
+         plaats van 'buiten data/inhoud/nieuws'. Dan zou de toets groen
+         blijven zonder nog iets te zeggen over het PAD -- precies het
+         soort toets dat niets meer bewijst.
+         De claim is dezelfde als hierboven: de bindingstabel is
+         gesleuteld op (inhoud_versie_id, uitspraak_id), dus twee
+         versies mogen hetzelfde bewijs delen. */
+      await c.query(
+        `insert into intel.inhoud_uitspraken
+           (organisatie_id, inhoud_versie_id, uitspraak_id, rol)
+         values ($1,$2,$3,'kern')`,
+        [org, tweede, uitspraakIdBron],
+      );
     });
 
     const { publiceer } = await import("../../src/inhoud/publiceer.ts");

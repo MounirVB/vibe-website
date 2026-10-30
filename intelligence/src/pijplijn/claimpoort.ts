@@ -73,9 +73,9 @@ const log = maakLogger("claimpoort");
  * $1 = organisatie_id, $2 = MODALITEIT_VERSIE, $3 = DOCUMENTSOORT_VERSIE
  */
 export const WACHT_OP_HERBEOORDELING_SQL = `
-  select count(*)::int as n
+  select count(distinct u.id)::int as n
     from intel.uitspraken u
-    join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id
+    join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id and ub.rol = 'primair'
     join intel.brondocument_versies bv on bv.id = ub.versie_id
    where u.organisatie_id = $1
      and coalesce(u.oordeel_bron, 'motor') <> 'mens'
@@ -83,6 +83,47 @@ export const WACHT_OP_HERBEOORDELING_SQL = `
        u.modaliteit_versie is distinct from $2
        or bv.documentsoort_versie is distinct from $3
      )`;
+
+/* WAAROM `ub.rol = 'primair'` EN `count(distinct u.id)` — een latent
+   defect, gevonden bij de acceptatie van de tweede poort en nog NIET
+   zichtbaar in productie.
+
+   `intel.uitspraak_bronnen.rol` is ('primair', 'bevestigend',
+   'tegensprekend'). De eerste versie van deze join noemde de rol niet.
+   Drie gevolgen, alle drie echt:
+
+     1 EEN CLAIM MET TWEE BINDINGEN WERD DUBBEL GETELD. Deze query gaf
+       dan 2 voor één claim. Voor de boolean 'staat de poort dicht'
+       maakt dat niets uit, maar het GETAL in de foutregel en in het
+       rapport van de herverwerker was fout.
+
+     2 DE HERVERWERKER WOOG ZO'N CLAIM TWEE KEER IN ÉÉN RONDE, met
+       mogelijk twee verschillende documentsoorten, en de laatste rij
+       won willekeurig. Dezelfde ongenoemde rol stond daar in de
+       selectie.
+
+     3 EEN TEGENSPREKEND DOCUMENT KON DE SOORT LEVEREN. De administratie
+       dat document X de claim WEERSPREEKT werd dan de grond waarop de
+       claim bewijskracht kreeg. Dat is de omgekeerde betekenis.
+
+   De schrijfkant deed het al goed: `schrijfUitspraken()` leidt de
+   documentsoort af van de PRIMAIRE versie. De leeskant deed het niet,
+   en twee formuleringen van dezelfde vraag lopen uiteen — precies de
+   klasse fout die deze constante moest voorkomen.
+
+   GEMETEN IN PRODUCTIE op 30 oktober 2026: 59 claims, alle met exact
+   één binding, alle met rol 'primair'. Nul claims zonder primaire
+   binding. Het defect was dus latent en de gemeten 46/5-uitslag is er
+   niet door geraakt. Het is wél bereikbaar: de bronverificatie en de
+   clusterlaag kunnen een tweede binding toevoegen.
+
+   EN EEN CLAIM ZONDER PRIMAIRE BINDING VALT HIER WEG — bewust. Die kan
+   namelijk niet 'bevestigd' zijn: de constraint trigger
+   `uitspraken_bewijsplicht` (migratie 0003 regel 292-317) weigert dat
+   in de database. Hij draagt dus niets, en hem hier meetellen zou de
+   poort permanent dicht zetten op een claim die nooit een soort kan
+   krijgen. De tweede poort hieronder blokkeert hem alsnog expliciet
+   wanneer hij aan een concept hangt. */
 
 /* WAAROM `herbeoordeeld_op` HIER NIET IN STAAT — gevonden door de eigen
    tests, en het was een echte fout.
@@ -217,4 +258,376 @@ export function waaromNietDragend(claim: {
     `de modaliteit is vastgesteld maar met zekerheid ` +
     `${(claim.modaliteitZekerheid ?? 0).toFixed(2)}, onder de drempel ${NOODZAKELIJKE_ZEKERHEID}`
   );
+}
+
+/* ============================================================
+   DE TWEEDE POORT — goedkeuring en publicatie wegen de ACTUELE claim
+   ------------------------------------------------------------
+   WAAROM ER EEN TWEEDE POORT NODIG IS, en waarom de eerste niet
+   volstond. Dit is een zelfcorrectie: ik heb in het acceptatierapport
+   geschreven dat `eisHerbeoordeling()` de keten dekt. Dat was te ruim
+   gesteld, en de audit had gelijk.
+
+   `eisHerbeoordeling()` staat vóór de besluitmotor, de nieuwsselectie,
+   de voorstellenlaag en de conceptgeneratie. Dat zijn de lagen die
+   bewijs WEGEN. Maar goedkeuren en publiceren wegen geen bewijs — ze
+   LEUNEN op een weging die eerder is gedaan en in een kolom is
+   opgeslagen:
+
+     publiceer()   regel 333  leest `v.poorten_geslaagd`, een boolean
+                              die bij de conceptbouw is gezet
+     keurGoed()               toetste gebruiker, recht en vier ogen, en
+                              geen enkel uitspraakveld
+
+   Tussen het bouwen van een concept en het goedkeuren ervan zit
+   menselijke tijd — uren, dagen. In dat venster kan de populatie
+   veranderen: een herbeoordelingsronde trekt een bevestiging in, een
+   schaalcorrectie voegt een ongeclassificeerde kloon toe, een
+   herclassificatie verlaagt een plafond. Een opgeslagen boolean weet
+   daar niets van. Hij was waar toen hij werd geschreven, en dat is iets
+   anders dan waar.
+
+   DAAROM: vlak vóór goedkeuren en vlak vóór publiceren wordt de
+   ACTUELE toestand van elke gebonden claim opnieuw gelezen. Niet de
+   opgeslagen uitslag — de rijen zelf.
+
+   ------------------------------------------------------------
+   WAAROM DIT GEEN EXCEPTIE GOOIT MAAR EEN UITSLAG TERUGGEEFT
+
+   De opdracht eist dat een blokkade AUDITEERBAAR wordt vastgelegd. Dat
+   kan niet met een exceptie: een `throw` rolt de transactie terug, en
+   daarmee ook de auditregel die de blokkade verklaart. Dat is geen
+   detail maar het verschil tussen een vastgelegde weigering en een
+   weigering die alleen in een logbestand bestaat.
+
+   Dus: `toetsGebondenBewijs()` geeft een UITSLAG, de aanroeper legt de
+   blokkade vast met `legBewijsblokkadeVast()` en de transactie COMMIT.
+   Dat is dezelfde vorm die `publiceer()` al had met zijn `weiger()`:
+   een claim die niet meer draagt is een normale uitkomst van het
+   redactionele proces, geen uitzondering. Een onbevoegde goedkeurder is
+   wél een uitzondering en blijft een exceptie.
+
+   ------------------------------------------------------------
+   WAAROM `for share of u` — DE RACE IS ECHT
+
+   Zonder slot bestaat deze ordening:
+
+     t0  goedkeuring leest claim 7: bevestigd, draagt
+     t1  herbeoordeling trekt claim 7 in en COMMIT
+     t2  goedkeuring schrijft status = 'goedgekeurd'
+
+   De goedkeuring is dan gebonden aan bewijs dat op het moment van
+   schrijven al was ingetrokken. `for share of u` neemt een gedeeld slot
+   op precies de uitspraakrijen die dit concept draagt. De
+   herbeoordeling doet een `update` op die rijen en wacht dus tot wij
+   committen. Daarna trekt zij in, en de PUBLICATIE — die opnieuw toetst
+   — blokkeert. De omgekeerde orde (eerst intrekken, dan goedkeuren) is
+   ongevaarlijk: dan ziet deze toets de intrekking gewoon.
+
+   `metOrganisatie()` zet de transactie al om elke route en elke CLI
+   heen (kern/db.ts regel 103-111), dus het slot valt samen met de
+   handeling. Dat is de hele consistentiegarantie: lees met een slot en
+   schrijf in dezelfde transactie.
+
+   EN EEN SPOED-UITWEG. Een slot dat eeuwig wacht hangt een
+   dashboardverzoek op. Daarom `lock_timeout` van vijf seconden, met een
+   SAVEPOINT eromheen: een mislukte opdracht zet een
+   PostgreSQL-transactie in de afgebroken stand, en dan zou de
+   auditregel er niet meer in kunnen. Met het savepoint blijft de
+   transactie bruikbaar en wordt de botsing een nette, herhaalbare
+   blokkade.
+   ============================================================ */
+
+export type GebondenClaim = {
+  readonly uitspraakId: number;
+  readonly rol: string;
+  readonly tekst: string;
+  readonly verificatieStatus: string;
+  readonly modaliteit: string | null;
+  readonly modaliteitZekerheid: number | null;
+  readonly modaliteitVersie: string | null;
+  readonly documentsoort: string | null;
+  readonly documentsoortVersie: string | null;
+  readonly bewijsKwaliteit: number;
+  readonly bewijskrachtPlafond: number | null;
+  readonly oordeelBron: string;
+  readonly primaireVersieId: number | null;
+  readonly versieInInvoer: boolean;
+  readonly draagt: boolean;
+  readonly waarom: string | null;
+};
+
+export type BewijsUitslag = {
+  readonly inhoudVersieId: number;
+  readonly claims: readonly GebondenClaim[];
+  readonly blokkades: readonly string[];
+  readonly dragendeKern: number;
+  readonly motorversies: string;
+};
+
+/** Draagt dit concept nu nog? Geen blokkades betekent ja. */
+export function bewijsDraagt(u: BewijsUitslag): boolean {
+  return u.blokkades.length === 0;
+}
+
+/**
+ * Leest de ACTUELE toestand van elke claim die aan deze inhoudsversie
+ * is gebonden, met een gedeeld slot erop, en zegt wat eraan schort.
+ *
+ * Geeft een uitslag en gooit niet: zie de kop van deze sectie.
+ */
+export async function toetsGebondenBewijs(
+  c: Pick<pg.PoolClient, "query">,
+  organisatieId: number,
+  inhoudVersieId: number,
+): Promise<BewijsUitslag> {
+  const motorversies = `${DOCUMENTSOORT_VERSIE} + ${MODALITEIT_VERSIE}`;
+  const blokkades: string[] = [];
+
+  /* DE HELE POPULATIE EERST. Hangt er ook maar één claim nog op
+     herbeoordeling, dan is geen enkele weging op deze versie te
+     vertrouwen — ook niet als de claims ONDER dit concept toevallig al
+     gewogen zijn. Een score vergelijkt met andere gebeurtenissen, en
+     die kunnen wel gemengd zijn. */
+  const stand = await herbeoordeelStand(c, organisatieId);
+  if (stand.openstaand > 0) {
+    blokkades.push(
+      `${stand.openstaand} claim(s) in deze organisatie wachten nog op herbeoordeling onder ` +
+        `${motorversies}; draai 'npm run herbeoordeel' en probeer het daarna opnieuw`,
+    );
+  }
+
+  const invoer = await c.query<{ invoer_versies: (number | string)[] | null }>(
+    "select invoer_versies from intel.inhoud_versies where organisatie_id = $1 and id = $2",
+    [organisatieId, inhoudVersieId],
+  );
+  if (invoer.rows.length === 0) {
+    return {
+      inhoudVersieId,
+      claims: [],
+      blokkades: [`inhoudsversie ${inhoudVersieId} bestaat niet in organisatie ${organisatieId}`],
+      dragendeKern: 0,
+      motorversies,
+    };
+  }
+  /* ALS STRINGS VERGELIJKEN, en dat is geen slordigheid maar een
+     gemeten valkuil. kern/db.ts zet een typeparser voor INT8 naar
+     number (regel 27), maar dat geldt voor de SCALAIRE int8 — niet voor
+     het ARRAY-type `_int8` (oid 1016), dat een eigen parser heeft. Een
+     `bigint[]`-kolom komt daarom terug als ['1','2'] en niet als
+     [1,2]. Mijn eerste versie deed `.includes(number)` en blokkeerde
+     daardoor ELKE legitiem gegenereerde conceptversie: de R3-eindproef
+     meldde 'bronversie 1 staat niet in de vastgelegde invoer' terwijl
+     hij er wel in stond. Via String() aan beide kanten maakt het niet
+     meer uit welke parser er geldt. */
+  const invoerVersies = new Set(
+    (invoer.rows[0]!.invoer_versies ?? []).map((v) => String(v)),
+  );
+
+  /* HET SLOT, met een savepoint eromheen. Zie de kop. */
+  await c.query("savepoint bewijsslot");
+  let rijen: {
+    uitspraak_id: number;
+    rol: string;
+    tekst: string;
+    verificatie_status: string;
+    modaliteit: string | null;
+    modaliteit_zekerheid: string | null;
+    modaliteit_versie: string | null;
+    documentsoort: string | null;
+    documentsoort_versie: string | null;
+    bewijs_kwaliteit: number;
+    bewijskracht_plafond: number | null;
+    oordeel_bron: string | null;
+    primaire_versie_id: number | null;
+  }[];
+  try {
+    await c.query("set local lock_timeout = '5s'");
+    const r = await c.query<(typeof rijen)[number]>(
+      /* GEEN BACKTICKS IN DIT COMMENTAAR: de query staat in een template
+         literal en een backtick sluit die af.
+         De join op rol = 'primair' is dezelfde als in
+         WACHT_OP_HERBEOORDELING_SQL en in de herverwerker; zie de
+         toelichting daar. Een left join, want een claim ZONDER primaire
+         binding moet hier zichtbaar worden en niet wegvallen. */
+      `select iu.uitspraak_id, iu.rol, u.tekst, u.verificatie_status,
+              u.modaliteit, u.modaliteit_zekerheid::text as modaliteit_zekerheid,
+              u.modaliteit_versie, u.bewijs_kwaliteit, u.bewijskracht_plafond,
+              u.oordeel_bron, bv.documentsoort, bv.documentsoort_versie,
+              bv.id as primaire_versie_id
+         from intel.inhoud_uitspraken iu
+         join intel.uitspraken u on u.id = iu.uitspraak_id
+         left join intel.uitspraak_bronnen ub
+                on ub.uitspraak_id = u.id and ub.rol = 'primair'
+         left join intel.brondocument_versies bv on bv.id = ub.versie_id
+        where iu.organisatie_id = $1 and iu.inhoud_versie_id = $2
+        order by u.id
+          for share of u`,
+      [organisatieId, inhoudVersieId],
+    );
+    rijen = r.rows;
+    await c.query("release savepoint bewijsslot");
+  } catch (e) {
+    await c.query("rollback to savepoint bewijsslot");
+    const code = (e as { code?: string }).code ?? "";
+    log.waarschuwing("bewijsslot niet verkregen", { inhoudVersieId, code });
+    return {
+      inhoudVersieId,
+      claims: [],
+      blokkades: [
+        `de gebonden claims konden niet met een slot gelezen worden (${code || "onbekend"}); ` +
+          `er loopt vermoedelijk een herbeoordeling. Probeer het opnieuw zodra die klaar is`,
+      ],
+      dragendeKern: 0,
+      motorversies,
+    };
+  }
+
+  const claims: GebondenClaim[] = rijen.map((r) => {
+    const zekerheid = r.modaliteit_zekerheid === null ? null : Number(r.modaliteit_zekerheid);
+    const kern = {
+      verificatieStatus: r.verificatie_status,
+      modaliteit: r.modaliteit,
+      modaliteitZekerheid: zekerheid,
+      documentsoort: r.documentsoort,
+    };
+    return {
+      uitspraakId: r.uitspraak_id,
+      rol: r.rol,
+      tekst: r.tekst,
+      verificatieStatus: r.verificatie_status,
+      modaliteit: r.modaliteit,
+      modaliteitZekerheid: zekerheid,
+      modaliteitVersie: r.modaliteit_versie,
+      documentsoort: r.documentsoort,
+      documentsoortVersie: r.documentsoort_versie,
+      bewijsKwaliteit: r.bewijs_kwaliteit,
+      bewijskrachtPlafond: r.bewijskracht_plafond,
+      oordeelBron: r.oordeel_bron ?? "motor",
+      primaireVersieId: r.primaire_versie_id,
+      versieInInvoer:
+        r.primaire_versie_id !== null && invoerVersies.has(String(r.primaire_versie_id)),
+      draagt: claimDraagt(kern),
+      waarom: waaromNietDragend(kern),
+    };
+  });
+
+  for (const k of claims) {
+    const naam = `claim ${k.uitspraakId} (${k.rol})`;
+
+    /* 1. DE BINDING NAAR DE BRON. */
+    if (k.primaireVersieId === null) {
+      blokkades.push(`${naam} heeft geen primaire bronbinding meer; zonder bron geen bewijs`);
+      continue;
+    }
+    if (!k.versieInInvoer) {
+      blokkades.push(
+        `${naam} hangt aan bronversie ${k.primaireVersieId}, die niet in de vastgelegde invoer ` +
+          `van dit concept staat; de koppeling tussen concept, claim en bron is gewijzigd`,
+      );
+    }
+
+    /* 2. DE CLASSIFICATIEVERSIE.
+       De documentsoort is machinewerk en moet altijd van de huidige
+       motor komen. De MODALITEIT mag van een mens komen; dan staat zijn
+       oordeel en eisen we er geen motorversie bij. Dat is eis 3 van de
+       opdracht: een menselijke beoordeling wordt niet overschreven, en
+       dus ook niet stilzwijgend ongeldig verklaard. */
+    if (k.documentsoortVersie !== DOCUMENTSOORT_VERSIE) {
+      blokkades.push(
+        `${naam} rust op een documentclassificatie van ` +
+          `${k.documentsoortVersie ?? "GEEN"} in plaats van ${DOCUMENTSOORT_VERSIE}`,
+      );
+    }
+    if (k.oordeelBron !== "mens" && k.modaliteitVersie !== MODALITEIT_VERSIE) {
+      blokkades.push(
+        `${naam} draagt een modaliteitsoordeel van ` +
+          `${k.modaliteitVersie ?? "GEEN"} in plaats van ${MODALITEIT_VERSIE}`,
+      );
+    }
+
+    /* 3. HET PLAFOND. Een bewijskracht boven het plafond betekent dat
+       de rij nog de oude, uit de UITGEVER afgeleide sterkte draagt. */
+    if (k.bewijskrachtPlafond === null) {
+      blokkades.push(`${naam} heeft geen bewijskrachtplafond; de soort is niet gewogen`);
+    } else if (k.bewijsKwaliteit > k.bewijskrachtPlafond) {
+      blokkades.push(
+        `${naam} staat op bewijskracht ${k.bewijsKwaliteit} boven zijn plafond ` +
+          `${k.bewijskrachtPlafond}; dat is de oude uitgeversbetrouwbaarheid en geen bewijs`,
+      );
+    }
+
+    /* 4. DRAAGT DE KERNCLAIM NOG. Alleen voor rol 'kern': een
+       ondersteunende of contextclaim hoeft niet vast te staan, die
+       staat in de tekst als wat hij is. */
+    if (k.rol === "kern" && !k.draagt) {
+      blokkades.push(`${naam} draagt niet meer: ${k.waarom}`);
+    }
+  }
+
+  const dragendeKern = claims.filter((k) => k.rol === "kern" && k.draagt).length;
+  if (claims.length === 0) {
+    blokkades.push("er is geen enkele uitspraak aan deze versie gebonden; dan is er geen bewijs");
+  } else if (dragendeKern === 0) {
+    blokkades.push("geen enkele gebonden kernclaim draagt nog; er is niets om op te publiceren");
+  }
+
+  return { inhoudVersieId, claims, blokkades, dragendeKern, motorversies };
+}
+
+/**
+ * Legt een bewijsblokkade vast in het publicatiebesluitenlogboek.
+ *
+ * `automatisch_geblokkeerd` bestond al als toegestaan besluit (migratie
+ * 0004 regel 249-250), dus hier is geen schemawijziging voor nodig. De
+ * tabel is append-only sinds dezelfde migratie, dus dit is niet te
+ * wissen en niet te herschrijven.
+ *
+ * MOET VÓÓR DE COMMIT GEBEUREN EN ZONDER DAARNA TE GOOIEN. Een exceptie
+ * rolt deze regel mee terug; zie de kop van deze sectie.
+ */
+export async function legBewijsblokkadeVast(
+  c: Pick<pg.PoolClient, "query">,
+  organisatieId: number,
+  uitslag: BewijsUitslag,
+  handeling: string,
+): Promise<void> {
+  await c.query(
+    `insert into intel.publicatiebesluiten
+       (organisatie_id, inhoud_versie_id, besluit, actor_soort, motivatie, poortresultaten)
+     values ($1, $2, 'automatisch_geblokkeerd', 'systeem', $3, $4)`,
+    [
+      organisatieId,
+      uitslag.inhoudVersieId,
+      `${handeling} geblokkeerd door de claimpoort: ${uitslag.blokkades.join(" | ")}`,
+      JSON.stringify({
+        handeling,
+        motorversies: uitslag.motorversies,
+        blokkades: uitslag.blokkades,
+        dragendeKern: uitslag.dragendeKern,
+        claims: uitslag.claims.map((k) => ({
+          uitspraakId: k.uitspraakId,
+          rol: k.rol,
+          verificatieStatus: k.verificatieStatus,
+          modaliteit: k.modaliteit,
+          modaliteitZekerheid: k.modaliteitZekerheid,
+          modaliteitVersie: k.modaliteitVersie,
+          documentsoort: k.documentsoort,
+          documentsoortVersie: k.documentsoortVersie,
+          bewijsKwaliteit: k.bewijsKwaliteit,
+          bewijskrachtPlafond: k.bewijskrachtPlafond,
+          oordeelBron: k.oordeelBron,
+          primaireVersieId: k.primaireVersieId,
+          versieInInvoer: k.versieInInvoer,
+          draagt: k.draagt,
+          waarom: k.waarom,
+        })),
+      }),
+    ],
+  );
+  log.fout("bewijspoort DICHT", {
+    handeling,
+    inhoudVersieId: uitslag.inhoudVersieId,
+    blokkades: uitslag.blokkades.length,
+  });
 }

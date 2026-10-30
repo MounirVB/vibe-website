@@ -20,7 +20,12 @@
 
 import type pg from "pg";
 import { configLezen } from "../kern/config.ts";
-import { claimDraagt, eisHerbeoordeling } from "../pijplijn/claimpoort.ts";
+import {
+  claimDraagt,
+  eisHerbeoordeling,
+  toetsGebondenBewijs,
+  waaromNietDragend,
+} from "../pijplijn/claimpoort.ts";
 import { eenRij, metOrganisatie, rijen, type Pool } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 import { kort, sha256hex, slug } from "../kern/tekst.ts";
@@ -600,6 +605,42 @@ export function bouwConcept(
   };
 }
 
+/**
+ * Serialiseert met gesorteerde sleutels, recursief.
+ *
+ * WAAROM DIT BESTAAT — een defect dat de eigen tests vingen. De afdruk
+ * hoort een functie te zijn van de OPGESLAGEN rij: alleen dan kan een
+ * latere controle hem narekenen en zien of de tekst buiten de keten om
+ * is gewijzigd. Met `JSON.stringify` was hij dat niet.
+ *
+ * `structured_data` is een `jsonb`-kolom, en jsonb bewaart geen
+ * sleutelorde: hij herordent (op lengte, dan bytegewijs) en haalt
+ * witruimte weg. Een afdruk die bij de conceptbouw uit het
+ * JS-object komt, is daarna dus niet meer te reproduceren uit de
+ * kolom — zelfs niet als er niets veranderd is. De hertoets in
+ * keurGoed() wees daarom elk legitiem gegenereerd concept af; de
+ * R3-eindproef werd rood en had gelijk.
+ *
+ * Door hier ZELF te sorteren is de orde van jsonb niet meer relevant:
+ * beide kanten komen op dezelfde string uit.
+ *
+ * DE GRENS, EERLIJK BENOEMD. jsonb normaliseert ook getallen en laat
+ * dubbele sleutels vallen. Een structured-dataobject met `1.0` of met
+ * twee keer dezelfde sleutel zou alsnog uiteen kunnen lopen. Onze
+ * schema.org-objecten worden in dit bestand opgebouwd uit strings en
+ * hele getallen, dus dat geval bestaat hier niet. Het staat er als
+ * waarschuwing voor wie er later iets anders in stopt.
+ */
+function canoniekJson(v: unknown): string {
+  if (v === null || typeof v !== "object") return JSON.stringify(v) ?? "null";
+  if (Array.isArray(v)) return `[${v.map(canoniekJson).join(",")}]`;
+  const o = v as Record<string, unknown>;
+  const paren = Object.keys(o)
+    .sort()
+    .map((k) => `${JSON.stringify(k)}:${canoniekJson(o[k])}`);
+  return `{${paren.join(",")}}`;
+}
+
 /** Afdruk waaraan een goedkeuring bindt. */
 export function inhoudAfdruk(c: {
   titel: string;
@@ -616,7 +657,7 @@ export function inhoudAfdruk(c: {
      beveiligingsscan die op grep leunt zou dit hele bestand missen.
      De hash verandert niet: de string is byte-identiek. */
   return sha256hex(
-    [c.titel, c.directAntwoord, c.bodyMarkdown, JSON.stringify(c.structuredData)].join("\u0000"),
+    [c.titel, c.directAntwoord, c.bodyMarkdown, canoniekJson(c.structuredData)].join("\u0000"),
   );
 }
 
@@ -699,12 +740,26 @@ export async function maakConcept(
               u.modaliteit, u.modaliteit_zekerheid::text as modaliteit_zekerheid,
               v.documentsoort, u.primaire_bron_bevestigd
          from intel.uitspraken u
-         join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id
+         /* ROL = PRIMAIR, en dat is een correctie van een echte fout.
+            Hier stond geen rolvoorwaarde en eronder
+            'order by u.id, ub.rol' bij een 'distinct on (u.id)'. De
+            toegestane rollen zijn ('primair', 'bevestigend',
+            'tegensprekend'), en die sorteren ALFABETISCH. Dus koos deze
+            query bij een claim met meerdere bindingen de BEVESTIGENDE
+            versie, en niet de primaire -- precies de versie waarvan de
+            claim niet afkomstig is. De documentsoort die daaruit kwam
+            voedde claimDraagt(), dus een navertelling kon de soort van
+            een bevestigend besluit lenen. Dat is de fout die R3 moet
+            uitsluiten.
+            De schrijfkant gebruikte altijd de primaire versie; deze
+            leeskant nu ook. Zie claimpoort.ts bij
+            WACHT_OP_HERBEOORDELING_SQL. */
+         join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id and ub.rol = 'primair'
          join intel.brondocument_versies v on v.id = ub.versie_id
          join intel.brondocumenten d on d.id = v.brondocument_id
          join intel.bronnen b on b.id = d.bron_id
         where u.gebeurtenis_id = $1
-        order by u.id, ub.rol`,
+        order by u.id, v.id`,
       [k.gebeurtenisId],
     );
 
@@ -1056,14 +1111,31 @@ export async function hertoetsInhoudVersie(
     geldig_tot: string | null;
     verificatie_status: string;
     rol: "kern" | "ondersteunend" | "context";
+    modaliteit: string | null;
+    modaliteit_zekerheid: string | null;
+    documentsoort: string | null;
   }>(
     c,
+    /* R3 — DE DRIE VELDEN DIE HIER ONTBRAKEN.
+       De audit vond het: deze query haalde geen enkel R3-veld op, dus
+       de hertoets gaf poort 6 alleen `verificatie_status` mee en kon
+       niet zien of een kernclaim nog droeg. Een redacteur die een
+       concept bewerkte, kreeg daardoor een PASS op precies de poort die
+       hem had moeten waarschuwen -- dezelfde vorm als de valse PASS op
+       de injectiepoort die eerder in dit bestand is gerepareerd.
+       De join op rol = 'primair' is dezelfde als in bouwConcept; zie de
+       toelichting daar en in claimpoort.ts. */
     `select u.id, u.tekst, u.soort, u.waarde_numeriek, u.eenheid,
-            u.geldig_vanaf, u.geldig_tot, u.verificatie_status, iu.rol
+            u.geldig_vanaf, u.geldig_tot, u.verificatie_status, iu.rol,
+            u.modaliteit, u.modaliteit_zekerheid::text as modaliteit_zekerheid,
+            bv.documentsoort
        from intel.inhoud_uitspraken iu
        join intel.uitspraken u on u.id = iu.uitspraak_id
+       left join intel.uitspraak_bronnen ub
+              on ub.uitspraak_id = u.id and ub.rol = 'primair'
+       left join intel.brondocument_versies bv on bv.id = ub.versie_id
       where iu.organisatie_id = $1 and iu.inhoud_versie_id = $2
-      order by u.id`,
+      order by u.id, bv.id`,
     [organisatieId, versieId],
   );
 
@@ -1094,17 +1166,28 @@ export async function hertoetsInhoudVersie(
     bronnenSectie: v.bronnen_sectie ?? [],
     risicoKlasse: v.risico_klasse,
     goedgekeurdDoor: v.goedgekeurd_door,
-    uitspraken: gebonden.map((u) => ({
-      id: u.id,
-      tekst: u.tekst,
-      soort: u.soort,
-      waardeNumeriek: u.waarde_numeriek === null ? null : Number(u.waarde_numeriek),
-      eenheid: u.eenheid,
-      geldigVanaf: u.geldig_vanaf,
-      geldigTot: u.geldig_tot,
-      verificatieStatus: u.verificatie_status,
-      rol: u.rol,
-    })),
+    uitspraken: gebonden.map((u) => {
+      const kern = {
+        verificatieStatus: u.verificatie_status,
+        modaliteit: u.modaliteit,
+        modaliteitZekerheid:
+          u.modaliteit_zekerheid === null ? null : Number(u.modaliteit_zekerheid),
+        documentsoort: u.documentsoort,
+      };
+      return {
+        id: u.id,
+        tekst: u.tekst,
+        soort: u.soort,
+        waardeNumeriek: u.waarde_numeriek === null ? null : Number(u.waarde_numeriek),
+        eenheid: u.eenheid,
+        geldigVanaf: u.geldig_vanaf,
+        geldigTot: u.geldig_tot,
+        verificatieStatus: u.verificatie_status,
+        rol: u.rol,
+        draagt: claimDraagt(kern),
+        waaromNietDragend: waaromNietDragend(kern),
+      };
+    }),
     bronteksten: gebonden.map((u) => u.tekst),
     injectieInBron: injectie?.verdacht ?? false,
     bestaandePaden: new Set(paden.map((p) => p.pad)),
@@ -1120,6 +1203,24 @@ export async function hertoetsInhoudVersie(
     structuredData: v.structured_data,
   });
 
+  /* DE CLAIMPOORT HOORT OOK IN DE OPGESLAGEN UITSLAG.
+     `publiceer()` leest `poorten_geslaagd` als bewijs dat alles klopte.
+     Zolang die kolom op true kan staan terwijl de populatie gemengd is
+     of een binding is gewijzigd, is hij een belofte die de keten niet
+     kan nakomen. Door de bewijsblokkades HIER mee te nemen kan de
+     kolom dat niet meer: wat de tweede poort afkeurt, staat ook in
+     `blokkades`.
+
+     GEEN AUDITREGEL HIER, en dat is een keuze. Een hertoets is een
+     DIAGNOSE en geen besluit; een redacteur die drie keer een komma
+     verplaatst hoort geen drie 'automatisch_geblokkeerd'-besluiten in
+     het publicatielogboek te veroorzaken. De auditregel valt op de
+     plekken waar werkelijk iets wordt besloten: goedkeuren en
+     publiceren. */
+  const bewijs = await toetsGebondenBewijs(c, organisatieId, versieId);
+  const blokkades = [...samenvatting.blokkades, ...bewijs.blokkades];
+  const geslaagd = samenvatting.geslaagd && bewijs.blokkades.length === 0;
+
   await c.query(
     `update intel.inhoud_versies
         set poortresultaten = $2,
@@ -1127,19 +1228,26 @@ export async function hertoetsInhoudVersie(
             blokkades = $4,
             inhoud_afdruk = $5
       where id = $1`,
-    [versieId, JSON.stringify(resultaten), samenvatting.geslaagd, samenvatting.blokkades, afdruk],
+    /* `poortresultaten` BLIJFT EEN ARRAY van poortuitslagen. De
+       studiopagina leest hem met `Array.isArray(v.poortresultaten)`
+       (dashboard/server.ts regel 1693) en zou bij een object stil geen
+       enkele poort meer tonen. De bewijsblokkades staan in
+       `blokkades`, dat de studio ook rendert; de volledige
+       claimtoestand gaat naar de auditregel op de besluitmomenten. */
+    [versieId, JSON.stringify(resultaten), geslaagd, blokkades, afdruk],
   );
 
   log.info("inhoudsversie hertoetst", {
     versie: versieId,
-    geslaagd: samenvatting.geslaagd,
-    blokkades: samenvatting.blokkades.length,
+    geslaagd,
+    blokkades: blokkades.length,
+    bewijsblokkades: bewijs.blokkades.length,
   });
 
   return {
     versieId,
-    poortenGeslaagd: samenvatting.geslaagd,
-    blokkades: samenvatting.blokkades,
+    poortenGeslaagd: geslaagd,
+    blokkades,
     adviezen: samenvatting.adviezen,
     afdruk,
   };
@@ -1167,18 +1275,29 @@ function toetsVoorConcept(
      waarschuwen. */
   injectieInBron: boolean,
 ) {
-  const gebonden: GebondenUitspraak[] = uitspraken.map((u) => ({
-    id: u.id,
-    tekst: u.tekst,
-    soort: u.soort,
-    waardeNumeriek: u.waarde_numeriek === null ? null : Number(u.waarde_numeriek),
-    eenheid: u.eenheid,
-    geldigVanaf: u.geldig_vanaf,
-    geldigTot: u.geldig_tot,
-    verificatieStatus: u.verificatie_status,
-    rol:
-      concept.uitspraakBindingen.find((b) => b.uitspraakId === u.id)?.rol ?? "context",
-  }));
+  const gebonden: GebondenUitspraak[] = uitspraken.map((u) => {
+    const kern = {
+      verificatieStatus: u.verificatie_status,
+      modaliteit: u.modaliteit,
+      modaliteitZekerheid:
+        u.modaliteit_zekerheid === null ? null : Number(u.modaliteit_zekerheid),
+      documentsoort: u.documentsoort,
+    };
+    return {
+      id: u.id,
+      tekst: u.tekst,
+      soort: u.soort,
+      waardeNumeriek: u.waarde_numeriek === null ? null : Number(u.waarde_numeriek),
+      eenheid: u.eenheid,
+      geldigVanaf: u.geldig_vanaf,
+      geldigTot: u.geldig_tot,
+      verificatieStatus: u.verificatie_status,
+      rol:
+        concept.uitspraakBindingen.find((b) => b.uitspraakId === u.id)?.rol ?? "context",
+      draagt: claimDraagt(kern),
+      waaromNietDragend: waaromNietDragend(kern),
+    };
+  });
 
   return toetsConcept({
     pad: concept.pad,

@@ -220,7 +220,17 @@ export async function herbeoordeelClaims(
             u.tekst, u.verificatie_status, u.bewijs_kwaliteit, u.oordeel_bron,
             bv.documentsoort, bv.documentsoort_gezag, bv.documentsoort_versie
        from intel.uitspraken u
-       join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id
+       -- ROL = PRIMAIR, en dat is een correctie. Zonder die voorwaarde
+       -- gaf een claim met twee bindingen TWEE rijen: hij werd in
+       -- dezelfde ronde twee keer gewogen, met mogelijk twee
+       -- verschillende documentsoorten, en de laatste rij won
+       -- willekeurig. Een TEGENSPREKEND document kon zo de soort
+       -- leveren waarop de claim bewijskracht kreeg -- de omgekeerde
+       -- betekenis van die binding. De schrijfkant deed het al goed:
+       -- schrijfUitspraken leidt de soort af van de primaire versie.
+       -- Zie de uitgebreide toelichting bij
+       -- WACHT_OP_HERBEOORDELING_SQL in claimpoort.ts.
+       join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id and ub.rol = 'primair'
        join intel.brondocument_versies bv on bv.id = ub.versie_id
        join intel.brondocumenten bd on bd.id = bv.brondocument_id
        join intel.bronnen b on b.id = bd.bron_id

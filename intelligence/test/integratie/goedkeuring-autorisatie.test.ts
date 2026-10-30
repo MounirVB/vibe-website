@@ -37,6 +37,7 @@ import { strict as assert } from "node:assert";
 import { after, before, describe, test } from "node:test";
 import {
   alsEigenaar,
+  maakDragendeVersie,
   maakGebruiker,
   maakOrganisatie,
   maakWegwerpdatabase,
@@ -53,7 +54,20 @@ describe("goedkeuren vraagt een bevoegde, herleidbare mens", () => {
   let lezer = 0;
   let geschorst = 0;
 
-  /** Maakt een verse inhoudsversie en geeft zijn id terug. */
+  /* DE FIXTURE IS VERZWAARD, EN DAT MOEST.
+     Hier stond één insert in intel.inhoud_versies met een verzonnen
+     `inhoud_afdruk` ('afdruk-/nieuws/...') en zonder één gebonden
+     claim. Dat werkte omdat keurGoed() destijds geen enkel
+     uitspraakveld las en de afdruk niet narekende. Sinds de
+     acceptatiecorrectie doet hij beide, en dan is zo'n rij geen
+     representatieve testopstelling meer maar een onmogelijke toestand:
+     een concept dat nergens op rust.
+     `maakDragendeVersie()` in het harnas bouwt de hele keten -- bron,
+     document, geclassificeerde versie, claim met modaliteit en
+     plafond, primaire binding, invoer_versies -- zodat deze toetsen
+     precies dát blijven toetsen waarvoor ze bestaan: WIE mag
+     goedkeuren. */
+  let teller = 0;
   async function nieuweVersie(
     opties: {
       aangemaaktDoor?: number | null;
@@ -62,34 +76,14 @@ describe("goedkeuren vraagt een bevoegde, herleidbare mens", () => {
       slug?: string;
     } = {},
   ): Promise<number> {
-    const s = opties.slug ?? `versie-${Math.abs(org)}-${Date.now()}`;
-    let id = 0;
-    await alsEigenaar(db, async (c) => {
-      await c.query("select set_config('app.organisatie_id', $1, false)", [String(org)]);
-      const r = await c.query<{ id: number }>(
-        `insert into intel.inhoud_versies
-           (organisatie_id, pad, versie, soort, titel, meta_omschrijving, canonieke_url,
-            direct_antwoord, body_markdown, status, risico_klasse, auteur_soort,
-            poorten_geslaagd, inhoud_afdruk, aangemaakt_door, bewerkt_door)
-         values ($1, $2, 1, 'nieuw_artikel',
-                 'Een titel die lang genoeg is voor de poort',
-                 'Een metabeschrijving die ook lang genoeg is om de lengtepoort van het concept te halen zonder gezeur.',
-                 'https://www.vibeenergy.nl' || $2,
-                 'Een direct antwoord dat zelfstandig leesbaar is en lang genoeg.',
-                 'De lead.\n\n## Een kop\n\nEen alinea.\n',
-                 'ter_review', $3, 'ai', true, 'afdruk-' || $2, $4, $5)
-         returning id`,
-        [
-          org,
-          `/nieuws/${s}`,
-          opties.risico ?? "laag",
-          opties.aangemaaktDoor ?? null,
-          opties.bewerktDoor ?? null,
-        ],
-      );
-      id = r.rows[0]!.id;
+    teller += 1;
+    const r = await maakDragendeVersie(db, org, {
+      slug: opties.slug ?? `versie-${teller}`,
+      ...(opties.risico === undefined ? {} : { risico: opties.risico }),
+      ...(opties.aangemaaktDoor === undefined ? {} : { aangemaaktDoor: opties.aangemaaktDoor }),
+      ...(opties.bewerktDoor === undefined ? {} : { bewerktDoor: opties.bewerktDoor }),
     });
-    return id;
+    return r.versieId;
   }
 
   before(async () => {

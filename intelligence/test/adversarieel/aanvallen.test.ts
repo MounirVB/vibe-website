@@ -396,6 +396,11 @@ describe("adversariële gevallen", () => {
             geldigTot: "2020-12-31",
             verificatieStatus: "bevestigd",
             rol: "kern",
+            /* DRAAGT, want deze fixture toetst een ANDERE poort. Poort 6
+               eist sinds R3 niet alleen bevestigd maar dragend; de
+               bedoeling van deze zaak is dat poort 6 slaagt. */
+            draagt: true,
+            waaromNietDragend: null,
           },
         ],
         bronteksten: ["Een volstrekt andere brontekst met andere woorden en andere onderwerpen."],
@@ -460,6 +465,11 @@ describe("adversariële gevallen", () => {
             geldigTot: null,
             verificatieStatus: "bevestigd",
             rol: "kern",
+            /* DRAAGT, want deze fixture toetst een ANDERE poort. Poort 6
+               eist sinds R3 niet alleen bevestigd maar dragend; de
+               bedoeling van deze zaak is dat poort 6 slaagt. */
+            draagt: true,
+            waaromNietDragend: null,
           },
         ],
         bronteksten: ["Een heel andere brontekst met andere woorden over andere onderwerpen."],

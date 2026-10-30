@@ -35,6 +35,19 @@ export type GebondenUitspraak = {
   readonly geldigTot: string | Date | null;
   readonly verificatieStatus: string;
   readonly rol: "kern" | "ondersteunend" | "context";
+  /* R3 — DRAAGT DEZE CLAIM EEN BERICHT.
+     Verplicht en niet optioneel, met opzet. De audit vond dat poort 6
+     `verificatieStatus` als ENIG bewijssignaal kreeg: het
+     poortcontract had geen enkel R3-veld, dus de poort kon niet zien of
+     een bevestigde claim ook VASTGESTELD was en uit een document kwam
+     dat zelf iets vaststelt. Een optioneel veld had dat gat open
+     gelaten bij elke aanroeper die het vergeet; nu dwingt de
+     typecontrole dat iedere aanroeper de vraag beantwoordt.
+     De waarde komt van claimDraagt() in pijplijn/claimpoort.ts, zodat
+     de poort, het concept en het dashboard niet uiteen kunnen lopen. */
+  readonly draagt: boolean;
+  /** Eén regel waarom niet, van waaromNietDragend(). Null als hij draagt. */
+  readonly waaromNietDragend: string | null;
 };
 
 export type ConceptTeToetsen = {
@@ -272,12 +285,37 @@ export function toetsConcept(c: ConceptTeToetsen): PoortUitkomst[] {
       ]),
     );
   } else {
-    const onbevestigd = kern.filter((u) => u.verificatieStatus !== "bevestigd");
-    if (onbevestigd.length > 0) {
+    /* R3 — NIET ALLEEN 'BEVESTIGD', MAAR 'DRAAGT'.
+       Hier stond uitsluitend de toets op verificatieStatus. Dat was
+       precies de regel die 45 van de 51 bevestigde claims in productie
+       liet passeren, waaronder een lobbyverzoek aan de Tweede Kamer:
+       'bevestigd' kwam van de betrouwbaarheid van de UITGEVER en zei
+       niets over het document of over de zin.
+       `draagt` is strikter en omvat de oude toets volledig —
+       claimDraagt() begint met dezelfde statuscontrole. De oude
+       formulering blijft hieronder staan als EERSTE bevinding, want
+       'staat op ongeverifieerd' leest voor een redacteur beter dan de
+       samengestelde reden. */
+    /* BEIDE EISEN, en niet alleen `draagt`. claimDraagt() begint zelf
+       met de statuscontrole, dus dit is logisch overbodig — maar alleen
+       zolang elke aanroeper `draagt` goed berekent. Een poort die op
+       één meegegeven veld leunt, kan door een verkeerde aanroep stil
+       opengaan. Een eenheidstoets die alleen `verificatieStatus` op
+       'ongeverifieerd' zette, kwam er daardoor langs; die toets had
+       gelijk en deze regel is het antwoord.
+       De status komt eerst in de reden, want 'staat op ongeverifieerd'
+       leest voor een redacteur beter dan de samengestelde uitleg. */
+    const nietDragend = kern.filter((u) => u.verificatieStatus !== "bevestigd" || !u.draagt);
+    if (nietDragend.length > 0) {
       uit.push(
         gefaald(
           "kernclaim_heeft_bewijs",
-          onbevestigd.map((u) => `kernclaim ${u.id} staat op '${u.verificatieStatus}', niet bevestigd`),
+          nietDragend.map((u) =>
+            u.verificatieStatus !== "bevestigd"
+              ? `kernclaim ${u.id} staat op '${u.verificatieStatus}', niet bevestigd`
+              : `kernclaim ${u.id} draagt geen bericht: ` +
+                `${u.waaromNietDragend ?? "reden niet meegegeven"}`,
+          ),
         ),
       );
     } else uit.push(geslaagd("kernclaim_heeft_bewijs"));

@@ -324,8 +324,21 @@ describe("R3 eindproef — SDE++ van bron tot goedkeuring", () => {
   });
 
   test("8 · met recht en een tweede paar ogen kan het wel", async () => {
-    await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+    /* DE UITSLAG WORDT GELEZEN. keurGoed() geeft sinds de
+       acceptatiecorrectie een uitslag terug: bewijs dat niet meer
+       draagt is een normale uitkomst en geen exceptie, omdat de
+       blokkade auditeerbaar moet worden vastgelegd en een throw die
+       regel zou terugrollen. Een toets die de uitslag negeert, zou een
+       geblokkeerde goedkeuring niet van een geslaagde onderscheiden. */
+    const uitslag = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
       keurGoed(c, versieId, beheerder, "feiten nagelopen bij RVO, aanvraagtermijn klopt"),
+    );
+    assert.equal(
+      uitslag.goedgekeurd,
+      true,
+      `de goedkeuring hoort te slagen; geblokkeerd op: ${
+        uitslag.goedgekeurd ? "" : uitslag.blokkades.join(" | ")
+      }`,
     );
     const v = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
       c.query<{ status: string; goedgekeurd_door: number | null }>(

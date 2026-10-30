@@ -66,6 +66,7 @@ import { leesSitekennis } from "../site/sitekennis.ts";
 import { beoordeel, type Besluit } from "../inhoud/beoordeling.ts";
 import { hertoetsInhoudVersie } from "../inhoud/concept.ts";
 import { keurGoed } from "../inhoud/publiceer.ts";
+import { claimDraagt, herbeoordeelStand } from "../pijplijn/claimpoort.ts";
 import { IntelFout } from "../kern/fouten.ts";
 import { redacteerFout } from "../kern/geheimen.ts";
 
@@ -1850,8 +1851,26 @@ ${tabel(
   ["Rol", "Waarde", "Status", "Kw.", "Modaliteit", "Documentsoort", "Gezag", "Bron", "Datum"],
   d.uitspraken.map((u) => {
     const zeker = u.zekerheid === null ? null : Number(u.zekerheid);
-    const draagt =
-      u.status === "bevestigd" && u.modaliteit === "VASTGESTELD" && (zeker ?? 0) >= 0.5;
+    /* DEZELFDE FUNCTIE ALS DE POORT, en dat is een correctie. Hier
+       stond de regel met de hand nagebouwd:
+
+         u.status === "bevestigd" && u.modaliteit === "VASTGESTELD"
+           && (zeker ?? 0) >= 0.5
+
+       Twee verschillen met claimDraagt(), en beide tellen. De drempel
+       0.5 stond als letterlijk getal in plaats van
+       NOODZAKELIJKE_ZEKERHEID, dus een wijziging daar zou het dashboard
+       niet meenemen. En de DOCUMENTSOORT werd niet getoetst: een claim
+       uit een SECUNDAIRE_BERICHTGEVING of een LOBBYDOCUMENT kreeg in
+       deze tabel het groene 'draagt' terwijl de poort hem afwijst.
+       Precies het uiteenlopen dat de comment bij claimDraagt() belooft
+       te voorkomen. */
+    const draagt = claimDraagt({
+      verificatieStatus: u.status,
+      modaliteit: u.modaliteit,
+      modaliteitZekerheid: zeker,
+      documentsoort: u.documentsoort,
+    });
     /* DE MODALITEITSKOLOM ZEGT OOK WAT HIJ BETEKENT. 'VOORSTEL' alleen
        is voor een redacteur niet genoeg; hij moet weten dat zo'n claim
        geen feit mag worden. */
@@ -1996,6 +2015,14 @@ afdwingt.</p>`
         return;
       }
 
+      /* DE BLOKKADE MOET DE COMMIT HALEN, de melding mag erna.
+         keurGoed() legt een bewijsblokkade vast in
+         intel.publicatiebesluiten en geeft hem terug als uitslag. Zou
+         deze route daarop gooien BINNEN alsGebruiker(), dan rolde de
+         transactie die auditregel mee terug. Dus: de uitslag naar
+         buiten dragen, de transactie laten committen, en pas daarna
+         weigeren. */
+      let geblokkeerd: { reden: string; blokkades: readonly string[] } | null = null;
       try {
         await alsGebruiker(req, async (c) => {
           /* DE AFDRUK DIE OP HET SCHERM STOND. Wijkt hij af, dan is de
@@ -2022,7 +2049,15 @@ afdwingt.</p>`
           }
 
           if (besluit === "GOEDGEKEURD") {
-            await keurGoed(c, Number(id), gebruikerId, motivatie || "goedgekeurd via het dashboard");
+            const uitslag = await keurGoed(
+              c,
+              Number(id),
+              gebruikerId,
+              motivatie || "goedgekeurd via het dashboard",
+            );
+            if (!uitslag.goedgekeurd) {
+              geblokkeerd = { reden: uitslag.reden, blokkades: uitslag.blokkades };
+            }
           } else {
             await c.query(
               "update intel.inhoud_versies set status = 'ingetrokken' where id = $1",
@@ -2039,6 +2074,16 @@ afdwingt.</p>`
         });
       } catch (e) {
         weiger(res, 400, redacteerFout(e));
+        return;
+      }
+      if (geblokkeerd !== null) {
+        const g = geblokkeerd as { reden: string; blokkades: readonly string[] };
+        weiger(
+          res,
+          409,
+          `${g.reden}. De blokkade is vastgelegd in het publicatielogboek.\n\n` +
+            g.blokkades.map((b) => `- ${b}`).join("\n"),
+        );
         return;
       }
       res.redirect(303, `/studio/${id}`);
@@ -2761,6 +2806,14 @@ ${tabel(
                   where a.op >= date_trunc('day', now())) as gebruikt
            from intel.kostenplafonds kp limit 1`,
       ),
+      /* DE STAND VAN DE CLAIMPOORT, ZICHTBAAR.
+         Sectie 3 van de acceptatieopdracht eist dat de nieuwsengine
+         niet ongemerkt operationeel stilvalt. De poort is fail-closed:
+         zolang er claims op herbeoordeling wachten, weigeren de
+         besluitmotor, de nieuwsselectie, de voorstellenlaag en de
+         conceptgeneratie. Dat is veilig, maar in een logregel ziet
+         niemand het. Hier staat het getal. */
+      claimpoort: await herbeoordeelStand(c, req.gebruiker!.organisatieId),
       gebruikers: await rijen<{ email: string; naam: string; rollen: string; hash: boolean; laatste: Date | null }>(
         c,
         `select g.email, g.naam,
@@ -2789,13 +2842,29 @@ ${tabel(
         inhoud: `
 <h1>Instellingen</h1>
 
+<h2>Claimpoort</h2>
+${
+  d.claimpoort.openstaand === 0
+    ? `<div class="tegel">${vlag("claimpoort open", "ok")}<div class="klein" style="margin-top:6px">
+       Elke claim is gewogen onder ${esc(d.claimpoort.motorversies)}. De besluitmotor, de
+       nieuwsselectie, de voorstellenlaag en de conceptgeneratie kunnen bewijs wegen.</div></div>`
+    : `<div class="tegel">${vlag(`claimpoort DICHT — ${d.claimpoort.openstaand} claim(s) wachten`, "fout")}<div class="klein" style="margin-top:6px">
+       Zolang dit getal niet nul is, weigeren de besluitmotor, de nieuwsselectie, de
+       voorstellenlaag en de conceptgeneratie &mdash; met opzet, want hun oordeel zou op een
+       gemengde populatie rusten. Dit is geen storing maar een grendel.
+       Draai <code>npm run documentsoort</code> en daarna <code>npm run herbeoordeel</code>.
+       Motorversies: ${esc(d.claimpoort.motorversies)}.</div></div>`
+}
+
 <h2>Beveiligingsinvarianten</h2>
 ${
   alleInvarianten.length === 0
     ? `<div class="tegel">${vlag("alle invarianten kloppen", "ok")}<div class="klein" style="margin-top:6px">
        RLS op elke tenanttabel, geen functie uitvoerbaar door PUBLIC, de applicatierol is geen
        eigenaar en heeft geen BYPASSRLS, het auditspoor is niet muteerbaar, en geen gepubliceerde
-       kernclaim zonder bevestigd bewijs.</div></div>`
+       kernclaim die onder de R3-regels niets draagt &mdash; dus niet alleen bevestigd, maar ook
+       vastgesteld met voldoende zekerheid en uit een document dat zelf iets vaststelt
+       (migratie 0044).</div></div>`
     : tabel(
         ["Soort", "Onderwerp", "Bevinding"],
         alleInvarianten.map((i) => [vlag(i.soort, "fout"), esc(i.onderwerp), esc(i.bevinding)]),

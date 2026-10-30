@@ -74,14 +74,31 @@ async function main(): Promise<number> {
 
   const keurdoor = argument("goedkeuren");
   if (keurdoor) {
-    await metOrganisatie(pool, { organisatieId, gebruikerId: Number.parseInt(keurdoor, 10) }, (c) =>
-      keurGoed(
-        c,
-        versieId,
-        Number.parseInt(keurdoor, 10),
-        `goedgekeurd via CLI door gebruiker ${keurdoor}`,
-      ),
+    /* DE UITSLAG WORDT GELEZEN, en dat is geen formaliteit. keurGoed()
+       geeft sinds de acceptatiecorrectie een uitslag terug in plaats
+       van void: bewijs dat niet meer draagt is een normale uitkomst en
+       geen exceptie, want de blokkade moet de commit halen om
+       auditeerbaar te zijn. Een CLI die de uitslag negeerde, zou
+       'goedgekeurd' melden en daarna doorlopen naar publiceer(). */
+    const uitslag = await metOrganisatie(
+      pool,
+      { organisatieId, gebruikerId: Number.parseInt(keurdoor, 10) },
+      (c) =>
+        keurGoed(
+          c,
+          versieId,
+          Number.parseInt(keurdoor, 10),
+          `goedgekeurd via CLI door gebruiker ${keurdoor}`,
+        ),
     );
+    if (!uitslag.goedgekeurd) {
+      process.stderr.write(
+        `GOEDKEURING GEBLOKKEERD voor versie ${versieId}\n  ${uitslag.reden}\n` +
+          uitslag.blokkades.map((b) => `    - ${b}\n`).join("") +
+          "  De blokkade staat in intel.publicatiebesluiten.\n",
+      );
+      return 1;
+    }
     process.stdout.write(`versie ${versieId} goedgekeurd door gebruiker ${keurdoor}\n`);
   }
 
