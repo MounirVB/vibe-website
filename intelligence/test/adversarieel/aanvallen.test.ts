@@ -514,7 +514,22 @@ describe("adversariële gevallen", () => {
   // ---------- 9. dubbele zoekintentie ----------
 
   test("een onderwerp met een bestaande pagina levert UPDATE_EXISTING, niet een nieuwe URL", async () => {
-    const b = await bron({ sleutel: "dubbelintentie", uitgever: "Toezichthouder", primair: true, betrouwbaarheid: 5 });
+    /* DE BRONSLEUTEL IS IN R3 ECHT GEWORDEN, en dat is geen cosmetiek.
+       Hij stond op 'dubbelintentie', een sleutel die niet in
+       bronnen/register.ts bestaat. R3 leidt het GEZAG van een uitgever
+       uit dat register af, en een onbekende sleutel valt naar het
+       laagste gezag (MARKT) — de veilige kant, want "ik weet de
+       bevoegdheid niet" mag geen "bevoegd" worden. Gevolg: de claims
+       bevestigden zichzelf niet meer en het besluit werd MONITOR.
+
+       Deze toets gaat over BESLUITLOGICA — bezit een pagina de
+       zoekintentie al — en niet over brongezag. Daarom draagt de
+       fixture nu een echt geregistreerd bevoegd gezag. Dat de
+       onbekende sleutel niet meer bevestigt is een eigenschap die het
+       waard is om vast te leggen, en dat gebeurt dan ook: zie
+       'een bron buiten het register kan geen claim bevestigen'
+       hieronder. */
+    const b = await bron({ sleutel: "acm-besluiten", uitgever: "Toezichthouder", primair: true, betrouwbaarheid: 5 });
     const titel = "Subsidieregeling verlengd met een plafond van 90 MW";
     await item(b, {
       externId: "dubbel-1",

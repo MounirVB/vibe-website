@@ -288,9 +288,102 @@ function basis(overschrijf: Partial<NieuwsselectieInvoer> = {}): NieuwsselectieI
     nieuwsteBrondatum: "2026-10-25",
     bestaandeNieuwsSlugs: new Set<string>(),
     vandaag: "2026-10-29",
+    /* R3 — de basiskandidaat heeft een dragende claim en een document
+       dat zelf iets vaststelt. Dat is de GEZONDE stand; de toetsen die
+       de nieuwe poorten uitproberen zetten hem expliciet om. Zonder
+       deze velden zou elke bestaande toets op de nieuwe gronden
+       struikelen en zouden ze niets meer over hun eigen onderwerp
+       zeggen. */
+    dragendeClaims: 2,
+    claimsPerModaliteit: { VASTGESTELD: 2 },
+    documentsoorten: ["OFFICIELE_REGELGEVING"],
     ...overschrijf,
   };
 }
+
+describe("E3 — R3: een bericht rust op een dragende claim", () => {
+  test("zonder dragende claim is de kandidaat ongeschikt, ook met bevestigde uitspraken", () => {
+    /* De gemeten situatie: 45 bevestigde claims met bewijs_kwaliteit 5
+       uit één branchevereniging, waaronder een verzoek aan de Kamer. De
+       oude poort keek alleen naar `uitsprakenBevestigd` en liet dat
+       door. */
+    const r = beoordeelNieuwswaarde(
+      basis({
+        uitsprakenBevestigd: 45,
+        besteBewijskwaliteit: 5,
+        dragendeClaims: 0,
+        claimsPerModaliteit: { VOORSTEL: 40, VERWACHTING: 5 },
+      }),
+    );
+    assert.equal(r.geschikt, false);
+    assert.ok(
+      r.afwijsgronden.some((g) => g.includes("geen dragende claim")),
+      r.afwijsgronden.join(" | "),
+    );
+    assert.ok(
+      r.afwijsgronden.some((g) => g.includes("VOORSTEL")),
+      "de grond hoort de verdeling te noemen, zodat een redacteur weet wat eraan schort",
+    );
+  });
+
+  test("NIET GEMETEN is geen nul en zegt dat ook", () => {
+    const r = beoordeelNieuwswaarde(
+      basis({ dragendeClaims: null, claimsPerModaliteit: { "zonder modaliteit": 3 } }),
+    );
+    assert.equal(r.geschikt, false);
+    assert.ok(
+      r.afwijsgronden.some((g) => g.includes("NIET GEMETEN")),
+      r.afwijsgronden.join(" | "),
+    );
+    assert.ok(
+      !r.afwijsgronden.some((g) => g.includes("geen dragende claim")),
+      "een ontbrekend oordeel mag niet als afwijzing worden gepresenteerd",
+    );
+  });
+
+  test("alle bronnen een navertelling of lobby levert een eigen grond", () => {
+    const r = beoordeelNieuwswaarde(
+      basis({ documentsoorten: ["SECUNDAIRE_BERICHTGEVING", "LOBBYDOCUMENT"] }),
+    );
+    assert.equal(r.geschikt, false);
+    assert.ok(
+      r.afwijsgronden.some((g) => g.includes("navertelling, opinie of lobby")),
+      r.afwijsgronden.join(" | "),
+    );
+  });
+
+  test("één document dat zelf iets vaststelt is genoeg om die grond te halen", () => {
+    const r = beoordeelNieuwswaarde(
+      basis({ documentsoorten: ["SECUNDAIRE_BERICHTGEVING", "OFFICIEEL_BESLUIT"] }),
+    );
+    assert.ok(
+      !r.afwijsgronden.some((g) => g.includes("navertelling, opinie of lobby")),
+      r.afwijsgronden.join(" | "),
+    );
+    assert.equal(r.geschikt, true, r.oordeel);
+  });
+
+  test("een lege documentsoortlijst levert GEEN grond — dat is niet gemeten", () => {
+    /* Een gebeurtenis waarvan geen enkele bron een soort heeft, is niet
+       hetzelfde als een gebeurtenis met uitsluitend zwakke bronnen. De
+       dragende-claimpoort vangt dat geval al via NIET GEMETEN. */
+    const r = beoordeelNieuwswaarde(basis({ documentsoorten: [] }));
+    assert.ok(
+      !r.afwijsgronden.some((g) => g.includes("navertelling, opinie of lobby")),
+      r.afwijsgronden.join(" | "),
+    );
+    assert.equal(r.geschikt, true, r.oordeel);
+  });
+
+  test("de bestaande drempels zijn niet verlaagd", () => {
+    assert.deepEqual({ ...NIEUWSDREMPELS }, {
+      materialiteit: 45,
+      bewijskwaliteit: 4,
+      totaalscore: 45,
+      maxLeeftijdDagen: 120,
+    });
+  });
+});
 
 describe("E — de nieuwsselectie weigert vooraf wat verderop toch zou stranden", () => {
   test("de basiskandidaat is geschikt en draagt drie assen", () => {

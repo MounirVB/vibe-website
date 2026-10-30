@@ -1641,6 +1641,15 @@ ${tabel(
           bron_titel: string | null;
           bron_datum: string | null;
           injectie: boolean | null;
+          documentsoort: string | null;
+          gezag: string | null;
+          besluit_van: string | null;
+          soort_uitleg: string | null;
+          modaliteit: string | null;
+          zekerheid: string | null;
+          mod_uitleg: string | null;
+          plafond: number | null;
+          origineel_gezien: boolean | null;
         }>(
           c,
           `select u.id, iu.rol, u.soort, u.tekst,
@@ -1648,7 +1657,18 @@ ${tabel(
                   u.verificatie_status as status, u.bewijs_kwaliteit as kwaliteit,
                   bd.uitgever, bd.canonieke_url as bron_url, bd.titel as bron_titel,
                   coalesce(bd.gepubliceerd_op, bv.opgehaald_op)::date::text as bron_datum,
-                  bv.injectie_verdacht as injectie
+                  bv.injectie_verdacht as injectie,
+                  /* R3 — de hele keten in één rij: welke soort document, welk
+                     gezag, welke modaliteit, en of het origineel is
+                     teruggevonden. Zonder deze velden ziet een redacteur
+                     'bevestigd, kwaliteit 5' en niet WAAROM. */
+                  bv.documentsoort, bv.documentsoort_gezag as gezag,
+                  bv.beschrijft_besluit_van as besluit_van,
+                  bv.documentsoort_grondslag->>'uitleg' as soort_uitleg,
+                  u.modaliteit, u.modaliteit_zekerheid::text as zekerheid,
+                  u.modaliteit_grondslag->>'uitleg' as mod_uitleg,
+                  u.bewijskracht_plafond as plafond,
+                  u.primaire_bron_bevestigd as origineel_gezien
              from intel.inhoud_uitspraken iu
              join intel.uitspraken u on u.id = iu.uitspraak_id
              left join intel.uitspraak_bronnen ub
@@ -1821,24 +1841,77 @@ ${tabel(
     : ""
 }
 
-<h2>De bronnen, om te controleren</h2>
+<h2>De keten: bron &rarr; document &rarr; claim &rarr; verificatie</h2>
+<p class="uitleg">Per claim staat hier waarom hij draagt of niet draagt. <strong>Soort</strong> is
+wat het document IS; <strong>gezag</strong> is wat de uitgever mag vaststellen; <strong>modaliteit</strong>
+is of de zin iets vaststelt, voorstelt of verwacht. Een claim draagt een bericht alleen als hij
+bevestigd is &eacute;n vastgesteld met voldoende zekerheid. Klap een rij open voor de grondslag.</p>
 ${tabel(
-  ["Rol", "Soort", "Waarde", "Status", "Kwaliteit", "Bron", "Datum"],
-  d.uitspraken.map((u) => [
-    esc(u.rol),
-    esc(u.soort),
-    u.waarde === null ? "<span class=\"bij\">geen getal</span>" : esc(`${u.waarde} ${u.eenheid ?? ""}`),
-    u.status === "bevestigd" ? vlag(u.status, "ok") : vlag(u.status, "waarschuwing"),
-    esc(String(u.kwaliteit ?? "-")),
-    u.bron_url
-      ? `<a href="${esc(u.bron_url)}" rel="noreferrer noopener nofollow" target="_blank">${esc(
-          (u.bron_titel ?? u.uitgever ?? u.bron_url).slice(0, 70),
-        )}</a>${u.injectie ? ` ${vlag("injectieverdacht", "fout")}` : ""}`
-      : vlag("geen primaire bron", "fout"),
-    esc(u.bron_datum ?? "-"),
-  ]),
+  ["Rol", "Waarde", "Status", "Kw.", "Modaliteit", "Documentsoort", "Gezag", "Bron", "Datum"],
+  d.uitspraken.map((u) => {
+    const zeker = u.zekerheid === null ? null : Number(u.zekerheid);
+    const draagt =
+      u.status === "bevestigd" && u.modaliteit === "VASTGESTELD" && (zeker ?? 0) >= 0.5;
+    /* DE MODALITEITSKOLOM ZEGT OOK WAT HIJ BETEKENT. 'VOORSTEL' alleen
+       is voor een redacteur niet genoeg; hij moet weten dat zo'n claim
+       geen feit mag worden. */
+    const modCel =
+      u.modaliteit === null
+        ? vlag("niet beoordeeld", "waarschuwing")
+        : u.modaliteit === "VASTGESTELD"
+          ? (zeker ?? 0) >= 0.5
+            ? vlag(`vastgesteld ${zeker?.toFixed(2)}`, "ok")
+            : vlag(`vastgesteld, onzeker ${zeker?.toFixed(2)}`, "waarschuwing")
+          : vlag(`${u.modaliteit.toLowerCase()} — geen feit`, "waarschuwing");
+    const soortCel =
+      u.documentsoort === null
+        ? vlag("niet geclassificeerd", "waarschuwing")
+        : `${esc(u.documentsoort)}${
+            u.besluit_van
+              ? `<div class="klein">besluit van ${esc(u.besluit_van)} — ${
+                  u.origineel_gezien
+                    ? "origineel teruggevonden"
+                    : "origineel NIET teruggevonden"
+                }</div>`
+              : ""
+          }`;
+    const grondslag = [
+      u.soort_uitleg ? `<strong>documentsoort:</strong> ${esc(u.soort_uitleg)}` : "",
+      u.mod_uitleg ? `<strong>modaliteit:</strong> ${esc(u.mod_uitleg)}` : "",
+      u.plafond === null
+        ? ""
+        : `<strong>bewijskrachtplafond:</strong> ${u.plafond} (de documentsoort stond niet meer toe)`,
+    ]
+      .filter(Boolean)
+      .join("<br>");
+    return [
+      esc(u.rol) + (draagt ? ` ${vlag("draagt", "ok")}` : ""),
+      u.waarde === null ? "<span class=\"bij\">geen getal</span>" : esc(`${u.waarde} ${u.eenheid ?? ""}`),
+      u.status === "bevestigd" ? vlag(u.status, "ok") : vlag(u.status, "waarschuwing"),
+      esc(String(u.kwaliteit ?? "-")),
+      modCel,
+      soortCel,
+      esc(u.gezag ?? "-"),
+      u.bron_url
+        ? `<a href="${esc(u.bron_url)}" rel="noreferrer noopener nofollow" target="_blank">${esc(
+            (u.bron_titel ?? u.uitgever ?? u.bron_url).slice(0, 56),
+          )}</a>${u.injectie ? ` ${vlag("injectieverdacht", "fout")}` : ""}${
+            grondslag ? `<details><summary class="klein">grondslag</summary><div class="klein">${grondslag}</div></details>` : ""
+          }`
+        : vlag("geen primaire bron", "fout"),
+      esc(u.bron_datum ?? "-"),
+    ];
+  }),
   "Geen uitspraken gebonden. Zonder bewijs kan dit concept niet gepubliceerd worden.",
 )}
+<p class="uitleg">Claims die dragen: <strong>${
+  d.uitspraken.filter(
+    (u) =>
+      u.status === "bevestigd" &&
+      u.modaliteit === "VASTGESTELD" &&
+      (u.zekerheid === null ? 0 : Number(u.zekerheid)) >= 0.5,
+  ).length
+}</strong> van ${d.uitspraken.length}. Een bericht zonder dragende claim hoort niet gepubliceerd te worden.</p>
 
 <h2>De tekst</h2>
 <pre class="concepttekst">${esc(v.body_markdown)}</pre>

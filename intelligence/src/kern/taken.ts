@@ -115,6 +115,22 @@ export const PLAN: readonly PlanRegel[] = [
 
      PUBLICEERT NIETS. De kandidaat komt op 'open' en wacht op een
      mens. */
+  /* NIEUW IN R3 — de inhaalronde van de documentclassificatie.
+     ------------------------------------------------------------------
+     `clusteren` classificeert elke versie die hij langs ziet komen, dus
+     nieuwe documenten zijn gedekt. Deze taak is er voor de twee gevallen
+     die dat niet zijn:
+
+       1. de versies die er al stonden toen R3 werd uitgerold — gemeten
+          op 30 oktober 2026 waren dat 3.483 documentversies;
+       2. de versies met een oordeel van een OUDERE motorversie. Gaat
+          DOCUMENTSOORT_VERSIE omhoog, dan staan er twee generaties
+          oordelen door elkaar en is een vergelijking tussen documenten
+          niet eerlijk meer.
+
+     Hij staat op 24, dus NA clusteren (20) en VOOR beoordelen (30): de
+     besluitmotor hoort met geclassificeerde documenten te werken. */
+  { soort: "documentclassificatie", prioriteit: 24, toelichting: "documentversies zonder of met een verouderde soort classificeren" },
   { soort: "nieuwsselectie", prioriteit: 35, toelichting: "gebeurtenissen op nieuwswaarde wegen en NEWS_ITEM-kandidaten schrijven" },
   { soort: "regio", prioriteit: 40, toelichting: "gebieden binden en regiovoorstellen maken" },
   { soort: "signaleren", prioriteit: 50, toelichting: "commerciele signalen uit SALES_SIGNAL-kandidaten" },
@@ -366,6 +382,57 @@ export const REGISTER: Record<string, Handler> = {
     const { neemBesluiten } = await import("../besluit/motor.ts");
     const r = await neemBesluiten(pool, organisatieId, {});
     return `beoordeeld ${r.beoordeeld}, kandidaten ${r.kandidatenGeschreven}`;
+  },
+
+  /**
+   * NIEUW IN R3 — de documentclassificatie inhalen.
+   *
+   * SCHRIJFT ALLEEN OP brondocument_versies, en alleen de zes
+   * classificatiekolommen. Hij raakt geen claim, geen gebeurtenis en
+   * geen kandidaat: een herclassificatie verandert wat we van een
+   * document WETEN, niet wat er eerder mee is gebeurd.
+   *
+   * IDEMPOTENT. `bepaalDocumentsoort()` is puur en de versietekst is
+   * onveranderlijk (versies_hash_uniek), dus twee rondes geven hetzelfde
+   * resultaat. De query pakt alleen rijen zonder soort of met een andere
+   * motorversie, dus een derde ronde doet niets meer.
+   */
+  async documentclassificatie(pool, organisatieId) {
+    const { haalClassificatieIn } = await import("../pijplijn/documentclassificatie.ts");
+    const { DOCUMENTSOORT_VERSIE } = await import("../pijplijn/documentsoort.ts");
+    const { metOrganisatie } = await import("./db.ts");
+
+    const { verifieerNavertellingen } = await import("../pijplijn/bronverificatie.ts");
+
+    const r = await metOrganisatie(pool, { organisatieId }, (c) =>
+      haalClassificatieIn(c, organisatieId, { huidigeVersie: DOCUMENTSOORT_VERSIE }),
+    );
+
+    /* DE VERIFICATIE DRAAIT NÁ DE CLASSIFICATIE, in dezelfde taak.
+       Hij heeft `beschrijft_besluit_van` nodig, en dat veld komt uit de
+       classificatie. Twee taken zou een venster openen waarin de ene al
+       wel en de andere nog niet is gedraaid; dan zou de uitslag van de
+       verificatie van de planningsorde afhangen. */
+    const v = await metOrganisatie(pool, { organisatieId }, (c) =>
+      verifieerNavertellingen(c, organisatieId, {}),
+    );
+
+    /* DE VERDELING IN DE UITKOMSTREGEL. Een telling zonder verdeling
+       zegt op productie niets: 2.000 geclassificeerd kan betekenen dat
+       het goed gaat of dat alles in één soort valt. De drie zwaarste
+       soorten passen in een regel. */
+    const top = Object.entries(r.perSoort)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([s, n]) => `${n}x ${s}`)
+      .join(" ;; ");
+
+    return (
+      `motor ${DOCUMENTSOORT_VERSIE} — bekeken ${r.bekeken}, geclassificeerd ${r.geclassificeerd}` +
+      (top ? ` — ${top}` : "") +
+      ` — bronverificatie: ${v.teruggevonden} teruggevonden, ` +
+      `${v.nietTeruggevonden} niet teruggevonden, ${v.nietVanToepassing} n.v.t.`
+    );
   },
 
   /**

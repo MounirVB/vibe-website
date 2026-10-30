@@ -145,7 +145,61 @@ type UitspraakRij = {
   bron_url: string;
   versie_id: number;
   gepubliceerd_op: Date | null;
+  /* R3 — zie de toelichting bij splitsNaarModaliteit(). */
+  modaliteit: string | null;
+  modaliteit_zekerheid: string | null;
+  documentsoort: string | null;
+  primaire_bron_bevestigd: boolean;
 };
+
+/**
+ * R3 — SCHEIDT WAT VASTSTAAT VAN WAT GEVRAAGD OF VERWACHT WORDT.
+ *
+ * Sectie 7 van de R3-opdracht eist "duidelijke onderscheidingen tussen
+ * feiten, verwachtingen en advies". Dat was hier niet te maken: elke
+ * bevestigde uitspraak met een getal landde onder 'Wat er is
+ * vastgelegd', ongeacht of de bronzin iets vaststelde of iets vroeg.
+ *
+ * De gemeten consequentie. In productie stond op 30 oktober 2026 deze
+ * rij bevestigd met bewijs_kwaliteit 5:
+ *
+ *   waarde 125000000 EUR — 'Schaal daarom de bestaande Flex-E-regeling
+ *   op naar een Flex-E regeling XL van structureel EUR 125 miljoen per
+ *   jaar (2027-2030).'
+ *
+ * Als concept zou dat '**125000000 EUR** — vastgelegd door Netbeheer
+ * Nederland' worden, onder een kop die zegt dat het vastligt. Het is een
+ * verzoek aan de Tweede Kamer.
+ *
+ * Een claim die niet draagbaar is als feit verdwijnt daarom NIET — dat
+ * zou de redacteur informatie onthouden — maar gaat naar een eigen
+ * sectie met zijn modaliteit erbij.
+ */
+function splitsNaarModaliteit(rijen: readonly UitspraakRij[]): {
+  readonly vastgesteld: readonly UitspraakRij[];
+  readonly nietVastgesteld: readonly UitspraakRij[];
+} {
+  const vastgesteld: UitspraakRij[] = [];
+  const nietVastgesteld: UitspraakRij[] = [];
+  for (const u of rijen) {
+    const zeker = u.modaliteit_zekerheid === null ? 0 : Number(u.modaliteit_zekerheid);
+    /* NULL IS NIET 'VASTGESTELD'. Een claim zonder modaliteitsoordeel
+       is niet beoordeeld, en dat is geen grond om hem als feit te
+       presenteren. Hij gaat naar de tweede sectie met die reden erbij. */
+    if (u.modaliteit === "VASTGESTELD" && zeker >= 0.5) vastgesteld.push(u);
+    else nietVastgesteld.push(u);
+  }
+  return { vastgesteld, nietVastgesteld };
+}
+
+/** Het label dat een niet-vastgestelde claim in de tekst krijgt. */
+function modaliteitLabel(u: UitspraakRij): string {
+  if (u.modaliteit === "VOORSTEL") return "VOORSTEL — nog niet vastgesteld";
+  if (u.modaliteit === "VERWACHTING") return "VERWACHTING — een prognose, geen stand";
+  if (u.modaliteit === null) return "NIET BEOORDEELD — modaliteit onbekend";
+  const zeker = u.modaliteit_zekerheid === null ? 0 : Number(u.modaliteit_zekerheid);
+  return `ONZEKER — modaliteit ${u.modaliteit} met zekerheid ${zeker.toFixed(2)}`;
+}
 
 function soortVanBesluit(besluit: string): OpgebouwdConcept["soort"] {
   switch (besluit) {
@@ -199,7 +253,11 @@ export function bouwConcept(
   };
 
   const bevestigd = uitspraken.filter((u) => u.verificatie_status === "bevestigd");
-  const metWaarde = bevestigd.filter((u) => u.waarde_numeriek !== null);
+  /* R3 — alleen een VASTGESTELDE claim mag onder 'Wat er is vastgelegd'.
+     Zie splitsNaarModaliteit() voor de gemeten reden. */
+  const gesplitst = splitsNaarModaliteit(bevestigd.filter((u) => u.waarde_numeriek !== null));
+  const metWaarde = gesplitst.vastgesteld;
+  const nietVastgesteldeWaarden = gesplitst.nietVastgesteld;
   const uitgevers = [...new Set(uitspraken.map((u) => u.uitgever))];
 
   const soort = soortVanBesluit(invoer.besluit);
@@ -335,6 +393,26 @@ export function bouwConcept(
   }
   regels.push("");
 
+  /* R3 — WAT NIET VASTSTAAT, STAAT APART EN MET ZIJN LABEL.
+     Deze sectie verschijnt alleen als er iets in hoort. Een lege sectie
+     met de kop 'Wat is voorgesteld of verwacht' zou suggereren dat er
+     naar gekeken is terwijl er niets was. */
+  if (nietVastgesteldeWaarden.length > 0) {
+    regels.push("## Wat is voorgesteld of verwacht");
+    regels.push("");
+    regels.push(
+      "*De onderstaande cijfers staan NIET vast. Ze komen uit een voorstel, een verwachting " +
+        "of een bronzin waarvan de strekking niet eenduidig is. Ze horen in een bericht alleen " +
+        "met deze kwalificatie erbij, en nooit als geldende regel.*",
+    );
+    regels.push("");
+    for (const u of nietVastgesteldeWaarden.slice(0, 10)) {
+      const waarde = `${nlGetal(u.waarde_numeriek)} ${u.eenheid ?? ""}`.trim();
+      regels.push(`- **${waarde}** — ${modaliteitLabel(u)}. Genoemd door ${u.uitgever}.`);
+    }
+    regels.push("");
+  }
+
   regels.push("## Wat dit betekent voor bedrijven");
   regels.push("");
   regels.push(
@@ -381,7 +459,26 @@ export function bouwConcept(
     gezien.add(u.bron_url);
     const datum = nlDatum(u.gepubliceerd_op);
     bronnenSectie.push({ uitgever: u.uitgever, url: u.bron_url, datum });
-    regels.push(`- ${u.uitgever}${datum ? `, ${datum}` : ""} — <${u.bron_url}>`);
+    /* R3 — DE SOORT VAN HET DOCUMENT STAAT BIJ DE BRON.
+       'Netbeheer Nederland, 12 oktober 2026' zegt niets over of dat
+       document een besluit navertelde of erom vroeg. Een lezer die de
+       bronnenlijst naloopt hoort dat te zien, en een redacteur die de
+       sterkte van een bericht weegt helemaal.
+
+       Is het een navertelling, dan staat er ook bij of het origineel
+       bij het bevoegde gezag is TERUGGEVONDEN. Niet-teruggevonden is
+       geen bewering dat het besluit niet bestaat; het betekent dat het
+       niet in onze eigen verzameling staat. Zie bronverificatie.ts. */
+    const soortLabel = u.documentsoort === null ? "" : ` [${u.documentsoort}]`;
+    const origineel =
+      u.documentsoort === "SECUNDAIRE_BERICHTGEVING"
+        ? u.primaire_bron_bevestigd
+          ? " — origineel teruggevonden bij het bevoegde gezag"
+          : " — origineel NIET teruggevonden in onze bronverzameling"
+        : "";
+    regels.push(
+      `- ${u.uitgever}${datum ? `, ${datum}` : ""}${soortLabel}${origineel} — <${u.bron_url}>`,
+    );
   }
   if (bronnenSectie.length === 0) regels.push("- (geen bron gebonden)");
   regels.push("");
@@ -544,7 +641,13 @@ export async function maakConcept(
               u.id, u.tekst, u.soort, u.waarde_numeriek, u.eenheid,
               u.geldig_vanaf, u.geldig_tot, u.verificatie_status,
               b.uitgever, d.canonieke_url as bron_url, v.id as versie_id,
-              d.gepubliceerd_op
+              d.gepubliceerd_op,
+              /* R3 — de modaliteit van de claim en de soort van het
+                 document waaruit hij komt. Zonder deze vier velden kan
+                 bouwConcept() niet scheiden wat vaststaat van wat
+                 gevraagd of verwacht wordt. */
+              u.modaliteit, u.modaliteit_zekerheid::text as modaliteit_zekerheid,
+              v.documentsoort, u.primaire_bron_bevestigd
          from intel.uitspraken u
          join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id
          join intel.brondocument_versies v on v.id = ub.versie_id

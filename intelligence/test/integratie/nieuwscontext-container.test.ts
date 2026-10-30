@@ -125,10 +125,27 @@ describe("de nieuwsselectie in de containerindeling", () => {
         [org, uitspraak.rows[0]!.id, versie.rows[0]!.id],
       );
       /* Pas NA de primaire bron mag de uitspraak bevestigd worden; de
-         trigger uitspraken_bewijsplicht weigert dat anders. */
-      await c.query("update intel.uitspraken set verificatie_status = 'bevestigd' where id = $1", [
-        uitspraak.rows[0]!.id,
-      ]);
+         trigger uitspraken_bewijsplicht weigert dat anders.
+
+         R3 — DE MODALITEIT HOORT HIER OOK GEZET TE WORDEN. Deze fixture
+         schrijft claims rechtstreeks met SQL en gaat dus niet door
+         schrijfUitspraken(), die de modaliteit normaal bepaalt. Zonder
+         die velden is `dragende_claims` NULL en luidt de bindende
+         afwijsgrond 'NIET GEMETEN' — correct gedrag, want een claim
+         zonder modaliteitsoordeel mag geen bericht dragen, maar dan
+         toetst deze test niet meer wat hij beweert te toetsen. De velden
+         staan hier net zo expliciet als `verificatie_status` en
+         `bewijs_kwaliteit` er al stonden. */
+      await c.query(
+        `update intel.uitspraken
+            set verificatie_status   = 'bevestigd',
+                modaliteit           = 'VASTGESTELD',
+                modaliteit_zekerheid = 0.80,
+                modaliteit_versie    = 'fixture',
+                bewijskracht_plafond = 5
+          where id = $1`,
+        [uitspraak.rows[0]!.id],
+      );
       /* De koppeling gebeurtenis -> document -> versie is wat de
          selectie als `onafhankelijke_bronnen` telt; zonder die rij is de
          bronas nul en haalt de kandidaat de totaalscoredrempel niet. */
