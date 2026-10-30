@@ -377,9 +377,21 @@ export const REGISTER: Record<string, Handler> = {
           (schaal.regels.length > 6 ? ` ;; +${schaal.regels.length - 6} meer` : "")
         : "";
 
+    /* DE CLAIMPOORT IN HET TAAKLOG.
+       Deze taak staat op prioriteit 25 en draait dus NA de
+       herbeoordeling (22) en VOOR de besluitmotor (30). Staat de poort
+       hier dicht, dan weigert beoordelen() straks — en dan hoort de
+       reden in dit log te staan en niet pas in de fout van de volgende
+       taak. Een nieuwskanaal dat stilstaat moet zichtbaar stilstaan. */
+    const poortRegel =
+      schaal.claimpoortOpenstaand === 0
+        ? ", claimpoort open"
+        : `, CLAIMPOORT DICHT: ${schaal.claimpoortOpenstaand} claim(s) wachten op ` +
+          "herbeoordeling — draai 'npm run documentsoort' en 'npm run herbeoordeel'";
+
     return (
       `bekeken ${bekeken}, verrijkt ${verrijkt}, zonder uitdrukking ${zonderUitdrukking}, ` +
-      `rondes ${rondes}, openstaande schaalcorrecties ${schaal.gevonden}${schaalDetail}`
+      `rondes ${rondes}, openstaande schaalcorrecties ${schaal.gevonden}${poortRegel}${schaalDetail}`
     );
   },
 

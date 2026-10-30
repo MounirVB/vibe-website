@@ -61,6 +61,30 @@ try {
     console.log("De oude uitspraken staan er nog; intel.uitspraak_correcties legt de keten vast.");
     console.log("Draai hierna de semantiekbackfill, zodat de nieuwe waarden hun verwoording krijgen.");
   }
+
+  /* DE STAND VAN DE CLAIMPOORT, ONVOORWAARDELIJK GEMELD.
+     Een kloon neemt het modaliteitsoordeel van het origineel over, dus
+     normaal verandert deze CLI niets aan de poort. Maar was het
+     origineel zelf nog niet gewogen onder de huidige motorversie, dan
+     erft de kloon die leegte en weigeren de besluitmotor, de
+     nieuwsselectie, de voorstellenlaag en de conceptgeneratie daarna.
+     Dat is fail-closed en dus veilig, maar het mag niet STIL gebeuren:
+     wie deze CLI draait hoort te weten of het nieuwskanaal erna loopt.
+     Daarom staat de regel er ook als het getal nul is. */
+  console.log("");
+  console.log("CLAIMPOORT");
+  if (r.claimpoortOpenstaand === 0) {
+    console.log("  open — 0 claims wachten op herbeoordeling; de nieuwsketen kan draaien.");
+  } else {
+    console.log(
+      `  DICHT — ${r.claimpoortOpenstaand} claim(s) wachten op herbeoordeling. De besluitmotor,`,
+    );
+    console.log(
+      "  de nieuwsselectie, de voorstellenlaag en de conceptgeneratie weigeren tot dat nul is.",
+    );
+    console.log("  Vervolgactie:  npm run documentsoort   &&   npm run herbeoordeel");
+    console.log("  Controleer eerst droog:  npm run herbeoordeel -- --droog");
+  }
 } finally {
   await sluitAllePools();
 }
