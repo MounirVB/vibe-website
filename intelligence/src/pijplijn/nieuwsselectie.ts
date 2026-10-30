@@ -419,7 +419,20 @@ export function beoordeelNieuwswaarde(inv: NieuwsselectieInvoer): NieuwsOordeel 
     naam: "bewijskwaliteit",
     score: Math.min(6, Math.max(0, Math.round((inv.besteBewijskwaliteit / 5) * 6))),
     max: 6,
-    bewijs: `beste bewijskwaliteit ${inv.besteBewijskwaliteit}/5 over ${inv.uitsprakenBevestigd} bevestigde van ${inv.uitsprakenTotaal} uitspraken`,
+    /* DE BEWIJSREGEL ZEGT NU WAAR HET GETAL VANDAAN KOMT.
+       Hier stond 'over N bevestigde van M uitspraken', terwijl het
+       getal uit een ongeverifieerde claim kon komen. Die regel wordt
+       in `beoordeling` opgeslagen en door de studio aan een redacteur
+       getoond; een onware regel in een bewaard oordeel is erger dan
+       geen regel, want hij wordt geloofd. De noemer is nu de
+       verzameling waaruit het maximum werkelijk is genomen. */
+    bewijs:
+      inv.dragendeClaims === null
+        ? `beste bewijskwaliteit ${inv.besteBewijskwaliteit}/5; dragende claims NIET GEMETEN ` +
+          `(${inv.uitsprakenBevestigd} bevestigd van ${inv.uitsprakenTotaal} uitspraken)`
+        : `beste bewijskwaliteit ${inv.besteBewijskwaliteit}/5 over ${inv.dragendeClaims} ` +
+          `dragende van ${inv.uitsprakenTotaal} uitspraken ` +
+          `(bevestigd: ${inv.uitsprakenBevestigd}), afgetopt op het bewijskrachtplafond`,
   });
 
   bronkwaliteit.push({
@@ -691,8 +704,39 @@ export async function nieuwsselectieronde(
               (select count(*)::int from intel.uitspraken u
                 where u.gebeurtenis_id = g.id)
                                      as uitspraken_totaal,
-              coalesce((select max(u.bewijs_kwaliteit) from intel.uitspraken u
-                          where u.gebeurtenis_id = g.id), 0)
+              /* R3 — DE BESTE BEWIJSKRACHT VAN EEN DRAGENDE CLAIM, en
+                 niet het maximum over alles.
+                 Hier stond
+                   max(u.bewijs_kwaliteit) where u.gebeurtenis_id = g.id
+                 zonder verificatie_status, zonder modaliteit en zonder
+                 aftopping op het plafond. De zustersubquery's in dit
+                 blok filteren allemaal wel; deze was de enige
+                 aggregatie zonder predicaat. Drie gevolgen:
+                   1 een ONGEVERIFIEERDE claim kon het maximum zetten,
+                     terwijl de bewijsregel eronder zegt dat het getal
+                     'over N bevestigde uitspraken' gaat;
+                   2 een claim die nog de oude, uit de UITGEVER
+                     afgeleide sterkte draagt (bewijs_kwaliteit boven
+                     zijn plafond) telde met die oude waarde mee;
+                   3 de zespuntscomponent kon daardoor 6 geven waar 5
+                     hoort.
+                 Dezelfde voorwaarden als dragende_claims hieronder,
+                 plus least() op het plafond. De aftopping is geen
+                 dubbelop: na een volledige herbeoordeling staat
+                 bewijs_kwaliteit al onder zijn plafond, maar een
+                 gekloonde of met de hand aangepaste rij hoeft dat niet
+                 te zijn, en dan hoort de SCORE de laagste van de twee
+                 te gebruiken.
+                 NUL IS HIER EEN GEMETEN NUL: geen dragende claim
+                 betekent geen bewijskracht, en de dragende-claimpoort
+                 wijst de gebeurtenis dan toch al af. */
+              coalesce((select max(least(u.bewijs_kwaliteit,
+                                         coalesce(u.bewijskracht_plafond, u.bewijs_kwaliteit)))
+                          from intel.uitspraken u
+                         where u.gebeurtenis_id = g.id
+                           and u.verificatie_status = 'bevestigd'
+                           and u.modaliteit = 'VASTGESTELD'
+                           and coalesce(u.modaliteit_zekerheid, 0) >= $3), 0)
                                      as beste_bewijskwaliteit,
               coalesce((select count(distinct bd.bron_id)::int
                           from intel.gebeurtenis_documenten gd
