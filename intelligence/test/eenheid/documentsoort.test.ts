@@ -355,6 +355,63 @@ describe("claimmodaliteit", () => {
     );
   });
 
+  test("een verslag over een AFGESLOTEN jaar is een vaststelling en draagt", () => {
+    /* GEMETEN GAT, gevonden bij de R3-acceptatie op de 59
+       productieclaims. Deze RVO-rij — bevoegd gezag, bevestigd,
+       bewijskracht 4 — kwam uit op zekerheid 0,20 en droeg dus niet:
+       'maakten gebruik van' zat in geen patroon en 'ruim' trok er als
+       afronding nog 0,15 af. Vier legitieme feiten bleven daardoor onder
+       de drempel. */
+    const m = bepaalModaliteit({
+      tekst:
+        "Bedrijven maakten in 2025 voor ruim € 3 miljard aan milieu-investeringen gebruik van " +
+        "het belastingvoordeel van de Milieu-investeringsaftrek (MIA) en de Vamil.",
+      documentsoort: "FEITELIJKE_MEDEDELING",
+      peildatum: "2026-05-27",
+    });
+    assert.equal(m.modaliteit, "VASTGESTELD");
+    assert.equal(m.draagbaarAlsFeit, true, m.grondslag.uitleg);
+  });
+
+  test("een TOEKOMSTIG jaartal is géén verslag — dat is het hele verschil", () => {
+    /* 'Tot 2040 investeren de netbeheerders meer dan €200 miljard' noemt
+       een jaartal dat nog niet voorbij is. Zou het jaartalsignaal daar
+       ook vuren, dan werd een investeringsplan een gemeten stand. */
+    const m = bepaalModaliteit({
+      tekst:
+        "Tot 2040 investeren de netbeheerders meer dan €200 miljard in het elektriciteitsnet.",
+      documentsoort: "FEITELIJKE_MEDEDELING",
+      peildatum: "2026-10-01",
+    });
+    assert.ok(
+      !m.grondslag.signalen.some((x) => x.startsWith("afgesloten-jaar")),
+      m.grondslag.signalen.join(" | "),
+    );
+    assert.equal(m.draagbaarAlsFeit, false);
+  });
+
+  test("zonder peildatum vuurt het jaartalsignaal niet — de veilige kant", () => {
+    /* De peildatum is de PUBLICATIEDATUM van het brondocument en niet de
+       klok; zonder datum is 'in 2025' niet te wegen. */
+    const m = bepaalModaliteit({
+      tekst: "Bedrijven maakten in 2025 gebruik van 3 miljard aan voordeel.",
+      documentsoort: "FEITELIJKE_MEDEDELING",
+    });
+    assert.ok(
+      !m.grondslag.signalen.some((x) => x.startsWith("afgesloten-jaar")),
+      m.grondslag.signalen.join(" | "),
+    );
+  });
+
+  test("de modaliteit hangt NIET aan de klok: dezelfde invoer geeft dezelfde uitslag", () => {
+    const inv = {
+      tekst: "Bedrijven maakten in 2025 voor ruim € 3 miljard gebruik van het voordeel.",
+      documentsoort: "FEITELIJKE_MEDEDELING",
+      peildatum: "2026-05-27",
+    };
+    assert.deepEqual(bepaalModaliteit(inv), bepaalModaliteit(inv));
+  });
+
   test("een prognose is een VERWACHTING", () => {
     const m = bepaalModaliteit({
       tekst: "De verwachting is dat de tarieven in 2028 verder stijgen.",
@@ -390,5 +447,47 @@ describe("claimmodaliteit", () => {
       documentsoort: "LOBBYDOCUMENT",
     });
     assert.equal(m.modaliteit, "VASTGESTELD");
+  });
+});
+
+describe("de bronsoort in het gepubliceerde record", () => {
+  test("een vaststellend document houdt de soort van zijn uitgever", async () => {
+    const { bronsoortVoorRecord } = await import("../../src/inhoud/publiceer.ts");
+    assert.equal(bronsoortVoorRecord("toezichthouder", "OFFICIEEL_BESLUIT"), "TOEZICHTHOUDER");
+    assert.equal(bronsoortVoorRecord("rijksoverheid", "OFFICIELE_REGELGEVING"), "WETGEVING");
+    assert.equal(bronsoortVoorRecord("netbeheerder", "FEITELIJKE_MEDEDELING"), "NETBEHEERDER");
+    assert.equal(bronsoortVoorRecord("statistiek", "ONDERZOEKSRAPPORT"), "STATISTIEK");
+  });
+
+  test("DE KERN — een navertelling, opinie of lobby verlaagt naar MARKTPARTIJ", async () => {
+    /* Dit is de waarde die weigerNieuws() leest om te beslissen of er
+       een DRAGENDE bron onder een bericht zit. Hij kwam uitsluitend uit
+       de uitgeverscategorie, dus een ACM-opiniestuk gold als dragend. */
+    const { bronsoortVoorRecord } = await import("../../src/inhoud/publiceer.ts");
+    for (const soort of [
+      "SECUNDAIRE_BERICHTGEVING",
+      "OPINIE",
+      "LOBBYDOCUMENT",
+      "ONVOLDOENDE_VERIFIEERBAAR",
+    ]) {
+      assert.equal(
+        bronsoortVoorRecord("toezichthouder", soort),
+        "MARKTPARTIJ",
+        `${soort} bij een toezichthouder hoort te verlagen`,
+      );
+      assert.equal(bronsoortVoorRecord("rijksoverheid", soort), "MARKTPARTIJ");
+      assert.equal(bronsoortVoorRecord("netbeheerder", soort), "MARKTPARTIJ");
+    }
+  });
+
+  test("een ONGECLASSIFICEERD document verlaagt ook — niet aantoonbaar dragend", async () => {
+    const { bronsoortVoorRecord } = await import("../../src/inhoud/publiceer.ts");
+    assert.equal(bronsoortVoorRecord("toezichthouder", null), "MARKTPARTIJ");
+    assert.equal(bronsoortVoorRecord("rijksoverheid", null), "MARKTPARTIJ");
+  });
+
+  test("een onbekende uitgeverssoort blijft MARKTPARTIJ", async () => {
+    const { bronsoortVoorRecord } = await import("../../src/inhoud/publiceer.ts");
+    assert.equal(bronsoortVoorRecord("bestaat-niet", "OFFICIEEL_BESLUIT"), "MARKTPARTIJ");
   });
 });

@@ -414,3 +414,272 @@ patroon dat je er zelf in hebt gezet.
    `BRONNEN_VAN_GEZAG` staan in code en gaan door een review. Een verkeerde
    regel daar is een echte fout; de tweede eis in `bronnenVanGezag()` (de bron
    moet óók `BEVOEGD_GEZAG` zijn) dempt dat, maar heft het niet op.
+
+---
+
+# R3 — definitieve acceptatie
+
+Toegevoegd na de acceptatieronde van 30 oktober 2026. Drie commits boven
+`633862f`: historische claimbeveiliging, het herverwerkingsmechanisme, en
+de verificatiecorrecties.
+
+## 16. De twee pull requests, en hun overlap
+
+| | PR #54 | PR #55 |
+|---|---|---|
+| titel | de observatiepunten in het rollbackplan | Nieuws R3 |
+| branch | `fix/r21-verwijzing-naar-werkelijke-observatiepunten` | `feat/nieuws-r3-documentclassificatie` |
+| head | `e40a588b563711b6855f1365ed09acad421ad3b4` | zie §24 |
+| merge-base | `dc9b8cc` | `dc9b8cc` |
+| omvang | 2 bestanden, +42/−7 | zie §24 |
+
+**Beide raken `intelligence/src/kern/taken.ts`** — #54 het commentaar op
+regel 439-440, #55 de taakhandlers. Beide mergeordes zijn getest in een
+losse worktree en **conflictvrij**; in beide uitkomsten blijft de
+correctie staan (nul foute verwijzingen) en is de R3-taak aanwezig. De
+twee blijven dus afzonderlijk beoordeelbaar en in willekeurige orde
+mergebaar.
+
+## 17. De historische claims — gemeten, niet aangenomen
+
+Read-only over de volledige productiedataset op 30 oktober 2026, met de
+R3-regels toegepast:
+
+| | |
+|---|---|
+| claims in `intel.uitspraken` | **59** |
+| oorspronkelijk bevestigd | **51** |
+| oorspronkelijk ongeverifieerd | 8 |
+| opnieuw beoordeeld | 59 (alle) |
+| bevestiging **behouden** | **5** |
+| bevestiging **ingetrokken** | **46** |
+| bewijskracht verlaagd | **59** |
+| claims zonder brongegevens | **0** |
+| getroffen gebeurtenissen | **18** |
+
+De 46 is dus exact bevestigd, en de populatie is volledig: er zijn geen
+andere historische claims door dezelfde fout geraakt, want **alle** 59
+krijgen een lagere bewijskracht en alle 51 bevestigde zijn gewogen.
+
+Per documentsoort × gezag:
+
+| soort / gezag | claims | was bevestigd | ingetrokken |
+|---|---|---|---|
+| `SECUNDAIRE_BERICHTGEVING` / BELANGENBEHARTIGER | 25 | 25 | **25** |
+| `FEITELIJKE_MEDEDELING` / BELANGENBEHARTIGER | 11 | 11 | **11** |
+| `FEITELIJKE_MEDEDELING` / MARKT | 6 | 1 | 1 |
+| `LOBBYDOCUMENT` / BELANGENBEHARTIGER | 5 | 5 | **5** |
+| `FEITELIJKE_MEDEDELING` / BEVOEGD_GEZAG | 5 | 5 | **0** |
+| `PERSBERICHT` / BELANGENBEHARTIGER | 4 | 4 | **4** |
+| `SECUNDAIRE_BERICHTGEVING` / MARKT | 2 | 0 | 0 |
+| `SECTORANALYSE` / BELANGENBEHARTIGER | 1 | 0 | 0 |
+
+Per bron:
+
+| bron | claims | was bevestigd | ingetrokken | bewijskracht |
+|---|---|---|---|---|
+| `netbeheer-nederland-nieuws` | 45 | 45 | **45** | 5→1, 5→2, 5→3 |
+| `rvo-opendata-artikelen` | 5 | 5 | **0** | 5→4 |
+| `tenderned-publicaties` | 1 | 1 | **1** | 5→2 |
+| `solar365` | 3 | 0 | 0 | 3→1, 3→2 |
+| `installatie-nl` / `warmte365` | 4 | 0 | 0 | 3→2 |
+| `energy-storage-nl` | 1 | 0 | 0 | 4→2 |
+
+De vijf behouden bevestigingen zijn alle van RVO — bevoegd gezag — en
+**alle vijf dragen** na de modaliteitscorrectie uit §21. Daaronder de
+claim achter de bestaande kandidaat g30.
+
+**Impact op de keten, gemeten:** `inhoud_versies` **0**,
+`inhoud_uitspraken` **0**, `publicaties` **0**, `publicatiebesluiten`
+**0**. Er bestaat in productie geen enkel concept, dus geen onterecht
+bevestigde claim heeft ooit een concept of een publicatie bereikt. De
+impact is volledig beperkt tot de kandidaat- en scorelaag.
+
+## 18. Het herverwerkingsmechanisme
+
+De tien eisen uit sectie 4, en waar ze zitten:
+
+| eis | hoe |
+|---|---|
+| 1 geen verlies van broninformatie | `brondocumenten` en `brondocument_versies` worden niet aangeraakt |
+| 2 geen verlies van auditgeschiedenis | één rij per wijziging in `intel.audit_gebeurtenissen`, append-only sinds 0001 |
+| 3 geen overschrijving van menselijke beoordelingen | `oordeel_bron = 'mens'` wordt niet eens geselecteerd |
+| 4 reproduceerbaar | dezelfde pure functies, met de publicatiedatum als peildatum in plaats van de klok |
+| 5 idempotent | selectie op motorversie; tweede en derde ronde zien **0** |
+| 6 herleidbaar naar een classificatieversie | `modaliteit_versie`, `documentsoort_versie`, `bewijskracht_plafond`, `herbeoordeeld_op` |
+| 7 koppelingen intact | geen `delete`; `uitspraak_bronnen`, `inhoud_uitspraken` en `gebeurtenis_documenten` onaangeroerd |
+| 8 veilig hervatbaar | id-orde met een limiet; een afgebroken ronde laat af wat af is |
+| 9 een halve ronde laat niets doorstromen | de claimpoort staat dicht zolang er iets openstaat — getoetst halverwege een ronde van `max 1` |
+| 10 nieuw en historisch onder dezelfde regels | beide gaan door `bepaalModaliteit` en `bewijskrachtPlafond` |
+
+**Geen tweede claimsysteem.** Twee nullable kolommen voor de herkomst en
+drie voor de verificatiegrondslag; geen nieuwe tabel.
+
+**De richting is eenzijdig, en dat is code.** De oude voorwaarde was
+`isPrimaireBron && betrouwbaarheid >= 4`; de nieuwe is diezelfde
+voorwaarde **plus** `magZelfBevestigen`. De nieuwe verzameling is een
+deelverzameling van de oude, dus de verwerking kan een bevestiging
+alleen intrekken. Een toets loopt alle vijftig combinaties van soort ×
+gezag langs en eist dat geen enkele een bevestiging toekent.
+
+## 19. Bewijs dat oude claims niet doorstromen
+
+Een audit over elke laag die bevestigde claims verbruikt vond **31
+plekken** die de oude waarde als waarheid behandelen, waarvan **9
+blokkerend** omdat ze naar een publiceerbaar artefact leiden:
+
+```
+besluit/motor.ts     233  de enige bewijspoort is 'minstens één bevestigde claim'
+                     251  de tak UPDATE_EXISTING kent geen bewijsdrempel
+                     268  magNieuw hangt aan bewijs_kwaliteit >= 4, niet aan het plafond
+                     368  uitspraken_bevestigd telt puur op verificatie_status
+                     372  beste_bewijskwaliteit neemt max() zonder statusfilter
+inhoud/concept.ts    189  splitsNaarModaliteit toetst gezag noch plafond
+                     552  élke bevestigde claim wordt kernclaim
+                    1011  hertoetsInhoudVersie haalt geen R3-veld op
+inhoud/publiceer.ts  642  bronsoort uit de UITGEVER, niet uit de documentsoort
+                     649  élke gebonden claim wordt een gepubliceerde claimregel
+```
+
+**De gekozen oplossing is niet tien filters maar één voorwaarde vooraf.**
+Tien voorwaarden lopen uiteen, een elfde plek wordt vergeten, en
+`and u.modaliteit is not null` in een subquery is voor een lezer niet te
+onderscheiden van een optimalisatie. `eisHerbeoordeling()` staat nu voor
+**beoordelen, nieuwsselectie, voorstel en conceptgeneratie** en gooit een
+niet-herhaalbare `IntelFout` zolang de populatie gemengd is. Is de
+herbeoordeling klaar, dan staat in de kolommen wat er hoort te staan en
+is elke bestaande query vanzelf juist.
+
+**Geen terugval.** Er is geen vlag die de poort overslaat en geen pad
+terug naar de uitgeversbetrouwbaarheid. Een toets eist dat de foutregel
+dat ook zegt.
+
+Twee plekken zijn daarnaast direct gerepareerd omdat ze het artefact
+raken en niet alleen het moment: `publiceer.ts` verlaagt de bronsoort van
+het registerrecord naar `MARKTPARTIJ` zodra het document zelf niets
+vaststelt (en ook als het ongeclassificeerd is), en laat niet-dragende
+claimregels weg met een logregel die zegt waarom. `concept.ts` bindt
+alleen dragende claims als **kernclaim**.
+
+## 20. De primaire-bronverificatie
+
+Zie de commitboodschap van `cbcd3e4` voor de acht bevindingen en hun
+reparatie. Wat de koppeling nu eist staat in de kop van
+`src/pijplijn/bronverificatie.ts`.
+
+**21 adversariële regressietoetsen** in
+`test/adversarieel/bronverificatie-grenzen.test.ts`, elk met een echte
+database: de acht scenario's uit de opdracht plus de rol van de binding,
+de afgeleide gezagkaart en de grondslag. Met een **positieve tegenproef**
+bovenaan, want een toets die groen wordt doordat de koppeling niets meer
+vindt bewijst niets.
+
+`NIET_TERUGGEVONDEN` behoudt zijn betekenis: niet aangetroffen in de
+beschikbare verzameling, **niet** bewezen afwezig. Dat staat in de
+uitslag én in de grondslag.
+
+## 21. De modaliteitscorrectie, en wat hij oplevert
+
+Vier RVO-claims kwamen uit op zekerheid 0,20 en droegen niet. Na de
+correctie uit `cbcd3e4` dragen **alle vijf** behouden bevestigingen.
+
+Dat levert geen extra geschikte kandidaat op, en de reden is een
+legitieme redactionele regel: gebeurtenis **g35** (*In 2025 ruim € 3
+miljard aan milieu-investeringen met belastingvoordeel MIA\\Vamil*) heeft
+nu **4 dragende claims en score 71**, en valt af op
+
+> de nieuwste bron is 156 dagen oud, boven de grens van 120; dat is geen
+> nieuws meer
+
+De kandidaat is dus verschoven van *geblokkeerd door een detectorgat*
+naar *geblokkeerd door een redactionele regel*, zonder dat één drempel
+is verlaagd. Dat is precies wat sectie 6 van de R3-opdracht vraagt.
+
+## 22. De read-only proefronde
+
+Op een database gevuld met de **echte 59 productieclaims**, 26
+documenten en 28 versies. De classificatieverdeling reproduceert de
+productiemeting exact (27 / 22 / 5 / 4 / 1).
+
+| | droge ronde | echte ronde |
+|---|---|---|
+| bekeken | 59 | 59 |
+| herbeoordeeld | 59 | 59 |
+| bevestiging behouden | 5 | 5 |
+| bevestiging ingetrokken | **46** | **46** |
+| bewijskracht verlaagd | 59 | 59 |
+| claims zonder brongegevens | 0 | 0 |
+| vraagt menselijke controle | 0 | 0 |
+| wachtend ná de ronde | **59** (ongewijzigd) | **0** |
+| auditregels | **0** | **59** |
+
+De droge ronde laat de populatie aantoonbaar ongemoeid: het aantal
+wachtende claims blijft 59 en er is geen auditregel.
+
+**Primaire-bronverificatie** over de 27 navertellingen: **0
+teruggevonden, 0 ambigu**, 13 niet teruggevonden, 14 niet van
+toepassing. Dat is geen tekortkoming van de verificatie maar een
+dekkingsopdracht: `acm-besluiten` bevat één tariefgerelateerd document
+(*Beslissingen op bezwaren tegen tariefbeschikkingen Bonaire 2026*) en
+geen Nederlands 2027-tariefbesluit.
+
+**Eindstand van de claims:** 5 bevestigd met bewijskracht 4, 54
+ongeverifieerd met bewijskracht 1–3.
+
+*Onderscheid in de herkomst van deze cijfers.* De tellingen in §17 zijn
+**gemeten productiegegevens** (read-only query's tegen de
+productiedatabase, met de R3-functies lokaal toegepast). De tabel in deze
+paragraaf komt uit een **lokale kopie** van die gegevens; bij het zaaien
+zijn `onderwerp` en `soort` genormaliseerd, wat alleen de
+bronverificatiekoppeling raakt en niet de classificatie. De A/B/C-tabel
+in §7 is een **simulatie**: hij draait de echte beoordelingsfuncties over
+de echte gegevens zonder iets te schrijven.
+
+## 23. Gecontroleerde productievolgorde
+
+Drie stappen die **niet** samen mogen vallen, met de reden per grens.
+
+**A · Schemawijziging.** Merge van PR #55 draait via de
+`preDeployCommand` op `vibe-intel-api` automatisch `npm run migreer`, dus
+0042 en 0043 worden bij de merge toegepast. Beide zijn puur toevoegend:
+0 DML, 0 destructieve DDL, alles nullable. Na deze stap draait de R3-code
+en staat de **claimpoort dicht** — de besluitmotor, de nieuwsselectie, de
+voorstellenlaag en de conceptgeneratie weigeren, met een
+configuratiefout die zegt wat er moet gebeuren. Dat is de bedoeling: er
+wordt niets besloten op een gemengde populatie.
+
+*Stopvoorwaarde:* faalt de migratie of staat er drift, dan stoppen. Er is
+geen datamutatie om terug te draaien.
+
+**B · Historische herbeoordeling.** `npm run herbeoordeel -- --droog`
+eerst, en de uitslag vergelijken met §22. Pas daarna zonder `--droog`,
+desgewenst in porties met `--max`. Elke wijziging landt in het
+append-only auditlogboek.
+
+*Stopvoorwaarde:* wijkt de droge uitslag af van §22, dan stoppen en
+rapporteren — dan is de populatie anders dan gemeten. Loopt de echte
+ronde vast, dan is dat veilig: wat gedaan is blijft, en de claimpoort
+houdt de rest buiten elke beslissing.
+
+**C · Activering.** De poort gaat vanzelf open zodra het aantal
+wachtende claims nul is. Daarna de pijplijn draaien en de uitslag van de
+nieuwsselectie vergelijken met de verwachting: **1 geschikte kandidaat**
+(g30). Pas daarna is R3 werkelijk actief.
+
+*Waarom deze orde en geen andere.* B kan niet voor A, want hij heeft de
+kolommen van 0042 en 0043 nodig. C kan niet voor B, want dan zou een
+laag beslissen op een gemengde populatie — en precies dat houdt de
+claimpoort tegen. A zonder B is een veilige tussentoestand waarin het
+nieuwskanaal stilstaat; dat is aanvaardbaar en zichtbaar, en het is beter
+dan een halve waarheid.
+
+**Herstelmogelijkheden.** Na A: revert van de merge of een
+Railway-rollback; geen databaseactie nodig. Na B: het auditlogboek draagt
+per claim de voor- en nawaarde, dus een gerichte terugzetting is te
+construeren — maar dat is een eigen besluit met een eigen opdracht, geen
+automatisme. Na C: de pijplijn opnieuw draaien; er is tot een menselijke
+goedkeuring niets gepubliceerd.
+
+**Geen productieherverwerking uitgevoerd.** Migratie 0042 en 0043 staan
+niet in productie (gemeten: 41 toegepast, 0 openstaand, 0 drift), er is
+geen herbeoordeling gedraaid en er is geen artikel gepubliceerd.

@@ -36,6 +36,8 @@ import { maakWegwerpdatabase, maakOrganisatie, alsEigenaar, type Wegwerpdatabase
 import { configVergeten } from "../../src/kern/config.ts";
 import { metOrganisatie } from "../../src/kern/db.ts";
 import { REGISTER } from "../../src/kern/taken.ts";
+import { MODALITEIT_VERSIE } from "../../src/pijplijn/claimmodaliteit.ts";
+import { DOCUMENTSOORT_VERSIE } from "../../src/pijplijn/documentsoort.ts";
 import { NIEUWSMOTOR_VERSIE, nieuwsselectieronde } from "../../src/pijplijn/nieuwsselectie.ts";
 import { leesNieuwsContext } from "../../src/site/nieuwscontext.ts";
 
@@ -136,15 +138,32 @@ describe("de nieuwsselectie in de containerindeling", () => {
          toetst deze test niet meer wat hij beweert te toetsen. De velden
          staan hier net zo expliciet als `verificatie_status` en
          `bewijs_kwaliteit` er al stonden. */
+      /* De motorVERSIES moeten de ECHTE zijn, niet 'fixture'. De
+         claimpoort (pijplijn/claimpoort.ts) weigert elke laag die bewijs
+         weegt zolang er claims zijn met een oordeel van een andere
+         motorversie — en een fixturewaarde is een andere motorversie.
+         Dat is geen hindernis maar precies de bedoeling: een claim met
+         een onbekend oordeel is geen bewijs. Een fixture die dat omzeilt
+         zou de poort uit de toets wegnemen. */
       await c.query(
         `update intel.uitspraken
             set verificatie_status   = 'bevestigd',
                 modaliteit           = 'VASTGESTELD',
                 modaliteit_zekerheid = 0.80,
-                modaliteit_versie    = 'fixture',
-                bewijskracht_plafond = 5
+                modaliteit_versie    = $2,
+                bewijskracht_plafond = 5,
+                oordeel_bron         = 'motor',
+                herbeoordeeld_op     = now()
           where id = $1`,
-        [uitspraak.rows[0]!.id],
+        [uitspraak.rows[0]!.id, MODALITEIT_VERSIE],
+      );
+      await c.query(
+        `update intel.brondocument_versies
+            set documentsoort        = 'OFFICIELE_REGELGEVING',
+                documentsoort_gezag  = 'BEVOEGD_GEZAG',
+                documentsoort_versie = $2
+          where id = $1`,
+        [versie.rows[0]!.id, DOCUMENTSOORT_VERSIE],
       );
       /* De koppeling gebeurtenis -> document -> versie is wat de
          selectie als `onafhankelijke_bronnen` telt; zonder die rij is de
