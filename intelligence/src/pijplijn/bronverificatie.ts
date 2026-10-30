@@ -72,6 +72,10 @@
      · beide kanten hangen met `rol = 'primair'` aan hun document;
      · het origineel is NIET LATER gepubliceerd dan de navertelling, en
        niet meer dan TIJDVENSTER_DAGEN eerder;
+     · komt het uit een bron die bekendmakingen van MEERDERE instanties
+       bundelt (de Staatscourant, het Gemeenteblad), dan moet het
+       document het gezag ook ZELF noemen — een bundel is een kanaal en
+       geen bestuursorgaan; nieuw in v3, zie GEBUNDELDE_BEKENDMAKINGEN;
      · en er is PRECIES ÉÉN treffer.
 
    DIE LAATSTE IS DE BELANGRIJKSTE. Bij meerdere kandidaten is de
@@ -130,12 +134,17 @@ import type pg from "pg";
 import { maakLogger } from "../kern/log.ts";
 import { BRONNEN } from "../bronnen/register.ts";
 import { NOODZAKELIJKE_ZEKERHEID } from "./claimmodaliteit.ts";
-import { EIGEN_GEZAG_NAMEN, gezagVan } from "./documentsoort.ts";
+import {
+  documentNoemtGezag,
+  EIGEN_GEZAG_NAMEN,
+  GEBUNDELDE_BEKENDMAKINGEN,
+  gezagVan,
+} from "./documentsoort.ts";
 
 const log = maakLogger("bronverificatie");
 
 /** Verhoog dit bij elke wijziging die een uitslag kan veranderen. */
-export const BRONVERIFICATIE_VERSIE = "bronverificatie-v2";
+export const BRONVERIFICATIE_VERSIE = "bronverificatie-v3";
 
 /**
  * Hoeveel dagen mag het origineel VOOR de navertelling liggen.
@@ -298,14 +307,15 @@ export async function verifieerBijGezag(
     };
   }
 
-  const { rows } = await c.query<{
+  const { rows: ruwe } = await c.query<{
     id: number;
     bron: string;
     titel: string;
+    ruwe_tekst: string;
     doc_datum: string | null;
     documentsoort: string;
   }>(
-    `select u.id, b.sleutel as bron, bd.titel,
+    `select u.id, b.sleutel as bron, bd.titel, bv.ruwe_tekst,
             coalesce(bd.gepubliceerd_op, bv.opgehaald_op)::date::text as doc_datum,
             bv.documentsoort
        from intel.uitspraken u
@@ -357,10 +367,40 @@ export async function verifieerBijGezag(
     ],
   );
 
+  /* EEN BEKENDMAKINGENKANAAL IS GEEN INSTANTIE.
+     De omgekeerde gezagkaart wijst bronSLEUTELS aan, en twee van die
+     sleutels zijn bundels: de Staatscourant en het Gemeenteblad
+     publiceren besluiten van veel bestuursorganen door elkaar. Zonder
+     deze filter kon een GEMEENTELIJKE vergunning in het Gemeenteblad
+     een ministerieel besluit "bevestigen" zodra het getal, de eenheid,
+     het onderwerp en het tijdvenster toevallig klopten — en dan zegt de
+     uitslag TERUGGEVONDEN over een document van een heel ander orgaan.
+
+     Voor zo'n bron moet het document het gezag daarom ook zelf NOEMEN.
+     Dat is een extra eis en geen versoepeling: er kunnen alleen minder
+     treffers overblijven. En het verschil is zichtbaar in de grondslag,
+     zodat een afgewezen kandidaat niet stil verdwijnt.
+
+     Een bron die het gezag zelf IS (acm-besluiten, rvo-*,
+     tennet-publicaties, rijksoverheid-nieuws) gaat hier ongemoeid
+     langs: daar is de uitgever het bestuursorgaan. */
+  const afgewezenOmGezag: { uitspraakId: number; bron: string; document: string }[] = [];
+  const rows = ruwe.filter((r) => {
+    if (!GEBUNDELDE_BEKENDMAKINGEN.has(r.bron)) return true;
+    if (documentNoemtGezag(claim.beschrijftBesluitVan!, `${r.titel} ${r.ruwe_tekst}`)) return true;
+    afgewezenOmGezag.push({ uitspraakId: r.id, bron: r.bron, document: r.titel });
+    return false;
+  });
+
   const grondslag: Record<string, unknown> = {
     ...basis,
     bronnenVanGezag: bronnen,
     tijdvensterDagen: TIJDVENSTER_DAGEN,
+    gebundeldeBronnen: bronnen.filter((b) => GEBUNDELDE_BEKENDMAKINGEN.has(b)),
+    /* Wat wél paste op grootheid en tijd, maar het gezag niet noemde.
+       Hoort in de grondslag: anders is een NIET_TERUGGEVONDEN niet te
+       onderscheiden van 'er was niets'. */
+    afgewezenOmGezag,
     kandidaten: rows.map((r) => ({
       uitspraakId: r.id,
       bron: r.bron,

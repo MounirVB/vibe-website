@@ -313,6 +313,60 @@ export const EIGEN_GEZAG_NAMEN: Readonly<Record<string, readonly string[]>> = {
   "tennet-publicaties": ["TenneT"],
 };
 
+/**
+ * Bronnen die bekendmakingen van MEERDERE instanties bundelen.
+ *
+ * WAAROM DIT ERBIJ MOET, en waarom `EIGEN_GEZAG_NAMEN` in twee
+ * richtingen niet dezelfde relatie is.
+ *
+ * Voor de classificatievraag — "vertelt dit document een besluit van
+ * een ANDER na?" — is de kaart hierboven juist. De Staatscourant IS het
+ * officiële kanaal waarin een ministerieel besluit verschijnt, dus een
+ * Staatscourantbericht over de minister is daar geen navertelling van.
+ *
+ * Voor de OMGEKEERDE vraag — "welke bron VORMT gezag X?", die
+ * bronverificatie.ts stelt — klopt het niet. Een
+ * bekendmakingenkanaal is geen instantie: de Staatscourant publiceert
+ * besluiten van ministers, de ACM, provincies en waterschappen door
+ * elkaar, en het Gemeenteblad publiceert besluiten van colleges van
+ * B&W — niet van de minister, hoe de kaart hierboven ook leest.
+ *
+ * HET GEMETEN RISICO. Zonder deze lijst kon een navertelling van een
+ * ministerieel besluit worden bevestigd door een GEMEENTELIJKE
+ * vergunning in het Gemeenteblad die toevallig hetzelfde getal met
+ * dezelfde eenheid over hetzelfde onderwerp noemt binnen het
+ * tijdvenster. Dan zegt de uitslag TERUGGEVONDEN terwijl het document
+ * van een heel ander bestuursorgaan is.
+ *
+ * DE OPLOSSING VERSOEPELT NIETS. Voor een bron uit deze lijst moet het
+ * gevonden document het gezag ook ZELF noemen; zie
+ * `documentNoemtGezag()`. Dat is een extra eis, dus er kunnen alleen
+ * MINDER treffers uit komen, nooit meer. De Staatscourant blijft dus
+ * bruikbaar voor een ministerieel besluit en wordt onbruikbaar als
+ * anker voor een besluit dat er niet in staat.
+ */
+export const GEBUNDELDE_BEKENDMAKINGEN: ReadonlySet<string> = new Set([
+  "koop-staatscourant-energie",
+  "koop-gemeenteblad-vergunningen",
+]);
+
+/**
+ * Noemt deze tekst het genoemde gezag?
+ *
+ * Gebruikt EXACT dezelfde patronen als de navertellingsdetectie
+ * hierboven (`ANDER_GEZAG`), zodat er één formulering is van de vraag
+ * "staat dit gezag in deze tekst". Een tweede set patronen voor
+ * dezelfde vraag loopt uiteen; dat is in dit bestand al eerder gemeten.
+ *
+ * Een onbekende gezagsnaam geeft `false`: wat we niet kunnen aanwijzen,
+ * wijzen we niet aan.
+ */
+export function documentNoemtGezag(gezagNaam: string, tekst: string): boolean {
+  const regel = ANDER_GEZAG.find((a) => a.naam === gezagNaam);
+  if (regel === undefined) return false;
+  return regel.patroon.test(tekst);
+}
+
 /* ------------------------------------------------------------------
    UITSLAG
    ------------------------------------------------------------------ */
