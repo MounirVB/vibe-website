@@ -683,3 +683,273 @@ goedkeuring niets gepubliceerd.
 **Geen productieherverwerking uitgevoerd.** Migratie 0042 en 0043 staan
 niet in productie (gemeten: 41 toegepast, 0 openstaand, 0 drift), er is
 geen herbeoordeling gedraaid en er is geen artikel gepubliceerd.
+
+---
+
+# R3 — acceptatiecorrectie: optie A
+
+Toegevoegd na de acceptatieronde. Vijf commits boven `dff7c3b`. De
+aanleiding is een zelfcorrectie: ik schreef in §19 dat één poort vooraf
+de keten dekt, en dat was één laag te ruim gesteld.
+
+## 24. Wat er mis was, en waarom één poort niet volstond
+
+`eisHerbeoordeling()` staat vóór de lagen die bewijs **wegen**: de
+besluitmotor, de nieuwsselectie, de voorstellenlaag, de
+conceptgeneratie. Goedkeuren en publiceren wegen geen bewijs — ze
+**leunen** op een weging die eerder is gedaan en in een kolom is
+opgeslagen:
+
+| plek | wat hij las |
+|---|---|
+| `publiceer()` regel 333 | `v.poorten_geslaagd`, gezet bij de conceptbouw |
+| `keurGoed()` | gebruiker, recht, vier ogen — en géén uitspraakveld |
+
+Tussen die twee momenten zit **menselijke tijd**. In dat venster kan een
+herbeoordelingsronde een bevestiging intrekken, kan een herclassificatie
+een plafond verlagen, kan een bronbinding veranderen. Een opgeslagen
+boolean weet daar niets van: hij was waar toen hij werd geschreven, en
+dat is iets anders dan waar.
+
+## 25. De tweede poort
+
+`toetsGebondenBewijs()` leest vlak vóór goedkeuren en vlak vóór
+publiceren de **actuele rijen** van elke gebonden claim, en toetst zeven
+dingen:
+
+| # | eis | waarom |
+|---|---|---|
+| 1 | er is nog een primaire bronbinding | zonder bron geen bewijs |
+| 2 | die bronversie staat in `invoer_versies` | de bronnenlijst onder het artikel moet de lijst zijn waaruit het bewijs komt |
+| 3 | `documentsoort_versie` is de huidige | de classificatie is machinewerk en moet actueel zijn |
+| 4 | `modaliteit_versie` is de huidige, **tenzij** `oordeel_bron = 'mens'` | een menselijke beoordeling wordt niet overschreven en dus ook niet stilzwijgend ongeldig verklaard |
+| 5 | `bewijs_kwaliteit <= bewijskracht_plafond` | daarboven draagt de rij nog de oude uitgeversbetrouwbaarheid |
+| 6 | elke **kern**claim haalt `claimDraagt()` | een ondersteunende claim hoeft niet vast te staan; die staat in de tekst als wat hij is |
+| 7 | er is minstens één dragende kernclaim | anders is er niets om op te publiceren |
+
+Plus de populatievraag: wacht er in deze organisatie nog één claim op
+herbeoordeling, dan is geen enkele weging te vertrouwen — ook niet als
+de claims ónder dit concept al gewogen zijn, want een score vergelijkt
+met andere gebeurtenissen.
+
+## 26. Waarom het een uitslag is en geen exceptie
+
+De opdracht eist dat een blokkade **auditeerbaar** wordt vastgelegd. Dat
+kan niet met een `throw`: die rolt de transactie terug en daarmee de
+auditregel die de blokkade verklaart. Dus:
+
+- `legBewijsblokkadeVast()` schrijft een `automatisch_geblokkeerd`-besluit
+  in `intel.publicatiebesluiten` — dat besluit bestond al in migratie
+  0004, dus **geen schemawijziging** — met de volledige claimtoestand in
+  `poortresultaten`;
+- de transactie **commit**;
+- `keurGoed()` geeft `GoedkeurUitslag` terug in plaats van `void`, een
+  discriminated union zodat de typecontrole een aanroeper die de uitslag
+  negeert niet doorlaat.
+
+Een **onbevoegde goedkeurder** blijft wél een exceptie. Dat is een
+uitzondering, geen normale uitkomst van het redactionele proces.
+
+En bij een geslaagde goedkeuring wordt vastgelegd **waarop** is
+goedgekeurd: de claimtoestand van dat moment gaat mee in het besluit.
+Zonder die vastlegging is later niet na te gaan welk bewijs de
+goedkeuring droeg.
+
+## 27. De race, en het slot
+
+Zonder slot bestaat deze ordening:
+
+```
+t0  de goedkeuring leest claim 7: bevestigd, draagt
+t1  de herbeoordeling trekt claim 7 in en COMMIT
+t2  de goedkeuring schrijft status = 'goedgekeurd'
+```
+
+De lezing neemt daarom `for share of u` op precies de uitspraakrijen van
+dit concept. `metOrganisatie()` zet de transactie al om elke route en
+elke CLI heen, dus het slot valt samen met de statuswijziging. De
+omgekeerde orde — eerst intrekken, dan goedkeuren — is ongevaarlijk:
+dan ziet de toets de intrekking gewoon.
+
+Met `lock_timeout` van vijf seconden en een **SAVEPOINT** eromheen: een
+mislukte opdracht zet een PostgreSQL-transactie in de afgebroken stand,
+en dan zou de auditregel er niet meer in kunnen.
+
+Zaak 3 in `test/integratie/goedkeurpoort.test.ts` speelt dit met **twee
+verbindingen** na en eist dat de concurrente update faalt met `55P03`.
+
+## 28. Vier defecten van de audit, en één latent defect
+
+| plek | wat er mis was |
+|---|---|
+| `concept.ts` 1011 | `hertoetsInhoudVersie` haalde geen R3-veld op; poort 6 kreeg alleen `verificatie_status` mee. Een redacteur zag een valse PASS op precies de poort die hem had moeten waarschuwen |
+| `poorten.ts` 267 | poort 6 toetste alleen `'bevestigd'` — de regel die 45 van de 51 productieclaims liet passeren. Nu **bevestigd én draagt**, beide, zodat de poort niet van één meegegeven veld afhangt |
+| `server.ts` 1853 | het dashboard bouwde `claimDraagt()` met de hand na, met `0.5` als letterlijk getal en **zonder** de documentsoort. Een lobbyclaim kreeg daar het groene 'draagt' |
+| `beoordeling.ts` | de voorstellaan toetste de claimpoort niet. Nu wel, maar **alleen bij een goedkeuring**: een afwijzing blokkeren zou voorstellen opsluiten |
+
+**En een latent defect dat niet in de audit stond.** Drie leespaden
+joinden `intel.uitspraak_bronnen` **zonder rol**, terwijl de schrijfkant
+de documentsoort altijd van de **primaire** versie afleidt. De rollen
+zijn `('primair','bevestigend','tegensprekend')` en die sorteren
+alfabetisch, dus `distinct on (u.id) order by u.id, ub.rol` in
+`concept.ts` koos de **bevestigende** versie — de versie waar de claim
+niet uit komt. Bij een tegensprekende binding zou de administratie dát
+een document de claim *weerspreekt* de grond worden waarop hij
+bewijskracht krijgt. In `herbeoordeling.ts` gaf het twee rijen voor één
+claim met twee bindingen: twee wegingen in één ronde, laatste wint
+willekeurig.
+
+*Gemeten in productie:* 59 claims, alle met **exact één** binding, alle
+`primair`, nul claims zonder primaire binding. Het defect was dus
+**latent** en de gemeten 46/5-uitslag is er niet door geraakt. Het is
+wél bereikbaar: de bronverificatie en de clusterlaag kunnen een tweede
+binding toevoegen.
+
+## 29. Twee fouten van mijzelf, gevonden door de eigen toetsen
+
+**1 · De afdrukhertoets was onmogelijk.** `keurGoed()` rekent de afdruk
+na uit de opgeslagen kolommen, maar `structured_data` is `jsonb` en
+jsonb bewaart geen sleutelorde — hij herordent en strijkt witruimte weg.
+`JSON.stringify` van een jsonb-retour is dus niet byte-stabiel, en de
+hertoets wees **elk** legitiem gegenereerd concept af. De R3-eindproef
+werd rood en had gelijk. `inhoudAfdruk()` sorteert nu zelf, zodat de
+afdruk een functie is van de opgeslagen rij in plaats van van een
+toevallige sleutelorde. *De grens, eerlijk benoemd:* jsonb normaliseert
+ook getallen en laat dubbele sleutels vallen; onze schema.org-objecten
+bevatten die gevallen niet.
+
+**2 · `bigint[]` komt als `string[]` terug.** `kern/db.ts` zet een
+typeparser voor de **scalaire** `INT8`, niet voor het arraytype `_int8`.
+`invoer_versies` gaf daarom `['1']` en mijn `.includes(1)` faalde — de
+poort blokkeerde élke conceptversie met *"bronversie 1 staat niet in de
+vastgelegde invoer"* terwijl hij er wel in stond. Nu via `String()` aan
+beide kanten.
+
+## 30. Migratie 0044
+
+De instellingenpagina zette bij nul bevindingen een groene tegel met
+*"geen gepubliceerde kernclaim zonder bevestigd bewijs"*. De invariant
+eronder toetste alleen `u.verificatie_status <> 'bevestigd'` — precies
+de regel die R3 ontmantelt. Een invariant die **minder** eist dan de
+poort ervoor is geen vangnet maar een valse bevestiging.
+
+0044 voegt de bevinding `kernclaim_draagt_niet` toe: een bevestigde
+kernclaim die niet vastgesteld is, te onzeker is, of uit een document
+komt dat zelf niets vaststelt. Puur toevoegend: **één**
+`create or replace function`, **0 DML**, geen kolom erbij. Kan geen
+bestaande rij breken, want productie heeft 0 gepubliceerde versies.
+
+De drempel `0.50` en de soortenlijst staan **letterlijk** in SQL, want
+SQL kan `claimDraagt()` niet aanroepen. Dat is een keuze met een prijs,
+en `test/integratie/invariant-kernclaim-draagt.test.ts` betaalt hem:
+twee toetsen vergelijken de SQL-brontekst met
+`NOODZAKELIJKE_ZEKERHEID` en `NIET_DRAGENDE_DOCUMENTSOORTEN`, zodat
+uiteenlopen **rood** wordt in plaats van stil.
+
+## 31. De schaalcorrectie-keten
+
+De kloon kreeg `verificatie_status` en `bewijs_kwaliteit` mee, maar
+`modaliteit_versie` werd NULL — en daarmee ging de claimpoort dicht.
+Fail-closed en dus veilig, maar het legt het nieuwskanaal stil na een
+handeling die daar niets mee te maken heeft, en het gebeurt **stil**.
+
+Per veld afgewogen:
+
+| veld | mee? | waarom |
+|---|---|---|
+| `modaliteit`, `modaliteit_zekerheid`, `modaliteit_versie`, `modaliteit_grondslag` | **ja** | afgeleid uit de tekst en de publicatiedatum; de tekst gaat letterlijk mee, dus gelijk en niet gekopieerd |
+| `bewijskracht_plafond` | **ja** | functie van documentsoort × gezag, en de primaire binding is dezelfde |
+| `oordeel_bron` | **nee**, vast op `'motor'` | een mensoordeel geldt voor de **oude** waarde; meeliften zou de kloon afschermen van de herverwerking zonder dat iemand naar het nieuwe getal kijkt |
+
+**En het mag niet stil gebeuren.** Het rapport draagt
+`claimpoortOpenstaand`, en drie plekken melden het: de CLI onder een
+eigen kopje (ook bij nul), het taaklog van `semantiek` (prioriteit 25,
+dus ná de herbeoordeling en vóór de besluitmotor), en een eigen tegel
+**Claimpoort** op de instellingenpagina.
+
+### Herstelprocedure na `npm run schaalcorrectie -- --toepassen`
+
+1. Lees het kopje **CLAIMPOORT** onder aan de CLI-uitvoer. Staat er
+   *open*, dan is er niets te doen: de kloon heeft het
+   modaliteitsoordeel van het origineel overgenomen en de keten loopt.
+2. Staat er **DICHT**, dan was het origineel zelf nog niet gewogen onder
+   de huidige motorversie. Dan is er werkelijk iets te wegen:
+   - `npm run documentsoort` — classificeert wat NULL is of een oudere
+     motorversie draagt, **max 2000 versies per ronde**;
+   - `npm run herbeoordeel -- --droog` — en de uitslag vergelijken met
+     wat je verwacht;
+   - `npm run herbeoordeel` — desgewenst in porties met `--max`.
+3. Draai de pijplijn opnieuw. De poort opent zichzelf zodra het aantal
+   wachtende claims nul is; de tegel op `/instellingen` toont dat.
+4. *Stopvoorwaarde:* wijkt de droge uitslag af van wat je verwacht, dan
+   stoppen en rapporteren. Dan is de populatie anders dan gemeten.
+
+Er is **geen** stap die de poort overslaat. Dat is met opzet.
+
+## 32. De bronverificatiegrens
+
+`bouwBronnenVanGezag()` leidt de omgekeerde kaart af uit
+`EIGEN_GEZAG_NAMEN`. Die afleiding is juist in één leesrichting en fout
+in de andere: een **bekendmakingenkanaal is geen instantie**. Gemeten:
+`bronnenVanGezag('de minister')` geeft `rijksoverheid-nieuws`,
+`koop-staatscourant-energie` **en** `koop-gemeenteblad-vergunningen` —
+en het Gemeenteblad publiceert besluiten van colleges van B&W.
+
+Voor een treffer uit zo'n bundel moet het document het gezag nu ook
+**zelf noemen** (`documentNoemtGezag()`, met exact dezelfde patronen als
+de navertellingsdetectie). Dat is een **extra** eis: alleen minder
+treffers, nooit meer. De primaire-bronpoort is niet geraakt.
+
+De bundels helemaal uitsluiten zou eenvoudiger zijn, maar dan is de
+Staatscourant onbruikbaar als anker voor een besluit dat er **wel** in
+staat — een verborgen weigering die zich voordoet als *niet gevonden*.
+Een tegenproef zet dat vast. `BRONVERIFICATIE_VERSIE` staat op **v3**.
+
+## 33. De vijftien zaken van sectie 5
+
+Alle vijftien in `test/integratie/goedkeurpoort.test.ts`, tegen een
+echte database en via de **werkelijke ingangen** — `keurGoed()`,
+`publiceer()`, `hertoetsInhoudVersie()`, `nieuwsselectieronde()`,
+`herbeoordeelClaims()`. Eén uitzondering, eerlijk benoemd: zaak 14 bouwt
+de kloon met de hand langs exact de kolomlijst van
+`schaalcorrectie.ts`, omdat `herstelSchaal()` zelf naar schaalwoorden in
+een brontekst zoekt en die opzet de vraag zou verdoezelen.
+
+| # | zaak | uitkomst |
+|---|---|---|
+| 1 | geldig bij de bouw, ingetrokken vóór de goedkeuring | geblokkeerd, status blijft `ter_review`, 1 auditregel |
+| 2 | geldig bij de goedkeuring, tegengesproken vóór de publicatie | geweigerd, niets geschreven |
+| 3 | herbeoordeling tijdens een goedkeuring | de concurrente update faalt met `55P03`; de claim blijft heel |
+| 4 | openstaande herbeoordeling | goedkeuren geblokkeerd, en de uitweg is de herbeoordeling en geen vlag |
+| 5 | conceptbewerking na een gewijzigde claim | `poorten_geslaagd` zakt naar `false`, ook in de kolom |
+| 6 | verouderde classificatieversie | geblokkeerd, beide versies in de reden |
+| 6b | **menselijk** modaliteitsoordeel zonder motorversie | blijft geldig |
+| 7 | ontbrekende modaliteit | geblokkeerd |
+| 8 | bewijskracht boven het plafond | geblokkeerd |
+| 8b | ontbrekend plafond | geblokkeerd — een lege kolom is geen vrijbrief |
+| 9 | binding verschoven naar `bevestigend` | geblokkeerd |
+| 9b | bronversie buiten `invoer_versies` | geblokkeerd |
+| 10 | onbevoegde goedkeurder | **exceptie**, geen uitslag |
+| 11 | maker keurt eigen concept goed | exceptie (vier ogen) |
+| 12 | hoog risico zonder het extra recht | exceptie |
+| 13 | ongeverifieerde claim met bewijskracht 5 naast een dragende met 3 | de bewijsdrempel wordt **niet** gehaald |
+| 14 | schaalcorrectiekloon | erft classificatie en plafond, **niet** het mensoordeel; poort blijft open |
+| 15 | tweede en derde herbeoordelingsronde | 0 bekeken, 0 herbeoordeeld |
+
+Elke zaak krijgt een eigen slug, want alle zaken delen één
+wegwerpdatabase. Zaak 6 **herstelt** zijn verouderde classificatieversie
+aan het eind: zonder dat zette hij de populatiepoort dicht voor elke
+latere zaak, en zaak 6b en 15 vielen er werkelijk op om.
+
+## 34. Regressie na de acceptatiecorrectie
+
+```
+TYPECHECK   = PASS (0 fouten)
+POORT       = PASS
+TESTS       = eenheid 603 · integratie 390 · adversarieel 113 = 1106
+              (was 1080 vóór deze ronde, +26)
+BROWSER     = 27/27
+MIGRATIES   = 44/44 toegepast, drift 0
+INVARIANTEN = 0 bevindingen
+SITEKENNIS  = 431 gepubliceerde pagina's
+```

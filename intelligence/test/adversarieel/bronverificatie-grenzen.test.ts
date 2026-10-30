@@ -57,6 +57,8 @@ type DocOpzet = {
   readonly datum: string;
   readonly documentsoort: string;
   readonly beschrijftBesluitVan: string | null;
+  /** Overschrijft de brontekst; nodig voor de gezagstoets op bundels. */
+  readonly tekst?: string;
 };
 
 type ClaimOpzet = {
@@ -87,6 +89,13 @@ describe("de grenzen van de primaire-bronverificatie", () => {
       for (const [sleutel, uitgever] of [
         [GEZAGBRON, "ACM"],
         [NAVERTELBRON, "Solar365"],
+        /* EEN BEKENDMAKINGENKANAAL. Het Gemeenteblad staat in
+           EIGEN_GEZAG_NAMEN onder 'de minister' en komt dus in de
+           omgekeerde gezagkaart terecht -- terwijl het in werkelijkheid
+           besluiten van colleges van B en W publiceert. Zonder de
+           bundelfilter kon een gemeentelijke vergunning daarmee een
+           ministerieel besluit bevestigen. */
+        ["koop-gemeenteblad-vergunningen", "KOOP"],
       ] as const) {
         const r = await c.query<{ id: number }>(
           `insert into intel.bronnen
@@ -131,7 +140,7 @@ describe("de grenzen van de primaire-bronverificatie", () => {
         `insert into intel.brondocument_versies
            (organisatie_id, brondocument_id, versie, inhoud_hash, titel, ruwe_tekst, tekst_lengte,
             documentsoort, documentsoort_gezag, documentsoort_versie, beschrijft_besluit_van)
-         values ($1,$2,1,$3,$4,'brontekst voor de fixture, lang genoeg om te bestaan',52,
+         values ($1,$2,1,$3,$4,$8,length($8),
                  $5,'BEVOEGD_GEZAG',$6,$7)
          returning id`,
         [
@@ -142,6 +151,7 @@ describe("de grenzen van de primaire-bronverificatie", () => {
           doc.documentsoort,
           DOCUMENTSOORT_VERSIE,
           doc.beschrijftBesluitVan,
+          doc.tekst ?? "brontekst voor de fixture, lang genoeg om te bestaan",
         ],
       );
       const u = await c.query<{ id: number }>(
@@ -545,6 +555,78 @@ describe("de grenzen van de primaire-bronverificatie", () => {
   });
 
   /* ---------- de kaart en de versie ---------- */
+
+  /* ---------- 9b en 9c · een bundel is geen bestuursorgaan ---------- */
+
+  test("9b · een gemeentelijk besluit in het Gemeenteblad bevestigt geen ministerieel besluit", async () => {
+    /* HET GEMETEN RISICO. `koop-gemeenteblad-vergunningen` staat in
+       EIGEN_GEZAG_NAMEN onder 'de minister', dus hij komt in de
+       omgekeerde gezagkaart terecht als bron DIE DE MINISTER VORMT. In
+       werkelijkheid publiceert het Gemeenteblad besluiten van colleges
+       van B en W. Zonder de bundelfilter zou een gemeentelijke
+       vergunning met hetzelfde bedrag over hetzelfde onderwerp binnen
+       het tijdvenster de uitslag TERUGGEVONDEN opleveren -- voor een
+       document van een heel ander bestuursorgaan. */
+    const claim = { ...BASISCLAIM, waarde: 9201 };
+    await zetKlaar(
+      {
+        extern: "p9b-gemeenteblad",
+        bron: "koop-gemeenteblad-vergunningen",
+        titel: "Omgevingsvergunning voor een laadplein",
+        datum: "2026-05-01",
+        documentsoort: "OFFICIEEL_BESLUIT",
+        beschrijftBesluitVan: null,
+        tekst:
+          "Het college van burgemeester en wethouders heeft de omgevingsvergunning verleend " +
+          "voor een laadplein met een vermogen van 9201 kW.",
+      },
+      claim,
+    );
+
+    const doc = { ...navertelling("p9b-navertelling"), beschrijftBesluitVan: "de minister" };
+    const id = await zetKlaar(doc, { ...claim, status: "ongeverifieerd" });
+    const v = await verifieer(id, doc, claim);
+
+    assert.equal(v.uitslag, "NIET_TERUGGEVONDEN", v.toelichting);
+    /* EN HET VERSCHIL IS NA TE REKENEN. Een kandidaat die op grootheid
+       en tijd paste maar het gezag niet noemde, hoort in de grondslag te
+       staan: anders is deze uitslag niet te onderscheiden van 'er was
+       helemaal niets'. */
+    const afgewezen = v.grondslag["afgewezenOmGezag"] as { bron: string }[];
+    assert.equal(afgewezen.length, 1, JSON.stringify(v.grondslag));
+    assert.equal(afgewezen[0]!.bron, "koop-gemeenteblad-vergunningen");
+    assert.deepEqual(v.grondslag["kandidaten"], []);
+  });
+
+  test("9c · TEGENPROEF — noemt het bundeldocument het gezag WEL, dan telt het", async () => {
+    /* Zonder deze tegenproef zou 9b ook groen worden door een filter
+       die bundelbronnen helemaal uitsluit. Dat zou de Staatscourant en
+       het Gemeenteblad onbruikbaar maken als anker voor een besluit dat
+       er WEL in staat, en dat is een verborgen weigering in plaats van
+       een veiligheidsmaatregel. */
+    const claim = { ...BASISCLAIM, waarde: 9301 };
+    await zetKlaar(
+      {
+        extern: "p9c-staatscourant",
+        bron: "koop-gemeenteblad-vergunningen",
+        titel: "Besluit tot wijziging van de subsidieregeling",
+        datum: "2026-05-01",
+        documentsoort: "OFFICIEEL_BESLUIT",
+        beschrijftBesluitVan: null,
+        tekst:
+          "De minister van Klimaat en Groene Groei heeft besloten het subsidieplafond vast " +
+          "te stellen op 9301 kW.",
+      },
+      claim,
+    );
+
+    const doc = { ...navertelling("p9c-navertelling"), beschrijftBesluitVan: "de minister" };
+    const id = await zetKlaar(doc, { ...claim, status: "ongeverifieerd" });
+    const v = await verifieer(id, doc, claim);
+
+    assert.equal(v.uitslag, "TERUGGEVONDEN", v.toelichting);
+    assert.deepEqual(v.grondslag["afgewezenOmGezag"], []);
+  });
 
   test("10 · de gezagkaart is afgeleid en bevat de regionale bekendmakingsbron", async () => {
     /* De oude kaart was met de hand bijgehouden en miste
