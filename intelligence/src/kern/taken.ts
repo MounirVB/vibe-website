@@ -115,6 +115,27 @@ export const PLAN: readonly PlanRegel[] = [
 
      PUBLICEERT NIETS. De kandidaat komt op 'open' en wacht op een
      mens. */
+  /* NIEUW IN R3 — de inhaalronde van de documentclassificatie.
+     ------------------------------------------------------------------
+     `clusteren` classificeert elke versie die hij langs ziet komen, dus
+     nieuwe documenten zijn gedekt. Deze taak is er voor de twee gevallen
+     die dat niet zijn:
+
+       1. de versies die er al stonden toen R3 werd uitgerold — gemeten
+          op 30 oktober 2026 waren dat 3.483 documentversies;
+       2. de versies met een oordeel van een OUDERE motorversie. Gaat
+          DOCUMENTSOORT_VERSIE omhoog, dan staan er twee generaties
+          oordelen door elkaar en is een vergelijking tussen documenten
+          niet eerlijk meer.
+
+     Hij staat op 24, dus NA clusteren (20) en VOOR beoordelen (30): de
+     besluitmotor hoort met geclassificeerde documenten te werken. */
+  /* NIEUW IN R3. Staat op 22, dus ná clusteren (20) en documentclassificatie
+     hieronder maar VOOR beoordelen (30) en nieuwsselectie (35). De orde is
+     de hele veiligheid: de claimpoort weigert die twee lagen zolang er
+     claims op herbeoordeling wachten, dus hij moet daarvoor klaar zijn. */
+  { soort: "documentclassificatie", prioriteit: 21, toelichting: "documentversies zonder of met een verouderde soort classificeren" },
+  { soort: "herbeoordeling", prioriteit: 22, toelichting: "historische claims wegen onder de huidige documentsoort- en modaliteitsregels" },
   { soort: "nieuwsselectie", prioriteit: 35, toelichting: "gebeurtenissen op nieuwswaarde wegen en NEWS_ITEM-kandidaten schrijven" },
   { soort: "regio", prioriteit: 40, toelichting: "gebieden binden en regiovoorstellen maken" },
   { soort: "signaleren", prioriteit: 50, toelichting: "commerciele signalen uit SALES_SIGNAL-kandidaten" },
@@ -356,16 +377,123 @@ export const REGISTER: Record<string, Handler> = {
           (schaal.regels.length > 6 ? ` ;; +${schaal.regels.length - 6} meer` : "")
         : "";
 
+    /* DE CLAIMPOORT IN HET TAAKLOG.
+       Deze taak staat op prioriteit 25 en draait dus NA de
+       herbeoordeling (22) en VOOR de besluitmotor (30). Staat de poort
+       hier dicht, dan weigert beoordelen() straks — en dan hoort de
+       reden in dit log te staan en niet pas in de fout van de volgende
+       taak. Een nieuwskanaal dat stilstaat moet zichtbaar stilstaan. */
+    const poortRegel =
+      schaal.claimpoortOpenstaand === 0
+        ? ", claimpoort open"
+        : `, CLAIMPOORT DICHT: ${schaal.claimpoortOpenstaand} claim(s) wachten op ` +
+          "herbeoordeling — draai 'npm run documentsoort' en 'npm run herbeoordeel'";
+
     return (
       `bekeken ${bekeken}, verrijkt ${verrijkt}, zonder uitdrukking ${zonderUitdrukking}, ` +
-      `rondes ${rondes}, openstaande schaalcorrecties ${schaal.gevonden}${schaalDetail}`
+      `rondes ${rondes}, openstaande schaalcorrecties ${schaal.gevonden}${poortRegel}${schaalDetail}`
     );
   },
 
+  /**
+   * R3 — DE CLAIMPOORT STAAT HIERVOOR.
+   *
+   * De besluitmotor weegt bewijs: `uitspraken_bevestigd > 0` is zijn
+   * enige bewijsvoorwaarde (motor.ts regel 233) en
+   * `besteBewijskwaliteit >= 4` zijn NEW_ARTICLE-poort (regel 268).
+   * Beide lezen kolommen die vóór de herbeoordeling de OUDE waarde
+   * dragen, waarin de bewijskracht van de uitgever kwam. Draaien op een
+   * gemengde populatie zou een lobbyclaim als bewijs laten tellen.
+   */
   async beoordelen(pool, organisatieId) {
     const { neemBesluiten } = await import("../besluit/motor.ts");
+    const { eisHerbeoordeling } = await import("../pijplijn/claimpoort.ts");
+    const { metOrganisatie } = await import("./db.ts");
+    await metOrganisatie(pool, { organisatieId }, (c) =>
+      eisHerbeoordeling(c, organisatieId, "de besluitmotor"),
+    );
     const r = await neemBesluiten(pool, organisatieId, {});
     return `beoordeeld ${r.beoordeeld}, kandidaten ${r.kandidatenGeschreven}`;
+  },
+
+  /**
+   * NIEUW IN R3 — de historische claims herbeoordelen.
+   *
+   * SCHRIJFT ALLEEN OP intel.uitspraken, en legt elke wijziging vast in
+   * het append-only auditlogboek. Hij raakt geen koppeling, geen
+   * gebeurtenis, geen kandidaat en geen concept aan.
+   *
+   * STAAT OP PRIORITEIT 22: ná de documentclassificatie (24 zou te laat
+   * zijn — hij heeft de documentsoort nodig) maar vóór beoordelen (30)
+   * en nieuwsselectie (35), de twee lagen die de claimpoort passeren.
+   * Zo is de populatie al schoon voordat er iets besloten wordt.
+   */
+  async herbeoordeling(pool, organisatieId) {
+    const { herbeoordeelClaims } = await import("../pijplijn/herbeoordeling.ts");
+    const { metOrganisatie } = await import("./db.ts");
+    const r = await metOrganisatie(pool, { organisatieId }, (c) =>
+      herbeoordeelClaims(c, organisatieId, {}),
+    );
+    return (
+      `bekeken ${r.bekeken}, herbeoordeeld ${r.herbeoordeeld}, ` +
+      `bevestiging behouden ${r.bevestigingBehouden}, ingetrokken ${r.bevestigingIngetrokken}, ` +
+      `bewijskracht verlaagd ${r.bewijskrachtVerlaagd}` +
+      (r.menselijkOvergeslagen > 0 ? `, menselijk oordeel overgeslagen ${r.menselijkOvergeslagen}` : "") +
+      (r.getroffenGebeurtenissen.length > 0
+        ? ` — ${r.getroffenGebeurtenissen.length} gebeurtenis(sen) geraakt`
+        : "")
+    );
+  },
+
+  /**
+   * NIEUW IN R3 — de documentclassificatie inhalen.
+   *
+   * SCHRIJFT ALLEEN OP brondocument_versies, en alleen de zes
+   * classificatiekolommen. Hij raakt geen claim, geen gebeurtenis en
+   * geen kandidaat: een herclassificatie verandert wat we van een
+   * document WETEN, niet wat er eerder mee is gebeurd.
+   *
+   * IDEMPOTENT. `bepaalDocumentsoort()` is puur en de versietekst is
+   * onveranderlijk (versies_hash_uniek), dus twee rondes geven hetzelfde
+   * resultaat. De query pakt alleen rijen zonder soort of met een andere
+   * motorversie, dus een derde ronde doet niets meer.
+   */
+  async documentclassificatie(pool, organisatieId) {
+    const { haalClassificatieIn } = await import("../pijplijn/documentclassificatie.ts");
+    const { DOCUMENTSOORT_VERSIE } = await import("../pijplijn/documentsoort.ts");
+    const { metOrganisatie } = await import("./db.ts");
+
+    const { verifieerNavertellingen } = await import("../pijplijn/bronverificatie.ts");
+
+    const r = await metOrganisatie(pool, { organisatieId }, (c) =>
+      haalClassificatieIn(c, organisatieId, { huidigeVersie: DOCUMENTSOORT_VERSIE }),
+    );
+
+    /* DE VERIFICATIE DRAAIT NÁ DE CLASSIFICATIE, in dezelfde taak.
+       Hij heeft `beschrijft_besluit_van` nodig, en dat veld komt uit de
+       classificatie. Twee taken zou een venster openen waarin de ene al
+       wel en de andere nog niet is gedraaid; dan zou de uitslag van de
+       verificatie van de planningsorde afhangen. */
+    const v = await metOrganisatie(pool, { organisatieId }, (c) =>
+      verifieerNavertellingen(c, organisatieId, {}),
+    );
+
+    /* DE VERDELING IN DE UITKOMSTREGEL. Een telling zonder verdeling
+       zegt op productie niets: 2.000 geclassificeerd kan betekenen dat
+       het goed gaat of dat alles in één soort valt. De drie zwaarste
+       soorten passen in een regel. */
+    const top = Object.entries(r.perSoort)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([s, n]) => `${n}x ${s}`)
+      .join(" ;; ");
+
+    return (
+      `motor ${DOCUMENTSOORT_VERSIE} — bekeken ${r.bekeken}, geclassificeerd ${r.geclassificeerd}` +
+      (top ? ` — ${top}` : "") +
+      ` — bronverificatie: ${v.teruggevonden} teruggevonden, ${v.ambigu} ambigu, ` +
+      `${v.nietTeruggevonden} niet teruggevonden, ${v.nietVanToepassing} n.v.t.`
+    );
   },
 
   /**
@@ -402,6 +530,16 @@ export const REGISTER: Record<string, Handler> = {
     const { nieuwsselectieronde } = await import("../pijplijn/nieuwsselectie.ts");
     const { configLezen } = await import("./config.ts");
     const { IntelFout } = await import("./fouten.ts");
+
+    const { eisHerbeoordeling } = await import("../pijplijn/claimpoort.ts");
+    const { metOrganisatie } = await import("./db.ts");
+    /* R3 — dezelfde grendel als bij de besluitmotor, en om dezelfde
+       reden: deze laag telt bevestigde uitspraken en leest de beste
+       bewijskwaliteit. Op een gemengde populatie zijn die twee getallen
+       geen bewijs maar een restant van de oude regel. */
+    await metOrganisatie(pool, { organisatieId }, (c) =>
+      eisHerbeoordeling(c, organisatieId, "de nieuwsselectie"),
+    );
 
     const config = configLezen();
     const ctx = await leesNieuwsContext(config.siteWortel);
@@ -490,6 +628,15 @@ export const REGISTER: Record<string, Handler> = {
     const { voorstelronde } = await import("../inhoud/voorstel.ts");
     const { APP_WORTEL } = await import("./config.ts");
     const { IntelFout } = await import("./fouten.ts");
+
+    /* R3 — de voorstellenlaag leest verificatie_status als bewijssignaal
+       (voorstel.ts regel 526: 'alle bevestigd' geeft PASS op controle 1),
+       dus ook hier geldt de claimpoort. */
+    const { eisHerbeoordeling } = await import("../pijplijn/claimpoort.ts");
+    const { metOrganisatie: metOrg } = await import("./db.ts");
+    await metOrg(pool, { organisatieId }, (c) =>
+      eisHerbeoordeling(c, organisatieId, "de voorstellenlaag"),
+    );
 
     const uitslag = await leesSitekennis(APP_WORTEL);
     if (!uitslag.ok) {

@@ -33,6 +33,18 @@ import { IntelFout } from "../kern/fouten.ts";
 import { maakLogger } from "../kern/log.ts";
 import { sha256hex } from "../kern/tekst.ts";
 import { bronOpSleutel } from "../bronnen/register.ts";
+import { NIET_DRAGENDE_DOCUMENTSOORTEN } from "../pijplijn/documentsoort.ts";
+import {
+  bewijsDraagt,
+  claimDraagt,
+  legBewijsblokkadeVast,
+  toetsGebondenBewijs,
+  waaromNietDragend,
+} from "../pijplijn/claimpoort.ts";
+/* GEEN KRINGVERWIJZING. inhoud/concept.ts importeert dit bestand niet;
+   de pijl loopt één kant op (publiceer -> concept). Nagegaan met grep
+   op 'publiceer.ts' in concept.ts: nul treffers. */
+import { inhoudAfdruk } from "./concept.ts";
 import {
   heeftRouteregister,
   leesRouteregister,
@@ -52,6 +64,39 @@ import {
 } from "../site/nieuwsregister.ts";
 
 const log = maakLogger("publiceer");
+
+/**
+ * De bronsoort zoals hij in het REGISTERRECORD belandt.
+ *
+ * DIT IS DE WAARDE DIE weigerNieuws() LEEST om te beslissen of er een
+ * dragende bron onder een bericht zit (DRAGENDE_BRONSOORTEN in
+ * scripts/seo/bouw-routes.mjs). Hij kwam uitsluitend uit de
+ * uitgeverscategorie, en dat was het R3-defect herhaald op de plek waar
+ * het het meest kost: een ACM-document is `toezichthouder` en dus
+ * TOEZICHTHOUDER — dragend — ook als dat specifieke document een
+ * opiniestuk is of een besluit van een ánder gezag navertelt.
+ *
+ * Een document dat zelf niets vaststelt verlaagt daarom naar
+ * MARKTPARTIJ. Dat is geen tweede regel bovenop de eerste: het is
+ * dezelfde regel die de claimlaag al gebruikt
+ * (NIET_DRAGENDE_DOCUMENTSOORTEN), nu ook toegepast op het artefact dat
+ * gepubliceerd wordt.
+ *
+ * NULL VERLAAGT OOK. Een ongeclassificeerd document is niet aantoonbaar
+ * dragend, en op deze naad is dat genoeg om het niet te zijn.
+ *
+ * Als eigen, geexporteerde functie zodat hij te toetsen is zonder een
+ * publicatieronde te draaien.
+ */
+export function bronsoortVoorRecord(
+  uitgeverSoort: string,
+  documentsoort: string | null,
+): string {
+  const uitUitgever = BRONSOORT_UIT_UITGEVER[uitgeverSoort] ?? "MARKTPARTIJ";
+  const documentDraagt =
+    documentsoort !== null && !NIET_DRAGENDE_DOCUMENTSOORTEN.includes(documentsoort);
+  return documentDraagt ? uitUitgever : "MARKTPARTIJ";
+}
 
 function esc(waarde: string): string {
   return waarde.replace(/[&<>"']/g, (c) =>
@@ -230,6 +275,21 @@ export function sitemapZonderPad(
   return { xml: nieuw, gewijzigd: nieuw !== sitemapXml };
 }
 
+/**
+ * De uitslag van een goedkeuringspoging.
+ *
+ * Een discriminated union en geen boolean met een losse reden: zo kan
+ * de typecontrole een aanroeper die `goedgekeurd` niet leest er niet
+ * langs laten met een plausibel ogende regel.
+ */
+export type GoedkeurUitslag =
+  | { readonly goedgekeurd: true }
+  | {
+      readonly goedgekeurd: false;
+      readonly reden: string;
+      readonly blokkades: readonly string[];
+    };
+
 export type PublicatieRapport = {
   readonly inhoudVersieId: number;
   readonly bestandspad: string;
@@ -316,6 +376,23 @@ export async function publiceer(
         v.id,
         `pagina ${v.pad} staat op handmatig beheer; dit platform schrijft dat bestand niet`,
       );
+    }
+
+    /* DE CLAIMS, NU OPNIEUW GELEZEN — niet de boolean hierboven.
+       `v.poorten_geslaagd` is bij de conceptbouw of bij een hertoets
+       geschreven. Tussen dat moment en deze publicatie zit de
+       goedkeuring, en dus menselijke tijd. Een herbeoordelingsronde die
+       daarna een bevestiging intrekt, maakt de boolean onwaar zonder
+       hem te veranderen.
+
+       Dit is de LAATSTE poort voor een bestand op schijf of een record
+       in het routeregister, en dus de plek waar de vraag niet uit een
+       kolom mag komen maar uit de rijen zelf. Zie de sectiekop in
+       pijplijn/claimpoort.ts voor het slot en de race. */
+    const bewijs = await toetsGebondenBewijs(c, organisatieId, v.id);
+    if (!bewijsDraagt(bewijs)) {
+      await legBewijsblokkadeVast(c, organisatieId, bewijs, "publicatie");
+      return weiger(v.id, `het bewijs draagt niet meer: ${bewijs.blokkades.join(" | ")}`);
     }
 
     // Zodra het routeregister van Release 1 bestaat, GENEREERT die
@@ -610,12 +687,21 @@ async function publiceerViaRegister(
     doc_titel: string;
     bron_datum: string | null;
     bron_sleutel: string;
+    documentsoort: string | null;
+    verificatie_status: string;
+    modaliteit: string | null;
+    modaliteit_zekerheid: string | null;
   }>(
     c,
     `select u.id as uitspraak_id, u.tekst, u.soort,
             bd.canonieke_url as url, bd.uitgever, bd.titel as doc_titel,
             coalesce(bd.gepubliceerd_op, bv.opgehaald_op)::date::text as bron_datum,
-            b.sleutel as bron_sleutel
+            b.sleutel as bron_sleutel,
+            /* R3 — de soort van het DOCUMENT, de modaliteit van de CLAIM.
+               Zonder deze vier velden kan dit bestand de bronsoort niet
+               verlagen en de claimregels niet filteren. */
+            bv.documentsoort, u.verificatie_status, u.modaliteit,
+            u.modaliteit_zekerheid::text as modaliteit_zekerheid
        from intel.inhoud_uitspraken iu
        join intel.uitspraken u          on u.id = iu.uitspraak_id
        join intel.uitspraak_bronnen ub  on ub.uitspraak_id = u.id and ub.rol = 'primair'
@@ -627,33 +713,106 @@ async function publiceerViaRegister(
     [organisatieId, v.id],
   );
 
-  // De uitgeverssoort staat in het bronregister in code, niet in de
-  // database: intel.bronnen draagt alleen de uitgevernaam. Onbekende
-  // sleutel valt terug op MARKTPARTIJ en kan een bericht dus niet
-  // alleen dragen — de veilige kant.
+  /* De uitgeverssoort staat in het bronregister in code, niet in de
+     database: intel.bronnen draagt alleen de uitgevernaam. Onbekende
+     sleutel valt terug op MARKTPARTIJ en kan een bericht dus niet
+     alleen dragen — de veilige kant.
+
+     R3 — EN DE DOCUMENTSOORT KAN HEM VERLAGEN.
+     ------------------------------------------------------------------
+     Dit was het defect dat R3 repareert, herhaald op de plek waar het
+     het meest kost. De `soort` die hier in het registerrecord belandt is
+     exact wat `weigerNieuws()` in scripts/seo/bouw-routes.mjs leest om
+     te beslissen of er een DRAGENDE bron onder een bericht zit. Hij kwam
+     uitsluitend uit de uitgeverscategorie.
+
+     Gevolg: een ACM-document is `toezichthouder` en dus TOEZICHTHOUDER —
+     dragend — ook als dat specifieke document een opiniestuk is of een
+     besluit van een ánder gezag navertelt. De publicatiepoort zou dan
+     een dragende bron zien waar er geen is.
+
+     Een document dat zelf niets vaststelt verlaagt daarom naar
+     MARKTPARTIJ. Dat is niet een tweede regel bovenop de eerste: het is
+     dezelfde regel die de claimlaag al gebruikt (NIET_DRAGENDE_
+     DOCUMENTSOORTEN), nu ook toegepast op het artefact dat gepubliceerd
+     wordt.
+
+     NULL VERLAAGT OOK. Een ongeclassificeerd document is niet
+     aantoonbaar dragend, en op deze naad is dat genoeg om het niet te
+     zijn. */
   const bronnenOpUrl = new Map<string, RegisterBron>();
+  const verlaagdeBronnen: string[] = [];
   for (const g of gebonden) {
     if (bronnenOpUrl.has(g.url)) continue;
     const uitgeverSoort = bronOpSleutel(g.bron_sleutel)?.uitgeverSoort ?? "";
+    const uitUitgever = BRONSOORT_UIT_UITGEVER[uitgeverSoort] ?? "MARKTPARTIJ";
+    const soort = bronsoortVoorRecord(uitgeverSoort, g.documentsoort);
+    if (soort !== uitUitgever) {
+      verlaagdeBronnen.push(
+        `${g.doc_titel}: ${uitUitgever} -> MARKTPARTIJ wegens documentsoort ` +
+          `${g.documentsoort ?? "(niet geclassificeerd)"}`,
+      );
+    }
     bronnenOpUrl.set(g.url, {
       naam: `${g.doc_titel}, ${g.uitgever}`,
       url: g.url,
       datum: g.bron_datum ?? "",
-      soort: BRONSOORT_UIT_UITGEVER[uitgeverSoort] ?? "MARKTPARTIJ",
+      soort,
     });
   }
   const bronnen = [...bronnenOpUrl.values()];
+  if (verlaagdeBronnen.length > 0) {
+    log.info("bronsoort verlaagd op documentsoort", { verlaagd: verlaagdeBronnen });
+  }
 
-  // Alleen een uitspraak met een getal is een claim in de zin van het
-  // contract; een feit zonder cijfer hoeft geen claimregel.
+  /* Alleen een uitspraak met een getal is een claim in de zin van het
+     contract; een feit zonder cijfer hoeft geen claimregel.
+
+     R3 — EN ALLEEN EEN CLAIM DIE DRAAGT.
+     Een claim die niet bevestigd is, die een voorstel of verwachting
+     uitdrukt, of die uit een navertelling of lobbydocument komt, hoort
+     niet als claimregel in een gepubliceerd record. Hij zou daar staan
+     als een vastgelegd feit met een bronverwijzing eronder, en dat is
+     precies de bewering die R3 niet meer wil doen. Zie claimDraagt(). */
+  const nietDragendeClaims: string[] = [];
   const claims: RegisterClaim[] = gebonden
     .filter((g) => ["cijfer", "prijs", "specificatie", "datum"].includes(g.soort))
+    .filter((g) => {
+      const draagt = claimDraagt({
+        verificatieStatus: g.verificatie_status,
+        modaliteit: g.modaliteit,
+        modaliteitZekerheid: g.modaliteit_zekerheid === null ? null : Number(g.modaliteit_zekerheid),
+        documentsoort: g.documentsoort,
+      });
+      if (!draagt) {
+        nietDragendeClaims.push(
+          `uitspraak ${g.uitspraak_id}: ${waaromNietDragend({
+            verificatieStatus: g.verificatie_status,
+            modaliteit: g.modaliteit,
+            modaliteitZekerheid:
+              g.modaliteit_zekerheid === null ? null : Number(g.modaliteit_zekerheid),
+            documentsoort: g.documentsoort,
+          })}`,
+        );
+      }
+      return draagt;
+    })
     .map((g) => ({
       tekst: g.tekst,
       bron: `${g.doc_titel}, ${g.uitgever}`,
       bron_url: g.url,
       bron_datum: g.bron_datum ?? "",
     }));
+  if (nietDragendeClaims.length > 0) {
+    /* ZICHTBAAR WEGLATEN. Een claim die hier uitvalt verdwijnt uit het
+       gepubliceerde record, en dat mag niet stil: de redactie moet
+       kunnen nagaan waarom een cijfer dat zij in het concept zag niet
+       in het record staat. */
+    log.waarschuwing("claimregels weggelaten omdat ze niet dragen", {
+      aantal: nietDragendeClaims.length,
+      redenen: nietDragendeClaims,
+    });
+  }
 
   /* De interne links, nu wél. De routestaten komen uit hetzelfde
      bestand dat weigerNieuws() straks leest (data/seo/routes.json), dus
@@ -992,13 +1151,27 @@ export async function draaiTerug(
  * WAT DIT NIET VERANDERT. De append-only regel in
  * intel.publicatiebesluiten stond er al en blijft; dit voegt de
  * bevoegdheidstoets en de echte vier-ogentoets ervoor toe.
+ *
+ * 3 EN TOEN TOETSTE HIJ GEEN ENKEL UITSPRAAKVELD. Toegevoegd na de
+ *   acceptatieaudit: deze functie wist alles over de GOEDKEURDER en
+ *   niets over het BEWIJS. Ze keek niet of de claims onder het concept
+ *   nog droegen, en niet of de afdruk waaraan ze bond bij de
+ *   opgeslagen tekst hoorde. Beide worden nu nagerekend, met een slot
+ *   op de uitspraakrijen tegen de race met een herbeoordeling.
+ *
+ * DAAROM GEEFT HIJ NU EEN UITSLAG TERUG IN PLAATS VAN VOID. Een
+ * onbevoegde goedkeurder is een uitzondering en blijft een exceptie.
+ * Bewijs dat niet meer draagt is een NORMALE uitkomst van het
+ * redactionele proces, en bovendien een die auditeerbaar moet worden
+ * vastgelegd — en dat kan niet met een exceptie, want die rolt de
+ * auditregel mee terug. De aanroeper moet de uitslag dus lezen.
  */
 export async function keurGoed(
   c: pg.PoolClient,
   inhoudVersieId: number,
   gebruikerId: number,
   motivatie: string,
-): Promise<void> {
+): Promise<GoedkeurUitslag> {
   const v = await eenRij<{
     inhoud_afdruk: string | null;
     organisatie_id: number;
@@ -1006,10 +1179,15 @@ export async function keurGoed(
     aangemaakt_door: number | null;
     bewerkt_door: number | null;
     status: string;
+    titel: string;
+    direct_antwoord: string | null;
+    body_markdown: string;
+    structured_data: unknown;
   }>(
     c,
     `select inhoud_afdruk, organisatie_id, risico_klasse,
-            aangemaakt_door, bewerkt_door, status
+            aangemaakt_door, bewerkt_door, status,
+            titel, direct_antwoord, body_markdown, structured_data
        from intel.inhoud_versies where id = $1`,
     [inhoudVersieId],
   );
@@ -1074,6 +1252,50 @@ export async function keurGoed(
     );
   }
 
+  /* ---- DE AFDRUK MOET BIJ DE TEKST HOREN ----
+     Een goedkeuring bindt aan `inhoud_afdruk`, en publiceer() vergelijkt
+     die later met `goedgekeurde_afdruk`. Die hele keten is waardeloos
+     als de afdruk zelf niet bij de opgeslagen tekst past: dan bindt de
+     goedkeuring aan een hash van iets anders. De hertoets herberekent
+     hem bij elke bewerking, maar een rechtstreekse databasewijziging
+     doet dat niet. Daarom hier narekenen in plaats van aannemen. */
+  const nu = inhoudAfdruk({
+    titel: v.titel,
+    directAntwoord: v.direct_antwoord ?? "",
+    bodyMarkdown: v.body_markdown,
+    structuredData: v.structured_data,
+  });
+  if (v.inhoud_afdruk !== nu) {
+    throw new IntelFout(
+      "validatie",
+      `de opgeslagen inhoudsafdruk (${v.inhoud_afdruk?.slice(0, 16) ?? "GEEN"}) hoort niet bij ` +
+        `de huidige tekst (${nu.slice(0, 16)}); hertoets deze versie voordat je hem goedkeurt`,
+    );
+  }
+
+  /* ---- EN HET BEWIJS MOET NU NOG DRAGEN ----
+     De kern van deze correctie. Zie de sectiekop in
+     pijplijn/claimpoort.ts: tussen de conceptbouw en dit moment zit
+     menselijke tijd, en in dat venster kan een bevestiging zijn
+     ingetrokken, een plafond zijn verlaagd of een bronbinding zijn
+     veranderd. De toets neemt een gedeeld slot op de uitspraakrijen, en
+     deze functie draait binnen de transactie van metOrganisatie(), dus
+     het slot valt samen met de statuswijziging eronder.
+
+     GEEN EXCEPTIE MAAR EEN UITSLAG, zodat de auditregel de commit
+     haalt. Een `throw` zou hem meeslepen in de rollback. */
+  const bewijs = await toetsGebondenBewijs(c, v.organisatie_id, inhoudVersieId);
+  if (!bewijsDraagt(bewijs)) {
+    await legBewijsblokkadeVast(c, v.organisatie_id, bewijs, "goedkeuring");
+    return {
+      goedgekeurd: false,
+      reden:
+        `de goedkeuring is geblokkeerd: het bewijs onder dit concept draagt niet meer ` +
+        `(${bewijs.blokkades.length} reden(en))`,
+      blokkades: bewijs.blokkades,
+    };
+  }
+
   await c.query(
     `update intel.inhoud_versies
         set status              = 'goedgekeurd',
@@ -1085,8 +1307,35 @@ export async function keurGoed(
   );
   await c.query(
     `insert into intel.publicatiebesluiten
-       (organisatie_id, inhoud_versie_id, besluit, door_gebruiker_id, actor_soort, motivatie)
-     values ($1, $2, 'goedgekeurd', $3, 'mens', $4)`,
-    [v.organisatie_id, inhoudVersieId, gebruikerId, motivatie],
+       (organisatie_id, inhoud_versie_id, besluit, door_gebruiker_id, actor_soort, motivatie,
+        poortresultaten)
+     values ($1, $2, 'goedgekeurd', $3, 'mens', $4, $5)`,
+    [
+      v.organisatie_id,
+      inhoudVersieId,
+      gebruikerId,
+      motivatie,
+      /* WAAROP IS GOEDGEKEURD, niet alleen DAT er is goedgekeurd. De
+         claimtoestand van dit moment hoort bij het besluit: zonder die
+         vastlegging is later niet na te gaan welk bewijs de goedkeuring
+         droeg. De tabel is append-only, dus dit is onwisbaar. */
+      JSON.stringify({
+        motorversies: bewijs.motorversies,
+        dragendeKern: bewijs.dragendeKern,
+        claims: bewijs.claims.map((k) => ({
+          uitspraakId: k.uitspraakId,
+          rol: k.rol,
+          verificatieStatus: k.verificatieStatus,
+          modaliteit: k.modaliteit,
+          modaliteitZekerheid: k.modaliteitZekerheid,
+          documentsoort: k.documentsoort,
+          bewijsKwaliteit: k.bewijsKwaliteit,
+          bewijskrachtPlafond: k.bewijskrachtPlafond,
+          primaireVersieId: k.primaireVersieId,
+          draagt: k.draagt,
+        })),
+      }),
+    ],
   );
+  return { goedgekeurd: true };
 }

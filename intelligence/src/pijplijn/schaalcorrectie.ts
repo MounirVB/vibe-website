@@ -26,6 +26,7 @@
 
 import type { Pool, PoolClient } from "pg";
 import { metOrganisatie, rijen } from "../kern/db.ts";
+import { herbeoordeelStand } from "./claimpoort.ts";
 
 /** De schaalwoorden en hun factor. 'mln'/'mld' komen in persberichten voor. */
 const SCHAALFACTOR: Readonly<Record<string, number>> = {
@@ -264,6 +265,17 @@ export type SchaalcorrectieRapport = {
   readonly gevonden: number;
   readonly aangebracht: number;
   readonly overgeslagen: number;
+  /**
+   * Hoeveel claims er na deze ronde op herbeoordeling wachten.
+   *
+   * Niet nul betekent dat de claimpoort DICHT staat en dat de
+   * besluitmotor, de nieuwsselectie, de voorstellenlaag en de
+   * conceptgeneratie weigeren tot `npm run herbeoordeel` heeft
+   * gedraaid. Staat hier een getal, dan hoort de aanroeper dat te
+   * melden — niet omdat het onveilig is, maar omdat een stilstaand
+   * nieuwskanaal zichtbaar moet zijn.
+   */
+  readonly claimpoortOpenstaand: number;
   readonly regels: readonly {
     readonly uitspraakId: number;
     readonly gebeurtenisId: number | null;
@@ -435,7 +447,48 @@ export async function herstelSchaal(
          van de waarde afhangen. `verwoordbaar` en `verwoorde_zin`
          blijven leeg: die hoort de verwoordbaarheidspoort opnieuw te
          bepalen, niet deze module. Dat is dezelfde regel als in
-         migratie 0025. */
+         migratie 0025.
+
+         ------------------------------------------------------------
+         DE R3-VELDEN GAAN MEE, EN DAT IS PER VELD AFGEWOGEN.
+
+         Hier stonden ze NIET in de kolomlijst. Gevolg: de kloon kreeg
+         `verificatie_status = 'bevestigd'` en `bewijs_kwaliteit` mee,
+         maar `modaliteit_versie` werd NULL. Daarmee viel hij in
+         WACHT_OP_HERBEOORDELING_SQL en ging de claimpoort DICHT: de
+         besluitmotor, de nieuwsselectie, de voorstellenlaag en de
+         conceptgeneratie weigerden tot er opnieuw een herbeoordeling
+         was gedraaid. Dat is fail-closed en dus veilig, maar het legt
+         het nieuwskanaal stil na een handeling die daar niets mee te
+         maken heeft. Sectie 3 van de acceptatieopdracht eist precies
+         dat dat niet ongemerkt gebeurt.
+
+         WAAROM OVERNEMEN SEMANTISCH JUIST IS. Deze module verandert
+         ALLEEN `waarde_numeriek` en de daarvan afgeleide bereikgrenzen.
+         De `tekst` gaat letterlijk mee. En:
+
+           * `modaliteit`, `modaliteit_zekerheid`, `modaliteit_versie`
+             en `modaliteit_grondslag` worden door bepaalModaliteit()
+             afgeleid uit de TEKST en de publicatiedatum van het
+             brondocument. Geen van beide verandert hier, dus hetzelfde
+             oordeel is niet gekopieerd maar gelijk.
+           * `bewijskracht_plafond` is een functie van documentsoort x
+             gezag. Die staan op brondocument_versies, en de kloon
+             krijgt dezelfde primaire binding. Ook gelijk.
+
+         WAT NIET MEEGAAT: `oordeel_bron`. Als een MENS het origineel
+         heeft beoordeeld, geldt dat oordeel voor de oude waarde. De
+         kloon is een nieuwe rij met een andere waarde, door de machine
+         gemaakt. Hem 'mens' meegeven zou hem afschermen van de
+         herverwerking zonder dat iemand naar het nieuwe getal heeft
+         gekeken — en dat is precies de stille herbevestiging die de
+         opdracht verbiedt. Hij komt daarom op 'motor'.
+
+         EN ALS HET ORIGINEEL ZELF NOG NIET IS HERBEOORDEELD, dan erft
+         de kloon een lege `modaliteit_versie` en gaat de poort alsnog
+         dicht. Dat hoort zo: dan is er werkelijk iets te wegen. Het
+         rapport telt die gevallen apart en de CLI noemt de
+         vervolgactie, zodat het niet stil gebeurt. */
       const nieuw = await rijen<{ id: number }>(
         c,
         `insert into intel.uitspraken (
@@ -446,7 +499,9 @@ export async function herstelSchaal(
            semantiek_soort, fenomeen, subject, richting, grondtal, uitdrukking, exactheid,
            bereik_min, bereik_max, schaalwoord, geo_bereik, periode, periode_van, periode_tot,
            bron_vindplaats, voorwaarden, uitzonderingen, vergelijkingsbasis,
-           semantiek_herkomst, scope_waarschuwing, horizon)
+           semantiek_herkomst, scope_waarschuwing, horizon,
+           modaliteit, modaliteit_zekerheid, modaliteit_versie, modaliteit_grondslag,
+           bewijskracht_plafond, oordeel_bron)
          select organisatie_id, gebeurtenis_id, tekst, soort, $2::numeric, eenheid, onderwerp,
                 geldig_vanaf, geldig_tot, hersien_voor, laatst_geverifieerd_op,
                 verificatie_status, bewijs_kwaliteit, risico_klasse,
@@ -463,7 +518,17 @@ export async function herstelSchaal(
                    fenomeen en het subject verkeerd opschrijven; waarom de
                    waarde veranderde staat in de grondslag van de
                    correctieregel, en dat is de plek ervoor. */
-                semantiek_herkomst, scope_waarschuwing, horizon
+                semantiek_herkomst, scope_waarschuwing, horizon,
+                /* Het modaliteitsoordeel en het plafond gaan mee; zie de
+                   afweging per veld in de comment hierboven. */
+                modaliteit, modaliteit_zekerheid, modaliteit_versie, modaliteit_grondslag,
+                bewijskracht_plafond,
+                /* EN HET MENSELIJK OORDEEL GAAT NIET MEE. Vast op
+                   'motor': de kloon is machinewerk op een nieuwe
+                   waarde, en een geërfd mensoordeel zou hem afschermen
+                   van de herverwerking zonder dat iemand ernaar heeft
+                   gekeken. */
+                'motor'
            from intel.uitspraken where id = $1
          returning id`,
         [u.id, verlies.nieuweWaarde, verlies.factor],
@@ -510,12 +575,25 @@ export async function herstelSchaal(
       });
     }
 
+    /* STAAT DE CLAIMPOORT NU DICHT DOOR DEZE RONDE?
+       De kloon neemt het modaliteitsoordeel van het origineel over, dus
+       in het normale geval verandert er niets aan de poort. Maar als
+       het origineel zelf nog niet onder de huidige motorversie was
+       gewogen, erft de kloon die leegte en gaat de poort dicht. Dan
+       hoort dat GETELD en GENOEMD te worden en niet pas gevonden te
+       worden als de volgende pijplijnronde weigert: de opdracht eist
+       dat de nieuwsengine niet ongemerkt stilvalt.
+       Na een droge ronde is dit de stand van vóór de ronde, en dat is
+       precies wat een operator wil weten voordat hij toepast. */
+    const poort = await herbeoordeelStand(c, organisatieId);
+
     return {
       bekeken: alle.length,
       gevonden: regels.length,
       aangebracht,
       overgeslagen,
       geblokkeerd,
+      claimpoortOpenstaand: poort.openstaand,
       regels,
     };
   });

@@ -293,6 +293,30 @@ export async function beoordeel(
     );
   }
 
+  /* R3 — EEN GOEDKEURING WEEGT BEWIJS, EN DUS GELDT DE CLAIMPOORT.
+     Deze laan heeft GEEN per-claim binding: een voorstel bindt aan een
+     INHOUDSHASH (`inhouds_hash`), niet aan uitspraak-id's zoals
+     intel.inhoud_uitspraken dat voor een conceptversie doet. Daarom is
+     hier niets per claim na te rekenen, en is de populatiepoort het
+     juiste instrument: zolang er claims op herbeoordeling wachten, is
+     het bewijs onder dit voorstel niet gewogen onder de huidige regels.
+
+     ALLEEN BIJ EEN GOEDKEURING. Een AFWIJZING moet altijd kunnen —
+     blokkeren zou voorstellen opsluiten in een toestand waaruit ze niet
+     meer weg te halen zijn, en dat is geen veiligheid maar een val.
+
+     DE GRENS, EERLIJK BENOEMD. Deze poort merkt niet dat één specifieke
+     claim ná de generatie is ingetrokken BINNEN dezelfde motorversie.
+     Daarvoor zou een voorstel zijn claims moeten binden, en dat is een
+     tweede claimbindingssysteem plus een schemawijziging. Het verschil
+     is te dragen omdat deze laan niets publiceert: een goedkeuring
+     levert een PATCH op die een mens doorvoert, en het publicatiepad
+     daarna toetst wel per claim. */
+  if (opdracht.besluit === "goedgekeurd") {
+    const { eisHerbeoordeling } = await import("../pijplijn/claimpoort.ts");
+    await eisHerbeoordeling(c, organisatieId, "een voorstelgoedkeuring");
+  }
+
   if (!rij.inhouds_hash) {
     throw new IntelFout(
       "validatie",

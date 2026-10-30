@@ -23,6 +23,13 @@ import type pg from "pg";
 import { eenRij, rijen } from "../kern/db.ts";
 import { kort, normaliseerTekst } from "../kern/tekst.ts";
 import type { Onderwerp } from "../bronnen/soorten.ts";
+import { bepaalModaliteit } from "./claimmodaliteit.ts";
+import {
+  bewijskrachtPlafond,
+  magZelfBevestigen,
+  type Documentsoort,
+  type Gezag,
+} from "./documentsoort.ts";
 
 export type UitspraakSoort =
   | "feit"
@@ -341,14 +348,65 @@ export async function schrijfUitspraken(
     risicoKlasse: "laag" | "midden" | "hoog";
     isPrimaireBron: boolean;
     betrouwbaarheid: number;
+    /**
+     * R3 — de soort van het document waaruit deze claims komen, en het
+     * gezag van de uitgever. VERPLICHT, en dat is het ontwerp: zou het
+     * optioneel zijn met een veilige standaard, dan kan een nieuwe
+     * aanroeper hem vergeten en valt de hele reparatie stil terug op
+     * het oude gedrag. Nu dwingt de typecheck elke aanroeper.
+     */
+    documentsoort: Documentsoort;
+    gezag: Gezag;
+    /**
+     * De publicatiedatum van het brondocument (ISO), als peildatum voor
+     * de modaliteit. Zie de toelichting bij ModaliteitInvoer.peildatum:
+     * of een zin over een jaartal terugkijkt of vooruitkijkt, hangt af
+     * van wanneer de schrijver hem opschreef — niet van onze klok.
+     * Ontbreekt hij, dan vuurt het jaartalsignaal niet.
+     */
+    peildatum?: string | undefined;
   },
 ): Promise<UitspraakSchrijfRapport> {
   const ruwe = extraheerUitspraken(invoer.titel, invoer.tekst);
   if (ruwe.length === 0) return { aangemaakt: 0, bevestigd: 0, overgeslagen: 0 };
 
-  // De regel, op één plek: alleen een primaire bron van voldoende
-  // betrouwbaarheid levert op zichzelf bewijs.
-  const magBevestigen = invoer.isPrimaireBron && invoer.betrouwbaarheid >= 4;
+  /* DE REGEL, OP ÉÉN PLEK — en in R3 met een tweede as erbij.
+     ------------------------------------------------------------------
+     Hiervoor stond hier alleen:
+
+       magBevestigen = invoer.isPrimaireBron && invoer.betrouwbaarheid >= 4
+
+     Beide waarden komen uit intel.bronnen en horen bij de UITGEVER.
+     Gemeten gevolg in productie op 30 oktober 2026: `netbeheer-
+     nederland-nieuws` staat op betrouwbaarheid 5 met is_primaire_bron
+     true, en leverde daardoor 45 claims die ALLE 45 bevestigd waren met
+     bewijs_kwaliteit 5 — 45 van de 51 bevestigde claims in het hele
+     platform. Daaronder deze, uit een document met de titel 'Inbreng
+     voor het eerste debat Netcongestie van de nieuwe Kamer':
+
+       'Schaal daarom de bestaande Flex-E-regeling op naar een Flex-E
+        regeling XL van structureel EUR 125 miljoen per jaar (2027-2030).'
+
+     Een verzoek aan de Kamer, opgeslagen als vastgesteld feit met de
+     hoogste bewijskracht die dit systeem kent.
+
+     De documentsoort is nu de tweede voorwaarde. Navertellen, opiniëren
+     en lobbyen bevestigen niets meer, ook niet van een partij die op 5
+     staat. Zie magZelfBevestigen() in documentsoort.ts. */
+  const magBevestigen =
+    invoer.isPrimaireBron &&
+    invoer.betrouwbaarheid >= 4 &&
+    magZelfBevestigen(invoer.documentsoort, invoer.gezag);
+
+  /* HET PLAFOND IS EEN PLAFOND EN GEEN WAARDE. De betrouwbaarheid van
+     de bron blijft gelden; de documentsoort kan hem alleen verlagen.
+     Een uitgever die om een andere reden op 3 staat, hoort niet door
+     een mooie documentsoort op 5 te komen. */
+  const plafond = bewijskrachtPlafond(invoer.documentsoort, invoer.gezag);
+  const bewijsKwaliteit = Math.min(
+    Math.min(5, Math.max(1, invoer.betrouwbaarheid)),
+    plafond,
+  );
   const hersienVoor = new Date(
     Date.now() + herzieningstermijnDagen(invoer.onderwerp) * 86_400_000,
   )
@@ -383,15 +441,30 @@ export async function schrijfUitspraken(
       continue;
     }
 
+    /* DE MODALITEIT KOMT UIT DE ZIN, NIET UIT HET DOCUMENT.
+       Ook in een gezaghebbend document staan voorstellen naast
+       vaststellingen: een besluit van de minister kan in dezelfde
+       alinea zeggen wat er nú geldt en wat er WORDT voorgesteld. De
+       documentsoort weegt mee als aanvullend signaal, maar beslist
+       niet. Zie bepaalModaliteit(). */
+    const mod = bepaalModaliteit({
+      tekst: u.tekst,
+      documentsoort: invoer.documentsoort,
+      ...(invoer.peildatum === undefined ? {} : { peildatum: invoer.peildatum }),
+    });
+
     const nieuw = await eenRij<{ id: number }>(
       c,
       `insert into intel.uitspraken
          (organisatie_id, gebeurtenis_id, tekst, soort, waarde_numeriek, eenheid,
           onderwerp, geldig_vanaf, geldig_tot, hersien_voor, laatst_geverifieerd_op,
           verificatie_status, bewijs_kwaliteit, risico_klasse, vertrouwen,
-          is_interpretatie, interpretatie_door)
+          is_interpretatie, interpretatie_door,
+          modaliteit, modaliteit_zekerheid, modaliteit_versie, modaliteit_grondslag,
+          bewijskracht_plafond)
        values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,now(),
-               'ongeverifieerd',$11,$12,$13,false,null)
+               'ongeverifieerd',$11,$12,$13,false,null,
+               $14,$15,$16,$17,$18)
        returning id`,
       [
         organisatieId,
@@ -404,9 +477,14 @@ export async function schrijfUitspraken(
         u.geldigVanaf,
         u.geldigTot,
         hersienVoor,
-        Math.min(5, Math.max(1, invoer.betrouwbaarheid)),
+        bewijsKwaliteit,
         invoer.risicoKlasse,
         vertrouwen.toFixed(2),
+        mod.modaliteit,
+        mod.zekerheid.toFixed(2),
+        mod.versie,
+        JSON.stringify(mod.grondslag),
+        plafond,
       ],
     );
     if (!nieuw) {

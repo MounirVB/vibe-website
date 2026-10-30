@@ -87,6 +87,11 @@ function concept(over: Partial<ConceptTeToetsen> = {}): ConceptTeToetsen {
         geldigTot: null,
         verificatieStatus: "bevestigd",
         rol: "kern",
+        /* DRAAGT, want deze fixture toetst een ANDERE poort. Poort 6
+           eist sinds R3 niet alleen bevestigd maar dragend; de
+           bedoeling van deze zaak is dat poort 6 slaagt. */
+        draagt: true,
+        waaromNietDragend: null,
       },
     ],
     /* De basis is een GEZOND NEDERLANDS feit, en dat is sinds 3.0.7 ook
@@ -291,6 +296,11 @@ describe("par. 32 — adversarieel, deel A (zuivere functies)", () => {
             geldigTot: "2020-12-31",
             verificatieStatus: "bevestigd",
             rol: "kern",
+            /* DRAAGT, want deze fixture toetst een ANDERE poort. Poort 6
+               eist sinds R3 niet alleen bevestigd maar dragend; de
+               bedoeling van deze zaak is dat poort 6 slaagt. */
+            draagt: true,
+            waaromNietDragend: null,
           },
         ],
       }),

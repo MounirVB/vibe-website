@@ -37,6 +37,8 @@ import {
 } from "../harnas.ts";
 import { metOrganisatie } from "../../src/kern/db.ts";
 import { configVergeten } from "../../src/kern/config.ts";
+import { MODALITEIT_VERSIE } from "../../src/pijplijn/claimmodaliteit.ts";
+import { DOCUMENTSOORT_VERSIE } from "../../src/pijplijn/documentsoort.ts";
 
 const EIGENAAR_ROUTE = "kennis/netcongestie-uitgelegd";
 
@@ -48,6 +50,10 @@ describe("publiceren via het routeregister", () => {
   let siteWortel = "";
   let versieId = 0;
   let publicatieId = 0;
+  /* De bronversie en de claim van de hoofdfixture, zodat een tweede
+     inhoudsversie in dezelfde suite hetzelfde bewijs kan binden. */
+  let versieIdBron = 0;
+  let uitspraakIdBron = 0;
 
   before(async () => {
     db = await maakWegwerpdatabase("publiceer");
@@ -100,12 +106,22 @@ describe("publiceren via het routeregister", () => {
          returning id`,
         [org, bron.rows[0]!.id],
       );
+      /* R3 — DE VERSIE WORDT HIER GECLASSIFICEERD.
+         publiceer() verlaagt de bronsoort in het registerrecord naar
+         MARKTPARTIJ zodra het document zelf niets vaststelt, en een
+         document ZONDER soort is niet aantoonbaar dragend — dus ook dat
+         verlaagt. Deze fixture schrijft rechtstreeks met SQL en gaat niet
+         door clusterNieuweVersies(), die de soort normaal zet. Zonder
+         deze velden zou de toets de verlaging meten in plaats van het
+         gedrag dat hij beschrijft. */
       const versie = await c.query<{ id: number }>(
         `insert into intel.brondocument_versies
-           (organisatie_id, brondocument_id, versie, inhoud_hash, titel, ruwe_tekst, tekst_lengte)
-         values ($1,$2,1,'hash-1','ACM stelt nettarieven vast','De tarieven voor 2027 zijn vastgesteld.',38)
+           (organisatie_id, brondocument_id, versie, inhoud_hash, titel, ruwe_tekst, tekst_lengte,
+            documentsoort, documentsoort_gezag, documentsoort_versie)
+         values ($1,$2,1,'hash-1','ACM stelt nettarieven vast','De tarieven voor 2027 zijn vastgesteld.',38,
+                 'OFFICIEEL_BESLUIT','BEVOEGD_GEZAG',$3)
          returning id`,
-        [org, doc.rows[0]!.id],
+        [org, doc.rows[0]!.id, DOCUMENTSOORT_VERSIE],
       );
       const cluster = await c.query<{ id: number }>(
         `insert into intel.onderwerp_clusters (organisatie_id, sleutel, naam)
@@ -135,9 +151,18 @@ describe("publiceren via het routeregister", () => {
       /* Pas NA de primaire bron mag de uitspraak bevestigd worden: de
          trigger uitspraken_bewijsplicht weigert dat anders. Dat is de
          bewijsplicht die dit platform juist moet hebben. */
-      await c.query("update intel.uitspraken set verificatie_status = 'bevestigd' where id = $1", [
-        uitspraak.rows[0]!.id,
-      ]);
+      await c.query(
+        `update intel.uitspraken
+            set verificatie_status   = 'bevestigd',
+                modaliteit           = 'VASTGESTELD',
+                modaliteit_zekerheid = 0.80,
+                modaliteit_versie    = $2,
+                bewijskracht_plafond = 5,
+                oordeel_bron         = 'motor',
+                herbeoordeeld_op     = now()
+          where id = $1`,
+        [uitspraak.rows[0]!.id, MODALITEIT_VERSIE],
+      );
       const kandidaat = await c.query<{ id: number }>(
         `insert into intel.inhoud_kandidaten
            (organisatie_id, gebeurtenis_id, onderwerp_cluster_id, besluit, totaalscore, motor_versie)
@@ -149,16 +174,24 @@ describe("publiceren via het routeregister", () => {
         `insert into intel.inhoud_versies
            (organisatie_id, kandidaat_id, pad, versie, soort, titel, meta_omschrijving,
             canonieke_url, direct_antwoord, body_markdown, status, risico_klasse,
-            auteur_soort, poorten_geslaagd, inhoud_afdruk, aangemaakt_door)
+            auteur_soort, poorten_geslaagd, inhoud_afdruk, aangemaakt_door, invoer_versies)
          values ($1,$2,'/nieuws/acm-nettarieven-2027',1,'nieuw_artikel',
                  'ACM stelt de nettarieven voor 2027 vast | Vibe Energy',
                  'De ACM heeft de nettarieven voor 2027 vastgesteld. Wat dat betekent voor een zakelijke aansluiting.',
                  'https://www.vibeenergy.nl/nieuws/acm-nettarieven-2027',
                  'De ACM heeft de nettarieven voor 2027 vastgesteld.',
                  'Dit is de lead van het bericht.\n\n## Wat er is besloten\n\nDe tarieven zijn vastgesteld.\n',
-                 'ter_review','laag','ai',true,'afdruk-1',$3)
+                 'ter_review','laag','ai',true,'afdruk-1',$3,array[$4::bigint])
          returning id`,
-        [org, kandidaat.rows[0]!.id, auteur],
+        /* INVOER_VERSIES HOORT ERBIJ, en dat was geen detail.
+           De claimpoort toetst sinds de acceptatiecorrectie of de
+           primaire bronversie van elke gebonden claim ook in de
+           vastgelegde invoer van het concept staat: anders is de
+           koppeling tussen concept, claim en bron gewijzigd en is de
+           bronnenlijst onder het artikel niet meer de lijst waaruit het
+           bewijs komt. bouwConcept() vult deze kolom altijd; deze
+           fixture deed dat niet en was dus geen getrouwe nabootsing. */
+        [org, kandidaat.rows[0]!.id, auteur, versie.rows[0]!.id],
       );
       versieId = iv.rows[0]!.id;
 
@@ -168,6 +201,8 @@ describe("publiceren via het routeregister", () => {
          values ($1,$2,$3,'kern')`,
         [org, versieId, uitspraak.rows[0]!.id],
       );
+      versieIdBron = versie.rows[0]!.id;
+      uitspraakIdBron = uitspraak.rows[0]!.id;
     });
   });
 
@@ -245,6 +280,14 @@ describe("publiceren via het routeregister", () => {
     assert.equal(bronnen[0]!.soort, "TOEZICHTHOUDER", "ACM is een toezichthouder, dus dragend");
     assert.match(bronnen[0]!.datum, /^\d{4}-\d{2}-\d{2}$/);
 
+    /* R3 — EEN NIET-VASTSTELLEND DOCUMENT VERLAAGT NAAR MARKTPARTIJ.
+       Deze assertie is er omdat de eerste versie van publiceer() de
+       bronsoort uitsluitend uit de UITGEVERSCATEGORIE haalde. Een
+       ACM-document is `toezichthouder` en dus TOEZICHTHOUDER — dragend —
+       ook als dat specifieke document een opiniestuk is of een besluit
+       van een ánder gezag navertelt. Juist die `soort` is wat
+       weigerNieuws() leest om te beslissen of er een dragende bron onder
+       een bericht zit. */
     // Het cijfer uit de uitspraak staat als claim met bron en datum.
     const claims = record["claims"] as { tekst: string; bron_url: string; bron_datum: string }[];
     assert.equal(claims.length, 1);
@@ -295,16 +338,33 @@ describe("publiceren via het routeregister", () => {
         `insert into intel.inhoud_versies
            (organisatie_id, pad, versie, soort, titel, meta_omschrijving, canonieke_url,
             body_markdown, status, risico_klasse, auteur_soort, poorten_geslaagd,
-            inhoud_afdruk, goedgekeurde_afdruk, goedgekeurd_door, goedgekeurd_op, aangemaakt_door)
+            inhoud_afdruk, goedgekeurde_afdruk, goedgekeurd_door, goedgekeurd_op, aangemaakt_door,
+            invoer_versies)
          values ($1,'/kennis/netcongestie-uitgelegd',1,'pagina_update','Patch | Vibe',
                  'Een patchvoorstel voor een bestaande pagina van Release 1.',
                  'https://www.vibeenergy.nl/kennis/netcongestie-uitgelegd',
                  'Lead.\n\n## Kop\n\nTekst.\n','goedgekeurd','laag','ai',true,
-                 'afdruk-2','afdruk-2',$2, now(), $3)
+                 'afdruk-2','afdruk-2',$2, now(), $3, array[$4::bigint])
          returning id`,
-        [org, goedkeurder, auteur],
+        [org, goedkeurder, auteur, versieIdBron],
       );
       tweede = iv.rows[0]!.id;
+      /* DEZE VERSIE KRIJGT OOK EEN DRAGENDE CLAIM, en dat is nodig om
+         te blijven toetsen waar deze zaak over gaat. De claimpoort
+         staat vóór publiceerViaRegister(), dus zonder gebonden bewijs
+         zou de weigering nu 'geen enkele uitspraak gebonden' luiden in
+         plaats van 'buiten data/inhoud/nieuws'. Dan zou de toets groen
+         blijven zonder nog iets te zeggen over het PAD -- precies het
+         soort toets dat niets meer bewijst.
+         De claim is dezelfde als hierboven: de bindingstabel is
+         gesleuteld op (inhoud_versie_id, uitspraak_id), dus twee
+         versies mogen hetzelfde bewijs delen. */
+      await c.query(
+        `insert into intel.inhoud_uitspraken
+           (organisatie_id, inhoud_versie_id, uitspraak_id, rol)
+         values ($1,$2,$3,'kern')`,
+        [org, tweede, uitspraakIdBron],
+      );
     });
 
     const { publiceer } = await import("../../src/inhoud/publiceer.ts");

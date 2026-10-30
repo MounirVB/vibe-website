@@ -51,6 +51,9 @@ import { metOrganisatie } from "../../src/kern/db.ts";
 import { maakApp } from "../../src/dashboard/server.ts";
 import { maakSessieCookie } from "../../src/dashboard/auth.ts";
 import { CSRF_KOEKJE, CSRF_VELD, maakCsrfToken } from "../../src/dashboard/bescherming.ts";
+import { inhoudAfdruk } from "../../src/inhoud/concept.ts";
+import { DOCUMENTSOORT_VERSIE } from "../../src/pijplijn/documentsoort.ts";
+import { MODALITEIT_VERSIE } from "../../src/pijplijn/claimmodaliteit.ts";
 import { inhoudsHashVan } from "../../src/inhoud/voorstel.ts";
 import { bouwNieuwePaginaVoorstel } from "../../src/inhoud/nieuwepagina.ts";
 
@@ -94,6 +97,14 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
   const voorstellen: Record<string, { id: string; hash: string }> = {};
   /** De conceptVERSIE voor /studio/:id; een andere tabel dan de voorstellen. */
   let conceptVersie = "";
+  /* DE ECHTE AFDRUK VAN DE FIXTURE.
+     Stond als letterlijke string 'afdruk-browserfixture' in zes
+     toetsen. De afdruk hoort een HASH van de opgeslagen tekst te zijn,
+     en sinds de acceptatiecorrectie rekent keurGoed() hem na. Hier
+     staat de waarde die de fixture werkelijk heeft gekregen, zodat de
+     toetsen het besluit aan de inhoud binden in plaats van aan een
+     afspraak over een tekenreeks. */
+  let conceptAfdruk = "";
 
   before(async () => {
     process.env["INTEL_SESSIE_GEHEIM"] = GEHEIM;
@@ -259,6 +270,179 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
           gebruikers["redacteur"]!,
         ],
       );
+
+      /* R3 — EEN ECHT GEBONDEN CLAIM, met zijn documentsoort en zijn
+         modaliteit. Zonder deze binding bleef `intel.inhoud_uitspraken`
+         leeg en toonde de ketentabel alleen de lege-staatregel; dan
+         rendert hij zijn kolommen nooit en bewijst een browsertoets op
+         die kolommen niets. Twee claims, met opzet verschillend:
+
+           - een VASTGESTELDE claim uit een OFFICIEEL_BESLUIT  -> draagt
+           - een VOORSTEL-claim uit een LOBBYDOCUMENT          -> draagt niet
+
+         Zo staat in de browser te zien dat de tabel het onderscheid
+         maakt, en niet alleen dat hij bestaat. */
+      const bron = await c.query<{ id: string }>(
+        `insert into intel.bronnen
+           (organisatie_id, sleutel, uitgever, soort, endpoint_url, basis_url, actief,
+            robots_status, tdm_status, verificatie_status, verificatie_bewijs,
+            betrouwbaarheid, is_primaire_bron)
+         values ($1,'acm-besluiten','ACM','rss','https://www.acm.nl/feed','https://www.acm.nl',
+                 true,'toegestaan','geen_voorbehoud','geverifieerd','fixture',5,true)
+         returning id::text`,
+        [org],
+      );
+      const doc = await c.query<{ id: string }>(
+        `insert into intel.brondocumenten
+           (organisatie_id, bron_id, extern_id, canonieke_url, titel, uitgever, soort,
+            gepubliceerd_op)
+         values ($1,$2::bigint,'fix-keten','https://www.acm.nl/besluit-keten',
+                 'Tariefbesluit 2027','ACM','rss', now())
+         returning id::text`,
+        [org, bron.rows[0]!.id],
+      );
+      const bronVersie = await c.query<{ id: string }>(
+        `insert into intel.brondocument_versies
+           (organisatie_id, brondocument_id, versie, inhoud_hash, titel, ruwe_tekst,
+            tekst_lengte, documentsoort, documentsoort_gezag, documentsoort_versie,
+            documentsoort_onzekerheid, documentsoort_grondslag)
+         values ($1,$2::bigint,1,'hash-keten','Tariefbesluit 2027',
+                 'De ACM stelt hierbij vast dat het tarief per 2027 wordt verhoogd.',63,
+                 'OFFICIEEL_BESLUIT','BEVOEGD_GEZAG',$4,0.10,
+                 $3::jsonb)
+         returning id::text`,
+        /* DE ECHTE MOTORVERSIE, niet de string 'fixture'. De claimpoort
+           toetst vlak voor goedkeuren en publiceren of elke gebonden
+           claim onder de HUIDIGE documentsoort- en modaliteitsversie is
+           gewogen. Een fixture met een verzonnen versiestring is daarna
+           geen representatieve toestand meer maar een claim die
+           terecht geweigerd wordt. */
+        [
+          org,
+          doc.rows[0]!.id,
+          JSON.stringify({ uitleg: "fixture: besluitvorm bij bevoegd gezag" }),
+          DOCUMENTSOORT_VERSIE,
+        ],
+      );
+
+      for (const claim of [
+        {
+          tekst: "Het tarief wordt per 1 januari 2027 verhoogd met 12 procent.",
+          waarde: 12,
+          eenheid: "%",
+          modaliteit: "VASTGESTELD",
+          zekerheid: 0.8,
+        },
+        {
+          tekst: "Schaal de regeling daarom op naar 125 miljoen euro per jaar.",
+          waarde: 125,
+          eenheid: "EUR",
+          modaliteit: "VOORSTEL",
+          zekerheid: 0.75,
+        },
+      ]) {
+        const u = await c.query<{ id: string }>(
+          `insert into intel.uitspraken
+             (organisatie_id, tekst, soort, waarde_numeriek, eenheid, verificatie_status,
+              bewijs_kwaliteit, modaliteit, modaliteit_zekerheid, modaliteit_versie,
+              modaliteit_grondslag, bewijskracht_plafond)
+           values ($1,$2,'cijfer',$3,$4,'ongeverifieerd',5,$5,$6,$8,$7::jsonb,5)
+           returning id::text`,
+          [
+            org,
+            claim.tekst,
+            claim.waarde,
+            claim.eenheid,
+            claim.modaliteit,
+            claim.zekerheid,
+            JSON.stringify({ uitleg: `fixture: ${claim.modaliteit}` }),
+            MODALITEIT_VERSIE,
+          ],
+        );
+        await c.query(
+          `insert into intel.uitspraak_bronnen (organisatie_id, uitspraak_id, versie_id, rol)
+           values ($1,$2::bigint,$3::bigint,'primair')`,
+          [org, u.rows[0]!.id, bronVersie.rows[0]!.id],
+        );
+        await c.query(
+          /* DE ROL VOLGT DE MODALITEIT, en dat was eerst niet zo.
+             Beide claims stonden als 'kern' gebonden, ook het VOORSTEL
+             uit het lobbydocument. Poort 6 eist van een KERNclaim dat
+             hij draagt, dus die opstelling is onpubliceerbaar -- en
+             hoort dat te zijn. De bedoeling van deze fixture is dat de
+             ketentabel een dragende naast een niet-dragende rij toont,
+             en dat blijft zo: een ondersteunende claim staat er met zijn
+             modaliteit bij. */
+          `insert into intel.inhoud_uitspraken (organisatie_id, inhoud_versie_id, uitspraak_id, rol)
+           values ($1,$2::bigint,$3::bigint,$4)`,
+          [
+            org,
+            v.rows[0]!.id,
+            u.rows[0]!.id,
+            claim.modaliteit === "VASTGESTELD" ? "kern" : "ondersteunend",
+          ],
+        );
+        /* Pas NA de bronbinding mag een claim bevestigd worden; de
+           trigger uitspraken_bewijsplicht weigert dat anders. Alleen de
+           VASTGESTELDE claim wordt bevestigd, zodat de pagina een
+           dragende en een niet-dragende rij naast elkaar toont. */
+        if (claim.modaliteit === "VASTGESTELD") {
+          await c.query(
+            "update intel.uitspraken set verificatie_status = 'bevestigd' where id = $1::bigint",
+            [u.rows[0]!.id],
+          );
+        }
+      }
+
+      /* DE AFDRUK EN DE INVOERVERSIES, NA DE BRONVERSIE.
+         Twee dingen die de claimpoort narekent en die deze fixture niet
+         kon zetten op het moment van de insert:
+
+           * `inhoud_afdruk` stond op de letterlijke string
+             'afdruk-browserfixture'. keurGoed() rekent de afdruk sinds
+             de acceptatiecorrectie na uit de OPGESLAGEN kolommen, dus
+             een verzonnen waarde betekent dat de goedkeuring aan een
+             hash van iets anders zou binden. Hier wordt hij uit de
+             database teruggelezen en met de echte functie berekend.
+
+           * `invoer_versies` was leeg. De poort toetst of de primaire
+             bronversie van elke gebonden claim ook in de vastgelegde
+             invoer van het concept staat; bouwConcept() vult dat altijd
+             en deze fixture hoort dat na te bootsen. */
+      const opgeslagen = await c.query<{
+        titel: string;
+        direct_antwoord: string | null;
+        body_markdown: string;
+        structured_data: unknown;
+      }>(
+        `select titel, direct_antwoord, body_markdown, structured_data
+           from intel.inhoud_versies where id = $1::bigint`,
+        [v.rows[0]!.id],
+      );
+      const r = opgeslagen.rows[0]!;
+      await c.query(
+        `update intel.inhoud_versies
+            set inhoud_afdruk  = $2,
+                invoer_versies = array[$3::bigint]
+          where id = $1::bigint`,
+        [
+          v.rows[0]!.id,
+          inhoudAfdruk({
+            titel: r.titel,
+            directAntwoord: r.direct_antwoord ?? "",
+            bodyMarkdown: r.body_markdown,
+            structuredData: r.structured_data,
+          }),
+          bronVersie.rows[0]!.id,
+        ],
+      );
+      conceptAfdruk = inhoudAfdruk({
+        titel: r.titel,
+        directAntwoord: r.direct_antwoord ?? "",
+        bodyMarkdown: r.body_markdown,
+        structuredData: r.structured_data,
+      });
+
       return v.rows[0]!.id;
     });
 
@@ -522,6 +706,43 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
     assert.match(tekst, /dragende bronsoort\(en\): WETGEVING/);
   });
 
+  test("18b. R3 — de keten bron -> document -> claim -> verificatie staat op de pagina", async () => {
+    /* Sectie 8 van de R3-opdracht eist dat een redacteur kan zien WAAROM
+       een bron betrouwbaar of beperkt betrouwbaar is, en welke claims
+       nog controle vragen. Dat is geen tekstregel maar een tabel met
+       vier kolommen die er eerder niet waren: modaliteit, documentsoort,
+       gezag en het bewijskrachtplafond.
+
+       Deze toets kijkt in een ECHTE browser, want de kolommen worden
+       server-side gerenderd en een eenheidstoets op de query zou niet
+       zien of ze ook op de pagina komen. */
+    const p = await alsRol("beheerder");
+    await p.goto(`/studio/${conceptVersie}`, { waitUntil: "domcontentloaded" });
+    const tekst = await p.locator("body").innerText();
+
+    assert.match(tekst, /bron . document . claim . verificatie/i, "de ketenkop hoort er te staan");
+    /* De tabelkoppen renderen in kapitalen; vandaar de /i. */
+    assert.match(tekst, /modaliteit/i, "de modaliteitskolom hoort er te staan");
+    assert.match(tekst, /documentsoort/i, "de documentsoortkolom hoort er te staan");
+    assert.match(tekst, /gezag/i, "de gezagkolom hoort er te staan");
+
+    /* HET ONDERSCHEID MOET ZICHTBAAR ZIJN, niet alleen de kolom. De
+       fixture bindt twee claims uit hetzelfde document: één vastgesteld
+       en bevestigd, één voorstel. Precies één hoort te dragen. */
+    assert.match(tekst, /OFFICIEEL_BESLUIT/, "de documentsoort van de bron hoort te staan");
+    assert.match(tekst, /vastgesteld 0\.80/i, "een dragende claim hoort zijn zekerheid te tonen");
+    assert.match(
+      tekst,
+      /voorstel . geen feit/i,
+      "een voorstel hoort als 'geen feit' gemarkeerd te zijn",
+    );
+    assert.match(
+      tekst,
+      /Claims die dragen: 1 van 2/,
+      "precies één van de twee claims hoort te dragen",
+    );
+  });
+
   test("19. een LEZER ziet GEEN besluitformulier op de conceptpagina", async () => {
     const p = await alsRol("lezer");
     const r = await p.goto(`/studio/${conceptVersie}`, { waitUntil: "domcontentloaded" });
@@ -542,7 +763,7 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
         [CSRF_VELD]: csrf,
         besluit: "GOEDGEKEURD",
         motivatie: "een lezer die toch probeert te besluiten",
-        inhoud_afdruk: "afdruk-browserfixture",
+        inhoud_afdruk: conceptAfdruk,
       },
     });
     assert.equal(antwoord.status(), 403, `verwacht 403, kreeg ${antwoord.status()}`);
@@ -560,7 +781,7 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
         [CSRF_VELD]: csrf,
         besluit: "GOEDGEKEURD",
         motivatie: "mijn eigen tekst goedkeuren",
-        inhoud_afdruk: "afdruk-browserfixture",
+        inhoud_afdruk: conceptAfdruk,
       },
     });
     assert.equal(antwoord.status(), 400, `verwacht 400, kreeg ${antwoord.status()}`);
@@ -593,7 +814,7 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
         [CSRF_VELD]: csrf,
         besluit: "GOEDGEKEURD",
         motivatie: "gelezen, bronnen gecontroleerd, akkoord",
-        inhoud_afdruk: "afdruk-browserfixture",
+        inhoud_afdruk: conceptAfdruk,
       },
       maxRedirects: 0,
     });
@@ -607,7 +828,7 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
     );
     assert.equal(stand.rows[0]!.status, "goedgekeurd");
     assert.equal(stand.rows[0]!.goedgekeurd_door, gebruikers["beheerder"]);
-    assert.equal(stand.rows[0]!.goedgekeurde_afdruk, "afdruk-browserfixture");
+    assert.equal(stand.rows[0]!.goedgekeurde_afdruk, conceptAfdruk);
 
     /* EN ER IS NIETS GEPUBLICEERD. Goedkeuren is geen publicatie; er
        hoort geen rij in intel.publicaties te staan. */
@@ -642,7 +863,7 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
         [CSRF_VELD]: csrf,
         body_markdown:
           "Een volledig andere tekst die lang genoeg is om de minimumlengte van tachtig tekens te halen.",
-        inhoud_afdruk: "afdruk-browserfixture",
+        inhoud_afdruk: conceptAfdruk,
       },
     });
     assert.equal(antwoord.status(), 400, `verwacht 400, kreeg ${antwoord.status()}`);

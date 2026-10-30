@@ -66,6 +66,7 @@ import { leesSitekennis } from "../site/sitekennis.ts";
 import { beoordeel, type Besluit } from "../inhoud/beoordeling.ts";
 import { hertoetsInhoudVersie } from "../inhoud/concept.ts";
 import { keurGoed } from "../inhoud/publiceer.ts";
+import { claimDraagt, herbeoordeelStand } from "../pijplijn/claimpoort.ts";
 import { IntelFout } from "../kern/fouten.ts";
 import { redacteerFout } from "../kern/geheimen.ts";
 
@@ -1641,6 +1642,15 @@ ${tabel(
           bron_titel: string | null;
           bron_datum: string | null;
           injectie: boolean | null;
+          documentsoort: string | null;
+          gezag: string | null;
+          besluit_van: string | null;
+          soort_uitleg: string | null;
+          modaliteit: string | null;
+          zekerheid: string | null;
+          mod_uitleg: string | null;
+          plafond: number | null;
+          origineel_gezien: boolean | null;
         }>(
           c,
           `select u.id, iu.rol, u.soort, u.tekst,
@@ -1648,7 +1658,18 @@ ${tabel(
                   u.verificatie_status as status, u.bewijs_kwaliteit as kwaliteit,
                   bd.uitgever, bd.canonieke_url as bron_url, bd.titel as bron_titel,
                   coalesce(bd.gepubliceerd_op, bv.opgehaald_op)::date::text as bron_datum,
-                  bv.injectie_verdacht as injectie
+                  bv.injectie_verdacht as injectie,
+                  /* R3 — de hele keten in één rij: welke soort document, welk
+                     gezag, welke modaliteit, en of het origineel is
+                     teruggevonden. Zonder deze velden ziet een redacteur
+                     'bevestigd, kwaliteit 5' en niet WAAROM. */
+                  bv.documentsoort, bv.documentsoort_gezag as gezag,
+                  bv.beschrijft_besluit_van as besluit_van,
+                  bv.documentsoort_grondslag->>'uitleg' as soort_uitleg,
+                  u.modaliteit, u.modaliteit_zekerheid::text as zekerheid,
+                  u.modaliteit_grondslag->>'uitleg' as mod_uitleg,
+                  u.bewijskracht_plafond as plafond,
+                  u.primaire_bron_bevestigd as origineel_gezien
              from intel.inhoud_uitspraken iu
              join intel.uitspraken u on u.id = iu.uitspraak_id
              left join intel.uitspraak_bronnen ub
@@ -1821,24 +1842,95 @@ ${tabel(
     : ""
 }
 
-<h2>De bronnen, om te controleren</h2>
+<h2>De keten: bron &rarr; document &rarr; claim &rarr; verificatie</h2>
+<p class="uitleg">Per claim staat hier waarom hij draagt of niet draagt. <strong>Soort</strong> is
+wat het document IS; <strong>gezag</strong> is wat de uitgever mag vaststellen; <strong>modaliteit</strong>
+is of de zin iets vaststelt, voorstelt of verwacht. Een claim draagt een bericht alleen als hij
+bevestigd is &eacute;n vastgesteld met voldoende zekerheid. Klap een rij open voor de grondslag.</p>
 ${tabel(
-  ["Rol", "Soort", "Waarde", "Status", "Kwaliteit", "Bron", "Datum"],
-  d.uitspraken.map((u) => [
-    esc(u.rol),
-    esc(u.soort),
-    u.waarde === null ? "<span class=\"bij\">geen getal</span>" : esc(`${u.waarde} ${u.eenheid ?? ""}`),
-    u.status === "bevestigd" ? vlag(u.status, "ok") : vlag(u.status, "waarschuwing"),
-    esc(String(u.kwaliteit ?? "-")),
-    u.bron_url
-      ? `<a href="${esc(u.bron_url)}" rel="noreferrer noopener nofollow" target="_blank">${esc(
-          (u.bron_titel ?? u.uitgever ?? u.bron_url).slice(0, 70),
-        )}</a>${u.injectie ? ` ${vlag("injectieverdacht", "fout")}` : ""}`
-      : vlag("geen primaire bron", "fout"),
-    esc(u.bron_datum ?? "-"),
-  ]),
+  ["Rol", "Waarde", "Status", "Kw.", "Modaliteit", "Documentsoort", "Gezag", "Bron", "Datum"],
+  d.uitspraken.map((u) => {
+    const zeker = u.zekerheid === null ? null : Number(u.zekerheid);
+    /* DEZELFDE FUNCTIE ALS DE POORT, en dat is een correctie. Hier
+       stond de regel met de hand nagebouwd:
+
+         u.status === "bevestigd" && u.modaliteit === "VASTGESTELD"
+           && (zeker ?? 0) >= 0.5
+
+       Twee verschillen met claimDraagt(), en beide tellen. De drempel
+       0.5 stond als letterlijk getal in plaats van
+       NOODZAKELIJKE_ZEKERHEID, dus een wijziging daar zou het dashboard
+       niet meenemen. En de DOCUMENTSOORT werd niet getoetst: een claim
+       uit een SECUNDAIRE_BERICHTGEVING of een LOBBYDOCUMENT kreeg in
+       deze tabel het groene 'draagt' terwijl de poort hem afwijst.
+       Precies het uiteenlopen dat de comment bij claimDraagt() belooft
+       te voorkomen. */
+    const draagt = claimDraagt({
+      verificatieStatus: u.status,
+      modaliteit: u.modaliteit,
+      modaliteitZekerheid: zeker,
+      documentsoort: u.documentsoort,
+    });
+    /* DE MODALITEITSKOLOM ZEGT OOK WAT HIJ BETEKENT. 'VOORSTEL' alleen
+       is voor een redacteur niet genoeg; hij moet weten dat zo'n claim
+       geen feit mag worden. */
+    const modCel =
+      u.modaliteit === null
+        ? vlag("niet beoordeeld", "waarschuwing")
+        : u.modaliteit === "VASTGESTELD"
+          ? (zeker ?? 0) >= 0.5
+            ? vlag(`vastgesteld ${zeker?.toFixed(2)}`, "ok")
+            : vlag(`vastgesteld, onzeker ${zeker?.toFixed(2)}`, "waarschuwing")
+          : vlag(`${u.modaliteit.toLowerCase()} — geen feit`, "waarschuwing");
+    const soortCel =
+      u.documentsoort === null
+        ? vlag("niet geclassificeerd", "waarschuwing")
+        : `${esc(u.documentsoort)}${
+            u.besluit_van
+              ? `<div class="klein">besluit van ${esc(u.besluit_van)} — ${
+                  u.origineel_gezien
+                    ? "origineel teruggevonden"
+                    : "origineel NIET teruggevonden"
+                }</div>`
+              : ""
+          }`;
+    const grondslag = [
+      u.soort_uitleg ? `<strong>documentsoort:</strong> ${esc(u.soort_uitleg)}` : "",
+      u.mod_uitleg ? `<strong>modaliteit:</strong> ${esc(u.mod_uitleg)}` : "",
+      u.plafond === null
+        ? ""
+        : `<strong>bewijskrachtplafond:</strong> ${u.plafond} (de documentsoort stond niet meer toe)`,
+    ]
+      .filter(Boolean)
+      .join("<br>");
+    return [
+      esc(u.rol) + (draagt ? ` ${vlag("draagt", "ok")}` : ""),
+      u.waarde === null ? "<span class=\"bij\">geen getal</span>" : esc(`${u.waarde} ${u.eenheid ?? ""}`),
+      u.status === "bevestigd" ? vlag(u.status, "ok") : vlag(u.status, "waarschuwing"),
+      esc(String(u.kwaliteit ?? "-")),
+      modCel,
+      soortCel,
+      esc(u.gezag ?? "-"),
+      u.bron_url
+        ? `<a href="${esc(u.bron_url)}" rel="noreferrer noopener nofollow" target="_blank">${esc(
+            (u.bron_titel ?? u.uitgever ?? u.bron_url).slice(0, 56),
+          )}</a>${u.injectie ? ` ${vlag("injectieverdacht", "fout")}` : ""}${
+            grondslag ? `<details><summary class="klein">grondslag</summary><div class="klein">${grondslag}</div></details>` : ""
+          }`
+        : vlag("geen primaire bron", "fout"),
+      esc(u.bron_datum ?? "-"),
+    ];
+  }),
   "Geen uitspraken gebonden. Zonder bewijs kan dit concept niet gepubliceerd worden.",
 )}
+<p class="uitleg">Claims die dragen: <strong>${
+  d.uitspraken.filter(
+    (u) =>
+      u.status === "bevestigd" &&
+      u.modaliteit === "VASTGESTELD" &&
+      (u.zekerheid === null ? 0 : Number(u.zekerheid)) >= 0.5,
+  ).length
+}</strong> van ${d.uitspraken.length}. Een bericht zonder dragende claim hoort niet gepubliceerd te worden.</p>
 
 <h2>De tekst</h2>
 <pre class="concepttekst">${esc(v.body_markdown)}</pre>
@@ -1923,6 +2015,14 @@ afdwingt.</p>`
         return;
       }
 
+      /* DE BLOKKADE MOET DE COMMIT HALEN, de melding mag erna.
+         keurGoed() legt een bewijsblokkade vast in
+         intel.publicatiebesluiten en geeft hem terug als uitslag. Zou
+         deze route daarop gooien BINNEN alsGebruiker(), dan rolde de
+         transactie die auditregel mee terug. Dus: de uitslag naar
+         buiten dragen, de transactie laten committen, en pas daarna
+         weigeren. */
+      let geblokkeerd: { reden: string; blokkades: readonly string[] } | null = null;
       try {
         await alsGebruiker(req, async (c) => {
           /* DE AFDRUK DIE OP HET SCHERM STOND. Wijkt hij af, dan is de
@@ -1949,7 +2049,15 @@ afdwingt.</p>`
           }
 
           if (besluit === "GOEDGEKEURD") {
-            await keurGoed(c, Number(id), gebruikerId, motivatie || "goedgekeurd via het dashboard");
+            const uitslag = await keurGoed(
+              c,
+              Number(id),
+              gebruikerId,
+              motivatie || "goedgekeurd via het dashboard",
+            );
+            if (!uitslag.goedgekeurd) {
+              geblokkeerd = { reden: uitslag.reden, blokkades: uitslag.blokkades };
+            }
           } else {
             await c.query(
               "update intel.inhoud_versies set status = 'ingetrokken' where id = $1",
@@ -1966,6 +2074,16 @@ afdwingt.</p>`
         });
       } catch (e) {
         weiger(res, 400, redacteerFout(e));
+        return;
+      }
+      if (geblokkeerd !== null) {
+        const g = geblokkeerd as { reden: string; blokkades: readonly string[] };
+        weiger(
+          res,
+          409,
+          `${g.reden}. De blokkade is vastgelegd in het publicatielogboek.\n\n` +
+            g.blokkades.map((b) => `- ${b}`).join("\n"),
+        );
         return;
       }
       res.redirect(303, `/studio/${id}`);
@@ -2688,6 +2806,14 @@ ${tabel(
                   where a.op >= date_trunc('day', now())) as gebruikt
            from intel.kostenplafonds kp limit 1`,
       ),
+      /* DE STAND VAN DE CLAIMPOORT, ZICHTBAAR.
+         Sectie 3 van de acceptatieopdracht eist dat de nieuwsengine
+         niet ongemerkt operationeel stilvalt. De poort is fail-closed:
+         zolang er claims op herbeoordeling wachten, weigeren de
+         besluitmotor, de nieuwsselectie, de voorstellenlaag en de
+         conceptgeneratie. Dat is veilig, maar in een logregel ziet
+         niemand het. Hier staat het getal. */
+      claimpoort: await herbeoordeelStand(c, req.gebruiker!.organisatieId),
       gebruikers: await rijen<{ email: string; naam: string; rollen: string; hash: boolean; laatste: Date | null }>(
         c,
         `select g.email, g.naam,
@@ -2716,13 +2842,29 @@ ${tabel(
         inhoud: `
 <h1>Instellingen</h1>
 
+<h2>Claimpoort</h2>
+${
+  d.claimpoort.openstaand === 0
+    ? `<div class="tegel">${vlag("claimpoort open", "ok")}<div class="klein" style="margin-top:6px">
+       Elke claim is gewogen onder ${esc(d.claimpoort.motorversies)}. De besluitmotor, de
+       nieuwsselectie, de voorstellenlaag en de conceptgeneratie kunnen bewijs wegen.</div></div>`
+    : `<div class="tegel">${vlag(`claimpoort DICHT — ${d.claimpoort.openstaand} claim(s) wachten`, "fout")}<div class="klein" style="margin-top:6px">
+       Zolang dit getal niet nul is, weigeren de besluitmotor, de nieuwsselectie, de
+       voorstellenlaag en de conceptgeneratie &mdash; met opzet, want hun oordeel zou op een
+       gemengde populatie rusten. Dit is geen storing maar een grendel.
+       Draai <code>npm run documentsoort</code> en daarna <code>npm run herbeoordeel</code>.
+       Motorversies: ${esc(d.claimpoort.motorversies)}.</div></div>`
+}
+
 <h2>Beveiligingsinvarianten</h2>
 ${
   alleInvarianten.length === 0
     ? `<div class="tegel">${vlag("alle invarianten kloppen", "ok")}<div class="klein" style="margin-top:6px">
        RLS op elke tenanttabel, geen functie uitvoerbaar door PUBLIC, de applicatierol is geen
        eigenaar en heeft geen BYPASSRLS, het auditspoor is niet muteerbaar, en geen gepubliceerde
-       kernclaim zonder bevestigd bewijs.</div></div>`
+       kernclaim die onder de R3-regels niets draagt &mdash; dus niet alleen bevestigd, maar ook
+       vastgesteld met voldoende zekerheid en uit een document dat zelf iets vaststelt
+       (migratie 0044).</div></div>`
     : tabel(
         ["Soort", "Onderwerp", "Bevinding"],
         alleInvarianten.map((i) => [vlag(i.soort, "fout"), esc(i.onderwerp), esc(i.bevinding)]),

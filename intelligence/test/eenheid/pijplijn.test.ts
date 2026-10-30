@@ -202,6 +202,11 @@ function basisConcept(overschrijf: Partial<ConceptTeToetsen> = {}): ConceptTeToe
         geldigTot: null,
         verificatieStatus: "bevestigd",
         rol: "kern",
+        /* DRAAGT, want deze fixture toetst een ANDERE poort. Poort 6
+           eist sinds R3 niet alleen bevestigd maar dragend; de
+           bedoeling van deze zaak is dat poort 6 slaagt. */
+        draagt: true,
+        waaromNietDragend: null,
       },
     ],
     /* NEDERLAND moet in de basisfixture VASTGESTELD zijn, anders kapt de

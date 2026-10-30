@@ -58,6 +58,8 @@
 import { eenRij, metOrganisatie, rijen, type Pool } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 import { slug } from "../kern/tekst.ts";
+import { NIET_DRAGENDE_DOCUMENTSOORTEN } from "./documentsoort.ts";
+import { NOODZAKELIJKE_ZEKERHEID } from "./claimmodaliteit.ts";
 
 const log = maakLogger("nieuwsselectie");
 
@@ -187,6 +189,31 @@ export type NieuwsselectieInvoer = {
   /** Slugs die al onder data/inhoud/nieuws/ bestaan. */
   readonly bestaandeNieuwsSlugs: ReadonlySet<string>;
   readonly vandaag: string;
+
+  /* ---------------- R3 ---------------- */
+
+  /**
+   * Claims die een bericht kunnen DRAGEN: modaliteit VASTGESTELD met
+   * voldoende zekerheid, én bewijskracht die niet uit een navertelling
+   * of een pleidooi komt.
+   *
+   * WAAROM DIT EEN EIGEN GETAL IS EN NIET `uitsprakenBevestigd`.
+   * Gemeten op 30 oktober 2026 waren 45 van de 51 bevestigde claims in
+   * productie afkomstig uit één branchevereniging, met bewijs_kwaliteit
+   * 5, en zat daar deze bij: 'Schaal daarom de bestaande Flex-E-regeling
+   * op naar een Flex-E regeling XL van structureel EUR 125 miljoen per
+   * jaar (2027-2030).' Een verzoek aan de Kamer. `uitsprakenBevestigd`
+   * telde die mee; dit getal niet.
+   *
+   * NULL betekent NIET GEMETEN — de classificatie heeft deze
+   * gebeurtenis nog niet gezien. Dat is iets anders dan nul dragende
+   * claims, en de poort hieronder behandelt het ook anders.
+   */
+  readonly dragendeClaims: number | null;
+  /** Hoeveel claims per modaliteit, voor de uitleg aan de redactie. */
+  readonly claimsPerModaliteit: Readonly<Record<string, number>>;
+  /** De documentsoorten van de bronnen onder deze gebeurtenis. */
+  readonly documentsoorten: readonly string[];
 };
 
 const ISO_VORM = /^\d{4}-\d{2}-\d{2}$/;
@@ -392,7 +419,20 @@ export function beoordeelNieuwswaarde(inv: NieuwsselectieInvoer): NieuwsOordeel 
     naam: "bewijskwaliteit",
     score: Math.min(6, Math.max(0, Math.round((inv.besteBewijskwaliteit / 5) * 6))),
     max: 6,
-    bewijs: `beste bewijskwaliteit ${inv.besteBewijskwaliteit}/5 over ${inv.uitsprakenBevestigd} bevestigde van ${inv.uitsprakenTotaal} uitspraken`,
+    /* DE BEWIJSREGEL ZEGT NU WAAR HET GETAL VANDAAN KOMT.
+       Hier stond 'over N bevestigde van M uitspraken', terwijl het
+       getal uit een ongeverifieerde claim kon komen. Die regel wordt
+       in `beoordeling` opgeslagen en door de studio aan een redacteur
+       getoond; een onware regel in een bewaard oordeel is erger dan
+       geen regel, want hij wordt geloofd. De noemer is nu de
+       verzameling waaruit het maximum werkelijk is genomen. */
+    bewijs:
+      inv.dragendeClaims === null
+        ? `beste bewijskwaliteit ${inv.besteBewijskwaliteit}/5; dragende claims NIET GEMETEN ` +
+          `(${inv.uitsprakenBevestigd} bevestigd van ${inv.uitsprakenTotaal} uitspraken)`
+        : `beste bewijskwaliteit ${inv.besteBewijskwaliteit}/5 over ${inv.dragendeClaims} ` +
+          `dragende van ${inv.uitsprakenTotaal} uitspraken ` +
+          `(bevestigd: ${inv.uitsprakenBevestigd}), afgetopt op het bewijskrachtplafond`,
   });
 
   bronkwaliteit.push({
@@ -468,6 +508,56 @@ export function beoordeelNieuwswaarde(inv: NieuwsselectieInvoer): NieuwsOordeel 
     afwijsgronden.push(
       `beste bewijskwaliteit ${inv.besteBewijskwaliteit} ligt onder de drempel ${NIEUWSDREMPELS.bewijskwaliteit}`,
     );
+  }
+
+  /* ---------------- R3: DE DRAGENDE CLAIM ----------------
+     `uitsprakenBevestigd > 0` is niet genoeg, en dat is gemeten. Op
+     30 oktober 2026 stonden 45 van de 51 bevestigde claims in productie
+     op naam van één branchevereniging met bewijs_kwaliteit 5, en daar
+     zat een verzoek aan de Tweede Kamer tussen. Een bericht dat daarop
+     rust, publiceert een lobbywens als beleid.
+
+     Een dragende claim is er één die VASTGESTELD is met voldoende
+     zekerheid én bewijskracht heeft die niet uit een navertelling of een
+     pleidooi komt. Zonder zo'n claim is er niets om over te berichten —
+     ook niet als er tien onbevestigde claims liggen.
+
+     NIET GEMETEN IS GEEN NUL. Is `dragendeClaims` null, dan heeft de
+     classificatie deze gebeurtenis nog niet gezien. Dan is dit geen
+     afwijzing maar een ontbrekend oordeel, en dat hoort als zodanig in
+     de uitvoer: anders leest een redacteur 'geen dragende claim' terwijl
+     niemand heeft gekeken. */
+  if (inv.dragendeClaims === null) {
+    afwijsgronden.push(
+      "dragende claims NIET GEMETEN; de documentclassificatie heeft deze gebeurtenis nog niet " +
+        "gezien — draai 'npm run documentsoort' en daarna de pijplijn opnieuw",
+    );
+  } else if (inv.dragendeClaims === 0) {
+    const verdeling = Object.entries(inv.claimsPerModaliteit)
+      .map(([m, n]) => `${n}x ${m}`)
+      .join(", ");
+    afwijsgronden.push(
+      `geen dragende claim: geen enkele uitspraak is vastgesteld MET voldoende bewijskracht ` +
+        `(${verdeling || "geen uitspraken"}); een voorstel of verwachting draagt geen bericht`,
+    );
+  }
+
+  /* Alle bronnen een navertelling, een opinie of een lobbydocument? Dan
+     is er geen eigen bewijs, hoe betrouwbaar de uitgevers ook zijn. Deze
+     grond staat los van de dragende claim, want hij zegt iets anders:
+     niet "de claims houden niet" maar "er is geen enkel document dat
+     iets vaststelt". Die twee vragen om een andere handeling — wachten
+     op het origineel versus wachten op een betere formulering. */
+  if (inv.documentsoorten.length > 0) {
+    const dragendeDocumenten = inv.documentsoorten.filter(
+      (s) => !NIET_DRAGENDE_DOCUMENTSOORTEN.includes(s),
+    );
+    if (dragendeDocumenten.length === 0) {
+      afwijsgronden.push(
+        `alle ${inv.documentsoorten.length} bronnen zijn navertelling, opinie of lobby ` +
+          `(${[...new Set(inv.documentsoorten)].join(", ")}); geen document stelt zelf iets vast`,
+      );
+    }
   }
   /* DE EIGENAAR, en dit is de grond die het contract afdwingt. */
   if (!inv.eigenaarRoute) {
@@ -552,6 +642,13 @@ type GebeurtenisRij = {
   heeft_primaire_bron: boolean;
   bronsleutels: string[];
   nieuwste_brondatum: string | null;
+  /* R3 */
+  dragende_claims: number | null;
+  claims_vastgesteld: number;
+  claims_voorstel: number;
+  claims_verwachting: number;
+  claims_zonder_modaliteit: number;
+  documentsoorten: string[];
 };
 
 /**
@@ -607,8 +704,39 @@ export async function nieuwsselectieronde(
               (select count(*)::int from intel.uitspraken u
                 where u.gebeurtenis_id = g.id)
                                      as uitspraken_totaal,
-              coalesce((select max(u.bewijs_kwaliteit) from intel.uitspraken u
-                          where u.gebeurtenis_id = g.id), 0)
+              /* R3 — DE BESTE BEWIJSKRACHT VAN EEN DRAGENDE CLAIM, en
+                 niet het maximum over alles.
+                 Hier stond
+                   max(u.bewijs_kwaliteit) where u.gebeurtenis_id = g.id
+                 zonder verificatie_status, zonder modaliteit en zonder
+                 aftopping op het plafond. De zustersubquery's in dit
+                 blok filteren allemaal wel; deze was de enige
+                 aggregatie zonder predicaat. Drie gevolgen:
+                   1 een ONGEVERIFIEERDE claim kon het maximum zetten,
+                     terwijl de bewijsregel eronder zegt dat het getal
+                     'over N bevestigde uitspraken' gaat;
+                   2 een claim die nog de oude, uit de UITGEVER
+                     afgeleide sterkte draagt (bewijs_kwaliteit boven
+                     zijn plafond) telde met die oude waarde mee;
+                   3 de zespuntscomponent kon daardoor 6 geven waar 5
+                     hoort.
+                 Dezelfde voorwaarden als dragende_claims hieronder,
+                 plus least() op het plafond. De aftopping is geen
+                 dubbelop: na een volledige herbeoordeling staat
+                 bewijs_kwaliteit al onder zijn plafond, maar een
+                 gekloonde of met de hand aangepaste rij hoeft dat niet
+                 te zijn, en dan hoort de SCORE de laagste van de twee
+                 te gebruiken.
+                 NUL IS HIER EEN GEMETEN NUL: geen dragende claim
+                 betekent geen bewijskracht, en de dragende-claimpoort
+                 wijst de gebeurtenis dan toch al af. */
+              coalesce((select max(least(u.bewijs_kwaliteit,
+                                         coalesce(u.bewijskracht_plafond, u.bewijs_kwaliteit)))
+                          from intel.uitspraken u
+                         where u.gebeurtenis_id = g.id
+                           and u.verificatie_status = 'bevestigd'
+                           and u.modaliteit = 'VASTGESTELD'
+                           and coalesce(u.modaliteit_zekerheid, 0) >= $3), 0)
                                      as beste_bewijskwaliteit,
               coalesce((select count(distinct bd.bron_id)::int
                           from intel.gebeurtenis_documenten gd
@@ -633,14 +761,57 @@ export async function nieuwsselectieronde(
                  join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id and ub.rol = 'primair'
                  join intel.brondocument_versies bv on bv.id = ub.versie_id
                  join intel.brondocumenten bd on bd.id = bv.brondocument_id
-                where u.gebeurtenis_id = g.id) as nieuwste_brondatum
+                where u.gebeurtenis_id = g.id) as nieuwste_brondatum,
+              /* R3 — DE DRAGENDE CLAIM.
+                 Bevestigd EN vastgesteld EN met voldoende zekerheid. Het
+                 'bevestigd' draagt na R3 al de documenteis in zich: een
+                 navertelling, een opinie of een lobbydocument bevestigt
+                 niets meer (zie magZelfBevestigen). Daarom hoeft deze
+                 subquery de documentsoort niet opnieuw te toetsen.
+
+                 NULL BETEKENT NIET GEMETEN. Zijn er wel uitspraken maar
+                 heeft geen enkele een modaliteit, dan heeft de
+                 classificatie deze gebeurtenis nog niet gezien. Dat is
+                 iets anders dan nul dragende claims, en de poort
+                 behandelt het ook anders. Nul uitspraken is wél een
+                 gemeten nul. */
+              (select case
+                        when count(*) = 0 then 0
+                        when count(*) filter (where u.modaliteit is not null) = 0 then null
+                        else count(*) filter (
+                               where u.verificatie_status = 'bevestigd'
+                                 and u.modaliteit = 'VASTGESTELD'
+                                 and coalesce(u.modaliteit_zekerheid, 0) >= $3)
+                      end::int
+                 from intel.uitspraken u
+                where u.gebeurtenis_id = g.id) as dragende_claims,
+              (select count(*)::int from intel.uitspraken u
+                where u.gebeurtenis_id = g.id and u.modaliteit = 'VASTGESTELD')
+                                     as claims_vastgesteld,
+              (select count(*)::int from intel.uitspraken u
+                where u.gebeurtenis_id = g.id and u.modaliteit = 'VOORSTEL')
+                                     as claims_voorstel,
+              (select count(*)::int from intel.uitspraken u
+                where u.gebeurtenis_id = g.id and u.modaliteit = 'VERWACHTING')
+                                     as claims_verwachting,
+              (select count(*)::int from intel.uitspraken u
+                where u.gebeurtenis_id = g.id and u.modaliteit is null)
+                                     as claims_zonder_modaliteit,
+              /* De documentsoorten onder deze gebeurtenis, langs dezelfde
+                 join als de bronsleutels hierboven. */
+              coalesce((select array_agg(distinct bv.documentsoort)
+                          from intel.uitspraken u
+                          join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id
+                          join intel.brondocument_versies bv on bv.id = ub.versie_id
+                         where u.gebeurtenis_id = g.id
+                           and bv.documentsoort is not null), '{}') as documentsoorten
          from intel.markt_gebeurtenissen g
          left join intel.onderwerp_clusters oc on oc.id = g.onderwerp_cluster_id
         where g.organisatie_id = $1
           and g.status <> 'afgewezen'
         order by g.bedrijfsrelevantie desc nulls last, g.materialiteit desc, g.id
         limit $2`,
-      [organisatieId, max],
+      [organisatieId, max, NOODZAKELIJKE_ZEKERHEID],
     ),
   );
 
@@ -676,6 +847,14 @@ export async function nieuwsselectieronde(
       nieuwsteBrondatum: g.nieuwste_brondatum,
       bestaandeNieuwsSlugs: opties.bestaandeNieuwsSlugs,
       vandaag,
+      dragendeClaims: g.dragende_claims,
+      claimsPerModaliteit: {
+        VASTGESTELD: g.claims_vastgesteld,
+        VOORSTEL: g.claims_voorstel,
+        VERWACHTING: g.claims_verwachting,
+        "zonder modaliteit": g.claims_zonder_modaliteit,
+      },
+      documentsoorten: g.documentsoorten,
     });
 
     if (oordeel.geschikt) {

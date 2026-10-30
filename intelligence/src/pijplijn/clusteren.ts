@@ -26,6 +26,7 @@ import type { Onderwerp } from "../bronnen/soorten.ts";
 import { gebeurtenisSoortVan, herkenOnderwerpen, isProcedureel } from "./onderwerpen.ts";
 import { schrijfUitspraken, vindTegenspraak } from "./uitspraken.ts";
 import { classificeer, type Categorie } from "./relevantie.ts";
+import { classificeerVersie, slaDocumentsoortOp } from "./documentclassificatie.ts";
 
 const log = maakLogger("clusteren");
 /**
@@ -173,6 +174,30 @@ async function verwerkVersie(
   uitsprakenBevestigd: number;
   tegenspraak: boolean;
 }> {
+  /* R3 — EERST CLASSIFICEREN, DAN KIJKEN OF ER EEN ONDERWERP IS.
+     ------------------------------------------------------------------
+     De classificatie stond hier eerst verderop, na het aanmaken van de
+     gebeurtenis. Een integratietoets ving dat: een versie zonder
+     herkend onderwerp keert hieronder vroeg terug, dus die versies
+     kregen NOOIT een documentsoort. Gemeten op de fixture
+     'Bouw versnelt opnieuw' — geclassificeerd: niets.
+
+     Dat is een gat met twee gevolgen. Het redactionele dashboard mist
+     de helft van zijn documenten, en een herclassificatie na een
+     versiebump zou diezelfde documenten blijven overslaan.
+
+     De soort van een document hangt niet van zijn onderwerp af, dus hij
+     hoort hier: boven elke vroege terugkeer. */
+  const soortUitslag = classificeerVersie({
+    versieId: v.versie_id,
+    titel: v.titel,
+    tekst: v.ruwe_tekst,
+    canoniekeUrl: v.canonieke_url,
+    bronSleutel: v.bron_sleutel,
+    injectieVerdacht: v.injectie_verdacht,
+  });
+  await slaDocumentsoortOp(c, organisatieId, v.versie_id, soortUitslag);
+
   // Bij sitemapbronnen is de titel het laatste padsegment en is er geen
   // samenvatting: we halen immers geen artikelteksten op. Het pad zelf
   // draagt dan het signaal ('/over-ons/nieuws/2026/update-netcapaciteit').
@@ -272,6 +297,12 @@ async function verwerkVersie(
     [organisatieId, gebeurtenis.id, v.brondocument_id, v.versie_id, rol],
   );
 
+  /* De soort is bovenaan deze functie al vastgesteld en weggeschreven;
+     hier wordt hij alleen doorgegeven. De classificatie hangt aan de
+     VERSIE en niet aan het document: de tekst kan tussen versies
+     veranderen en dan verandert de soort mee. intel.uitspraak_bronnen
+     verwijst al naar versie_id, dus het oordeel hangt aan precies het
+     stuk tekst waarop een claim rust. */
   const uitspraken = await schrijfUitspraken(c, organisatieId, {
     versieId: v.versie_id,
     gebeurtenisId: gebeurtenis.id,
@@ -281,6 +312,14 @@ async function verwerkVersie(
     risicoKlasse: cluster?.risico_klasse ?? "laag",
     isPrimaireBron: v.is_primaire_bron,
     betrouwbaarheid: v.betrouwbaarheid,
+    documentsoort: soortUitslag.soort,
+    gezag: soortUitslag.gezag,
+    /* De publicatiedatum van het document als peildatum voor de
+       modaliteit. `gepubliceerd_op` is een onveranderlijk feit over het
+       document, dus het modaliteitsoordeel blijft reproduceerbaar. */
+    peildatum: v.gepubliceerd_op === null
+      ? undefined
+      : v.gepubliceerd_op.toISOString().slice(0, 10),
   });
 
   // Bronnen tellen, tegenspraak zoeken en materialiteit herberekenen.
