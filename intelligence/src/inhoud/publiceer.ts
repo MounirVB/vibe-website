@@ -33,6 +33,8 @@ import { IntelFout } from "../kern/fouten.ts";
 import { maakLogger } from "../kern/log.ts";
 import { sha256hex } from "../kern/tekst.ts";
 import { bronOpSleutel } from "../bronnen/register.ts";
+import { NIET_DRAGENDE_DOCUMENTSOORTEN } from "../pijplijn/documentsoort.ts";
+import { claimDraagt, waaromNietDragend } from "../pijplijn/claimpoort.ts";
 import {
   heeftRouteregister,
   leesRouteregister,
@@ -52,6 +54,39 @@ import {
 } from "../site/nieuwsregister.ts";
 
 const log = maakLogger("publiceer");
+
+/**
+ * De bronsoort zoals hij in het REGISTERRECORD belandt.
+ *
+ * DIT IS DE WAARDE DIE weigerNieuws() LEEST om te beslissen of er een
+ * dragende bron onder een bericht zit (DRAGENDE_BRONSOORTEN in
+ * scripts/seo/bouw-routes.mjs). Hij kwam uitsluitend uit de
+ * uitgeverscategorie, en dat was het R3-defect herhaald op de plek waar
+ * het het meest kost: een ACM-document is `toezichthouder` en dus
+ * TOEZICHTHOUDER — dragend — ook als dat specifieke document een
+ * opiniestuk is of een besluit van een ánder gezag navertelt.
+ *
+ * Een document dat zelf niets vaststelt verlaagt daarom naar
+ * MARKTPARTIJ. Dat is geen tweede regel bovenop de eerste: het is
+ * dezelfde regel die de claimlaag al gebruikt
+ * (NIET_DRAGENDE_DOCUMENTSOORTEN), nu ook toegepast op het artefact dat
+ * gepubliceerd wordt.
+ *
+ * NULL VERLAAGT OOK. Een ongeclassificeerd document is niet aantoonbaar
+ * dragend, en op deze naad is dat genoeg om het niet te zijn.
+ *
+ * Als eigen, geexporteerde functie zodat hij te toetsen is zonder een
+ * publicatieronde te draaien.
+ */
+export function bronsoortVoorRecord(
+  uitgeverSoort: string,
+  documentsoort: string | null,
+): string {
+  const uitUitgever = BRONSOORT_UIT_UITGEVER[uitgeverSoort] ?? "MARKTPARTIJ";
+  const documentDraagt =
+    documentsoort !== null && !NIET_DRAGENDE_DOCUMENTSOORTEN.includes(documentsoort);
+  return documentDraagt ? uitUitgever : "MARKTPARTIJ";
+}
 
 function esc(waarde: string): string {
   return waarde.replace(/[&<>"']/g, (c) =>
@@ -610,12 +645,21 @@ async function publiceerViaRegister(
     doc_titel: string;
     bron_datum: string | null;
     bron_sleutel: string;
+    documentsoort: string | null;
+    verificatie_status: string;
+    modaliteit: string | null;
+    modaliteit_zekerheid: string | null;
   }>(
     c,
     `select u.id as uitspraak_id, u.tekst, u.soort,
             bd.canonieke_url as url, bd.uitgever, bd.titel as doc_titel,
             coalesce(bd.gepubliceerd_op, bv.opgehaald_op)::date::text as bron_datum,
-            b.sleutel as bron_sleutel
+            b.sleutel as bron_sleutel,
+            /* R3 — de soort van het DOCUMENT, de modaliteit van de CLAIM.
+               Zonder deze vier velden kan dit bestand de bronsoort niet
+               verlagen en de claimregels niet filteren. */
+            bv.documentsoort, u.verificatie_status, u.modaliteit,
+            u.modaliteit_zekerheid::text as modaliteit_zekerheid
        from intel.inhoud_uitspraken iu
        join intel.uitspraken u          on u.id = iu.uitspraak_id
        join intel.uitspraak_bronnen ub  on ub.uitspraak_id = u.id and ub.rol = 'primair'
@@ -627,33 +671,106 @@ async function publiceerViaRegister(
     [organisatieId, v.id],
   );
 
-  // De uitgeverssoort staat in het bronregister in code, niet in de
-  // database: intel.bronnen draagt alleen de uitgevernaam. Onbekende
-  // sleutel valt terug op MARKTPARTIJ en kan een bericht dus niet
-  // alleen dragen — de veilige kant.
+  /* De uitgeverssoort staat in het bronregister in code, niet in de
+     database: intel.bronnen draagt alleen de uitgevernaam. Onbekende
+     sleutel valt terug op MARKTPARTIJ en kan een bericht dus niet
+     alleen dragen — de veilige kant.
+
+     R3 — EN DE DOCUMENTSOORT KAN HEM VERLAGEN.
+     ------------------------------------------------------------------
+     Dit was het defect dat R3 repareert, herhaald op de plek waar het
+     het meest kost. De `soort` die hier in het registerrecord belandt is
+     exact wat `weigerNieuws()` in scripts/seo/bouw-routes.mjs leest om
+     te beslissen of er een DRAGENDE bron onder een bericht zit. Hij kwam
+     uitsluitend uit de uitgeverscategorie.
+
+     Gevolg: een ACM-document is `toezichthouder` en dus TOEZICHTHOUDER —
+     dragend — ook als dat specifieke document een opiniestuk is of een
+     besluit van een ánder gezag navertelt. De publicatiepoort zou dan
+     een dragende bron zien waar er geen is.
+
+     Een document dat zelf niets vaststelt verlaagt daarom naar
+     MARKTPARTIJ. Dat is niet een tweede regel bovenop de eerste: het is
+     dezelfde regel die de claimlaag al gebruikt (NIET_DRAGENDE_
+     DOCUMENTSOORTEN), nu ook toegepast op het artefact dat gepubliceerd
+     wordt.
+
+     NULL VERLAAGT OOK. Een ongeclassificeerd document is niet
+     aantoonbaar dragend, en op deze naad is dat genoeg om het niet te
+     zijn. */
   const bronnenOpUrl = new Map<string, RegisterBron>();
+  const verlaagdeBronnen: string[] = [];
   for (const g of gebonden) {
     if (bronnenOpUrl.has(g.url)) continue;
     const uitgeverSoort = bronOpSleutel(g.bron_sleutel)?.uitgeverSoort ?? "";
+    const uitUitgever = BRONSOORT_UIT_UITGEVER[uitgeverSoort] ?? "MARKTPARTIJ";
+    const soort = bronsoortVoorRecord(uitgeverSoort, g.documentsoort);
+    if (soort !== uitUitgever) {
+      verlaagdeBronnen.push(
+        `${g.doc_titel}: ${uitUitgever} -> MARKTPARTIJ wegens documentsoort ` +
+          `${g.documentsoort ?? "(niet geclassificeerd)"}`,
+      );
+    }
     bronnenOpUrl.set(g.url, {
       naam: `${g.doc_titel}, ${g.uitgever}`,
       url: g.url,
       datum: g.bron_datum ?? "",
-      soort: BRONSOORT_UIT_UITGEVER[uitgeverSoort] ?? "MARKTPARTIJ",
+      soort,
     });
   }
   const bronnen = [...bronnenOpUrl.values()];
+  if (verlaagdeBronnen.length > 0) {
+    log.info("bronsoort verlaagd op documentsoort", { verlaagd: verlaagdeBronnen });
+  }
 
-  // Alleen een uitspraak met een getal is een claim in de zin van het
-  // contract; een feit zonder cijfer hoeft geen claimregel.
+  /* Alleen een uitspraak met een getal is een claim in de zin van het
+     contract; een feit zonder cijfer hoeft geen claimregel.
+
+     R3 — EN ALLEEN EEN CLAIM DIE DRAAGT.
+     Een claim die niet bevestigd is, die een voorstel of verwachting
+     uitdrukt, of die uit een navertelling of lobbydocument komt, hoort
+     niet als claimregel in een gepubliceerd record. Hij zou daar staan
+     als een vastgelegd feit met een bronverwijzing eronder, en dat is
+     precies de bewering die R3 niet meer wil doen. Zie claimDraagt(). */
+  const nietDragendeClaims: string[] = [];
   const claims: RegisterClaim[] = gebonden
     .filter((g) => ["cijfer", "prijs", "specificatie", "datum"].includes(g.soort))
+    .filter((g) => {
+      const draagt = claimDraagt({
+        verificatieStatus: g.verificatie_status,
+        modaliteit: g.modaliteit,
+        modaliteitZekerheid: g.modaliteit_zekerheid === null ? null : Number(g.modaliteit_zekerheid),
+        documentsoort: g.documentsoort,
+      });
+      if (!draagt) {
+        nietDragendeClaims.push(
+          `uitspraak ${g.uitspraak_id}: ${waaromNietDragend({
+            verificatieStatus: g.verificatie_status,
+            modaliteit: g.modaliteit,
+            modaliteitZekerheid:
+              g.modaliteit_zekerheid === null ? null : Number(g.modaliteit_zekerheid),
+            documentsoort: g.documentsoort,
+          })}`,
+        );
+      }
+      return draagt;
+    })
     .map((g) => ({
       tekst: g.tekst,
       bron: `${g.doc_titel}, ${g.uitgever}`,
       bron_url: g.url,
       bron_datum: g.bron_datum ?? "",
     }));
+  if (nietDragendeClaims.length > 0) {
+    /* ZICHTBAAR WEGLATEN. Een claim die hier uitvalt verdwijnt uit het
+       gepubliceerde record, en dat mag niet stil: de redactie moet
+       kunnen nagaan waarom een cijfer dat zij in het concept zag niet
+       in het record staat. */
+    log.waarschuwing("claimregels weggelaten omdat ze niet dragen", {
+      aantal: nietDragendeClaims.length,
+      redenen: nietDragendeClaims,
+    });
+  }
 
   /* De interne links, nu wél. De routestaten komen uit hetzelfde
      bestand dat weigerNieuws() straks leest (data/seo/routes.json), dus

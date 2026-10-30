@@ -20,6 +20,7 @@
 
 import type pg from "pg";
 import { configLezen } from "../kern/config.ts";
+import { claimDraagt, eisHerbeoordeling } from "../pijplijn/claimpoort.ts";
 import { eenRij, metOrganisatie, rijen, type Pool } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 import { kort, sha256hex, slug } from "../kern/tekst.ts";
@@ -182,12 +183,29 @@ function splitsNaarModaliteit(rijen: readonly UitspraakRij[]): {
   const vastgesteld: UitspraakRij[] = [];
   const nietVastgesteld: UitspraakRij[] = [];
   for (const u of rijen) {
-    const zeker = u.modaliteit_zekerheid === null ? 0 : Number(u.modaliteit_zekerheid);
-    /* NULL IS NIET 'VASTGESTELD'. Een claim zonder modaliteitsoordeel
-       is niet beoordeeld, en dat is geen grond om hem als feit te
-       presenteren. Hij gaat naar de tweede sectie met die reden erbij. */
-    if (u.modaliteit === "VASTGESTELD" && zeker >= 0.5) vastgesteld.push(u);
-    else nietVastgesteld.push(u);
+    /* DRIE EISEN, VIA ÉÉN FUNCTIE. Eerste versie toetste hier alleen de
+       modaliteit en de zekerheid. Een audit over alle verbruikers van
+       bevestigde claims ving dat: een claim uit een
+       SECUNDAIRE_BERICHTGEVING met een vaststellende zin kwam zo onder
+       'Wat er is vastgelegd' terecht. De zin stelt dan wel iets vast,
+       maar de bron is er niet de bron van — en dat is precies het
+       onderscheid waar R3 om begonnen is.
+
+       claimDraagt() in pijplijn/claimpoort.ts is de ENIGE definitie van
+       'deze claim draagt', zodat de conceptlaag, de publicatielaag en
+       het dashboard niet uiteen kunnen lopen. */
+    if (
+      claimDraagt({
+        verificatieStatus: u.verificatie_status,
+        modaliteit: u.modaliteit,
+        modaliteitZekerheid: u.modaliteit_zekerheid === null ? null : Number(u.modaliteit_zekerheid),
+        documentsoort: u.documentsoort,
+      })
+    ) {
+      vastgesteld.push(u);
+    } else {
+      nietVastgesteld.push(u);
+    }
   }
   return { vastgesteld, nietVastgesteld };
 }
@@ -258,6 +276,16 @@ export function bouwConcept(
   const gesplitst = splitsNaarModaliteit(bevestigd.filter((u) => u.waarde_numeriek !== null));
   const metWaarde = gesplitst.vastgesteld;
   const nietVastgesteldeWaarden = gesplitst.nietVastgesteld;
+  /* Dragende claims over ALLE uitspraken, niet alleen die met een getal:
+     een datumbesluit zonder cijfer kan een bericht ook dragen. */
+  const dragend = uitspraken.filter((u) =>
+    claimDraagt({
+      verificatieStatus: u.verificatie_status,
+      modaliteit: u.modaliteit,
+      modaliteitZekerheid: u.modaliteit_zekerheid === null ? null : Number(u.modaliteit_zekerheid),
+      documentsoort: u.documentsoort,
+    }),
+  );
   const uitgevers = [...new Set(uitspraken.map((u) => u.uitgever))];
 
   const soort = soortVanBesluit(invoer.besluit);
@@ -548,10 +576,24 @@ export function bouwConcept(
        Niet-bevestigde uitspraken blijven ondersteunend. Zou een
        ongeverifieerde uitspraak kern worden, dan zou poort 6 juist
        terecht blokkeren. */
+    /* R3 — ALLEEN EEN DRAGENDE CLAIM WORDT KERNCLAIM.
+       ----------------------------------------------------------------
+       Hier stond `bevestigd.map(...)`: élke claim met
+       verificatie_status 'bevestigd' werd kernclaim. Een audit over de
+       verbruikers van bevestigde claims wees dit aan als blokkerend, en
+       terecht: de modaliteitstoets hierboven haalt een lobbyclaim net
+       uit de FEITENSECTIE, en drie regels later werd diezelfde claim
+       alsnog als KERNCLAIM aan de versie gebonden. Een kernclaim is wat
+       het bericht draagt; poort 6 en het publicatiecontract lezen
+       precies die rol.
+
+       Niet-dragende claims blijven ondersteunend. Ze verdwijnen dus
+       niet uit de versie — dat zou de redactie informatie onthouden —
+       maar ze dragen niets. */
     uitspraakBindingen: [
-      ...bevestigd.map((u) => ({ uitspraakId: u.id, rol: "kern" as const })),
+      ...dragend.map((u) => ({ uitspraakId: u.id, rol: "kern" as const })),
       ...uitspraken
-        .filter((u) => !bevestigd.some((m) => m.id === u.id))
+        .filter((u) => !dragend.some((m) => m.id === u.id))
         .map((u) => ({ uitspraakId: u.id, rol: "ondersteunend" as const })),
     ],
     invoerVersies: [...new Set(uitspraken.map((u) => u.versie_id))],
@@ -612,6 +654,14 @@ export async function maakConcept(
   const config = configLezen();
 
   return metOrganisatie(pool, { organisatieId }, async (c) => {
+    /* R3 — DE CLAIMPOORT STAAT VOORAAN.
+       Een concept is een artefact dat op bewijs rust: de kernclaims
+       hieronder binden aan intel.uitspraken en het publicatiecontract
+       leest precies die rol. Een concept bouwen op een populatie waarin
+       nog historische, onterecht bevestigde claims staan, levert een
+       artefact op dat later niet meer te verantwoorden is. */
+    await eisHerbeoordeling(c, organisatieId, "de conceptgeneratie");
+
     const k = await eenRij<ConceptInvoer & { gebeurtenis_titel: string; gebeurd_op: Date | null }>(
       c,
       `select k.id                as "kandidaatId",
