@@ -361,6 +361,27 @@ export const BRONNEN: readonly Bron[] = [
     licentieUrl: null,
     robotsStatus: "toegestaan",
     tdmStatus: "geen_voorbehoud",
+    /* VOLLEDIGE TEKST AAN — en dit is de zwakkere van de twee
+       grondslagen, dus hij staat er voluit.
+       De RSS-samenvattingen zijn gemiddeld 323 tekens (gemeten over 27
+       versies op 30 oktober 2026), waarvan 21 onder de 400. Daaruit
+       kwamen NUL claims en nul OFFICIEEL_BESLUIT-documenten, waardoor
+       de primaire-bronverificatie niets kon terugvinden. De
+       besluittekst staat achter de <link>. */
+    volledigeTekst: {
+      grondslag:
+        "robots.txt van www.acm.nl geeft HTTP 200 met 53 regels voor 'vibeenergyintelligence' of '*', " +
+        "staat /nl/publicaties/* EXPLICIET toe en sluit geen enkele AI- of TDM-crawler uit " +
+        "(volledig uitgesloten zijn: fasterfox, 008, mj12bot, proximic, youdaobot, baiduspider, " +
+        "cazoodlebot, jyxobot). Crawl-delay 10 seconden, geeerbiedigd via minIntervalSeconden. " +
+        "De ACM is een Nederlands bestuursorgaan en haar besluiten zijn openbare documenten. " +
+        "LET OP: bepaalToestemming() geeft hier grondslag 'syndicatieformaat', en dat draagt het " +
+        "LEZEN van de feed — niet het oogsten van de besluittekst. Wat die stap draagt is de " +
+        "expliciete robotstoestemming op het artikelpad, niet het bestaan van de feed. " +
+        "Gemeten 2026-10-30.",
+      containers: ["main", "article"],
+      minimumTekens: 400,
+    },
     verificatie: {
       status: "geverifieerd",
       bewijs:
@@ -509,6 +530,22 @@ export const BRONNEN: readonly Bron[] = [
       "U mag openbare informatie van de Rijksoverheid hergebruiken.",
     robotsStatus: "toegestaan",
     tdmStatus: "geen_voorbehoud",
+    /* VOLLEDIGE TEKST AAN. Een Google-News-sitemap levert per definitie
+       geen body: alleen <loc>, news:title en news:publication_date.
+       Gemeten over 80 versies op 30 oktober 2026: ALLE 80 met nul
+       tekens tekst, dus nul claims en 80x ONVOLDOENDE_VERIFIEERBAAR.
+       Dit is de bron waar het verschil het grootst is. */
+    volledigeTekst: {
+      grondslag:
+        "De uitgever verklaart hergebruik met zoveel woorden: 'U mag openbare informatie van de " +
+        "Rijksoverheid hergebruiken.' bepaalToestemming() geeft daarop grondslag " +
+        "'hergebruik_verklaard' — de sterkste in de ladder onder een open licentie, en hij gaat " +
+        "over de INFORMATIE en niet over het feedformaat. robots.txt van www.rijksoverheid.nl " +
+        "geeft HTTP 200 met 0 regels voor ons of '*', sluit niemand uit, heeft geen crawl-delay, " +
+        "en staat /actueel/nieuws/* toe. Gemeten 2026-10-30.",
+      containers: ["main", "article", ".article", "#content"],
+      minimumTekens: 400,
+    },
     verificatie: {
       status: "geverifieerd",
       bewijs:
