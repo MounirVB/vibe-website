@@ -436,8 +436,20 @@ export const REGISTER: Record<string, Handler> = {
 
     /* DE HERKOMST IN DE UITKOMSTREGEL. Een nul zonder herkomst is op
        productie niet te wegen: hij kan betekenen dat de oogst klein was
-       of dat de context uit een ondergrens kwam. `intel.taken.resultaat`
-       is de enige plek waar een mens dat later terugvindt. */
+       of dat de context uit een ondergrens kwam.
+
+       WAAR DEZE STRING LANDT — gemeten, want de eerste versie van dit
+       commentaar wees naar een kolom die niet bestaat. `intel.taken`
+       heeft GEEN `resultaat`-kolom. De returnwaarde gaat via `voerUit()`
+       naar `console.log` in cli/worker.ts en verschijnt dus in het
+       Railway-log van vibe-intel-worker, als regel
+       `[<id>] nieuwsselectie GEREED in <n>ms — <deze string>`.
+
+       Wat er van een taak WEL in de database staat: `status`,
+       `gereed_op`, `duur_ms` en `pogingen`, en bij een storing
+       `laatste_fout` en `laatste_fout_soort`. Dat laatste is het enige
+       dat een logretentie overleeft; wie een uitkomst duurzaam wil
+       bewaren moet hem in intel.meldingen zetten. */
     return (
       `context ${ctx.toestand} via ${ctx.herkomst.bron} ` +
       `(${ctx.herkomst.clustersMetEigenaar} cluster(s) met eigenaar) — ` +
