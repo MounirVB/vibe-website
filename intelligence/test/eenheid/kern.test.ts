@@ -6,6 +6,8 @@ import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import {
   bepaalWijziging,
+  MATERIEEL_DREMPEL,
+  termijnen,
   gebeurtenisSleutel,
   htmlNaarTekst,
   inhoudHash,
@@ -301,4 +303,105 @@ test("dashboard: zonder sessiegeheim start het nooit, ook niet in ontwikkeling",
     dashboardSessieGeheimAanwezig: false,
   });
   assert.match(reden!, /INTEL_SESSIE_GEHEIM/);
+});
+
+/* ============================================================
+   TERMIJNEN — juridische en commerciële termijnen zijn materieel
+   ------------------------------------------------------------
+   HET GEMETEN DEFECT. `bepaalWijziging` noemde dit cosmetisch:
+
+     oud:   "Het besluit treedt in werking op 1 januari 2027."
+     nieuw: "Het besluit treedt in werking op 1 juli 2027."
+
+   Twee oorzaken tegelijk: `getallen()` haalt uit beide teksten exact
+   ["1","2027"] omdat de maand een WOORD is, en de verschilratio van één
+   veranderd woord in een hele alinea blijft onder 0,08. 'Cosmetisch'
+   betekent in dit platform dat de laag erboven de versie mag overslaan,
+   dus een verschoven ingangsdatum verdween stil.
+   ============================================================ */
+
+const TERMIJN_ROMP =
+  " De regeling geldt voor alle netbeheerders in Nederland en wordt uitgevoerd" +
+  " door de toezichthouder volgens de gebruikelijke procedure.";
+
+test("een verschoven maand in een ingangsdatum is materieel", () => {
+  const oud = `Het besluit treedt in werking op 1 januari 2027.${TERMIJN_ROMP}`;
+  const nieuw = `Het besluit treedt in werking op 1 juli 2027.${TERMIJN_ROMP}`;
+  const r = bepaalWijziging(oud, nieuw);
+  assert.equal(r.soort, "materieel");
+  assert.equal(r.termijnWijziging, true);
+  /* DE TWEE OUDE ASSEN ZIEN HET NIET, en dat is precies waarom de derde
+     as er is. Zonder deze twee regels zou de toets ook groen zijn als
+     de ratio het per ongeluk oppikte. */
+  assert.equal(r.getalWijziging, false, "de getallen 1 en 2027 blijven gelijk");
+  assert.ok(r.ratio < MATERIEEL_DREMPEL, `ratio ${r.ratio} haalt de drempel niet`);
+});
+
+test("een verschoven einddatum van een subsidieperiode is materieel", () => {
+  const r = bepaalWijziging(
+    `De subsidie loopt van 1 maart 2026 tot en met 31 december 2027.${TERMIJN_ROMP}`,
+    `De subsidie loopt van 1 maart 2026 tot en met 31 maart 2027.${TERMIJN_ROMP}`,
+  );
+  assert.equal(r.soort, "materieel");
+  assert.equal(r.termijnWijziging, true);
+});
+
+test("een geschreven duur is materieel", () => {
+  const r = bepaalWijziging(
+    `De periode bedraagt vijf jaar na vaststelling.${TERMIJN_ROMP}`,
+    `De periode bedraagt zeven jaar na vaststelling.${TERMIJN_ROMP}`,
+  );
+  assert.equal(r.soort, "materieel");
+  assert.equal(r.termijnWijziging, true);
+  assert.equal(r.getalWijziging, false, "'vijf' en 'zeven' zijn woorden, geen cijfers");
+});
+
+test("een verschoven kwartaal is materieel", () => {
+  const r = bepaalWijziging(
+    `De aanvraag opent in het eerste kwartaal van 2027 volgens de regeling.${TERMIJN_ROMP}`,
+    `De aanvraag opent in het derde kwartaal van 2027 volgens de regeling.${TERMIJN_ROMP}`,
+  );
+  assert.equal(r.soort, "materieel");
+  assert.equal(r.termijnWijziging, true);
+});
+
+test("termijnen normaliseert maandnamen naar nummers", () => {
+  assert.deepEqual(termijnen("op 1 januari 2027"), ["d:2027-01-01"]);
+  assert.deepEqual(termijnen("op 1 juli 2027"), ["d:2027-07-01"]);
+  assert.deepEqual(termijnen("op 1 jan 2027"), ["d:2027-01-01"], "'jan' telt als januari");
+  assert.deepEqual(termijnen("in juli 2027"), ["d:2027-07-??"], "zonder dag mag ook");
+  assert.deepEqual(termijnen("per 1 juli"), ["d:????-07-01"], "zonder jaar mag ook");
+});
+
+test("termijnen leest beide numerieke datumschrijfwijzen", () => {
+  assert.deepEqual(termijnen("ingang 2027-07-01"), ["d:2027-07-01"]);
+  assert.deepEqual(termijnen("ingang 01-07-2027"), ["d:2027-07-01"]);
+  assert.deepEqual(termijnen("ingang 1/7/2027"), ["d:2027-07-01"]);
+});
+
+test("een ISO-tijdstempel is geen termijn", () => {
+  /* ANDERS WORDT ELKE OPHALING MATERIEEL. Een pagina met een klokje in
+     de voettekst zou bij elke ronde een 'gewijzigde termijn' geven.
+     `termijnen()` werkt daarom op voorHash(), die volledige
+     tijdstempels eerst door een plaatshouder vervangt. */
+  assert.deepEqual(termijnen("bijgewerkt 2026-10-31T06:20:43Z"), []);
+  const r = bepaalWijziging(
+    `Bijgewerkt 2026-10-31T06:20:43Z.${TERMIJN_ROMP}`,
+    `Bijgewerkt 2026-10-31T07:45:11Z.${TERMIJN_ROMP}`,
+  );
+  assert.equal(r.termijnWijziging, false, "een veranderd klokje is geen termijnwijziging");
+});
+
+test("een tekst zonder termijnen levert geen termijnwijziging", () => {
+  const r = bepaalWijziging(
+    `De netbeheerder onderzoekt de aansluiting.${TERMIJN_ROMP}`,
+    `De netbeheerder onderzoekt de aansluiting opnieuw.${TERMIJN_ROMP}`,
+  );
+  assert.equal(r.termijnWijziging, false);
+});
+
+test("een eerste versie is nieuw en heeft geen termijnwijziging", () => {
+  const r = bepaalWijziging(null, "op 1 januari 2027");
+  assert.equal(r.soort, "nieuw");
+  assert.equal(r.termijnWijziging, false);
 });

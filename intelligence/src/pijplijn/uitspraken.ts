@@ -23,13 +23,19 @@ import type pg from "pg";
 import { eenRij, rijen } from "../kern/db.ts";
 import { kort, normaliseerTekst } from "../kern/tekst.ts";
 import type { Onderwerp } from "../bronnen/soorten.ts";
+import { maakLogger } from "../kern/log.ts";
+import { bepaalClaimAard, CLAIMAARD_VERSIE } from "./claimaard.ts";
 import { bepaalModaliteit } from "./claimmodaliteit.ts";
 import {
   bewijskrachtPlafond,
   magZelfBevestigen,
+  EIGEN_GEZAG_NAMEN,
   type Documentsoort,
   type Gezag,
 } from "./documentsoort.ts";
+import type { Documentvorm } from "./documentvorm.ts";
+import { steltStukDeClaimVast, VASTSTELLING_VERSIE } from "./vaststelling.ts";
+import { vraagOmBeoordeling } from "./claimbeoordeling.ts";
 
 export type UitspraakSoort =
   | "feit"
@@ -43,6 +49,8 @@ export type UitspraakSoort =
   | "interpretatie";
 
 /** Plafonds zoals de databaseconstraint ze ook afdwingt. */
+const log = maakLogger("uitspraken");
+
 export const VERTROUWEN_PLAFOND: Readonly<Record<UitspraakSoort, number>> = {
   feit: 1.0,
   regel: 1.0,
@@ -327,6 +335,12 @@ export type UitspraakSchrijfRapport = {
   readonly aangemaakt: number;
   readonly bevestigd: number;
   readonly overgeslagen: number;
+  /**
+   * Claims die het document wél mocht bevestigen, maar die een
+   * JURIDISCHE vaststelling zijn uit een niet-vaststellend stuk. Ze
+   * staan op 'ongeverifieerd' en wachten op bronverificatie.
+   */
+  readonly juridischGeblokkeerd: number;
 };
 
 /**
@@ -358,6 +372,21 @@ export async function schrijfUitspraken(
     documentsoort: Documentsoort;
     gezag: Gezag;
     /**
+     * De VORM van het brondocument. Nodig omdat de juridische poort
+     * hieronder vraagt of dit stuk een AUTHENTIEKE juridische bron is,
+     * en dat is een vraag over uitgever en vorm — niet over de inhoud.
+     */
+    documentvorm: Documentvorm;
+    /**
+     * De bronsleutel van het document. VERPLICHT, om dezelfde reden als
+     * documentsoort hierboven: de vaststellingstoets heeft hem nodig om
+     * te weten welke gezagsnamen voor DIT document het EIGEN gezag zijn
+     * (EIGEN_GEZAG_NAMEN). Zonder die kaart zou "de ACM heeft besloten"
+     * in een ACM-besluit als navertelling gelden, en dan blokkeert het
+     * stuk zijn eigen claim.
+     */
+    bronSleutel: string;
+    /**
      * De publicatiedatum van het brondocument (ISO), als peildatum voor
      * de modaliteit. Zie de toelichting bij ModaliteitInvoer.peildatum:
      * of een zin over een jaartal terugkijkt of vooruitkijkt, hangt af
@@ -368,7 +397,8 @@ export async function schrijfUitspraken(
   },
 ): Promise<UitspraakSchrijfRapport> {
   const ruwe = extraheerUitspraken(invoer.titel, invoer.tekst);
-  if (ruwe.length === 0) return { aangemaakt: 0, bevestigd: 0, overgeslagen: 0 };
+  if (ruwe.length === 0)
+    return { aangemaakt: 0, bevestigd: 0, overgeslagen: 0, juridischGeblokkeerd: 0 };
 
   /* DE REGEL, OP ÉÉN PLEK — en in R3 met een tweede as erbij.
      ------------------------------------------------------------------
@@ -416,6 +446,7 @@ export async function schrijfUitspraken(
   let aangemaakt = 0;
   let bevestigd = 0;
   let overgeslagen = 0;
+  let juridischGeblokkeerd = 0;
 
   for (const u of ruwe) {
     const vertrouwen = Math.min(
@@ -501,16 +532,134 @@ export async function schrijfUitspraken(
       [organisatieId, nieuw.id, invoer.versieId, u.vindplaats],
     );
 
-    if (magBevestigen) {
+    /* DE POORT PER CLAIM, en niet per document.
+
+       `magBevestigen` hierboven kijkt naar het DOCUMENT: is de uitgever
+       een primaire bron, is hij betrouwbaar genoeg, en mag deze
+       documentsoort zichzelf bevestigen. Dat is voor een feitelijke
+       mededeling over eigen handelen het juiste antwoord.
+
+       Maar niet elke zin in zo'n stuk gaat over eigen handelen.
+       Gemeten op 31 oktober 2026, met rijksoverheid-nieuws
+       (betrouwbaarheid 5, primaire bron):
+
+         "De verplichte gegevensdeling voor netbeheerders geldt vanaf
+          1 juli 2027."
+         "Het maximumtarief bedraagt vanaf 1 juli 2027 nog 45 euro
+          per maand."
+
+       Beide kwamen uit een FEITELIJKE_MEDEDELING met plafond 4, kregen
+       modaliteit VASTGESTELD met zekerheid 0,80, werden BEVESTIGD en
+       haalden claimDraagt(). Dat zijn juridische vaststellingen — een
+       verplichting en een wettelijk maximum — die zichzelf bevestigen
+       uit een nieuwsbericht, zonder dat er ooit een authentieke
+       juridische bron is gezien.
+
+       Een nieuwsbericht mag MELDEN dat een regel geldt. Het mag niet het
+       BEWIJS zijn dat hij geldt. Daarvoor moet bronverificatie.ts het
+       origineel bij het bevoegde gezag vinden, met hetzelfde getal,
+       dezelfde eenheid, hetzelfde onderwerp en modaliteit VASTGESTELD.
+
+       DIT VERLAAGT NIETS. Het is een extra voorwaarde bovenop alle
+       bestaande; geen claim die eerder niet bevestigde, bevestigt nu
+       wel. */
+    const aard = bepaalClaimAard(u.tekst);
+    /* DE POORT KIJKT NAAR DE VORM EN NIET NAAR DE SOORT, en dat is een
+       correctie op mijn eerste opzet.
+
+       Ik liet hem eerst `VASTSTELLENDE_SOORTEN` lezen. De tegenproef
+       zakte: een ECHT tariefbesluit — "Gelet op artikel 41 ... Het
+       maximumtarief bedraagt vanaf 1 juli 2027 nog 45 euro per maand.
+       Belanghebbenden kunnen binnen zes weken bezwaar maken." — kwam uit
+       op FEITELIJKE_MEDEDELING, omdat `geldt vanaf` en `bedraagt` niet
+       in de smalle BESLUIT- en REGELGEVING-patronen staan. Daarmee werd
+       de authentieke bron geblokkeerd voor zijn eigen juridische claim,
+       en dat is geen strengheid maar een kapotte keten: dan kan
+       bronverificatie.ts nergens meer ankeren.
+
+       De vraag "mag dit stuk recht vaststellen" hoort niet van een
+       regex op de inhoud af te hangen maar van wie het uitvaardigt en
+       in welke vorm. Bevoegd gezag plus een bekendmakingsvorm IS de
+       authentieke juridische bron; de smalle inhoudspatronen zijn daar
+       een onvolledige afgeleide van. */
+    /* R3-CORRECTIE, 31 oktober 2026 — DE DOCUMENTEIS WAS NIET GENOEG.
+       ----------------------------------------------------------------
+       Hierboven stond alleen:
+
+         authentiekeGrondslag = gezag === BEVOEGD_GEZAG
+                                && vormKanVaststellen(documentvorm)
+
+       Dat is een eigenschap van het DOCUMENT en zegt niets over DEZE
+       claim. Geforceerd en gemeten: een echt concentratiebesluit van de
+       ACM (OFFICIEEL_BESLUIT / BEKENDMAKING / BEVOEGD_GEZAG, plafond 5)
+       met de regel "Ter achtergrond: het maximumtarief bedraagt vanaf
+       1 juli 2027 nog 45 euro per maand" bevestigde die tariefzin, en
+       ook "De verplichte gegevensdeling voor netbeheerders geldt vanaf
+       1 juli 2027". Een concentratiebesluit beslist over zeggenschap en
+       niets over een tarief.
+
+       steltStukDeClaimVast() beantwoordt nu de vraag die ontbrak: stelt
+       dit stuk DEZE claim vast, of staat de claim er alleen IN. Hij
+       BEVAT de oude voorwaarde als eerste eis en voegt er vier toe —
+       ontwerp, modaliteit, achtergrondpassage en toeschrijving aan een
+       ander orgaan. Er is dus geen drempel verlaagd.
+
+       De passagetoets is EENZIJDIG: hij blokkeert alleen bij positief
+       bewijs van achtergrond. Zie de kop van vaststelling.ts voor de
+       meting waarom "bewijs dat hij in het dictum staat" de keten
+       breekt. */
+    const vaststelling = steltStukDeClaimVast({
+      claimTekst: u.tekst,
+      documentTitel: invoer.titel,
+      documentTekst: invoer.tekst,
+      documentsoort: invoer.documentsoort,
+      gezag: invoer.gezag,
+      documentvorm: invoer.documentvorm,
+      modaliteit: mod.modaliteit,
+      eigenGezagNamen: EIGEN_GEZAG_NAMEN[invoer.bronSleutel] ?? [],
+    });
+    const juridischZonderGrondslag = aard.juridisch && !vaststelling.steltVast;
+
+    if (magBevestigen && !juridischZonderGrondslag) {
       await c.query(
         "update intel.uitspraken set verificatie_status = 'bevestigd' where id = $1",
         [nieuw.id],
       );
       bevestigd += 1;
+    } else if (magBevestigen && juridischZonderGrondslag) {
+      /* De blokkade hoort navolgbaar te zijn. De claim blijft
+         'ongeverifieerd' — wat het dashboard al toont — en de reden
+         staat hier in het log, met de bronversie erbij. */
+      juridischGeblokkeerd += 1;
+      log.info("juridische claim niet zelfbevestigd", {
+        uitspraakId: nieuw.id,
+        versieId: invoer.versieId,
+        documentsoort: invoer.documentsoort,
+        reden: aard.reden,
+        markeringen: aard.markeringen,
+        /* WAAROM hij niet vaststelt, en niet alleen DAT hij het niet
+           doet. Zonder deze uitslag is een blokkade op 'achtergrond'
+           niet te onderscheiden van een blokkade op 'verkeerde vorm',
+           en dan is hij niet na te meten. */
+        vaststelling: vaststelling.uitslag,
+        vaststellingReden: vaststelling.reden,
+      });
+      /* En de blokkade hoort niet alleen in een logregel te staan. Een
+         logregel is na een deploy weg en niemand kan erop handelen.
+         Zie vraagOmBeoordeling(): de claim komt in een register waar een
+         mens hem kan beslissen. Fail-closed: lukt dat niet, dan blijft
+         de claim gewoon 'ongeverifieerd'. */
+      await vraagOmBeoordeling(c, organisatieId, {
+        uitspraakId: nieuw.id,
+        versieId: invoer.versieId,
+        aanleiding: vaststelling.uitslag,
+        reden: `${aard.reden}; ${vaststelling.reden}`,
+        motorversies: `${CLAIMAARD_VERSIE} + ${VASTSTELLING_VERSIE}`,
+      });
     }
   }
 
-  return { aangemaakt, bevestigd, overgeslagen };
+  return { aangemaakt, bevestigd, overgeslagen, juridischGeblokkeerd };
 }
 
 /**

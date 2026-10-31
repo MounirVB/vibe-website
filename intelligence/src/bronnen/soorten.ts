@@ -1,4 +1,3 @@
-import type { Antwoordaanwijzingen } from "./http.ts";
 /* ============================================================
    BRONNEN — het contract
    ------------------------------------------------------------
@@ -11,6 +10,8 @@ import type { Antwoordaanwijzingen } from "./http.ts";
    etag, hoe gezond, hoeveel opeenvolgende fouten.
    ============================================================ */
 
+import type { Antwoordaanwijzingen } from "./http.ts";
+import type { VolledigeTekstBeleid } from "./volledigetekst.ts";
 export type BronSoort =
   | "rss"
   | "atom"
@@ -100,6 +101,18 @@ export type Bron = {
   readonly tdmStatus: TdmStatus;
   readonly magCiteren: boolean;
   readonly citaatLimietTekens: number;
+
+  /**
+   * Mag van deze bron de VOLLEDIGE tekst achter een feeditem worden
+   * opgehaald, en op welke gemeten grondslag?
+   *
+   * Afwezig = nee. Dat is de standaard en dat blijft het: een feed
+   * levert een titel en een samenvatting, en dat is wat we bewaren.
+   * Deze verklaring is per bron en bevat de grondslag in woorden, met
+   * de datum van de meting. Zie bronnen/volledigetekst.ts voor waarom
+   * dit een opt-in is en geen schakelaar.
+   */
+  readonly volledigeTekst?: VolledigeTekstBeleid;
 
   /** Uitkomst van een echte ophaling met geparseerde items. */
   readonly verificatie: {

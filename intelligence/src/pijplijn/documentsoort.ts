@@ -71,6 +71,39 @@
    classificeren. Zie test/adversarieel/documentsoort-manipulatie.test.ts.
 
    ------------------------------------------------------------
+   DERDE REGEL, NIEUW IN V2: EEN BERICHT OVER EEN REGEL IS DE REGEL NIET
+
+   V1 las twee assen — het gezag van de uitgever en de formuleringen in
+   de tekst — en dat was voor één vraag te weinig. De authentieke
+   regeling en het nieuwsbericht erover gebruiken dezelfde woorden
+   ('treedt in werking', 'wijziging van de wet'), en het ministerie is in
+   beide gevallen bevoegd. Gemeten op 31 oktober 2026:
+
+     "Nieuwsbericht 29-10-2026 | 10:14  Vanaf 1 november 2026 treedt de
+      wijziging van de Wet toeristische verhuur in werking."
+     -> OFFICIELE_REGELGEVING, plafond 5, mag zichzelf bevestigen
+
+   Wat die twee onderscheidt is de VORM, en die as zat er niet in.
+   `documentvorm.ts` leest hem uit STRUCTUURMARKERINGEN — de
+   zelfbenoeming 'Nieuwsbericht', de aanhef 'Gelet op artikel', de
+   rechtsmiddelenclausule, een zaakkenmerk — en niet uit de strekking.
+   Vaststellen vraagt nu drie dingen die ALLE DRIE moeten gelden:
+
+     uitgever   het gezag kan het uitvaardigen
+     inhoud     de tekst draagt een besluit of een regel
+     vorm       het stuk is aantoonbaar het AUTHENTIEKE stuk
+
+   DE VORM IS EEN EXTRA EIS EN NOOIT EEN VERVANGING. Een marktpartij die
+   een rechtsmiddelenclausule onder zijn tekst zet haalt de vorm wel,
+   maar niet het gezag, en komt dus nergens. Omgekeerd verlaagt een
+   nieuwsbericht-markering ook bij een ministerie. Dezelfde asymmetrie
+   als hierboven: tekst verlaagt, gezag verhoogt.
+
+   Twee soorten vullen het gat dat daardoor benoembaar werd:
+   NIEUWSBERICHT_REGELGEVING (plafond 3, mag niet zelf bevestigen) en
+   ONTWERPBESLUIT (plafond 2, draagt niets).
+
+   ------------------------------------------------------------
    TWEEDE REGEL: WIE EEN BESLUIT NAVERTELT, IS ER NIET DE BRON VAN
 
    Noemt een document een ander gezag als handelende partij ('ACM stelt
@@ -81,21 +114,51 @@
    voordat de claim als vastgesteld geldt.
    ============================================================ */
 
-/** De tien soorten uit de opdracht, van zwaarste bewijs naar lichtste. */
+import {
+  bepaalDocumentvorm,
+  vormKanVaststellen,
+  type Documentvorm,
+  type DocumentvormUitslag,
+} from "./documentvorm.ts";
+
+/**
+ * De soorten, van zwaarste bewijs naar lichtste.
+ *
+ * TWEE SOORTEN ERBIJ IN V2, en ze zitten precies in het gat dat v1 niet
+ * kon benoemen. V1 kende alleen "dit IS een regeling" en "dit vertelt
+ * een regeling van een ANDER na". Een ministerie dat zijn eigen
+ * wetswijziging in een nieuwsbericht aankondigt viel in geen van beide
+ * en kwam daarom in de eerste terecht — met bewijskrachtplafond 5.
+ *
+ *   NIEUWSBERICHT_REGELGEVING  het bevoegde gezag bericht OVER zijn
+ *                              eigen regel of besluit, maar het stuk is
+ *                              niet het authentieke stuk
+ *   ONTWERPBESLUIT             het stuk is een ontwerp of consultatie;
+ *                              er is nog niets vastgesteld
+ */
 export type Documentsoort =
   | "OFFICIEEL_BESLUIT"
   | "OFFICIELE_REGELGEVING"
   | "FEITELIJKE_MEDEDELING"
   | "ONDERZOEKSRAPPORT"
   | "SECTORANALYSE"
+  | "NIEUWSBERICHT_REGELGEVING"
+  | "ONTWERPBESLUIT"
   | "PERSBERICHT"
   | "OPINIE"
   | "LOBBYDOCUMENT"
   | "SECUNDAIRE_BERICHTGEVING"
   | "ONVOLDOENDE_VERIFIEERBAAR";
 
-/** Verhoog dit bij elke wijziging die een uitslag kan veranderen. */
-export const DOCUMENTSOORT_VERSIE = "documentsoort-v1";
+/**
+ * Verhoog dit bij elke wijziging die een uitslag kan veranderen.
+ *
+ * V2 (31 oktober 2026) voegt de VORM-as toe. Zie documentvorm.ts voor
+ * het gemeten defect: een rijksoverheid-nieuwsbericht over een
+ * wetswijziging werd OFFICIELE_REGELGEVING met plafond 5 en mocht
+ * zichzelf bevestigen.
+ */
+export const DOCUMENTSOORT_VERSIE = "documentsoort-v2";
 
 /**
  * Het GEZAG van een uitgever: wat mag deze partij uit zichzelf vaststellen.
@@ -156,6 +219,21 @@ export const ALLEEN_BEVOEGD_GEZAG: readonly Documentsoort[] = [
   "OFFICIEEL_BESLUIT",
   "OFFICIELE_REGELGEVING",
 ];
+
+/**
+ * De soorten die zelf een JURIDISCHE toestand vaststellen.
+ *
+ * EEN TWEEDE NAAM VOOR DEZELFDE LIJST, en dat is hier bewust. De vraag
+ * "wie mag dit uitvaardigen" (ALLEEN_BEVOEGD_GEZAG) en de vraag "stelt
+ * dit stuk recht vast" zijn verschillend, en ze vallen voor deze twaalf
+ * soorten samen. Door de ene uit de andere te DEFINIEREN kunnen ze niet
+ * uiteenlopen als er een soort bijkomt, terwijl de naam op de plek van
+ * gebruik wel zegt welke vraag er gesteld wordt.
+ *
+ * `uitspraken.ts` leest deze lijst: een juridische claim bevestigt
+ * zichzelf alleen uit zo'n stuk. Zie claimaard.ts voor het gemeten gat.
+ */
+export const VASTSTELLENDE_SOORTEN: readonly Documentsoort[] = ALLEEN_BEVOEGD_GEZAG;
 
 /* ------------------------------------------------------------------
    DE SIGNALEN
@@ -222,13 +300,10 @@ const OPINIE: readonly Signaal[] = [
   },
 ];
 
-const PERSBERICHT: readonly Signaal[] = [
-  {
-    naam: "persbericht",
-    patroon: /\b(persbericht|press\s*release|voor\s+directe\s+publicatie)\b/iu,
-    reden: "de tekst noemt zich een persbericht",
-  },
-];
+/* DE PERSBERICHTPATRONEN STAAN NU IN documentvorm.ts.
+   Zelfbenoeming is een VORMvraag ("wat is dit voor stuk") en geen
+   inhoudsvraag, en hij hoort daarom op één plek te staan. Stap 2 van
+   bepaalDocumentsoort leest de vorm-as. */
 
 const ONDERZOEK: readonly Signaal[] = [
   {
@@ -253,7 +328,30 @@ const SECTORANALYSE: readonly Signaal[] = [
   },
 ];
 
-/** Een bekendmaking van een besluit. Bereikbaar alleen voor bevoegd gezag. */
+/**
+ * Een bekendmaking van een besluit. Bereikbaar alleen voor bevoegd gezag
+ * EN alleen in een vaststellende documentvorm; zie stap 4.
+ *
+ * DE BESLUITTAAL VAN DE ACM ONTBRAK, en dat was meetbaar. Gemeten op
+ * 30 oktober 2026 over alle 3.679 productieversies: `OFFICIEEL_BESLUIT`
+ * kwam NUL keer voor. Daardoor kon `bronverificatie.ts` — die eist dat
+ * het origineel `documentsoort in (OFFICIEEL_BESLUIT,
+ * OFFICIELE_REGELGEVING)` heeft — nooit een origineel vinden, en bleven
+ * alle 111 navertellingen permanent NIET_TERUGGEVONDEN. De verificatie
+ * was in de praktijk inert.
+ *
+ * En dat terwijl er 19 ACM-documenten in het corpus staan die een
+ * besluit in titel én tekst dragen:
+ *
+ *   "Baltisse en Arcola mogen gezamenlijke zeggenschap verkrijgen
+ *    over HBG (concentratiebesluit)"
+ *   "Geschilbesluit ZonOffensief - Stedin"
+ *   "De ACM concludeert dat de klacht van Jumbo gegrond is."
+ *
+ * De oude patronen eisten `heeft besloten`, `wij besluiten` of
+ * `stelt vast dat`. Zo schrijft de ACM niet. De patronen hieronder komen
+ * uit de werkelijke formuleringen op www.acm.nl, deze sessie gelezen.
+ */
 const BESLUIT: readonly Signaal[] = [
   {
     naam: "bekendmaking",
@@ -261,11 +359,85 @@ const BESLUIT: readonly Signaal[] = [
       /\b(staatscourant|staatsblad|gepubliceerd\s+in\s+de\s+staatscourant|ter\s+inzage\s+gelegd|kenmerk\s+acm\/)\b/iu,
     reden: "de tekst verwijst naar een officiële bekendmaking",
   },
+  /* DRIE PATROONFOUTEN UIT HET LABELWERK, hier gerepareerd. Mijn eerste
+     versie eiste `heeft besloten` als aaneengesloten woorden; de ACM
+     schrijft "Dat heeft de ACM op 26 oktober 2026 besloten" en dat
+     matcht niet. Vier van de vijf concentratiebesluiten in de labelset
+     vielen daardoor terug op FEITELIJKE_MEDEDELING. Nu met een
+     woordafstand binnen dezelfde zin. */
   {
     naam: "besluitvorm",
     patroon:
-      /\b(besluit\s+van\s+de\s+(minister|autoriteit|staatssecretaris)|heeft\s+besloten|wij\s+besluiten|stelt\s+(hierbij\s+)?vast\s+dat|vastgesteld\s+besluit)\b/iu,
+      /\b(besluit\s+van\s+de\s+(minister|autoriteit|staatssecretaris)|he(eft|bben)\b[^.]{0,70}\bbesloten|he(eft|bben)\s+(een\s+)?besluit\s+genomen|wij\s+besluiten|stelt\s+(hierbij\s+)?vast\s+dat|vastgesteld\s+besluit)\b/iu,
     reden: "de tekst draagt de vorm van een besluit van het eigen gezag",
+  },
+  /* Het dictum van een toezichthouder. 'Oordeelt dat', 'wijst af' en
+     'goedgekeurd' kwamen uit de labelset; de oude patronen misten ze
+     alle drie. De gap stond eerst op 40 tekens en viel 4 tekens te kort
+     voor "heeft de registratie van Stichting digiGO als
+     databemiddelingsdienst goedgekeurd" — dat soort marge hoort
+     gemeten, niet geraden. */
+  {
+    naam: "dictum",
+    patroon:
+      /\b(oordeelt\s+dat|he(eft|bben)\b[^.]{0,80}\bgoedgekeurd|is\s+goedgekeurd\s+onder|wijst\s+(het|de)\s+(verzoek|klacht|aanvraag)\s+af)\b/iu,
+    reden: "de tekst spreekt het oordeel van het bevoegde gezag uit",
+  },
+  /* De beslissing op een geschil of klacht. 'Gegrond' en 'ongegrond'
+     zijn juridische uitkomsten, geen journalistieke woorden. */
+  {
+    naam: "geschilbeslissing",
+    patroon:
+      /\bde\s+klacht\b[^.]{0,60}\b(is\s+)?(gegrond|ongegrond|afgewezen|toegewezen)\b|\bconcludeert\s+dat\s+de\s+klacht\b/iu,
+    reden: "de tekst beslist op een klacht of geschil",
+  },
+  /* Een concentratiebesluit: toestemming voor zeggenschap of overname.
+     'Mogen verkrijgen' is de standaardformulering van de ACM. */
+  /* `mog(en|t)` matchte 'mogen' maar niet 'mag', en de ACM schrijft
+      "Standard Investment mag uitsluitende zeggenschap verkrijgen".
+      Vier besluiten in de labelset vielen daarop. */
+  {
+    naam: "concentratiebeslissing",
+    patroon:
+      /\b(mag|mogen)\b[^.]{0,70}\b(zeggenschap\s+verkrijgen|overnemen|verkrijgen\s+over)\b|\bgezamenlijke\s+zeggenschap\s+verkrijgen\b/iu,
+    reden: "de tekst verleent toestemming voor zeggenschap of een overname",
+  },
+  /* Verlenen, weigeren of intrekken van een bevoegdheidsstuk. */
+  {
+    naam: "beschikking",
+    patroon:
+      /\b(ontheffing|vergunning|erkenning|toestemming|machtiging)\s+(is\s+)?(verleend|geweigerd|ingetrokken|afgegeven)\b|\bmag\b[^.]{0,50}\b(leveren\s+aan\s+eindafnemers|elektriciteit\s+en\s+gas\s+leveren)\b/iu,
+    reden: "de tekst verleent, weigert of trekt een bevoegdheidsstuk in",
+  },
+  /* DE PASSIEVE VASTSTELLING, en die ontbrak volledig. De oude
+     patronen eisten de actieve vorm `stelt vast dat`, maar een
+     Nederlands tariefbesluit schrijft:
+
+       "Het nettarief is vastgesteld op 12,50 euro per maand."
+       "De capaciteit wordt vastgesteld op 90 MW."
+       "Gelet op artikel 41 besluit de minister dat ..."
+
+     Gemeten tijdens de adversariële ronde: een tariefbesluit IN
+     BEKENDMAKINGSVORM, van de ACM, met een getal en een
+     rechtsmiddelenclausule, kwam uit op FEITELIJKE_MEDEDELING. Precies
+     het document waar de primaire-bronverificatie op moet ankeren viel
+     erbuiten.
+
+     Dit kan niets omhoog praten: de vormeis en de gezagseis staan er
+     onverkort naast. Wat het repareert is een besluit dat we niet als
+     besluit herkenden. */
+  {
+    naam: "vaststelling",
+    patroon:
+      /\b((is|wordt|worden|zijn)\s+vastgesteld\s+op|stelt\b[^.]{0,40}\bvast\s+op|besluit\s+de\s+(minister|autoriteit|staatssecretaris|raad)\s+dat)\b/iu,
+    reden: "de tekst stelt een grootheid vast in besluitvorm",
+  },
+  /* Een sanctie is per definitie een besluit. */
+  {
+    naam: "sanctie",
+    patroon:
+      /\b(boete\s+(van\s+)?(€|eur|opgelegd)|last\s+onder\s+dwangsom|dwangsom\s+opgelegd|bestuurlijke\s+boete)\b/iu,
+    reden: "de tekst legt een sanctie op",
   },
 ];
 
@@ -388,6 +560,15 @@ export type DocumentsoortUitslag = {
   readonly soort: Documentsoort;
   readonly gezag: Gezag;
   /**
+   * De VORM van het stuk, de derde as uit v2.
+   *
+   * Hij staat in de uitslag en niet alleen in de grondslag, omdat
+   * `documentclassificatie.ts` hem naast de soort bewaart. Een audit
+   * moet kunnen zien WAAROM een stuk met besluittaal geen besluit werd,
+   * en dat is precies dit veld.
+   */
+  readonly vorm: Documentvorm;
+  /**
    * 0,00–1,00. Hoe onzeker de uitslag is. Nul betekent niet "zeker" maar
    * "geen tegenstrijdige signalen"; de waarde is bedoeld om te sorteren,
    * niet om een kans uit te drukken.
@@ -467,6 +648,16 @@ export function bepaalDocumentsoort(inv: DocumentsoortInvoer): DocumentsoortUits
   const signalen: string[] = [];
   const geblokkeerd: string[] = [];
 
+  /* De vorm wordt ALTIJD bepaald, ook als hij de uitslag niet raakt.
+     Dat is bewust: hij komt in de uitslag terecht en dus in de
+     database, zodat een latere herbeoordeling niet opnieuw hoeft te
+     raden waarom een stuk niet mocht vaststellen. */
+  const vorm: DocumentvormUitslag = bepaalDocumentvorm({
+    titel: inv.titel,
+    tekst: inv.tekst,
+    ...(inv.url === undefined ? {} : { url: inv.url }),
+  });
+
   const mag = (s: Documentsoort): boolean =>
     !ALLEEN_BEVOEGD_GEZAG.includes(s) || gezag === "BEVOEGD_GEZAG";
 
@@ -486,6 +677,7 @@ export function bepaalDocumentsoort(inv: DocumentsoortInvoer): DocumentsoortUits
       return {
         soort: "SECUNDAIRE_BERICHTGEVING",
         gezag,
+        vorm: vorm.vorm,
         onzekerheid: Math.max(onzekerheid, 0.4),
         beschrijftBesluitVan,
         versie: DOCUMENTSOORT_VERSIE,
@@ -501,6 +693,7 @@ export function bepaalDocumentsoort(inv: DocumentsoortInvoer): DocumentsoortUits
     return {
       soort,
       gezag,
+      vorm: vorm.vorm,
       onzekerheid,
       beschrijftBesluitVan,
       versie: DOCUMENTSOORT_VERSIE,
@@ -547,12 +740,15 @@ export function bepaalDocumentsoort(inv: DocumentsoortInvoer): DocumentsoortUits
     );
   }
 
-  /* ---------- 2 · persbericht ---------- */
-  const pers = treffers(PERSBERICHT, volledig);
-  const urlPers = /\/pers(bericht|berichten|releases?)?\//iu.test(inv.url ?? "");
-  if (pers.length > 0 || urlPers) {
-    for (const t of pers) signalen.push(`${t.naam}: ${t.reden} — "${t.fragment}"`);
-    if (urlPers) signalen.push("url-pad: de URL plaatst dit onder persberichten");
+  /* ---------- 2 · persbericht ----------
+
+     DIT LEEST NU DE VORM-AS en heeft geen eigen patronen meer. Er
+     stonden twee identieke sets voor dezelfde vraag — één hier, één in
+     documentvorm.ts — en dit bestand waarschuwt zelf al dat zulke
+     tweelingen uiteenlopen (zie documentNoemtGezag). Eén formulering,
+     één plek om te wijzigen. */
+  if (vorm.vorm === "PERSBERICHT") {
+    for (const m of vorm.markeringen) signalen.push(`vorm/${m}`);
     return uitslag(
       "PERSBERICHT",
       "de tekst of de URL merkt dit aan als persbericht; eigen communicatie, geen vaststelling",
@@ -568,7 +764,39 @@ export function bepaalDocumentsoort(inv: DocumentsoortInvoer): DocumentsoortUits
   const besluit = treffers(BESLUIT, volledig);
   const regel = treffers(REGELGEVING, volledig);
 
-  if (anderen.length > 0 && (besluit.length > 0 || regel.length > 0)) {
+  /* EEN BESLUIT **OVER** EEN PARTIJ IS GEEN BESLUIT **VAN** DIE PARTIJ.
+     Gevonden door te labelen, en het raakt juist de documenten waar dit
+     platform om begonnen is:
+
+       "Geschilbesluit Kallista Tethys - TenneT
+        De ACM oordeelt dat TenneT in lijn met de geldende wet- en
+        regelgeving heeft gehandeld ..."
+
+     ANDER_GEZAG ziet 'TenneT' en concludeert: een ander gezag handelt
+     hier, dus dit is een navertelling. Maar TenneT besluit hier niets —
+     TenneT is de partij WAAROVER de ACM beslist. Het stuk werd daardoor
+     SECUNDAIRE_BERICHTGEVING met plafond 2, en
+     `beschrijftBesluitVan` kwam op 'TenneT' te staan. Dat is niet
+     alleen te streng, het is onwaar, en het zou bronverificatie.ts bij
+     TenneT naar een origineel laten zoeken dat daar niet bestaat.
+
+     De uitzondering is smal en eist alle vier tegelijk:
+       · de uitgever is BEVOEGD_GEZAG;
+       · het stuk NOEMT zijn eigen gezag als handelende partij;
+       · de vorm is een bekendmaking, dus aantoonbaar authentiek;
+       · er is een besluit- of regelsignaal.
+
+     Hij is niet te misbruiken door wie de brontekst beheerst: de eerste
+     voorwaarde gaat over de uitgever en niet over de tekst. Een
+     branchevereniging die ACM-besluittaal citeert heeft geen eigen
+     gezagsnaam in EIGEN_GEZAG_NAMEN, blijft dus een navertelling, en
+     loopt daarnaast tegen de eindcontrole van mag() aan. */
+  const eigenHandelt =
+    gezag === "BEVOEGD_GEZAG" &&
+    vormKanVaststellen(vorm.vorm) &&
+    eigen.some((n) => documentNoemtGezag(n, volledig));
+
+  if (anderen.length > 0 && (besluit.length > 0 || regel.length > 0) && !eigenHandelt) {
     const naam = anderen[0]!.naam;
     signalen.push(`ander gezag: '${naam}' handelt in deze tekst en is niet de uitgever`);
     for (const t of [...besluit, ...regel]) {
@@ -582,20 +810,80 @@ export function bepaalDocumentsoort(inv: DocumentsoortInvoer): DocumentsoortUits
     );
   }
 
-  /* ---------- 4 · eigen besluit of eigen regelgeving ---------- */
-  if (regel.length > 0) {
-    for (const t of regel) signalen.push(`${t.naam}: ${t.reden} — "${t.fragment}"`);
+  /* ---------- 3b · een ontwerp stelt niets vast ----------
+
+     DIT GAT VOND IK DOOR TE LABELEN, en niet door te bedenken. De
+     vormcontrole in stap 4 vuurt alleen als er een besluit- of
+     regelsignaal is. Een consultatiestuk zonder zo'n signaal viel er
+     dus langs en kwam in stap 6 uit als FEITELIJKE_MEDEDELING: plafond
+     4, en mag zichzelf bevestigen. Een ontwerpbesluit dat zijn eigen
+     voorgenomen bedragen noemt was daarmee even sterk bewijs als een
+     vastgestelde regeling.
+
+     NA DE NAVERTELLINGSCONTROLE, met opzet. Vertelt het stuk het
+     ontwerp van een ANDER gezag na, dan is dat het belangrijkere feit:
+     `beschrijftBesluitVan` moet gevuld blijven, want bronverificatie.ts
+     heeft die naam nodig om het origineel te zoeken. */
+  if (vorm.vorm === "ONTWERP") {
+    signalen.push(`documentvorm: ONTWERP — ${vorm.uitleg}`);
+    for (const m of vorm.markeringen) signalen.push(`vorm/${m}`);
     return uitslag(
-      "OFFICIELE_REGELGEVING",
-      "de tekst stelt regelgeving of beleid vast en de uitgever is daartoe bevoegd",
-      0.1,
+      "ONTWERPBESLUIT",
+      "het stuk is een ontwerp of consultatieversie; er is nog niets vastgesteld",
+      0.2,
     );
   }
-  if (besluit.length > 0) {
-    for (const t of besluit) signalen.push(`${t.naam}: ${t.reden} — "${t.fragment}"`);
+
+  /* ---------- 4 · eigen besluit of eigen regelgeving ----------
+
+     HIER ZIT DE CORRECTIE VAN V2. Vaststellen vraagt drie dingen die
+     ALLE DRIE moeten gelden, en v1 toetste er twee:
+
+       uitgever   het gezag moet het kunnen uitvaardigen  (v1: ja)
+       inhoud     de tekst moet een besluit of regel dragen (v1: ja)
+       vorm       het stuk moet het AUTHENTIEKE stuk zijn   (v1: NEE)
+
+     Zonder de derde werd een nieuwsbericht over een wetswijziging de
+     wetswijziging zelf. Zie documentvorm.ts voor de gemeten pagina.
+
+     DE VORM IS EEN EXTRA EIS, GEEN VERVANGING. Voor een uitgever zonder
+     bevoegdheid verandert er niets: die liep in v1 al tegen de
+     eindcontrole van mag() aan en wordt SECUNDAIRE_BERICHTGEVING. De
+     nieuwe aftakking geldt alleen bij BEVOEGD_GEZAG, want daar — en
+     alleen daar — zat het gat. */
+  if (regel.length > 0 || besluit.length > 0) {
+    const beoogd: Documentsoort =
+      regel.length > 0 ? "OFFICIELE_REGELGEVING" : "OFFICIEEL_BESLUIT";
+    for (const t of [...regel, ...besluit]) {
+      signalen.push(`${t.naam}: ${t.reden} — "${t.fragment}"`);
+    }
+
+    /* ONTWERP komt hier niet meer langs; stap 3b heeft die al
+       afgevangen, ook zonder besluitsignaal. Wat hier overblijft is
+       NIEUWSBERICHT en ARTIKEL: een stuk dat besluittaal draagt maar
+       niet aantoonbaar het authentieke stuk is. */
+    if (gezag === "BEVOEGD_GEZAG" && !vormKanVaststellen(vorm.vorm)) {
+      signalen.push(`documentvorm: ${vorm.vorm} — ${vorm.uitleg}`);
+      for (const m of vorm.markeringen) signalen.push(`vorm/${m}`);
+      return uitslag(
+        "NIEUWSBERICHT_REGELGEVING",
+        `het bevoegde gezag bericht over een eigen regel of besluit, maar de vorm is ` +
+          `${vorm.vorm} en niet het authentieke stuk; geen ${beoogd}`,
+        0.2,
+      );
+    }
+
+    if (gezag === "BEVOEGD_GEZAG") {
+      signalen.push(`documentvorm: BEKENDMAKING — ${vorm.uitleg}`);
+      for (const m of vorm.markeringen) signalen.push(`vorm/${m}`);
+    }
     return uitslag(
-      "OFFICIEEL_BESLUIT",
-      "de tekst draagt de vorm van een besluit en de uitgever is daartoe bevoegd",
+      beoogd === "OFFICIELE_REGELGEVING"
+        ? "OFFICIELE_REGELGEVING"
+        : "OFFICIEEL_BESLUIT",
+      beoogd === "OFFICIELE_REGELGEVING"
+        ? "de tekst stelt regelgeving of beleid vast, de uitgever is daartoe bevoegd en het stuk draagt de vorm van een bekendmaking"
+        : "de tekst draagt een besluit, de uitgever is daartoe bevoegd en het stuk draagt de vorm van een bekendmaking",
       0.1,
     );
   }
@@ -683,6 +971,36 @@ const PLAFOND: Readonly<Record<Documentsoort, Readonly<Partial<Record<Gezag, num
     BELANGENBEHARTIGER: 2,
     MARKT: 2,
   },
+  /* HET BERICHT OVER DE REGEL, NIET DE REGEL.
+     Drie en niet vier, en dat getal doet het werk: `magZelfBevestigen`
+     eist minstens 4, dus een nieuwsbericht over een eigen wetswijziging
+     kan géén claim op 'bevestigd' zetten. Het blijft bruikbaar als
+     nieuwssignaal en als aanleiding, maar de claim eronder moet het
+     authentieke stuk vinden via bronverificatie.ts.
+
+     De waarden onder BEVOEGD_GEZAG zijn gelijk aan die van
+     SECUNDAIRE_BERICHTGEVING. Dat is geen slordigheid: die soorten zijn
+     daar onbereikbaar (stap 4 takt alleen af bij BEVOEGD_GEZAG), en
+     mocht een latere wijziging ze toch bereikbaar maken, dan is het
+     plafond niet hoger dan wat v1 daar gaf. Geen versoepeling langs een
+     achterdeur. */
+  NIEUWSBERICHT_REGELGEVING: {
+    BEVOEGD_GEZAG: 3,
+    NETBEHEERDER: 2,
+    STATISTIEK: 2,
+    BELANGENBEHARTIGER: 2,
+    MARKT: 1,
+  },
+  /* Een ontwerp stelt niets vast, van wie het ook komt. Twee en niet
+     drie, want een ontwerp is zwakker bewijs dan een bericht over een
+     stuk dat al geldt. */
+  ONTWERPBESLUIT: {
+    BEVOEGD_GEZAG: 2,
+    NETBEHEERDER: 1,
+    STATISTIEK: 1,
+    BELANGENBEHARTIGER: 1,
+    MARKT: 1,
+  },
   /* Eigen communicatie over eigen handelen. */
   PERSBERICHT: {
     BEVOEGD_GEZAG: 3,
@@ -745,9 +1063,33 @@ export function bewijskrachtPlafond(soort: Documentsoort, gezag: Gezag): number 
 export const NIET_DRAGENDE_DOCUMENTSOORTEN: readonly string[] = [
   "OPINIE",
   "LOBBYDOCUMENT",
+  /* ERBIJ IN V2. Een ontwerp stelt niets vast; een gepubliceerde
+     kernclaim mag er dus niet op rusten. */
+  "ONTWERPBESLUIT",
   "SECUNDAIRE_BERICHTGEVING",
   "ONVOLDOENDE_VERIFIEERBAAR",
 ];
+
+/* WAAROM NIEUWSBERICHT_REGELGEVING HIER NIET STAAT, en waarom dat geen
+   versoepeling is.
+
+   De verleiding is om hem er bij te zetten: het stuk is immers niet het
+   authentieke besluit. Maar deze lijst beantwoordt een andere vraag dan
+   "mag dit zelf bevestigen". Hij bepaalt of een BEVESTIGDE claim een
+   gepubliceerd artikel mag dragen, en bevestigd worden kan deze soort
+   langs precies één weg: `bronverificatie.ts` vindt het authentieke
+   stuk bij het bevoegde gezag, met hetzelfde getal, dezelfde eenheid,
+   hetzelfde onderwerp en modaliteit VASTGESTELD.
+
+   Komt een claim zo ver, dan IS er een vaststellend origineel gezien en
+   is er geen reden hem alsnog te weigeren. Zou deze soort hier wel
+   staan, dan werd die hele weg onbruikbaar en bleef de aankondiging van
+   een energieregel permanent onpubliceerbaar — terwijl dat juist het
+   signaal is waar dit platform voor bestaat.
+
+   De poort die het gat dicht is het plafond 3, niet deze lijst:
+   `magZelfBevestigen` eist 4. Zelfbevestiging is dus uitgesloten, en
+   dat is wat de eis vraagt. */
 
 /**
  * Mag dit document op eigen kracht een claim op 'bevestigd' zetten?

@@ -314,6 +314,12 @@ async function verwerkVersie(
     betrouwbaarheid: v.betrouwbaarheid,
     documentsoort: soortUitslag.soort,
     gezag: soortUitslag.gezag,
+    documentvorm: soortUitslag.vorm,
+    /* De vaststellingstoets heeft de bronsleutel nodig om te weten
+       welke gezagsnamen voor DIT document het eigen gezag zijn. Zonder
+       die kaart zou "de ACM heeft besloten" in een ACM-besluit als
+       navertelling gelden en blokkeert het stuk zijn eigen claim. */
+    bronSleutel: v.bron_sleutel,
     /* De publicatiedatum van het document als peildatum voor de
        modaliteit. `gepubliceerd_op` is een onveranderlijk feit over het
        document, dus het modaliteitsoordeel blijft reproduceerbaar. */

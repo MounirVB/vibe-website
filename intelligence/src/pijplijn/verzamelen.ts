@@ -21,6 +21,7 @@ import { eenRij, metOrganisatie, rijen, type Pool } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 import { bepaalWijziging, inhoudHash, kort, normaliseerTekst } from "../kern/tekst.ts";
 import { haalBron } from "../bronnen/haal.ts";
+import { verrijkMetVolledigeTekst } from "../bronnen/volledigetekst.ts";
 import { classificeerStoring, type Storingssoort } from "../bronnen/storingssoort.ts";
 import { bronOpSleutel } from "../bronnen/register.ts";
 import { vergeetRobotsCache } from "../bronnen/robots.ts";
@@ -168,8 +169,15 @@ function bepaalGezondheid(
 /**
  * Verwerkt één item tot een brondocument en, als de inhoud veranderd
  * is, een nieuwe versie. Geeft terug wat er gebeurde.
+ *
+ * GEEXPORTEERD OM TOETSBAAR TE ZIJN. Het versiegedrag van deze functie
+ * is wat de volledige-tekstophaling veilig maakt: een langere tekst
+ * geeft een NIEUWE versie met `vorige_versie_id`, en de oude versie
+ * blijft staan met de claims die eraan hangen. Zonder export zou dat
+ * alleen via `verzamel()` te toetsen zijn, en die doet netwerkverkeer —
+ * dan toetst de test het protocol in plaats van de versielogica.
  */
-async function verwerkItem(
+export async function verwerkItem(
   c: pg.PoolClient,
   organisatieId: number,
   bronId: number,
@@ -179,8 +187,18 @@ async function verwerkItem(
   urlIsIdentiteit: boolean,
 ): Promise<{ nieuwDocument: boolean; nieuweVersie: boolean; materieel: boolean; injectie: boolean }> {
   const titel = kort(item.titel, 500);
-  // Alleen titel en de door de uitgever meegegeven samenvatting. Nooit
-  // het volledige artikel ophalen of bewaren.
+  /* TITEL, SAMENVATTING EN — ALLEEN WAAR DAT IS GEMETEN — DE VOLLEDIGE
+     TEKST.
+     Hier stond: "Nooit het volledige artikel ophalen of bewaren." Dat
+     beleid is niet opgeheven maar VERSMALD: `item.tekst` is leeg
+     tenzij de bron een `volledigeTekst`-verklaring in het register
+     draagt met een gemeten grondslag. Zie bronnen/volledigetekst.ts
+     voor de meting die deze versmalling draagt, en waarom hij nodig
+     was: de twee bronnen met bevoegd gezag leverden titels en
+     samenvattingen, waardoor 45 van de 59 claims uit een
+     branchevereniging kwamen.
+     De samenvatting blijft eerst staan, dus de volledige tekst VULT
+     AAN en overschrijft niets. */
   const tekst = normaliseerTekst(
     [item.samenvatting, item.tekst].filter((t): t is string => Boolean(t)).join("\n\n"),
   );
@@ -358,7 +376,24 @@ async function verzamelBron(
   if (uitkomst.resultaat === "ok") {
     httpStatus = uitkomst.httpStatus;
     aantalItems = uitkomst.items.length;
-    for (const item of uitkomst.items) {
+
+    /* DE VOLLEDIGE TEKST, ALLEEN WAAR HET MAG.
+       Deze stap doet niets voor een bron zonder `volledigeTekst` in het
+       register — dat is de standaard en dat blijft zo. Staat hij er
+       wel, dan wordt per item de canonieke URL opgehaald via dezelfde
+       `haalOp()` als de feed zelf, met dezelfde hostallowlist,
+       bytelimiet, hostklok en robotscontrole per redirecthop.
+       De uitgeverssamenvatting blijft altijd staan; de volledige tekst
+       komt ernaast. Mislukt de ophaling, dan verandert het item niet. */
+    const verrijking = await verrijkMetVolledigeTekst(bron, uitkomst.items);
+    if (verrijking.rapport.bekeken > 0) {
+      const delen = Object.entries(verrijking.rapport.perUitkomst)
+        .map(([k, v]) => `${k} ${v}`)
+        .join(", ");
+      opmerking = `${opmerking}${opmerking ? "; " : ""}volledige tekst: ${verrijking.rapport.verrijkt} van ${verrijking.rapport.bekeken} verrijkt (${delen})`;
+    }
+
+    for (const item of verrijking.items) {
       const r = await verwerkItem(
         c,
         organisatieId,

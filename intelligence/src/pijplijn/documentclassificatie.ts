@@ -91,7 +91,8 @@ export async function slaDocumentsoortOp(
             documentsoort_grondslag   = $5,
             documentsoort_versie      = $6,
             documentsoort_onzekerheid = $7,
-            beschrijft_besluit_van    = $8
+            beschrijft_besluit_van    = $8,
+            documentvorm              = $9
       where id = $1 and organisatie_id = $2`,
     [
       versieId,
@@ -102,6 +103,11 @@ export async function slaDocumentsoortOp(
       u.versie,
       u.onzekerheid.toFixed(2),
       u.beschrijftBesluitVan,
+      /* DE VORM GAAT MEE, ook als hij de soort niet veranderde. Een
+         audit moet kunnen zien WAAROM een stuk met besluittaal geen
+         besluit werd, en zonder dit veld is dat alleen uit de
+         grondslag-json te vissen. */
+      u.vorm,
     ],
   );
 }
