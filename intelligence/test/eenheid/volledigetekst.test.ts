@@ -327,7 +327,17 @@ describe("de beveiligingen op het volledige-tekstpad", () => {
        met foutSoort 'netwerk_uit'. Wat deze toets vastzet is niet die
        specifieke reden maar de VORM: een mislukking komt terug als
        `geweigerd` met een reden erbij, zodat de collector het kan
-       loggen in plaats van een lege tekst door te geven. */
+       loggen in plaats van een lege tekst door te geven.
+
+       DIE EERSTE ZIN WAS TOT 31 OKTOBER 2026 ONWAAR. De vlag stond op
+       zijn standaard `true`, want alleen het integratieharnas zette hem
+       om; deze toets ging dus echt naar www.acm.nl en kreeg HTTP 404 in
+       895 ms. Groen om de verkeerde reden, omdat hieronder alleen werd
+       gevraagd OF er een reden was. Sinds test/netwerk-uit.ts via
+       `--import` meeloopt is hij wel waar, en daarom staat de reden nu
+       VAST: zodra iemand die preambule weghaalt of de orde in haalOp()
+       terugdraait, wordt deze toets rood in plaats van stil het
+       internet op te gaan. */
     const bron = {
       sleutel: "acm-besluiten",
       toegestaneHosts: ["www.acm.nl"],
@@ -341,6 +351,12 @@ describe("de beveiligingen op het volledige-tekstpad", () => {
     if (u.soort === "geweigerd") {
       assert.ok(u.reden.length > 0, "er hoort een reden bij");
       assert.ok(u.foutSoort.length > 0, "en een foutsoort");
+      assert.equal(
+        u.foutSoort,
+        "netwerk_uit",
+        "de toets hoort NIET het internet op te gaan; een andere foutsoort " +
+          "betekent dat er echt verkeer is geweest",
+      );
     }
   });
 
