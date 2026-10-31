@@ -1,8 +1,12 @@
 # Release- en acceptatiedocument — volledige tekst, documentsoort v2 en de juridische claimpoort
 
-> **Status: NIET UITGEROLD. Eindoordeel NO-GO op de v2-kern.**
-> Branch `feat/fulltext-bevoegd-gezag` @ `0250679`, 12 commits voor op
-> `origin/main` (`f7351a27`). Niet gemerged. Productie draait `f7351a27`.
+> **Status: NIET UITGEROLD. Eindoordeel GO voor de gecontroleerde
+> uitrol volgens §7.4.** Branch `feat/fulltext-bevoegd-gezag`, 14 commits
+> voor op `origin/main` (`f7351a27`). Niet gemerged. Productie draait
+> `f7351a27` met migratiestand 44.
+>
+> Op 1 november 2026 zijn de twee defecten uit §4 gerepareerd die dit
+> document eerder NO-GO maakten.
 >
 > Dit document bestond niet toen het nodig was. De negen oorspronkelijke
 > commits verwijzen op twee plekken naar "het acceptatierapport"
@@ -33,14 +37,22 @@ staat als **ONBEKEND** of **NIET GEDRAAID** met de reden.
 | 10 | `6681a3f` | **fix** — de netwerknoodstop hing achter de databaseconfiguratie |
 | 11 | `6561f60` | **fix(api)** — `proxy-addr`, `body-parser`, `qs` binnen de bestaande ranges |
 | 12 | `0250679` | **feat** — een plannerpauze die een deploy niet kan opheffen |
+| 13 | `c585dff` | **fix** — een officieel stuk bevestigt alleen de claim die het ZELF vaststelt (+ migratie 0047) |
+| 14 | `a20ba53` | **fix** — de worker bewaakte de motorpariteit niet, en juist hij voert uit |
 
-Commits 10–12 zijn op 31 oktober 2026 toegevoegd naar aanleiding van de
-herstelcontrole. Commits 1–9 komen uit de verloren sessie en zijn
+Commits 10–12 zijn op 31 oktober toegevoegd naar aanleiding van de
+herstelcontrole; 13–14 op 1 november naar aanleiding van de
+correctieronde. Commits 1–9 komen uit de verloren sessie en zijn
 ongewijzigd.
 
-Migraties: **0045** (documentvorm en de twee nieuwe soorten) en **0046**
-(de plannerpauze). Beide puur toevoegend: 0 DML, 0 destructieve DDL,
-getoetst door `intelligence/ops/migratiepoort.mjs` → PASS.
+Migraties: **0045** (documentvorm en de twee nieuwe soorten), **0046**
+(de plannerpauze) en **0047** (het claimbeoordelingsregister). Alle drie
+puur toevoegend: 0 DML, 0 destructieve DDL, getoetst door
+`intelligence/ops/migratiepoort.mjs` → PASS.
+
+Nieuwe lagen in 13–14: `src/pijplijn/vaststelling.ts` (stelt dit stuk
+déze claim vast), `src/pijplijn/claimbeoordeling.ts` (de doorverwijzing),
+en de motorpariteitstoets in `src/cli/worker.ts`.
 
 ---
 
@@ -52,17 +64,24 @@ met per toets een wegwerpdatabase. Nooit tegen de productiedatabase.
 | Poort | Uitkomst |
 |---|---|
 | `npm run typecheck` | **PASS** — 0 fouten. Meethaak bewezen: een geïnjecteerde fout geeft aantoonbaar TS2322 |
-| Eenheidstoetsen | **668 / 668**, 0 gefaald, 0 overgeslagen |
-| Integratietoetsen (echte database, applicatierol, RLS actief) | **411 / 411** |
-| Adversariële toetsen | **133 / 133** |
+| Eenheidstoetsen | **688 / 688**, 0 gefaald, 0 overgeslagen |
+| Integratietoetsen (echte database, applicatierol, RLS actief) | **421 / 421** |
+| Adversariële toetsen | **133 / 133** — ongewijzigd, dus de bestaande claimpoorttoets is niet gebroken |
 | API-suite (`api/`) | **24 / 24** |
-| `npm run poort` | **EINDOORDEEL = PASS** — invarianten 0 bevindingen, migraties 46/46 drift 0, applicatierol geen superuser/BYPASSRLS/eigenaar |
-| `ops/migratiepoort.mjs` | **PASS** |
-| `ops/geheimenscan.mjs` | **PASS** — 907 gevolgde bestanden |
+| `npm run poort` | **EINDOORDEEL = PASS** — invarianten 0 bevindingen, migraties 47/47 drift 0, applicatierol geen superuser/BYPASSRLS/eigenaar |
+| `ops/migratiepoort.mjs` | **PASS** — 0047 heeft geen destructieve DDL |
+| `ops/geheimenscan.mjs` | **PASS** — 914 gevolgde bestanden |
 | `scripts/seo/audit.mjs` | **EINDOORDEEL POORT = PASS** (met bestaande adviesregels) |
-| CI-run `41230485510` op de gepushte branch | **success** op alle drie de jobs |
+| CI op de gepushte branch | **success** op alle drie de jobs (run `41233866288`, commit `ca06e29`) |
 
-**Totaal: 1236 toetsen groen, 0 rood.**
+**Totaal: 1242 toetsen groen plus 24 in `api/`, 0 rood.**
+
+Nieuw in de correctieronde: 20 toetsen in `test/eenheid/vaststelling.test.ts`
+(waarvan twee **tegenproeven** die vastzetten wat NIET geblokkeerd mag
+worden), 9 in `test/integratie/claimbeoordeling.test.ts`, en 1 inbouwtoets
+die vastzet dat zowel de planner als de worker de motorpariteit werkelijk
+aanroept — met het commentaar eerst gestript, en met een bewezen meethaak
+(de aanroep vervangen maakt hem rood).
 
 **Niet gedraaid**, met reden:
 
@@ -144,9 +163,34 @@ naam.
 
 ---
 
-## 4 · Waarom dit document NO-GO zegt op de v2-kern
+## 4 · De twee defecten in de bewijsketen — GEREPAREERD op 1 november 2026
 
-Twee gemeten defecten in de laag waar deze release om begonnen is.
+Deze paragraaf zei tot 1 november **NO-GO**. Beide defecten zijn nu
+gerepareerd en met toetsen vastgezet; de beschrijving blijft staan omdat
+de faalwijze het belangrijkste deel van de documentatie is.
+
+| Defect | Status |
+|---|---|
+| 4.1 een officieel stuk bevestigt een claim die het niet vaststelt | **GEREPAREERD** — `c585dff`, `src/pijplijn/vaststelling.ts` |
+| 4.2 de terugvalroute dekt de geblokkeerde claims niet | **GEREPAREERD** — `c585dff`, migratie 0047 + `claimbeoordeling.ts` |
+| 4.3 de herbeoordeling kent de poort niet · meetgat in de labelset | **OPEN**, met reden — zie 4.3 |
+
+**Gemeten impact op verse read-only productiedata** (3741 versies, 59 claims):
+
+```
+bestaande juridische claims opnieuw gewogen   3
+uitkomst anders dan onder de oude poort       0
+versies met authentieke grondslag            21
+juridische zinnen daarin                      0
+tegengehouden                                 0
+```
+
+De reparatie is dus **aantoonbaar niet-regressief** en vandaag **inert**:
+de 21 stukken die zouden kunnen zelfbevestigen dragen nul juridische
+zinnen. Haar waarde is dat ze het gat dicht **voordat** de full-textlaag
+het bereikbaar maakt. De simulatie rapporteert dit sinds `c585dff` zelf
+in sectie **6c**, dus het releasebesluit rust niet op een simulatie die
+de reparatie mist.
 
 ### 4.1 · Een officiële documentsoort bevestigt claims die het document niet beslist
 
@@ -168,10 +212,28 @@ gezag. Een rijksoverheidspagina wordt gered door het `/actueel/nieuws/`-pad;
 `acm.nl` publiceert onder `/nl/publicaties/`, dat géén van de drie
 padpatronen raakt, en komt dan op plafond 4 met `authentiekeGrondslag = true`.
 
-Herstelrichting en de val erbij: een strengere eis (de claim moet in het
-dictum staan) kan een écht tariefbesluit blokkeren voor zijn eigen claim —
-precies de afweging die het commentaar bij `uitspraken.ts:556-572` al
-beschrijft. Dit moet mét de labelset gemeten worden, niet op gevoel.
+**DE REPARATIE.** `steltStukDeClaimVast()` beantwoordt nu de vraag die
+ontbrak, met zes uitslagen waarvan vijf niet bevestigen:
+`GEEN_AUTHENTIEK_STUK`, `ONTWERP`, `NIET_VASTSTELLENDE_MODALITEIT`,
+`ACHTERGRONDPASSAGE`, `ANDER_GEZAG` en `STELT_VAST`. De oude eis is de
+**eerste** van die zes — er is dus geen drempel verlaagd, er zijn er vier
+bijgekomen.
+
+**De passagetoets is eenzijdig, en dat is het dragende ontwerpbesluit.**
+Hij blokkeert alleen bij *positief bewijs* van achtergrond. "Bewijs dat de
+zin in het dictum staat" zou strenger lijken en de keten breken: een écht
+tariefbesluit ("Gelet op artikel 41 … Het maximumtarief bedraagt …") komt
+uit op `FEITELIJKE_MEDEDELING` en draagt géén dictummarkering. Zou ik die
+eisen, dan blokkeert de authentieke bron zijn eigen claim en heeft
+bronverificatie nergens meer een anker. Die twee tegenproeven staan als
+**eerste** in `test/eenheid/vaststelling.test.ts`, zodat een latere
+verscherping er meteen op stukloopt.
+
+**Geen ACM-padmarkering.** Een voorstel wilde `/nl/publicaties/` als
+bekendmakingspad toevoegen. Gemeten: dat **verbreedt** het lek — de
+ACM-versies met `authentiekeGrondslag` gaan van 21 naar **28**, alle 28,
+doordat zeven documenten van `ARTIKEL` naar `BEKENDMAKING` schuiven. Niet
+gedaan, en dat is een expliciet besluit.
 
 ### 4.2 · De terugvalroute bestaat, maar niet voor de claims die hem nodig hebben
 
@@ -194,9 +256,21 @@ op `bronverificatie.ts:261` onmiddellijk uit met `NIET_VAN_TOEPASSING`.
 **De voor de hand liggende reparatie werkt niet.** De werkvoorraad
 verbreden naar "claim is juridisch en niet bevestigd" repareert niets,
 juist door die uitstap op regel 261: zonder gezagsnaam komt de claim nooit
-voorbij de eerste controle. Een echte oplossing moet de gezagsnaam
-vastleggen of die uitstap herzien — dat is een ontwerpingreep, geen
-query-aanpassing.
+voorbij de eerste controle.
+
+**DE REPARATIE: de route is MENSELIJKE BEOORDELING, niet bronverificatie.**
+Migratie 0047 geeft `intel.claimbeoordeling`, een register waarin een
+geblokkeerde claim zichtbaar, telbaar en beslisbaar wordt in plaats van
+stil. Drie eigenschappen, elk een eis uit de opdracht:
+
+| Eigenschap | Hoe hij wordt afgedwongen |
+|---|---|
+| **geen lus** | unieke index op `(organisatie, uitspraak, motorversies)` + `on conflict do nothing`. Hoe vaak de uurlijkse ronde ook draait, dezelfde claim vraagt **één** keer om beoordeling. Een nieuwe motorversie is bewust een nieuwe vraag — binnen een versie nooit |
+| **geen opwaardering** | géén code leest dit register om een uitspraak op `bevestigd` te zetten. Zelfs `BEVESTIGBAAR` **mét** autorisatie laat de claim op `ongeverifieerd` — vastgezet door toets 6. Daarmee is een historische claim per constructie veilig |
+| **`BEVESTIGBAAR` vraagt autorisatie** | `check claimbeoordeling_bevestigbaar_vraagt_autorisatie`, in de **database** en niet in code. `AFGEWEZEN` en `ONBESLIST` mogen zonder: dat zijn de veilige kanten |
+
+Een mislukte doorverwijzing laat de ingestie niet vallen; de claim blijft
+dan gewoon `ongeverifieerd` (toets 8).
 
 **En één voorstel moet uitdrukkelijk NIET worden uitgevoerd:** een
 padmarkering voor `acm.nl` toevoegen (zodat `/nl/publicaties/` als
@@ -334,16 +408,50 @@ misgaat — al is 0045 puur toevoegend en daarmee laag risico.
 Elke stap met **AKKOORD** vraagt expliciete toestemming van de eigenaar in
 dát moment. Eerdere toestemming geldt niet opnieuw.
 
-### 7.1 · Eerst beslissen (blokkerend voor de v2-kern)
+### 7.0 · DE ORDE UIT DE OPDRACHT KAN NIET, EN DIT IS WAAROM
+
+De gevraagde volgorde begon met "planner veilig pauzeren" en zette
+"migratie 0046 activeren" op stap 3. **Dat kan niet in die orde**, en dat
+is geen detail maar de kern van het plan.
+
+Autoritatief gemeten via de Railway-API op 1 november 2026:
+
+```
+vibe-intel-api      preDeploy: npm run migreer && npm run zaai && npm run geo
+vibe-intel-planner  preDeploy: null     start: npm run planner
+vibe-intel-worker   preDeploy: null     start: npm run worker
+vibe-website        preDeploy: null
+vibe-website-api    preDeploy: null     (en GEEN repoTrigger)
+```
+
+Daaruit volgen drie harde beperkingen:
+
+1. **De pauze bestaat niet voordat 0046 is toegepast.** De stand leeft in
+   `intel.plannerpauze`; die tabel komt er pas met 0046. Pauzeren vóór
+   stap 3 is dus letterlijk onmogelijk.
+2. **`npm run migreer` past ALLE openstaande migraties in één keer toe.**
+   Er is geen `--tot` in het deploypad. Eén deploy van de volle branch
+   zet 0045, 0046 én 0047 samen, dus de gevraagde scheiding tussen stap 3
+   en stap 4 bestaat niet binnen één deploy.
+3. **Alleen `vibe-intel-api` migreert, en de vier services deployen
+   parallel.** De worker kan dus met v2-code opstarten terwijl die
+   migratie nog loopt. Daarom staat de motorpariteitstoets sinds
+   `a20ba53` óók in de worker, met exitcode 1 en een herstart.
+
+**De oplossing is een eerste, aparte deploy.** Een branch vanaf
+`origin/main` met alleen `6681a3f 6561f60 0250679` bevat **0046 en niet
+0045/0047**. Die deploy brengt de pauze in productie zonder de v2-kern
+aan te raken, en daarna is de gevraagde orde wél uitvoerbaar.
+
+### 7.1 · Nog te beslissen (niet blokkerend meer)
 
 | | Besluit |
 |---|---|
-| **AKKOORD** | §4.1 — bevestigt een officiële documentsoort claims die het document niet beslist? Repareren, of bewust accepteren met de reden vastgelegd? |
-| **AKKOORD** | §4.2 — de terugvalroute repareren, of de drie toelichtingen aanpassen zodat ze niet naar een route verwijzen die niet bestaat? |
-| **AKKOORD** | §4.3 — de labelset uitbreiden met ACM-nieuwsberichten vóór of ná de uitrol? |
+| **AKKOORD** | §4.3 — de labelset uitbreiden met ACM-nieuwsberichten: vóór of ná de uitrol? Nu is dat onderscheid door nul gelabelde voorbeelden gedekt |
+| **AKKOORD** | §4.3 — moet `herbeoordeling.ts` de juridische poort overnemen? Vandaag kosteloos (3 juridische claims, 0 bevestigd); zodra er één bijkomt is hij niet meer intrekbaar |
+| **AKKOORD** | §9 — de KOOP-licentie laten lezen door een mens, zodat de claimpoort ooit open kan |
 
-Zonder deze drie besluiten is het eindoordeel **NO-GO**. De plannerpauze
-(0046) en de twee fixes kunnen wél vooruit — zie 7.2.
+Geen van deze drie blokkeert de uitrol. §4.1 en §4.2 zijn gerepareerd.
 
 ### 7.2 · De veilige voorhoede (kan los, zonder de v2-kern)
 
@@ -402,19 +510,31 @@ sleutel**.
 Overweeg daarnaast een apart spoor voor het productie-databasewachtwoord
 uit §5.1.
 
-### 7.4 · De v2-kern, pas na 7.1
+### 7.4 · HET DEFINITIEVE RELEASEPLAN voor de v2-kern
 
-| Stap | Handeling | Akkoord |
-|---|---|---|
-| 1 | `npm run plannerpauze -- --pauzeer --door "<naam>" --reden "<waarom>"` | **AKKOORD** |
-| 2 | **Toets** de pauze: `npm run plannerpauze` moet exitcode **2** geven. Een gedraaid commando is geen bewijs | nee |
-| 3 | Wacht tot de lopende ronde leeg is: `select count(*) from intel.taken where status='bezig'` → 0 | nee |
-| 4 | Migratie **0045** toepassen | **AKKOORD** |
-| 5 | Motorpariteit toetsen: de database is nu v2, de code nog v1 — dat **mag** en wordt benoemd | nee |
-| 6 | De branch naar main → productiedeploy van vier services | **AKKOORD** |
-| 7 | Verifieer de gedeployde SHA via `railway status --json` → `meta.commitHash` | nee |
-| 8 | Hervatten met autorisatie: `--hervat --autorisatie "<grond>"` | **AKKOORD** |
-| 9 | Meet de eerste ronde: `documentclassificatie` moet nu `motor documentsoort-v2` loggen | nee |
+Tien stappen, in de enige orde die technisch uitvoerbaar is. Elke stap
+met **AKKOORD** vraagt toestemming in dát moment; eerdere toestemming
+geldt niet opnieuw.
+
+| # | Handeling | Bewijs dat je afwacht | Akkoord |
+|---|---|---|---|
+| **1** | **Back-up en restorecontrole eerst.** `backup` moet geslaagd zijn en in de bucket staan: `select soort,status,gereed_op,pogingen from intel.taken where soort='backup' order by gereed_op desc limit 3` plus `gcloud storage ls -l "gs://vibe-energy-intel-backups/"`. **Gebruik `backups/.laatste-restoretest.json` NOOIT als bewijs** — die staat op de containerschijf en is na elke deploy weg | een `backup`-rij op `gereed` van vandaag, en een `.dump` in de bucket | nee |
+| **2** | **Deploy de voorhoede** (`6681a3f 6561f60 0250679` vanaf `origin/main`; laat de ene hunk in `volledigetekst.test.ts` vallen). De preDeploy past **alleen 0046** toe — 0045 en 0047 zitten niet in die tree | `select max(nummer) from intel.migraties` → **46** | **AKKOORD** |
+| **3** | **Pauzeer de planner.** Nu bestaat de tabel. `npm run plannerpauze -- --pauzeer --door "<naam>" --reden "<waarom>"` | — | **AKKOORD** |
+| **4** | **Toets de pauze.** `npm run plannerpauze` moet exitcode **2** geven. Een gedraaid commando is geen bewijs | exitcode 2 + "planner GEPAUZEERD" | nee |
+| **5** | **Wacht tot de wachtrij leeg is.** `select count(*) from intel.taken where status='bezig'` → 0. Een al geclaimde taak loopt áf; er komt niets bij | 0 | nee |
+| **6** | **Deploy de volle branch** naar main. De preDeploy past **0045 en 0047** toe en de vier services herstarten. De planner start en plant **niets** (de pauze zit in de database en overleeft de deploy). Start de worker vóór de migratie, dan weigert hij op motorpariteit met exitcode 1 en herstart | `max(nummer)` → **47**; `railway status --json` → `meta.commitHash` = de verwachte SHA | **AKKOORD** |
+| **7** | **Herclassificeer gecontroleerd, met de planner NOG gepauzeerd.** Eerst droog: `npm run documentsoort -- --droog`. Dan echt: `npm run documentsoort`. Hij schrijft **uitsluitend de zes classificatiekolommen** op `brondocument_versies` — geen claim, geen gebeurtenis, geen kandidaat — is idempotent, en pakt **2000** rijen per run. Met 3741 versies zijn dat **twee** runs; een derde doet niets | `select documentsoort_versie, count(*) from intel.brondocument_versies group by 1` → alles op `documentsoort-v2`, 0 op v1 | **AKKOORD** |
+| **8** | **Herbeoordeel de claims gecontroleerd.** `npm run herbeoordeel`. `herbeoordeelClaim()` kan een bevestiging alleen **intrekken**, nooit toekennen | verwacht uit de simulatie: 0 ingetrokken, 0 nieuw, 1 gedaald, som 126 → 125 | **AKKOORD** |
+| **9** | **Controleer de primaire-bronverificatie.** `select count(*) from intel.uitspraken where primaire_bron_bevestigd` en de telling van vaststellende documenten | 19 verwachte ankers uit de simulatie; vandaag 0 claims op die 21 versies, dus 0 is óók een geldige uitkomst | nee |
+| **10** | **Hervat met autorisatie**, en meet daarna. `npm run plannerpauze -- --hervat --door "<naam>" --autorisatie "<grond>" --reden "<waarom>"`. De CLI weigert te hervatten als de motorpariteit niet sluit | de eerste ronde logt `motor documentsoort-v2`; 431 sitemap-URL's onveranderd; `gezondheid` zonder nieuwe FOUT; 0 nieuwe DLQ | **AKKOORD** |
+
+**Terugvalpunt per stap.** Tot en met stap 6 is `git revert` + redeploy
+genoeg en kost 0045 geen data (puur toevoegend). **Ná stap 7 niet meer
+zonder meer:** dan staan er rijen met `NIEUWSBERICHT_REGELGEVING` of
+`ONTWERPBESLUIT` die de oude CHECK afkeurt, en moet je eerst terug naar
+v1 herclassificeren. **Dat is precies de reden dat de pauze vóór de
+deploy staat.**
 
 ---
 
@@ -565,13 +685,25 @@ niet gedocumenteerd.
 
 | Onderdeel | Oordeel |
 |---|---|
-| Plannerpauze (0046) + motorpariteit | **GO** — los uitrolbaar, additief, 11 eigen toetsen groen |
+| Plannerpauze (0046) + motorpariteit, nu óók in de worker | **GO** — additief, 12 eigen toetsen groen, meethaak bewezen |
 | Netwerknoodstop (`6681a3f`) | **GO** |
-| API-security (`6561f60`) | **GO** in code; bereikt productie pas na een repoTrigger |
-| Sleutelrotatie | **GO en urgent**, los van deze release |
-| Volledige tekst + documentvorm + documentsoort v2 | **NO-GO** tot §4.1 en §4.2 beslist zijn |
-| Juridische claimpoort | **NO-GO** — de controle "een officiële documentsoort bevestigt niet automatisch een specifieke claim" **faalt** (§4.1) |
+| API-security (`6561f60`) | **GO** in code; bereikt productie pas na een repoTrigger op `vibe-website-api` |
+| Bewijslogica — stelt dit stuk déze claim vast (`c585dff`) | **GO** — 20 eigen toetsen, 0 verandering op de 59 productieclaims |
+| Claimbeoordelingsregister (0047) | **GO** — 9 eigen toetsen; geen lus, geen opwaardering, autorisatie in de database |
+| Volledige tekst + documentvorm + documentsoort v2 | **GO**, uitsluitend via het plan in §7.4 |
+| Juridische claimpoort | **GO** — de controle "een officiële documentsoort bevestigt niet automatisch een specifieke claim" **slaagt** nu (§4.1) |
+| Sleutelrotatie | **GO en urgent**, los van deze release en buiten deze opdracht |
 
-De techniek is gereed en groen: 1236 toetsen, typecheck 0 fouten, elke
-poort PASS. Het blokkerende punt is geen testfout maar een **ontwerpvraag**
-die alleen de eigenaar kan beslissen.
+**GO voor de gecontroleerde productie-uitrol**, op drie voorwaarden die
+geen van drieën een ontwerpvraag zijn:
+
+1. de orde van §7.4 wordt gevolgd, met de **voorhoededeploy eerst** —
+   pauzeren kan niet voordat 0046 in productie staat;
+2. elke **AKKOORD**-stap krijgt zijn eigen toestemming op dat moment;
+3. stap 7 en 8 worden **gemeten** en niet aangenomen, met de verwachte
+   getallen uit de simulatie ernaast.
+
+De techniek is gereed en groen: **1242 toetsen** plus 24 in `api/`,
+typecheck 0 fouten, elke poort PASS, en de simulatie tweemaal identiek op
+verse productiedata. Wat openstaat (§7.1) is documentatie en
+meetdekking — geen van die punten raakt de veiligheid van de uitrol.
