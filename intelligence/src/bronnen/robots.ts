@@ -15,7 +15,7 @@
    voorbehoud en dan halen we niet op.
    ============================================================ */
 
-import { configLezen } from "../kern/config.ts";
+import { configLezen, netwerkToegestaanRuw } from "../kern/config.ts";
 import { maakLogger } from "../kern/log.ts";
 import type { RobotsStatus } from "./soorten.ts";
 
@@ -257,8 +257,9 @@ export type RobotsUitkomst = {
  * Faalt dicht: is robots.txt onleesbaar, dan is de status onbekend.
  */
 export async function haalRobots(endpointUrl: string): Promise<RobotsUitkomst> {
-  const config = configLezen();
-  if (!config.netwerkToegestaan) {
+  /* Zelfde orde als in haalOp(): de noodstop eerst, zodat "netwerk uit"
+     geen database nodig heeft om te gelden. */
+  if (!netwerkToegestaanRuw()) {
     return {
       robotsStatus: "onbekend",
       httpStatus: null,
@@ -267,6 +268,11 @@ export async function haalRobots(endpointUrl: string): Promise<RobotsUitkomst> {
       bewijs: "netwerk uitgeschakeld (INTEL_NETWERK_TOEGESTAAN=0)",
     };
   }
+
+  /* Pas NA de noodstop de volledige configuratie lezen: die eist
+     INTEL_DB_URL, en een netwerkgrens hoort niet aan een database te
+     hangen. Zie netwerkToegestaanRuw() in kern/config.ts. */
+  const config = configLezen();
 
   const url = new URL(endpointUrl);
   const robotsUrl = `${url.origin}/robots.txt`;

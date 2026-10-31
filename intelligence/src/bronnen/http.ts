@@ -15,7 +15,7 @@
       uitgever niet alsnog hameren.
    ============================================================ */
 
-import { configLezen } from "../kern/config.ts";
+import { configLezen, netwerkToegestaanRuw } from "../kern/config.ts";
 import { urlToegestaan } from "./robots.ts";
 import { httpHerhaalbaar } from "../kern/fouten.ts";
 import { maakLogger } from "../kern/log.ts";
@@ -261,10 +261,10 @@ async function leesBegrensd(
 }
 
 export async function haalOp(opties: HaalOpties): Promise<HaalUitkomst> {
-  const config = configLezen();
-  const start = Date.now();
-
-  if (!config.netwerkToegestaan) {
+  /* EERST de noodstop, DAN de rest van de configuratie. Omgekeerd hing
+     de netwerkgrens aan INTEL_DB_URL, en dan is "uit" niet te bereiken
+     zonder database. Zie netwerkToegestaanRuw() in kern/config.ts. */
+  if (!netwerkToegestaanRuw()) {
     return {
       soort: "fout",
       httpStatus: null,
@@ -274,6 +274,9 @@ export async function haalOp(opties: HaalOpties): Promise<HaalUitkomst> {
       duurMs: 0,
     };
   }
+
+  const config = configLezen();
+  const start = Date.now();
 
   let huidigeUrl = opties.url;
 
