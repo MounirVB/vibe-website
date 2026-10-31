@@ -112,6 +112,17 @@ export async function zetInWachtrij(
  * De `for update skip locked` staat op de subquery: daardoor slaat een
  * tweede worker een vergrendelde rij over in plaats van erop te
  * wachten.
+ *
+ * DE PLANNERPAUZE ZIT IN DEZE QUERY EN NIET ERVOOR. Een losse
+ * `if (gepauzeerd) return null` laat een venster open: tussen het lezen
+ * van de stand en het claimen kan de pauze ingaan, en dan pakt de worker
+ * nog één taak die er niet meer bij hoorde. `intel.planner_gepauzeerd()`
+ * in de subquery maakt het één statement, dus dat venster bestaat niet.
+ *
+ * Een taak die AL geclaimd is, blijft gewoon lopen: zijn lease is al
+ * gezet en rondAf() werkt onveranderd. Dat is precies de bedoeling —
+ * de wachtrij raakt leeg in plaats van afgekapt. Zie
+ * src/ops/plannerpauze.ts.
  */
 export async function pakTaak(
   c: pg.PoolClient,
@@ -140,6 +151,10 @@ export async function pakTaak(
          where k.organisatie_id = $1
            and k.status = 'wachtend'
            and k.beschikbaar_op <= now()
+           -- De cast is nodig: $1 wordt in deze query ook als
+           -- organisatie_id gebruikt en Postgres leidt hem dan af als
+           -- bigint, waarop de functie (integer) niet matcht — 42883.
+           and not intel.planner_gepauzeerd($1::integer)
            ${soorten && soorten.length ? "and k.soort = any($4)" : ""}
          order by k.prioriteit, k.beschikbaar_op, k.id
          limit 1
