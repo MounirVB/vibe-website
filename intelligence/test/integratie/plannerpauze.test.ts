@@ -36,6 +36,7 @@ import pg from "pg";
 
 import { maakOrganisatie, maakWegwerpdatabase, type Wegwerpdatabase } from "../harnas.ts";
 import { metOrganisatie, zonderOrganisatie } from "../../src/kern/db.ts";
+import { leesMigraties } from "../../src/db/migraties.ts";
 import { pakTaak, rondAf, zetInWachtrij } from "../../src/kern/wachtrij.ts";
 import { hervat, pauzeer, pauzeStand } from "../../src/ops/plannerpauze.ts";
 import { motorpariteit } from "../../src/ops/motorpariteit.ts";
@@ -308,11 +309,36 @@ describe("de motorpariteit weigert een halve uitrol", () => {
     await tot44?.opruimen();
   });
 
-  test("een volledig gemigreerde database sluit aan op deze code", async () => {
+  test("een volledig gemigreerde database wordt NOOIT geweigerd", async () => {
+    /* DEZE TOETS WAS FOUT, en de fase-1-releasebranch vond het.
+       Hij stelde hard `databaseVersie === "v2"` voor een "volledig
+       gemigreerde" database. Dat is alleen waar als 0045 in de boom
+       zit. Op een release die 0045 BEWUST weglaat — precies de
+       geïsoleerde fase-1-uitrol — is de volledig gemigreerde database
+       v1, en viel de toets om op een aanname in plaats van op een
+       defect.
+
+       De verwachting komt nu uit de MIGRATIESET die werkelijk is
+       toegepast, niet uit een hardgecodeerde versiestring. Daarmee is
+       de toets correct op elke tak die dit harnas gebruikt, en toetst
+       hij iets sterkers: dat de probe de database leest zoals hij is. */
+    const migraties = await leesMigraties();
+    const heeft0045 = migraties.some((m) => m.nummer === 45);
+
     const p = await zonderOrganisatie(volledig.pool, (c) => motorpariteit(c));
-    assert.equal(p.databaseVersie, "v2", "na 0045 hoort de database v2 te kennen");
-    assert.equal(p.sluit, true, p.bewijs);
+    assert.equal(
+      p.sluit,
+      true,
+      `een volledig gemigreerde database hoort nooit geweigerd te worden — ${p.bewijs}`,
+    );
     assert.equal(p.codeVersie, DOCUMENTSOORT_VERSIE);
+    assert.equal(
+      p.databaseVersie,
+      heeft0045 ? "v2" : "v1",
+      heeft0045
+        ? "met 0045 in de boom hoort de probe v2 te lezen"
+        : "zonder 0045 hoort de probe v1 te lezen; de kolom documentvorm bestaat dan niet",
+    );
   });
 
   test("8 · code v2 op een database van voor 0045 wordt BENOEMD geweigerd", async () => {
