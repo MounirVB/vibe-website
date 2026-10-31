@@ -335,6 +335,48 @@ describe("de motorpariteit weigert een halve uitrol", () => {
     }
   });
 
+  test("ZOWEL de planner als de worker weigert op een halve uitrol", async () => {
+    /* WAAROM DIT EEN TOETS IS. Gemeten op 31 oktober 2026 via de
+       Railway-API: alleen vibe-intel-api draagt een preDeployCommand met
+       `npm run migreer`; de andere services niet. De vier services
+       deployen PARALLEL met lege watchPatterns, dus de WORKER kan met
+       v2-code opstarten terwijl die migratie nog loopt. De planner
+       alleen bewaken is dus niet genoeg — de worker is juist degene die
+       `documentclassificatie` uitvoert.
+
+       Dit is een INBOUWTOETS en geen gedragsbewijs: het gedrag van
+       motorpariteit() staat in de toetsen hierboven. Hier wordt alleen
+       vastgezet dat beide CLI's hem werkelijk aanroepen.
+
+       COMMENTAAR EERST WEG. Een toets die op een patroon zoekt in ruwe
+       broncode kan zijn eigen uitleg lezen: dit bestand noemt
+       'motorpariteit' zelf tientallen keren, en de CLI's beschrijven de
+       grens in hun commentaar. Zonder strippen zou de toets groen
+       blijven nadat iemand de aanroep weghaalt en de uitleg laat staan.
+       Dezelfde klasse val als een poort die zijn eigen patroon draagt. */
+    const { readFileSync } = await import("node:fs");
+    const { fileURLToPath } = await import("node:url");
+    const { resolve, dirname } = await import("node:path");
+    const hier = dirname(fileURLToPath(import.meta.url));
+
+    for (const pad of ["../../src/cli/planner.ts", "../../src/cli/worker.ts"]) {
+      const ruw = readFileSync(resolve(hier, pad), "utf8");
+      const zonderCommentaar = ruw
+        .replace(/\/\*[\s\S]*?\*\//gu, "")
+        .replace(/(^|[^:])\/\/.*$/gmu, "$1");
+      assert.match(
+        zonderCommentaar,
+        /motorpariteit\s*\(/u,
+        `${pad} hoort motorpariteit() werkelijk AAN TE ROEPEN, niet alleen te beschrijven`,
+      );
+      assert.match(
+        zonderCommentaar,
+        /process\.exit\(1\)/u,
+        `${pad} hoort met exitcode 1 te stoppen, zodat Railway de ronde ROOD toont`,
+      );
+    }
+  });
+
   test("een vooruit toegepaste 0045 mag, en wordt benoemd", async () => {
     /* De stand tussen een vooruit toegepaste migratie en de codedeploy
        moet BESTAAN, anders kun je 0045 niet los uitrollen — en juist dat
