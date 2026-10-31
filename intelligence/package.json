@@ -15,6 +15,7 @@
     "semantiek": "node src/cli/semantiek.ts",
     "worker": "node src/cli/worker.ts",
     "planner": "node src/cli/planner.ts",
+    "plannerpauze": "node src/cli/plannerpauze.ts",
     "paginascan": "node src/cli/paginascan.ts",
     "bronaudit": "node src/cli/bronaudit.ts",
     "schaalcorrectie": "node src/cli/schaalcorrectie.ts",

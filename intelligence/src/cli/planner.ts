@@ -40,6 +40,8 @@ import { eenRij, maakPool, metOrganisatie, sluitAllePools } from "../kern/db.ts"
 import { huidigeOrganisatie } from "../db/zaai.ts";
 import { PLAN, wekelijksVenster } from "../kern/taken.ts";
 import { zetInWachtrij } from "../kern/wachtrij.ts";
+import { pauzeStand, standAlsRegel } from "../ops/plannerpauze.ts";
+import { motorpariteit } from "../ops/motorpariteit.ts";
 
 laadEnvBestand();
 
@@ -71,6 +73,54 @@ try {
   console.log("");
   console.log(`PLANNER — venster ${VENSTER}${DROOG ? " (DROOG)" : ""}`);
   console.log("");
+
+  /* ---- GRENS 1: draait deze code op een database die hem kent? ----
+     Een gedeeltelijke deployment zet DOCUMENTSOORT_VERSIE en het schema
+     uit elkaar. Doorgaan betekent dan een constraintfout per document in
+     plaats van een leesbare weigering. Zie src/ops/motorpariteit.ts.
+     Exitcode 1, zodat de cronronde in Railway ROOD is en niet stil. */
+  const pariteit = await metOrganisatie(pool, { organisatieId }, (c) => motorpariteit(c));
+  if (!pariteit.sluit) {
+    console.error("MOTORPARITEIT — GEWEIGERD");
+    console.error(`  ${pariteit.bewijs}`);
+    console.error("");
+    console.error("Er is NIETS gepland. Dit is een halve uitrol, geen storing.");
+    await sluitAllePools();
+    process.exit(1);
+  }
+
+  /* ---- GRENS 2: staat de planning gepauzeerd? ----
+     De stand komt uit intel.plannerpauze en niet uit de omgeving, dus
+     een deploy kan hem niet opheffen. Een gepauzeerde ronde wordt wel
+     VASTGELEGD: resultaat 'overgeslagen' met nul taken. Een stille ronde
+     is niet te onderscheiden van een kapotte cron, een ronde die zegt
+     dat hij gepauzeerd is wel. */
+  const stand = await metOrganisatie(pool, { organisatieId }, (c) =>
+    pauzeStand(c, organisatieId),
+  );
+  if (stand.gepauzeerd) {
+    console.log(standAlsRegel(stand));
+    console.log("");
+    console.log("Er is NIETS gepland. Hervatten vraagt een expliciete autorisatie:");
+    console.log('  npm run plannerpauze -- --hervat --door "<naam>" --autorisatie "<grond>" --reden "<waarom>"');
+    if (!DROOG) {
+      await metOrganisatie(pool, { organisatieId }, (c) =>
+        c.query(
+          `insert into intel.planner_runs
+             (organisatie_id, soort, venster_sleutel, afgerond_op, duur_ms,
+              resultaat, taken_aangemaakt, taken_overgeslagen)
+           values ($1, 'keten', $2, now(), 0, 'overgeslagen', 0, 0)
+           on conflict (organisatie_id, soort, venster_sleutel) do nothing`,
+          [organisatieId, VENSTER],
+        ),
+      );
+    }
+    console.log("");
+    console.log("taken aangemaakt   0");
+    console.log("taken overgeslagen 0");
+    await sluitAllePools();
+    process.exit(0);
+  }
 
   let aangemaakt = 0;
   let overgeslagen = 0;
