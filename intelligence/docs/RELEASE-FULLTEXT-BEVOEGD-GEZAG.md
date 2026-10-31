@@ -303,11 +303,38 @@ Zonder deze drie besluiten is het eindoordeel **NO-GO**. De plannerpauze
 
 ### 7.2 · De veilige voorhoede (kan los, zonder de v2-kern)
 
+> **LET OP — deze branch is niet los uit te rollen zoals hij is.**
+> `feat/fulltext-bevoegd-gezag` bundelt nu de v2-kern (**NO-GO**,
+> commits 1–9) met de plannerpauze en de twee fixes (**GO**,
+> commits 10–12). Een merge van de hele branch rolt dus ook de NO-GO-kern
+> uit. Wie alleen de veilige voorhoede wil, maakt een aparte branch vanaf
+> `origin/main` en cherry-pickt in deze orde:
+>
+> ```
+> git cherry-pick 6681a3f 6561f60 0250679
+> ```
+>
+> **Eén conflict is voorspeld en nagemeten.** Van de vijftien bestanden die
+> commits 10–12 raken, bestaat er precies **één** niet op `main`:
+> `intelligence/test/eenheid/volledigetekst.test.ts`. Dat bestand wordt
+> door de v2-kern *toegevoegd* en door `6681a3f` alleen *gewijzigd*. Laat
+> die ene hunk bij de cherry-pick dus vallen — hij hoort bij de v2-kern.
+> Alle andere veertien bestanden bestaan op main of zijn nieuw, dus die
+> gaan schoon mee.
+>
+> `src/ops/motorpariteit.ts` compileert op main: hij leest
+> `DOCUMENTSOORT_VERSIE` (daar `"documentsoort-v1"`) en noemt de v2-soorten
+> alleen als string. `test/integratie/plannerpauze.test.ts` is bewust
+> versiebewust geschreven en toetst op main de v1-op-v1-stand.
+>
+> Toets dit met de volledige poort op de nieuwe branch voordat er iets naar
+> main gaat; neem de uitslag niet over uit dit document.
+
 | Stap | Handeling | Akkoord |
 |---|---|---|
 | 1 | Migratie **0046** vooruit toepassen. Puur toevoegend, geen DML, en hij zet de pauze **niet** aan | **AKKOORD** |
 | 2 | `npm run plannerpauze -- --status` → verwacht exitcode 0 en "planner LOOPT" | nee (lezen) |
-| 3 | Commits `6681a3f` (netwerknoodstop) en `6561f60` (api-security) naar main | **AKKOORD** |
+| 3 | De cherry-pick-branch naar main → productiedeploy | **AKKOORD** |
 | 4 | `vibe-website-api` een repoTrigger geven, anders bereikt 5.2 productie nooit | **AKKOORD** |
 
 ### 7.3 · De sleutelrotatie (los van de release, hoogste urgentie)
@@ -409,33 +436,64 @@ op `false`.
 | `www.koopoverheid.nl` | 64 bytes, geen enkele Disallow — **open** |
 | `data.overheid.nl` | sluit GPTBot, ClaudeBot, CCBot, PerplexityBot e.a. expliciet uit — **dicht voor ons** |
 | `wetten.overheid.nl` | sluit ClaudeBot/Claude-Web/anthropic uit — **dicht voor ons** |
-| `www.rvo.nl` | open, robots declareert de sitemap zelf — de HTTP 500 is serverzijdig op de user-agent |
+| `www.rvo.nl` | open, robots declareert de sitemap zelf. **De vastgelegde HTTP 500 bestaat niet meer:** met onze eigen user-agent is het op 2026-10-31 HTTP **200**. `register.ts:512-513` is daarmee achterhaald |
 | `opendata.overheid.nl` | bestaat niet (DNS faalt) |
 
-**De ontdekking: het DOCUMENT is rechtmatig bereikbaar, alleen de
-ZOEKDIENST niet.** Met het identificatienummer dat het register al heeft
-vastgelegd (`stcrt-2023-35277`) geeft
+Alle twaalf hosten zijn met de **platform-user-agent** gemeten, nergens
+vermomd als browser. (Een eerste ronde gebruikte een browserstring; die is
+hermeten en de uitkomsten zijn identiek.) Eén nuance:
+`linkeddata.overheid.nl` faalde eerst met een TLS-SNI-fout en gaf daarna
+200 — één meting op die host is niet betrouwbaar.
+
+### De ontdekking, en de grens eromheen
+
+Met het identificatienummer dat het register al heeft vastgelegd
+(`stcrt-2023-35277`) geeft
 `https://zoek.officielebekendmakingen.nl/stcrt-2023-35277.html` HTTP 200,
-22.604 bytes — één authentiek vaststellend document, op een host zonder
-verbod. En KOOP verklaart hergebruik in eigen woorden op de volledig open
-`www.koopoverheid.nl`.
+22.604 bytes. De **zoekdienst** staat dicht, het **document** niet.
+
+**Maar "bereikbaar" is niet "toegestaan", en dat onderscheid is hier het
+hele punt.** `robotsStatus` wordt `toegestaan` (`robots.ts:403`) en het
+document geeft 200, maar `bepaalToestemming()` zegt **nee** met grondslag
+`geen_grondslag`. Gemeten is dus alleen: *robots verbiedt het niet.*
+Zolang er voor die host geen licentie of `hergebruikVerklaring` is
+vastgelegd, blijft de bron volgens het eigen toestemmingsbeleid uit.
+
+KOOP verklaart hergebruik wél in eigen woorden, op de volledig open
+`www.koopoverheid.nl`, en dat voldoet aan de maat van
+`toestemmingsbeleid.ts:124-132` (zelfde categorie als het
+TenderNed-precedent op `register.ts:750`). Dat is de kandidaat-grondslag —
+maar hij moet aan de **documenthost** worden gekoppeld, niet aan de
+zoekdienst.
+
+**En zelfs met een rechtmatige KOOP-route is de poort nog niet open:**
+beide KOOP-bronnen staan in `GEBUNDELDE_BEKENDMAKINGEN`
+(`documentsoort.ts:521-522`), dus een Staatscourant- of
+Gemeentebladdocument moet het bevoegd gezag ook **zelf noemen** voordat het
+een claim kan bevestigen. En `bronverificatie.ts:56-80` stelt ruim **tien**
+eisen boven de documentsoort, niet vier.
 
 **Wat ontbreekt:** de licentie zelf is **NIET gemeten**. De drie pagina's
 die de voorwaarden dragen staan op `www.overheid.nl`, dat ClaudeBot
-uitsluit. Dit vraagt een mens. Niets hiervan mag met een vermomde
-user-agent worden opgehaald.
+uitsluit. Dit vraagt **een mens die de pagina in een browser leest** en het
+letterlijke citaat met datum in `register.ts` zet. Een geautomatiseerde
+ophaling van die host is **niet toelaatbaar**, ook niet met de
+platform-user-agent, en al helemaal niet met een vermomde.
 
-**Meetvoorbehoud, eerlijk vermeld:** de zeven hosts zijn opgehaald met een
-browser-user-agentstring omdat de opdracht "normale user-agent" vroeg.
-`robots.txt` is onder RFC 9309 altijd opvraagbaar, dus er is geen
-toegangscontrole omzeild, maar de identificatie was niet die van het
-platform. Een hermeting met de productie-UA is aan te raden voordat hier
-een besluit op rust.
+De SRU-getallen die het register noemt (637 records, en in de notities
+5149 ACM-codebesluiten / 3999 Kamerstukken / 2104 en 15 Gemeenteblad)
+zijn de **registermeting van 2026-10-10**. Ze zijn in deze sessie niet
+nagemeten en zijn ook niet na te meten zonder de `Disallow` op
+`repository.overheid.nl` te schenden. Neem ze niet over als eigen bewijs.
 
 **Het goedkoopste alternatief bestaat al en is niet uitgerold:** deze branch
 zet volledige tekst aan voor twee van de drie `BEVOEGD_GEZAG`-bronnen.
-`acm.nl/robots.txt` staat `/nl/publicaties/*` expliciet toe, sluit geen AI-
-of TDM-crawler uit, en vraagt Crawl-delay 10 — vandaar `minIntervalSeconden: 10`.
+`acm.nl/robots.txt` sluit geen AI- of TDM-crawler uit en vraagt Crawl-delay
+10 — vandaar `minIntervalSeconden: 10`. Let op de formulering: er is
+**geen expliciete `Allow`** voor `/nl/publicaties/*`; dat pad valt alleen
+onder geen enkele `Disallow` en is dus bij afwezigheid toegestaan. Dat is
+een zwakkere grondslag dan "expliciet toegestaan", en `register.ts:373-374`
+moet dat zo zeggen vóór de uitrol.
 
 Er is **geen** `TOEGANGSVERZOEK-KOOP.md`; het patroon staat in
 `TOEGANGSVERZOEK-RENDO.md` (status: concept, niet verzonden).
