@@ -24,15 +24,18 @@ import { eenRij, rijen } from "../kern/db.ts";
 import { kort, normaliseerTekst } from "../kern/tekst.ts";
 import type { Onderwerp } from "../bronnen/soorten.ts";
 import { maakLogger } from "../kern/log.ts";
-import { bepaalClaimAard } from "./claimaard.ts";
+import { bepaalClaimAard, CLAIMAARD_VERSIE } from "./claimaard.ts";
 import { bepaalModaliteit } from "./claimmodaliteit.ts";
 import {
   bewijskrachtPlafond,
   magZelfBevestigen,
+  EIGEN_GEZAG_NAMEN,
   type Documentsoort,
   type Gezag,
 } from "./documentsoort.ts";
-import { vormKanVaststellen, type Documentvorm } from "./documentvorm.ts";
+import type { Documentvorm } from "./documentvorm.ts";
+import { steltStukDeClaimVast, VASTSTELLING_VERSIE } from "./vaststelling.ts";
+import { vraagOmBeoordeling } from "./claimbeoordeling.ts";
 
 export type UitspraakSoort =
   | "feit"
@@ -375,6 +378,15 @@ export async function schrijfUitspraken(
      */
     documentvorm: Documentvorm;
     /**
+     * De bronsleutel van het document. VERPLICHT, om dezelfde reden als
+     * documentsoort hierboven: de vaststellingstoets heeft hem nodig om
+     * te weten welke gezagsnamen voor DIT document het EIGEN gezag zijn
+     * (EIGEN_GEZAG_NAMEN). Zonder die kaart zou "de ACM heeft besloten"
+     * in een ACM-besluit als navertelling gelden, en dan blokkeert het
+     * stuk zijn eigen claim.
+     */
+    bronSleutel: string;
+    /**
      * De publicatiedatum van het brondocument (ISO), als peildatum voor
      * de modaliteit. Zie de toelichting bij ModaliteitInvoer.peildatum:
      * of een zin over een jaartal terugkijkt of vooruitkijkt, hangt af
@@ -570,9 +582,43 @@ export async function schrijfUitspraken(
        in welke vorm. Bevoegd gezag plus een bekendmakingsvorm IS de
        authentieke juridische bron; de smalle inhoudspatronen zijn daar
        een onvolledige afgeleide van. */
-    const authentiekeGrondslag =
-      invoer.gezag === "BEVOEGD_GEZAG" && vormKanVaststellen(invoer.documentvorm);
-    const juridischZonderGrondslag = aard.juridisch && !authentiekeGrondslag;
+    /* R3-CORRECTIE, 31 oktober 2026 — DE DOCUMENTEIS WAS NIET GENOEG.
+       ----------------------------------------------------------------
+       Hierboven stond alleen:
+
+         authentiekeGrondslag = gezag === BEVOEGD_GEZAG
+                                && vormKanVaststellen(documentvorm)
+
+       Dat is een eigenschap van het DOCUMENT en zegt niets over DEZE
+       claim. Geforceerd en gemeten: een echt concentratiebesluit van de
+       ACM (OFFICIEEL_BESLUIT / BEKENDMAKING / BEVOEGD_GEZAG, plafond 5)
+       met de regel "Ter achtergrond: het maximumtarief bedraagt vanaf
+       1 juli 2027 nog 45 euro per maand" bevestigde die tariefzin, en
+       ook "De verplichte gegevensdeling voor netbeheerders geldt vanaf
+       1 juli 2027". Een concentratiebesluit beslist over zeggenschap en
+       niets over een tarief.
+
+       steltStukDeClaimVast() beantwoordt nu de vraag die ontbrak: stelt
+       dit stuk DEZE claim vast, of staat de claim er alleen IN. Hij
+       BEVAT de oude voorwaarde als eerste eis en voegt er vier toe —
+       ontwerp, modaliteit, achtergrondpassage en toeschrijving aan een
+       ander orgaan. Er is dus geen drempel verlaagd.
+
+       De passagetoets is EENZIJDIG: hij blokkeert alleen bij positief
+       bewijs van achtergrond. Zie de kop van vaststelling.ts voor de
+       meting waarom "bewijs dat hij in het dictum staat" de keten
+       breekt. */
+    const vaststelling = steltStukDeClaimVast({
+      claimTekst: u.tekst,
+      documentTitel: invoer.titel,
+      documentTekst: invoer.tekst,
+      documentsoort: invoer.documentsoort,
+      gezag: invoer.gezag,
+      documentvorm: invoer.documentvorm,
+      modaliteit: mod.modaliteit,
+      eigenGezagNamen: EIGEN_GEZAG_NAMEN[invoer.bronSleutel] ?? [],
+    });
+    const juridischZonderGrondslag = aard.juridisch && !vaststelling.steltVast;
 
     if (magBevestigen && !juridischZonderGrondslag) {
       await c.query(
@@ -591,6 +637,24 @@ export async function schrijfUitspraken(
         documentsoort: invoer.documentsoort,
         reden: aard.reden,
         markeringen: aard.markeringen,
+        /* WAAROM hij niet vaststelt, en niet alleen DAT hij het niet
+           doet. Zonder deze uitslag is een blokkade op 'achtergrond'
+           niet te onderscheiden van een blokkade op 'verkeerde vorm',
+           en dan is hij niet na te meten. */
+        vaststelling: vaststelling.uitslag,
+        vaststellingReden: vaststelling.reden,
+      });
+      /* En de blokkade hoort niet alleen in een logregel te staan. Een
+         logregel is na een deploy weg en niemand kan erop handelen.
+         Zie vraagOmBeoordeling(): de claim komt in een register waar een
+         mens hem kan beslissen. Fail-closed: lukt dat niet, dan blijft
+         de claim gewoon 'ongeverifieerd'. */
+      await vraagOmBeoordeling(c, organisatieId, {
+        uitspraakId: nieuw.id,
+        versieId: invoer.versieId,
+        aanleiding: vaststelling.uitslag,
+        reden: `${aard.reden}; ${vaststelling.reden}`,
+        motorversies: `${CLAIMAARD_VERSIE} + ${VASTSTELLING_VERSIE}`,
       });
     }
   }

@@ -405,6 +405,12 @@ describe("de juridische claimpoort in de database", () => {
         documentsoort: "FEITELIJKE_MEDEDELING",
         gezag: "BEVOEGD_GEZAG",
         documentvorm: vorm,
+        /* De echte bronsleutel, niet een verzonnen string: de
+           vaststellingstoets leest hiermee EIGEN_GEZAG_NAMEN, en met
+           een onbekende sleutel zou hij elke gezagsnaam als 'ander
+           gezag' lezen. Dan toetst dit bestand iets anders dan
+           productie doet. */
+        bronSleutel: "rijksoverheid-nieuws",
         peildatum: "2026-10-29",
       });
       const rijen = await c.query<{ verificatie_status: string; tekst: string }>(

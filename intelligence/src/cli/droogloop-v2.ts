@@ -37,6 +37,10 @@ import { classificeerVersie } from "../pijplijn/documentclassificatie.ts";
 import { herkenOnderwerpen } from "../pijplijn/onderwerpen.ts";
 import { bepaalClaimAard } from "../pijplijn/claimaard.ts";
 import { vormKanVaststellen, type Documentvorm } from "../pijplijn/documentvorm.ts";
+import { steltStukDeClaimVast, VASTSTELLING_VERSIE } from "../pijplijn/vaststelling.ts";
+import { EIGEN_GEZAG_NAMEN } from "../pijplijn/documentsoort.ts";
+import type { Modaliteit } from "../pijplijn/claimmodaliteit.ts";
+import { extraheerUitspraken } from "../pijplijn/uitspraken.ts";
 import { classificeer } from "../pijplijn/relevantie.ts";
 import {
   bewijskrachtPlafond,
@@ -344,6 +348,78 @@ console.log(`     juridische claims:                    ${juridisch} van ${data.
 console.log(`     daarvan nu BEVESTIGD:                 ${juridischBevestigd}`);
 console.log(`     zonder authentieke grondslag:         ${juridischZonderGrondslag}`);
 console.log(`     -> zouden onder de poort niet zelf bevestigen`);
+
+console.log(`\n6c · DE VASTSTELLINGSTOETS (${VASTSTELLING_VERSIE})`);
+/* 6b vraagt of het DOCUMENT authentiek is. Dat was precies de te
+   zwakke vraag: een concentratiebesluit van bevoegd gezag in
+   bekendmakingsvorm bevestigde een tariefzin die het niet vaststelde.
+   Deze sectie meet de laag die daar bovenop zit — stelt dit stuk DEZE
+   claim vast — zodat het releasebesluit niet op een simulatie rust die
+   de reparatie mist.
+
+   TWEE TELLINGEN, want ze beantwoorden verschillende vragen:
+     · over de BESTAANDE claims: verandert de uitkomst?
+     · over alle juridische zinnen in de 19 vaststellende versies: wat
+       zou de poort doen zodra de full-textlaag er claims uit haalt? */
+const perUitslag = new Map<string, number>();
+let nieuweUitkomstAnders = 0;
+for (const c of data.claims) {
+  const aard = bepaalClaimAard(c.tekst);
+  if (!aard.juridisch) continue;
+  const versie = data.versies.find((v) => String(v.id) === String(c.primaire_versie_id));
+  const n = versie === undefined ? undefined : nieuwOp.get(String(versie.id));
+  if (versie === undefined || n === undefined) continue;
+  const oudAuthentiek = n.gezag === "BEVOEGD_GEZAG" && vormKanVaststellen(n.vorm);
+  const vs = steltStukDeClaimVast({
+    claimTekst: c.tekst,
+    documentTitel: versie.titel ?? "",
+    documentTekst: versie.ruwe_tekst ?? "",
+    documentsoort: n.soort,
+    gezag: n.gezag,
+    documentvorm: n.vorm,
+    modaliteit: (c.modaliteit as Modaliteit | null) ?? "VASTGESTELD",
+    eigenGezagNamen: EIGEN_GEZAG_NAMEN[versie.bron_sleutel] ?? [],
+  });
+  perUitslag.set(vs.uitslag, (perUitslag.get(vs.uitslag) ?? 0) + 1);
+  if (oudAuthentiek !== vs.steltVast) nieuweUitkomstAnders += 1;
+}
+console.log(`     bestaande juridische claims opnieuw gewogen: ${juridisch}`);
+console.log(`     uitkomst anders dan onder de oude poort:     ${nieuweUitkomstAnders}   (hoort 0 te zijn op deze voorraad)`);
+for (const [k, n] of [...perUitslag].sort((a, b) => b[1] - a[1])) {
+  console.log(`       ${k.padEnd(32)} ${n}`);
+}
+
+/* En de vooruitblik: de 19 vaststellende versies dragen vandaag nul
+   claims, dus de poort is op deze voorraad inert. Zodra de
+   full-textlaag draait verandert dat, en dan telt wat hij dan doet. */
+let vaststellendeVersies = 0;
+let juridischeZinnenDaarin = 0;
+let zouZelfBevestigen = 0;
+for (const v of data.versies) {
+  const n = nieuwOp.get(String(v.id));
+  if (n === undefined) continue;
+  if (!(n.gezag === "BEVOEGD_GEZAG" && vormKanVaststellen(n.vorm))) continue;
+  vaststellendeVersies += 1;
+  for (const z of extraheerUitspraken(v.titel ?? "", v.ruwe_tekst ?? "")) {
+    if (!bepaalClaimAard(z.tekst).juridisch) continue;
+    juridischeZinnenDaarin += 1;
+    const vs = steltStukDeClaimVast({
+      claimTekst: z.tekst,
+      documentTitel: v.titel ?? "",
+      documentTekst: v.ruwe_tekst ?? "",
+      documentsoort: n.soort,
+      gezag: n.gezag,
+      documentvorm: n.vorm,
+      modaliteit: "VASTGESTELD",
+      eigenGezagNamen: EIGEN_GEZAG_NAMEN[v.bron_sleutel] ?? [],
+    });
+    if (vs.steltVast) zouZelfBevestigen += 1;
+  }
+}
+console.log(`     versies met authentieke grondslag:           ${vaststellendeVersies}`);
+console.log(`     juridische zinnen daarin:                    ${juridischeZinnenDaarin}`);
+console.log(`     daarvan zou zelfbevestigen:                  ${zouZelfBevestigen}`);
+console.log(`     tegengehouden door de vaststellingstoets:    ${juridischeZinnenDaarin - zouZelfBevestigen}`);
 
 console.log("\n7 · DRAAGVERMOGEN — voor en na");
 const nietDragendV1 = data.versies.filter((v) =>
