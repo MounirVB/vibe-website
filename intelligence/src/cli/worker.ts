@@ -19,6 +19,7 @@
 
 import { laadEnvBestand, configLezen } from "../kern/config.ts";
 import { maakPool, metOrganisatie, sluitAllePools } from "../kern/db.ts";
+import { motorpariteit } from "../ops/motorpariteit.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
 import { maakLogger } from "../kern/log.ts";
 import { GEPLANDE_SOORTEN, TAAKSOORTEN, voerUit } from "../kern/taken.ts";
@@ -116,6 +117,37 @@ try {
       console.log("Hervatten: npm run worker -- --dlq-hervat [--soort <soort>]");
     }
     process.exit(0);
+  }
+
+  /* DE MOTORPARITEIT, VOOR DE EERSTE TAAK — en dit is de plek waar het
+     écht moet, niet alleen in de planner.
+
+     Gemeten op 31 oktober 2026 via de Railway-API: ALLEEN
+     vibe-intel-api draagt een preDeployCommand
+     (`npm run migreer && npm run zaai && npm run geo`); de andere
+     services hebben er geen. De vier services deployen PARALLEL en
+     watchPatterns is overal leeg, dus de worker kan met v2-code
+     opstarten terwijl de migratie van vibe-intel-api nog loopt. In dat
+     venster praat v2-code tegen schema 44 en loopt elke classificatie
+     vast op de CHECK versies_documentsoort — per document, zonder dat
+     iemand ziet dat de oorzaak een nog niet toegepaste migratie is.
+
+     Exitcode 1, zodat Railway de service als gefaald toont en
+     herstart. Bij een herstart na de migratie sluit de pariteit wel en
+     loopt hij door; dat is precies het gedrag dat je wilt. */
+  const pariteit = await metOrganisatie(pool, { organisatieId }, (c) => motorpariteit(c));
+  if (!pariteit.sluit) {
+    log.fout("motorpariteit sluit niet; de worker weigert werk te pakken", {
+      codeVersie: pariteit.codeVersie,
+      databaseVersie: pariteit.databaseVersie,
+      bewijs: pariteit.bewijs,
+    });
+    console.error("MOTORPARITEIT — GEWEIGERD");
+    console.error(`  ${pariteit.bewijs}`);
+    console.error("");
+    console.error("Er is GEEN taak gepakt. Dit is een halve uitrol, geen storing.");
+    await sluitAllePools();
+    process.exit(1);
   }
 
   // Eerst opruimen: taken van een omgevallen worker terugleggen.

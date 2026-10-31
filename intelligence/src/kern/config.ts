@@ -102,6 +102,29 @@ function vlag(naam: string, standaard: boolean): boolean {
   return v === "1" || v.toLowerCase() === "true" || v.toLowerCase() === "ja";
 }
 
+/**
+ * DE NETWERKNOODSTOP, LOS VAN DE REST VAN DE CONFIGURATIE.
+ *
+ * `haalOp()` las eerst de VOLLEDIGE config en toetste deze vlag pas
+ * daarna. Die orde maakte de noodstop afhankelijk van INTEL_DB_URL:
+ * zonder database gooide `configLezen()` al voordat iemand kon zien dat
+ * het netwerk uit hoorde te staan.
+ *
+ * Gemeten op 31 oktober 2026 in test/eenheid/volledigetekst.test.ts:
+ * twee toetsen gingen MET een .env het publieke internet op naar
+ * www.acm.nl (HTTP 404 in 895 ms) terwijl hun eigen commentaar zei dat
+ * het netwerk uit stond, en vielen ZONDER .env om met "INTEL_DB_URL
+ * ontbreekt". Eén oorzaak, twee gezichten.
+ *
+ * Een fail-closed grens mag niets anders nodig hebben dan zijn eigen
+ * vlag. Daarom staat hij hier apart en leest hij alleen .env plus de
+ * omgeving.
+ */
+export function netwerkToegestaanRuw(): boolean {
+  laadEnvBestand();
+  return vlag("INTEL_NETWERK_TOEGESTAAN", true);
+}
+
 function omgevingVan(waarde: string): Omgeving {
   if (waarde === "ontwikkel" || waarde === "test" || waarde === "productie") return waarde;
   throw new Error(
