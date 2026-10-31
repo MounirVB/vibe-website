@@ -56,6 +56,8 @@ export type Pariteit = {
 type ProbeRij = {
   heeft_documentvorm: boolean;
   check_definitie: string | null;
+  heeft_plannerpauze: boolean;
+  heeft_pauzefunctie: boolean;
 };
 
 /**
@@ -80,7 +82,20 @@ export async function motorpariteit(client: Leesclient): Promise<Pariteit> {
            from pg_constraint c
           where c.conrelid = 'intel.brondocument_versies'::regclass
             and c.conname  = 'versies_documentsoort'
-       ) as check_definitie`,
+       ) as check_definitie,
+       /* DE PAUZEOBJECTEN UIT 0046. Deze code ROEPT ze aan — pakTaak
+          doet intel.planner_gepauzeerd() in zijn claim-query en de
+          planner leest intel.plannerpauze — dus ze horen bij het
+          schemacontract van deze motor, net zo hard als de v2-as. */
+       exists (
+         select 1 from information_schema.tables
+          where table_schema = 'intel' and table_name = 'plannerpauze'
+       ) as heeft_plannerpauze,
+       exists (
+         select 1 from pg_proc p
+           join pg_namespace n on n.oid = p.pronamespace
+          where n.nspname = 'intel' and p.proname = 'planner_gepauzeerd'
+       ) as heeft_pauzefunctie`,
   );
 
   const codeVersie = DOCUMENTSOORT_VERSIE;
@@ -93,6 +108,34 @@ export async function motorpariteit(client: Leesclient): Promise<Pariteit> {
       bewijs:
         "de schemaprobe leverde geen rij op; de stand van de database is ONBEKEND en " +
         "daarmee weigert de motor. Controleer of intel.brondocument_versies bestaat.",
+    };
+  }
+
+  /* EERST DE PAUZEOBJECTEN, want dit is de goedkoopste en hardste eis.
+     GEMETEN OP 1 NOVEMBER 2026, en dit is de reden dat deze toets
+     bestaat: met de fase-1-code tegen een database op stand 44 valt de
+     planner om met `relation "intel.plannerpauze" does not exist` en de
+     worker met `function intel.planner_gepauzeerd(integer) does not
+     exist` (42883) — per claimpoging.
+
+     Alleen vibe-intel-api draagt een preDeployCommand, dus tijdens een
+     deploy loopt de nieuwe planner- en workercode kortstondig tegen het
+     OUDE schema. Zonder deze toets is dat een kryptische databasefout;
+     met deze toets is het een benoemde weigering die naar 0046 wijst.
+     Zelfherstellend blijft het: zodra de migratie landt, sluit de
+     pariteit en loopt de service door. */
+  if (!rij.heeft_plannerpauze || !rij.heeft_pauzefunctie) {
+    const mist: string[] = [];
+    if (!rij.heeft_plannerpauze) mist.push("de tabel intel.plannerpauze");
+    if (!rij.heeft_pauzefunctie) mist.push("de functie intel.planner_gepauzeerd()");
+    return {
+      sluit: false,
+      codeVersie,
+      databaseVersie: "v1",
+      bewijs:
+        `deze code gebruikt de plannerpauze maar ${mist.join(" en ")} ontbreekt. ` +
+        "Pas migratie 0046_plannerpauze.sql toe vóór deze code. Doorgaan zou " +
+        "elke claim op 42883 laten vastlopen.",
     };
   }
 

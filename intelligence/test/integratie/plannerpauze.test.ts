@@ -297,16 +297,48 @@ describe("de plannerpauze", () => {
 describe("de motorpariteit weigert een halve uitrol", () => {
   let volledig: Wegwerpdatabase;
   let tot44: Wegwerpdatabase;
+  /** 44 + ALLEEN 0046: de werkelijke productiestand na de fase-1-uitrol. */
+  let fase1: Wegwerpdatabase;
 
   before(async () => {
     volledig = await maakWegwerpdatabase("pariteitvol");
     // Precies de database van VOOR 0045: geen documentvorm, oude CHECK.
     tot44 = await maakWegwerpdatabase("pariteit44", { totNummer: 44 });
+
+    /* De fase-1-stand is met totNummer niet uit te drukken — dat zou
+       0045 meenemen — dus 0046 wordt hier LOS op een 44-database gezet,
+       precies zoals de geïsoleerde release het doet.
+
+       ALLE FIXTURES HOREN IN before() EN NIET IN EEN TOETS. Het harnas
+       sluit bij opruimen() ALLE pools (sluitAllePools), dus een fixture
+       die midden in een toets wordt opgeruimd trekt de pools van de
+       andere fixtures mee onderuit. Gemeten: dat liet de laatste toets
+       van dit blok omvallen op een fout die niets met zijn onderwerp
+       te maken had. */
+    fase1 = await maakWegwerpdatabase("fase1stand", { totNummer: 44 });
+    const m0046 = (await leesMigraties()).find((m) => m.nummer === 46);
+    if (m0046 !== undefined) {
+      const eigenaar = new pg.Client({
+        connectionString: fase1.url,
+        options: "-c search_path=intel,public",
+      });
+      await eigenaar.connect();
+      try {
+        await eigenaar.query(m0046.sql);
+        await eigenaar.query(
+          "insert into intel.migraties (naam, nummer, hash, duur_ms) values ($1,$2,$3,0)",
+          [m0046.naam, m0046.nummer, m0046.hash],
+        );
+      } finally {
+        await eigenaar.end();
+      }
+    }
   });
 
   after(async () => {
     await volledig?.opruimen();
     await tot44?.opruimen();
+    await fase1?.opruimen();
   });
 
   test("een volledig gemigreerde database wordt NOOIT geweigerd", async () => {
@@ -341,23 +373,36 @@ describe("de motorpariteit weigert een halve uitrol", () => {
     );
   });
 
-  test("8 · code v2 op een database van voor 0045 wordt BENOEMD geweigerd", async () => {
+  test("8a · een database van VOOR 0046 wordt geweigerd, met 0046 in de reden", async () => {
+    /* GEMETEN OP 1 NOVEMBER 2026 met de fase-1-releasecode tegen een
+       database op stand 44: de planner viel om met `relation
+       "intel.plannerpauze" does not exist` en de worker met `function
+       intel.planner_gepauzeerd(integer) does not exist` — 42883, per
+       claimpoging. Kryptisch, en precies de faalwijze die motorpariteit
+       moet voorkomen.
+
+       Alleen vibe-intel-api draagt een preDeployCommand, dus tijdens
+       elke deploy loopt de nieuwe planner- en workercode kortstondig
+       tegen het oude schema. Deze eis staat daarom VOOROP in de probe:
+       hij is de goedkoopste en hij raakt elke tak, v1 of v2. */
     const p = await zonderOrganisatie(tot44.pool, (c) => motorpariteit(c));
+    assert.equal(p.sluit, false, "zonder de pauzeobjecten hoort hij te weigeren");
+    assert.match(p.bewijs, /plannerpauze|planner_gepauzeerd/, "de reden moet ZEGGEN wat er mist");
+    assert.match(p.bewijs, /0046/, "en naar de migratie wijzen die het oplost");
+  });
+
+  test("8b · de FASE-1-stand (44 + alleen 0046) weegt de v2-as apart", async () => {
+    const p = await zonderOrganisatie(fase1.pool, (c) => motorpariteit(c));
     assert.equal(p.databaseVersie, "v1", "zonder 0045 is de database v1");
 
     if (DOCUMENTSOORT_VERSIE.endsWith("-v2")) {
-      assert.equal(p.sluit, false, "een halve uitrol hoort te worden geweigerd");
-      assert.match(
-        p.bewijs,
-        /documentvorm/,
-        "de weigering moet ZEGGEN wat er mist, niet dat er iets mis is",
-      );
-      assert.match(p.bewijs, /0045/, "en naar de migratie wijzen die het oplost");
+      assert.equal(p.sluit, false, "v2-code op een v1-schema hoort geweigerd te worden");
+      assert.match(p.bewijs, /documentvorm/, "en nu moet de reden over de v2-as gaan");
+      assert.match(p.bewijs, /0045/, "en naar 0045 wijzen");
     } else {
-      /* Draait deze code als v1, dan is v1-op-v1 juist de goede stand.
-         De toets blijft dan zinvol: hij zet vast dat de probe de
-         database als v1 LEEST. */
-      assert.equal(p.sluit, true, "v1-code op een v1-database hoort te mogen");
+      /* Precies de fase-1-productiestand: v1-code op 44+0046. Dit MOET
+         mogen, anders is de geïsoleerde release niet uitrolbaar. */
+      assert.equal(p.sluit, true, `de fase-1-stand hoort te mogen draaien — ${p.bewijs}`);
     }
   });
 
