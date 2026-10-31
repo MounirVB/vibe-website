@@ -28,6 +28,14 @@ import {
 } from "../harnas.ts";
 import { metOrganisatie } from "../../src/kern/db.ts";
 import { verwerkItem } from "../../src/pijplijn/verzamelen.ts";
+import {
+  classificeerVersie,
+  slaDocumentsoortOp,
+} from "../../src/pijplijn/documentclassificatie.ts";
+import {
+  bewijskrachtPlafond,
+  magZelfBevestigen,
+} from "../../src/pijplijn/documentsoort.ts";
 import type { RuwItem } from "../../src/bronnen/soorten.ts";
 
 const SAMENVATTING =
@@ -217,6 +225,81 @@ describe("de volledige tekst en de versiehistorie", () => {
        intel.uitspraken vragen, en die doet deze laag niet. */
   });
 
+  test("5b · EIS 8 — ook een OFFICIEEL_BESLUIT waardeert de claim niet op", async () => {
+    /* WAT V2 HIERAAN TOEVOEGT, en waarom toets 5 alleen niet genoeg is.
+
+       Toets 5 bewees dat een nieuwe versie een bestaande binding niet
+       verplaatst. Maar v2 maakt iets nieuws mogelijk: die nieuwe versie
+       kan nu zelf een OFFICIEEL_BESLUIT zijn met plafond 5 en het recht
+       zichzelf te bevestigen — dat is precies wat eis 3 vraagt. De
+       vraag van eis 8 is of die zwaardere soort de claim eronder
+       meetrekt.
+
+       Hier wordt de ECHTE classificatiemotor op versie 2 gezet, zoals
+       de taak `documentclassificatie` dat zou doen, en daarna wordt de
+       claim opnieuw gemeten. */
+    const v = await versies();
+    const versie2 = v[1]!;
+
+    const uitslag = classificeerVersie({
+      versieId: versie2.id,
+      titel: "Geschilbesluit ZonOffensief - Stedin",
+      tekst: VOLLEDIG,
+      canoniekeUrl:
+        "https://www.acm.nl/nl/publicaties/geschilbesluit-zonoffensief-stedin",
+      bronSleutel: "acm-besluiten",
+      injectieVerdacht: false,
+    });
+
+    /* Eerst vastleggen dat de nieuwe versie inderdaad het zware geval
+       is; anders toetst de rest hieronder niets. */
+    assert.equal(uitslag.soort, "OFFICIEEL_BESLUIT", `versie 2 werd ${uitslag.soort}`);
+    assert.equal(uitslag.vorm, "BEKENDMAKING");
+    assert.equal(bewijskrachtPlafond(uitslag.soort, uitslag.gezag), 5);
+    assert.equal(magZelfBevestigen(uitslag.soort, uitslag.gezag), true);
+
+    await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      slaDocumentsoortOp(c, org, versie2.id, uitslag),
+    );
+
+    const claim = await metOrganisatie(db.pool, { organisatieId: org }, async (c) => {
+      const r = await c.query<{
+        verificatie_status: string;
+        bewijs_kwaliteit: number;
+        versie_id: number;
+        primaire_bron_bevestigd: boolean;
+      }>(
+        `select u.verificatie_status, u.bewijs_kwaliteit, u.primaire_bron_bevestigd,
+                ub.versie_id
+           from intel.uitspraken u
+           join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id and ub.rol = 'primair'
+          where u.id = $1`,
+        [claimId],
+      );
+      return r.rows[0]!;
+    });
+
+    assert.equal(claim.bewijs_kwaliteit, 4, "bewijskracht blijft 4, ook naast een plafond van 5");
+    assert.equal(claim.versie_id, versie1Id, "de binding blijft op versie 1");
+    assert.notEqual(
+      claim.primaire_bron_bevestigd,
+      true,
+      "een zwaardere documentsoort is geen gezien origineel",
+    );
+
+    /* EN DE VERSIE ZELF DRAAGT HET OORDEEL, zodat een audit kan zien
+       waarom dit stuk wel mocht vaststellen. */
+    const opgeslagen = await metOrganisatie(db.pool, { organisatieId: org }, async (c) => {
+      const r = await c.query<{ documentsoort: string; documentvorm: string }>(
+        "select documentsoort, documentvorm from intel.brondocument_versies where id = $1",
+        [versie2.id],
+      );
+      return r.rows[0]!;
+    });
+    assert.equal(opgeslagen.documentsoort, "OFFICIEEL_BESLUIT");
+    assert.equal(opgeslagen.documentvorm, "BEKENDMAKING");
+  });
+
   test("6 · dezelfde volledige tekst opnieuw geeft geen versie 3", async () => {
     const r = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
       verwerkItem(c, org, bronId, "acm-besluiten", item(VOLLEDIG), ["regelgeving"], false),
@@ -237,27 +320,28 @@ describe("de volledige tekst en de versiehistorie", () => {
     assert.equal(v[2]!.vorige_versie_id, v[1]!.id, "keten van 3 naar 2");
     assert.equal(v[0]!.tekst_lengte, SAMENVATTING.length, "versie 1 nog steeds ongemoeid");
 
-    /* HIER VOND DEZE TOETS IETS DAT IK NIET VERWACHTTE, EN HET IS GEEN
-       FOUT IN DE NIEUWE CODE MAAR EEN EIGENSCHAP VAN DE BESTAANDE
-       WIJZIGINGSDETECTIE.
+    /* DEZE TOETS IS ÉÉN RONDE LANG ROOD GEWEEST, en dat was de
+       bedoeling.
 
-       Ik verwachtte 'materieel'. Gemeten is 'cosmetisch'. De reden:
-       `bepaalWijziging()` noemt een wijziging materieel als de
+       In de vorige ronde stond hier 'cosmetisch', met de uitleg dat
+       `bepaalWijziging()` een wijziging materieel noemt als de
        verschilratio boven de drempel ligt OF als de GETALLEN
-       veranderen. "1 januari 2027" en "1 juli 2027" bevatten dezelfde
-       getallen — 1 en 2027 — en alleen de maandNAAM verschilt. Dat ene
-       woord in ruim 400 tekens haalt de ratiodrempel niet.
+       veranderen — en "1 januari 2027" en "1 juli 2027" bevatten
+       dezelfde getallen, 1 en 2027, terwijl dat ene woord in ruim 400
+       tekens de ratiodrempel niet haalt. Ik heb die gemeten
+       werkelijkheid toen vastgezet met de opmerking dat een latere
+       reparatie hier zichtbaar rood moest worden.
 
-       Een besluit dat van januari naar juli schuift is inhoudelijk
-       natuurlijk wel materieel. Dat is een bestaande beperking van de
-       wijzigingsdetectie, los van deze opdracht, en hij staat in het
-       acceptatierapport als benoemd risico. Deze toets zet de GEMETEN
-       werkelijkheid vast in plaats van mijn aanname, zodat een latere
-       reparatie van `bepaalWijziging()` hier zichtbaar rood wordt. */
+       Dat is gebeurd. `bepaalWijziging()` heeft nu een derde as —
+       `termijnen()` in kern/tekst.ts — en een verschoven ingangsdatum
+       is daarmee materieel. Dit is de regel die de reparatie bewijst
+       aan de BUITENKANT van de functie: niet in een eenheidstoets op
+       de functie zelf, maar in de versierij zoals de collector hem
+       wegschrijft. */
     assert.equal(
       v[2]!.wijziging_soort,
-      "cosmetisch",
-      "gemeten gedrag: dezelfde getallen plus een andere maandnaam haalt de drempel niet",
+      "materieel",
+      "een verschoven ingangsdatum hoort materieel te zijn",
     );
   });
 
