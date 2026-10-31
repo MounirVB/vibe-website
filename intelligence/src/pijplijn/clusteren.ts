@@ -314,6 +314,7 @@ async function verwerkVersie(
     betrouwbaarheid: v.betrouwbaarheid,
     documentsoort: soortUitslag.soort,
     gezag: soortUitslag.gezag,
+    documentvorm: soortUitslag.vorm,
     /* De publicatiedatum van het document als peildatum voor de
        modaliteit. `gepubliceerd_op` is een onveranderlijk feit over het
        document, dus het modaliteitsoordeel blijft reproduceerbaar. */

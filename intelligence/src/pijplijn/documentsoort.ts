@@ -220,6 +220,21 @@ export const ALLEEN_BEVOEGD_GEZAG: readonly Documentsoort[] = [
   "OFFICIELE_REGELGEVING",
 ];
 
+/**
+ * De soorten die zelf een JURIDISCHE toestand vaststellen.
+ *
+ * EEN TWEEDE NAAM VOOR DEZELFDE LIJST, en dat is hier bewust. De vraag
+ * "wie mag dit uitvaardigen" (ALLEEN_BEVOEGD_GEZAG) en de vraag "stelt
+ * dit stuk recht vast" zijn verschillend, en ze vallen voor deze twaalf
+ * soorten samen. Door de ene uit de andere te DEFINIEREN kunnen ze niet
+ * uiteenlopen als er een soort bijkomt, terwijl de naam op de plek van
+ * gebruik wel zegt welke vraag er gesteld wordt.
+ *
+ * `uitspraken.ts` leest deze lijst: een juridische claim bevestigt
+ * zichzelf alleen uit zo'n stuk. Zie claimaard.ts voor het gemeten gat.
+ */
+export const VASTSTELLENDE_SOORTEN: readonly Documentsoort[] = ALLEEN_BEVOEGD_GEZAG;
+
 /* ------------------------------------------------------------------
    DE SIGNALEN
 

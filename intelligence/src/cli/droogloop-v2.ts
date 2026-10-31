@@ -35,6 +35,8 @@ import { readFileSync } from "node:fs";
 
 import { classificeerVersie } from "../pijplijn/documentclassificatie.ts";
 import { herkenOnderwerpen } from "../pijplijn/onderwerpen.ts";
+import { bepaalClaimAard } from "../pijplijn/claimaard.ts";
+import { vormKanVaststellen, type Documentvorm } from "../pijplijn/documentvorm.ts";
 import { classificeer } from "../pijplijn/relevantie.ts";
 import {
   bewijskrachtPlafond,
@@ -102,7 +104,7 @@ const bronOp = new Map(data.bronnen.map((b) => [b.sleutel, b]));
 type Nieuw = {
   readonly soort: Documentsoort;
   readonly gezag: Gezag;
-  readonly vorm: string;
+  readonly vorm: Documentvorm;
   readonly plafond: number;
   readonly magZelf: boolean;
   readonly beschrijftBesluitVan: string | null;
@@ -316,6 +318,32 @@ console.log(`     menselijke oordelen ongemoeid: ${gevolgen.filter((g) => g.mens
 const somOud = gevolgen.reduce((a, g) => a + g.oudeBk, 0);
 const somNieuw = gevolgen.reduce((a, g) => a + g.nieuweBk, 0);
 console.log(`     som bewijskracht: ${somOud} -> ${somNieuw}`);
+
+console.log("\n6b · DE JURIDISCHE CLAIMPOORT (claimaard-v1)");
+/* Hoeveel van de bestaande claims zijn JURIDISCHE vaststellingen, en
+   hoeveel daarvan zouden zonder authentieke grondslag zijn bevestigd?
+   Dit is de impactanalyse van de poort in uitspraken.ts. Hij werkt
+   alleen bij het SCHRIJVEN van nieuwe claims; bestaande rijen worden er
+   niet door geraakt. Deze telling zegt dus wat er met dezelfde oogst
+   zou zijn gebeurd als de poort er vanaf het begin had gestaan. */
+let juridisch = 0;
+let juridischBevestigd = 0;
+let juridischZonderGrondslag = 0;
+for (const c of data.claims) {
+  const aard = bepaalClaimAard(c.tekst);
+  if (!aard.juridisch) continue;
+  juridisch += 1;
+  if (c.verificatie_status === "bevestigd") juridischBevestigd += 1;
+  const versie = data.versies.find((v) => String(v.id) === String(c.primaire_versie_id));
+  const n = versie === undefined ? undefined : nieuwOp.get(String(versie.id));
+  const authentiek =
+    n !== undefined && n.gezag === "BEVOEGD_GEZAG" && vormKanVaststellen(n.vorm);
+  if (!authentiek) juridischZonderGrondslag += 1;
+}
+console.log(`     juridische claims:                    ${juridisch} van ${data.claims.length}`);
+console.log(`     daarvan nu BEVESTIGD:                 ${juridischBevestigd}`);
+console.log(`     zonder authentieke grondslag:         ${juridischZonderGrondslag}`);
+console.log(`     -> zouden onder de poort niet zelf bevestigen`);
 
 console.log("\n7 · DRAAGVERMOGEN — voor en na");
 const nietDragendV1 = data.versies.filter((v) =>
