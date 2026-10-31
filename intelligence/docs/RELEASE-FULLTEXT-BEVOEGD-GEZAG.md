@@ -173,16 +173,37 @@ dictum staan) kan een écht tariefbesluit blokkeren voor zijn eigen claim —
 precies de afweging die het commentaar bij `uitspraken.ts:556-572` al
 beschrijft. Dit moet mét de labelset gemeten worden, niet op gevoel.
 
-### 4.2 · De beloofde terugvalroute bestaat niet
+### 4.2 · De terugvalroute bestaat, maar niet voor de claims die hem nodig hebben
 
 `uitspraken.ts` en `claimaard.ts` zeggen op drie plekken dat een
 geblokkeerde juridische claim "via bronverificatie het origineel bij het
-bevoegde gezag moet vinden". Die route is er niet:
-`bronverificatie.ts:510-511` selecteert **uitsluitend**
-`documentsoort = 'SECUNDAIRE_BERICHTGEVING' and beschrijft_besluit_van is not null`.
-Een claim die door de nieuwe poort wordt gestopt komt uit een
-`FEITELIJKE_MEDEDELING` of `NIEUWSBERICHT_REGELGEVING` met `null` en valt
-dus buiten elke verificatieronde. Hij faalt dicht en komt nooit meer open.
+bevoegde gezag moet vinden".
+
+Die route bestaat — maar alleen voor **navertellingen**. De werkvoorraad
+(`bronverificatie.ts:510-511`) selecteert
+`documentsoort = 'SECUNDAIRE_BERICHTGEVING' and beschrijft_besluit_van is not null`,
+en onder v2 blijven daar 108 versies met 27 claims in zitten. Voor die
+groep werkt de verwijzing dus wél.
+
+**De claims die door de nieuwe poort worden gestopt vallen er buiten**, en
+dat is de groep waarvoor de toelichting hem belooft: zij komen uit een
+`FEITELIJKE_MEDEDELING` of `NIEUWSBERICHT_REGELGEVING` met
+`beschrijft_besluit_van = null`. `verifieerBijGezag()` stapt bij zo'n claim
+op `bronverificatie.ts:261` onmiddellijk uit met `NIET_VAN_TOEPASSING`.
+
+**De voor de hand liggende reparatie werkt niet.** De werkvoorraad
+verbreden naar "claim is juridisch en niet bevestigd" repareert niets,
+juist door die uitstap op regel 261: zonder gezagsnaam komt de claim nooit
+voorbij de eerste controle. Een echte oplossing moet de gezagsnaam
+vastleggen of die uitstap herzien — dat is een ontwerpingreep, geen
+query-aanpassing.
+
+**En één voorstel moet uitdrukkelijk NIET worden uitgevoerd:** een
+padmarkering voor `acm.nl` toevoegen (zodat `/nl/publicaties/` als
+bekendmakingspad geldt) werkt de verkeerde kant op. Gemeten: het aantal
+ACM-versies met `authentiekeGrondslag = true` stijgt dan van **21 naar 28**
+— alle 28 — doordat 7 documenten van vorm `ARTIKEL` naar `BEKENDMAKING`
+schuiven. Dat **verbreedt** het lek van §4.1 in plaats van het te dichten.
 
 ### 4.3 · Twee kleinere, benoemde gaten
 
@@ -231,16 +252,39 @@ beland. De redactie knipte per **regel**, en een JSON-dienstaccount is
 | Draagwijdte | die bucket bevat **30 volledige `pg_dump`s van de productiedatabase** → dit is een **exfiltratiepad naar de hele intel-productiedatabase**, niet alleen een schrijfrecht |
 | Wat de schade begrenst | versioning aan, uniform access, `public_access_prevention = enforced`, levensduur 35/7 dagen, en de account mist `objects.delete` — niets kan publiek of gewist worden |
 | Misbruik | **ONBEKEND en niet vast te stellen.** Het project heeft geen `auditConfigs`, dus GCS Data Access logs staan uit. Een lege Admin Activity-query bewijst **niets** |
-| Omvang | 1 van 55 logbestanden draagt de sleutel; materiaal is lengte-volledig (1752 base64-tekens) → behandel als volledig gecompromitteerd |
+| Omvang | 1 van 55 logbestanden draagt de sleutel. Materiaal: **1622** base64-datatekens over 25 regels van 64 → behandel als volledig gecompromitteerd |
 | Verspreiding | lokaal: `~/.claude` is geen git-repo, geen iCloud/Dropbox, bestandsmodus 0600 |
 
-**Tweede geheimklasse, apart spoor:** 3 logbestanden bevatten een
-`postgres.railway.internal:5432`-URL **met inloggegevens** — het
-productie-databasewachtwoord. Verzachtend: die host is privé-only en er is
-geen publieke proxy.
+**Waarom "volledig gecompromitteerd" en niet "misschien afgekapt".** Een
+naïeve vergelijking misleidt hier: 1622 tekens is net *onder* de ~1624 die
+een RSA-2048-PKCS8-body nodig heeft, en `END PRIVATE KEY` ontbreekt. Toch
+is afkapping niet de verklaring. In dezelfde string staat **26×** de
+markering `<REDACTED>`: de redactor heeft stukken *uitgesneden* en daarbij
+juist de slotregel met de END-marker geraakt. Een sleutel waarvan het
+grootste deel plus de structuur bekend is, geldt als gecompromitteerd. Het
+materiaal is bewust **niet** getoetst op bruikbaarheid — dat zou betekenen
+de sleutel reconstrueren en gebruiken.
+
+**Er is ÉÉN geheimklasse, niet twee.** Een eerdere versie van dit document
+stelde dat ook het productie-databasewachtwoord in de logmap stond. Een
+hermeting weerlegt dat: het wachtwoord van de productie-Postgres staat er
+**niet** in. Het enige andere echte inloggegeven is 4× een wachtwoord op
+`127.0.0.1:5432` — een lokale wegwerpdatabase, zonder betekenis buiten deze
+machine. Er is dus **geen** tweede rotatiespoor nodig.
+
+**Blinde vlek in de eigen scanner, en die is hier bewezen.**
+`ops/geheimenscan.mjs` zoekt op de BEGIN-marker. De redactor vernietigde
+juist de END-marker en liet BEGIN staan; omgekeerd zou dezelfde scanner een
+sleutel met geknipte BEGIN volledig missen. Een scanner die op één marker
+leunt, dekt een meerregelig geheim niet.
 
 De rotatie staat in §7.3. Alleen `vibe-intel-worker` draagt
 `INTEL_GCS_SLEUTEL`, dus er is precies één plek om te vervangen.
+
+**NIET GEMETEN:** of Railway zelf retentie van de back-ups houdt. De
+bewering "álle externe retentie stopt bij intrekken" rust op een
+codecommentaar en niet op een meting. Hij draagt wel de urgentie van de
+rotatie, dus hij hoort als onbewezen gemarkeerd te staan.
 
 ### 5.2 · Kritieke kwetsbaarheid in `api/` — gerepareerd in code, niet in productie
 
@@ -347,8 +391,8 @@ sleutel**.
 | 1 | Basislijn vastleggen: `keys list` + `gcloud storage ls -l restoretest/` | nee | ja |
 | 2 | **Nieuwe** sleutel aanmaken naar `~/.secrets/`, `umask 077`. Daarna zijn **beide** geldig | **AKKOORD** | ja |
 | 3 | Bewijs dat de nieuwe sleutel LEEST (`lijstGcs`), lokaal, vóór productie | nee | ja |
-| 4 | Bewijs dat hij SCHRIJFT, met `alleenAlsNieuw` onder een eigen voorvoegsel | **AKKOORD** | nee — de account mist `objects.delete`, het proefobject blijft tot het levensduurbeleid |
-| 5 | De variabele op `vibe-intel-worker` zetten — **dit veroorzaakt een redeploy** | **AKKOORD** | ja, mits vooraf een rollback-doel bewaard |
+| 4 | Bewijs dat hij SCHRIJFT, met `alleenAlsNieuw` onder een eigen voorvoegsel | **AKKOORD** | **ja, dubbel** — de dienstaccount mist `objects.delete`, maar het **eigenaarsaccount** wist het proefobject direct (`gcloud storage rm`), en het soft-deletebeleid houdt het daarna nog 7 dagen herstelbaar |
+| 5 | De variabele op `vibe-intel-worker` zetten — **dit veroorzaakt een redeploy**. **Plat de JSON eerst tot één regel**, anders kan een newline de waarde afkappen — precies de vorm die dit incident veroorzaakte | **AKKOORD** | ja, mits vooraf een rollback-doel bewaard |
 | 6 | End-to-end toetsen op de **natuurlijke cadans**: `backup` 00:00 UTC en `restoretestronde` zondag vanaf 03:00 UTC. Niets forceren | nee | ja |
 | 7 | De oude sleutel **uitzetten** (`keys disable`), niet verwijderen | **AKKOORD** | ja (`keys enable`) |
 | 8 | Soak: een volledige dag, liefst een week, met de oude sleutel uit | nee | ja |
