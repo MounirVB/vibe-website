@@ -195,6 +195,23 @@ export const PLAN: readonly PlanRegel[] = [
      meten is: het routeregister, de sitemap en de eigen HTTP-meting.
      De GSC-metrieken blijven NOT_AVAILABLE met hun reden — dat is de
      eerlijke uitkomst en geen fout. */
+  /* DE GSC-SYNCHRONISATIE, OP 94 EN DUS VOOR `indexatie` (97).
+     Die orde is geen smaak: indexatie bouwt de dagstand, en als de
+     GSC-rijen er dan al staan kan die dagstand ze meenemen in plaats van
+     een dag achter te lopen.
+
+     DAGELIJKS, want Google levert per dag en werkt een dag soms nog bij.
+     De synchronisatie haalt daarom een VENSTER van 28 dagen op en laat de
+     laatste twee dagen staan; een herverwerkte dag krijgt een hogere
+     epoch_versie in plaats van stil overschreven te worden.
+
+     EEN BLOKKADE IS HIER EEN FOUT EN GEEN NUL. Zonder credential, met de
+     API uit, of zonder propertytoegang gooit deze handler een
+     niet-herhaalbare IntelFout met de fase erin. Stil 'nul rijen'
+     wegschrijven zou precies de verwarring maken die
+     intel.analytics_dekking moet voorkomen: geen rij is niet hetzelfde
+     als nul vertoningen. */
+  { soort: "gsc", prioriteit: 94, dagelijks: true, toelichting: "zoekprestaties uit Search Console ophalen, met de dekking erbij" },
   { soort: "indexatie", prioriteit: 97, dagelijks: true, toelichting: "de indexatiedagstand vastleggen, zodat er een trend kan ontstaan" },
   /* WEKELIJKS, ZONDAG 03:00 UTC — de enige taak met die cadans.
      Waarom niet dagelijks: een restoretest zet een volledige dump terug
@@ -1074,6 +1091,53 @@ export const REGISTER: Record<string, Handler> = {
    * een getal erin. Dat hoort niet stil in een logregel te verdwijnen,
    * want dan zou de dagstand een verzonnen indexatiecijfer gaan dragen.
    */
+  async gsc(pool, organisatieId) {
+    const { synchroniseerGsc } = await import("../analytics/gsc.ts");
+    const { IntelFout } = await import("./fouten.ts");
+    const { maakLogger } = await import("./log.ts");
+
+    const uit = await synchroniseerGsc(pool, organisatieId, { dagen: 28 });
+
+    if (uit.soort === "geblokkeerd") {
+      /* EEN BLOKKADE WORDT EEN FOUT, GEEN NUL.
+         De opdracht eist dat ontbrekende GSC-data geen nulresultaat
+         wordt. Dat is hier op twee manieren afgedwongen: de module
+         schrijft bij een blokkade GEEN dekkingsrij, en deze handler
+         gooit. Zou hij netjes terugkeren, dan stond er in intel.taken
+         'gereed' bij een ronde waarin niets is gemeten.
+
+         NIET-HERHAALBAAR, want geen van de blokkades lost zich op door
+         opnieuw te proberen: een uitgeschakelde API, een ontbrekende
+         propertymachtiging en een onbesliste propertykeuze vragen alle
+         drie een handeling van een mens. Een herhaalbare fout zou vijf
+         keer dezelfde 403 ophalen en daarna in de DLQ landen met
+         dezelfde reden. */
+      throw new IntelFout(
+        "configuratie",
+        `GSC-synchronisatie geblokkeerd in fase '${uit.fase}': ${uit.reden}`,
+        { herhaalbaar: false },
+      );
+    }
+
+    maakLogger("taak:gsc").info("gsc gesynchroniseerd", {
+      property: uit.property,
+      property_soort: uit.propertySoort,
+      venster: `${uit.vanaf}..${uit.tot}`,
+      rijen: uit.rijen,
+      geschreven: uit.geschreven,
+      afgekapt: uit.afgekapt,
+      conventie: uit.conventie,
+      epoch: uit.epoch,
+    });
+
+    return (
+      `property ${uit.property} (${uit.propertySoort}), venster ${uit.vanaf} t/m ${uit.tot}: ` +
+      `${uit.rijen} rijen, ${uit.geschreven} weggeschreven, conventie ${uit.conventie}, ` +
+      `epoch ${uit.epoch}` +
+      (uit.afgekapt ? " — AFGEKAPT, deze periode is een ONDERGRENS" : "")
+    );
+  },
+
   async indexatie(pool, organisatieId) {
     const { bewaarDagstand, indexatieRapport, meetLive } = await import(
       "../analytics/koppelingen.ts"

@@ -41,6 +41,14 @@ const VOCABULAIRE: readonly Vocabulaire[] = [
       "transportbeperking",
       "transportschaarste",
       "congestiegebied",
+      /* SINDS 1 NOVEMBER 2026, en gemeten vóór het toevoegen. Een
+         Nederlandse samenstelling matcht niet op zijn kern: telTermen()
+         eist harde woordgrenzen, dus 'congestierapport' viel niet onder
+         'congestie'. Drie titels dragen hem, waaronder het
+         ACM-geschilbesluit Jumbo-Liander (versie 3673) dat zonder deze
+         term nooit een gebeurtenis kon worden. */
+      "congestierapport",
+      "congestierapporten",
       "wachtrij voor netaansluiting",
       "wachtlijst netaansluiting",
       "filegebied",
@@ -50,7 +58,20 @@ const VOCABULAIRE: readonly Vocabulaire[] = [
   },
   {
     onderwerp: "netbeheer",
-    sterk: ["netbeheerder", "investeringsplan", "nettarief", "nettarieven", "tariefstructuur", "netverzwaring"],
+    /* `tariefbeschikking` erbij om dezelfde reden als congestierapport
+       hierboven: hij viel niet onder 'nettarief' of 'tariefstructuur'.
+       Een titel draagt hem, het ACM-besluit over de tariefbeschikkingen
+       Bonaire 2026 (versie 18). */
+    sterk: [
+      "netbeheerder",
+      "investeringsplan",
+      "nettarief",
+      "nettarieven",
+      "tariefstructuur",
+      "tariefbeschikking",
+      "tariefbeschikkingen",
+      "netverzwaring",
+    ],
     zwak: ["elektriciteitsnet", "hoogspanning", "middenspanning", "onderstation", "schakelstation", "stroomnet", "netbeheer"],
     tegen: [],
   },
