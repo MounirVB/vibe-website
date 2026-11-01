@@ -49,9 +49,15 @@
    WAT DEZE MODULE NIET IS
 
    Hij is geen tweede claimsysteem en houdt geen eigen administratie bij.
-   Hij leest `uitspraken.herbeoordeeld_op`, `uitspraken.modaliteit_versie`
-   en `brondocument_versies.documentsoort_versie` — drie velden die de
-   herbeoordeling zelf zet — en telt.
+   Hij leest `uitspraken.herbeoordeeld_onder` — één veld dat de
+   herbeoordeling en de schrijfkant zelf zetten — en telt.
+
+   DAT WAS EERDER `brondocument_versies.documentsoort_versie`, en dat
+   veld hoort bij het DOCUMENT en niet bij de claim. De taak
+   `documentclassificatie` werkt het bij op prioriteit 21, vóór
+   `herbeoordeling` op 22, en daarmee was de greep in dezelfde ronde al
+   weg. Migratie 0048 zette de stempel op de claim; zie de toelichting
+   bij WACHT_OP_HERBEOORDELING_SQL hieronder.
    ============================================================ */
 
 import type pg from "pg";
@@ -59,6 +65,7 @@ import { IntelFout } from "../kern/fouten.ts";
 import { maakLogger } from "../kern/log.ts";
 import { MODALITEIT_VERSIE, NOODZAKELIJKE_ZEKERHEID } from "./claimmodaliteit.ts";
 import { DOCUMENTSOORT_VERSIE, NIET_DRAGENDE_DOCUMENTSOORTEN } from "./documentsoort.ts";
+import { MOTORVERSIES } from "./motorversies.ts";
 
 const log = maakLogger("claimpoort");
 
@@ -70,19 +77,37 @@ const log = maakLogger("claimpoort");
  * gebruiken. Twee formuleringen van dezelfde vraag lopen uiteen; dat is
  * de klasse fouten die dit platform al vaker heeft gemeten.
  *
- * $1 = organisatie_id, $2 = MODALITEIT_VERSIE, $3 = DOCUMENTSOORT_VERSIE
+ * DE VOORWAARDE HING AAN HET BRONDOCUMENT, EN DAT WAS DE FOUT.
+ *
+ * Hij luidde:
+ *
+ *   u.modaliteit_versie is distinct from <MODALITEIT_VERSIE>
+ *   or bv.documentsoort_versie is distinct from <DOCUMENTSOORT_VERSIE>
+ *
+ * De tweede helft leest een veld van brondocument_versies dat de taak
+ * `documentclassificatie` bijwerkt — en die staat op prioriteit 21,
+ * vóór `herbeoordeling` op 22. In dezelfde ronde is de greep dus al weg
+ * voordat de herbeoordeling kijkt.
+ *
+ * GEMETEN IN PRODUCTIE op 1 november 2026, na de v2-uitrol: 3753 van
+ * 3753 versies op documentsoort-v2, `npm run herbeoordeel` zag 0 claims,
+ * en claim 29 bleef op bewijs_kwaliteit 2 staan terwijl v2 voor
+ * ONTWERPBESLUIT bij BELANGENBEHARTIGER plafond 1 geeft.
+ *
+ * Sinds 0048 staat de stempel op de CLAIM: `herbeoordeeld_onder`
+ * bewaart onder welke motorversies de uitspraak voor het laatst is
+ * gewogen. Dat is onafhankelijk van de classificatie, en een
+ * versiewissel maakt elke claim weer selecteerbaar.
+ *
+ * $1 = organisatie_id, $2 = MOTORVERSIES
  */
 export const WACHT_OP_HERBEOORDELING_SQL = `
   select count(distinct u.id)::int as n
     from intel.uitspraken u
     join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id and ub.rol = 'primair'
-    join intel.brondocument_versies bv on bv.id = ub.versie_id
    where u.organisatie_id = $1
      and coalesce(u.oordeel_bron, 'motor') <> 'mens'
-     and (
-       u.modaliteit_versie is distinct from $2
-       or bv.documentsoort_versie is distinct from $3
-     )`;
+     and u.herbeoordeeld_onder is distinct from $2`;
 
 /* WAAROM `ub.rol = 'primair'` EN `count(distinct u.id)` — een latent
    defect, gevonden bij de acceptatie van de tweede poort en nog NIET
@@ -157,12 +182,11 @@ export async function herbeoordeelStand(
 ): Promise<HerbeoordeelStand> {
   const { rows } = await c.query<{ n: number }>(WACHT_OP_HERBEOORDELING_SQL, [
     organisatieId,
-    MODALITEIT_VERSIE,
-    DOCUMENTSOORT_VERSIE,
+    MOTORVERSIES,
   ]);
   return {
     openstaand: rows[0]?.n ?? 0,
-    motorversies: `${DOCUMENTSOORT_VERSIE} + ${MODALITEIT_VERSIE}`,
+    motorversies: MOTORVERSIES,
   };
 }
 

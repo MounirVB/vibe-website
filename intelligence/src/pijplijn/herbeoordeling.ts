@@ -74,6 +74,7 @@ import {
   type Gezag,
 } from "./documentsoort.ts";
 import { classificeerVersie, slaDocumentsoortOp } from "./documentclassificatie.ts";
+import { MOTORVERSIES } from "./motorversies.ts";
 
 const log = maakLogger("herbeoordeling");
 
@@ -247,14 +248,20 @@ export async function herbeoordeelClaims(
         -- nooit op nul en de twee voorwaarden spraken elkaar tegen --
         -- precies de klasse fout die deze constante moest voorkomen.
         -- Een eigen toets ving dat: de tweede ronde zag 1 in plaats van 0.
+        --
+        -- SINDS 0048 HANGT DE GREEP AAN DE CLAIM EN NIET AAN HET
+        -- DOCUMENT. De oude tweede helft las
+        -- bv.documentsoort_versie, en dat veld wordt door de taak
+        -- documentclassificatie (prioriteit 21) bijgewerkt voordat deze
+        -- taak (22) kijkt. Gemeten op 1 november 2026 na de v2-uitrol:
+        -- 3753 van 3753 versies op documentsoort-v2 en deze selectie zag
+        -- 0 claims, terwijl claim 29 nog op bewijs_kwaliteit 2 stond bij
+        -- een plafond van 1.
         and coalesce(u.oordeel_bron, 'motor') <> 'mens'
-        and (
-          u.modaliteit_versie is distinct from $2
-          or bv.documentsoort_versie is distinct from $3
-        )
+        and u.herbeoordeeld_onder is distinct from $2
       order by u.id
-      limit $4`,
-    [organisatieId, MODALITEIT_VERSIE, DOCUMENTSOORT_VERSIE, max],
+      limit $3`,
+    [organisatieId, MOTORVERSIES, max],
   );
 
   let herbeoordeeld = 0;
@@ -340,6 +347,14 @@ export async function herbeoordeelClaims(
               modaliteit_grondslag = $8,
               oordeel_bron         = 'motor',
               herbeoordeeld_op     = now(),
+              /* DE STEMPEL, EN HIJ MOET IN DEZELFDE UPDATE STAAN.
+                 Zou hij in een tweede statement staan, dan bestaat er
+                 een venster waarin het oordeel is bijgewerkt maar de
+                 stempel niet; de volgende ronde weegt de claim dan
+                 opnieuw en de telling komt nooit op nul. In één update
+                 is de idempotentie een eigenschap van de transactie en
+                 niet van de orde waarin twee queries slagen. */
+              herbeoordeeld_onder  = $10,
               bijgewerkt_op        = now()
         where id = $1 and organisatie_id = $9`,
       [
@@ -352,6 +367,7 @@ export async function herbeoordeelClaims(
         MODALITEIT_VERSIE,
         JSON.stringify(oordeel.modaliteitGrondslag),
         organisatieId,
+        MOTORVERSIES,
       ],
     );
 

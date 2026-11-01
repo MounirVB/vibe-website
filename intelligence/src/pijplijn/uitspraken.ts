@@ -35,6 +35,7 @@ import {
 } from "./documentsoort.ts";
 import type { Documentvorm } from "./documentvorm.ts";
 import { steltStukDeClaimVast, VASTSTELLING_VERSIE } from "./vaststelling.ts";
+import { MOTORVERSIES } from "./motorversies.ts";
 import { vraagOmBeoordeling } from "./claimbeoordeling.ts";
 
 export type UitspraakSoort =
@@ -492,10 +493,10 @@ export async function schrijfUitspraken(
           verificatie_status, bewijs_kwaliteit, risico_klasse, vertrouwen,
           is_interpretatie, interpretatie_door,
           modaliteit, modaliteit_zekerheid, modaliteit_versie, modaliteit_grondslag,
-          bewijskracht_plafond)
+          bewijskracht_plafond, herbeoordeeld_onder)
        values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,now(),
                'ongeverifieerd',$11,$12,$13,false,null,
-               $14,$15,$16,$17,$18)
+               $14,$15,$16,$17,$18,$19)
        returning id`,
       [
         organisatieId,
@@ -516,6 +517,16 @@ export async function schrijfUitspraken(
         mod.versie,
         JSON.stringify(mod.grondslag),
         plafond,
+        /* DE STEMPEL BIJ DE GEBOORTE, EN DIE IS NIET OPTIONEEL.
+           Een nieuwe claim wordt hier al door de HUIDIGE motor beoordeeld
+           — bewijsKwaliteit, plafond en modaliteit komen uit deze ronde.
+           Hij is dus niet "nog te herbeoordelen", en zonder deze stempel
+           zou de claimpoort hem als openstaand lezen en permanent DICHT
+           blijven zodra de pijplijn één claim schrijft. Dat is exact de
+           fout die het commentaar bij WACHT_OP_HERBEOORDELING_SQL
+           beschrijft voor `herbeoordeeld_op`, en hij geldt onverkort
+           voor dit veld. */
+        MOTORVERSIES,
       ],
     );
     if (!nieuw) {

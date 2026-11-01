@@ -488,7 +488,23 @@ export async function herstelSchaal(
          de kloon een lege `modaliteit_versie` en gaat de poort alsnog
          dicht. Dat hoort zo: dan is er werkelijk iets te wegen. Het
          rapport telt die gevallen apart en de CLI noemt de
-         vervolgactie, zodat het niet stil gebeurt. */
+         vervolgactie, zodat het niet stil gebeurt.
+
+         ------------------------------------------------------------
+         SINDS 0048 GELDT DAT OOK VOOR `herbeoordeeld_onder`, en het
+         WEGLATEN was een echte regressie: toets 14 van de
+         goedkeurpoort viel erop om met twee openstaande claims waar
+         nul hoorde te staan. De poort leest die stempel nu in plaats
+         van brondocument_versies.documentsoort_versie, dus een kloon
+         zonder stempel legt het nieuwskanaal stil na een handeling die
+         daar niets mee te maken heeft — precies wat de afweging
+         hierboven wilde voorkomen.
+
+         HIJ ERFT, en wordt niet op MOTORVERSIES gezet. Dat verschil is
+         het hele punt: een kloon van een ONGEWOGEN claim moet ongewogen
+         blijven. Hem hier stempelen zou een claim die nooit onder de
+         huidige motor is gewogen als gewogen aanmerken — de stille
+         herbevestiging die deze module elders juist weigert. */
       const nieuw = await rijen<{ id: number }>(
         c,
         `insert into intel.uitspraken (
@@ -501,7 +517,7 @@ export async function herstelSchaal(
            bron_vindplaats, voorwaarden, uitzonderingen, vergelijkingsbasis,
            semantiek_herkomst, scope_waarschuwing, horizon,
            modaliteit, modaliteit_zekerheid, modaliteit_versie, modaliteit_grondslag,
-           bewijskracht_plafond, oordeel_bron)
+           bewijskracht_plafond, oordeel_bron, herbeoordeeld_onder)
          select organisatie_id, gebeurtenis_id, tekst, soort, $2::numeric, eenheid, onderwerp,
                 geldig_vanaf, geldig_tot, hersien_voor, laatst_geverifieerd_op,
                 verificatie_status, bewijs_kwaliteit, risico_klasse,
@@ -528,7 +544,12 @@ export async function herstelSchaal(
                    waarde, en een geërfd mensoordeel zou hem afschermen
                    van de herverwerking zonder dat iemand ernaar heeft
                    gekeken. */
-                'motor'
+                'motor',
+                /* DE MOTORVERSIESTEMPEL ERFT. Zie de afweging hierboven:
+                   gelijke tekst en gelijke primaire binding betekenen een
+                   gelijke weging, en een ONGEWOGEN origineel levert een
+                   ongewogen kloon. */
+                herbeoordeeld_onder
            from intel.uitspraken where id = $1
          returning id`,
         [u.id, verlies.nieuweWaarde, verlies.factor],

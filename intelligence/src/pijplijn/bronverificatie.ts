@@ -143,8 +143,15 @@ import {
 
 const log = maakLogger("bronverificatie");
 
-/** Verhoog dit bij elke wijziging die een uitslag kan veranderen. */
-export const BRONVERIFICATIE_VERSIE = "bronverificatie-v3";
+/** Verhoog dit bij elke wijziging die een uitslag kan veranderen.
+ *
+ * v4: de AMBIGU-regel telt DOCUMENTEN in plaats van claimrijen, en er is
+ * een opruimstap voor claims die de werkvoorraad verlaten. Beide zijn
+ * hieronder toegelicht. De verhoging is nodig en niet cosmetisch: zonder
+ * hem houden de 27 al gewogen claims hun v3-uitslag en zou de reparatie
+ * alleen voor nieuwe claims gelden.
+ */
+export const BRONVERIFICATIE_VERSIE = "bronverificatie-v4";
 
 /**
  * Hoeveel dagen mag het origineel VOOR de navertelling liggen.
@@ -309,15 +316,21 @@ export async function verifieerBijGezag(
 
   const { rows: ruwe } = await c.query<{
     id: number;
+    versie_id: number;
     bron: string;
     titel: string;
     ruwe_tekst: string;
     doc_datum: string | null;
     documentsoort: string;
+    modaliteit_zekerheid: string | null;
   }>(
-    `select u.id, b.sleutel as bron, bd.titel, bv.ruwe_tekst,
+    /* `ub.versie_id` EN `u.modaliteit_zekerheid` ERBIJ sinds v4. De
+       eerste is nodig omdat de beslisregel hieronder op DOCUMENT telt en
+       niet op claimrij; de tweede om binnen één document de sterkste
+       kandidaat te kiezen. Zie de toelichting bij de AMBIGU-tak. */
+    `select u.id, ub.versie_id, b.sleutel as bron, bd.titel, bv.ruwe_tekst,
             coalesce(bd.gepubliceerd_op, bv.opgehaald_op)::date::text as doc_datum,
-            bv.documentsoort
+            bv.documentsoort, u.modaliteit_zekerheid::text as modaliteit_zekerheid
        from intel.uitspraken u
        join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id and ub.rol = 'primair'
        join intel.brondocument_versies bv on bv.id = ub.versie_id
@@ -382,8 +395,26 @@ export async function verifieerBijGezag(
      zodat een afgewezen kandidaat niet stil verdwijnt.
 
      Een bron die het gezag zelf IS (acm-besluiten, rvo-*,
-     tennet-publicaties, rijksoverheid-nieuws) gaat hier ongemoeid
-     langs: daar is de uitgever het bestuursorgaan. */
+     rijksoverheid-nieuws) gaat hier ongemoeid langs: daar is de
+     uitgever het bestuursorgaan.
+
+     HIER STOND OOK `tennet-publicaties`, EN DAT WAS ONWAAR. Gemeten met
+     de uitgerolde module op vibe-intel-api: bronnenVanGezag('TenneT')
+     geeft []. bouwBronnenVanGezag() hierboven laat alleen bronnen door
+     waarvan gezagVan(uitgeverSoort) === 'BEVOEGD_GEZAG', en
+     tennet-publicaties heeft uitgeverSoort 'netbeheerder' — dat mapt op
+     NETBEHEERDER. Hetzelfde geldt voor 'de Europese Commissie': die
+     naam staat in ANDER_GEZAG maar bij geen enkele sleutel in
+     EIGEN_GEZAG_NAMEN, dus bronnenVanGezag geeft ook daar [].
+
+     GEVOLG, en het is geen klein gevolg: 9 versies met
+     beschrijft_besluit_van = 'TenneT' en 11 met 'de Europese Commissie'
+     zijn per ontwerp onverifieerbaar en krijgen altijd de
+     NIET_TERUGGEVONDEN van de lege-gezagstak hierboven. Dat is een
+     ONTWERPKEUZE en geen defect — een netbeheerder is geen bevoegd
+     gezag — maar hij moet hier staan in plaats van het tegendeel.
+     test/eenheid/gezagsbronnen.test.ts zet beide leesrichtingen vast,
+     zodat deze tekst niet opnieuw stil uiteen kan lopen met de code. */
   const afgewezenOmGezag: { uitspraakId: number; bron: string; document: string }[] = [];
   const rows = ruwe.filter((r) => {
     if (!GEBUNDELDE_BEKENDMAKINGEN.has(r.bron)) return true;
@@ -403,6 +434,7 @@ export async function verifieerBijGezag(
     afgewezenOmGezag,
     kandidaten: rows.map((r) => ({
       uitspraakId: r.id,
+      versieId: r.versie_id,
       bron: r.bron,
       document: r.titel,
       datum: r.doc_datum,
@@ -410,7 +442,45 @@ export async function verifieerBijGezag(
     })),
   };
 
-  if (rows.length === 0) {
+  /* DE EENHEID VAN DE BESLISSING IS HET DOCUMENT, NIET DE CLAIMRIJ.
+     ------------------------------------------------------------------
+     Tot v3 keek de regel hieronder naar `rows.length`, en rows zijn
+     CLAIMS. Twee claims uit HETZELFDE besluit gaven daarmee AMBIGU —
+     'welke van die besluiten beschrijft deze navertelling' — terwijl er
+     maar één besluit was en er dus niets te kiezen viel.
+
+     GEMETEN IN PRODUCTIE op 1 november 2026: zes groepen claims staan op
+     dezelfde primaire versie met identieke (waarde_numeriek, eenheid,
+     soort, onderwerp), waaronder de paren 3/4 en 54/55 op versie 36 —
+     alle vier VASTGESTELD, zekerheid >= 0,5 en verificatie_status
+     'bevestigd'. Vandaag niet actief, want versie 36 is
+     FEITELIJKE_MEDEDELING en valt op de documentsoort-eis in de query.
+     Het pad is wel bereikbaar: magZelfBevestigen() laat juist
+     OFFICIEEL_BESLUIT en OFFICIELE_REGELGEVING zelf bevestigen.
+
+     WAAROM DIT GEEN VERSOEPELING IS, en dat is na te rekenen. Het
+     samenvouwen gebeurt uitsluitend BINNEN één document. Twee
+     VERSCHILLENDE documenten geven nog steeds AMBIGU, dus de keuze die
+     de audit afkeurde — de willekeurige tie-break die systematisch het
+     vervallen besluit koos — blijft onmogelijk. De richting is
+     asymmetrisch: wat vandaag TERUGGEVONDEN geeft kan hierdoor nooit
+     iets anders worden, en twee documenten kunnen nooit TERUGGEVONDEN
+     worden.
+
+     BINNEN het ene document wint de HOOGSTE modaliteitszekerheid, bij
+     gelijke zekerheid de laagste id. Dat is een keuze tussen claims uit
+     hetzelfde stuk en niet tussen stukken; alle claimids van dat
+     document blijven in grondslag.kandidaten staan, zodat de keuze
+     navolgbaar is. */
+  const perVersie = new Map<number, typeof rows>();
+  for (const r of rows) {
+    const lijst = perVersie.get(r.versie_id) ?? [];
+    lijst.push(r);
+    perVersie.set(r.versie_id, lijst);
+  }
+  grondslag["documenten"] = perVersie.size;
+
+  if (perVersie.size === 0) {
     return {
       uitslag: "NIET_TERUGGEVONDEN",
       toelichting:
@@ -421,8 +491,8 @@ export async function verifieerBijGezag(
     };
   }
 
-  if (rows.length > 1) {
-    /* MEERDERE KANDIDATEN IS GEEN KEUZE MAAR EEN UITSLAG.
+  if (perVersie.size > 1) {
+    /* MEERDERE DOCUMENTEN IS GEEN KEUZE MAAR EEN UITSLAG.
        De oude versie nam hier `order by u.id limit 1` en dus de oudste
        rij — bij een vervangen besluit systematisch de vervallen. Er valt
        hier niets te kiezen: als twee vastgestelde besluiten van hetzelfde
@@ -431,9 +501,9 @@ export async function verifieerBijGezag(
        navertelling beschrijft. */
     return {
       uitslag: "AMBIGU",
-      kandidaten: rows.length,
+      kandidaten: perVersie.size,
       toelichting:
-        `${rows.length} vastgestelde besluiten van ${claim.beschrijftBesluitVan} noemen ` +
+        `${perVersie.size} vastgestelde besluiten van ${claim.beschrijftBesluitVan} noemen ` +
         `${claim.waarde} ${claim.eenheid} over '${claim.onderwerp}' binnen het tijdvenster. ` +
         "Welke van die besluiten deze navertelling beschrijft is niet vast te stellen, dus er " +
         "wordt geen origineel aangewezen.",
@@ -441,7 +511,15 @@ export async function verifieerBijGezag(
     };
   }
 
-  const treffer = rows[0]!;
+  /* HET ENE DOCUMENT, en daarbinnen de sterkste claim. Zie de
+     toelichting hierboven: dit is een keuze binnen één stuk. */
+  const binnenEenDocument = [...perVersie.values()][0]!;
+  const treffer = [...binnenEenDocument].sort((a, b) => {
+    const za = a.modaliteit_zekerheid === null ? 0 : Number(a.modaliteit_zekerheid);
+    const zb = b.modaliteit_zekerheid === null ? 0 : Number(b.modaliteit_zekerheid);
+    if (za !== zb) return zb - za;
+    return a.id - b.id;
+  })[0]!;
   return {
     uitslag: "TERUGGEVONDEN",
     bijUitspraakId: treffer.id,
@@ -461,7 +539,113 @@ export type VerificatieRonde = {
   readonly ambigu: number;
   readonly nietTeruggevonden: number;
   readonly nietVanToepassing: number;
+  /**
+   * Claims die een oordeel DROEGEN maar niet meer in de werkvoorraad
+   * vallen, en waarvan het oordeel daarom is teruggezet. Zie
+   * `ruimVervallenOordelenOp()`.
+   */
+  readonly vervallenOpgeruimd: number;
 };
+
+/**
+ * Zet het oordeel terug van claims die de werkvoorraad hebben VERLATEN.
+ *
+ * HET GAT, gemeten in productie op 1 november 2026. De docstring van
+ * verifieerNavertellingen() zegt 'NIET GELATCHT', en dat geldt voor
+ * claims die IN de werkvoorraad blijven: een nieuwe
+ * BRONVERIFICATIE_VERSIE laat die opnieuw wegen. Maar een claim die
+ * ERUIT valt — omdat zijn primaire versie opnieuw geclassificeerd is en
+ * geen navertelling meer is — wordt door de werkvoorraadquery niet meer
+ * gezien, en houdt dus zijn oude oordeel voor altijd.
+ *
+ * Gemeten geval: uitspraak 29 draagt primaire_bron_versie
+ * 'bronverificatie-v3' met uitslag NIET_TERUGGEVONDEN en een grondslag
+ * die 'ACM' noemt, terwijl zijn primaire versie 1209 sinds de v2-uitrol
+ * documentsoort ONTWERPBESLUIT heeft met beschrijft_besluit_van NULL.
+ * Hij zou vandaag NIET_VAN_TOEPASSING moeten zijn. De stand is 'false',
+ * dus er staat geen onjuiste bevestiging in productie — maar was het
+ * oude oordeel TERUGGEVONDEN geweest, dan bleef
+ * primaire_bron_bevestigd = true staan op een grondslag die niet meer
+ * bestaat. Dat is precies de latch die de audit afkeurde.
+ *
+ * DEZE STAP KAN PER CONSTRUCTIE GEEN BEVESTIGING TOEKENNEN. Hij zet
+ * primaire_bron_bevestigd uitsluitend NAAR false en
+ * primaire_bron_uitspraak_id naar null. De richting is één kant op,
+ * net als bij de herbeoordeling.
+ *
+ * DE VERSIESTEMPEL GAAT MEE OP DE HUIDIGE VERSIE, niet op null. Zou hij
+ * op null gaan, dan zou de claim bij elke volgende ronde opnieuw worden
+ * opgeruimd en kwam het aantal nooit op nul — dezelfde
+ * idempotentieval die de herbeoordeling eerder had.
+ */
+export async function ruimVervallenOordelenOp(
+  c: Pick<pg.PoolClient, "query">,
+  organisatieId: number,
+  opties: { readonly droog?: boolean } = {},
+): Promise<{ readonly ids: readonly number[] }> {
+  /* EERST LEZEN WELKE RIJEN HET RAAKT, ook droog. Een UPDATE ... returning
+     zou in de droge stand niets mogen schrijven, en een aparte select is
+     eerlijker dan een transactie die wordt teruggedraaid. De voorwaarde
+     is het SPIEGELBEELD van de werkvoorraadquery hieronder; staat daar
+     ooit een derde eis bij, dan hoort hij hier ook. */
+  const { rows } = await c.query<{ id: number }>(
+    `select u.id
+       from intel.uitspraken u
+       join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id and ub.rol = 'primair'
+       join intel.brondocument_versies bv on bv.id = ub.versie_id
+      where u.organisatie_id = $1
+        -- TWEE VOORWAARDEN OP DE STEMPEL, en beide zijn nodig.
+        -- GEEN BACKTICKS in dit commentaar: het staat in een template
+        -- literal, en een backtick sluit die af.
+        --
+        -- "is not null" sluit claims uit die nooit een oordeel droegen.
+        -- Zonder die eis zou deze stap een NIET_VAN_TOEPASSING-grondslag
+        -- schrijven op elke claim die nooit is geverifieerd -- ruis op
+        -- rijen waar niets aan de hand is.
+        --
+        -- "is distinct from $2" maakt hem IDEMPOTENT. Mijn eerste versie
+        -- had alleen de eerste eis, en een eigen toets ving dat: na het
+        -- opruimen staat de stempel gevuld, dus de volgende ronde
+        -- selecteerde dezelfde rij opnieuw en het aantal kwam nooit op
+        -- nul. Dat is dezelfde val als bij de herbeoordeling.
+        --
+        -- Bij een VERSIEWISSEL wordt zo'n rij nog eenmaal opgeruimd, met
+        -- dezelfde waarden en een nieuwe stempel. Dat hoort: een nieuwe
+        -- motorversie weegt alles opnieuw.
+        and u.primaire_bron_versie is not null
+        and u.primaire_bron_versie is distinct from $2
+        and not (bv.documentsoort = 'SECUNDAIRE_BERICHTGEVING'
+                 and bv.beschrijft_besluit_van is not null)
+      order by u.id`,
+    [organisatieId, BRONVERIFICATIE_VERSIE],
+  );
+  const ids = rows.map((r) => r.id);
+  if (ids.length === 0 || opties.droog === true) return { ids };
+
+  await c.query(
+    `update intel.uitspraken
+        set primaire_bron_bevestigd    = false,
+            primaire_bron_uitspraak_id = null,
+            primaire_bron_grondslag    = $3,
+            primaire_bron_versie       = $4,
+            bijgewerkt_op              = now()
+      where organisatie_id = $1 and id = any($2::bigint[])`,
+    [
+      organisatieId,
+      ids,
+      JSON.stringify({
+        uitslag: "NIET_VAN_TOEPASSING",
+        toelichting:
+          "de primaire versie vertelt geen besluit van een ander gezag meer na; het eerdere " +
+          "oordeel is daarmee vervallen en teruggezet",
+        opgeruimdDoor: "ruimVervallenOordelenOp",
+      }),
+      BRONVERIFICATIE_VERSIE,
+    ],
+  );
+  log.info("vervallen bronoordelen opgeruimd", { aantal: ids.length, ids: ids.slice(0, 20) });
+  return { ids };
+}
 
 /**
  * Loopt de claims langs die een besluit van een ander gezag navertellen
@@ -487,6 +671,12 @@ export async function verifieerNavertellingen(
 ): Promise<VerificatieRonde> {
   const max = opties.max ?? 500;
   const droog = opties.droog === true;
+
+  /* EERST OPRUIMEN, DAN WEGEN. De orde maakt uit: de opruimstap raakt
+     precies de claims die de werkvoorraad NIET meer bevat, dus de twee
+     verzamelingen zijn disjunct en de hoofdlus hieronder kan een net
+     opgeruimde rij niet opnieuw overschrijven. */
+  const opgeruimd = await ruimVervallenOordelenOp(c, organisatieId, { droog });
 
   const { rows } = await c.query<{
     id: number;
@@ -565,6 +755,7 @@ export async function verifieerNavertellingen(
     ambigu,
     niet_teruggevonden: nietTeruggevonden,
     niet_van_toepassing: nietVanToepassing,
+    vervallen_opgeruimd: opgeruimd.ids.length,
     droog,
   });
 
@@ -574,5 +765,6 @@ export async function verifieerNavertellingen(
     ambigu,
     nietTeruggevonden,
     nietVanToepassing,
+    vervallenOpgeruimd: opgeruimd.ids.length,
   };
 }

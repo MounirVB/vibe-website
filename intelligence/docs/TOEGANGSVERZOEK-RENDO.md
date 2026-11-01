@@ -1,16 +1,46 @@
-# Toegangsverzoek RENDO Groep — CONCEPT, NIET VERZONDEN
+# Toegangsverzoek RENDO Groep — INGETROKKEN op 1 november 2026
 
-**Status: wacht op goedkeuring van de eigenaar. Er is niets verstuurd.**
-
-Dit document bestaat omdat de bron `rendo-nieuws` sinds 13 oktober 2026 HTTP 403 geeft vanaf
-de productieomgeving, terwijl RENDO het crawlen uitdrukkelijk toestaat. Het verzoek hieronder is
-opgesteld om dat op te lossen langs de enige toegestane weg: het vragen van een uitzondering.
+> **STATUS: INGETROKKEN. NIET VERZENDEN.**
+>
+> Dit verzoek is nooit verstuurd en mag dat ook niet worden. De twee feiten waarop het rust zijn
+> op 1 november 2026 gemeten en blijken **onjuist**:
+>
+> | bewering in dit document | meting 1 november 2026, productie-egress, platform-UA |
+> |---|---|
+> | "inhoud van robots.txt: `User-agent: *` met een lege `Disallow:` — expliciete toestemming voor alles" | De productie-egress krijgt 2.676 bytes **zonder** Yoast-blok en **zonder** lege `Disallow:`. Cloudflare serveert twee varianten; die van productie is de strengere. |
+> | "TDM-voorbehoud: **geen**" | `Content-Signal: search=yes,ai-train=no,use=reference`, mét de regel dat restricties via Content Signals een *express reservation of rights* onder **Artikel 4 van richtlijn 2019/790** zijn. 32 user-agentgroepen met `Disallow: /`, waarvan **13 op onze eigen TDM-lijst**. |
+>
+> **Waarom intrekken en niet herschrijven.** Dit verzoek vraagt om een firewalluitzondering op de
+> grond dat de uitgever niets heeft voorbehouden. Dat is precies wat hij wél heeft gedaan. Het
+> verzenden zou RENDO's eigen beleid verkeerd weergeven en toegang vragen die we daarna niet
+> mogen gebruiken: met een HTTP 200 mogen we de inhoud evenmin verwerken. Gevoed met deze
+> robots.txt geeft `bepaalToestemming()` grondslag `ai_crawler_uitgesloten` en
+> `mogenVerwerken=false` — het platform zegt hier zelf nee, op stap 2 van de ladder in
+> `toestemmingsbeleid.ts`, die zwaarder weegt dan de syndicatiegrond waarop deze bron leunde.
+>
+> **Ook de datum in dit document klopt niet.** Regel hieronder zegt "sinds 13 oktober 2026 HTTP
+> 403"; de eerste 403 in `intel.bron_ophalingen` staat op **2026-10-10 12:02:56Z**, tien dagen
+> eerder dan elk signaal meldde. (`storing_sinds` = 20 oktober is het moment waarop de
+> classificatie van `TOEGANG_BEPERKT` naar `CDN_BLOKKADE` sprong, niet het begin van de storing —
+> `verzamelen.ts` zet die datum opnieuw zodra de soort verandert.)
+>
+> **Wat er in plaats hiervan is gebeurd.** De bron staat gecontroleerd geblokkeerd: in
+> `src/bronnen/register.ts` is `tdmStatus` op `voorbehoud` gezet en `actief` op `false`, met de
+> gemeten grond in `inactiefReden`. Er is **geen rechtmatig alternatief kanaal** — een Artikel
+> 4-voorbehoud geldt het werk van de uitgever en niet een adres, dus een ander endpoint of een
+> zusterhost van RENDO Groep is niet rechtmatiger. Het kost geen gemeten dekking: deze bron heeft
+> in 8 ophaalpogingen nooit één document geleverd.
+>
+> De tekst hieronder blijft staan als **meetspoor** van wat er op 13/14 oktober is vastgesteld.
+> Lees hem niet als een opdracht.
 
 ---
 
 ## 1. Wat er gemeten is
 
 Alle regels hieronder zijn op 13 en 14 oktober 2026 gemeten; niets is aangenomen.
+**De twee regels over robots.txt en het TDM-voorbehoud zijn op 1 november weerlegd — zie de
+kop.**
 
 | meting | uitkomst |
 |---|---|
@@ -42,7 +72,11 @@ verboden.
   RENDO's eigen berichten niet. `energieonderbrekingen-storingen` is een storings-API, geen
   nieuwsfeed, en staat uit wegens onvastgestelde toestemming.
 
-## 3. Conceptbericht
+## 3. Conceptbericht — NIET VERZENDBAAR
+
+> Dit bericht stelt dat RENDO "het crawlen uitdrukkelijk toestaat" en dat er geen TDM-voorbehoud
+> is. Beide zijn op 1 november 2026 weerlegd. Verzenden zou het beleid van de uitgever verkeerd
+> weergeven. Bewaard als meetspoor, niet als concept.
 
 > **Aan:** RENDO Groep — t.a.v. de webredactie of de beheerder van www.rendogroep.nl
 > **Onderwerp:** verzoek tot uitzondering firewallregel voor onze RSS-lezer
@@ -75,7 +109,11 @@ verboden.
 > *(naam, functie)*
 > Vibe Energy B.V. — sales@vibeenergy.nl — +31 85 060 0489
 
-## 4. Wat de eigenaar moet beslissen vóór verzending
+## 4. Wat de eigenaar moest beslissen vóór verzending — VERVALLEN
+
+> Er valt niets meer te beslissen: het verzoek is ingetrokken. De bron staat gecontroleerd
+> geblokkeerd op de gemeten TDM-grond. Zou RENDO het voorbehoud ooit intrekken, dan begint dit
+> opnieuw met een nieuwe meting van robots.txt — niet met deze tekst.
 
 1. **Afzender en ondertekening.** Het concept laat naam en functie open.
 2. **Het contactkanaal.** Er is geen e-mailadres van RENDO gemeten; dat is niet opgezocht omdat

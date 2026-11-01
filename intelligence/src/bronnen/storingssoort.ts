@@ -65,8 +65,24 @@ export type Storingssoort =
    * een firewallregel — en vaak staat de uitgever het crawlen al toe.
    * Gemeten geval dat dit nodig maakte: rendo-nieuws geeft 403 vanaf
    * Railway en 200 vanaf een Nederlandse egress, met DEZELFDE
-   * user-agent, en de robots.txt van de uitgever draagt een LEGE
-   * `Disallow:` — expliciete toestemming voor alles.
+   * user-agent.
+   *
+   * MAAR DE TWEEDE HELFT VAN DAT VOORBEELD WAS ONWAAR, en is op
+   * 2026-11-01 weerlegd. Hier stond: 'de robots.txt van de uitgever
+   * draagt een LEGE `Disallow:` — expliciete toestemming voor alles'.
+   * Vanaf de productie-egress serveert Cloudflare een ANDERE,
+   * strengere variant: 2.676 bytes zonder Yoast-blok, met
+   * 'Content-Signal: ai-train=no', een expliciete Artikel 4-verwijzing
+   * (richtlijn 2019/790) en 32 volledig uitgesloten user-agents waarvan
+   * 13 op onze eigen TDM-lijst. De uitgever had dus wél iets
+   * voorbehouden; rendo-nieuws staat nu gecontroleerd geblokkeerd op
+   * tdmStatus 'voorbehoud'.
+   *
+   * De SOORT blijft geldig en nuttig: een CDN dat ons netwerk weigert is
+   * iets anders dan een uitgever die ons weigert, en de remedies
+   * verschillen. Alleen is dit voorbeeld er geen zuiver geval van meer —
+   * hier was bereikbaarheid én toestemming een probleem, en alleen het
+   * tweede is bindend.
    */
   | "CDN_BLOKKADE"
   /**

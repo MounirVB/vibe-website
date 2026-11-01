@@ -466,6 +466,18 @@ const ANDER_GEZAG: readonly { readonly naam: string; readonly patroon: RegExp }[
 ];
 
 /**
+ * De gezagsnamen die dit platform kan HERKENNEN, afgeleid uit ANDER_GEZAG.
+ *
+ * GEEXPORTEERD voor één doel: test/eenheid/gezagsbronnen.test.ts houdt de
+ * twee leesrichtingen van EIGEN_GEZAG_NAMEN tegen elkaar en moet daarvoor
+ * de VOLLEDIGE verzameling namen kennen. Een lijst die de toets zelf
+ * bijhoudt zou stil achterlopen zodra hier een naam bijkomt, en dan toetst
+ * hij een verleden — precies de divergentie die deze twee kaarten eerder
+ * al eens hadden.
+ */
+export const ANDER_GEZAG_NAMEN: readonly string[] = ANDER_GEZAG.map((a) => a.naam);
+
+/**
  * Vormt deze uitgever zelf het genoemde gezag? Dan is het geen navertelling.
  *
  * GEEXPORTEERD omdat `bronverificatie.ts` de OMGEKEERDE kaart nodig

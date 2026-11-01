@@ -39,6 +39,7 @@ import {
   BRONVERIFICATIE_VERSIE,
   TIJDVENSTER_DAGEN,
   bronnenVanGezag,
+  ruimVervallenOordelenOp,
   verifieerBijGezag,
 } from "../../src/pijplijn/bronverificatie.ts";
 import { DOCUMENTSOORT_VERSIE } from "../../src/pijplijn/documentsoort.ts";
@@ -652,5 +653,211 @@ describe("de grenzen van de primaire-bronverificatie", () => {
     assert.equal(g["versie"], BRONVERIFICATIE_VERSIE);
     assert.equal(g["gezag"], GEZAG);
     assert.ok(v.toelichting.length > 20);
+  });
+
+  /* ---------- 12 · twee claims uit ÉÉN besluit is geen keuze ---------- */
+
+  /** Het versie-id van het document met dit externe id. */
+  async function versieVan(extern: string): Promise<number> {
+    return alsEigenaar(db, async (c) => {
+      await c.query("select set_config('app.organisatie_id', $1, false)", [String(org)]);
+      const r = await c.query<{ id: number }>(
+        `select bv.id from intel.brondocument_versies bv
+           join intel.brondocumenten bd on bd.id = bv.brondocument_id
+          where bd.organisatie_id = $1 and bd.extern_id = $2`,
+        [org, extern],
+      );
+      const id = r.rows[0]?.id;
+      if (id === undefined) throw new Error(`geen versie voor ${extern}`);
+      return id;
+    });
+  }
+
+  /** Hangt een TWEEDE bevestigde claim aan een bestaande versie. */
+  async function extraClaimOpVersie(
+    versieId: number,
+    claim: ClaimOpzet & { readonly zekerheid: number },
+  ): Promise<number> {
+    teller += 1;
+    return alsEigenaar(db, async (c) => {
+      await c.query("select set_config('app.organisatie_id', $1, false)", [String(org)]);
+      const u = await c.query<{ id: number }>(
+        `insert into intel.uitspraken
+           (organisatie_id, tekst, soort, waarde_numeriek, eenheid, onderwerp,
+            toepassingsgebied, toepassingsgebied_grondslag, verificatie_status,
+            bewijs_kwaliteit, modaliteit, modaliteit_zekerheid, modaliteit_versie)
+         values ($1,$2,$3,$4,$5,$6,$7,$10,'ongeverifieerd',5,$8,$9,$11)
+         returning id`,
+        [
+          org,
+          `tweede fixtureclaim ${teller} op dezelfde versie`,
+          claim.soort,
+          claim.waarde,
+          claim.eenheid,
+          claim.onderwerp,
+          claim.toepassingsgebied,
+          claim.modaliteit,
+          claim.zekerheid,
+          claim.toepassingsgebied === null ? null : "fixture: vastgesteld voor de grenstoets",
+          MODALITEIT_VERSIE,
+        ],
+      );
+      await c.query(
+        `insert into intel.uitspraak_bronnen (organisatie_id, uitspraak_id, versie_id, rol)
+         values ($1,$2,$3,'primair')`,
+        [org, u.rows[0]!.id, versieId],
+      );
+      await c.query("update intel.uitspraken set verificatie_status = 'bevestigd' where id = $1", [
+        u.rows[0]!.id,
+      ]);
+      return u.rows[0]!.id;
+    });
+  }
+
+  test("12 · TWEE claims uit HETZELFDE besluit is TERUGGEVONDEN, niet AMBIGU", async () => {
+    /* HET GEMETEN DEFECT. Tot v3 telde de AMBIGU-regel `rows.length`, en
+       rows zijn CLAIMS. Twee claims uit één besluit gaven daarmee
+       'welke van die besluiten beschrijft deze navertelling' terwijl er
+       maar één besluit was. In productie staan zes groepen claims op
+       dezelfde primaire versie met identieke grootheid, waaronder de
+       paren 3/4 en 54/55 op versie 36.
+
+       DIT IS GEEN VERSOEPELING, en toets 7 hierboven is daarvan de
+       tegenproef: twee VERSCHILLENDE besluiten geven nog steeds AMBIGU.
+       Hier gaat het om één stuk. */
+    await zetKlaar(besluit("p12-besluit", "2026-03-01"), {
+      ...BASISCLAIM,
+      waarde: 62,
+      zekerheid: 0.6,
+    });
+    const versieId = await versieVan("p12-besluit");
+    const sterkere = await extraClaimOpVersie(versieId, {
+      ...BASISCLAIM,
+      waarde: 62,
+      zekerheid: 0.9,
+    });
+
+    const doc = navertelling("p12-navertelling");
+    const claim = { ...BASISCLAIM, waarde: 62, status: "ongeverifieerd" };
+    const id = await zetKlaar(doc, claim);
+    const v = await verifieer(id, doc, claim);
+
+    assert.equal(
+      v.uitslag,
+      "TERUGGEVONDEN",
+      `één besluit met twee claims hoort TERUGGEVONDEN te geven: ${v.toelichting}`,
+    );
+    /* EN DE STERKSTE CLAIM BINNEN DAT STUK WINT. Dat is een keuze tussen
+       claims uit hetzelfde document, niet tussen documenten. */
+    if (v.uitslag === "TERUGGEVONDEN") {
+      assert.equal(
+        v.bijUitspraakId,
+        sterkere,
+        "binnen één document hoort de hoogste modaliteitszekerheid te winnen",
+      );
+    }
+    /* DE GRONDSLAG BLIJFT VOLLEDIG: beide claimids staan erin, met het
+       aantal DOCUMENTEN erbij. Zonder dat laatste is de nieuwe
+       beslisregel niet na te rekenen. */
+    const g = v.grondslag as { kandidaten?: unknown[]; documenten?: number };
+    assert.equal(g.documenten, 1, "er is precies één document");
+    assert.equal(
+      (g.kandidaten ?? []).length,
+      2,
+      "beide claims van dat ene document horen in de grondslag te blijven staan",
+    );
+  });
+
+  /* ---------- 13 · een vervallen oordeel wordt opgeruimd ---------- */
+
+  test("13 · een claim die de werkvoorraad verlaat houdt zijn oude oordeel NIET", async () => {
+    /* HET GEMETEN GEVAL: uitspraak 29 in productie draagt een
+       v3-oordeel met gezag ACM, terwijl zijn primaire versie sinds de
+       v2-uitrol ONTWERPBESLUIT is met beschrijft_besluit_van NULL. De
+       werkvoorraad ziet hem niet meer, dus niets herschreef die rij —
+       en was het oude oordeel TERUGGEVONDEN geweest, dan bleef
+       primaire_bron_bevestigd op true staan op een grondslag die niet
+       meer bestaat. */
+    const doc = navertelling("p13-navertelling");
+    const claim = { ...BASISCLAIM, waarde: 63, status: "ongeverifieerd" };
+    const id = await zetKlaar(doc, claim);
+
+    /* Een oordeel neerzetten zoals een eerdere ronde dat deed, mét de
+       onwaarschijnlijkste stand: bevestigd. */
+    await alsEigenaar(db, async (c) => {
+      await c.query("select set_config('app.organisatie_id', $1, false)", [String(org)]);
+      await c.query(
+        `update intel.uitspraken
+            set primaire_bron_versie = 'bronverificatie-v3',
+                primaire_bron_bevestigd = true,
+                primaire_bron_uitspraak_id = $1
+          where id = $1`,
+        [id],
+      );
+    });
+
+    /* NU HERCLASSIFICEERT DE DOCUMENTLAAG: het stuk vertelt geen besluit
+       van een ander gezag meer na. Daarmee valt de claim uit de
+       werkvoorraad. */
+    const versieId = await versieVan("p13-navertelling");
+    await alsEigenaar(db, async (c) => {
+      await c.query("select set_config('app.organisatie_id', $1, false)", [String(org)]);
+      await c.query(
+        `update intel.brondocument_versies
+            set documentsoort = 'ONTWERPBESLUIT', beschrijft_besluit_van = null
+          where id = $1`,
+        [versieId],
+      );
+    });
+
+    /* DROOG EERST: hij hoort de rij te NOEMEN en niets te schrijven. */
+    const droog = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      ruimVervallenOordelenOp(c, org, { droog: true }),
+    );
+    assert.ok(droog.ids.includes(id), `de droge ronde hoort claim ${id} te noemen`);
+    const naDroog = await alsEigenaar(db, async (c) => {
+      await c.query("select set_config('app.organisatie_id', $1, false)", [String(org)]);
+      const r = await c.query<{ primaire_bron_bevestigd: boolean }>(
+        "select primaire_bron_bevestigd from intel.uitspraken where id = $1",
+        [id],
+      );
+      return r.rows[0]!.primaire_bron_bevestigd;
+    });
+    assert.equal(naDroog, true, "droog mag niets wijzigen");
+
+    /* EN DAN ECHT. */
+    await metOrganisatie(db.pool, { organisatieId: org }, (c) => ruimVervallenOordelenOp(c, org));
+    const na = await alsEigenaar(db, async (c) => {
+      await c.query("select set_config('app.organisatie_id', $1, false)", [String(org)]);
+      const r = await c.query<{
+        primaire_bron_bevestigd: boolean;
+        primaire_bron_uitspraak_id: number | null;
+        primaire_bron_versie: string | null;
+        grondslag: { uitslag?: string } | null;
+      }>(
+        `select primaire_bron_bevestigd, primaire_bron_uitspraak_id, primaire_bron_versie,
+                primaire_bron_grondslag as grondslag
+           from intel.uitspraken where id = $1`,
+        [id],
+      );
+      return r.rows[0]!;
+    });
+    assert.equal(na.primaire_bron_bevestigd, false, "de bevestiging hoort teruggezet te zijn");
+    assert.equal(na.primaire_bron_uitspraak_id, null, "en de verwijzing hoort weg te zijn");
+    assert.equal(na.grondslag?.uitslag, "NIET_VAN_TOEPASSING");
+    assert.equal(
+      na.primaire_bron_versie,
+      BRONVERIFICATIE_VERSIE,
+      "de stempel gaat op de HUIDIGE versie; op null zou elke ronde hem opnieuw oppakken",
+    );
+
+    /* IDEMPOTENT: een tweede ronde ziet deze rij niet meer. */
+    const tweede = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      ruimVervallenOordelenOp(c, org, { droog: true }),
+    );
+    assert.ok(
+      !tweede.ids.includes(id),
+      "een opgeruimde claim hoort niet opnieuw in de opruimlijst te staan",
+    );
   });
 });
