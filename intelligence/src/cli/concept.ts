@@ -15,7 +15,7 @@
 
 import { maakPool, metOrganisatie, rijen, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
-import { maakConcept } from "../inhoud/concept.ts";
+import { CONCEPTEERBARE_BESLUITEN, maakConcept } from "../inhoud/concept.ts";
 
 const heeft = (naam: string) => process.argv.includes(`--${naam}`);
 function argument(naam: string): string | undefined {
@@ -34,13 +34,44 @@ async function main(): Promise<number> {
     : await metOrganisatie(pool, { organisatieId }, (c) =>
         rijen<{ id: number }>(
           c,
+          /* NEWS_ITEM ONTBRAK HIER, EN DAT WAS DE HARDE STOP.
+             ------------------------------------------------------------
+             De nieuwsselectie schrijft een kandidaat met besluit
+             NEWS_ITEM. Die soort stond in deze lijst niet, en in de
+             geplande taak `voorstel` valt hij ook buiten de selectie
+             (voorstel.ts eist besluit UPDATE_EXISTING MET een
+             doel_pagina_id, en een NEWS_ITEM heeft er geen). Het
+             dashboard importeert maakConcept niet. Gevolg: de enige
+             geschikte kandidaat die de motor ooit heeft opgeleverd kon
+             langs GEEN ENKELE route een concept worden.
+
+             Gemeten in productie op 1 november 2026: kandidaat 199,
+             besluit NEWS_ITEM, totaalscore 70, status open sinds 29
+             oktober — tegenover 0 rijen in intel.inhoud_versies. En
+             concept.ts ONDERSTEUNT NEWS_ITEM wel: het beeldt hem af op
+             soort 'nieuw_artikel' en heeft voor het subsidiecluster al
+             een CTA klaarstaan.
+
+             DIT PUBLICEERT NIETS. maakConcept schrijft op status
+             'ter_review', en kandidaat 199 staat op risico_klasse 'hoog',
+             dus de poort hoog_risico_vereist_mens blokkeert hem tot een
+             mens hem goedkeurt. Bovendien blijven de zes
+             CHECK-constraints staan die publiceren zonder mens
+             onmogelijk maken.
+
+             WAT ER NIET IS GEWIJZIGD: voorstel.ts. Een NEWS_ITEM hoort
+             geen inhoud_voorstel te worden maar een inhoud_versie; die
+             query met rust laten is de kleinste reparatie die de keten
+             doorlaat. */
+          /* DE LIJST KOMT UIT concept.ts en staat hier niet meer met de
+             hand. Zie CONCEPTEERBARE_BESLUITEN daar. */
           `select id from intel.inhoud_kandidaten
             where organisatie_id = $1
               and status = 'open'
-              and besluit in ('NEW_ARTICLE', 'UPDATE_EXISTING', 'KNOWLEDGE_UPDATE', 'REGIONAL_PATCH')
+              and besluit = any($3::text[])
             order by totaalscore desc, id
             limit $2`,
-          [organisatieId, Number.isFinite(max) ? max : 5],
+          [organisatieId, Number.isFinite(max) ? max : 5, [...CONCEPTEERBARE_BESLUITEN]],
         ),
       );
 

@@ -58,6 +58,8 @@ type ProbeRij = {
   check_definitie: string | null;
   heeft_plannerpauze: boolean;
   heeft_pauzefunctie: boolean;
+  heeft_stempel: boolean;
+  heeft_claiminvarianten: boolean;
 };
 
 /**
@@ -95,7 +97,25 @@ export async function motorpariteit(client: Leesclient): Promise<Pariteit> {
          select 1 from pg_proc p
            join pg_namespace n on n.oid = p.pronamespace
           where n.nspname = 'intel' and p.proname = 'planner_gepauzeerd'
-       ) as heeft_pauzefunctie`,
+       ) as heeft_pauzefunctie,
+       /* DE HERBEOORDELINGSSTEMPEL UIT 0048. Dezelfde reden als bij de
+          pauzeobjecten: de claimpoort LEEST intel.uitspraken.herbeoordeeld_onder
+          in WACHT_OP_HERBEOORDELING_SQL, en die poort staat vóór élke laag
+          die bewijs weegt — de besluitmotor, de nieuwsselectie, de
+          voorstellenlaag en de conceptgeneratie. Ontbreekt de kolom, dan
+          is dat geen randgeval maar een kryptische 42703 op elk van die
+          paden. */
+       exists (
+         select 1 from information_schema.columns
+          where table_schema = 'intel'
+            and table_name   = 'uitspraken'
+            and column_name  = 'herbeoordeeld_onder'
+       ) as heeft_stempel,
+       exists (
+         select 1 from pg_proc p
+           join pg_namespace n on n.oid = p.pronamespace
+          where n.nspname = 'intel_priv' and p.proname = 'controleer_claiminvarianten'
+       ) as heeft_claiminvarianten`,
   );
 
   const codeVersie = DOCUMENTSOORT_VERSIE;
@@ -161,6 +181,51 @@ export async function motorpariteit(client: Leesclient): Promise<Pariteit> {
         `de code draagt ${codeVersie} maar de database is v1: ${mist.join(", ")} ` +
         "ontbreekt. Pas migratie 0045_documentvorm_en_soorten_v2.sql toe vóór deze code. " +
         "Doorgaan zou elke classificatie op de CHECK laten vastlopen.",
+    };
+  }
+
+  /* EN DAN DE STEMPEL UIT 0048, als LAATSTE weigering en op de ECHTE
+     databaseversie.
+     ------------------------------------------------------------------
+     De claimpoort leest intel.uitspraken.herbeoordeeld_onder in
+     WACHT_OP_HERBEOORDELING_SQL, en die poort staat vóór élke laag die
+     bewijs weegt. Zonder de kolom is dat een 42703 op al die paden in
+     plaats van een benoemde weigering. Op 1 november 2026 stond
+     PRODUCTIE op migratie 47, dus het deployvenster van deze release
+     loopt hier precies door.
+
+     TWEE DINGEN HEB IK HIER EERST FOUT GEDAAN, en een eigen toets vond
+     beide.
+
+     (1) DE ORDE. Deze tak stond vóór de v2-as. Op de fase-1-stand
+     (44 + alleen 0046) missen 0045 en 0048 BEIDE, en dan wees de
+     weigering naar 0048 terwijl 0045 het lagere nummer is en eerst
+     landt. Toets 8b viel daarop om. De orde volgt nu de
+     migratienummers: 0046, dan 0045, dan 0048.
+
+     (2) DE GEMELDE DATABASEVERSIE. Hij stond hardgecodeerd op 'v1'.
+     Op stand 47 IS de database v2 — 0045 is daar toegepast — dus die
+     regel was feitelijk onjuist in precies het geval waarvoor de tak
+     bestaat. Hij gebruikt nu de gemeten `databaseVersie`.
+
+     De invariantfunctie hoort erbij omdat src/cli/poort.ts hem los
+     aanroept; zonder die functie is de poort rood om een reden die
+     niets met de code te maken heeft. */
+  if (!rij.heeft_stempel || !rij.heeft_claiminvarianten) {
+    const mist: string[] = [];
+    if (!rij.heeft_stempel) mist.push("de kolom intel.uitspraken.herbeoordeeld_onder");
+    if (!rij.heeft_claiminvarianten) {
+      mist.push("de functie intel_priv.controleer_claiminvarianten()");
+    }
+    return {
+      sluit: false,
+      codeVersie,
+      databaseVersie,
+      bewijs:
+        `deze code weegt claims op de motorversiestempel maar ${mist.join(" en ")} ` +
+        "ontbreekt. Pas migratie 0048_herbeoordeling_stempel.sql toe vóór deze code. " +
+        "Doorgaan zou de claimpoort op 42703 laten vastlopen, en die poort staat vóór de " +
+        "besluitmotor, de nieuwsselectie, de voorstellenlaag en de conceptgeneratie.",
     };
   }
 

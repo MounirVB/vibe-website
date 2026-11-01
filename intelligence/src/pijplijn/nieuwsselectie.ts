@@ -94,6 +94,42 @@ export const DRAGENDE_BRONSOORTEN: readonly string[] = [
  * 'warmtepompsubsidie' juist (terecht: dat is een particuliere
  * regeling). Zakelijke elektrificatie — industriële warmtepomp,
  * procesverwarming, e-boiler — was daarmee onvindbaar.
+ *
+ * ------------------------------------------------------------------
+ * EN DIE SLEUTEL IS ONBEREIKBAAR. GEMETEN, MET EEN GETAL.
+ *
+ * `elektrificatie` bestaat NERGENS anders: niet in VOCABULAIRE
+ * (pijplijn/onderwerpen.ts), niet in `type Onderwerp`
+ * (bronnen/soorten.ts), niet als cluster in productie (15 gemeten) en
+ * niet in CLUSTER_NAAR_ROUTE (site/routeregister.ts). Deze regel wordt
+ * alleen opgezocht via `inv.clusterSleutel`, en geen gebeurtenis kan die
+ * waarde ooit dragen. De 8 punten van het zakelijk_thema-component zijn
+ * voor dit thema dus niet te halen.
+ *
+ * WAAROM ER TOCH GEEN ONDERWERP IS BIJGEBOUWD. Gemeten op productie,
+ * 1 november 2026, over alle 3753 brondocumentversies — TITELS:
+ *
+ *   'industri\w* warmtepomp'            0
+ *   'e-boiler' of 'elektrische boiler'  0
+ *   'procesverwarming' / 'proceswarmte' 0
+ *   'elektrificat\w*'                   0
+ *   'warmtepomp' (alle)                57, waarvan 11 met een expliciet
+ *                                        particulier signaal in de titel
+ *   body 'elektrificat\w*'             24
+ *
+ * Een ZAKELIJK elektrificatievocabulaire zou vandaag dus NUL documenten
+ * raken. En de 57 generieke warmtepomptitels halen de zeef niet:
+ * `raakt()` in onderwerpen.ts eist één sterke of twee zwakke
+ * titeltermen, en 'warmtepomp' is daar een zwakke.
+ *
+ * DIT IS EEN BRONGAT EN GEEN VOCABULAIREGAT — hetzelfde beeld als bij
+ * `ems`, waar 0 van 3753 titels een van de vijf sterke termen bevat. De
+ * 20 actieve bronnen zijn netbeheerder-sitemaps, TenderNed, RVO, ACM,
+ * CBS, PDOK, een prijsreeks en vijf branche-RSS'en; geen daarvan dekt
+ * industriële elektrificatie. Een onderwerp bijbouwen zou een LABEL
+ * voor een lege verzameling opleveren en dekking suggereren die er niet
+ * is. Wat dit thema nodig heeft is een BRON, en het kiezen daarvan is
+ * een eigenaarsbesluit met een eigen toestemmingstoets.
  */
 export const ZAKELIJKE_THEMACLUSTERS: Readonly<Record<string, string>> = {
   netcongestie: "netcongestie",
@@ -108,7 +144,43 @@ export const ZAKELIJKE_THEMACLUSTERS: Readonly<Record<string, string>> = {
   netbeheer: "netbeheer en transportcapaciteit",
 };
 
-/** Soorten die een commercieel signaal zijn; die gaan naar de kansenlaag. */
+/** Soorten die een commercieel signaal zijn; die gaan naar de kansenlaag.
+ *
+ * ------------------------------------------------------------------
+ * LET OP — 'vastgoedontwikkeling' SLUIT EEN HEEL ONDERWERP UIT, en dat
+ * is een gevolg dat hier niet zichtbaar was.
+ *
+ * `gebeurtenisSoortVan()` in pijplijn/onderwerpen.ts beeldt het ONDERWERP
+ * vastgoedverduurzaming af op de SOORT vastgoedontwikkeling. Die soort
+ * staat hieronder, dus de harde grond 'is een commercieel signaal' wijst
+ * elke gebeurtenis over energielabel, label-C-plicht, Paris Proof of
+ * energieprestatie AF — per constructie, ongeacht bewijs of
+ * materialiteit. Dat is iets anders dan een routeringskeuze: dit
+ * onderwerp kan nooit een nieuwsbericht worden.
+ *
+ * GEMETEN IMPACT VANDAAG: NUL, en dat is de reden dat er hier niets is
+ * gewijzigd. In productie staan 2 gebeurtenissen met soort
+ * vastgoedontwikkeling (ids 218 en 259, 'Monumentale Amsterdamse villa
+ * toont potentie aquathermie' en 'Monumenten krijgen energielabel'),
+ * BEIDE met materialiteit 36 — onder NIEUWSDREMPELS.materialiteit van
+ * 45. Ze zouden dus ook zonder deze grond afvallen.
+ *
+ * EN DE REPARATIE VRAAGT EEN MIGRATIE. De zuivere oplossing is het
+ * onderwerp vastgoedverduurzaming op een EIGEN soort afbeelden
+ * (bijvoorbeeld 'verduurzaming') in plaats van 'vastgoedontwikkeling'
+ * uit deze set te halen — die betekenis, een bouwkans, wil je houden.
+ * Maar `intel.markt_gebeurtenissen` draagt
+ * `markt_gebeurtenissen_gebeurtenis_soort_check` met elf toegestane
+ * waarden, gemeten op productie, dus een nieuwe soort is een
+ * schemawijziging. Hij raakt bovendien commercieel/bouwkansen.ts en
+ * commercieel/signalen.ts, die op de huidige naam rekenen.
+ *
+ * Bij nul gemeten impact, een migratie en twee afnemers in de
+ * kansenlaag is dit een eigenaarsbesluit en geen stille reparatie.
+ * Hetzelfde platslaan raakt bess, ems, zonne-energie en flexibiliteit,
+ * die alle vier op soort 'techniek' uitkomen (47 gebeurtenissen) — daar
+ * is het gevolg onschuldig, want 'techniek' staat niet in deze set.
+ */
 const SIGNAALSOORTEN = new Set(["aanbesteding", "vergunning", "vastgoedontwikkeling"]);
 
 /** Soorten die per dag veranderen; een gedateerd bericht verouderd meteen. */

@@ -299,11 +299,17 @@ describe("de motorpariteit weigert een halve uitrol", () => {
   let tot44: Wegwerpdatabase;
   /** 44 + ALLEEN 0046: de werkelijke productiestand na de fase-1-uitrol. */
   let fase1: Wegwerpdatabase;
+  /** 47: fase 1 en 2 live, maar de 0048-stempel nog niet toegepast. */
+  let tot47: Wegwerpdatabase;
 
   before(async () => {
     volledig = await maakWegwerpdatabase("pariteitvol");
     // Precies de database van VOOR 0045: geen documentvorm, oude CHECK.
     tot44 = await maakWegwerpdatabase("pariteit44", { totNummer: 44 });
+    /* 47 IS GEEN WILLEKEURIG GETAL: dat was de PRODUCTIESTAND op
+       1 november 2026, na de uitrol van fase 1 en 2 en vóór 0048. Het
+       deployvenster van deze release loopt dus precies hierdoor. */
+    tot47 = await maakWegwerpdatabase("pariteit47", { totNummer: 47 });
 
     /* De fase-1-stand is met totNummer niet uit te drukken — dat zou
        0045 meenemen — dus 0046 wordt hier LOS op een 44-database gezet,
@@ -339,6 +345,7 @@ describe("de motorpariteit weigert een halve uitrol", () => {
     await volledig?.opruimen();
     await tot44?.opruimen();
     await fase1?.opruimen();
+    await tot47?.opruimen();
   });
 
   test("een volledig gemigreerde database wordt NOOIT geweigerd", async () => {
@@ -389,6 +396,41 @@ describe("de motorpariteit weigert een halve uitrol", () => {
     assert.equal(p.sluit, false, "zonder de pauzeobjecten hoort hij te weigeren");
     assert.match(p.bewijs, /plannerpauze|planner_gepauzeerd/, "de reden moet ZEGGEN wat er mist");
     assert.match(p.bewijs, /0046/, "en naar de migratie wijzen die het oplost");
+  });
+
+  test("8c · stand 47 wordt geweigerd om de 0048-stempel, met 0048 in de reden", async () => {
+    /* DIT IS HET DEPLOYVENSTER VAN DEZE RELEASE, en het is hetzelfde gat
+       als 8a — ik had het in mijn eigen werk eerst niet gedicht.
+
+       De claimpoort leest intel.uitspraken.herbeoordeeld_onder in
+       WACHT_OP_HERBEOORDELING_SQL, en die poort staat vóór de
+       besluitmotor, de nieuwsselectie, de voorstellenlaag en de
+       conceptgeneratie. Op 1 november 2026 stond PRODUCTIE op migratie
+       47. Alleen vibe-intel-api draagt een preDeployCommand, dus zonder
+       deze tak loopt de nieuwe worker- en plannercode in dat venster
+       tegen een ontbrekende kolom: 42703, per laag, zonder dat iemand
+       kan zien dat een migratie de oorzaak is.
+
+       De eis gaat NIET over een getal in intel.migraties maar over het
+       schema zelf: de kolom en de invariantfunctie moeten er echt
+       staan. */
+    const p = await zonderOrganisatie(tot47.pool, (c) => motorpariteit(c));
+    assert.equal(p.sluit, false, "zonder de stempel hoort hij te weigeren");
+    assert.match(
+      p.bewijs,
+      /herbeoordeeld_onder|controleer_claiminvarianten/,
+      "de reden moet ZEGGEN wat er mist",
+    );
+    assert.match(p.bewijs, /0048/, "en naar de migratie wijzen die het oplost");
+    /* EN HIJ NOEMT DE PAUZEOBJECTEN NIET: op stand 47 zijn die er wel,
+       dus de weigering mag niet de verkeerde migratie aanwijzen. Zonder
+       deze assertie zou een tak die altijd over 0046 klaagt ook groen
+       blijven. */
+    assert.doesNotMatch(
+      p.bewijs,
+      /0046/,
+      `op stand 47 bestaan de pauzeobjecten; de reden mag niet naar 0046 wijzen: ${p.bewijs}`,
+    );
   });
 
   test("8b · de FASE-1-stand (44 + alleen 0046) weegt de v2-as apart", async () => {

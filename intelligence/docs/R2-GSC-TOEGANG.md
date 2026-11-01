@@ -30,6 +30,33 @@ Cloud **Storage** (`devstorage.read_write`), niet voor Search Console.
 
 ## 2. Propertytoegang — welke property, en in welke vorm
 
+> **ONBESLIST — twee documenten spreken elkaar tegen, en geen van beide is uit de repo of uit
+> productie te beslissen (vastgesteld 1 november 2026).**
+>
+> | document | zegt | laatst gewijzigd |
+> |---|---|---|
+> | `intelligence/docs/R2-GSC-TOEGANG.md` §2 | URL-prefix `https://www.vibeenergy.nl/`, met een expliciete afwijzing van de domeinproperty | 2026-10-29 |
+> | `docs/seo-meetplan-en-analytics.md` §5 | domeinproperty `sc-domain:vibeenergy.nl`, "hoeft niet gewijzigd te worden" | 2026-10-13 |
+> | `docs/seo-release-3-2.md` | noemt "stel het propertytype vast" nog als OPEN actie | 2026-10-14 |
+>
+> Het nieuwere document draait de conclusie van het oudere terug zonder het te noemen. Het
+> manifest (`intelligence/deploy/analytics-cloudrun-job.yaml`) staat op de URL-prefix en volgt dus
+> het oudere document niet.
+>
+> **Wat wél opnieuw gemeten is, en wat beide documenten delen:** `http://vibeenergy.nl/` → 301 →
+> `https://vibeenergy.nl/` → 301 → `https://www.vibeenergy.nl/` → 200, en
+> `CURRENT_CANONICAL_INVENTORY` is 431 van 431 onder www. Die feiten steunen het argument dat een
+> www-URL-prefix geen huidig verkeer mist. Ze zeggen **niet** welk propertytype in de Search
+> Console van de eigenaar bestaat — dat is daarbinnen te zien, en dat is precies de autorisatie
+> die ontbreekt (`intel.koppelingen` draagt geen propertywaarde; de koppeling `gsc` staat op
+> `niet_geconfigureerd` met `INTEL_GSC_SITE_URL` als ontbrekend gemeld).
+>
+> **Waarom dit nu niet is opgelost:** een keuze maken zou een besluit verzinnen. Staat de
+> manifestwaarde straks op het verkeerde type, dan geeft de eerste koppeling 403 of 404 op een
+> property die wél bestaat — en dat leest als "geen data" in plaats van "verkeerde identiteit".
+> Dit is een eigenaarsbesluit; er is één plek nodig waar het mét reden staat, en daarna moet de
+> verliezer worden bijgewerkt in plaats van te blijven staan.
+
 **Property:** `https://www.vibeenergy.nl/` (URL-prefix).
 
 Dat staat zo in `deploy/analytics-cloudrun-job.yaml` en het is een
@@ -143,7 +170,7 @@ identiteit van de job. Daarom staan `INTEL_GSC_CLIENT_EMAIL` en
 | Metriek | Nu | Met GSC |
 |---|---|---|
 | `TECHNICALLY_INDEXABLE` | **431**, gemeten | ongewijzigd |
-| `CURRENT_CANONICAL_INVENTORY` | **430 van 447**, gemeten | ongewijzigd |
+| `CURRENT_CANONICAL_INVENTORY` | **431 van 431**, gemeten in productie op 2026-11-01 (was hier **430 van 447** — dat mengde een bestandstelling met een registertelling: 448 HTML-bestanden in de werkboom, 431 canonieke sitemap-URL's, 433 rijen in `intel.pagina_register`) | ongewijzigd |
 | `GOOGLE_INDEXED` | `NOT_AVAILABLE` | klikken/vertoningen per URL |
 | `ORGANIC_IMPRESSIONS` / `_CLICKS` / `SEARCH_QUERIES` | `NOT_AVAILABLE` | ja |
 | CTR en gemiddelde positie | niet in het rapport | kolommen bestaan al in `intel.zoekvraag_metingen` |

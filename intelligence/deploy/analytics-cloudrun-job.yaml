@@ -65,7 +65,29 @@ spec:
           containers:
             - image: europe-west4-docker.pkg.dev/vibe-energy-509410/vibe/analytics-ingest:PLAATSHOUDER
               command: ["node"]
-              args: ["src/cli/analytics.ts", "--ingest"]
+              # DE VLAG --ingest BESTAAT NIET, en dat was een stil defect.
+              # Gemeten: de string 'ingest' komt NUL keer voor in
+              # src/cli/analytics.ts. De CLI negeert een onbekende vlag,
+              # dus deze job zou dagelijks GROEN draaien en alleen het
+              # rapport printen — zonder iets te ingesteren. Dat is erger
+              # dan een rode job.
+              #
+              # Nu de vlaggen die de CLI WEL kent (cli/analytics.ts):
+              #   --meet    de eigen live-meting per URL
+              #   --alles   over het hele pagina-register in plaats van 12
+              #   --bewaar  de dagstand wegschrijven naar
+              #             intel.indexatie_dagstand
+              #
+              # LET OP: --meet meet BEREIKBAARHEID van onze eigen site, en
+              # geen indexatie door een zoekmachine. Dat laatste blijft
+              # NOT_AVAILABLE tot Search Console is aangesloten; zie
+              # bewaakScheiding() in analytics/koppelingen.ts.
+              #
+              # EN DEZE JOB IS NIET UITGEROLD. Sinds 1 november doet de
+              # Railway-planner de taaksoort `indexatie` dagelijks, mét de
+              # live-meting erin (src/kern/taken.ts). Dit manifest is
+              # daarmee een alternatieve route en geen voorwaarde.
+              args: ["src/cli/analytics.ts", "--meet", "--alles", "--bewaar"]
               resources:
                 limits:
                   # Gemeten uitgangspunt: de ingest is IO-gebonden, niet
@@ -102,6 +124,20 @@ spec:
                 # toegangstoken bij de metadataserver op met de
                 # identiteit van de job. Er bestaat geen sleutel om te
                 # lekken.
+                # DEZE VARIABELE WORDT DOOR GEEN ENKELE REGEL CODE
+                # GELEZEN, en dat is gemeten: de naam komt voor in dit
+                # manifest en in vier markdownregels, en in nul
+                # TypeScript-regels. src/kern/config.ts kent hem niet.
+                #
+                # Hij blijft staan omdat hij de BEDOELDE stroom
+                # beschrijft, maar met dit voorbehoud erbij: zolang er
+                # geen Search Console-adapter bestaat (geen googleapis,
+                # geen google-auth in package.json; de enige
+                # RS256-ondertekening in src/ is ops/gcsopslag.ts voor
+                # Cloud STORAGE), suggereert een variabele die niemand
+                # uitleest een werkende workload-identity-stroom die er
+                # niet is. Wie de adapter bouwt, laat config.ts hem lezen
+                # of haalt hem hier weg.
                 - name: INTEL_GOOGLE_AUTH
                   value: workload-identity
 

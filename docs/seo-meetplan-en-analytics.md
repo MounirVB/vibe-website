@@ -71,7 +71,35 @@ deze sessie NIET gecontroleerd — dat vraagt toegang tot het dashboard. **UNKNO
 5. **Of het lead-endpoint de landingspagina registreert.**
 6. **Conversiecijfers, leads en omzet.** Geen bron in deze repo.
 
-## 5 · De property die de data draagt — domeinproperty
+## 5 · De property die de data draagt — ONBESLIST
+
+> **ONBESLIST — twee documenten spreken elkaar tegen, en geen van beide is uit de repo of uit
+> productie te beslissen (vastgesteld 1 november 2026).**
+>
+> | document | zegt | laatst gewijzigd |
+> |---|---|---|
+> | `intelligence/docs/R2-GSC-TOEGANG.md` §2 | URL-prefix `https://www.vibeenergy.nl/`, met een expliciete afwijzing van de domeinproperty | 2026-10-29 |
+> | `docs/seo-meetplan-en-analytics.md` §5 | domeinproperty `sc-domain:vibeenergy.nl`, "hoeft niet gewijzigd te worden" | 2026-10-13 |
+> | `docs/seo-release-3-2.md` | noemt "stel het propertytype vast" nog als OPEN actie | 2026-10-14 |
+>
+> Het nieuwere document draait de conclusie van het oudere terug zonder het te noemen. Het
+> manifest (`intelligence/deploy/analytics-cloudrun-job.yaml`) staat op de URL-prefix en volgt dus
+> het oudere document niet.
+>
+> **Wat wél opnieuw gemeten is, en wat beide documenten delen:** `http://vibeenergy.nl/` → 301 →
+> `https://vibeenergy.nl/` → 301 → `https://www.vibeenergy.nl/` → 200, en
+> `CURRENT_CANONICAL_INVENTORY` is 431 van 431 onder www. Die feiten steunen het argument dat een
+> www-URL-prefix geen huidig verkeer mist. Ze zeggen **niet** welk propertytype in de Search
+> Console van de eigenaar bestaat — dat is daarbinnen te zien, en dat is precies de autorisatie
+> die ontbreekt (`intel.koppelingen` draagt geen propertywaarde; de koppeling `gsc` staat op
+> `niet_geconfigureerd` met `INTEL_GSC_SITE_URL` als ontbrekend gemeld).
+>
+> **Waarom dit nu niet is opgelost:** een keuze maken zou een besluit verzinnen. Staat de
+> manifestwaarde straks op het verkeerde type, dan geeft de eerste koppeling 403 of 404 op een
+> property die wél bestaat — en dat leest als "geen data" in plaats van "verkeerde identiteit".
+> Dit is een eigenaarsbesluit; er is één plek nodig waar het mét reden staat, en daarna moet de
+> verliezer worden bijgewerkt in plaats van te blijven staan.
+
 
 De canonical en de sitemapverwijzing staan op **`https://www.vibeenergy.nl`**, omdat gemeten is
 dat de apex `vibeenergy.nl` met 301 naar www doorstuurt en alleen www door Railway wordt
@@ -310,9 +338,17 @@ script de inzenddatum telkens opnieuw wist.
 5. **Een eigen live-meting is bereikbaarheid, geen indexatie.** HTTP 200 met een kloppende
    canonical zegt dat de pagina er staat en wat hij van zichzelf beweert. Of een zoekmachine hem
    heeft opgenomen, zegt alleen metriek 3.
-6. **De dagelijkse job is niet uitgerold.** `vibe-analytics-dagelijks` bestaat als manifest en als
-   cron-expressie, niet als draaiende dienst. Tot die uitrol moet iemand `--bewaar` met de hand
-   draaien, en tot er twee dagstanden staan is elke trendmetriek `UNVERIFIED`.
+6. **De dagelijkse job is niet uitgerold, maar de bewaring is wel geautomatiseerd.**
+   *Bijgewerkt 1 november 2026 — de oude tekst zei dat iemand `--bewaar` met de hand moest
+   draaien, en dat is achterhaald.* De Cloud Run Job `vibe-analytics-dagelijks` bestaat nog
+   steeds alleen als manifest en cron-expressie. Maar de **Railway-planner** draait de taaksoort
+   `indexatie` dagelijks en schrijft de dagstand zelf weg: gemeten op 1 november 2026 vier
+   voltooide taken over vier opeenvolgende dagen, nieuwste aangemaakt 00:01:34Z met de
+   dagstandrijen 24 seconden later. Sinds dezelfde datum doet die taak ook de eigen live-meting
+   (`meetLive()`), die daarvoor nergens in productie werd gestart — `intel.indexatie_status`
+   stond daardoor op nul rijen terwijl de code er al was. Tot er twee dagstanden met een eigen
+   meting staan blijft `CURRENT_PAGE_INDEXATION` op `UNVERIFIED`; dat is de trendregel en geen
+   gebrek.
 7. **Conversie-attributie is onbewezen zolang de landingspagina niet meekomt.** Zie paragraaf 3.
    `intel.attributies` dwingt daarom een `onzekerheid_reden` af en kent geen "bewezen" zonder
    methode.

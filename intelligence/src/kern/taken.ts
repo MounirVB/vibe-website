@@ -1075,12 +1075,65 @@ export const REGISTER: Record<string, Handler> = {
    * want dan zou de dagstand een verzonnen indexatiecijfer gaan dragen.
    */
   async indexatie(pool, organisatieId) {
-    const { bewaarDagstand, indexatieRapport } = await import("../analytics/koppelingen.ts");
+    const { bewaarDagstand, indexatieRapport, meetLive } = await import(
+      "../analytics/koppelingen.ts"
+    );
     const { meetIndexeerbaar } = await import("../site/indexeerbaar.ts");
     const { IntelFout } = await import("./fouten.ts");
     const { maakLogger } = await import("./log.ts");
 
     const ti = await meetIndexeerbaar();
+
+    /* DE EIGEN LIVE-METING, EN HIJ DRAAIDE NOOIT.
+       ------------------------------------------------------------------
+       meetLive() meet per URL de HTTP-status, de aanwezigheid in
+       sitemap.xml en of de canonical op de pagina klopt, en schrijft naar
+       intel.indexatie_status. Hij heeft GEEN enkele credential nodig: het
+       is onze eigen site. Maar de enige aanroeper was
+       'npm run analytics -- --meet', en die wordt in productie door niets
+       gestart.
+
+       Gemeten op 1 november 2026: intel.indexatie_dagstand had 40 rijen
+       en intel.indexatie_status NUL, en CURRENT_PAGE_INDEXATION stond op
+       alle vier de dagstanden op NOT_AVAILABLE met het bewijs 'er is nog
+       geen enkele eigen live-meting vastgelegd'. Een grootheid die
+       niemand hoeft te autoriseren bleef daardoor permanent ongemeten.
+
+       WAT DIT NIET IS, en dat staat al in de code afgedwongen: het is
+       BEREIKBAARHEID en geen indexatie. koppelingen.ts zet `bron` hard op
+       'eigen_meting', `geindexeerd` op 'onbekend', en het bewijsveld
+       begint met 'LET OP: dit is bereikbaarheid, niet indexatie'.
+       bewaakScheiding() werpt als een getal van de een via de bron van de
+       ander binnenkomt, en GOOGLE_INDEXED blijft onverminderd
+       NOT_AVAILABLE. Er wordt hier dus geen cijfer opgewaardeerd.
+
+       `--alles`-SEMANTIEK, want een venster van 12 zou het register nooit
+       rondkrijgen: deze taak is DAGELIJKS (PLAN prioriteit 97), dus dit
+       is eenmaal per dag 431 verzoeken naar onze eigen site, met het
+       bestaande gelijktijdigheidsplafond van koppelingen.ts.
+
+       EN HIJ MAG DE DAGSTAND NIET MEESLEPEN. De dagstand is de primaire
+       opbrengst van deze taak; een mislukte live-meting (netwerk uit,
+       site tijdelijk weg) mag niet betekenen dat er die dag geen trendrij
+       is. Daarom een eigen try, met de uitkomst in het log en in de
+       retourregel. */
+    let liveRegel = "eigen live-meting: NIET GEDRAAID";
+    try {
+      const live = await meetLive(pool, organisatieId, { max: 100_000 });
+      liveRegel =
+        `eigen live-meting: ${live.geschreven} van ${live.totaalInRegister} vastgelegd` +
+        (live.nogTeGaan > 0 ? `, ${live.nogTeGaan} nog te gaan` : "");
+    } catch (e) {
+      liveRegel = `eigen live-meting MISLUKT: ${e instanceof Error ? e.message : String(e)}`;
+      maakLogger("taak:indexatie").waarschuwing("eigen live-meting mislukt", {
+        fout: e instanceof Error ? e.message : String(e),
+      });
+    }
+
+    /* HET RAPPORT NA DE METING BOUWEN, niet ervoor. Dat is wat de CLI ook
+       doet (cli/analytics.ts), en het is de hele reden dat de meting hier
+       vóór indexatieRapport() staat: anders landt de meting van vandaag
+       pas in de dagstand van morgen. */
     const { regels } = await indexatieRapport(pool, organisatieId, {
       ...(ti.getal ? { technischIndexeerbaar: ti.getal } : {}),
     });
@@ -1114,7 +1167,8 @@ export const REGISTER: Record<string, Handler> = {
       `technisch indexeerbaar ${ti.getal?.aantal ?? "NIET GEMETEN"}` +
       (ti.pariteit.length > 0
         ? `, ${ti.pariteit.length} TEGENSTRIJDIGE sitemapregel(s): ${ti.pariteit.slice(0, 5).join(", ")}`
-        : "")
+        : "") +
+      ` — ${liveRegel}`
     );
   },
 

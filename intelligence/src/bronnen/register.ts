@@ -1202,13 +1202,47 @@ export const BRONNEN: readonly Bron[] = [
       "op 2026-10-10. Er is geen permissieve alternatieve host: /sru?operation=explain geeft 404 op " +
       "www.officielebekendmakingen.nl en op zoek.officielebekendmakingen.nl, en 200 alleen hier. " +
       "zoekservice.overheid.nl heeft dezelfde blanket-disallow. Dit is een beleidsbesluit voor de " +
-      "eigenaar, geen technisch probleem.",
+      "eigenaar, geen technisch probleem. " +
+      "HERMETEN 2026-11-01 met de platform-UA, zeven hosts, alle zeven HTTP 200 op robots.txt, en " +
+      "de uitkomst is ONGEWIJZIGD: repository.overheid.nl nog steeds 26 bytes met de " +
+      "blanket-disallow. VIER NIEUWE METINGEN erbij, en drie daarvan sluiten een route die er " +
+      "uitnodigend uitziet. (1) zoek. en www.officielebekendmakingen.nl: byte-identiek, 196 " +
+      "bytes, sluiten alleen AhrefsBot uit en staan de rest toe - maar er is geen machineleesbare " +
+      "route (/sru en /atom/stcrt geven 404) en geen Sitemap-regel, dus de ladder valt door naar " +
+      "geen_grondslag. (2) data.overheid.nl, 4.458 bytes: sluit ClaudeBot, CCBot, GPTBot, " +
+      "OAI-SearchBot, Google-Extended, PerplexityBot, Applebot(-Extended), Bytespider en " +
+      "TikTokSpider elk met 'Disallow: /' volledig uit terwijl de *-groep permissief is - " +
+      "grondslag ai_crawler_uitgesloten, dus NEE, ondanks dat dit de landelijke " +
+      "open-datacatalogus is. (3) wetten.overheid.nl, 5.918 bytes, 70 user-agentgroepen: " +
+      "zelfde uitkomst, met in het bestand letterlijk de kop 'AI/LLM-crawlers expliciet " +
+      "Disallow'. (4) www.koopoverheid.nl, 64 bytes: GEEN enkele Disallow en een aangekondigde " +
+      "sitemap, dus aantoonbaar toegestaan - maar dat is KOOP's eigen organisatiesite en draagt " +
+      "geen bekendmakingen. Toegestaan en waardeloos. " +
+      "EN DE BOTSING, die de kern van het beleidsbesluit is: " +
+      "www.overheid.nl/over-deze-site/informatie-hergebruiken zegt letterlijk 'Om het hergebruik " +
+      "van deze data mogelijk te maken, is er een technische koppeling (ook wel webservice of " +
+      "API genoemd) beschikbaar', met een link naar de Handleiding SRU 2.0. De uitgever nodigt " +
+      "dus met WOORDEN uit en sluit met ROBOTS af - op twee hosts tegelijk, want www.overheid.nl " +
+      "zelf sluit ClaudeBot en GPTBot ook volledig uit. Poort 1 (padToegestaan) is " +
+      "onvoorwaardelijk, dus de uitkomst blijft NEE. De doorverwijzing naar " +
+      "/help/officiele-bekendmakingen/bestanden-en-hergebruik geeft HTTP 404: de verklaring die " +
+      "het verschil had kunnen maken is NIET GEVONDEN, niet weerlegd.",
     bewaren: "n.v.t. zolang de bron uit staat.",
     config: {},
     notities:
       "Dit is de meest waardevolle gemiste bron: Staatscourant, ACM-codebesluiten (5149 records), " +
       "Kamerstukken (3999) en Gemeenteblad-vergunningen (2104 voor 'zonnepark', 15 voor 'batterijopslag' " +
-      "sinds september) komen allemaal hiervandaan. Zie docs/ARCHITECTUUR.md sectie 9.",
+      "sinds september) komen allemaal hiervandaan. Zie docs/ARCHITECTUUR.md sectie 9. " +
+      "DE ROUTE DIE WEL BESTAAT IS EEN AFSPRAAK, GEEN CRAWLER. In de robots.txt van " +
+      "wetten.overheid.nl staan twee MET NAAM GENOEMDE juridische onderzoekscrawlers die WEL " +
+      "toegang krijgen - AstralLaw en 45weg-legal-research, elk met 'Allow: /' en " +
+      "'Crawl-delay: 30' - terwijl alle generieke AI-crawlers 'Disallow: /' krijgen. Dat is het " +
+      "bewijs dat KOOP per aanvrager een uitzondering maakt. Is deze laag commercieel nodig, en " +
+      "de meting zegt dat hij de enige bron zou zijn voor OFFICIEEL_BESLUIT buiten de ACM, dan " +
+      "is de weg een schriftelijke aanvraag bij KOOP voor een benoemde user-agent op " +
+      "repository.overheid.nl, met de hergebruikverklaring van overheid.nl als grondslag. Elke " +
+      "andere route is omzeiling, en bereikbaarheid is hier niet hetzelfde als toestemming: " +
+      "data.overheid.nl en wetten.overheid.nl geven 200 op elk pad en zien er uitnodigend uit.",
   },
   {
     ...STANDAARD,

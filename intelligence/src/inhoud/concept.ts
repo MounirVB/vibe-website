@@ -224,6 +224,29 @@ function modaliteitLabel(u: UitspraakRij): string {
   return `ONZEKER — modaliteit ${u.modaliteit} met zekerheid ${zeker.toFixed(2)}`;
 }
 
+/**
+ * De besluiten waarvoor deze module een concept kan BOUWEN.
+ *
+ * EEN BRON VAN WAARHEID, en dat is geen netheid maar een gemeten
+ * noodzaak. Deze lijst stond met de hand in `src/cli/concept.ts`, en
+ * NEWS_ITEM ontbrak daar — terwijl soortVanBesluit() hieronder hem wel
+ * afbeeldt. Gevolg: de enige geschikte kandidaat die de nieuwsmotor
+ * ooit opleverde (kandidaat 199, score 70, open sinds 29 oktober 2026)
+ * kon langs geen enkele route een concept worden, en intel.inhoud_versies
+ * bleef op 0 rijen staan.
+ *
+ * Twee lijsten van dezelfde verzameling lopen uiteen; één afleiding kan
+ * dat niet. test/eenheid/concepteerbare-besluiten.test.ts houdt deze
+ * constante tegen de cases van soortVanBesluit().
+ */
+export const CONCEPTEERBARE_BESLUITEN = [
+  "NEWS_ITEM",
+  "NEW_ARTICLE",
+  "UPDATE_EXISTING",
+  "REGIONAL_PATCH",
+  "KNOWLEDGE_UPDATE",
+] as const;
+
 function soortVanBesluit(besluit: string): OpgebouwdConcept["soort"] {
   switch (besluit) {
     /* NEWS_ITEM is het besluit van de nieuwsselectie (migratie 0041).
