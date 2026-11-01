@@ -509,11 +509,66 @@ feitelijk onjuist op stand 47, waar de database wél v2 is.
 | taken in DLQ | **0** |
 | taken mislukt (laatste uur) | **0** |
 | publicaties | **0** |
+| open FOUT-meldingen | 6 → **0** |
+| gezondheidssignalen | 43, waarvan **38 OK**, 1 LET OP (aanvaard), 4 NIET GEMETEN, **0 FOUT** |
 
 **De uitrolorde klopt en is gemeten:** `herbeoordeling` staat op prioriteit **22**,
 vóór `beoordelen` (30), `nieuwsselectie` (35) en `voorstel` (60). De eerste
 planner­ronde na de migratie stempelt dus alle claims vóórdat een laag bewijs
 wil wegen.
+
+### De eerste plannerronde ná de uitrol — 09:04 UTC, ronde 515
+
+Alles wat deze release belooft is in één ronde door de **planner zelf** gedaan,
+niet met de hand. Drie voorspellingen, alle drie gehaald:
+
+| voorspelling | uitkomst |
+|---|---|
+| de `bronverificatie-v4`-ronde draait | **27** claims gewogen: 16 NIET_VAN_TOEPASSING, 11 NIET_TERUGGEVONDEN, 0 AMBIGU, 0 TERUGGEVONDEN |
+| claim 29's vastgelopen v3-oordeel wordt opgeruimd | `bronverificatie-v4`, `bevestigd=false`, `uitspraak_id=NULL`, uitslag NIET_VAN_TOEPASSING, `opgeruimdDoor: ruimVervallenOordelenOp` |
+| de zes open FOUT-meldingen sluiten | **6 → 0**, plus `melden/alerteringsbestemming`: **7 gesloten, 0 geopend** |
+
+De v4-verdeling is 16/11 waar v3 15/12 gaf. Die **ene** verschoven claim is claim
+29: hij droeg een v3-oordeel met gezag ACM terwijl zijn versie geen navertelling
+meer is, en staat nu terecht op NIET_VAN_TOEPASSING. Dat is de latch die weg is.
+
+**De gezondheidsronde, letterlijk uit het log:**
+
+```
+signalen 43 (OK 38, LET OP 1, NIET GEMETEN 4), geen FOUT
+niet-ok: ingestie/storingssoort CDN_BLOKKADE=LET OP(aanvaard)
+         ingestie/toestemming niet vastgesteld=NIET GEMETEN(aanvaard)
+         ai/maandbudget aanroepen=NIET GEMETEN
+         koppelingen/analytics en CRM=NIET GEMETEN
+         backup/aanwezigheid=NIET GEMETEN(aanvaard)
+meldingen open 5 (geopend 0, gesloten 7)
+mail[resend] gepland 4, nieuw 3, aangeboden 3, geaccepteerd 3, mislukt 0
+```
+
+**43 signalen** waar het er 35 waren: elke storingssoort uit de taxonomie geeft
+er nu één, ook bij nul bronnen. `motorpariteit`, `dead-letter queue` en
+`melden/alerteringsbestemming` staan **niet** in de niet-ok-lijst — alle drie
+**OK**, en dat laatste is de reden dat zijn melding regulier sloot in plaats van
+438 rondes onterecht open te blijven.
+
+**En het mailkanaal leverde in dezelfde ronde**: 3 nieuwe berichten aangeboden en
+geaccepteerd, 0 mislukt. Geen burst — precies de reden om `LET OP` níet breed
+meldwaardig te maken.
+
+**Eén melding is MET DE HAND gesloten** (id 12, `koppelingen/alerteringsbestemming`,
+laatst gezien 13 oktober). Die kon per constructie nooit sluiten: het signaal is
+in 3.0.5 van groep `koppelingen` naar groep `melden` verhuisd, en `melden.ts`
+sluit uitsluitend meldingen waarvan het signaal **actief** als OK of LET OP is
+gemeten. Gemeten bewijs dat de sleutel niet meer bestaat: groep `koppelingen`
+draagt nog precies één signaal, `analytics en CRM`. De reden staat in
+`laatste_meting` van die rij, mét de oorspronkelijke meting erachter bewaard.
+
+**Eindstand van de meldingen: 4 open, 0 FOUT.** Twee aanvaarde grenzen
+(`backup/aanwezigheid` — de containerschijf is ephemeer, het echte archief staat
+extern; `ingestie/toestemming niet vastgesteld` — vijf inactieve bronnen) en twee
+WARNING's die op een credential wachten (`ai/maandbudget aanroepen`,
+`koppelingen/analytics en CRM`). Die laatste twee zijn de §8-bevinding en vragen
+jouw autorisatie, niet een reparatie.
 
 **Niet gedaan, met reden:**
 
