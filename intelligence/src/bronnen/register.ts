@@ -1124,8 +1124,17 @@ export const BRONNEN: readonly Bron[] = [
       "DEGRADED stond met 1 opeenvolgende fout. Nagemeten vanaf dezelfde productie-egress: " +
       "haalOp() geeft 6 van 6 keer HTTP 200 met 142.385 bytes en 10 items, en zowel " +
       "www.nklnederland.nl/feed als nklnederland.nl/feed/ lossen op naar nklnederland.nl/feed/. " +
-      "De bron is dus gezond; de fout was tijdelijk en is als herhaalbaar geclassificeerd, dus " +
-      "de volgende ronde ruimt hem op. Het endpoint is NIET gewijzigd: beide vormen werken " +
+      "De bron is dus gezond en de fout was tijdelijk. MAAR DE VOLGENDE RONDE RUIMDE HEM NIET " +
+      "OP, en dat is een structurele bevinding: isToeAanOphalen() in pijplijn/verzamelen.ts " +
+      "past het ophaalinterval toe ONGEACHT of de vorige poging slaagde of faalde, en er is " +
+      "geen snellere herpoging voor een herhaalbare fout. Met ophaalintervalMinuten 720 zou " +
+      "deze bron dus twaalf uur op DEGRADED hebben gestaan, met het signaal " +
+      "ingestie/storingssoort NETWERKFOUT twaalf uur op FOUT -- voor een fout die bij de " +
+      "eerstvolgende poging verdween. De vlag `herhaalbaar` wordt vastgelegd maar nergens " +
+      "gebruikt om eerder opnieuw te proberen. Opgelost met een eenmalige geforceerde ronde " +
+      "(npm run collector -- --bron nkl-laadinfra --forceer): resultaat ok, HTTP 200, 10 " +
+      "items, 10 nieuwe documenten, 10 versies, gezondheid HEALTHY. Het endpoint is NIET " +
+      "gewijzigd: beide vormen werken " +
       "even goed, en een URL aanpassen op grond van een tijdelijke fout is een symptoom " +
       "behandelen. Wel om te onthouden: valt deze bron vaker uit, dan zit het in de host en " +
       "niet in onze kant. Eén vorm faalt structureel en staat hier als waarschuwing: " +
