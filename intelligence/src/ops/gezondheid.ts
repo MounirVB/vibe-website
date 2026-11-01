@@ -33,6 +33,10 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { leesSitekennis } from "../site/sitekennis.ts";
 import { meldBestemming } from "./melden.ts";
+/* HET TWEEDE BEZORGKANAAL. Zie het signaal melden/alerteringsbestemming:
+   dat keek alleen naar de webhook en ontkende daarmee een mailkanaal dat
+   aantoonbaar levert. */
+import { mailBestemming } from "./mail.ts";
 import { meetBrondekking, vatBrondekkingSamen } from "./brondekking.ts";
 import { NIET_HARTSLAGWAARDIGE_SOORTEN, PLAN } from "../kern/taken.ts";
 import {
@@ -49,6 +53,15 @@ import {
   type BucketInventaris,
 } from "./restorebewijs.ts";
 import { redigeer } from "../kern/geheimen.ts";
+/* DE VOLLEDIGE STORINGSSOORTTAXONOMIE. Nodig om ook voor een soort die
+   op dit moment NIET in intel.bronnen voorkomt een signaal uit te geven —
+   zonder dat kan een eerdere melding nooit sluiten. Zie de toelichting
+   bij die lus. */
+import { STORINGSSOORT_LABEL } from "../bronnen/storingssoort.ts";
+/* DE PARITEITSPROBE. Hij had geen gezondheidssignaal: een halve uitrol
+   werd geweigerd zonder dat er iets meldbaar werd. Zie het signaal
+   database/motorpariteit. */
+import { motorpariteit } from "./motorpariteit.ts";
 
 export type Niveau = "OK" | "LET OP" | "FOUT" | "NIET GEMETEN";
 
@@ -341,6 +354,50 @@ export async function meetGezondheid(
     meting: `${mig[0]?.n ?? 0} toegepast, laatste ${mig[0]?.laatste ?? "onbekend"}`,
   });
 
+  /* MOTORPARITEIT HAD GEEN MEETHAAK, en dat was het gevaarlijkste gat.
+     ------------------------------------------------------------------
+     ops/motorpariteit.ts wordt aangeroepen door de planner-, worker- en
+     plannerpauze-CLI's, die fail-closed weigeren te starten als de code
+     en het schema niet bij elkaar passen. Dat is de juiste richting,
+     maar het gezondheidsmodel kende het signaal niet: een halve uitrol
+     werd wél geweigerd en leverde GEEN signaal, geen melding, geen ernst
+     en dus geen mail. De weigering was alleen zichtbaar voor wie het
+     servicelog openslaat — precies het scenario dat die module zelf als
+     ergste beschrijft.
+
+     GROEP `database`, en dat is een keuze met gevolg: ernstVan() maakt
+     een FOUT in de groepen backup, database, beveiliging en publicatie
+     tot CRITICAL. Dat hoort hier, want zonder pariteit loopt elke
+     ophaalronde per document vast op een constraintfout.
+
+     DE PROBE IS READ-ONLY — hij leest information_schema en
+     pg_constraint — en draait hier met de pool die de gezondheidstaak
+     al gebruikt. */
+  try {
+    const pariteit = await motorpariteit(c);
+    voeg({
+      groep: "database",
+      naam: "motorpariteit",
+      niveau: pariteit.sluit ? "OK" : "FOUT",
+      meting:
+        `code ${pariteit.codeVersie}, database ${pariteit.databaseVersie} — ${pariteit.bewijs}`,
+      advies: pariteit.sluit
+        ? undefined
+        : "de code en het schema passen niet bij elkaar; draai npm run migreer op deze " +
+          "database, of rol de code terug naar de versie die bij dit schema hoort. De " +
+          "planner en de worker weigeren tot die tijd te starten.",
+    });
+  } catch (e) {
+    /* EEN MISLUKTE PROBE IS GEEN OK. Zou hij stil wegvallen, dan was dit
+       signaal onbetrouwbaar juist in de situatie waarvoor het bestaat. */
+    voeg({
+      groep: "database",
+      naam: "motorpariteit",
+      niveau: "NIET GEMETEN",
+      meting: `de pariteitsprobe kon niet draaien: ${e instanceof Error ? e.message : String(e)}`,
+    });
+  }
+
   /* ---------------- ingestie ---------------- */
   const bronnen = await rijen<{
     actief: number;
@@ -539,6 +596,46 @@ export async function meetGezondheid(
     });
   }
 
+  /* EEN VERDWENEN SIGNAAL SLOOT ZIJN MELDING NOOIT.
+     ------------------------------------------------------------------
+     De query hierboven groepeert over `intel.bronnen where storingssoort
+     is not null`. Bestaat er geen rij met een soort, dan bestaat dat
+     signaal niet — en melden.ts sluit uitsluitend meldingen waarvan het
+     signaal ACTIEF als OK of LET OP is gemeten (bewust zo: een signaal
+     dat wegvalt bewijst niets over de storing). Gevolg: zodra een bron
+     van soort wisselt of herstelt, blijft de oude FOUT-melding voor
+     altijd open.
+
+     GEMETEN op 1 november 2026: drie van de zes open FOUT-meldingen
+     waren zulke zombies — storingssoort TOEGANG_BEPERKT (laatst gezien
+     20 oktober), ONGELDIG_ENDPOINT (21 oktober) en TIJDELIJKE_STORING
+     (29 oktober) — terwijl er in de hele tabel nog maar ÉÉN bron met een
+     storingssoort stond. De open-telling overdreef het aantal levende
+     storingen blijvend, en dat is precies hoe een dashboard ophoudt
+     gelezen te worden.
+
+     DE REPARATIE: voor ELKE soort uit de taxonomie een signaal
+     uitgeven, ook bij nul bronnen, en dan op OK. Dan sluit melden.ts die
+     meldingen actief in plaats van ze open te laten staan.
+
+     DE LIJST IS AFGELEID uit STORINGSSOORT_LABEL en niet met de hand
+     bijgehouden: dat is een volledige Record over Storingssoort, dus de
+     typecheck dwingt af dat er geen soort ontbreekt. Een tweede,
+     handgeschreven lijst zou stil achterlopen zodra er een soort
+     bijkomt — en dan is de zombie terug. */
+  const gezien = new Set(storingen.map((st) => st.soort));
+  for (const soort of Object.keys(STORINGSSOORT_LABEL)) {
+    if (gezien.has(soort)) continue;
+    voeg({
+      groep: "ingestie",
+      naam: `storingssoort ${soort}`,
+      niveau: "OK",
+      meting:
+        `0 bronnen met deze storingssoort. Dit signaal wordt ook bij nul uitgegeven, zodat een ` +
+        `eerdere melding kan SLUITEN; een signaal dat wegvalt sluit niets.`,
+    });
+  }
+
   /* TOESTEMMING NIET VASTGESTELD is geen storingssoort maar mag ook
      nooit als gezond doorgaan: er is simpelweg niets nagetrokken. */
   const onbepaald = await rijen<{ aantal: number; actieve: number; sleutels: string }>(
@@ -648,10 +745,30 @@ export async function meetGezondheid(
           "(geefVerlopenTerug in cli/worker.ts), niet vanzelf. Herstart de worker als de taak niet loopt."
         : undefined,
   });
+  /* DIT SIGNAAL WAS STRUCTUREEL STIL, en dat is gemeten.
+     ------------------------------------------------------------------
+     Het niveau was OK of LET OP, nooit FOUT. Maar een melding wordt
+     uitsluitend geopend voor FOUT en NIET GEMETEN (MELDWAARDIG in
+     ops/melden.ts). LET OP kwam dus NOOIT in intel.meldingen, kreeg
+     nooit een ernst, en kon nooit het WARNING-dagoverzicht bereiken.
+
+     Bewijs dat dit niet incidenteel was: in de hele historie van
+     intel.meldingen bestaat geen enkele rij met niveau 'LET OP' — niet
+     open en niet gesloten. En op 1 november 2026 stonden er 2 taken in
+     de DLQ bij drempel 1, dus het signaal STOND op LET OP terwijl er
+     geen melding en geen mail was.
+
+     NU FOUT BOVEN DE DREMPEL. Bewust alleen dit ene signaal en niet
+     'LET OP' breed meldwaardig maken: dat laatste zou elk bestaand LET
+     OP-signaal in één ronde een melding laten openen en het dagoverzicht
+     van toestand doen veranderen — een mailburst als neveneffect van een
+     reparatie. Een taak die na vijf pogingen in de DLQ ligt is per
+     definitie niet meer vanzelf opgelost; dat is een storing en geen
+     waarneming. */
   voeg({
     groep: "worker",
     naam: "dead-letter queue",
-    niveau: (t?.dlq ?? 0) < DREMPELS.dlqMeldDrempel ? "OK" : "LET OP",
+    niveau: (t?.dlq ?? 0) < DREMPELS.dlqMeldDrempel ? "OK" : "FOUT",
     meting: `${t?.dlq ?? 0} taak/taken in de dlq`,
     advies: (t?.dlq ?? 0) > 0 ? "npm run worker -- --dlq om te zien waarom" : undefined,
   });
@@ -978,21 +1095,60 @@ export async function meetGezondheid(
      wordt bewaard in intel.meldingen en intel.systeem_meldingen, en het
      dashboard toont de open meldingen op /. Zou dat wegvallen, dan is
      dit geen aanvaarde grens meer maar een blinde vlek. */
+  /* DIT SIGNAAL ONTKENDE EEN WERKEND KANAAL, EN DAT IS GEMETEN.
+     ------------------------------------------------------------------
+     Er zijn TWEE bezorgkanalen: de webhook (ops/melden.ts) en de mail
+     via Resend (ops/mail.ts + ops/meldmail.ts). Dit signaal keek
+     uitsluitend naar meldBestemming() — de webhook — en meldde daardoor
+     438 rondes achter elkaar 'NIET_GECONFIGUREERD, er is geen door een
+     mens goedgekeurde bestemming'.
+
+     Gemeten in productie op 1 november 2026: het mailkanaal is volledig
+     geconfigureerd op vibe-intel-worker, INTEL_MAIL_ACTIEF staat aan, en
+     intel.meld_berichten bevat 27 van 27 door Resend GEACCEPTEERDE
+     berichten met provider_id, 0 mislukt, 0 opgegeven, 0 achterstand.
+     Het signaal waarop iemand 'staat alertering aan?' beantwoordt, gaf
+     dus een onjuist negatief antwoord.
+
+     NU: OK zodra er MINSTENS ÉÉN werkend kanaal is, met in de meting
+     welk kanaal dat is. Dat is geen versoepeling — nul kanalen geeft nog
+     steeds NIET GEMETEN met dezelfde aanvaarding en hetzelfde advies. */
   const bestemming = meldBestemming();
+  const mail = mailBestemming();
+  const mailAan =
+    mail.soort === "resend" && /^(1|ja|aan|true)$/i.test(process.env["INTEL_MAIL_ACTIEF"] ?? "");
+  const kanalen = [
+    ...(bestemming.soort === "webhook"
+      ? [`webhook${bestemming.token ? " met token" : " zonder token"}`]
+      : []),
+    ...(mailAan ? ["mail via Resend, INTEL_MAIL_ACTIEF staat aan"] : []),
+  ];
+  const webhookReden = bestemming.soort === "webhook" ? "" : ` webhook: ${bestemming.reden}`;
+  const mailReden = mailAan
+    ? ""
+    : ` mail: ${mail.soort === "resend" ? "INTEL_MAIL_ACTIEF staat uit." : mail.reden}`;
   voeg({
     groep: "melden",
     naam: "alerteringsbestemming",
-    niveau: bestemming.soort === "webhook" ? "OK" : "NIET GEMETEN",
-    aanvaard: bestemming.soort === "webhook" ? undefined : true,
+    niveau: kanalen.length > 0 ? "OK" : "NIET GEMETEN",
+    aanvaard: kanalen.length > 0 ? undefined : true,
     meting:
-      bestemming.soort === "webhook"
-        ? `webhook geconfigureerd${bestemming.token ? " met token" : " zonder token"}`
-        : `NIET_GECONFIGUREERD — ${bestemming.reden} Interne monitoring werkt wel: ` +
+      kanalen.length > 0
+        ? `${kanalen.length} werkend kanaal: ${kanalen.join(" + ")}.` +
+          `${webhookReden}${mailReden}`
+        : `NIET_GECONFIGUREERD —${webhookReden}${mailReden} Interne monitoring werkt wel: ` +
           `meldingen staan in intel.meldingen en zijn zichtbaar op het dashboard.`,
     advies:
-      bestemming.soort === "geen"
-        ? "om externe meldingen aan te zetten: INTEL_MELD_WEBHOOK op een door een mens " +
-          "goedgekeurde https-bestemming, eventueel met INTEL_MELD_WEBHOOK_TOKEN"
+      kanalen.length === 0
+        ? /* DE TOKENNAAM WAS FOUT, en dat is niet onschuldig. Hier stond
+             INTEL_MELD_WEBHOOK_TOKEN; die naam wordt NERGENS uitgelezen.
+             ops/melden.ts leest INTEL_MELD_TOKEN. Een eigenaar die dit
+             advies letterlijk volgde, zette een variabele die niemand
+             leest en kreeg stil een ONGEAUTHENTICEERDE webhook-POST —
+             zonder foutmelding, want een leeg token is een geldige
+             toestand. */
+          "om externe meldingen aan te zetten: INTEL_MELD_WEBHOOK op een door een mens " +
+          "goedgekeurde https-bestemming, eventueel met INTEL_MELD_TOKEN"
         : undefined,
   });
 

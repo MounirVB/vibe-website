@@ -75,9 +75,33 @@ const KRITIEKE_GROEPEN: ReadonlySet<string> = new Set([
 /**
  * De alarmklasse van een signaal.
  *
- * `null` = geen bericht. Dat geldt voor OK, voor elke aanvaarde grens, en
- * voor LET OP buiten de kritieke groepen — die laatste gaat mee in het
- * dagelijkse overzicht via `warningOverzicht()` en niet als los alarm.
+ * `null` = geen bericht. Dat geldt voor OK en voor elke aanvaarde grens.
+ *
+ * ------------------------------------------------------------------
+ * DE LET OP-TAK HIERONDER IS IN HET PRODUCTIEPAD DODE CODE, en hier
+ * stond het tegendeel.
+ *
+ * Deze docstring beloofde dat LET OP buiten de kritieke groepen 'mee gaat
+ * in het dagelijkse overzicht via warningOverzicht()'. Dat kan niet:
+ * ops/melden.ts opent een melding uitsluitend voor FOUT en NIET GEMETEN
+ * (de set MELDWAARDIG), dus een LET OP-signaal bereikt intel.meldingen
+ * nooit, krijgt nooit een ernst, en kan het overzicht dus niet halen.
+ *
+ * GEMETEN BEWIJS, 1 november 2026: in de hele historie van
+ * intel.meldingen bestaat geen enkele rij met niveau 'LET OP' — niet open
+ * en niet gesloten. Ondertussen stond het signaal worker/dead-letter
+ * queue op LET OP met 2 taken in de DLQ bij drempel 1, en er was geen
+ * melding en geen mail.
+ *
+ * WAT ER IS GEDAAN: het DLQ-signaal staat nu op FOUT boven de drempel
+ * (zie ops/gezondheid.ts). BEWUST NIET gedaan: 'LET OP' breed meldwaardig
+ * maken. Dat zou elk bestaand LET OP-signaal in één ronde een melding
+ * laten openen en het dagoverzicht van toestand doen veranderen — een
+ * mailburst als neveneffect van een reparatie.
+ *
+ * De tak blijft staan omdat ernstVan() een pure functie is die ook buiten
+ * het meldpad wordt gebruikt en een totale afbeelding moet geven. Maar
+ * wie hem leest moet weten dat er vandaag geen afnemer achter zit.
  */
 export function ernstVan(s: Signaal): Meldernst | null {
   if (s.niveau === "OK") return null;

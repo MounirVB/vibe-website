@@ -40,6 +40,24 @@ export const GEMETEN_OP = "2026-10-10";
  */
 export const GEMETEN_OP_TENDERNED = "2026-10-12";
 
+/**
+ * Derde meetronde, 1 november 2026, vanaf de PRODUCTIE-egress.
+ *
+ * Twee bronnen zijn hier opnieuw gemeten met exact de platform-UA, en
+ * beide metingen weerleggen wat het register beweerde:
+ *
+ *   rendo-nieuws          robots.txt draagt een Artikel 4-voorbehoud en
+ *                         sluit 13 van onze eigen TDM-crawlers volledig
+ *                         uit. Het register zei 'geen_voorbehoud'.
+ *   rvo-subsidie-sitemap  HTTP 200, 1.860.473 bytes, 12.973 url-blokken.
+ *                         Het register zei 'HTTP 500 bij onze UA'.
+ *
+ * Een eigen datum, zodat niet de indruk ontstaat dat alle 29 bronnen op
+ * 1 november zijn herzien: `robots_gecontroleerd_op` komt uit dit veld,
+ * en de overige 27 staan terecht nog op 10 oktober.
+ */
+export const GEMETEN_OP_EGRESS = "2026-11-01";
+
 const STANDAARD = {
   taal: "nl",
   geoBereik: "nl",
@@ -324,22 +342,56 @@ export const BRONNEN: readonly Bron[] = [
     betrouwbaarheid: 4,
     licentie: null,
     licentieUrl: null,
+    /* CRAWLEN MAG, HERGEBRUIKEN NIET. Die twee zijn hier verschillend en
+       dat is geen slordigheid: `Allow: /` staat er nog steeds en er is
+       geen Crawl-delay, dus robotsStatus blijft 'toegestaan'. Het
+       voorbehoud gaat over het VERWERKEN van de inhoud. */
     robotsStatus: "toegestaan",
-    tdmStatus: "geen_voorbehoud",
+    tdmStatus: "voorbehoud",
     verificatie: {
       status: "geverifieerd",
       bewijs:
         "WordPress RSS 2.0, HTTP 200, 44.827 bytes, 10 <item>-elementen met hetzelfde WP-veldenset. " +
-        "Nieuwste item 2026-09-24. www.rendo.nl stuurt 301 naar rendogroep.nl.",
-      op: GEMETEN_OP,
+        "Nieuwste item 2026-09-24. www.rendo.nl stuurt 301 naar rendogroep.nl. " +
+        "HERMETEN 2026-11-01 vanaf de productie-egress met de platform-UA: robots.txt " +
+        "HTTP 200, 2.676 bytes, server cloudflare. Daarin letterlijk " +
+        "'Content-Signal: search=yes,ai-train=no,use=reference' plus de regel dat " +
+        "restricties via Content Signals een express reservation of rights onder Artikel 4 " +
+        "van richtlijn 2019/790 zijn. 32 user-agentgroepen met 'Disallow: /', waarvan 13 op " +
+        "onze eigen TDM-lijst: anthropic-ai, applebot-extended, bytespider, ccbot, " +
+        "claude-web, claudebot, cohere-ai, diffbot, google-extended, gptbot, " +
+        "meta-externalagent, mistralai-training, omgili.",
+      op: GEMETEN_OP_EGRESS,
     },
     ophaalintervalMinuten: 1440,
     maxItemsPerOphaling: 10,
-    actief: true,
-    inactiefReden: null,
+    actief: false,
+    inactiefReden:
+      "GECONTROLEERD GEBLOKKEERD op grond van een TDM-voorbehoud, niet op grond van de 403. " +
+      "De robots.txt van www.rendogroep.nl draagt 'Content-Signal: ai-train=no' met een " +
+      "expliciete Artikel 4-verwijzing (richtlijn 2019/790) en sluit 13 van onze eigen " +
+      "TDM-crawlers volledig uit. Gevoed met die robots.txt geeft bepaalToestemming() " +
+      "grondslag 'ai_crawler_uitgesloten' en mogenVerwerken=false: het platform zegt hier " +
+      "zelf nee, op stap 2 van de ladder in toestemmingsbeleid.ts, die zwaarder weegt dan " +
+      "de syndicatiegrond waarop deze bron eerder leunde. Gemeten 2026-11-01 vanaf de " +
+      "productie-egress. De bron heeft nooit een document geleverd (0 brondocumenten, 8 " +
+      "ophaalpogingen, alle acht HTTP 403), dus het uitzetten kost geen gemeten dekking. " +
+      "LET OP: er is GEEN rechtmatig alternatief kanaal. Een Artikel 4-voorbehoud geldt het " +
+      "werk van de uitgever en niet een adres, dus een ander endpoint of een zusterhost van " +
+      "RENDO Groep is niet rechtmatiger. Een toegangsverzoek om de 403 te laten opheffen is " +
+      "daarmee zinloos: met een HTTP 200 mogen we de inhoud evenmin verwerken.",
     bewaren: "titel, url, datum, eigen samenvatting.",
     config: {},
-    notities: "robots.txt (Yoast) heeft een lege Disallow, dus niets geblokkeerd.",
+    notities:
+      "DE OUDE NOTITIE WAS ONWAAR en luidde: 'robots.txt (Yoast) heeft een lege Disallow, dus " +
+      "niets geblokkeerd.' Cloudflare serveert twee varianten: de productie-egress (cf-ray " +
+      "…-SJC) krijgt 2.676 bytes met alleen het Cloudflare-managed blok, ZONDER Yoast-blok, " +
+      "zonder lege Disallow en zonder Sitemap-regel; een Europese egress (…-AMS) krijgt " +
+      "2.851 bytes MET dat blok. Het beleid dat productie leest is dus strenger dan het " +
+      "beleid waarop dit register was gebouwd — en in beide varianten staan de 13 " +
+      "TDM-uitsluitingen. De 403 zelf zit op het IP/ASN van de Railway-egress en niet op de " +
+      "user-agent: dezelfde UA geeft 200 vanaf een werkstation. Dat is vastgesteld en " +
+      "vervolgens niet meer relevant, want de toestemming is de bindende grond.",
   },
 
   // ==========================================================
@@ -455,7 +507,39 @@ export const BRONNEN: readonly Bron[] = [
   },
   {
     ...STANDAARD,
-    /* UITGEZET OP 12 OKTOBER 2026 — GEMETEN, NIET GEGOKT.
+    /* WEER AAN OP 1 NOVEMBER 2026 — DE LATERE METING GELDT.
+       ----------------------------------------------------------------
+       De HTTP 500 hieronder is niet meer reproduceerbaar. Hermeten op
+       2026-11-01 met exact de platform-UA, zonder vermomming:
+
+         vanaf een werkstation, 3 pogingen -> 200, 1.860.473 bytes
+         vanaf de PRODUCTIE-egress          -> 200, 1.860.473 bytes
+         content-type                       -> application/xml
+         12.973 <url>-blokken, 12.973 <lastmod>
+
+       De toestemming is DUBBEL en citeerbaar: robots.txt van www.rvo.nl
+       (HTTP 200, 583 bytes) kondigt deze sitemap zelf aan met
+       'Sitemap: https://www.rvo.nl/sitemap.xml' — grondslag
+       in_robots_aangekondigd — en RVO verklaart hergebruik in eigen
+       woorden, zie hergebruikVerklaring hieronder, wat de sterkere
+       grondslag hergebruik_verklaard oplevert. parseerRobots() op die
+       robots.txt geeft 0 volledig uitgesloten user-agents, dus stap 2
+       van de toestemmingsladder gaat hier NIET af. De negen
+       Disallow-regels vallen alle onder /subsidies-financiering/tvl/,
+       dat uitsluitPatroon hieronder al uitsluit.
+
+       WAT ER NIET IS VERANDERD: de user-agent. Het 200-antwoord komt met
+       dezelfde UA die eerder 500 gaf. Er is dus niets omzeild; de
+       serverkant is veranderd, niet onze kant.
+
+       WAT HIJ WEL EN NIET OPLEVERT, eerlijk: in zijn vorige leven gaf
+       deze bron 400 versies en 15 markt_gebeurtenissen, maar 0 van de
+       400 versies had tekst — een sitemap levert url, lastmod en titel
+       en verder niets. Verwacht hier geen claims van, wél de
+       houdbaarheidssignalen waarvoor intel.uitspraken is gebouwd. Het is
+       bovendien een ophaling van 1,86 MB per ronde.
+
+       DE OUDE MOTIVERING, als meetspoor bewaard en nu onwaar:
        ----------------------------------------------------------------
        Deze bron gaf in productie HTTP 500 en de monitoring meldde dat
        terecht als FOUT. Het nameten gaf een scherper beeld:
@@ -500,17 +584,23 @@ export const BRONNEN: readonly Bron[] = [
     verificatie: {
       status: "geverifieerd",
       bewijs:
-        "Vlakke <urlset> (geen index), HTTP 200, 12.970 <url>-blokken en alle 12.970 hebben <lastmod>. " +
-        "61 urls onder /nieuws. Energierelevante families aanwezig: /subsidies-financiering/sde/aanvragen/*, " +
-        "en lastmod-waarden tot de dag voor de meting.",
-      op: GEMETEN_OP,
+        "Vlakke <urlset> (geen index), HTTP 200, 12.973 <url>-blokken en alle 12.973 hebben " +
+        "<lastmod>. 64 urls onder /nieuws, 1.419 onder /subsidies-financiering. " +
+        "Energierelevante families aanwezig: /subsidies-financiering/sde/aanvragen/*. " +
+        "HERMETEN 2026-11-01 met de platform-UA, zowel vanaf een werkstation (3 van 3 " +
+        "pogingen HTTP 200, 1.860.473 bytes, application/xml) als vanaf de productie-egress " +
+        "(HTTP 200, 1.860.473 bytes). De eerdere HTTP 500 is niet reproduceerbaar. " +
+        "robots.txt HTTP 200, 583 bytes, kondigt deze sitemap zelf aan en sluit 0 " +
+        "user-agents volledig uit; de 9 Disallow-regels vallen alle onder " +
+        "/subsidies-financiering/tvl/, dat uitsluitPatroon hieronder al weert. " +
+        "De sitemap groeit: op 2026-10-10 waren het 12.970 blokken en 61 /nieuws-urls.",
+      op: GEMETEN_OP_EGRESS,
     },
     ophaalintervalMinuten: 1440,
     maxItemsPerOphaling: 400,
     maxBytes: 16_777_216,
-    actief: false,
-    inactiefReden:
-      "HTTP 500 op de gedeclareerde sitemap bij onze user-agent, HTTP 200 bij een browser-user-agent op hetzelfde moment (gemeten 2026-10-12). robots.txt staat lezen expliciet toe, dus dit is geen toestemmingsprobleem maar botbescherming of een serverfout bij RVO. De user-agent vermommen zou een toegangscontrole omzeilen en is daarom niet gedaan. De geautoriseerde route rvo-opendata-artikelen dekt dezelfde onderwerpen en meer, en werkt wel.",
+    actief: true,
+    inactiefReden: null,
     bewaren: "url en lastmod van subsidiepagina's, als verloopdetector voor subsidieclaims.",
     config: {},
     notities:
