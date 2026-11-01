@@ -426,9 +426,14 @@ describe("de claimpoort en de herbeoordeling", () => {
     /* Terugzetten naar de historische stand om de hervatting te meten. */
     await alsEigenaar(db, async (c) => {
       await c.query("select set_config('app.organisatie_id', $1, false)", [String(org)]);
+      /* `herbeoordeeld_onder` ERBIJ, en dat veld is sinds 0048 het veld
+         dat de selectie en de poort lezen. De twee andere blijven staan
+         omdat de ronde ze ook hoort te zetten; zonder de stempel leeg te
+         maken selecteert de herverwerker niets en meet deze toets een
+         hervatting die niet begonnen is. */
       await c.query(
         `update intel.uitspraken
-            set modaliteit_versie = null, herbeoordeeld_op = null
+            set modaliteit_versie = null, herbeoordeeld_op = null, herbeoordeeld_onder = null
           where organisatie_id = $1 and coalesce(oordeel_bron,'motor') <> 'mens'`,
         [org],
       );

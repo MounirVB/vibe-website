@@ -37,6 +37,7 @@ import { configVergeten } from "../../src/kern/config.ts";
 import { metOrganisatie } from "../../src/kern/db.ts";
 import { REGISTER } from "../../src/kern/taken.ts";
 import { MODALITEIT_VERSIE } from "../../src/pijplijn/claimmodaliteit.ts";
+import { MOTORVERSIES } from "../../src/pijplijn/motorversies.ts";
 import { DOCUMENTSOORT_VERSIE } from "../../src/pijplijn/documentsoort.ts";
 import { NIEUWSMOTOR_VERSIE, nieuwsselectieronde } from "../../src/pijplijn/nieuwsselectie.ts";
 import { leesNieuwsContext } from "../../src/site/nieuwscontext.ts";
@@ -153,9 +154,15 @@ describe("de nieuwsselectie in de containerindeling", () => {
                 modaliteit_versie    = $2,
                 bewijskracht_plafond = 5,
                 oordeel_bron         = 'motor',
-                herbeoordeeld_op     = now()
+                herbeoordeeld_op     = now(),
+                /* EN DE MOTORVERSIESTEMPEL OP DE CLAIM, sinds 0048. De
+                   toelichting hierboven blijft gelden -- hij moet de
+                   ECHTE zijn, en MOTORVERSIES is precies de samenstelling
+                   die de poort vergelijkt. GEEN BACKTICKS in dit
+                   commentaar: de query staat in een template literal. */
+                herbeoordeeld_onder  = $3
           where id = $1`,
-        [uitspraak.rows[0]!.id, MODALITEIT_VERSIE],
+        [uitspraak.rows[0]!.id, MODALITEIT_VERSIE, MOTORVERSIES],
       );
       await c.query(
         `update intel.brondocument_versies

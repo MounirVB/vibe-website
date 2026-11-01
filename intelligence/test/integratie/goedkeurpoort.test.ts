@@ -52,6 +52,7 @@ import {
 import { herbeoordeelClaims } from "../../src/pijplijn/herbeoordeling.ts";
 import { nieuwsselectieronde } from "../../src/pijplijn/nieuwsselectie.ts";
 import { MODALITEIT_VERSIE } from "../../src/pijplijn/claimmodaliteit.ts";
+import { MOTORVERSIES } from "../../src/pijplijn/motorversies.ts";
 import { DOCUMENTSOORT_VERSIE } from "../../src/pijplijn/documentsoort.ts";
 
 describe("de tweede poort: goedkeuren en publiceren wegen de actuele claim", () => {
@@ -238,7 +239,12 @@ describe("de tweede poort: goedkeuren en publiceren wegen de actuele claim", () 
        vergelijkt met andere gebeurtenissen, dus een gemengde populatie
        maakt ook de weging van DIT concept onbetrouwbaar. */
     const ander = await klaar("zaak-4-ander");
-    await zetClaim(ander.uitspraakId, "modaliteit_versie", null);
+    /* OPENSTAAND IS SINDS 0048 EEN LEGE `herbeoordeeld_onder`, en niet
+       meer een lege `modaliteit_versie`. Die stempel hoort bij de CLAIM;
+       de oude greep hing aan het DOCUMENT, waar de taak
+       documentclassificatie hem op prioriteit 21 al wegwerkte vóórdat
+       de herbeoordeling op 22 keek. Zie claimpoort.ts. */
+    await zetClaim(ander.uitspraakId, "herbeoordeeld_onder", null);
 
     const stand = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
       herbeoordeelStand(c, org),
@@ -264,7 +270,7 @@ describe("de tweede poort: goedkeuren en publiceren wegen de actuele claim", () 
     );
 
     // Opruimen, zodat de volgende zaken niet op deze poort stuiten.
-    await zetClaim(ander.uitspraakId, "modaliteit_versie", MODALITEIT_VERSIE);
+    await zetClaim(ander.uitspraakId, "herbeoordeeld_onder", MOTORVERSIES);
     const na = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
       herbeoordeelStand(c, org),
     );
@@ -562,11 +568,21 @@ describe("de tweede poort: goedkeuren en publiceren wegen de actuele claim", () 
         `insert into intel.uitspraken
            (organisatie_id, gebeurtenis_id, tekst, soort, waarde_numeriek, eenheid, onderwerp,
             verificatie_status, bewijs_kwaliteit, modaliteit, modaliteit_zekerheid,
-            modaliteit_versie, bewijskracht_plafond)
+            modaliteit_versie, bewijskracht_plafond, herbeoordeeld_onder)
          values ($1, $2, $3, 'cijfer', 125, 'EUR', 'subsidie', 'ongeverifieerd', 5,
-                 'VASTGESTELD', 0.90, $4, 5)
+                 'VASTGESTELD', 0.90, $4, 5, $5)
          returning id`,
-        [org, gid, "Schaal de regeling op naar 125 miljoen euro per jaar.", MODALITEIT_VERSIE],
+        /* MET DE MOTORVERSIESTEMPEL. Deze claim IS door de huidige motor
+           gewogen -- hij is alleen niet bevestigd. Zonder stempel zou hij
+           de claimpoort sluiten en toetsten de zaken hieronder een dichte
+           poort in plaats van de bewijsdrempel. */
+        [
+          org,
+          gid,
+          "Schaal de regeling op naar 125 miljoen euro per jaar.",
+          MODALITEIT_VERSIE,
+          MOTORVERSIES,
+        ],
       );
       await c.query(
         `insert into intel.uitspraak_bronnen (organisatie_id, uitspraak_id, versie_id, rol)
@@ -613,11 +629,16 @@ describe("de tweede poort: goedkeuren en publiceren wegen de actuele claim", () 
            (organisatie_id, gebeurtenis_id, tekst, soort, waarde_numeriek, eenheid, onderwerp,
             verificatie_status, bewijs_kwaliteit,
             modaliteit, modaliteit_zekerheid, modaliteit_versie, modaliteit_grondslag,
-            bewijskracht_plafond, oordeel_bron)
+            bewijskracht_plafond, oordeel_bron, herbeoordeeld_onder)
          select organisatie_id, gebeurtenis_id, tekst, soort, 4000, eenheid, onderwerp,
                 'ongeverifieerd', bewijs_kwaliteit,
                 modaliteit, modaliteit_zekerheid, modaliteit_versie, modaliteit_grondslag,
-                bewijskracht_plafond, 'motor'
+                bewijskracht_plafond, 'motor',
+                /* DE STEMPEL ERFT, net als in schaalcorrectie.ts sinds
+                   0048. Weglaten liet de poort dichtvallen na een
+                   schaalcorrectie -- de assertie onderaan deze zaak is
+                   precies die tegenproef. */
+                herbeoordeeld_onder
            from intel.uitspraken where id = $1
          returning id`,
         [v.uitspraakId],

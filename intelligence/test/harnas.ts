@@ -27,6 +27,7 @@ import { migreer } from "../src/db/migraties.ts";
 import { inhoudAfdruk } from "../src/inhoud/concept.ts";
 import { DOCUMENTSOORT_VERSIE } from "../src/pijplijn/documentsoort.ts";
 import { MODALITEIT_VERSIE } from "../src/pijplijn/claimmodaliteit.ts";
+import { MOTORVERSIES } from "../src/pijplijn/motorversies.ts";
 
 let teller = 0;
 
@@ -252,6 +253,12 @@ export async function maakDragendeVersie(
     readonly verificatieStatus?: string;
     readonly bewijsKwaliteit?: number;
     readonly bewijskrachtPlafond?: number | null;
+    /**
+     * De motorversiestempel. Standaard MOTORVERSIES, zoals
+     * schrijfUitspraken() hem in productie zet. Geef expliciet `null`
+     * mee om een claim te toetsen die NOG op herbeoordeling wacht.
+     */
+    readonly herbeoordeeldOnder?: string | null;
   },
 ): Promise<DragendeVersie> {
   const titel = "Ondernemers krijgen in 2026 meer tijd voor hun SDE++-aanvraag";
@@ -333,9 +340,9 @@ export async function maakDragendeVersie(
          (organisatie_id, tekst, soort, waarde_numeriek, eenheid, onderwerp,
           verificatie_status, bewijs_kwaliteit,
           modaliteit, modaliteit_zekerheid, modaliteit_versie, modaliteit_grondslag,
-          bewijskracht_plafond)
+          bewijskracht_plafond, herbeoordeeld_onder)
        values ($1, $2, 'datum', 2, 'week', 'subsidie',
-               'ongeverifieerd', $3, $4, $5, $6, $7, $8)
+               'ongeverifieerd', $3, $4, $5, $6, $7, $8, $9)
        returning id`,
       [
         organisatieId,
@@ -346,6 +353,16 @@ export async function maakDragendeVersie(
         MODALITEIT_VERSIE,
         JSON.stringify({ uitleg: "fixture" }),
         opties.bewijskrachtPlafond === undefined ? 4 : opties.bewijskrachtPlafond,
+        /* DE STEMPEL, zoals schrijfUitspraken() hem in productie zet.
+           Zonder hem leest de claimpoort deze fixture als "nog te
+           herbeoordelen" en blijft hij DICHT — en dan toetst een
+           fixture iets anders dan productie doet. Gemeten: 22
+           integratietoetsen vielen daarop om, met "aanname: de poort
+           staat weer open" als foutregel.
+
+           Wie een claim MET een openstaande herbeoordeling wil
+           toetsen, geeft herbeoordeeldOnder expliciet mee als null. */
+        opties.herbeoordeeldOnder === undefined ? MOTORVERSIES : opties.herbeoordeeldOnder,
       ],
     );
     /* EERST DE BINDING, DAN DE STATUS. De constraint trigger

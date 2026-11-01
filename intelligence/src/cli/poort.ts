@@ -17,6 +17,7 @@ import { status as migratieStatus } from "../db/migraties.ts";
 import { BRONNEN } from "../bronnen/register.ts";
 import { redacteerFout } from "../kern/geheimen.ts";
 import { controleerBron } from "../bronnen/soorten.ts";
+import { MOTORVERSIES } from "../pijplijn/motorversies.ts";
 
 const heeft = (naam: string) => process.argv.includes(`--${naam}`);
 
@@ -103,14 +104,24 @@ async function main(): Promise<number> {
       const b = await c.query<{ r: string }>(
         "select soort || ': ' || bevinding as r from intel_priv.controleer_inhoudsinvarianten()",
       );
-      return [...a.rows, ...b.rows].map((x) => x.r);
+      /* DE CLAIMINVARIANTEN, sinds 0048 en als DERDE aanroep.
+         Een aparte functie, bewust: controleer_invarianten() is 79
+         regels security-kritieke SQL, en die overtypen om er een tak
+         aan te hangen is een transcriptierisico zonder opbrengst. Hij
+         krijgt MOTORVERSIES mee omdat een SQL-functie de
+         TypeScript-constanten niet kan kennen. */
+      const d = await c.query<{ r: string }>(
+        "select soort || ': ' || bevinding as r from intel_priv.controleer_claiminvarianten($1)",
+        [MOTORVERSIES],
+      );
+      return [...a.rows, ...b.rows, ...d.rows].map((x) => x.r);
     });
     stappen.push({
       naam: "INVARIANTEN",
       uitkomst: bevindingen.length === 0 ? "PASS" : "FAIL",
       detail:
         bevindingen.length === 0
-          ? "RLS, functierechten, auditspoor en bewijsplicht: 0 bevindingen"
+          ? "RLS, functierechten, auditspoor, bewijsplicht en claims: 0 bevindingen"
           : bevindingen.slice(0, 4).join(" | "),
     });
   } catch (e) {

@@ -38,6 +38,7 @@ import {
 import { metOrganisatie } from "../../src/kern/db.ts";
 import { configVergeten } from "../../src/kern/config.ts";
 import { MODALITEIT_VERSIE } from "../../src/pijplijn/claimmodaliteit.ts";
+import { MOTORVERSIES } from "../../src/pijplijn/motorversies.ts";
 import { DOCUMENTSOORT_VERSIE } from "../../src/pijplijn/documentsoort.ts";
 
 const EIGENAAR_ROUTE = "kennis/netcongestie-uitgelegd";
@@ -159,9 +160,14 @@ describe("publiceren via het routeregister", () => {
                 modaliteit_versie    = $2,
                 bewijskracht_plafond = 5,
                 oordeel_bron         = 'motor',
-                herbeoordeeld_op     = now()
+                herbeoordeeld_op     = now(),
+                /* DE MOTORVERSIESTEMPEL, sinds 0048. Zonder hem leest de
+                   claimpoort deze fixture als openstaand en weigert
+                   publiceer() op een reden die niets met deze toets te
+                   maken heeft. */
+                herbeoordeeld_onder  = $3
           where id = $1`,
-        [uitspraak.rows[0]!.id, MODALITEIT_VERSIE],
+        [uitspraak.rows[0]!.id, MODALITEIT_VERSIE, MOTORVERSIES],
       );
       const kandidaat = await c.query<{ id: number }>(
         `insert into intel.inhoud_kandidaten
