@@ -56,7 +56,8 @@
     "weekrapport": "node src/cli/weekrapport.ts",
     "documentsoort": "node src/cli/documentsoort.ts",
     "herbeoordeel": "node src/cli/herbeoordeel.ts",
-    "gsc": "node src/cli/gsc.ts"
+    "gsc": "node src/cli/gsc.ts",
+    "geozicht": "node src/cli/geozicht.ts"
   },
   "dependencies": {
     "express": "^4.21.2",

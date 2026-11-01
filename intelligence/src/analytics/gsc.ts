@@ -102,6 +102,7 @@
    ============================================================ */
 
 import { createSign } from "node:crypto";
+import type pg from "pg";
 import { eenRij, metOrganisatie, rijen, type Pool } from "../kern/db.ts";
 import { IntelFout } from "../kern/fouten.ts";
 import { maakLogger } from "../kern/log.ts";
@@ -755,9 +756,19 @@ export type GscStand = {
   readonly afgekapteVensters: number;
 };
 
-/** Wat er van GSC in de database staat. Voor het dashboard en de monitor. */
-export async function gscStand(pool: Pool, organisatieId: number): Promise<GscStand> {
-  return metOrganisatie(pool, { organisatieId }, async (c) => {
+/**
+ * Wat er van GSC in de database staat. Voor het dashboard en de monitor.
+ *
+ * NEEMT EEN CLIENT EN GEEN POOL, want hij leest alleen. Dat is geen
+ * smaak: meetGezondheid() krijgt een client aangereikt en zou anders
+ * een tweede verbinding moeten opzetten binnen een transactie die al
+ * loopt.
+ */
+export async function gscStand(
+  c: Pick<pg.PoolClient, "query">,
+  organisatieId: number,
+): Promise<GscStand> {
+  {
     const r = await rijen<{
       dekkingsrijen: string;
       zoekvraagrijen: string;
@@ -786,5 +797,5 @@ export async function gscStand(pool: Pool, organisatieId: number): Promise<GscSt
       laatsteOphaling: x?.laatste ?? null,
       afgekapteVensters: Number(x?.afgekapt ?? 0),
     };
-  });
+  }
 }

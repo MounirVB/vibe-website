@@ -196,6 +196,8 @@ export type ZaaiRapport = {
   readonly bronnenActief: number;
   readonly koppelingen: readonly { sleutel: string; status: string; ontbrekend: string[] }[];
   readonly beleidVersie: string;
+  /** Nieuw gezaaide GEO-prompts. Idempotent per sleutel+versie. */
+  readonly geoPromptsToegevoegd: number;
 };
 
 export async function zaai(pool: Pool, opties: { siteWortel?: string } = {}): Promise<ZaaiRapport> {
@@ -321,6 +323,19 @@ export async function zaai(pool: Pool, opties: { siteWortel?: string } = {}): Pr
       bronnen: bronnenGeschreven,
     });
 
+    /* DE GEO-PROMPTSET, hier en niet in een migratie. Een promptset is
+       INHOUD: hij hoort in code te staan waar hij reviewbaar is, en een
+       migratie met DML zou hem onwijzigbaar in de historie zetten.
+       zaaiGeoPrompts() is idempotent per (sleutel, versie), dus elke
+       deploy voegt alleen echt nieuwe prompts toe. Een HERSCHREVEN
+       prompt krijgt een nieuwe VERSIE en overschrijft de oude nooit;
+       zie migratie 0049. */
+    const { geoPromptsToegevoegd } = await (async () => {
+      const { zaaiGeoPrompts } = await import("../analytics/geo.ts");
+      const uit = await zaaiGeoPrompts(c, organisatieId);
+      return { geoPromptsToegevoegd: uit.toegevoegd };
+    })();
+
     return {
       organisatieId,
       paginasGescand: scan.paginas.length,
@@ -338,6 +353,7 @@ export async function zaai(pool: Pool, opties: { siteWortel?: string } = {}): Pr
       bronnenActief: actief,
       koppelingen,
       beleidVersie,
+      geoPromptsToegevoegd,
     };
   });
 }

@@ -151,7 +151,7 @@ describe("de Search Console-koppeling", () => {
       if (bewaard.gcs !== undefined) process.env["INTEL_GCS_SLEUTEL"] = bewaard.gcs;
     }
 
-    const stand = await gscStand(db.pool, org);
+    const stand = await metOrganisatie(db.pool, { organisatieId: org }, (c) => gscStand(c, org));
     assert.equal(stand.dekkingsrijen, 0, "een blokkade mag geen dekkingsvenster achterlaten");
     assert.equal(stand.zoekvraagrijen, 0);
     assert.equal(
@@ -176,7 +176,7 @@ describe("de Search Console-koppeling", () => {
         [org, GSC_BRON],
       );
     });
-    const stand = await gscStand(db.pool, org);
+    const stand = await metOrganisatie(db.pool, { organisatieId: org }, (c) => gscStand(c, org));
     assert.equal(stand.dekkingsrijen, 1, "er is nu WEL een venster");
     assert.equal(stand.zoekvraagrijen, 0, "en nul zoekvraagrijen daarbinnen");
     /* Dat is de leesbare uitkomst 'nul vertoningen in die week', en die

@@ -13,7 +13,7 @@
    schrijft niets.
    ============================================================ */
 
-import { maakPool, sluitAllePools } from "../kern/db.ts";
+import { maakPool, metOrganisatie, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
 import {
   gscStand,
@@ -111,7 +111,9 @@ async function main(): Promise<number> {
     return 0;
   }
 
-  const stand = await gscStand(pool, organisatieId);
+  const stand = await metOrganisatie(pool, { organisatieId }, (c) =>
+    gscStand(c, organisatieId),
+  );
   const toegang = gscToegang();
   process.stdout.write(
     `\nGSC — STAND IN DE DATABASE\n\n` +
