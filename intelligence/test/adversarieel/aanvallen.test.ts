@@ -373,6 +373,13 @@ describe("adversariële gevallen", () => {
     const s = vatPoortenSamen(
       toetsConcept({
         pad: "/nieuws-oud",
+        /* De poort `commerciele_doorverwijzing` is voor soort
+           'nieuw_artikel' blokkerend. Deze twee zaken toetsen een
+           verlopen claim en een injectiebron, niet de commerciele
+           doorverwijzing, dus de fixture draagt die wel zodat de
+           blokkade die ze METEN de enige is. */
+        soort: "nieuw_artikel",
+        commercielePaden: new Set(["/contact"]),
         titel: "Een titel die lang genoeg is voor de poort op titellengte",
         metaOmschrijving:
           "Een metabeschrijving die ruim boven de zeventig tekens uitkomt en netjes onder honderdzestig blijft.",
@@ -442,6 +449,11 @@ describe("adversariële gevallen", () => {
     const s = vatPoortenSamen(
       toetsConcept({
         pad: "/nieuws-inject",
+        /* Zie de zaak hierboven: de fixture draagt de commerciele
+           doorverwijzing wel, zodat de blokkade die deze zaak MEET de
+           injectiebron is en niet de doorverwijzing. */
+        soort: "nieuw_artikel",
+        commercielePaden: new Set(["/contact"]),
         titel: "Een titel die lang genoeg is voor de poort op titellengte",
         metaOmschrijving:
           "Een metabeschrijving die ruim boven de zeventig tekens uitkomt en netjes onder honderdzestig blijft.",

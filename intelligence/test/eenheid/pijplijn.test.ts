@@ -219,6 +219,13 @@ function basisConcept(overschrijf: Partial<ConceptTeToetsen> = {}): ConceptTeToe
     ],
     injectieInBron: false,
     bestaandePaden: new Set(["/contact"]),
+    /* Sinds de poort `commerciele_doorverwijzing`. Deze basisfixture
+       hoort door alle poorten te komen; /contact staat al in
+       bestaandePaden en is ook het commerciele pad. Soort
+       `kennis_update`, zodat de poort hier een advies is en de losse
+       zaken hieronder niet op een tweede blokkade stuiten. */
+    commercielePaden: new Set(["/contact"]),
+    soort: "kennis_update",
     siteBasisUrl: "https://www.vibeenergy.nl",
     doelPaginaBeheer: "intelligence",
     ...overschrijf,
@@ -228,6 +235,111 @@ function basisConcept(overschrijf: Partial<ConceptTeToetsen> = {}): ConceptTeToe
 test("poorten: een net concept haalt alles", () => {
   const s = vatPoortenSamen(toetsConcept(basisConcept()));
   assert.equal(s.geslaagd, true, s.blokkades.join(" | "));
+});
+
+/* ------------------------------------------------------------------
+   DE POORT `commerciele_doorverwijzing`
+   ------------------------------------------------------------------
+   De opdracht eist dat nieuws niet alleen informeert maar zakelijke
+   aanvragen ondersteunt. De bestaande poort `interne_links_bestaan`
+   dekt dat NIET: die toetst of een link ergens naartoe gaat dat
+   bestaat, dus een nieuwsbericht dat alleen naar andere
+   nieuwsberichten linkt haalt hem en leidt commercieel nergens heen.
+   ------------------------------------------------------------------ */
+
+test("poort commerciele_doorverwijzing: een NIEUWSbericht zonder commerciele link BLOKKEERT", () => {
+  const s = vatPoortenSamen(
+    toetsConcept(
+      basisConcept({
+        soort: "nieuw_artikel",
+        /* Een body met een interne link die BESTAAT maar niet
+           commercieel is. Dit is precies het geval dat
+           `interne_links_bestaan` doorlaat. */
+        bodyMarkdown:
+          "# Kop\n\nDit is een bericht.\n\n[Lees ook dit nieuws](/nieuws/ander)\n\n" +
+          "- Netbeheer Nederland — <https://netbeheernederland.nl/a>",
+        interneLinks: ["/nieuws/ander"],
+        bestaandePaden: new Set(["/nieuws/ander"]),
+        commercielePaden: new Set(["/contact", "/systeem-energieopslag"]),
+      }),
+    ),
+  );
+  assert.equal(s.geslaagd, false);
+  assert.ok(
+    s.blokkades.some((b) => b.startsWith("commerciele_doorverwijzing")),
+    s.blokkades.join(" | "),
+  );
+  /* DE REDEN MOET DE BESCHIKBARE PADEN NOEMEN, anders weet een
+     redacteur niet waar hij wél naartoe kan linken. */
+  assert.ok(
+    s.blokkades.some((b) => /\/contact|\/systeem-energieopslag/.test(b)),
+    `de blokkade hoort de beschikbare commerciele paden te noemen: ${s.blokkades.join(" | ")}`,
+  );
+});
+
+test("poort commerciele_doorverwijzing: een CTA in de BODY is genoeg", () => {
+  /* De CTA hoort in de TEKST te staan en niet alleen in een veld: een
+     CTA die als metadata bestaat maar niet in de body staat, bestaat
+     voor een lezer niet. */
+  const s = vatPoortenSamen(
+    toetsConcept(
+      basisConcept({
+        soort: "nieuw_artikel",
+        bodyMarkdown:
+          "# Kop\n\nDit is een bericht.\n\n[Vraag een businesscase aan](/contact)\n\n" +
+          "- Netbeheer Nederland — <https://netbeheernederland.nl/a>",
+        interneLinks: [],
+        commercielePaden: new Set(["/contact"]),
+      }),
+    ),
+  );
+  assert.equal(s.geslaagd, true, s.blokkades.join(" | "));
+});
+
+test("poort commerciele_doorverwijzing: voor een KENNISupdate is het een advies", () => {
+  /* Een kennispagina heeft een ander doel. Hem tot een CTA dwingen zou
+     een commerciele zin in een neutrale uitleg persen, dus daar is de
+     bevinding zichtbaar maar niet blokkerend. */
+  const uit = toetsConcept(
+    basisConcept({
+      soort: "kennis_update",
+      bodyMarkdown:
+        "# Kop\n\nEen neutrale uitleg.\n\n- Netbeheer Nederland — <https://netbeheernederland.nl/a>",
+      interneLinks: [],
+      commercielePaden: new Set(["/contact"]),
+    }),
+  );
+  const poort = uit.find((p) => p.poort === "commerciele_doorverwijzing");
+  assert.ok(poort !== undefined, "de poort hoort te bestaan");
+  assert.equal(poort!.geslaagd, false, "de bevinding hoort er te zijn");
+  assert.equal(poort!.ernst, "advies", "maar hij mag een kennisupdate niet tegenhouden");
+  assert.equal(
+    vatPoortenSamen(uit).geslaagd,
+    true,
+    "en de samenvatting hoort dus geslaagd te blijven",
+  );
+});
+
+test("poort commerciele_doorverwijzing: een LEEG register wordt benoemd, niet verzwegen", () => {
+  /* Zonder commerciele paden kan deze poort niets vinden. Dat is een
+     REGISTERprobleem en geen conceptprobleem, en de bevinding moet dat
+     zeggen -- anders gaat een redacteur zijn tekst herschrijven voor
+     iets dat hij niet kan oplossen. */
+  const s = vatPoortenSamen(
+    toetsConcept(
+      basisConcept({
+        soort: "nieuw_artikel",
+        bodyMarkdown:
+          "# Kop\n\nEen bericht.\n\n- Netbeheer Nederland — <https://netbeheernederland.nl/a>",
+        interneLinks: [],
+        commercielePaden: new Set(),
+      }),
+    ),
+  );
+  assert.ok(
+    s.blokkades.some((b) => /registerprobleem/.test(b)),
+    `de blokkade hoort het registerprobleem te benoemen: ${s.blokkades.join(" | ")}`,
+  );
 });
 
 test("poort geen_verzonnen_getallen: een getal zonder uitspraak blokkeert", () => {

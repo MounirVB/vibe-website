@@ -181,7 +181,9 @@ export const ZAKELIJKE_THEMACLUSTERS: Readonly<Record<string, string>> = {
  * die alle vier op soort 'techniek' uitkomen (47 gebeurtenissen) — daar
  * is het gevolg onschuldig, want 'techniek' staat niet in deze set.
  */
-const SIGNAALSOORTEN = new Set(["aanbesteding", "vergunning", "vastgoedontwikkeling"]);
+/* GEEXPORTEERD zodat test/eenheid/vocabulaire-uitbreiding.test.ts de
+   uitsluiting kan vastzetten in plaats van hem na te bouwen. */
+export const SIGNAALSOORTEN = new Set(["aanbesteding", "vergunning", "vastgoedontwikkeling"]);
 
 /** Soorten die per dag veranderen; een gedateerd bericht verouderd meteen. */
 const DAGREEKSSOORTEN = new Set(["marktprijs", "statistiek"]);

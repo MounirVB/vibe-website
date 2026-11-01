@@ -70,7 +70,9 @@ function concept(over: Partial<ConceptTeToetsen> = {}): ConceptTeToetsen {
     canoniekeUrl: "https://www.vibeenergy.nl/kennis/netcongestie",
     directAntwoord:
       "Netcongestie betekent dat het net op dat moment niet meer vermogen kan transporteren dan er al is vastgelegd.",
-    bodyMarkdown: "# Netcongestie\n\nDe wachttijd liep op tot 24 maanden.\n\n- Netbeheer Nederland — <https://netbeheernederland.nl/a>",
+    bodyMarkdown:
+      "# Netcongestie\n\nDe wachttijd liep op tot 24 maanden.\n\n" +
+      "[Bespreek uw aansluiting](/contact)\n\n- Netbeheer Nederland — <https://netbeheernederland.nl/a>",
     structuredData: { "@context": "https://schema.org", "@type": "Article" },
     interneLinks: [],
     bronnenSectie: [{ uitgever: "Netbeheer Nederland", url: "https://netbeheernederland.nl/a" }],
@@ -105,7 +107,16 @@ function concept(over: Partial<ConceptTeToetsen> = {}): ConceptTeToetsen {
         "van een nieuwe grootverbruikaansluiting in Nederland maximaal 24 maanden.",
     ],
     injectieInBron: false,
-    bestaandePaden: new Set(["/kennis/netcongestie"]),
+    bestaandePaden: new Set(["/kennis/netcongestie", "/contact"]),
+    /* DE COMMERCIELE PADEN EN DE SOORT, sinds de poort
+       `commerciele_doorverwijzing`. Deze basisfixture hoort door ALLE
+       poorten te komen, dus hij draagt een CTA naar /contact in zijn
+       body -- zie bodyMarkdown hierboven. Soort `kennis_update` en niet
+       `nieuw_artikel`: deze fixture beschrijft een kennispagina, en voor
+       die soort is de poort een advies. Dat laat de 25 zaken hieronder
+       precies toetsen wat ze toetsen. */
+    commercielePaden: new Set(["/contact"]),
+    soort: "kennis_update",
     siteBasisUrl: "https://www.vibeenergy.nl",
     doelPaginaBeheer: "intelligence",
     ...over,

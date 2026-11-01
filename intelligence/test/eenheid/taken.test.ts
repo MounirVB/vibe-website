@@ -107,7 +107,7 @@ describe("de keten staat in de juiste orde", () => {
     );
   });
 
-  test("de dagelijkse taken zijn precies de back-up, de meting en de indexatiedagstand", () => {
+  test("de dagelijkse taken zijn precies de back-up, de meting, de indexatiedagstand en gsc", () => {
     /* Uurlijks is de norm; dagelijks moet je verantwoorden. De back-up
        omdat een uurlijkse dump van een database die per uur een handvol
        rijen bijschrijft verspilling is, en de meting omdat die cijfers
@@ -120,11 +120,19 @@ describe("de keten staat in de juiste orde", () => {
        meetpunt te maken, dus 23 extra runs per dag leveren geen enkel
        extra punt op. Zie de toelichting bij de planregel.
 
+       `gsc` is er in deze ronde bijgekomen, en de verantwoording is
+       dat de BRON per dag levert: Search Console geeft zoekprestaties
+       per datum en werkt een dag soms nog bij. Uurlijks synchroniseren
+       zou 23 keer per dag hetzelfde venster ophalen bij een externe API
+       met een quotum, en elke keer de epoch verhogen zonder een nieuw
+       meetpunt. De dagcadans is hier dus de vorm van de data zelf.
+
        DEZE TOETS BLIJFT EXACT. Een verzameling die groeit zonder dat
        iemand hem hier verantwoordt, is precies wat hij moet tegenhouden:
        een uurlijkse taak die stil dagelijks wordt (of omgekeerd) verandert
-       de cadans van productie zonder dat het opvalt. */
+       de cadans van productie zonder dat het opvalt. Deze toets ving mijn
+       eigen toevoeging, en dat is waarvoor hij bestaat. */
     const dagelijks = PLAN.filter((p) => p.dagelijks).map((p) => p.soort).sort();
-    assert.deepEqual(dagelijks, ["backup", "indexatie", "meting"]);
+    assert.deepEqual(dagelijks, ["backup", "gsc", "indexatie", "meting"]);
   });
 });

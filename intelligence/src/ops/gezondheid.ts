@@ -1203,6 +1203,107 @@ export async function meetGezondheid(
         : undefined,
   });
 
+  /* ---------------- GSC-synchronisatie en GEO-meting ----------------
+     TWEE NIEUWE SIGNALEN, en bij beide is de valkuil dezelfde: een
+     ONTBREKENDE meting mag niet als een SLECHTE uitkomst lezen.
+
+     Daarom is de niveaukeuze bij beide drieledig in plaats van
+     tweeledig:
+
+       nooit gemeten        NIET GEMETEN, met de ontbrekende toegang erbij
+       gemeten en recent    OK
+       gemeten en GESTOPT   FOUT  <- dit is de stille storing
+
+     Die derde tak is het punt. Een koppeling die een maand werkte en
+     daarna stilviel is precies wat een monitor moet vinden, en met
+     alleen 'is er data' zou dat onzichtbaar blijven. */
+  try {
+    const { gscStand } = await import("../analytics/gsc.ts");
+    const { gscToegang } = await import("../analytics/gsc.ts");
+    const stand = await gscStand(c, organisatieId);
+    const toegang = gscToegang();
+    const leeftijdDagen =
+      stand.laatsteOphaling === null
+        ? null
+        : (Date.now() - new Date(stand.laatsteOphaling).getTime()) / 86_400_000;
+    /* DRIE DAGEN. De taak is dagelijks en Google levert met twee dagen
+       vertraging, dus twee dagen stil is normaal en drie niet. */
+    const gestopt = leeftijdDagen !== null && leeftijdDagen > 3;
+    voeg({
+      groep: "gsc",
+      naam: "synchronisatie",
+      niveau: stand.dekkingsrijen === 0 ? "NIET GEMETEN" : gestopt ? "FOUT" : "OK",
+      meting:
+        stand.dekkingsrijen === 0
+          ? `NOOIT GESYNCHRONISEERD. Credential: ${
+              toegang.soort === "geen" ? toegang.reden : `${toegang.clientEmail} via ${toegang.herkomst}`
+            }. NUL DEKKINGSVENSTERS betekent niet nul vertoningen; het betekent dat er niets is opgehaald.`
+          : `${stand.dekkingsrijen} dekkingsvenster(s), ${stand.zoekvraagrijen} zoekvraagrijen, ` +
+            `nieuwste datum ${stand.nieuwsteDatum ?? "onbekend"}, laatste ophaling ` +
+            `${leeftijdDagen === null ? "onbekend" : `${leeftijdDagen.toFixed(1)} dagen oud`}` +
+            (stand.afgekapteVensters > 0
+              ? `, ${stand.afgekapteVensters} venster(s) AFGEKAPT en dus een ondergrens`
+              : ""),
+      advies:
+        stand.dekkingsrijen === 0
+          ? "npm run gsc -- --properties zegt precies waar het stokt: credential, API uit, " +
+            "propertytoegang of een onbesliste propertykeuze"
+          : gestopt
+            ? "de dagelijkse taak `gsc` levert niets meer; kijk in intel.taken en in de " +
+              "logregel van die taak"
+            : undefined,
+    });
+  } catch (e) {
+    voeg({
+      groep: "gsc",
+      naam: "synchronisatie",
+      niveau: "NIET GEMETEN",
+      meting: `de GSC-stand kon niet gelezen worden: ${e instanceof Error ? e.message : String(e)}`,
+    });
+  }
+
+  try {
+    const { geoStand } = await import("../analytics/geo.ts");
+    const stand = await geoStand(c, organisatieId);
+    const leeftijdDagen =
+      stand.laatsteMeting === null
+        ? null
+        : (Date.now() - new Date(stand.laatsteMeting).getTime()) / 86_400_000;
+    /* ACHT DAGEN, want de GEO-ronde is bedoeld als periodiek en niet
+       dagelijks: hij kost modelaanroepen. */
+    const gestopt = stand.gemeten > 0 && leeftijdDagen !== null && leeftijdDagen > 8;
+    voeg({
+      groep: "geo",
+      naam: "zichtbaarheidsmeting",
+      niveau: stand.gemeten === 0 ? "NIET GEMETEN" : gestopt ? "FOUT" : "OK",
+      meting:
+        stand.gemeten === 0
+          ? `${stand.prompts} actieve prompt(s), ${stand.metingen} poging(en), ` +
+            `${stand.nietGemeten} NIET GEMETEN. Het aandeel met merkvermelding staat op ` +
+            `NIET GEMETEN en niet op 0%: nul gemeten pogingen is geen nul zichtbaarheid.`
+          : `${stand.gemeten} van ${stand.metingen} poging(en) gemeten, aandeel met merk ` +
+            `${stand.aandeelMetMerk === null ? "NIET GEMETEN" : `${(stand.aandeelMetMerk * 100).toFixed(0)}%`}` +
+            `, methode ${stand.methodeVersies.join("/") || "onbekend"}, laatste poging ` +
+            `${leeftijdDagen === null ? "onbekend" : `${leeftijdDagen.toFixed(1)} dagen oud`}` +
+            `. GECONTROLEERDE MODELMETING, geen zichtbaarheid bij echte AI-gebruikers.`,
+      advies:
+        stand.gemeten === 0
+          ? "npm run geozicht noemt de reden per poging. Zonder modelsleutel weigert de ronde " +
+            "met opzet: de deterministische terugval kan zichtbaarheid niet meten"
+          : gestopt
+            ? "de GEO-ronde heeft gemeten en is gestopt; kijk naar het dagbudget en de " +
+              "stroomonderbreker in intel.ai_*"
+            : undefined,
+    });
+  } catch (e) {
+    voeg({
+      groep: "geo",
+      naam: "zichtbaarheidsmeting",
+      niveau: "NIET GEMETEN",
+      meting: `de GEO-stand kon niet gelezen worden: ${e instanceof Error ? e.message : String(e)}`,
+    });
+  }
+
   /* ---------------- back-up en restore ---------------- */
   /* DE BUCKET IS DE WAARHEID, DE CONTAINERSCHIJF IS EEN BIJZAAK.
      Dat stond al in de toelichting bij 'externe kopie', maar de twee

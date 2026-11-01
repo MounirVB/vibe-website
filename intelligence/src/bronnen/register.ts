@@ -23,6 +23,68 @@
      volledig uit. De machinaleesbare laag van TenneT staat op
      developer.tennet.eu (robots zonder enkele Disallow), maar de
      data-API zelf vereist een apikey.
+
+   ------------------------------------------------------------
+   GEMETEN EN AFGEWEZEN KANDIDATEN — 1 november 2026
+
+   Acht hosts zijn die dag vanaf de PRODUCTIE-egress met de platform-UA
+   gemeten, op zoek naar dekking voor EMS, industriële elektrificatie,
+   flexibiliteit, netcongestiemaatregelen, batterijopslag en
+   laadinfrastructuur. Twee zijn toegevoegd (nkl-laadinfra en
+   energie-nederland-nieuws). De zes andere staan hier met hun reden,
+   zodat ze niet opnieuw als kandidaat opduiken. Ze zijn met OPZET geen
+   Bron-rij: een bron die we nooit ophalen hoort niet in de
+   bronnenmonitoring mee te tellen.
+
+   hollandsolar.nl        GEEN GRONDSLAG, en subtiel. Zijn robots.txt is
+                          1.248 bytes die UITSLUITEND de
+                          Content-Signals-toelichting bevatten: geen
+                          User-agent-groep, geen Disallow, en geen
+                          directieve `Content-Signal:`-regel. Alleen de
+                          uitleg en de Artikel 4-zin. Volgens hun eigen
+                          clausule (c) wordt er dan 'neither granted nor
+                          restricted'. Er is dus GEEN voorbehoud — maar
+                          ook geen uitnodiging, en zonder feed of
+                          Sitemap valt de ladder door naar
+                          geen_grondslag. bepaalToestemming():
+                          mogenVerwerken=false. Niet verboden, wel
+                          ongegrond.
+   gopacs.eu              RECHTMATIG MAAR LEEG. /feed geeft HTTP 200
+                          application/rss+xml en de ladder zegt
+                          geen_voorbehoud / syndicatieformaat /
+                          mogenVerwerken=true. Maar de feed bevat ÉÉN
+                          item: 'Hello world!', gedateerd 28 november
+                          2024 — de standaard WordPress-placeholder.
+                          Technisch betrouwbaar is iets anders dan
+                          technisch bereikbaar; dit zou een document
+                          zonder waarde in de bak zetten. Inhoudelijk
+                          jammer: GOPACS is hét Nederlandse
+                          congestiemarktplatform. Het aanmelden waard
+                          zodra zij echt gaan publiceren.
+   vemw.nl                robots 200, 445 bytes, 0 uitgesloten
+                          user-agents, maar GEEN feed gevonden op /feed,
+                          /rss, /nieuws/rss. Zijn sitemap staat op een
+                          eigen pad (/l/sitemaps/index) dat een andere
+                          vorm heeft dan de sitemapparser verwacht.
+                          Inhoudelijk zeer relevant (zakelijke
+                          energiegebruikers, industriële
+                          elektrificatie); vraagt een eigen
+                          parsertoets voordat hij erin kan.
+   technieknederland.nl   robots 200, 175 bytes, maar de Sitemap-regel
+                          wijst naar een ANDERE host
+                          (tnverzekeringen.livits.net). Dat is geen
+                          grondslag voor technieknederland.nl zelf, en
+                          een sitemap van een verzekeringsportaal is
+                          niet de bron die we zoeken.
+   topsectorenergie.nl    robots 200, 132 bytes, Sitemap wijst naar
+                          energy-innovation.nl — opnieuw een andere
+                          host. Geen feed gevonden.
+   fme.nl                 robots 200, 2.170 bytes, 0 uitgesloten
+                          user-agents, /sitemap.xml geeft 200. Geen
+                          RSS. Een sitemap zonder tekst levert alleen
+                          url, lastmod en titel; dat is een
+                          wijzigingsdetector en geen nieuwsbron. Niet
+                          afgewezen op toestemming maar op opbrengst.
    ============================================================ */
 
 import type { Bron } from "./soorten.ts";
@@ -984,6 +1046,142 @@ export const BRONNEN: readonly Bron[] = [
     notities:
       "Brancheorganisatie voor energieopslag: het dichtst bij de kern van Vibe. Let op dat een " +
       "belangenstandpunt als interpretatie wordt vastgelegd, niet als feit.",
+  },
+  {
+    ...STANDAARD,
+    /* NIEUW OP 1 NOVEMBER 2026, voor het laadinfragat.
+       ----------------------------------------------------------------
+       De vorige ronde stelde vast dat `laadinfrastructuur` nauwelijks
+       dekking had: 11 van 3753 titels met een laadinfraterm, en de
+       inhoudelijk kansrijkste bron (elaad-laadinfra) staat terecht uit
+       omdat zijn robots.txt CCBot volledig uitsluit.
+
+       NKL is het Nationaal Kennisplatform Laadinfrastructuur, opgericht
+       door netbeheerders, gemeenten en marktpartijen. GEMETEN op
+       1 november 2026 vanaf de productie-egress met de platform-UA:
+
+         /robots.txt  HTTP 200, 173 bytes, een permissief Yoast-blok
+                      (User-agent: * met een LEGE Disallow) plus een
+                      Sitemap-directive. Nul volledig uitgesloten
+                      user-agents, dus stap 2 van de ladder gaat niet af.
+         /feed        HTTP 200, application/rss+xml, 142.143 bytes,
+                      10 <item>-elementen, nieuwste 2026-10-02.
+
+       Het eigen beleid bevestigt dat: bepaalToestemming() geeft
+       tdmStatus 'geen_voorbehoud', grondslag 'syndicatieformaat',
+       mogenVerwerken=true. Een feed bestaat om gelezen te worden.
+
+       EEN WAARNEMING OM TE ONTHOUDEN: één van de tien items heet
+       'Beschermd: In 4 stappen aan de slag met laadpaaldelen'. Dat is
+       een WordPress-afgeschermde post; de inhoud is er niet, alleen de
+       titel. Die leveren geen bruikbare tekst en worden door de
+       verwoordbaarheidspoort afgewezen, wat de juiste uitkomst is. */
+    sleutel: "nkl-laadinfra",
+    uitgever: "NKL Nederland",
+    uitgeverSoort: "branchevereniging",
+    soort: "rss",
+    basisUrl: "https://www.nklnederland.nl",
+    endpointUrl: "https://www.nklnederland.nl/feed",
+    toegestaneHosts: ["www.nklnederland.nl", "nklnederland.nl"],
+    onderwerpen: ["laadinfrastructuur", "netcongestie"],
+    /* GEEN PRIMAIRE BRON, en dat is een geleerde les. Een
+       belangenplatform dat op primair staat met betrouwbaarheid >= 4 kan
+       zijn eigen standpunten bevestigen; dat is precies hoe
+       netbeheer-nederland-nieuws 45 lobbyclaims opleverde die bij de
+       herbeoordeling allemaal zijn ingetrokken. */
+    isPrimaireBron: false,
+    betrouwbaarheid: 4,
+    licentie: null,
+    licentieUrl: null,
+    robotsStatus: "toegestaan",
+    tdmStatus: "geen_voorbehoud",
+    verificatie: {
+      status: "geverifieerd",
+      bewijs:
+        "RSS 2.0, HTTP 200, application/rss+xml, 142.143 bytes, 10 <item>-elementen, nieuwste " +
+        "item 2026-10-02. Gemeten titels: 'Nieuwe aansluitspecificaties 4.0 maken laadpalen " +
+        "klaar voor slimme fundering', 'Verdere verplichtingen voor laadinfrastructuur bij " +
+        "gebouwen door EPBD IV', 'Wat betekent het prioriteringskader voor elektrische " +
+        "deelauto's?'. robots.txt 173 bytes, permissief Yoast-blok met lege Disallow en een " +
+        "Sitemap-directive; 0 volledig uitgesloten user-agents. bepaalToestemming(): " +
+        "geen_voorbehoud / syndicatieformaat / mogenVerwerken=true. Gemeten vanaf de " +
+        "productie-egress.",
+      op: GEMETEN_OP_EGRESS,
+    },
+    /* TWAALF UUR. Een kennisplatform publiceert een paar keer per maand;
+       uurlijks ophalen zou 24 keer per dag hetzelfde venster lezen. */
+    ophaalintervalMinuten: 720,
+    maxItemsPerOphaling: 10,
+    actief: true,
+    inactiefReden: null,
+    bewaren: "titel, url, datum, eigen samenvatting.",
+    config: {},
+    notities:
+      "Kennisplatform, geen bevoegd gezag: een aansluitspecificatie van NKL is een afspraak " +
+      "tussen marktpartijen en geen besluit. De documentsoortlaag plafonneert dat terecht.",
+  },
+  {
+    ...STANDAARD,
+    /* NIEUW OP 1 NOVEMBER 2026, voor netcongestie en flexibiliteit.
+       ----------------------------------------------------------------
+       Energie-Nederland is de brancheorganisatie van energiebedrijven.
+       GEMETEN op 1 november 2026 vanaf de productie-egress:
+
+         /robots.txt  HTTP 200, en WEL BIJZONDER: exact 14 bytes, te
+                      weten 'User-agent: *' en verder NIETS. Geen
+                      Disallow, geen Allow, geen Sitemap. Onder
+                      RFC 9309 is een groep zonder regels geen
+                      beperking, dus het pad is toegestaan.
+         /feed        HTTP 200, application/rss+xml, 47.344 bytes,
+                      8 <item>-elementen, nieuwste 2026-10-22.
+
+       De grondslag komt dus NIET uit robots.txt — daar staat niets
+       positiefs — maar uit de feed zelf: bepaalToestemming() geeft
+       grondslag 'syndicatieformaat' en mogenVerwerken=true.
+
+       INHOUDELIJK IS DIT DE SCHERPSTE VAN DE VIER GEMETEN KANDIDATEN.
+       Gemeten titels raken precies onze onderwerpen: 'Verbeterprogramma's
+       op koers, maar wachtrij voor het stroomnet blijft te lang', 'Benut
+       elke beschikbare megawatt van het elektriciteitsnet',
+       'tijdsafhankelijke nettarieven moeten begrijpelijk en betaalbaar',
+       'Voortgang aanpak netcongestie: betere contracten leveren
+       resultaat op'. */
+    sleutel: "energie-nederland-nieuws",
+    uitgever: "Energie-Nederland",
+    uitgeverSoort: "branchevereniging",
+    soort: "rss",
+    basisUrl: "https://www.energie-nederland.nl",
+    endpointUrl: "https://www.energie-nederland.nl/feed",
+    toegestaneHosts: ["www.energie-nederland.nl", "energie-nederland.nl"],
+    onderwerpen: ["netcongestie", "netbeheer", "regelgeving", "flexibiliteit"],
+    isPrimaireBron: false,
+    betrouwbaarheid: 4,
+    licentie: null,
+    licentieUrl: null,
+    robotsStatus: "toegestaan",
+    tdmStatus: "geen_voorbehoud",
+    verificatie: {
+      status: "geverifieerd",
+      bewijs:
+        "RSS 2.0, HTTP 200, application/rss+xml, 47.344 bytes, 8 <item>-elementen, nieuwste " +
+        "item 2026-10-22. Gemeten titels: 'Verbeterprogramma's op koers, maar wachtrij voor het " +
+        "stroomnet blijft te lang', 'Benut elke beschikbare megawatt van het elektriciteitsnet', " +
+        "'Voortgang aanpak netcongestie: betere contracten leveren resultaat op'. robots.txt is " +
+        "exact 14 bytes: 'User-agent: *' en verder niets, dus geen beperking en ook geen " +
+        "positieve grondslag; die komt uit de feed. bepaalToestemming(): geen_voorbehoud / " +
+        "syndicatieformaat / mogenVerwerken=true. Gemeten vanaf de productie-egress.",
+      op: GEMETEN_OP_EGRESS,
+    },
+    ophaalintervalMinuten: 720,
+    maxItemsPerOphaling: 10,
+    actief: true,
+    inactiefReden: null,
+    bewaren: "titel, url, datum, eigen samenvatting. Een standpunt van de branche is geen feit.",
+    config: {},
+    notities:
+      "Brancheorganisatie van energiebedrijven. Inhoudelijk de scherpste van de vier op " +
+      "1 november gemeten kandidaten, en juist daarom met isPrimaireBron: false — een " +
+      "belangenstandpunt mag zichzelf niet bevestigen.",
   },
   {
     ...STANDAARD,
