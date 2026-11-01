@@ -1118,7 +1118,18 @@ export const BRONNEN: readonly Bron[] = [
     config: {},
     notities:
       "Kennisplatform, geen bevoegd gezag: een aansluitspecificatie van NKL is een afspraak " +
-      "tussen marktpartijen en geen besluit. De documentsoortlaag plafonneert dat terecht.",
+      "tussen marktpartijen en geen besluit. De documentsoortlaag plafonneert dat terecht. " +
+      "LET OP, GEMETEN OP 1 NOVEMBER 2026: deze host reset af en toe de verbinding. De EERSTE " +
+      "ophaalronde na de uitrol gaf 'netwerk: fetch failed' (UND_ERR_SOCKET), waarna de bron op " +
+      "DEGRADED stond met 1 opeenvolgende fout. Nagemeten vanaf dezelfde productie-egress: " +
+      "haalOp() geeft 6 van 6 keer HTTP 200 met 142.385 bytes en 10 items, en zowel " +
+      "www.nklnederland.nl/feed als nklnederland.nl/feed/ lossen op naar nklnederland.nl/feed/. " +
+      "De bron is dus gezond; de fout was tijdelijk en is als herhaalbaar geclassificeerd, dus " +
+      "de volgende ronde ruimt hem op. Het endpoint is NIET gewijzigd: beide vormen werken " +
+      "even goed, en een URL aanpassen op grond van een tijdelijke fout is een symptoom " +
+      "behandelen. Wel om te onthouden: valt deze bron vaker uit, dan zit het in de host en " +
+      "niet in onze kant. Eén vorm faalt structureel en staat hier als waarschuwing: " +
+      "nklnederland.nl/feed ZONDER afsluitende slash gaf bij elke poging UND_ERR_SOCKET.",
   },
   {
     ...STANDAARD,
