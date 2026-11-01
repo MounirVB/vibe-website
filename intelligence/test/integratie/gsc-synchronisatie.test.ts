@@ -183,6 +183,45 @@ describe("de Search Console-koppeling", () => {
        mag een dashboard tonen. De vorige zaak mocht dat niet. */
   });
 
+  test("2c · een AUTORISATIEblokkade is geen taakfout, een STORING wel", async () => {
+    /* DE FOUT DIE IK EERST MAAKTE, en de reden dat deze zaak bestaat.
+       Mijn eerste plannerhandler gooide op ELKE blokkade met
+       herhaalbaar:false. Zo'n fout gaat in dit platform RECHTSTREEKS
+       naar de DLQ (wachtrij.ts: naarDlq = opgebruikt || !herhaalbaar).
+       De taak is DAGELIJKS en de Search Console-API staat uit in
+       afwachting van een handeling van de eigenaar -- dus elke dag een
+       nieuwe DLQ-rij, en het DLQ-signaal dat in dezelfde ronde op FOUT
+       is gezet zou daar permanent rood op staan. Een zelfgemaakt vals
+       alarm over een bekende grens.
+
+       Deze zaak zet de SCHEIDING vast op de vier fasen die op een mens
+       wachten. De module levert ze als `geblokkeerd` met een fase, en
+       de handler mag daar niet op gooien. */
+    const wachtOpMens = ["credential", "api_uit", "propertytoegang", "propertykeuze"];
+    const bron = await import("node:fs").then((fs) =>
+      fs.readFileSync(new URL("../../src/kern/taken.ts", import.meta.url), "utf8"),
+    );
+    const zonderCommentaar = bron.replace(/\/\*[\s\S]*?\*\//g, " ");
+    for (const fase of wachtOpMens) {
+      assert.ok(
+        zonderCommentaar.includes(`uit.fase === "${fase}"`),
+        `fase '${fase}' hoort in de wachtOpMens-tak van de gsc-handler te staan; zonder dat ` +
+          `levert hij dagelijks een DLQ-rij op voor een bekende grens`,
+      );
+    }
+    /* EN DE ANDERE KANT: een echte storing moet WEL gooien, en
+       herhaalbaar zijn. Een geweigerd token of een 5xx is iets dat stuk
+       is en hoort in de wachtrij. */
+    assert.ok(
+      /herhaalbaar: true/.test(zonderCommentaar),
+      "een echte storing hoort als herhaalbare fout te gooien",
+    );
+    assert.ok(
+      !/herhaalbaar: false[\s\S]{0,400}GSC-synchronisatie/.test(zonderCommentaar),
+      "de gsc-handler mag niet meer met herhaalbaar:false gooien",
+    );
+  });
+
   /* ---------- 3 · HTTP 200 is geen indexatie ---------- */
 
   test("3 · een eigen meting met HTTP 200 laat de indexatie ONBEKEND", async () => {

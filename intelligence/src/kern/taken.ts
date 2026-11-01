@@ -1099,23 +1099,64 @@ export const REGISTER: Record<string, Handler> = {
     const uit = await synchroniseerGsc(pool, organisatieId, { dagen: 28 });
 
     if (uit.soort === "geblokkeerd") {
-      /* EEN BLOKKADE WORDT EEN FOUT, GEEN NUL.
-         De opdracht eist dat ontbrekende GSC-data geen nulresultaat
-         wordt. Dat is hier op twee manieren afgedwongen: de module
-         schrijft bij een blokkade GEEN dekkingsrij, en deze handler
-         gooit. Zou hij netjes terugkeren, dan stond er in intel.taken
-         'gereed' bij een ronde waarin niets is gemeten.
+      /* TWEE SOORTEN BLOKKADES, EN ZE MOGEN NIET HETZELFDE WORDEN
+         BEHANDELD. Dit heb ik eerst fout gedaan, en de consequentie is
+         ernstig genoeg om hier uit te schrijven.
 
-         NIET-HERHAALBAAR, want geen van de blokkades lost zich op door
-         opnieuw te proberen: een uitgeschakelde API, een ontbrekende
-         propertymachtiging en een onbesliste propertykeuze vragen alle
-         drie een handeling van een mens. Een herhaalbare fout zou vijf
-         keer dezelfde 403 ophalen en daarna in de DLQ landen met
-         dezelfde reden. */
+         MIJN EERSTE VERSIE GOOIDE OP ELKE BLOKKADE, met
+         herhaalbaar:false. Een niet-herhaalbare fout gaat in dit
+         platform RECHTSTREEKS naar de DLQ (wachtrij.ts: `naarDlq =
+         opgebruikt || !herhaalbaar`). Deze taak is DAGELIJKS, en de
+         Search Console-API staat uit in afwachting van een handeling
+         van de eigenaar. Gevolg zou zijn: elke dag een nieuwe DLQ-rij,
+         en het DLQ-gezondheidssignaal — dat ik in dezelfde ronde juist
+         op FOUT heb gezet boven drempel 1 — zou daar permanent rood op
+         staan. Een zelfgemaakt vals alarm over een bekende grens, en
+         precies wat par. 9 verbiedt.
+
+         DE SCHEIDING DIE WEL KLOPT:
+
+           ONTBREKENDE EXTERNE AUTORISATIE -> geen taakfout.
+           credential, api_uit, propertytoegang en propertykeuze zijn
+           alle vier een bekende grens die op een MENS wacht, niet op
+           een herhaling. Ze horen bij backup/aanwezigheid en
+           koppelingen/analytics en CRM: zichtbaar als NIET GEMETEN in
+           het gezondheidssignaal gsc/synchronisatie, met de reden erbij,
+           en niet als storing in de wachtrij.
+
+           EEN ECHTE STORING -> wel een taakfout.
+           Een geweigerd token (de sleutel is ongeldig), een mislukte
+           sites.list om een andere reden dan 'API uit', of een
+           searchAnalytics die 5xx geeft. Dat is iets dat stuk is, en
+           dat hoort in de wachtrij te staan.
+
+         EN DE EIS UIT PAR. 10 BLIJFT GEDEKT. 'Ontbrekende GSC-data mag
+         geen nulresultaat worden' wordt niet door deze throw
+         afgedwongen maar door de MODULE: bij elke blokkade schrijft hij
+         GEEN dekkingsrij. Zonder dekkingsrij is er geen venster, en
+         zonder venster leest niets als 'nul vertoningen'. */
+      const wachtOpMens =
+        uit.fase === "credential" ||
+        uit.fase === "api_uit" ||
+        uit.fase === "propertytoegang" ||
+        uit.fase === "propertykeuze";
+
+      if (wachtOpMens) {
+        maakLogger("taak:gsc").waarschuwing("gsc-synchronisatie wacht op autorisatie", {
+          fase: uit.fase,
+          reden: uit.reden,
+        });
+        return (
+          `NIET GESYNCHRONISEERD — wacht op een handeling buiten dit platform ` +
+          `(fase '${uit.fase}'): ${uit.reden} Er is GEEN dekkingsrij geschreven, dus niets ` +
+          `leest dit als nul vertoningen. Zie het signaal gsc/synchronisatie.`
+        );
+      }
+
       throw new IntelFout(
-        "configuratie",
-        `GSC-synchronisatie geblokkeerd in fase '${uit.fase}': ${uit.reden}`,
-        { herhaalbaar: false },
+        "netwerk",
+        `GSC-synchronisatie mislukt in fase '${uit.fase}': ${uit.reden}`,
+        { herhaalbaar: true },
       );
     }
 
