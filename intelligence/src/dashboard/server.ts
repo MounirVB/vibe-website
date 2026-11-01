@@ -2696,6 +2696,52 @@ ${tabel(
                 count(*) filter (where kosten_schatting is not null)::int as bekend
            from intel.ai_aanroepen`,
       ),
+      /* DE VIER TOESTANDEN UIT DE OPDRACHT, als één telling. Ze mogen
+         niet door elkaar lopen, dus ze worden APART geteld en apart
+         getoond. */
+      vierToestanden: await eenRij<{
+        bereikbaar: number;
+        in_sitemap: number;
+        gsc_ja: number;
+        onbekend: number;
+      }>(
+        c,
+        `select count(*) filter (where bron = 'eigen_meting' and http_status = 200)::int as bereikbaar,
+                count(*) filter (where in_sitemap)::int                                  as in_sitemap,
+                count(*) filter (where bron = 'gsc' and geindexeerd = 'ja')::int         as gsc_ja,
+                count(*) filter (where geindexeerd = 'onbekend')::int                    as onbekend
+           from intel.indexatie_status`,
+      ),
+      zoekvragen: await rijen<{
+        zoekvraag: string;
+        impressies: number;
+        kliks: number;
+        ctr: string | null;
+        positie: string | null;
+        dagen: number;
+      }>(
+        c,
+        `select zoekvraag, impressies, kliks, ctr::text, gemiddelde_positie::text as positie,
+                dagen_met_data as dagen
+           from intel.zoekvraag_per_vraag
+          order by impressies desc nulls last limit 15`,
+      ),
+      geo: await rijen<{
+        prompt_sleutel: string;
+        provider: string;
+        model: string;
+        pogingen: number;
+        gemeten: number;
+        met_merk: number;
+        aandeel: string | null;
+        tot: string | null;
+      }>(
+        c,
+        `select prompt_sleutel, provider, model, pogingen, gemeten, met_merk,
+                aandeel_met_merk::text as aandeel, tot::text as tot
+           from intel.geo_zichtbaarheid_per_prompt
+          order by prompt_sleutel`,
+      ),
     }));
 
     res.send(
@@ -2705,8 +2751,11 @@ ${tabel(
         gebruiker: req.gebruiker ?? null,
         inhoud: `
 <h1>Prestaties</h1>
-<p class="uitleg">Dit is de eerlijke stand. Search Console, Bing, GA4 en het CRM zijn niet
-aangesloten, dus er zijn geen zoek- en conversiecijfers. Een ontbrekende meting is geen nul.</p>
+<p class="uitleg">Dit is de eerlijke stand. <strong>Een ontbrekende meting is geen nul.</strong>
+De Search Console-koppeling BESTAAT sinds 1 november 2026 (<code>npm run gsc</code>); of er data
+staat hangt af van twee externe handelingen: de Search Console-API moet in het GCP-project aan,
+en het dienstaccount moet in Search Console aan de property zijn toegevoegd. Bing, GA4 en het CRM
+zijn niet aangesloten, dus doorklikken en conversies blijven ONBEKEND.</p>
 
 <h2>Koppelingen</h2>
 ${tabel(
@@ -2752,6 +2801,62 @@ ${tabel(
     `<div class="klein">${esc((i.bewijs ?? "").slice(0, 240))}</div>`,
   ]),
   "Nog geen eigen metingen gedaan. Draai npm run analytics.",
+)}
+
+<h2>De vier toestanden, apart geteld</h2>
+<p class="uitleg"><strong>HTTP 200 is geen Google-indexering.</strong> Dit zijn vier
+verschillende waarnemingen over dezelfde URL's, en ze staan als aparte rijen in
+<code>intel.indexatie_status</code> omdat de unieke sleutel de BRON bevat. Zou die sleutel
+alleen de URL zijn, dan zou een eigen meting een GSC-waarneming overschrijven met
+&lsquo;onbekend&rsquo; &mdash; en dan verliest het systeem indexatie door naar zijn eigen site te
+kijken.</p>
+${tabel(
+  ["Toestand", "Aantal", "Bron", "Wat het betekent"],
+  [
+    ["technisch bereikbaar", String(d.vierToestanden?.bereikbaar ?? 0), "<code>eigen_meting</code>", "HTTP 200. Zegt dat de pagina er staat, niets over opname."],
+    ["in een sitemap", String(d.vierToestanden?.in_sitemap ?? 0), "<code>eigen_meting</code>", "Wij vragen om opname. Dat is geen opname."],
+    ["indexatie VASTGESTELD", String(d.vierToestanden?.gsc_ja ?? 0), "<code>gsc</code>", "Alleen Search Console kan dit zeggen."],
+    ["indexatie ONBEKEND", String(d.vierToestanden?.onbekend ?? 0), "&mdash;", "Niet gemeten. Dit is geen nul."],
+  ].map((r) => [esc(r[0]!), `<span class="num">${r[1]}</span>`, r[2]!, `<div class="klein">${r[3]}</div>`]),
+)}
+
+<h2>Zoekprestaties uit Search Console</h2>
+${tabel(
+  ["Zoekvraag", "Vertoningen", "Kliks", "CTR", "Gem. positie", "Dagen"],
+  d.zoekvragen.map((z) => [
+    `<code class="klein">${esc(z.zoekvraag)}</code>`,
+    `<span class="num">${z.impressies ?? 0}</span>`,
+    `<span class="num">${z.kliks ?? 0}</span>`,
+    z.ctr === null ? '<span class="onbekend">ONBEKEND</span>' : `${(Number(z.ctr) * 100).toFixed(1)}%`,
+    z.positie === null ? '<span class="onbekend">ONBEKEND</span>' : Number(z.positie).toFixed(1),
+    `<span class="num">${z.dagen ?? 0}</span>`,
+  ]),
+  "Nog geen zoekvraagrijen. Dat betekent NIET nul vertoningen; het betekent dat er niets is opgehaald. Draai npm run gsc -- --properties om te zien waar het stokt.",
+)}
+<p class="klein">De gemiddelde positie komt uit <code>intel.zoekvraag_per_vraag</code>, die
+<code>sum(positie_som)/sum(impressies) + 1</code> rekent. Nooit <code>avg(gemiddelde_positie)</code>:
+dat weegt een dag met twee vertoningen even zwaar als een dag met tweeduizend.</p>
+
+<h2>GEO &mdash; zichtbaarheid in AI-antwoorden</h2>
+<p class="uitleg">Dit is een <strong>gecontroleerde modelmeting</strong> en geen zichtbaarheid bij
+echte AI-gebruikers. Een echte gebruiker heeft een gespreksgeschiedenis, een locatie en een eigen
+formulering; aanbieders personaliseren en A/B-testen; en een modelversie verandert zonder
+aankondiging. Het aandeel is <strong>ONBEKEND</strong> zodra er nul GEMETEN pogingen zijn &mdash;
+0 van 0 is geen nul procent.</p>
+${tabel(
+  ["Prompt", "Provider / model", "Pogingen", "Gemeten", "Met merk", "Aandeel", "Laatste"],
+  d.geo.map((g) => [
+    `<code class="klein">${esc(g.prompt_sleutel)}</code>`,
+    `<div class="klein">${esc(g.provider)} / ${esc(g.model)}</div>`,
+    `<span class="num">${g.pogingen ?? 0}</span>`,
+    `<span class="num">${g.gemeten ?? 0}</span>`,
+    `<span class="num">${g.met_merk ?? 0}</span>`,
+    g.aandeel === null
+      ? '<span class="onbekend">NIET GEMETEN</span>'
+      : `${(Number(g.aandeel) * 100).toFixed(0)}%`,
+    `<div class="klein">${esc((g.tot ?? "").slice(0, 16))}</div>`,
+  ]),
+  "Nog geen GEO-pogingen. Draai npm run geozicht -- --meet; zonder modelsleutel weigert die ronde met opzet, want de deterministische terugval kan zichtbaarheid niet meten.",
 )}
 
 <h2>Modelkosten</h2>

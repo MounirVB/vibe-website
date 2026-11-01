@@ -68,6 +68,19 @@ export type ConceptTeToetsen = {
   readonly injectieInBron: boolean;
   /** Paden die in het pagina-register bestaan. */
   readonly bestaandePaden: ReadonlySet<string>;
+  /**
+   * De COMMERCIELE paden uit het pagina-register: oplossing, systeem en
+   * /contact. Apart van `bestaandePaden`, want de vraag 'bestaat deze
+   * link' is een andere dan 'leidt dit bericht ergens naartoe waar een
+   * bedrijf iets kan aanvragen'.
+   */
+  readonly commercielePaden: ReadonlySet<string>;
+  /**
+   * Het soort concept. Alleen een NIEUWSBERICHT hoort een commerciele
+   * doorverwijzing te MOETEN hebben; een regio-patch of een
+   * kennisupdate is iets anders.
+   */
+  readonly soort: string;
   readonly siteBasisUrl: string;
   readonly doelPaginaBeheer: "handmatig" | "intelligence" | null;
 };
@@ -382,6 +395,51 @@ export function toetsConcept(c: ConceptTeToetsen): PoortUitkomst[] {
       ]),
     );
   } else uit.push(geslaagd("interne_links_bestaan"));
+
+  /* 11b. COMMERCIELE DOORVERWIJZING — nieuw, en alleen voor nieuws.
+     ------------------------------------------------------------------
+     De opdracht eist dat nieuws niet alleen informeert maar zakelijke
+     aanvragen ondersteunt: een interne link naar een relevante
+     commerciele pagina, en een relevante CTA.
+
+     DE BESTAANDE POORT `interne_links_bestaan` DEKT DAT NIET. Die
+     toetst of een link ergens naartoe gaat dat BESTAAT. Een
+     nieuwsbericht dat alleen naar drie andere nieuwsberichten en een
+     kennispagina linkt haalt die poort, en leidt commercieel nergens
+     heen.
+
+     WAAROM ALLEEN VOOR `nieuw_artikel`. Een regio-patch en een
+     kennisupdate hebben een ander doel; die dwingen tot een CTA zou
+     een commerciele zin in een neutrale uitleg persen. Voor de andere
+     soorten is dit daarom een ADVIES en geen blokkade -- zichtbaar,
+     maar het houdt niets tegen.
+
+     EN DE CTA WORDT IN DE BODY GEZOCHT, niet in een veld. Een CTA die
+     als metadata bestaat maar niet in de tekst staat, bestaat voor een
+     lezer niet. De markdownlinkvorm is de enige plek waar hij kan
+     staan. */
+  const commercieleLinks = c.interneLinks.filter((l) => c.commercielePaden.has(l));
+  const ctaInBody = [...c.bodyMarkdown.matchAll(/\]\((\/[^)\s]*)\)/g)]
+    .map((m) => m[1]!)
+    .filter((p) => c.commercielePaden.has(p));
+  const isNieuws = c.soort === "nieuw_artikel";
+  if (commercieleLinks.length === 0 && ctaInBody.length === 0) {
+    uit.push(
+      gefaald(
+        "commerciele_doorverwijzing",
+        [
+          "dit concept verwijst naar geen enkele commerciele pagina, niet via een interne link " +
+            "en niet via een CTA in de body. Een bericht dat alleen informeert ondersteunt geen " +
+            "zakelijke aanvraag." +
+            (c.commercielePaden.size === 0
+              ? " LET OP: het pagina-register levert nul commerciele paden, dus deze poort kan " +
+                "hier niets vinden; dat is een registerprobleem en niet een conceptprobleem."
+              : ` Beschikbaar in het register: ${[...c.commercielePaden].slice(0, 6).join(", ")}`),
+        ],
+        isNieuws ? "blokkerend" : "advies",
+      ),
+    );
+  } else uit.push(geslaagd("commerciele_doorverwijzing"));
 
   // 12. Bronvermelding
   const bronnenOk = c.bronnenSectie.filter((b) => b.uitgever.length > 1 && /^https:\/\//.test(b.url));

@@ -284,6 +284,35 @@ function nlGetal(waarde: string | null): string {
  * Bouwt het concept deterministisch op. Alleen waarden en eenheden uit
  * de uitspraken; nooit de bronzin.
  */
+/**
+ * Welke paden uit het pagina-register zijn COMMERCIEEL.
+ *
+ * Twee soorten uit intel.pagina_register plus het contactpad. Gemeten
+ * verdeling op 1 november 2026 over 433 rijen: regio 349, kennis 18,
+ * project 17, sector 16, overig 12, oplossing 10, systeem 6,
+ * juridisch 3, home 1, nieuws 1.
+ *
+ * `oplossing` en `systeem` zijn de pagina's waar een bedrijf iets kan
+ * aanvragen; samen zestien. `regio` is met 349 rijen de grootste groep
+ * maar is GEEN commerciele bestemming: dat zijn landingspagina's per
+ * gebied, en een nieuwsbericht dat daarnaartoe linkt stuurt de lezer
+ * naar een variant van zichzelf.
+ *
+ * /contact staat er expliciet bij omdat de helft van de CTA's in
+ * OPLOSSING_PER_CLUSTER daarnaartoe wijst en dat pad soort 'overig'
+ * kan dragen.
+ */
+export function commercieleSelectie(
+  paden: readonly { pad: string; soort: string | null }[],
+): ReadonlySet<string> {
+  const uit = new Set<string>();
+  for (const p of paden) {
+    if (p.soort === "oplossing" || p.soort === "systeem") uit.add(p.pad);
+    if (p.pad === "/contact") uit.add(p.pad);
+  }
+  return uit;
+}
+
 export function bouwConcept(
   invoer: ConceptInvoer,
   uitspraken: readonly UitspraakRij[],
@@ -795,12 +824,13 @@ export async function maakConcept(
       [k.gebeurtenisId],
     );
 
-    const paden = await rijen<{ pad: string }>(
+    const paden = await rijen<{ pad: string; soort: string | null }>(
       c,
-      "select pad from intel.pagina_register where organisatie_id = $1 and bestaat_in_repo",
+      "select pad, soort from intel.pagina_register where organisatie_id = $1 and bestaat_in_repo",
       [organisatieId],
     );
     const bestaandePaden = new Set(paden.map((p) => p.pad));
+    const commercielePaden = commercieleSelectie(paden);
 
     const invoer: ConceptInvoer = { ...k, gebeurtenisTitel: k.gebeurtenis_titel, gebeurdOp: k.gebeurd_op };
     let concept = bouwConcept(invoer, uitspraken, geo, bestaandePaden);
@@ -895,6 +925,7 @@ export async function maakConcept(
             invoer,
             uitspraken,
             bestaandePaden,
+            commercielePaden,
             config.siteBasisUrl,
             injectieInBron,
           );
@@ -938,6 +969,7 @@ export async function maakConcept(
       invoer,
       uitspraken,
       bestaandePaden,
+      commercielePaden,
       config.siteBasisUrl,
       injectieInBron,
     );
@@ -1107,11 +1139,12 @@ export async function hertoetsInhoudVersie(
     goedgekeurd_door: number | null;
     invoer_versies: number[] | null;
     doel_pagina_beheer: "handmatig" | "intelligence" | null;
+    soort: string;
   }>(
     c,
     `select v.pad, v.titel, v.meta_omschrijving, v.canonieke_url, v.direct_antwoord,
             v.body_markdown, v.structured_data, v.interne_links, v.bronnen_sectie,
-            v.risico_klasse, v.goedgekeurd_door, v.invoer_versies,
+            v.risico_klasse, v.goedgekeurd_door, v.invoer_versies, v.soort,
             pr.beheer as doel_pagina_beheer
        from intel.inhoud_versies v
        left join intel.pagina_register pr
@@ -1162,9 +1195,9 @@ export async function hertoetsInhoudVersie(
     [organisatieId, versieId],
   );
 
-  const paden = await rijen<{ pad: string }>(
+  const paden = await rijen<{ pad: string; soort: string | null }>(
     c,
-    "select pad from intel.pagina_register where organisatie_id = $1 and bestaat_in_repo",
+    "select pad, soort from intel.pagina_register where organisatie_id = $1 and bestaat_in_repo",
     [organisatieId],
   );
 
@@ -1179,6 +1212,8 @@ export async function hertoetsInhoudVersie(
 
   const resultaten = toetsConcept({
     pad: v.pad,
+    soort: v.soort,
+    commercielePaden: commercieleSelectie(paden),
     titel: v.titel,
     metaOmschrijving: v.meta_omschrijving,
     canoniekeUrl: v.canonieke_url,
@@ -1281,6 +1316,7 @@ function toetsVoorConcept(
   invoer: ConceptInvoer,
   uitspraken: readonly UitspraakRij[],
   bestaandePaden: ReadonlySet<string>,
+  commercielePaden: ReadonlySet<string>,
   siteBasisUrl: string,
   /* GEMETEN, NIET AANGENOMEN.
      Hier stond `injectieInBron: false` als constante in de aanroep
@@ -1324,6 +1360,8 @@ function toetsVoorConcept(
 
   return toetsConcept({
     pad: concept.pad,
+    soort: concept.soort,
+    commercielePaden,
     titel: concept.titel,
     metaOmschrijving: concept.metaOmschrijving,
     canoniekeUrl: concept.canoniekeUrl,
