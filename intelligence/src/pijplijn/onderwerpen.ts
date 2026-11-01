@@ -201,6 +201,48 @@ export type OnderwerpTreffer = {
   readonly termen: readonly string[];
 };
 
+/* EEN NEDERLANDSE SAMENSTELLING MATCHT NIET OP ZIJN KERN, en dat is een
+   GEMETEN beperking van de woordgrenzen hieronder. Vastgelegd, niet
+   gerepareerd; de reden staat eronder.
+   ------------------------------------------------------------------
+   Het patroon eist harde woordgrenzen, dus 'congestierapport' matcht
+   niet op 'congestie' en 'tariefbeschikking' niet op 'nettarief'. Het
+   netcongestievocabulaire kent congestiemanagement, congestieonderzoek
+   en congestiegebied maar niet congestierapport; netbeheer kent
+   nettarief en tariefstructuur maar niet tariefbeschikking.
+
+   GEMETEN GEVOLG, productie 1 november 2026 over 3753 versies. Twee
+   ACM-besluiten die wél over ons domein gaan krijgen 0
+   onderwerptreffers en worden daardoor nooit een gebeurtenis:
+
+     versie   18  Beslissingen op bezwaren tegen tariefbeschikkingen Bonaire 2026
+     versie 3673  Geschilbesluit Jumbo - Liander over congestierapport
+
+   Die twee termen toevoegen zou VIER documenten nieuw bereiken op
+   titel (de twee hierboven plus twee liander-sitemappagina's
+   'netbeheerders publiceren nieuwe congestierapporten'), en een vijfde
+   alleen op body.
+
+   WAAROM HET HIER NIET IS GEDAAN, met het getal erbij:
+
+   1 HET VERANDERT DE §3-UITKOMST NIET. Geen van beide ACM-besluiten
+     bevat een getal met een eenheid -- gemeten: 0 van de 19 ankers
+     matcht '[0-9][0-9.,]*\\s*(%|procent|euro|MW|GW|kWh|MWh)'. Ze zouden
+     dus een gebeurtenis worden zonder een verifieerbare claim op te
+     leveren, en de nul koppelingen blijft nul.
+
+   2 HET RAAKT ALLE 3753 VERSIES. herkenOnderwerpen() voedt de
+     gebeurtenissleutel (clusteren.ts), de nieuwsselectie en de
+     voorstelmotor. Een nieuwe term kan documenten hergroeperen, en dat
+     effect heb ik NIET gemeten. Een wijziging doorvoeren waarvan ik de
+     neveneffecten niet heb geteld is precies wat deze ronde elders
+     heeft opgeruimd.
+
+   3 HET WERKT ALLEEN VOORUIT. Bestaande versies worden niet opnieuw
+     geclusterd, dus er hoort een herclassificatieronde bij.
+
+   Dit is daarmee één afgebakend besluit met een bekende prijs: twee
+   termen, vier documenten, plus een gemeten hergroeperingstoets. */
 function telTermen(tekst: string, termen: readonly string[]): string[] {
   const gevonden: string[] = [];
   for (const term of termen) {

@@ -362,10 +362,10 @@ als vermelding — anders ontstaat er een cijfer zonder noemer, en
 
 ---
 
-## J · Twee bevindingen die zijn GEMETEN en NIET gebouwd
+## J · Drie bevindingen die zijn GEMETEN en NIET gebouwd
 
-Omdat bouwen hier dekking zou verzinnen. Beide staan met hun getal in de code,
-op de plek waar ze gelden.
+Omdat bouwen hier dekking zou verzinnen, of omdat de neveneffecten niet geteld
+zijn. Alle drie staan met hun getal in de code, op de plek waar ze gelden.
 
 **1 · `elektrificatie` is een dode sleutel in `ZAKELIJKE_THEMACLUSTERS`** — geen
 onderwerp, geen cluster, geen route, dus de 8 punten van het
@@ -403,6 +403,37 @@ Paris Proof wordt dus afgewezen, **ongeacht bewijs of materialiteit**. Maar:
 
 Bij nul impact, een schemawijziging en twee afnemers is dit een eigenaarsbesluit
 en geen stille reparatie.
+
+**3 · Een Nederlandse samenstelling matcht niet op zijn kern.** `telTermen()`
+eist harde woordgrenzen, dus `congestierapport` matcht niet op `congestie` en
+`tariefbeschikking` niet op `nettarief`. Twee ACM-besluiten die **wél** over ons
+domein gaan krijgen daardoor 0 onderwerptreffers en worden nooit een gebeurtenis:
+
+| versie | titel |
+|---|---|
+| 18 | Beslissingen op bezwaren tegen tariefbeschikkingen Bonaire 2026 |
+| 3673 | Geschilbesluit Jumbo – Liander over congestierapport |
+
+Die twee termen toevoegen zou **vier** documenten nieuw bereiken op titel (de
+twee hierboven plus twee liander-sitemappagina's "netbeheerders publiceren nieuwe
+congestierapporten"), en een vijfde alleen op body.
+
+Niet gedaan, met drie redenen en hun getal:
+
+1. **het verandert de §3-uitkomst niet** — geen van beide besluiten bevat een
+   getal met een eenheid (0 van de 19 ankers matcht
+   `[0-9][0-9.,]*\s*(%|procent|euro|MW|GW|kWh|MWh)`), dus ze zouden een
+   gebeurtenis worden zónder verifieerbare claim;
+2. **het raakt alle 3753 versies** — `herkenOnderwerpen()` voedt de
+   gebeurtenissleutel, de nieuwsselectie en de voorstelmotor, en het
+   hergroeperingseffect heb ik **niet** gemeten. Een wijziging doorvoeren waarvan
+   ik de neveneffecten niet heb geteld is precies wat deze ronde elders heeft
+   opgeruimd;
+3. **het werkt alleen vooruit** — bestaande versies worden niet opnieuw
+   geclusterd, dus er hoort een herclassificatieronde bij.
+
+Eén afgebakend besluit met een bekende prijs: twee termen, vier documenten, plus
+een gemeten hergroeperingstoets.
 
 ---
 
@@ -530,3 +561,7 @@ EINDOORDEEL = PASS
 5. **Een aanvraag bij KOOP** voor een benoemde user-agent op
    `repository.overheid.nl`, als Staatscourant en Gemeenteblad commercieel nodig
    zijn. Dat is de enige citeerbare route; elke andere is omzeiling.
+6. **Twee vocabulairetermen** (`congestierapport`, `tariefbeschikking`), als die
+   vier documenten — waaronder twee ACM-besluiten over netcongestie — mee moeten
+   gaan tellen. Prijs: een gemeten hergroeperingstoets plus een
+   herclassificatieronde. Verandert de §3-uitkomst niet.
