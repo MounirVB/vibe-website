@@ -2707,6 +2707,7 @@
         "congestiegebied": 10,
         "congestiemanagement": 1,
         "congestieonderzoek": 2,
+        "congestierapport": 1,
         "doorlooptijd": 1,
         "elektriciteitsnet": 2,
         "energiemanagement": 1,
@@ -43928,5 +43929,5 @@
       ]
     }
   ],
-  "inhoudsHash": "9723be9f635fd158a1289791c519df2e46548c471c09941eec8844b96ecf10a3"
+  "inhoudsHash": "1fcaa6a3542bd947e2c79980996351cfae66cf8e1c2772c1ad65eeca1a05bc3f"
 }
