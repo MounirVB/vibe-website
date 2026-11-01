@@ -4,6 +4,31 @@
 #  NIET UITGEROLD. Dit is een manifest, geen draaiende dienst.
 #  Toepassen maakt billbare resources aan en vraagt dus goedkeuring.
 #
+#  ------------------------------------------------------------
+#  EN HET DIENSTACCOUNT HIERONDER BESTAAT NIET. GEMETEN OP
+#  1 NOVEMBER 2026 met `gcloud iam service-accounts list
+#  --project=vibe-energy-509410`: het project bevat PRECIES EEN
+#  dienstaccount, en dat is
+#  intel-backup-schrijver@vibe-energy-509410.iam.gserviceaccount.com
+#  ("Vibe Intelligence back-upschrijver").
+#
+#  `vibe-analytics-ingest` is dus nooit aangemaakt; het is een naam uit
+#  dit manifest en uit docs/R2-GSC-TOEGANG.md, en die naam werd
+#  vervolgens in latere documenten herhaald alsof het account bestond.
+#  De `gcloud`-regels onderaan dit bestand zijn de instructies om hem
+#  AAN TE MAKEN -- ze zijn nooit uitgevoerd.
+#
+#  WAT ER IN PLAATS DAARVAN DRAAIT: de GSC-synchronisatie loopt sinds
+#  1 november 2026 op RAILWAY, als dagelijkse plannertaak `gsc`
+#  (prioriteit 94) met src/analytics/gsc.ts. Die gebruikt het BESTAANDE
+#  back-upschrijver-account via INTEL_GCS_SLEUTEL, met uitsluitend de
+#  scope webmasters.readonly. Er is dus geen nieuw account en geen
+#  nieuwe sleutel voor nodig.
+#
+#  Dit manifest blijft staan als het ALTERNATIEVE pad, voor als de
+#  langlevende sleutel op Railway ooit onacceptabel wordt. Wie het
+#  toepast, maakt eerst het account aan met de regels onderaan.
+#
 #  WAAROM CLOUD RUN EN NIET RAILWAY
 #  Gemeten in het zusterplatform en opnieuw bevestigd hier: Railway
 #  heeft geen OIDC-identity-token en geen tokenendpoint. Workload
@@ -22,17 +47,25 @@
 #  hij raakt de website niet aan. Faalt hij, dan blijft elke
 #  funnelstap ONBEKEND — en ONBEKEND is geen nul.
 #
-#  GEMETEN STAND VAN HET GCP-PROJECT (10 oktober 2026)
+#  GEMETEN STAND VAN HET GCP-PROJECT — BIJGEWERKT 1 NOVEMBER 2026
 #    project          vibe-energy-509410 ("Vibe Energy Calender")
 #    rol van operator roles/owner
-#    service accounts 0
+#    service accounts 1  (intel-backup-schrijver, was 0 op 10 okt)
+#    searchconsole.googleapis.com       INGESCHAKELD  <- veranderd
+#    storage.googleapis.com             ingeschakeld
+#    bigquerystorage.googleapis.com     ingeschakeld
 #    run.googleapis.com                 NIET ingeschakeld
-#    searchconsole.googleapis.com       NIET ingeschakeld
 #    analyticsdata.googleapis.com       NIET ingeschakeld
 #    secretmanager.googleapis.com       NIET ingeschakeld
 #    artifactregistry.googleapis.com    NIET ingeschakeld
 #
-#  Er is dus NIETS van deze keten aanwezig. De commando's onderaan
+#  De stand van 10 oktober zei '0 service accounts' en
+#  'searchconsole NIET ingeschakeld'. Beide zijn achterhaald, en dat
+#  is precies het soort verouderd feit dat een volgende ronde als
+#  uitgangspunt overneemt.
+#
+#  Voor de CLOUD RUN-keten is er nog niets aanwezig: run,
+#  artifactregistry en secretmanager staan uit. De commando's onderaan
 #  maken hem aan; elk daarvan is een billbare of
 #  configuratiewijzigende handeling.
 # ============================================================
@@ -106,8 +139,20 @@ spec:
                 # De GSC-property. LET OP: dit is de Vibe ENERGY-property.
                 # Vibe Home gebruikt GTM-WFWS7DRN en een eigen property;
                 # die twee mogen nooit in dezelfde database belanden.
+                #
+                # GECORRIGEERD OP 1 NOVEMBER 2026. Hier stond
+                # 'https://www.vibeenergy.nl/', een URL-prefixproperty.
+                # De eigenaar heeft de bestaande property bevestigd en
+                # dat is een DOMEINproperty: sc-domain:vibeenergy.nl.
+                # Die twee meten verschillende dingen -- een
+                # domeinproperty dekt apex en www plus http en https --
+                # en de API eist de identiteit letterlijk in de
+                # sc-domain:-vorm. De oude waarde zou dus 403 of 404
+                # hebben gegeven op een property die wel bestaat, en dat
+                # leest als 'geen data' in plaats van 'verkeerde
+                # identiteit'.
                 - name: INTEL_GSC_SITE_URL
-                  value: https://www.vibeenergy.nl/
+                  value: sc-domain:vibeenergy.nl
 
                 # De databaseverbinding komt uit Secret Manager en staat
                 # NIET in dit bestand. Dit bestand staat in een publieke

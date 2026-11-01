@@ -127,17 +127,38 @@ nu uit.
 API 403 ongeacht de IAM-rollen.** Een GCP-rol geeft géén toegang tot een
 GSC-property; die toegang wordt in Search Console verleend.
 
-Handeling: in Search Console → property `https://www.vibeenergy.nl/` →
+> **BIJGEWERKT 1 NOVEMBER 2026 — twee dingen in dit blok waren onjuist.**
+>
+> **Het dienstaccount bestond niet.** `vibe-analytics-ingest@…` is nooit aangemaakt.
+> Gemeten met `gcloud iam service-accounts list --project=vibe-energy-509410`: het project
+> bevat **precies één** dienstaccount,
+> `intel-backup-schrijver@vibe-energy-509410.iam.gserviceaccount.com`. De naam in dit
+> document was een *voornemen* uit het Cloud Run-manifest, en is daarna in latere
+> documenten herhaald alsof het account bestond.
+>
+> **De property is een DOMEINproperty.** De eigenaar heeft hem bevestigd als
+> `sc-domain:vibeenergy.nl`, niet `https://www.vibeenergy.nl/`. §2 van dit document
+> verdedigde de URL-prefix; die keuze is daarmee achterhaald, en het manifest is
+> gecorrigeerd.
+
+Handeling: in Search Console → property `sc-domain:vibeenergy.nl` →
 *Instellingen* → *Gebruikers en machtigingen* → het e-mailadres van het
 dienstaccount toevoegen:
 
 ```
-vibe-analytics-ingest@vibe-energy-509410.iam.gserviceaccount.com
+intel-backup-schrijver@vibe-energy-509410.iam.gserviceaccount.com
 ```
 
 met machtiging **Beperkt** (`Restricted`). Dat is voldoende voor
 `searchanalytics.query` en `sites.get`. **Niet** *Volledig* en zeker niet
 *Eigenaar*: die kunnen gebruikers verwijderen en de property ontverifiëren.
+
+**Waarom dit account en niet een nieuw leesaccount.** Een apart account met uitsluitend
+leesrechten is netter, maar vraagt een **nieuwe langlevende sleutel** plus twee nieuwe
+Railway-variabelen. Het bestaande account authenticeert aantoonbaar al voor de scope
+`webmasters.readonly`, heeft **nul** IAM-rollen op projectniveau (zijn opslagrechten zijn
+bucket-gebonden), en Search Console-toegang wordt *binnen* Search Console gegeven en niet
+via IAM. Toevoegen geeft dit account dus leesinzage in één property en niets meer.
 
 ## 5. Uitvoeromgeving — en waarom niet op Railway
 
@@ -197,9 +218,12 @@ eigen akkoord.
 1. API's inschakelen: `run`, `searchconsole`, `secretmanager`,
    `artifactregistry`.
 2. Dienstaccount `vibe-analytics-ingest` aanmaken — **zonder** sleutel.
+   *Let op: dit account bestaat niet; deze stap is nooit uitgevoerd. De
+   Railway-route gebruikt het bestaande `intel-backup-schrijver` en heeft geen nieuw
+   account nodig.*
 3. Secret `vibe-intel-db-url` aanmaken en `secretAccessor` eraan binden.
 4. **In Search Console** het dienstaccount als *Beperkt* toevoegen aan
-   `https://www.vibeenergy.nl/`.
+   `sc-domain:vibeenergy.nl` — de bevestigde DOMEINproperty, niet de URL-prefix.
 5. De API-client bouwen: scope `webmasters.readonly`, token van de
    metadataserver, `searchanalytics.query` per dag met `positie_som`.
 6. `--ingest` in `cli/analytics.ts` implementeren en `INTEL_GOOGLE_AUTH`
