@@ -193,13 +193,35 @@ export function kiesProvider(opties: { forceerDeterministisch?: boolean } = {}):
     });
     return maakDeterministischeProvider();
   }
+  /* EEN BEWEGENDE ALIAS IS NU EEN WEIGERING, GEEN WAARSCHUWING.
+
+     Dit stond hier als log.waarschuwing() en de aanroep ging daarna
+     gewoon door. Gemeten op 5 november 2026 is het geconfigureerde
+     model de DEFAULT 'gpt-5' (config.ts: INTEL_AI_MODEL met die
+     standaard), en isGepindModel() noemt die niet vastgezet. Zodra er
+     een sleutel wordt gezet, zou de eerste aanroep dus naar een
+     bewegende alias gaan.
+
+     Waarom dat erger is dan het klinkt, staat in de kop van dit
+     bestand als punt 2: dezelfde promptafdruk betekent dan over tijd
+     een ander model. De afdruk is wat een artikel reproduceerbaar
+     maakt; is hij niet eenduidig, dan is 'welk model schreef dit' niet
+     meer te beantwoorden — ook niet met de per-aanroep vastgelegde
+     respons, want die zegt alleen wat het model die dag ANTWOORDDE en
+     niet welke versie het was.
+
+     De weigering valt terug op de deterministische provider, met de
+     reden erbij. Dat is dezelfde route als een ontbrekende sleutel, en
+     de GEO-laag weigert expliciet op 'deterministisch' — dus dit wordt
+     zichtbaar in plaats van stil. */
   if (!isGepindModel(openai.model)) {
-    log.waarschuwing("modelnaam is geen vastgezette versie", {
+    log.waarschuwing("modelnaam is geen vastgezette versie; deterministisch terugvallen", {
       model: openai.model,
       gevolg:
-        "dezelfde promptafdruk kan over tijd een ander model betekenen; de provider-respons " +
-        "wordt per aanroep vastgelegd zodat het achteraf te zien is",
+        "dezelfde promptafdruk zou over tijd een ander model kunnen betekenen. Zet " +
+        "INTEL_AI_MODEL op een versie met een datum of versienummer",
     });
+    return maakDeterministischeProvider();
   }
   return openai;
 }

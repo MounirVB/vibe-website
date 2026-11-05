@@ -88,6 +88,11 @@ const EENHEDEN: readonly EenheidRegel[] = [
   { patroon: "kv", eenheid: "kV", soort: "cijfer" },
   { patroon: "wp", eenheid: "Wp", soort: "cijfer" },
   { patroon: "%", eenheid: "%", soort: "cijfer" },
+  /* HET WOORD NAAST HET TEKEN. '%' stond er wel, 'procent' niet, en
+     gemeten op de brontekst schrijven deze bronnen het even vaak uit:
+     "de tarieven dalen in 2026 met 12 procent" leverde nul uitspraken.
+     De eenheid is dezelfde, dus de claim is dezelfde. */
+  { patroon: "procent", eenheid: "%", soort: "cijfer" },
   { patroon: "ct/kwh", eenheid: "ct/kWh", soort: "prijs" },
   { patroon: "eur/mwh", eenheid: "EUR/MWh", soort: "prijs" },
   { patroon: "euro/mwh", eenheid: "EUR/MWh", soort: "prijs" },
@@ -125,12 +130,27 @@ export function splitsZinnen(tekst: string): string[] {
  * Wie het woord negeert, bewaart een getal dat negen ordes van grootte
  * naast de bron ligt.
  */
+/* DEZE TABEL MOET GELIJK ZIJN AAN DIE IN uitdrukking.ts.
+
+   Gemeten op 5 november 2026: daar stonden 'mille' en 'biljoen' wel en
+   hier niet. schaalcorrectie.ts had 'biljoen' al toegevoegd met precies
+   die reden erbij — "juist die asymmetrie tussen twee lagen is de klasse
+   fout die PR #28 in de getalpatronen moest repareren".
+
+   Waarom het ertoe doet: semantiek.ts laat rijmtMetUitdrukking() de
+   uitkomst van dit bestand tegen die van uitdrukking.ts aanhouden als
+   KRUISCONTROLE. Kent de ene laag een schaalwoord dat de andere niet
+   kent, dan rijmt een correct geëxtraheerd bedrag niet met zijn eigen
+   uitdrukking en valt de claim af — niet omdat hij fout is, maar omdat
+   de twee lagen een ander woordenboek hebben. */
 const SCHAAL: Readonly<Record<string, number>> = {
   duizend: 1_000,
+  mille: 1_000,
   miljoen: 1_000_000,
   mln: 1_000_000,
   miljard: 1_000_000_000,
   mld: 1_000_000_000,
+  biljoen: 1_000_000_000_000,
 };
 
 function getalVan(ruw: string): number | null {
@@ -219,12 +239,49 @@ function zoekGetallen(zin: string): RuweUitspraak[] {
      `(?:\.\d{3})*` staat nul groepen toe, dus '164' matcht zonder de punt,
      waarna de motor opschuift en '09' als bedrag leest. Een factor 18
      eraf, met de hoogste bewijskwaliteit die dit systeem kent. */
-  const euroPatroon =
-    /(?:€\s*(?<![\d.,])(\d{1,3}(?:\.\d{3})*(?:,\d+)?)|(?<![\d.,])(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*euro\b)\s*(duizend|miljoen|miljard|mln\.?|mld\.?)?/giu;
+  /* DRIE VORMEN, EN DE DERDE ONTBRAK.
+
+     Gemeten op 5 november 2026 op de echte brontekst van
+     netbeheer-nederland-nieuws: "Het uitvoeren van alle IBO-maatregelen
+     kan tot 30 miljard euro besparen" en "Netbeheerders investeren tot
+     2040 meer dan 200 miljard euro" leverden NUL uitspraken. Tien
+     claimloze gebeurtenissen van samen 85.000 tekens leverden samen nul.
+
+     De oorzaak was de plaats van het schaalwoord. Dit patroon kende
+     '€200 miljard' (symbool, getal, schaal) en '200 euro miljard' (een
+     vorm die niemand schrijft), maar niet '200 miljard euro' — getal,
+     schaal, dan het woord euro. En dat is juist de dominante
+     Nederlandse vorm.
+
+     DIT IS GEEN NIEUWE AANNAME MAAR HET WEGWERKEN VAN EEN ASYMMETRIE.
+     uitdrukking.ts kende de vorm al: regel 300 daar leest
+     '(€|EUR)? GETAL SCHAAL (euro|EUR)' en het commentaar noemt
+     letterlijk '200 miljoen euro'. De twee lagen horen elkaar te
+     kruiscontroleren via rijmtMetUitdrukking(), en één van de twee was
+     blind voor een vorm die de ander wel las.
+
+     'EUR' komt er ook bij, om dezelfde reden: uitdrukking.ts accepteert
+     alle drie de spellingen, dit bestand alleen twee. */
+  const SCHAALWOORDEN = String.raw`duizend|mille|miljoen|miljard|biljoen|mln\.?|mld\.?`;
+  const GETAL = String.raw`\d{1,3}(?:\.\d{3})*(?:,\d+)?`;
+  const euroPatronen = [
+    /* A · symbool of EUR eerst, schaalwoord erachter: '€200 miljard'. */
+    new RegExp(
+      String.raw`(?:€|EUR)\s*(?<![\d.,])(${GETAL})\s*(${SCHAALWOORDEN})?`,
+      "giu",
+    ),
+    /* B · getal, dan eventueel een schaalwoord, dan het woord euro:
+       '200 miljard euro', '1.250 euro'. */
+    new RegExp(
+      String.raw`(?<![\d.,])(${GETAL})\s*(${SCHAALWOORDEN})?\s*(?:euro|EUR)\b`,
+      "giu",
+    ),
+  ];
+  for (const euroPatroon of euroPatronen) {
   while ((m = euroPatroon.exec(zin)) !== null) {
-    const basis = getalVan(m[1] ?? m[2] ?? "");
+    const basis = getalVan(m[1] ?? "");
     if (basis === null) continue;
-    const schaalWoord = (m[3] ?? "").toLowerCase().replace(/\.$/, "");
+    const schaalWoord = (m[2] ?? "").toLowerCase().replace(/\.$/, "");
     const factor = SCHAAL[schaalWoord] ?? 1;
     uit.push({
       tekst: kort(zin, 600),
@@ -235,6 +292,7 @@ function zoekGetallen(zin: string): RuweUitspraak[] {
       geldigTot: null,
       vindplaats: `tekenpositie ${m.index}${schaalWoord ? ` (schaal: ${schaalWoord})` : ""}`,
     });
+  }
   }
 
   return uit;
