@@ -42,7 +42,15 @@ const VERDACHTE_WAARDE: readonly RegExp[] = [
   /\bsk-[A-Za-z0-9_-]{16,}\b/g,
   /\bghp_[A-Za-z0-9]{20,}\b/g,
   /\bre_[A-Za-z0-9_-]{16,}\b/g,
-  /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g,
+  /* EEN AFGEKAPTE SLEUTEL IS NOG STEEDS EEN SLEUTEL. Dit patroon eiste
+     eerst een volledig blok met -----END-----. Een diagnose die een
+     respons op 300 tekens afkapt — en dat doen er hier verscheidene —
+     levert een BEGIN-kop met honderden tekens base64 en géén END, en
+     dan greep de oude vorm niets. De alternatie pakt daarom eerst het
+     volledige blok en anders de base64-sliert die erop volgt. De
+     backslash zit in de tekenklasse omdat een sleutel in JSON zijn
+     regeleindes als letterlijke \n draagt. */
+  /-----BEGIN [A-Z ]*PRIVATE KEY-----(?:[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----|[A-Za-z0-9+/=\s\\]*)/g,
   /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g,
   /(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis|amqp|https?):\/\/[^/@\s:]+:[^@\s]+@/gi,
   /\bPG(?:PASSWORD|PASSFILE)\s*=\s*\S+/g,

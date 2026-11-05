@@ -208,17 +208,109 @@ export function configVergeten(): void {
  * Namen van omgevingsvariabelen die een koppeling nodig heeft. Alleen
  * namen; waarden worden nergens gerapporteerd.
  */
-export const KOPPELING_ENV: Readonly<Record<string, readonly string[]>> = {
-  gsc: ["INTEL_GSC_CLIENT_EMAIL", "INTEL_GSC_PRIVATE_KEY", "INTEL_GSC_SITE_URL"],
-  bing_webmaster: ["INTEL_BING_API_KEY", "INTEL_BING_SITE_URL"],
-  ga4: ["INTEL_GA4_PROPERTY_ID", "INTEL_GA4_CLIENT_EMAIL", "INTEL_GA4_PRIVATE_KEY"],
-  crm: ["INTEL_CRM_SOORT", "INTEL_CRM_TOKEN"],
-  ai_model: ["OPENAI_API_KEY"],
+export type KoppelingRoute = {
+  /** Hoe deze route heet in een rapport. */
+  readonly naam: string;
+  readonly env: readonly string[];
 };
+
+export type KoppelingEis = {
+  /** Namen die altijd aanwezig moeten zijn, welke route je ook neemt. */
+  readonly altijd: readonly string[];
+  /**
+   * Alternatieve credentialroutes; ÉÉN volledige groep volstaat.
+   *
+   * DIT VELD BESTAAT OMDAT EEN PLATTE LIJST LOOG. Tot 5 november 2026
+   * stond hier voor gsc één lijst — CLIENT_EMAIL, PRIVATE_KEY,
+   * SITE_URL — terwijl gscToegang() al een tweede route aanvaardde: de
+   * dienstaccount-JSON in INTEL_GCS_SLEUTEL. Gevolg: het
+   * koppelingenregister meldde 'niet geconfigureerd' op het moment dat
+   * GSC 4.361 rijen had weggeschreven. Een eis die niet overeenkomt met
+   * de code die hem moet waarmaken, is een valse meting.
+   *
+   * Een lege lijst betekent: er is geen keuze, `altijd` is alles.
+   */
+  readonly routes: readonly KoppelingRoute[];
+};
+
+export const KOPPELING_EIS: Readonly<Record<string, KoppelingEis>> = {
+  gsc: {
+    altijd: ["INTEL_GSC_SITE_URL"],
+    routes: [
+      { naam: "eigen GSC-credential", env: ["INTEL_GSC_CLIENT_EMAIL", "INTEL_GSC_PRIVATE_KEY"] },
+      { naam: "dienstaccount-JSON", env: ["INTEL_GCS_SLEUTEL"] },
+    ],
+  },
+  bing_webmaster: { altijd: ["INTEL_BING_API_KEY", "INTEL_BING_SITE_URL"], routes: [] },
+  ga4: {
+    altijd: ["INTEL_GA4_PROPERTY_ID", "INTEL_GA4_CLIENT_EMAIL", "INTEL_GA4_PRIVATE_KEY"],
+    routes: [],
+  },
+  crm: { altijd: ["INTEL_CRM_SOORT", "INTEL_CRM_TOKEN"], routes: [] },
+  ai_model: { altijd: ["OPENAI_API_KEY"], routes: [] },
+};
+
+/** Alle namen die een koppeling kán gebruiken, voor weergave. Nooit waarden. */
+export const KOPPELING_ENV: Readonly<Record<string, readonly string[]>> = Object.fromEntries(
+  Object.entries(KOPPELING_EIS).map(([sleutel, eis]) => [
+    sleutel,
+    [...eis.altijd, ...eis.routes.flatMap((r) => r.env)],
+  ]),
+);
 
 export function ontbrekendeEnv(sleutels: readonly string[]): string[] {
   return sleutels.filter((s) => {
     const v = process.env[s];
     return v === undefined || v === "";
   });
+}
+
+export type KoppelingEnvStand = {
+  readonly voldoet: boolean;
+  /**
+   * Wat er mist om deze koppeling te laten werken, HIER GEMETEN.
+   *
+   * Bij meerdere routes de goedkoopste: de route waarvoor het minst
+   * hoeft te worden toegevoegd. Anders zou een rapport drie variabelen
+   * eisen terwijl er één volstaat.
+   */
+  readonly ontbrekend: readonly string[];
+  /** Welke route voldoet, of null als geen enkele voldoet. */
+  readonly route: string | null;
+};
+
+/**
+ * Of de omgeving van DIT PROCES de koppeling kan bedienen.
+ *
+ * Let op het "dit proces": deze functie leest `process.env`, en dat is
+ * per dienst verschillend. `INTEL_GCS_SLEUTEL` staat alleen op
+ * vibe-intel-worker. Een uitkomst hiervan is dus nooit een uitspraak
+ * over het platform — alleen over waar hij is gemeten. Zie
+ * intel.koppelingen.laatste_sync_op voor het bewijs dat het ergens
+ * werkelijk werkt.
+ */
+export function koppelingEnvStand(sleutel: string): KoppelingEnvStand {
+  const eis = KOPPELING_EIS[sleutel];
+  if (eis === undefined) return { voldoet: false, ontbrekend: [], route: null };
+
+  const altijdMist = ontbrekendeEnv(eis.altijd);
+  if (eis.routes.length === 0) {
+    return {
+      voldoet: altijdMist.length === 0,
+      ontbrekend: altijdMist,
+      route: altijdMist.length === 0 ? "enige route" : null,
+    };
+  }
+
+  const perRoute = eis.routes.map((r) => ({ route: r, mist: ontbrekendeEnv(r.env) }));
+  const geslaagd = perRoute.find((p) => p.mist.length === 0);
+  if (altijdMist.length === 0 && geslaagd !== undefined) {
+    return { voldoet: true, ontbrekend: [], route: geslaagd.route.naam };
+  }
+  const goedkoopste = perRoute.reduce((a, b) => (b.mist.length < a.mist.length ? b : a));
+  return {
+    voldoet: false,
+    ontbrekend: [...altijdMist, ...(geslaagd === undefined ? goedkoopste.mist : [])],
+    route: null,
+  };
 }

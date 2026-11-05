@@ -17,7 +17,7 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type pg from "pg";
-import { configLezen, KOPPELING_ENV, ontbrekendeEnv } from "../kern/config.ts";
+import { configLezen, KOPPELING_ENV, koppelingEnvStand } from "../kern/config.ts";
 import {
   eenRij,
   maakPool,
@@ -615,26 +615,63 @@ async function zaaiKostenplafond(c: pg.PoolClient, organisatieId: number): Promi
  * koppeling zonder credentials is 'niet_geconfigureerd', en het
  * dashboard toont dat als NIET AANGESLOTEN in plaats van nullen.
  */
-async function zaaiKoppelingen(
+/* GEËXPORTEERD VOOR DE TOETS. De regel dat een dienst zonder
+   credentials een bewezen koppeling niet mag afschrijven is alleen hier
+   te toetsen; via het hele zaaipad zou de zaak een sitescan en een
+   netwerkronde nodig hebben. */
+export async function zaaiKoppelingen(
   c: pg.PoolClient,
   organisatieId: number,
 ): Promise<{ sleutel: string; status: string; ontbrekend: string[] }[]> {
   const uit: { sleutel: string; status: string; ontbrekend: string[] }[] = [];
 
   for (const [sleutel, env] of Object.entries(KOPPELING_ENV)) {
-    const ontbrekend = ontbrekendeEnv(env);
-    const status = ontbrekend.length === 0 ? "geconfigureerd" : "niet_geconfigureerd";
+    const stand = koppelingEnvStand(sleutel);
+    const ontbrekend = stand.ontbrekend;
+    const status = stand.voldoet ? "geconfigureerd" : "niet_geconfigureerd";
+
+    /* DEZE ZAAIER MAG EEN WERKENDE KOPPELING NIET AFSCHRIJVEN.
+
+       `npm run zaai` is de pre-deploy van vibe-intel-api. Die dienst
+       heeft INTEL_GCS_SLEUTEL en INTEL_GSC_SITE_URL niet — die staan op
+       vibe-intel-worker. Tot 5 november 2026 overschreef deze upsert
+       daarom bij elke uitrol de status van GSC met
+       'niet_geconfigureerd', en meldde de monitor een koppeling als
+       afwezig terwijl die 4.361 rijen had weggeschreven.
+
+       De oorzaak is dat één veld twee vragen moest beantwoorden: 'is
+       het hier geconfigureerd' en 'werkt het'. Die zijn nu gescheiden.
+
+       DE GRENDEL IS `bewijs_door` EN NIET `laatste_sync_op`. Dat is een
+       bewust verschil: laatste_sync_op wordt alleen gevuld bij een
+       geslaagde LEVERING, terwijl bewijs_door bij elke rapportage uit
+       een gebruikend proces gezet wordt — ook bij 'bereikbaar' en bij
+       'fout'. Zou de grendel op laatste_sync_op staan, dan zou deze
+       zaaier een koppeling die bereikbaar-maar-leeg is alsnog
+       overschrijven met 'niet geconfigureerd', en dan is de
+       diagnostische waarde weg: een ontbrekende machtiging zou weer
+       lezen als een ontbrekende variabele.
+
+       REGEL: zolang er bewijs staat, blijft de status staan. Wat deze
+       zaaier wél altijd bijwerkt is de namenlijst en het tijdstip van
+       de laatste controle — dat is informatie, geen oordeel. Ontbreekt
+       het bewijs, dan is de env-afleiding het beste wat er is en wordt
+       hij geschreven. */
     await c.query(
       `insert into intel.koppelingen
          (organisatie_id, sleutel, soort, status, benodigde_env, ontbrekende_env,
           laatste_check_op, bewijs)
        values ($1, $2, $3, $4, $5, $6, now(), $7)
        on conflict (organisatie_id, sleutel) do update set
-         status           = excluded.status,
+         status           = case when intel.koppelingen.bewijs_door is null
+                                 then excluded.status
+                                 else intel.koppelingen.status end,
          benodigde_env    = excluded.benodigde_env,
          ontbrekende_env  = excluded.ontbrekende_env,
          laatste_check_op = now(),
-         bewijs           = excluded.bewijs`,
+         bewijs           = case when intel.koppelingen.bewijs_door is null
+                                 then excluded.bewijs
+                                 else intel.koppelingen.bewijs end`,
       [
         organisatieId,
         sleutel,
@@ -642,12 +679,14 @@ async function zaaiKoppelingen(
         status,
         env,
         ontbrekend,
-        ontbrekend.length === 0
-          ? `alle ${env.length} omgevingsvariabelen aanwezig; nog niet tegen de echte API gevalideerd`
-          : `ontbreekt: ${ontbrekend.join(", ")}`,
+        stand.voldoet
+          ? `credentialroute '${stand.route}' compleet in de omgeving van dit proces; ` +
+            `nog niet tegen de echte API gevalideerd`
+          : `ontbreekt in de omgeving van DIT proces: ${ontbrekend.join(", ")}. ` +
+            `Dat zegt niets over een andere dienst; zie laatste_sync_op voor bewijs.`,
       ],
     );
-    uit.push({ sleutel, status, ontbrekend });
+    uit.push({ sleutel, status, ontbrekend: [...ontbrekend] });
   }
   return uit;
 }

@@ -139,16 +139,76 @@ export type GscToegang =
   | {
       readonly soort: "sleutel";
       readonly clientEmail: string;
+      /** NIET-OPSOMBAAR. Zie maakSleutelToegang() voor de reden. */
       readonly privateKey: string;
       /** Uit INTEL_GSC_SITE_URL; een VOORKEUR, geen aanname. */
       readonly voorkeur: string | null;
       /** Waar de sleutel vandaan komt, voor het rapport. */
       readonly herkomst: "INTEL_GSC_PRIVATE_KEY" | "INTEL_GCS_SLEUTEL";
+      /** Geeft een geredigeerde vorm, zodat serialiseren niet kan lekken. */
+      toJSON(): object;
     };
 
 /** Railway-variabelen verliezen echte newlines; \n als twee tekens is een val. */
 function herstelNewlines(sleutel: string): string {
   return sleutel.includes("\\n") ? sleutel.replace(/\\n/g, "\n") : sleutel;
+}
+
+/** Wat er in de plaats van de sleutel komt te staan. */
+export const SLEUTEL_VERBORGEN = "[sleutel weggelaten]";
+
+/**
+ * Bouwt de toegang zó dat de sleutel NIET UIT TE PRINTEN is.
+ *
+ * DIT IS EEN INCIDENTREPARATIE EN GEEN VERFRAAIING. Op 1 november 2026
+ * heeft een wegwerp-diagnosescript de privésleutel van dit dienstaccount
+ * naar een terminal geschreven, met één regel:
+ *
+ *     if (t.soort !== "ok") console.log(JSON.stringify(t));
+ *
+ * Twee dingen gingen daar samen fout. De bewaking vertakte op "ok",
+ * terwijl de geslaagde tak van dit type `"sleutel"` heet — dus liep een
+ * GESLAAGDE lezing de faaltak in. En die faaltak stringifyde het hele
+ * object. De redactielaag in kern/geheimen.ts was niet in het spel: een
+ * ad-hoc script roept die niet aan, en dat zal het volgende script ook
+ * niet doen.
+ *
+ * Daarom zit de bescherming nu IN HET OBJECT in plaats van in de
+ * discipline van de aanroeper. Twee lagen, want ze dekken verschillende
+ * wegen:
+ *
+ *   privateKey is NIET-OPSOMBAAR — JSON.stringify slaat hem over, een
+ *   spread kopieert hem niet mee, en util.inspect (wat console.log op
+ *   een object doet) toont niet-opsombare velden alleen met showHidden;
+ *
+ *   toJSON() geeft een expliciet geredigeerde vorm — zodat wie het
+ *   object tóch serialiseert een leesbare afdruk krijgt mét de melding
+ *   dat er iets is weggelaten, in plaats van een object dat stil
+ *   onvolledig is.
+ *
+ * De sleutel blijft gewoon te LEZEN als `toegang.privateKey`. Niet
+ * opsombaar is niet onbereikbaar; gscToken() werkt onveranderd.
+ */
+function maakSleutelToegang(
+  clientEmail: string,
+  privateKey: string,
+  voorkeur: string | null,
+  herkomst: "INTEL_GSC_PRIVATE_KEY" | "INTEL_GCS_SLEUTEL",
+): Extract<GscToegang, { soort: "sleutel" }> {
+  const zichtbaar = { soort: "sleutel" as const, clientEmail, voorkeur, herkomst };
+  Object.defineProperty(zichtbaar, "privateKey", {
+    value: privateKey,
+    enumerable: false,
+    writable: false,
+    configurable: false,
+  });
+  Object.defineProperty(zichtbaar, "toJSON", {
+    value: () => ({ ...zichtbaar, privateKey: SLEUTEL_VERBORGEN }),
+    enumerable: false,
+    writable: false,
+    configurable: false,
+  });
+  return zichtbaar as Extract<GscToegang, { soort: "sleutel" }>;
 }
 
 /**
@@ -176,13 +236,12 @@ export function gscToegang(): GscToegang {
   const eigenEmail = (process.env["INTEL_GSC_CLIENT_EMAIL"] ?? "").trim();
   const eigenKey = (process.env["INTEL_GSC_PRIVATE_KEY"] ?? "").trim();
   if (eigenEmail !== "" && eigenKey !== "") {
-    return {
-      soort: "sleutel",
-      clientEmail: eigenEmail,
-      privateKey: herstelNewlines(eigenKey),
+    return maakSleutelToegang(
+      eigenEmail,
+      herstelNewlines(eigenKey),
       voorkeur,
-      herkomst: "INTEL_GSC_PRIVATE_KEY",
-    };
+      "INTEL_GSC_PRIVATE_KEY",
+    );
   }
 
   const gcsRuw = (process.env["INTEL_GCS_SLEUTEL"] ?? "").trim();
@@ -199,13 +258,12 @@ export function gscToegang(): GscToegang {
       };
     }
     if (sleutel.type === "service_account" && sleutel.client_email && sleutel.private_key) {
-      return {
-        soort: "sleutel",
-        clientEmail: sleutel.client_email,
-        privateKey: herstelNewlines(sleutel.private_key),
+      return maakSleutelToegang(
+        sleutel.client_email,
+        herstelNewlines(sleutel.private_key),
         voorkeur,
-        herkomst: "INTEL_GCS_SLEUTEL",
-      };
+        "INTEL_GCS_SLEUTEL",
+      );
     }
   }
 
@@ -424,6 +482,15 @@ export function kiesProperty(
 
 export type ZoekvraagRij = {
   readonly zoekvraag: string;
+  /**
+   * De host uit de pagina-URL.
+   *
+   * ONMISBAAR BIJ EEN DOMEINPROPERTY. `sc-domain:` dekt elke host onder
+   * het domein, en deze property leverde er in het eerste echte venster
+   * drie: www, de apex en dashboard.vibeenergy.nl. Zonder de host vallen
+   * `www.../` en `dashboard.../` samen op pad `/`.
+   */
+  readonly paginaHost: string | null;
   readonly paginaPad: string | null;
   readonly land: string | null;
   readonly apparaat: string | null;
@@ -438,6 +505,56 @@ export type ZoekvraagOogst = {
   readonly rijen: readonly ZoekvraagRij[];
   readonly afgekapt: boolean;
 };
+
+/**
+ * Voegt rijen samen die op dezelfde databasesleutel landen.
+ *
+ * WAAROM DIT VÓÓR HET SCHRIJVEN MOET. De upsert overschrijft
+ * (`impressies = excluded.impressies`), en dat is juist: een
+ * hersynchronisatie van dezelfde dag mag niet optellen, anders
+ * verdubbelt elke ronde. Maar overschrijven binnen ÉÉN oogst betekent
+ * dat de laatst geschreven rij de vorige wegvaagt, en dan is de
+ * uitkomst afhankelijk van de volgorde waarin Google zijn rijen zet.
+ *
+ * Dat is op 5 november 2026 gemeten en het was geen theorie: negen
+ * sleutels botsten, 14 impressies en 2 kliks gingen verloren, en de
+ * twee verdwenen kliks waren merkkliks op de homepage die werden
+ * weggeschreven door een rij van `dashboard.vibeenergy.nl`.
+ *
+ * Met de host in de sleutel botsen die twee niet meer. Deze functie is
+ * de tweede verdedigingslinie: wat er ná de hostcorrectie nog op één
+ * sleutel landt, wordt OPGETELD in plaats van weggegooid. Daarmee is
+ * het schrijven orde-onafhankelijk en dus werkelijk idempotent — zelfde
+ * oogst in, zelfde tabel uit, ongeacht de volgorde.
+ *
+ * De positie wordt IMPRESSIEGEWOGEN samengevoegd, niet gemiddeld: een
+ * rij met 100 impressies op positie 3 en een rij met 1 impressie op
+ * positie 90 leveren samen positie 3,9 en niet 46,5.
+ */
+export function voegSamen(rijen: readonly ZoekvraagRij[]): ZoekvraagRij[] {
+  const SCHEIDER = String.fromCharCode(31); // unit separator: komt in geen URL of zoekvraag voor
+  const samen = new Map<string, { rij: ZoekvraagRij; positieMaalImpressies: number }>();
+  for (const r of rijen) {
+    const sleutel = [r.datum, r.zoekvraag, r.paginaHost, r.paginaPad, r.land, r.apparaat].join(SCHEIDER);
+    const bestaand = samen.get(sleutel);
+    if (bestaand === undefined) {
+      samen.set(sleutel, { rij: r, positieMaalImpressies: r.positie * r.impressies });
+      continue;
+    }
+    const impressies = bestaand.rij.impressies + r.impressies;
+    const positieMaalImpressies = bestaand.positieMaalImpressies + r.positie * r.impressies;
+    samen.set(sleutel, {
+      rij: {
+        ...bestaand.rij,
+        impressies,
+        kliks: bestaand.rij.kliks + r.kliks,
+        positie: impressies > 0 ? positieMaalImpressies / impressies : bestaand.rij.positie,
+      },
+      positieMaalImpressies,
+    });
+  }
+  return [...samen.values()].map((v) => v.rij);
+}
 
 /**
  * Haalt Search Analytics op, met de dimensies die de tabel kent.
@@ -486,16 +603,23 @@ export async function haalZoekvragen(
   for (const r of ruw) {
     const k = r.keys ?? [];
     if (k.length < 5) continue;
-    const pad = (() => {
+    /* HOST EN PAD APART. Tot 5 november 2026 bewaarde deze functie
+       alleen het pad, en bij een domeinproperty gooide dat de host van
+       een ándere applicatie op hetzelfde pad. Valt de URL niet te
+       ontleden, dan blijft de host null en gaat de hele waarde als pad
+       mee — liever een onhandig pad dan een verzonnen host. */
+    const { host, pad } = (() => {
       try {
-        return new URL(k[2]!).pathname;
+        const u = new URL(k[2]!);
+        return { host: u.host, pad: u.pathname };
       } catch {
-        return k[2] ?? null;
+        return { host: null, pad: k[2] ?? null };
       }
     })();
     uit.push({
       datum: k[0]!,
       zoekvraag: k[1]!,
+      paginaHost: host,
       paginaPad: pad,
       land: k[3] ?? null,
       apparaat: k[4] ?? null,
@@ -504,7 +628,70 @@ export async function haalZoekvragen(
       positie: r.position ?? 0,
     });
   }
-  return { rijen: uit, afgekapt: ruw.length >= limiet };
+  return { rijen: voegSamen(uit), afgekapt: ruw.length >= limiet };
+}
+
+export type PropertyTotaal = {
+  readonly kliks: number;
+  readonly impressies: number;
+  readonly ctr: number;
+  /** 1-gebaseerd, zoals Google hem geeft. */
+  readonly positie: number;
+};
+
+/**
+ * Het totaal van de property, ZONDER dimensies.
+ *
+ * DIT IS EEN ANDER GETAL DAN DE SOM VAN DE DETAILLAAG, en dat verschil
+ * is de reden dat deze functie bestaat. Google anonimiseert zeldzame
+ * zoekvragen en laat ze uit elke gedimensioneerde respons weg. Op
+ * 5 november 2026 gemeten over 2026-10-06 t/m 2026-11-03, dezelfde
+ * property, dezelfde dag:
+ *
+ *     zonder dimensies      126 kliks   9.891 impressies
+ *     dimensie query         57 kliks   6.410 impressies
+ *     onze detailtabel       55 kliks   7.113 impressies
+ *
+ * De detaillaag haalde dus 44% van de kliks en 72% van de impressies.
+ * Wie het detailtotaal als sitetotaal leest, zit er ruim een factor
+ * twee naast. Daarom wordt dit totaal apart opgeslagen en apart getoond.
+ *
+ * Geeft null als Google geen totaalrij levert. NULL IS GEEN NUL: het
+ * betekent dat het totaal niet is gemeten, en de dekkingsgraad blijft
+ * dan onbekend in plaats van 100%.
+ */
+export async function haalPropertyTotaal(
+  token: string,
+  siteUrl: string,
+  vanaf: string,
+  tot: string,
+): Promise<PropertyTotaal | null> {
+  const url = `${ZOEK_URL}/${encodeURIComponent(siteUrl)}/searchAnalytics/query`;
+  const antwoord = await fetch(url, {
+    method: "POST",
+    headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+    body: JSON.stringify({ startDate: vanaf, endDate: tot, dataState: "final" }),
+    signal: AbortSignal.timeout(60_000),
+  });
+  const tekst = await antwoord.text();
+  if (!antwoord.ok) {
+    throw new IntelFout(
+      "netwerk",
+      `GSC propertytotaal gaf HTTP ${antwoord.status}: ${tekst.slice(0, 300)}`,
+      { herhaalbaar: antwoord.status >= 500 || antwoord.status === 429 },
+    );
+  }
+  const body = JSON.parse(tekst) as {
+    rows?: { clicks?: number; impressions?: number; ctr?: number; position?: number }[];
+  };
+  const r = body.rows?.[0];
+  if (r === undefined) return null;
+  return {
+    kliks: Math.round(r.clicks ?? 0),
+    impressies: Math.round(r.impressions ?? 0),
+    ctr: r.ctr ?? 0,
+    positie: r.position ?? 0,
+  };
 }
 
 /**
@@ -537,6 +724,15 @@ export type SyncUitkomst =
       readonly afgekapt: boolean;
       readonly conventie: string;
       readonly epoch: number;
+      /** Hoeveel legacyrijen zonder host zijn opgeruimd; zie de sync. */
+      readonly opgeruimd: number;
+      /** Het propertytotaal, of null als Google er geen gaf. NULL IS GEEN NUL. */
+      readonly propertyTotaal: PropertyTotaal | null;
+      /** Wat de detaillaag voor dit venster draagt, om naast het totaal te zetten. */
+      readonly detailKliks: number;
+      readonly detailImpressies: number;
+      /** Impressies per host, zodat twee applicaties nooit in één getal zitten. */
+      readonly perHost: Readonly<Record<string, number>>;
     }
   /** Een BENOEMDE weigering. Nooit een nulresultaat; zie de kop. */
   | { readonly soort: "geblokkeerd"; readonly fase: string; readonly reden: string };
@@ -566,43 +762,79 @@ export async function synchroniseerGsc(
     readonly maxRijen?: number;
   } = {},
 ): Promise<SyncUitkomst> {
+  /* ELKE BLOKKADE WORDT OOK IN HET KOPPELINGENREGISTER GELEGD, met de
+     juiste van drie toestanden. Tot 5 november 2026 schreef deze
+     functie bij een blokkade NIETS naar het register, en daardoor bleef
+     daar de env-afleiding van een andere dienst staan — die zei
+     'niet geconfigureerd' terwijl het werkelijke probleem een
+     ontbrekende machtiging in Search Console was.
+
+       bereikbaar  het token werkt en Google antwoordt, maar er komt
+                   niets: een ontbrekende machtiging of een uitstaande
+                   API. Er is niets stuk; er mist een handeling.
+       fout        een echte storing in de aanroep.
+       (niets)     bij fase 'credential' laten we het register staan:
+                   deze dienst heeft de sleutel niet, en dat mag de
+                   stand van een dienst die hem wél heeft niet raken. */
+  const blokkade = async (
+    fase: string,
+    reden: string,
+    soort: "bereikbaar" | "fout" | "stil",
+  ): Promise<SyncUitkomst> => {
+    if (soort !== "stil") {
+      try {
+        const { legVastKoppelingBewijs } = await import("./koppelingen.ts");
+        await metOrganisatie(pool, { organisatieId }, (c) =>
+          legVastKoppelingBewijs(c, organisatieId, GSC_BRON, {
+            status: soort,
+            bewijs: `fase '${fase}': ${reden}`,
+            door: "synchroniseerGsc",
+          }),
+        );
+      } catch (e) {
+        /* Een registerschrijf die faalt mag de benoemde blokkade niet
+           vervangen door een databasefout: de blokkade is het antwoord. */
+        log.waarschuwing("koppelingbewijs niet vastgelegd", {
+          fase,
+          reden: e instanceof Error ? e.message.slice(0, 160) : String(e),
+        });
+      }
+    }
+    return { soort: "geblokkeerd", fase, reden };
+  };
+
   const toegang = gscToegang();
   if (toegang.soort === "geen") {
-    return { soort: "geblokkeerd", fase: "credential", reden: toegang.reden };
+    return blokkade("credential", toegang.reden, "stil");
   }
 
   let token: string;
   try {
     token = await gscToken(toegang);
   } catch (e) {
-    return {
-      soort: "geblokkeerd",
-      fase: "token",
-      reden: e instanceof Error ? e.message : String(e),
-    };
+    return blokkade("token", e instanceof Error ? e.message : String(e), "fout");
   }
 
   const props = await ontdekProperties(token);
   if (props.soort === "api_uit") {
-    return { soort: "geblokkeerd", fase: "api_uit", reden: props.bericht };
+    return blokkade("api_uit", props.bericht, "bereikbaar");
   }
   if (props.soort === "geen_propertytoegang") {
-    return {
-      soort: "geblokkeerd",
-      fase: "propertytoegang",
-      reden:
-        `De API werkt en het token is geldig, maar ${toegang.clientEmail} ziet GEEN enkele ` +
+    return blokkade(
+      "propertytoegang",
+      `De API werkt en het token is geldig, maar ${toegang.clientEmail} ziet GEEN enkele ` +
         `property. Voeg dat dienstaccount in Search Console toe aan de property met minstens ` +
         `de machtiging 'Beperkt'. Een GCP-rol geeft die toegang niet.`,
-    };
+      "bereikbaar",
+    );
   }
   if (props.soort === "fout") {
-    return { soort: "geblokkeerd", fase: "sites.list", reden: props.bericht };
+    return blokkade("sites.list", props.bericht, "fout");
   }
 
   const keuze = kiesProperty(props.properties, toegang.voorkeur);
   if (keuze.soort === "onbeslist") {
-    return { soort: "geblokkeerd", fase: "propertykeuze", reden: keuze.reden };
+    return blokkade("propertykeuze", keuze.reden, "bereikbaar");
   }
 
   const nu = opties.nu ?? new Date();
@@ -615,14 +847,31 @@ export async function synchroniseerGsc(
       ...(opties.maxRijen === undefined ? {} : { maxRijen: opties.maxRijen }),
     });
   } catch (e) {
-    return {
-      soort: "geblokkeerd",
-      fase: "searchAnalytics",
-      reden: e instanceof Error ? e.message : String(e),
-    };
+    return blokkade("searchAnalytics", e instanceof Error ? e.message : String(e), "fout");
+  }
+
+  /* HET PROPERTYTOTAAL, in een eigen try. Mislukt dit, dan is de
+     detailoogst nog steeds geldig en hoort hij opgeslagen te worden —
+     met het totaal op null, want een niet-gemeten totaal is geen nul.
+     De blokkade van de hele ronde zou hier onevenredig zijn. */
+  let propertyTotaal: PropertyTotaal | null = null;
+  let totaalFout: string | null = null;
+  try {
+    propertyTotaal = await haalPropertyTotaal(token, keuze.property.siteUrl, vanaf, tot);
+  } catch (e) {
+    totaalFout = e instanceof Error ? e.message : String(e);
+    log.waarschuwing("gsc propertytotaal niet opgehaald", { reden: totaalFout.slice(0, 200) });
   }
 
   const conventie = meetConventie(oogst.rijen);
+  const detailKliks = oogst.rijen.reduce((s, r) => s + Math.min(r.kliks, r.impressies), 0);
+  const detailImpressies = oogst.rijen.reduce((s, r) => s + r.impressies, 0);
+  const perHost: Record<string, number> = {};
+  for (const r of oogst.rijen) {
+    const h = r.paginaHost ?? "(host onbekend)";
+    perHost[h] = (perHost[h] ?? 0) + r.impressies;
+  }
+
   const basis = {
     soort: "gesynchroniseerd" as const,
     property: keuze.property.siteUrl,
@@ -633,10 +882,14 @@ export async function synchroniseerGsc(
     rijen: oogst.rijen.length,
     afgekapt: oogst.afgekapt,
     conventie,
+    propertyTotaal,
+    detailKliks,
+    detailImpressies,
+    perHost,
   };
 
   if (opties.droog === true) {
-    return { ...basis, geschreven: 0, epoch: 0 };
+    return { ...basis, geschreven: 0, epoch: 0, opgeruimd: 0 };
   }
 
   const uit = await metOrganisatie(pool, { organisatieId }, async (c) => {
@@ -654,6 +907,47 @@ export async function synchroniseerGsc(
     );
     const epoch = (bestaand?.epoch ?? -1) + 1;
 
+    /* DE LEGACYRIJEN ZONDER HOST MOETEN WEG, en alleen zij.
+
+       Vóór migratie 0050 had de sleutel geen host. Die rijen hebben
+       pagina_host NULL, en omdat de nieuwe sleutel NULLS NOT DISTINCT
+       gebruikt is een rij met host een ANDERE sleutel dan dezelfde rij
+       zonder host. Zonder deze opruiming zouden oud en nieuw naast
+       elkaar blijven staan en zou elke som dubbel tellen.
+
+       DRIE GRENZEN, zodat dit nooit meer dan het bedoelde raakt:
+         * alleen deze bron en dit venster;
+         * alleen rijen met pagina_host IS NULL;
+         * alleen als de huidige oogst werkelijk hosts bevat — anders
+           zou een respons met onontleedbare URL's goede rijen wissen
+           en er host-loze voor terugzetten.
+
+       Na de eerste geslaagde ronde is dit een no-op: er zijn dan geen
+       host-loze rijen meer in het venster. Het getal gaat mee in de
+       uitkomst, zodat zichtbaar is dát er is opgeruimd. */
+    const oogstHeeftHosts = oogst.rijen.some((r) => r.paginaHost !== null);
+    let opgeruimd = 0;
+    if (oogstHeeftHosts) {
+      const weg = await c.query(
+        `delete from intel.zoekvraag_metingen
+          where organisatie_id = $1 and bron = $2
+            and datum between $3::date and $4::date
+            and pagina_host is null`,
+        [organisatieId, GSC_BRON, vanaf, tot],
+      );
+      opgeruimd = weg.rowCount ?? 0;
+      if (opgeruimd > 0) {
+        log.info("gsc legacyrijen zonder host opgeruimd", {
+          rijen: opgeruimd,
+          vanaf,
+          tot,
+          toelichting:
+            "opgehaald vóór migratie 0050; de host was voor die rijen niet te bepalen en " +
+            "bij een botsing per definitie ambigu",
+        });
+      }
+    }
+
     let geschreven = 0;
     for (const r of oogst.rijen) {
       /* DE CONSTRAINT `impressies >= 1` IS GEEN HINDERNIS MAAR EEN
@@ -666,11 +960,11 @@ export async function synchroniseerGsc(
       const positieSom = (r.positie - 1) * r.impressies;
       await c.query(
         `insert into intel.zoekvraag_metingen
-           (organisatie_id, bron, datum, zoekvraag, pagina_pad, land, apparaat,
+           (organisatie_id, bron, datum, zoekvraag, pagina_host, pagina_pad, land, apparaat,
             impressies, kliks, ctr, gemiddelde_positie, positie_som, positie_conventie,
             epoch_versie, opgehaald_op)
-         values ($1,$2,$3::date,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,now())
-         on conflict (organisatie_id, bron, datum, zoekvraag, pagina_pad, land, apparaat)
+         values ($1,$2,$3::date,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,now())
+         on conflict (organisatie_id, bron, datum, zoekvraag, pagina_host, pagina_pad, land, apparaat)
            do update set impressies = excluded.impressies,
                          kliks = excluded.kliks,
                          ctr = excluded.ctr,
@@ -684,6 +978,7 @@ export async function synchroniseerGsc(
           GSC_BRON,
           r.datum,
           r.zoekvraag,
+          r.paginaHost,
           r.paginaPad,
           r.land,
           r.apparaat,
@@ -731,7 +1026,78 @@ export async function synchroniseerGsc(
             : ""),
       ],
     );
-    return { geschreven, epoch };
+
+    /* HET PROPERTYTOTAAL NAAST HET DETAILTOTAAL.
+
+       Alleen schrijven als Google werkelijk een totaalrij gaf. Een rij
+       met nullen zou beweren dat de property nul kliks had, en dat is
+       precies de verwarring die deze tabel moet wegnemen: een
+       ontbrekend totaal is geen nul en geen volledige dekking. De view
+       intel.analytics_dekkingsgraad laat de aandelen daarom op NULL
+       staan zolang er geen totaalrij is. */
+    if (propertyTotaal !== null) {
+      await c.query(
+        `insert into intel.analytics_propertytotalen
+           (organisatie_id, bron, property, datum_vanaf, datum_tot,
+            kliks, impressies, ctr, positie_som, positie_conventie,
+            detail_kliks, detail_impressies, detail_rijen, opmerking, opgehaald_op)
+         values ($1,$2,$3,$4::date,$5::date,$6,$7,$8,$9,$10,$11,$12,$13,$14,now())
+         on conflict (organisatie_id, bron, property, datum_vanaf, datum_tot)
+           do update set kliks = excluded.kliks,
+                         impressies = excluded.impressies,
+                         ctr = excluded.ctr,
+                         positie_som = excluded.positie_som,
+                         positie_conventie = excluded.positie_conventie,
+                         detail_kliks = excluded.detail_kliks,
+                         detail_impressies = excluded.detail_impressies,
+                         detail_rijen = excluded.detail_rijen,
+                         opmerking = excluded.opmerking,
+                         opgehaald_op = now()`,
+        [
+          organisatieId,
+          GSC_BRON,
+          keuze.property.siteUrl,
+          vanaf,
+          tot,
+          propertyTotaal.kliks,
+          propertyTotaal.impressies,
+          propertyTotaal.ctr,
+          /* Dezelfde nul-gebaseerde teller als in zoekvraag_metingen,
+             zodat de view op één manier aggregeert. */
+          (propertyTotaal.positie - 1) * propertyTotaal.impressies,
+          conventie,
+          detailKliks,
+          detailImpressies,
+          geschreven,
+          `zonder dimensies opgehaald naast de detaillaag. De detaillaag is een ` +
+            `DEELVERZAMELING: Google laat zeldzame zoekvragen uit elke gedimensioneerde ` +
+            `respons weg. Hosts in de detaillaag: ${
+              Object.entries(perHost)
+                .sort((a, b) => b[1] - a[1])
+                .map(([h, i]) => `${h} ${i}`)
+                .join(", ") || "geen"
+            }`,
+        ],
+      );
+    }
+    /* HET BEWIJS. Dit is de enige plek waar laatste_sync_op gevuld
+       raakt, en zolang dat veld staat laat de zaaier de status met rust.
+       Geen rijen is hier geen storing maar ook geen verificatie: dan is
+       de koppeling bereikbaar en heeft hij niets geleverd. */
+    const { legVastKoppelingBewijs } = await import("./koppelingen.ts");
+    await legVastKoppelingBewijs(c, organisatieId, GSC_BRON, {
+      status: geschreven > 0 ? "geverifieerd" : "bereikbaar",
+      bewijs:
+        `${geschreven} rij(en) weggeschreven over ${vanaf} t/m ${tot} voor property ` +
+        `${keuze.property.siteUrl} via ${toegang.herkomst}` +
+        (propertyTotaal === null
+          ? ". Propertytotaal NIET GEMETEN, dus de dekkingsgraad van de detaillaag is onbekend."
+          : `. Propertytotaal ${propertyTotaal.kliks} kliks / ${propertyTotaal.impressies} ` +
+            `impressies naast detail ${detailKliks} / ${detailImpressies}.`),
+      door: "synchroniseerGsc",
+    });
+
+    return { geschreven, epoch, opgeruimd };
   });
 
   log.info("gsc gesynchroniseerd", {
@@ -741,12 +1107,63 @@ export async function synchroniseerGsc(
     tot,
     rijen: oogst.rijen.length,
     geschreven: uit.geschreven,
+    opgeruimd: uit.opgeruimd,
     afgekapt: oogst.afgekapt,
     conventie,
     epoch: uit.epoch,
+    hosts: Object.keys(perHost).length,
+    /* HET DETAILTOTAAL NOOIT ZONDER HET PROPERTYTOTAAL loggen: naast
+       elkaar is het een dekkingsgraad, los is het een verkeerd getal. */
+    detail_kliks: detailKliks,
+    detail_impressies: detailImpressies,
+    property_kliks: propertyTotaal === null ? "NIET GEMETEN" : propertyTotaal.kliks,
+    property_impressies: propertyTotaal === null ? "NIET GEMETEN" : propertyTotaal.impressies,
+    ...(totaalFout === null ? {} : { propertytotaal_fout: totaalFout.slice(0, 200) }),
   });
-  return { ...basis, geschreven: uit.geschreven, epoch: uit.epoch };
+  return { ...basis, geschreven: uit.geschreven, epoch: uit.epoch, opgeruimd: uit.opgeruimd };
 }
+
+/**
+ * De host waarop de WEBSITE staat.
+ *
+ * Een domeinproperty dekt elke host onder het domein, inclusief
+ * applicaties die geen website zijn — hier gemeten:
+ * `dashboard.vibeenergy.nl` en `aanvragen.vibeenergy.nl`. Een
+ * websiterapport dat die meetelt, meet iets anders dan de website.
+ *
+ * Overschrijfbaar met INTEL_GSC_WEBSITE_HOST, want dit hoort niet in
+ * een migratie of in SQL te staan: het is configuratie, niet schema.
+ */
+export function websiteHost(): string {
+  const uit = (process.env["INTEL_GSC_WEBSITE_HOST"] ?? "").trim();
+  return uit === "" ? "www.vibeenergy.nl" : uit;
+}
+
+export type HostStand = {
+  readonly host: string | null;
+  readonly rijen: number;
+  readonly kliks: number;
+  readonly impressies: number;
+  readonly ctr: number | null;
+  readonly positie: number | null;
+};
+
+export type DekkingsStand = {
+  readonly property: string;
+  readonly vanaf: string;
+  readonly tot: string;
+  readonly propertyKliks: number;
+  readonly propertyImpressies: number;
+  readonly propertyCtr: number | null;
+  readonly propertyPositie: number | null;
+  readonly detailKliks: number;
+  readonly detailImpressies: number;
+  readonly detailRijen: number;
+  /** NULL betekent NIET GEMETEN, niet 0% en niet 100%. */
+  readonly kliksDekking: number | null;
+  readonly impressiesDekking: number | null;
+  readonly opgehaaldOp: string;
+};
 
 export type GscStand = {
   readonly dekkingsrijen: number;
@@ -754,6 +1171,20 @@ export type GscStand = {
   readonly nieuwsteDatum: string | null;
   readonly laatsteOphaling: string | null;
   readonly afgekapteVensters: number;
+  /** Rijen die nog geen host dragen: opgehaald vóór migratie 0050. */
+  readonly rijenZonderHost: number;
+  /** Per host, zodat website en dashboard nooit in één getal zitten. */
+  readonly perHost: readonly HostStand[];
+  /** De website apart, op de host uit websiteHost(). */
+  readonly website: HostStand | null;
+  /**
+   * Het nieuwste propertytotaal naast het detailtotaal.
+   *
+   * NULL betekent: nog geen propertytotaal gemeten. Dan is de
+   * dekkingsgraad onbekend en mag het detailtotaal niet als sitetotaal
+   * worden gepresenteerd.
+   */
+  readonly dekking: DekkingsStand | null;
 };
 
 /**
@@ -790,12 +1221,97 @@ export async function gscStand(
       [organisatieId, GSC_BRON],
     );
     const x = r[0];
+
+    const zonderHost = await rijen<{ n: string }>(
+      c,
+      `select count(*)::text as n from intel.zoekvraag_metingen
+        where organisatie_id = $1 and bron = $2 and pagina_host is null`,
+      [organisatieId, GSC_BRON],
+    );
+
+    const hosts = await rijen<{
+      pagina_host: string | null;
+      rijen: string;
+      kliks: string | null;
+      impressies: string | null;
+      ctr: string | null;
+      gemiddelde_positie: string | null;
+    }>(
+      c,
+      `select pagina_host, rijen::text, kliks::text, impressies::text,
+              ctr::text, gemiddelde_positie::text
+         from intel.zoekvraag_per_host
+        where organisatie_id = $1 and bron = $2
+        order by impressies desc nulls last`,
+      [organisatieId, GSC_BRON],
+    );
+    const perHost: HostStand[] = hosts.map((h) => ({
+      host: h.pagina_host,
+      rijen: Number(h.rijen),
+      kliks: Number(h.kliks ?? 0),
+      impressies: Number(h.impressies ?? 0),
+      ctr: h.ctr === null ? null : Number(h.ctr),
+      positie: h.gemiddelde_positie === null ? null : Number(h.gemiddelde_positie),
+    }));
+
+    const d = await rijen<{
+      property: string;
+      vanaf: string;
+      tot: string;
+      property_kliks: string | null;
+      property_impressies: string | null;
+      property_ctr: string | null;
+      property_positie: string | null;
+      detail_kliks: string | null;
+      detail_impressies: string | null;
+      detail_rijen: string | null;
+      kliks_dekking: string | null;
+      impressies_dekking: string | null;
+      opgehaald_op: string;
+    }>(
+      c,
+      `select property, datum_vanaf::text as vanaf, datum_tot::text as tot,
+              property_kliks::text, property_impressies::text, property_ctr::text,
+              property_positie::text, detail_kliks::text, detail_impressies::text,
+              detail_rijen::text, kliks_dekking::text, impressies_dekking::text,
+              opgehaald_op::text
+         from intel.analytics_dekkingsgraad
+        where organisatie_id = $1 and bron = $2
+        order by datum_tot desc, opgehaald_op desc
+        limit 1`,
+      [organisatieId, GSC_BRON],
+    );
+    const dr = d[0];
+
+    const eigenHost = websiteHost();
     return {
       dekkingsrijen: Number(x?.dekkingsrijen ?? 0),
       zoekvraagrijen: Number(x?.zoekvraagrijen ?? 0),
       nieuwsteDatum: x?.nieuwste ?? null,
       laatsteOphaling: x?.laatste ?? null,
       afgekapteVensters: Number(x?.afgekapt ?? 0),
+      rijenZonderHost: Number(zonderHost[0]?.n ?? 0),
+      perHost,
+      website: perHost.find((h) => h.host === eigenHost) ?? null,
+      dekking:
+        dr === undefined
+          ? null
+          : {
+              property: dr.property,
+              vanaf: dr.vanaf,
+              tot: dr.tot,
+              propertyKliks: Number(dr.property_kliks ?? 0),
+              propertyImpressies: Number(dr.property_impressies ?? 0),
+              propertyCtr: dr.property_ctr === null ? null : Number(dr.property_ctr),
+              propertyPositie: dr.property_positie === null ? null : Number(dr.property_positie),
+              detailKliks: Number(dr.detail_kliks ?? 0),
+              detailImpressies: Number(dr.detail_impressies ?? 0),
+              detailRijen: Number(dr.detail_rijen ?? 0),
+              kliksDekking: dr.kliks_dekking === null ? null : Number(dr.kliks_dekking),
+              impressiesDekking:
+                dr.impressies_dekking === null ? null : Number(dr.impressies_dekking),
+              opgehaaldOp: dr.opgehaald_op,
+            },
     };
   }
 }

@@ -41,8 +41,45 @@ const BEREIK = "https://www.googleapis.com/auth/devstorage.read_write";
 export type GcsConfig = {
   readonly bucket: string;
   readonly clientEmail: string;
+  /** NIET-OPSOMBAAR. Zie verbergSleutel() voor de reden. */
   readonly privateKey: string;
+  /** Geeft een geredigeerde vorm, zodat serialiseren niet kan lekken. */
+  toJSON(): object;
 };
+
+/** Wat er in de plaats van de sleutel komt te staan. */
+export const SLEUTEL_VERBORGEN = "[sleutel weggelaten]";
+
+/**
+ * Maakt de sleutel in dit object onprintbaar.
+ *
+ * DEZELFDE INCIDENTREPARATIE als in analytics/gsc.ts, en om dezelfde
+ * reden hier óók: dit is het tweede object dat `INTEL_GCS_SLEUTEL`
+ * draagt, en een diagnose die 'de config' afdrukt pakt even gemakkelijk
+ * déze. Een bescherming die alleen op één van de twee zit, is een
+ * bescherming die je niet hebt.
+ *
+ * privateKey wordt niet-opsombaar — JSON.stringify slaat hem over, een
+ * spread kopieert hem niet mee, util.inspect toont hem niet — en
+ * toJSON() geeft een expliciet geredigeerde afdruk, zodat een
+ * serialisatie leesbaar blijft én meldt dat er iets weg is. De sleutel
+ * blijft gewoon te lezen als `config.privateKey`.
+ */
+function verbergSleutel(zichtbaar: { bucket: string; clientEmail: string }, privateKey: string): GcsConfig {
+  Object.defineProperty(zichtbaar, "privateKey", {
+    value: privateKey,
+    enumerable: false,
+    writable: false,
+    configurable: false,
+  });
+  Object.defineProperty(zichtbaar, "toJSON", {
+    value: () => ({ ...zichtbaar, privateKey: SLEUTEL_VERBORGEN }),
+    enumerable: false,
+    writable: false,
+    configurable: false,
+  });
+  return zichtbaar as GcsConfig;
+}
 
 /**
  * Leest de configuratie uit de omgeving, of geeft null als er niets is.
@@ -78,7 +115,7 @@ export function gcsConfigUitOmgeving(): GcsConfig | null {
     ? sleutel.private_key.replace(/\\n/g, "\n")
     : sleutel.private_key;
 
-  return { bucket, clientEmail: sleutel.client_email, privateKey };
+  return verbergSleutel({ bucket, clientEmail: sleutel.client_email }, privateKey);
 }
 
 function base64url(b: Buffer | string): string {

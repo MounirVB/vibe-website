@@ -958,9 +958,15 @@ export async function meetGezondheid(
   });
 
   /* ---------------- koppelingen ---------------- */
-  const kop = await rijen<{ sleutel: string; status: string; vertrouwd: boolean }>(
+  const kop = await rijen<{
+    sleutel: string;
+    status: string;
+    vertrouwd: boolean;
+    laatste_sync_op: string | null;
+  }>(
     c,
-    "select sleutel, status, vertrouwd from intel.koppelingen where organisatie_id = $1 order by sleutel",
+    `select sleutel, status, vertrouwd, laatste_sync_op::text
+       from intel.koppelingen where organisatie_id = $1 order by sleutel`,
     [organisatieId],
   );
   /* ---------------- redactie (par. 18) ----------------
@@ -1188,19 +1194,68 @@ export async function meetGezondheid(
           : undefined,
   });
 
-  const nietAangesloten = kop.filter((k) => k.status !== "geconfigureerd");
+  /* VIER TOESTANDEN, EN ZE MOGEN NIET OP ÉÉN HOOP.
+
+     Dit signaal filterde tot 5 november 2026 op `status !==
+     "geconfigureerd"` en noemde al het andere NIET AANGESLOTEN. Twee
+     gevolgen, en het tweede was het ergste:
+
+       het meldde "5 van 5 NIET AANGESLOTEN: ... gsc" op het moment dat
+       GSC 4.361 rijen had weggeschreven — omdat de zaaier de status uit
+       een dienst zonder credentials had overschreven;
+
+       en zodra dat gerepareerd was zou een koppeling met status
+       'geverifieerd' óók als niet-aangesloten zijn geteld, want die is
+       immers niet gelijk aan 'geconfigureerd'. De reparatie van het ene
+       zou het andere hebben verborgen.
+
+     Daarom nu expliciet gescheiden:
+       GESYNCHRONISEERD  er is bewijs: laatste_sync_op staat gevuld;
+       BEREIKBAAR        Google antwoordt, er komt nog niets;
+       GECONFIGUREERD    de variabelen zijn er, niets geprobeerd;
+       STORING / AFWEZIG dát is pas niet aangesloten.
+
+     Het niveau volgt de slechtste categorie die er is, en een koppeling
+     die aantoonbaar levert kan het signaal niet meer rood maken. */
+  const gesynchroniseerd = kop.filter((k) => k.laatste_sync_op !== null);
+  const bereikbaar = kop.filter((k) => k.laatste_sync_op === null && k.status === "bereikbaar");
+  const geconfigureerd = kop.filter(
+    (k) => k.laatste_sync_op === null && k.status === "geconfigureerd",
+  );
+  const storing = kop.filter((k) => k.laatste_sync_op === null && k.status === "fout");
+  const afwezig = kop.filter(
+    (k) => k.laatste_sync_op === null && k.status === "niet_geconfigureerd",
+  );
+  const noem = (lijst: typeof kop) => lijst.map((k) => k.sleutel).join(", ");
+  const delen = [
+    gesynchroniseerd.length > 0
+      ? `${gesynchroniseerd.length} GESYNCHRONISEERD (${noem(gesynchroniseerd)})`
+      : null,
+    bereikbaar.length > 0 ? `${bereikbaar.length} BEREIKBAAR (${noem(bereikbaar)})` : null,
+    geconfigureerd.length > 0
+      ? `${geconfigureerd.length} GECONFIGUREERD (${noem(geconfigureerd)})`
+      : null,
+    storing.length > 0 ? `${storing.length} STORING (${noem(storing)})` : null,
+    afwezig.length > 0 ? `${afwezig.length} NIET AANGESLOTEN (${noem(afwezig)})` : null,
+  ].filter((d): d is string => d !== null);
   voeg({
     groep: "koppelingen",
     naam: "analytics en CRM",
-    niveau: nietAangesloten.length === 0 ? "OK" : "NIET GEMETEN",
-    meting:
-      nietAangesloten.length === 0
-        ? `alle ${kop.length} koppelingen geconfigureerd`
-        : `${nietAangesloten.length} van ${kop.length} NIET AANGESLOTEN: ${nietAangesloten.map((k) => k.sleutel).join(", ")}`,
+    niveau:
+      storing.length > 0
+        ? "FOUT"
+        : afwezig.length > 0 || bereikbaar.length > 0
+          ? "NIET GEMETEN"
+          : "OK",
+    meting: `van ${kop.length} koppeling(en): ${delen.join(" · ")}`,
     advies:
-      nietAangesloten.length > 0
-        ? "zonder credentials blijft elke funnelstap ONBEKEND, en dat is geen nul"
-        : undefined,
+      storing.length > 0
+        ? `${noem(storing)} meldt een storing; zie intel.koppelingen.fout_bericht`
+        : afwezig.length > 0
+          ? "zonder credentials blijft elke funnelstap ONBEKEND, en dat is geen nul"
+          : bereikbaar.length > 0
+            ? `${noem(bereikbaar)} antwoordt wel maar levert niets; zie laatste_sync_bewijs`
+            : undefined,
   });
 
   /* ---------------- GSC-synchronisatie en GEO-meting ----------------
@@ -1218,7 +1273,7 @@ export async function meetGezondheid(
      daarna stilviel is precies wat een monitor moet vinden, en met
      alleen 'is er data' zou dat onzichtbaar blijven. */
   try {
-    const { gscStand } = await import("../analytics/gsc.ts");
+    const { gscStand, websiteHost } = await import("../analytics/gsc.ts");
     const { gscToegang } = await import("../analytics/gsc.ts");
     const stand = await gscStand(c, organisatieId);
     const toegang = gscToegang();
@@ -1243,6 +1298,40 @@ export async function meetGezondheid(
             `${leeftijdDagen === null ? "onbekend" : `${leeftijdDagen.toFixed(1)} dagen oud`}` +
             (stand.afgekapteVensters > 0
               ? `, ${stand.afgekapteVensters} venster(s) AFGEKAPT en dus een ondergrens`
+              : "") +
+            /* HET DETAILTOTAAL NOOIT ALLEEN. Een domeinproperty bevat
+               meer dan de website, en de detaillaag is een
+               deelverzameling van het propertytotaal. Beide feiten
+               horen in dezelfde regel te staan als het getal zelf, want
+               anders leest iemand het detailtotaal als sitetotaal. */
+            (stand.perHost.length > 1
+              ? `. ${stand.perHost.length} HOSTS in deze property: ` +
+                stand.perHost
+                  .map((h) => `${h.host ?? "(onbekend)"} ${h.impressies}`)
+                  .join(", ") +
+                `. De website is ${websiteHost()}` +
+                (stand.website === null
+                  ? " en die host komt in de data NIET voor"
+                  : ` met ${stand.website.impressies} impressies en ${stand.website.kliks} kliks`)
+              : "") +
+            (stand.dekking === null
+              ? ". PROPERTYTOTAAL NIET GEMETEN, dus de dekkingsgraad van de detaillaag is " +
+                "onbekend — en dan mag dit detailtotaal niet als sitetotaal gelden."
+              : `. Propertytotaal ${stand.dekking.propertyKliks} kliks / ` +
+                `${stand.dekking.propertyImpressies} impressies tegen detail ` +
+                `${stand.dekking.detailKliks} / ${stand.dekking.detailImpressies} — dekking ` +
+                `${
+                  stand.dekking.kliksDekking === null
+                    ? "NIET GEMETEN"
+                    : `${(stand.dekking.kliksDekking * 100).toFixed(0)}% van de kliks`
+                } en ${
+                  stand.dekking.impressiesDekking === null
+                    ? "NIET GEMETEN"
+                    : `${(stand.dekking.impressiesDekking * 100).toFixed(0)}% van de impressies`
+                }`) +
+            (stand.rijenZonderHost > 0
+              ? `. ${stand.rijenZonderHost} rij(en) dragen nog geen host: opgehaald vóór ` +
+                `migratie 0050, de volgende ronde over dat venster ruimt ze op.`
               : ""),
       advies:
         stand.dekkingsrijen === 0

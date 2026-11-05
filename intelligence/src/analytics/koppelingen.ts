@@ -41,7 +41,8 @@
      `number | null` en nooit `number` met 0 als noodgreep.
    ============================================================ */
 
-import { configLezen, KOPPELING_ENV, ontbrekendeEnv } from "../kern/config.ts";
+import type pg from "pg";
+import { configLezen, KOPPELING_ENV, koppelingEnvStand, ontbrekendeEnv } from "../kern/config.ts";
 import { metOrganisatie, rijen, type Pool } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 
@@ -49,48 +50,199 @@ const log = maakLogger("analytics");
 
 export type KoppelingStatus = {
   readonly sleutel: string;
-  readonly status: "niet_geconfigureerd" | "geconfigureerd" | "geverifieerd" | "fout";
+  readonly status:
+    | "niet_geconfigureerd"
+    | "geconfigureerd"
+    | "bereikbaar"
+    | "geverifieerd"
+    | "fout";
   readonly vertrouwd: boolean;
   readonly ontbrekendeEnv: readonly string[];
   readonly toelichting: string;
 };
 
 /**
- * Leest de status van elke koppeling uit de omgeving. Geen waarden,
- * alleen namen — en een koppeling is pas 'vertrouwd' na een validatie
- * tegen de echte API, wat zonder sleutel nooit gebeurt.
+ * Legt vast dat een koppeling AANTOONBAAR heeft geleverd.
+ *
+ * Alleen aan te roepen door code die de koppeling werkelijk heeft
+ * gebruikt — de synchronisatie zelf dus, in de dienst die de credential
+ * heeft. Dit is de enige weg waarlangs `laatste_sync_op` gevuld raakt,
+ * en zolang dat veld gevuld is laat de zaaier de status staan.
+ *
+ * `door` noemt het proces, zodat in het register te zien is of het
+ * bewijs uit de juiste dienst komt en niet uit een toevallige lezer.
+ */
+export async function legVastKoppelingBewijs(
+  c: Pick<pg.PoolClient, "query">,
+  organisatieId: number,
+  sleutel: string,
+  opties: {
+    readonly status: "bereikbaar" | "geverifieerd" | "fout";
+    readonly bewijs: string;
+    readonly door: string;
+  },
+): Promise<void> {
+  /* EEN UPSERT EN GEEN UPDATE.
+
+     Dit was eerst een kale UPDATE, en dan valt het bewijs STIL weg als
+     de registerrij nog niet bestaat — precies het geval waarin een
+     synchronisatie draait vóór de eerste zaaironde, en precies het
+     soort nulresultaat dat dit platform nergens wil. Een toets op een
+     verse database legde het bloot: nul geraakte rijen, geen fout,
+     geen bewijs.
+
+     `soort` is gelijk aan de sleutel; de CHECK op die kolom accepteert
+     dezelfde namen. De `altijd`-lijst gaat mee als benodigde_env zodat
+     een rij die híer ontstaat niet zonder namen in het dashboard komt.
+
+     ALLEEN 'geverifieerd' VULT laatste_sync_op.
+
+     Mijn eerste versie vulde het veld bij elke status behalve 'fout',
+     en een toets legde bloot waar dat op uitdraait: een koppeling die
+     alleen BEREIKBAAR is — token geldig, Google antwoordt, geen
+     gegevens — kwam onder 'GESYNCHRONISEERD' te staan. Dat is exact de
+     samenvoeging die deze hele wijziging moet wegnemen. Bereikbaar
+     bewijst dat je Google kunt spreken; het bewijst geen levering.
+
+     Wat alle drie de toestanden wél vullen is `bewijs_door`. Dát is het
+     signaal dat een proces dat de koppeling echt gebruikte iets heeft
+     gerapporteerd, en dus de grendel waar de zaaier op kijkt. */
+  await c.query(
+    `insert into intel.koppelingen
+       (organisatie_id, sleutel, soort, status, benodigde_env, ontbrekende_env,
+        laatste_check_op, laatste_sync_op, laatste_sync_bewijs, bewijs_door, fout_bericht)
+     values ($1, $2, $2, $3, $6, '{}', now(),
+             case when $3 = 'geverifieerd' then now() else null end,
+             $4, $5,
+             case when $3 = 'fout' then $4 else null end)
+     on conflict (organisatie_id, sleutel) do update set
+       status              = excluded.status,
+       laatste_sync_op     = case when excluded.status = 'geverifieerd'
+                                  then now()
+                                  else intel.koppelingen.laatste_sync_op end,
+       laatste_sync_bewijs = excluded.laatste_sync_bewijs,
+       bewijs_door         = excluded.bewijs_door,
+       fout_bericht        = case when excluded.status = 'fout'
+                                  then excluded.laatste_sync_bewijs
+                                  else null end,
+       bijgewerkt_op       = now()`,
+    [
+      organisatieId,
+      sleutel,
+      opties.status,
+      opties.bewijs.slice(0, 2000),
+      opties.door,
+      KOPPELING_ENV[sleutel] ?? [],
+    ],
+  );
+}
+
+export type EffectieveKoppeling = {
+  readonly sleutel: string;
+  readonly status: string;
+  /** Wanneer deze koppeling voor het laatst aantoonbaar leverde. */
+  readonly laatsteSyncOp: string | null;
+  readonly bewijs: string | null;
+  readonly door: string | null;
+  readonly ontbrekendeEnvHier: readonly string[];
+  /** Of de omgeving van DIT proces de koppeling zou kunnen bedienen. */
+  readonly bedienbaarHier: boolean;
+};
+
+/**
+ * De stand zoals dashboard én monitor hem horen te zien.
+ *
+ * Combineert twee dingen die uit elkaar moeten blijven: wat er in het
+ * REGISTER staat (met het bewijs, geschreven door een proces dat de
+ * koppeling echt gebruikte) en wat DIT proces in zijn omgeving heeft.
+ * Lopen die uiteen, dan is dat informatie en geen tegenspraak — het
+ * betekent dat de credential elders staat.
+ */
+export async function effectieveKoppelingStand(
+  c: Pick<pg.PoolClient, "query">,
+  organisatieId: number,
+): Promise<EffectieveKoppeling[]> {
+  const uit = await rijen<{
+    sleutel: string;
+    status: string;
+    laatste_sync_op: string | null;
+    laatste_sync_bewijs: string | null;
+    bewijs_door: string | null;
+  }>(
+    c,
+    `select sleutel, status, laatste_sync_op::text, laatste_sync_bewijs, bewijs_door
+       from intel.koppelingen where organisatie_id = $1 order by sleutel`,
+    [organisatieId],
+  );
+  return uit.map((r) => {
+    const hier = koppelingEnvStand(r.sleutel);
+    return {
+      sleutel: r.sleutel,
+      status: r.status,
+      laatsteSyncOp: r.laatste_sync_op,
+      bewijs: r.laatste_sync_bewijs,
+      door: r.bewijs_door,
+      ontbrekendeEnvHier: hier.ontbrekend,
+      bedienbaarHier: hier.voldoet,
+    };
+  });
+}
+
+/**
+ * Leest de status van elke koppeling uit DE OMGEVING VAN DIT PROCES.
+ *
+ * TWEE DINGEN DIE DEZE FUNCTIE NIET WEET, en die het verschil maken
+ * tussen een meting en een bewering:
+ *
+ *   1 Hij kijkt naar `process.env` van het proces dat hem aanroept.
+ *     INTEL_GCS_SLEUTEL staat alleen op vibe-intel-worker. Draai je dit
+ *     in de dashboarddienst, dan ontbreekt hij daar — en dat zegt niets
+ *     over de worker.
+ *
+ *   2 Aanwezige variabelen betekenen niet dat het werkt. Daarvoor is
+ *     intel.koppelingen.laatste_sync_op het bewijs; zie
+ *     effectieveKoppelingStand().
+ *
+ * Sinds 5 november 2026 gaat dit via koppelingEnvStand(), die
+ * ALTERNATIEVE credentialroutes kent. De oude vorm eiste voor gsc drie
+ * variabelen terwijl de code er twee routes naar toe had, en meldde
+ * daardoor 'NIET AANGESLOTEN' over een koppeling die rijen wegschreef.
  */
 export function koppelingStatussen(): KoppelingStatus[] {
   return Object.entries(KOPPELING_ENV).map(([sleutel, env]) => {
-    const ontbrekend = ontbrekendeEnv(env);
-    if (ontbrekend.length === env.length) {
+    const stand = koppelingEnvStand(sleutel);
+    if (stand.voldoet) {
+      return {
+        sleutel,
+        status: "geconfigureerd" as const,
+        vertrouwd: false,
+        ontbrekendeEnv: [],
+        toelichting:
+          `Credentialroute '${stand.route}' compleet in dit proces, maar nog niet tegen ` +
+          "de echte API gevalideerd. De data mag bestaan; hij is nog niet te vertrouwen.",
+      };
+    }
+    const alles = ontbrekendeEnv(env);
+    if (alles.length === env.length) {
       return {
         sleutel,
         status: "niet_geconfigureerd" as const,
         vertrouwd: false,
-        ontbrekendeEnv: ontbrekend,
+        ontbrekendeEnv: stand.ontbrekend,
         toelichting:
-          `NIET AANGESLOTEN. Alle ${env.length} variabelen ontbreken: ${ontbrekend.join(", ")}. ` +
+          `NIET AANGESLOTEN in dit proces. Geen enkele van de ${env.length} mogelijke ` +
+          `variabelen is gezet; het goedkoopste pad vraagt: ${stand.ontbrekend.join(", ")}. ` +
           "Zolang dat zo is zijn er geen cijfers, en geen cijfers is niet nul.",
-      };
-    }
-    if (ontbrekend.length > 0) {
-      return {
-        sleutel,
-        status: "fout" as const,
-        vertrouwd: false,
-        ontbrekendeEnv: ontbrekend,
-        toelichting: `HALF GECONFIGUREERD. Ontbreekt nog: ${ontbrekend.join(", ")}.`,
       };
     }
     return {
       sleutel,
-      status: "geconfigureerd" as const,
+      status: "fout" as const,
       vertrouwd: false,
-      ontbrekendeEnv: [],
+      ontbrekendeEnv: stand.ontbrekend,
       toelichting:
-        "Alle variabelen aanwezig, maar nog niet tegen de echte API gevalideerd. " +
-        "De data mag bestaan; hij is nog niet te vertrouwen.",
+        `HALF GECONFIGUREERD in dit proces. Geen enkele credentialroute is compleet; ` +
+        `het goedkoopste pad vraagt nog: ${stand.ontbrekend.join(", ")}.`,
     };
   });
 }
