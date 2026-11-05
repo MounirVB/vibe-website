@@ -122,10 +122,32 @@ const STARTDATUM_P: readonly RegExp[] = [
   /\b(?:geldt|gelden|gaat\s+gelden|van\s+kracht)\s+(?:vanaf|per|sinds)\b/iu,
 ];
 
-/* 5 · EINDDATUM */
+/* 5 · EINDDATUM
+
+   'voor <datum>' HOORT ERBIJ, EN DAT WAS EEN ASYMMETRIE.
+   ------------------------------------------------------------------
+   zoekDatums() in uitspraken.ts rekent 'voor' al tot de eindgrenzen —
+   het staat daar in dezelfde lijst als 'tot', 'tot en met' en
+   'uiterlijk' — en zette dus geldig_tot. Dit bestand kende die vorm
+   niet, dus kreeg dezelfde claim rol LOSSE_DATUM.
+
+   GEMETEN OP DE 39 ECHTE DATUMCLAIMS, 6 november 2026. Claim 16:
+
+     "Aanvragen ontvangen voor 1 juli 2026 — Kleinverbruikaanvragen
+      worden toegekend"
+
+   Die claim HAD een geldig_tot uit de extractie en kwam hier uit op
+   'losse datum zonder voldoende context'. Dat is dezelfde klasse fout
+   als die tussen uitspraken.ts en uitdrukking.ts: twee lagen met
+   hetzelfde doel en een iets ander woordenboek, waardoor een geldige
+   claim in de ene laag wordt gevonden en in de andere stil wegvalt.
+
+   DIT VERLAAGT GEEN DREMPEL. De rol wordt juister, niet milder: een
+   EINDDATUM moet nog steeds bevestigd zijn, een onderwerp hebben en
+   een zin opleveren voordat hij verwoordbaar wordt. */
 const EINDDATUM_P: readonly RegExp[] = [
   /\b(tot\s+en\s+met\s+\d{1,2}\s+\w+\s+20\d\d|uiterlijk\s+\d{1,2}\s+\w+\s+20\d\d|sluit\s+(?:op|per)|einddatum|loopt\s+(?:af|tot)|vervalt\s+(?:op|per)|geldig\s+tot|deadline|laatste\s+dag)\b/iu,
-  /\btot\s+\d{1,2}\s+\w+\s+20\d\d\b/iu,
+  /\b(?:tot|voor)\s+\d{1,2}\s+\w+\s+20\d\d\b/iu,
 ];
 
 /* ------------------------------------------------------------------

@@ -311,6 +311,22 @@ test("datumrol · een einddatum", () => {
   assert.equal(r.rol, "EINDDATUM", r.reden);
 });
 
+test("datumrol · 'voor <datum>' is een einddatum, net als in de extractie", () => {
+  /* DE ASYMMETRIE DIE DE ECHTE DATA OPLEVERDE. zoekDatums() rekent
+     'voor' al tot de eindgrenzen en zette geldig_tot; dit bestand kende
+     die vorm niet. Gemeten op productieclaim 16:
+
+       "Aanvragen ontvangen voor 1 juli 2026 — Kleinverbruikaanvragen
+        worden toegekend"
+
+     Die claim had een geldig_tot én rol LOSSE_DATUM. Twee lagen, één
+     woordenboek — dat is de regel die hier wordt vastgezet. */
+  const r = bepaalDatumrol(
+    "Aanvragen voor de subsidieregeling ontvangen voor 1 juli 2026 worden nog toegekend.",
+  );
+  assert.equal(r.rol, "EINDDATUM", r.reden);
+});
+
 test("datumrol · een publicatiedatum is geen ingangsdatum", () => {
   const r = bepaalDatumrol(
     "Op 2 juni 2026 publiceerde de ACM de bestuurlijke afspraken over het congestiebeleid.",
