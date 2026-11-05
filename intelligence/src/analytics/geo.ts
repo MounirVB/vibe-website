@@ -67,6 +67,12 @@ const log = maakLogger("geo");
  * verschillende methodeversies zijn niet vergelijkbaar, en dat moet uit
  * de DATA blijken en niet uit een aanname van wie het dashboard leest.
  */
+/* HET MAXIMUM AAN UITVOERTOKENS, als constante omdat hij op twee
+   plekken moet gelden: in de kostenschatting VOORAF en in de aanroep
+   zelf. Twee losse getallen zouden uiteen kunnen lopen, en dan schat de
+   budgetcontrole iets anders in dan er wordt uitgegeven. */
+export const GEO_MAX_TOKENS_UIT = 900;
+
 export const GEO_METHODE_VERSIE = "geo-v1";
 
 /** Het eigen domein, waarvan een citaat als eigen pagina telt. */
@@ -343,9 +349,22 @@ export async function geoRonde(
     }
 
     /* GRENDEL 2 — het dagbudget van de BESTAANDE kostenlaag. Geen eigen
-       plafond: twee plafonds op dezelfde uitgaven lopen uiteen. */
+       plafond: twee plafonds op dezelfde uitgaven lopen uiteen.
+
+       PROVIDER EN MODEL GAAN MEE sinds migratie 0053. Zonder die twee
+       toetst controleerBudget alleen het aanroepenplafond en blijven de
+       GELDgrenzen buiten beschouwing — en een GEO-ronde is dezelfde
+       AI-uitgave als een artikel, dus hij hoort onder dezelfde €5 per
+       dag te vallen. Het maximum aan uitvoertokens is wat deze ronde
+       daadwerkelijk vraagt, zodat de kostenschatting over de BOVENGRENS
+       gaat en niet over een gemiddelde. */
     const budget = await metOrganisatie(pool, { organisatieId }, (c) =>
-      controleerBudget(c as pg.PoolClient, organisatieId),
+      controleerBudget(c as pg.PoolClient, organisatieId, {
+        provider: provider.naam,
+        model: provider.model,
+        maxTokensUit: GEO_MAX_TOKENS_UIT,
+        tokensIn: Math.ceil(p.prompt.length / 4),
+      }),
     );
     if (!budget.mag) {
       const reden = `dagbudget bereikt (${budget.gebruiktVandaag}/${budget.plafond}): ${budget.reden}`;
@@ -389,7 +408,7 @@ export async function geoRonde(
           "Je beantwoordt een zakelijke vraag over de Nederlandse energiemarkt. Noem concrete " +
           "partijen en bronnen waar dat kan. Antwoord in het Nederlands.",
         gebruiker: p.prompt,
-        maxTokensUit: 900,
+        maxTokensUit: GEO_MAX_TOKENS_UIT,
       });
     } catch (e) {
       fout = e instanceof Error ? e.message : String(e);

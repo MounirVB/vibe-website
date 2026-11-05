@@ -18,6 +18,7 @@
     "plannerpauze": "node src/cli/plannerpauze.ts",
     "paginascan": "node src/cli/paginascan.ts",
     "bronaudit": "node src/cli/bronaudit.ts",
+    "autopublicatie": "node src/cli/autopublicatie.ts",
     "schaalcorrectie": "node src/cli/schaalcorrectie.ts",
     "sitekennis": "node src/cli/sitekennis.ts",
     "geo": "node src/cli/geo.ts",

@@ -143,6 +143,17 @@ export const PLAN: readonly PlanRegel[] = [
      die de motor heeft geschreven. Publiceert niets: een voorstel komt
      in READY_FOR_REVIEW en wacht op een mens. */
   { soort: "voorstel", prioriteit: 60, toelichting: "kandidaten met een doelpagina naar wijzigingsvoorstellen" },
+  /* NA VOORSTEL, EN STANDAARD EEN NO-OP. Deze taak handhaaft het
+     publicatiebeleid. Staat auto_publiceren_aan op false — de
+     standaard, en de enige toestand waarin dit platform nooit zelf
+     publiceert — dan leest hij één beleidsrij en stopt. Hij staat
+     daarom in de uurlijkse keten en niet dagelijks: zodra het beleid
+     ooit aangaat, hoort een goedgekeurd artikel niet een etmaal te
+     wachten.
+     Prioriteit 70: ná de voorstellen die kandidaten afwerken, vóór de
+     back-up op 90, zodat een publicatie van die ronde nog in de
+     back-up van diezelfde dag zit. */
+  { soort: "publiceren", prioriteit: 70, toelichting: "het publicatiebeleid handhaven; publiceert alleen wat alle negen voorwaarden haalt" },
   /* DAGELIJKS, NIET PER UUR. De idempotentiesleutel van deze taak draagt
      alleen de DATUM, dus de eerste plannerrun van een dag maakt hem aan
      en de 23 runs daarna slaan hem over — precies hetzelfde mechanisme
@@ -640,6 +651,51 @@ export const REGISTER: Record<string, Handler> = {
    * een mens. Bestaande menselijke besluiten blijven staan zolang de
    * inhoudshash gelijk is; zie bewaarVoorstel.
    */
+  /**
+   * HET PUBLICATIEBELEID HANDHAVEN.
+   *
+   * STANDAARD DOET DEZE TAAK NIETS, en dat is geen voorbehoud maar het
+   * ontwerp: `auto_publiceren_aan` staat op false en
+   * `auto_toegestane_soorten` is leeg. Dan leest hij één beleidsrij,
+   * meldt waarom er niets gebeurt, en stopt.
+   *
+   * DE REDEN KOMT IN HET TAAKLOG. Een nieuwskanaal dat stilstaat moet
+   * zichtbaar stilstaan: wie dit log leest ziet of het beleid uit staat,
+   * of er niets te publiceren was, of dat er kandidaten zijn geweigerd
+   * en op welke van de negen voorwaarden.
+   *
+   * GOOIT NIET BIJ EEN WEIGERING. Een geweigerde kandidaat is geen
+   * storing maar een uitkomst. Alleen een onverwachte fout in de ronde
+   * zelf hoort een taakfout te worden, en die komt uit publiceer().
+   */
+  async publiceren(pool, organisatieId) {
+    const { automatischPubliceren } = await import("../inhoud/autopublicatie.ts");
+    const r = await automatischPubliceren(pool, organisatieId);
+
+    if (r.beleidReden !== null) {
+      return `niets gedaan: ${r.beleidReden}`;
+    }
+    const weigerregel =
+      r.geweigerd.length === 0
+        ? ""
+        : `; geweigerd ${r.geweigerd.length}: ` +
+          r.geweigerd
+            .slice(0, 5)
+            .map((w) => `versie ${w.inhoudVersieId} op '${w.voorwaarde}' (${w.reden.slice(0, 90)})`)
+            .join(" ;; ") +
+          (r.geweigerd.length > 5 ? ` ;; +${r.geweigerd.length - 5} meer` : "");
+    const publicatieregel =
+      r.gepubliceerd.length === 0
+        ? ""
+        : `; GEPUBLICEERD ${r.gepubliceerd.length}: ` +
+          r.gepubliceerd.map((g) => `${g.pad} (publicatie ${g.publicatieId})`).join(", ");
+    return (
+      `beleid '${r.beleid?.versie ?? "-"}' actief, bekeken ${r.bekeken} kandidaat(en)` +
+      publicatieregel +
+      weigerregel
+    );
+  },
+
   async voorstel(pool, organisatieId, payload) {
     const { leesSitekennis } = await import("../site/sitekennis.ts");
     const { voorstelronde } = await import("../inhoud/voorstel.ts");
