@@ -657,8 +657,8 @@ export type PropertyTotaal = {
  * twee naast. Daarom wordt dit totaal apart opgeslagen en apart getoond.
  *
  * Geeft null als Google geen totaalrij levert. NULL IS GEEN NUL: het
- * betekent dat het totaal niet is gemeten, en de dekkingsgraad blijft
- * dan onbekend in plaats van 100%.
+ * betekent dat het totaal niet is gemeten, en de verhouding
+ * detailmetingen/propertytotaal blijft dan onbekend in plaats van 100%.
  */
 export async function haalPropertyTotaal(
   token: string,
@@ -1033,7 +1033,7 @@ export async function synchroniseerGsc(
        met nullen zou beweren dat de property nul kliks had, en dat is
        precies de verwarring die deze tabel moet wegnemen: een
        ontbrekend totaal is geen nul en geen volledige dekking. De view
-       intel.analytics_dekkingsgraad laat de aandelen daarom op NULL
+       intel.analytics_verhoudingen laat de verhouding daarom op NULL
        staan zolang er geen totaalrij is. */
     if (propertyTotaal !== null) {
       await c.query(
@@ -1091,7 +1091,7 @@ export async function synchroniseerGsc(
         `${geschreven} rij(en) weggeschreven over ${vanaf} t/m ${tot} voor property ` +
         `${keuze.property.siteUrl} via ${toegang.herkomst}` +
         (propertyTotaal === null
-          ? ". Propertytotaal NIET GEMETEN, dus de dekkingsgraad van de detaillaag is onbekend."
+          ? ". Propertytotaal NIET GEMETEN, dus de verhouding detailmetingen/propertytotaal is onbekend."
           : `. Propertytotaal ${propertyTotaal.kliks} kliks / ${propertyTotaal.impressies} ` +
             `impressies naast detail ${detailKliks} / ${detailImpressies}.`),
       door: "synchroniseerGsc",
@@ -1113,7 +1113,7 @@ export async function synchroniseerGsc(
     epoch: uit.epoch,
     hosts: Object.keys(perHost).length,
     /* HET DETAILTOTAAL NOOIT ZONDER HET PROPERTYTOTAAL loggen: naast
-       elkaar is het een dekkingsgraad, los is het een verkeerd getal. */
+       elkaar is het een verhouding, los is het een verkeerd getal. */
     detail_kliks: detailKliks,
     detail_impressies: detailImpressies,
     property_kliks: propertyTotaal === null ? "NIET GEMETEN" : propertyTotaal.kliks,
@@ -1159,9 +1159,21 @@ export type DekkingsStand = {
   readonly detailKliks: number;
   readonly detailImpressies: number;
   readonly detailRijen: number;
-  /** NULL betekent NIET GEMETEN, niet 0% en niet 100%. */
-  readonly kliksDekking: number | null;
-  readonly impressiesDekking: number | null;
+  /**
+   * De VERHOUDING detailmetingen / propertytotaal.
+   *
+   * KAN BOVEN 1 UITKOMEN, en dat is geen fout. Gemeten op 5 november
+   * 2026: 1,24 voor juni, 1,03 voor juli, 1,01 voor augustus en
+   * september. Google's totalen zijn niet additief over dimensies —
+   * het ongedimensioneerde totaal ontdubbelt op zoekvertoning, de
+   * gedimensioneerde rijen niet. Lees dit dus NIET als 'welk deel van
+   * de gegevens hebben we'; dat heette het eerst en dat was te veel
+   * belofte.
+   *
+   * NULL betekent NIET GEMETEN, niet 0 en niet 1.
+   */
+  readonly kliksVerhouding: number | null;
+  readonly impressiesVerhouding: number | null;
   readonly opgehaaldOp: string;
 };
 
@@ -1265,17 +1277,17 @@ export async function gscStand(
       detail_kliks: string | null;
       detail_impressies: string | null;
       detail_rijen: string | null;
-      kliks_dekking: string | null;
-      impressies_dekking: string | null;
+      kliks_verhouding: string | null;
+      impressies_verhouding: string | null;
       opgehaald_op: string;
     }>(
       c,
       `select property, datum_vanaf::text as vanaf, datum_tot::text as tot,
               property_kliks::text, property_impressies::text, property_ctr::text,
               property_positie::text, detail_kliks::text, detail_impressies::text,
-              detail_rijen::text, kliks_dekking::text, impressies_dekking::text,
+              detail_rijen::text, kliks_verhouding::text, impressies_verhouding::text,
               opgehaald_op::text
-         from intel.analytics_dekkingsgraad
+         from intel.analytics_verhoudingen
         where organisatie_id = $1 and bron = $2
         order by datum_tot desc, opgehaald_op desc
         limit 1`,
@@ -1307,9 +1319,9 @@ export async function gscStand(
               detailKliks: Number(dr.detail_kliks ?? 0),
               detailImpressies: Number(dr.detail_impressies ?? 0),
               detailRijen: Number(dr.detail_rijen ?? 0),
-              kliksDekking: dr.kliks_dekking === null ? null : Number(dr.kliks_dekking),
-              impressiesDekking:
-                dr.impressies_dekking === null ? null : Number(dr.impressies_dekking),
+              kliksVerhouding: dr.kliks_verhouding === null ? null : Number(dr.kliks_verhouding),
+              impressiesVerhouding:
+                dr.impressies_verhouding === null ? null : Number(dr.impressies_verhouding),
               opgehaaldOp: dr.opgehaald_op,
             },
     };
