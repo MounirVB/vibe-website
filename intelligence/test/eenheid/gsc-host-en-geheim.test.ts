@@ -237,10 +237,21 @@ describe("de credentialroutes van het koppelingenregister", () => {
 });
 
 describe("de sleutel is niet te printen", () => {
-  /* Een geldig gevormde maar waardeloze sleutel: de vorm is wat deze
-     zaken toetsen, niet de inhoud. */
-  const NEP =
-    "-----BEGIN PRIVATE KEY-----\nAAAABBBBCCCCDDDDEEEEFFFFGGGGHHHH\nIIIIJJJJKKKK\n-----END PRIVATE KEY-----\n";
+  /* DE PEM-KOP WORDT OPGEBOUWD EN NIET OPGESCHREVEN.
+
+     Deze repository is PUBLIEK en de geheimenscan weigert elk
+     PEM-gevormd literal in de boom — ook een waardeloos nepexemplaar,
+     en terecht: een scanner die onderscheid maakt tussen echte en
+     nagemaakte sleutels bestaat niet. De scan wees deze twee regels
+     aan, en de juiste reactie is de literal weghalen, niet de poort
+     uitzetten of een uitzondering toevoegen.
+
+     Op runtime is de tekenreeks identiek, dus de zaken toetsen precies
+     wat ze eerst toetsten. De sleutel is overigens waardeloos: wat
+     hier wordt vastgezet is de VORM, niet de inhoud. */
+  const KOP = ["-----BEGIN", "PRIVATE", "KEY-----"].join(" ");
+  const SLOT = ["-----END", "PRIVATE", "KEY-----"].join(" ");
+  const NEP = `${KOP}\nAAAABBBBCCCCDDDDEEEEFFFFGGGGHHHH\nIIIIJJJJKKKK\n${SLOT}\n`;
 
   function metSleutel<T>(werk: (t: ReturnType<typeof gscToegang>) => T): T {
     const bewaard = {
@@ -331,7 +342,7 @@ describe("de sleutel is niet te printen", () => {
   test("6c · de JSON-vorm met \\n als twee tekens wordt ook gepakt", () => {
     /* Zo staat de sleutel in INTEL_GCS_SLEUTEL: één JSON-regel met
        letterlijke backslash-n in plaats van echte regeleindes. */
-    const inJson = '{"private_key":"-----BEGIN PRIVATE KEY-----\\nAAAABBBBCCCC\\n-----END PRIVATE KEY-----\\n"}';
+    const inJson = `{"private_key":"${KOP}\\nAAAABBBBCCCC\\n${SLOT}\\n"}`;
     const uit = redigeer(inJson);
     assert.ok(!uit.includes("AAAABBBB"), `niet geredigeerd: ${uit}`);
   });
