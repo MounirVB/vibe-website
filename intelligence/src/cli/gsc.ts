@@ -22,6 +22,7 @@ import {
   kiesProperty,
   ontdekProperties,
   synchroniseerGsc,
+  websiteHost,
 } from "../analytics/gsc.ts";
 
 const heeft = (naam: string) => process.argv.includes(`--${naam}`);
@@ -96,6 +97,8 @@ async function main(): Promise<number> {
       );
       return 1;
     }
+    const t = uit.propertyTotaal;
+    const eigen = websiteHost();
     process.stdout.write(
       `\nGSC-SYNCHRONISATIE${heeft("droog") ? " (DROOG)" : ""}\n\n` +
         `  property:    ${uit.property} (${uit.propertySoort})\n` +
@@ -103,9 +106,37 @@ async function main(): Promise<number> {
         `  venster:     ${uit.vanaf} t/m ${uit.tot}\n` +
         `  rijen:       ${uit.rijen}${uit.afgekapt ? " (AFGEKAPT — dit is een ONDERGRENS)" : ""}\n` +
         `  weggeschreven: ${uit.geschreven}\n` +
+        (uit.opgeruimd > 0
+          ? `  opgeruimd:   ${uit.opgeruimd} legacyrij(en) zonder host (van vóór migratie 0050)\n`
+          : "") +
         `  conventie:   ${uit.conventie}\n` +
         `  epoch:       ${uit.epoch}\n\n` +
-        "  LET OP: dit zijn zoekprestaties, geen indexatiestatus. Of Google een pagina heeft\n" +
+        /* DE TWEE TOTALEN NAAST ELKAAR, nooit los. Het detailtotaal
+           alleen is een verkeerd getal: Google laat zeldzame
+           zoekvragen uit elke gedimensioneerde respons weg. */
+        `  PROPERTYTOTAAL (Google zelf, zonder dimensies)\n` +
+        (t === null
+          ? `    NIET GEMETEN — de dekkingsgraad van de detaillaag is dus onbekend,\n` +
+            `    en dit detailtotaal mag niet als sitetotaal gelden.\n`
+          : `    kliks ${t.kliks}   impressies ${t.impressies}   ` +
+            `ctr ${(t.ctr * 100).toFixed(2)} %   positie ${t.positie.toFixed(2)}\n`) +
+        `  DETAILTOTAAL (wat per zoekvraag is opgeslagen)\n` +
+        `    kliks ${uit.detailKliks}   impressies ${uit.detailImpressies}\n` +
+        (t === null || t.kliks === 0 || t.impressies === 0
+          ? ""
+          : `  DEKKING: ${((uit.detailKliks / t.kliks) * 100).toFixed(0)} % van de kliks, ` +
+            `${((uit.detailImpressies / t.impressies) * 100).toFixed(0)} % van de impressies.\n` +
+            `    Het verschil is Google's anonimisering van zeldzame zoekvragen.\n`) +
+        `\n  PER HOST — een domeinproperty dekt meer dan de website\n` +
+        Object.entries(uit.perHost)
+          .sort((a, b) => b[1] - a[1])
+          .map(
+            ([h, i]) =>
+              `    ${h.padEnd(28)} ${String(i).padStart(7)} impressies` +
+              (h === eigen ? "   <- de website" : ""),
+          )
+          .join("\n") +
+        "\n\n  LET OP: dit zijn zoekprestaties, geen indexatiestatus. Of Google een pagina heeft\n" +
         "  opgenomen is een aparte waarneming; HTTP 200 is dat zeker niet.\n",
     );
     return 0;
@@ -121,7 +152,44 @@ async function main(): Promise<number> {
       `  dekkingsvensters:  ${stand.dekkingsrijen}${stand.afgekapteVensters > 0 ? ` (${stand.afgekapteVensters} AFGEKAPT)` : ""}\n` +
       `  zoekvraagrijen:    ${stand.zoekvraagrijen}\n` +
       `  nieuwste datum:    ${stand.nieuwsteDatum ?? "GEEN DATA"}\n` +
-      `  laatste ophaling:  ${stand.laatsteOphaling ?? "NOOIT"}\n\n` +
+      `  laatste ophaling:  ${stand.laatsteOphaling ?? "NOOIT"}\n` +
+      (stand.rijenZonderHost > 0
+        ? `  zonder host:       ${stand.rijenZonderHost} rij(en) van vóór migratie 0050\n`
+        : "") +
+      "\n" +
+      (stand.perHost.length === 0
+        ? ""
+        : `  PER HOST\n` +
+          stand.perHost
+            .map(
+              (h) =>
+                `    ${(h.host ?? "(onbekend)").padEnd(28)} ` +
+                `${String(h.impressies).padStart(7)} impressies  ` +
+                `${String(h.kliks).padStart(4)} kliks  ` +
+                `positie ${h.positie === null ? "n.v.t." : h.positie.toFixed(1)}` +
+                (h.host === websiteHost() ? "   <- de website" : ""),
+            )
+            .join("\n") +
+          "\n\n") +
+      (stand.dekking === null
+        ? "  PROPERTYTOTAAL: NIET GEMETEN. De dekkingsgraad van de detaillaag is dus onbekend,\n" +
+          "  en het detailtotaal mag niet als sitetotaal worden gelezen.\n"
+        : `  PROPERTYTOTAAL ${stand.dekking.vanaf} t/m ${stand.dekking.tot}\n` +
+          `    Google zelf:  ${stand.dekking.propertyKliks} kliks   ` +
+          `${stand.dekking.propertyImpressies} impressies   positie ` +
+          `${stand.dekking.propertyPositie === null ? "n.v.t." : stand.dekking.propertyPositie.toFixed(2)}\n` +
+          `    detaillaag:   ${stand.dekking.detailKliks} kliks   ` +
+          `${stand.dekking.detailImpressies} impressies   ${stand.dekking.detailRijen} rijen\n` +
+          `    dekking:      ${
+            stand.dekking.kliksDekking === null
+              ? "NIET GEMETEN"
+              : `${(stand.dekking.kliksDekking * 100).toFixed(0)} % van de kliks`
+          }, ${
+            stand.dekking.impressiesDekking === null
+              ? "NIET GEMETEN"
+              : `${(stand.dekking.impressiesDekking * 100).toFixed(0)} % van de impressies`
+          }\n`) +
+      "\n" +
       (stand.dekkingsrijen === 0
         ? "  NUL DEKKINGSVENSTERS betekent NIET 'nul vertoningen'. Het betekent dat er nooit\n" +
           "  iets is opgehaald. Draai 'npm run gsc -- --properties' om te zien waar het stokt.\n"

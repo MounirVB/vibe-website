@@ -2742,6 +2742,54 @@ ${tabel(
            from intel.geo_zichtbaarheid_per_prompt
           order by prompt_sleutel`,
       ),
+      /* DE HOSTSPLITSING EN HET PROPERTYTOTAAL. Beide bestaan omdat één
+         getal twee dingen verborg: een domeinproperty bevat meer dan de
+         website, en de detaillaag is een deelverzameling van het
+         propertytotaal. Zie migratie 0050. */
+      hosts: await rijen<{
+        pagina_host: string | null;
+        rijen: number;
+        zoekvragen: number;
+        paden: number;
+        impressies: number;
+        kliks: number;
+        ctr: string | null;
+        positie: string | null;
+      }>(
+        c,
+        `select pagina_host, rijen, zoekvragen, paden, impressies, kliks,
+                ctr::text, gemiddelde_positie::text as positie
+           from intel.zoekvraag_per_host
+          where bron = 'gsc'
+          order by impressies desc nulls last`,
+      ),
+      propertyDekking: await rijen<{
+        property: string;
+        vanaf: string;
+        tot: string;
+        property_kliks: number | null;
+        property_impressies: number | null;
+        property_positie: string | null;
+        detail_kliks: number | null;
+        detail_impressies: number | null;
+        detail_rijen: number | null;
+        kliks_dekking: string | null;
+        impressies_dekking: string | null;
+      }>(
+        c,
+        `select property, datum_vanaf::text as vanaf, datum_tot::text as tot,
+                property_kliks, property_impressies, property_positie::text,
+                detail_kliks, detail_impressies, detail_rijen,
+                kliks_dekking::text, impressies_dekking::text
+           from intel.analytics_dekkingsgraad
+          where bron = 'gsc'
+          order by datum_tot desc limit 1`,
+      ),
+      zonderHost: await eenRij<{ n: number }>(
+        c,
+        `select count(*)::int as n from intel.zoekvraag_metingen
+          where bron = 'gsc' and pagina_host is null`,
+      ),
     }));
 
     res.send(
@@ -2752,10 +2800,11 @@ ${tabel(
         inhoud: `
 <h1>Prestaties</h1>
 <p class="uitleg">Dit is de eerlijke stand. <strong>Een ontbrekende meting is geen nul.</strong>
-De Search Console-koppeling BESTAAT sinds 1 november 2026 (<code>npm run gsc</code>); of er data
-staat hangt af van twee externe handelingen: de Search Console-API moet in het GCP-project aan,
-en het dienstaccount moet in Search Console aan de property zijn toegevoegd. Bing, GA4 en het CRM
-zijn niet aangesloten, dus doorklikken en conversies blijven ONBEKEND.</p>
+De Search Console-koppeling levert sinds 5 november 2026 echte gegevens: de API staat aan en het
+dienstaccount is aan de property <code>sc-domain:vibeenergy.nl</code> toegevoegd. Let bij het lezen
+op twee dingen die deze pagina expliciet scheidt &mdash; het <strong>propertytotaal</strong> is
+groter dan het detailtotaal, en de property dekt <strong>meer hosts dan de website</strong>. Bing,
+GA4 en het CRM zijn niet aangesloten, dus doorklikken en conversies blijven ONBEKEND.</p>
 
 <h2>Koppelingen</h2>
 ${tabel(
@@ -2820,7 +2869,77 @@ ${tabel(
   ].map((r) => [esc(r[0]!), `<span class="num">${r[1]}</span>`, r[2]!, `<div class="klein">${r[3]}</div>`]),
 )}
 
+<h2>Propertytotaal tegen detailtotaal</h2>
+<p class="uitleg">Dit zijn <strong>twee verschillende getallen</strong> en het grote mag nooit uit
+het kleine worden afgelezen. Google laat zeldzame zoekvragen uit elke gedimensioneerde respons weg,
+dus de detaillaag is per definitie een <strong>deelverzameling</strong>. Op 5 november 2026 gemeten:
+de detaillaag droeg 44% van de kliks en 72% van de vertoningen. Zonder propertytotaal is de
+dekkingsgraad <strong>ONBEKEND</strong> &mdash; niet 100%.</p>
+${
+  d.propertyDekking[0] === undefined
+    ? '<p class="onbekend">PROPERTYTOTAAL NIET GEMETEN. Het detailtotaal hieronder is dus een ondergrens van onbekende omvang en geen sitetotaal.</p>'
+    : tabel(
+        ["Laag", "Kliks", "Vertoningen", "Gem. positie", "Dekking"],
+        [
+          [
+            `<div>Google zelf, zonder dimensies</div><div class="klein">${esc(d.propertyDekking[0].property)} &middot; ${esc(d.propertyDekking[0].vanaf)} t/m ${esc(d.propertyDekking[0].tot)}</div>`,
+            `<span class="num">${d.propertyDekking[0].property_kliks ?? 0}</span>`,
+            `<span class="num">${d.propertyDekking[0].property_impressies ?? 0}</span>`,
+            d.propertyDekking[0].property_positie === null
+              ? '<span class="onbekend">ONBEKEND</span>'
+              : Number(d.propertyDekking[0].property_positie).toFixed(2),
+            "<div class=\"klein\">dit IS het totaal</div>",
+          ],
+          [
+            '<div>Onze detaillaag, per zoekvraag</div><div class="klein">zoekvraag &times; pagina &times; land &times; apparaat</div>',
+            `<span class="num">${d.propertyDekking[0].detail_kliks ?? 0}</span>`,
+            `<span class="num">${d.propertyDekking[0].detail_impressies ?? 0}</span>`,
+            '<div class="klein">zie de tabel hieronder</div>',
+            `<div class="klein">${
+              d.propertyDekking[0].kliks_dekking === null
+                ? '<span class="onbekend">ONBEKEND</span>'
+                : `${(Number(d.propertyDekking[0].kliks_dekking) * 100).toFixed(0)}% van de kliks`
+            }, ${
+              d.propertyDekking[0].impressies_dekking === null
+                ? '<span class="onbekend">ONBEKEND</span>'
+                : `${(Number(d.propertyDekking[0].impressies_dekking) * 100).toFixed(0)}% van de vertoningen`
+            }</div>`,
+          ],
+        ],
+      )
+}
+
+<h2>Per host &mdash; een domeinproperty dekt meer dan de website</h2>
+<p class="uitleg">De property is <code>sc-domain:</code>, en die dekt <strong>elke host onder het
+domein</strong>. Op 5 november 2026 leverde hij er drie, waaronder
+<code>dashboard.vibeenergy.nl</code>. Tot migratie 0050 bewaarde de synchronisatie alleen het pad,
+waardoor <code>dashboard&hellip;/</code> en <code>www&hellip;/</code> op dezelfde rij landden en de
+laatste de vorige overschreef &mdash; twee merkkliks op de homepage gingen zo verloren. De host
+staat nu in de sleutel, dus deze regels zijn gescheiden gemeten.</p>
+${tabel(
+  ["Host", "Vertoningen", "Kliks", "CTR", "Gem. positie", "Paden", "Zoekvragen"],
+  d.hosts.map((h) => [
+    h.pagina_host === null
+      ? '<span class="onbekend">(geen host)</span><div class="klein">opgehaald v&oacute;&oacute;r migratie 0050</div>'
+      : `<code class="klein">${esc(h.pagina_host)}</code>`,
+    `<span class="num">${h.impressies ?? 0}</span>`,
+    `<span class="num">${h.kliks ?? 0}</span>`,
+    h.ctr === null ? '<span class="onbekend">ONBEKEND</span>' : `${(Number(h.ctr) * 100).toFixed(1)}%`,
+    h.positie === null ? '<span class="onbekend">ONBEKEND</span>' : Number(h.positie).toFixed(1),
+    `<span class="num">${h.paden ?? 0}</span>`,
+    `<span class="num">${h.zoekvragen ?? 0}</span>`,
+  ]),
+  "Nog geen zoekvraagrijen met een host.",
+)}
+${
+  (d.zonderHost?.n ?? 0) > 0
+    ? `<p class="klein"><strong>${d.zonderHost?.n ?? 0} rij(en)</strong> dragen nog geen host: die zijn opgehaald v&oacute;&oacute;r migratie 0050, toen de host niet werd bewaard. Voor die rijen is hij niet meer te bepalen &mdash; bij een botsing was hij per definitie ambigu. De volgende synchronisatie over dat venster ruimt ze op.</p>`
+    : ""
+}
+
 <h2>Zoekprestaties uit Search Console</h2>
+<p class="klein">Dit is de <strong>detaillaag</strong> en propertybreed: alle hosts samen. Zie de
+tabel hierboven voor het verschil met het propertytotaal en voor de website apart.</p>
 ${tabel(
   ["Zoekvraag", "Vertoningen", "Kliks", "CTR", "Gem. positie", "Dagen"],
   d.zoekvragen.map((z) => [
