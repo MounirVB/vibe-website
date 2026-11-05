@@ -116,7 +116,7 @@ async function main(): Promise<number> {
            zoekvragen uit elke gedimensioneerde respons weg. */
         `  PROPERTYTOTAAL (Google zelf, zonder dimensies)\n` +
         (t === null
-          ? `    NIET GEMETEN — de dekkingsgraad van de detaillaag is dus onbekend,\n` +
+          ? `    NIET GEMETEN — de verhouding detailmetingen/propertytotaal is dus onbekend,\n` +
             `    en dit detailtotaal mag niet als sitetotaal gelden.\n`
           : `    kliks ${t.kliks}   impressies ${t.impressies}   ` +
             `ctr ${(t.ctr * 100).toFixed(2)} %   positie ${t.positie.toFixed(2)}\n`) +
@@ -124,9 +124,11 @@ async function main(): Promise<number> {
         `    kliks ${uit.detailKliks}   impressies ${uit.detailImpressies}\n` +
         (t === null || t.kliks === 0 || t.impressies === 0
           ? ""
-          : `  DEKKING: ${((uit.detailKliks / t.kliks) * 100).toFixed(0)} % van de kliks, ` +
-            `${((uit.detailImpressies / t.impressies) * 100).toFixed(0)} % van de impressies.\n` +
-            `    Het verschil is Google's anonimisering van zeldzame zoekvragen.\n`) +
+          : `  VERHOUDING detailmetingen / propertytotaal\n` +
+            `    kliks ${((uit.detailKliks / t.kliks) * 100).toFixed(0)} %   ` +
+            `impressies ${((uit.detailImpressies / t.impressies) * 100).toFixed(0)} %\n` +
+            `    Dit is GEEN percentage datavolledigheid en kan boven 100 % uitkomen:\n` +
+            `    Google rekent de totalen niet additief over dimensies.\n`) +
         `\n  PER HOST — een domeinproperty dekt meer dan de website\n` +
         Object.entries(uit.perHost)
           .sort((a, b) => b[1] - a[1])
@@ -172,23 +174,24 @@ async function main(): Promise<number> {
             .join("\n") +
           "\n\n") +
       (stand.dekking === null
-        ? "  PROPERTYTOTAAL: NIET GEMETEN. De dekkingsgraad van de detaillaag is dus onbekend,\n" +
-          "  en het detailtotaal mag niet als sitetotaal worden gelezen.\n"
+        ? "  PROPERTYTOTAAL: NIET GEMETEN. De verhouding detailmetingen/propertytotaal is dus\n" +
+          "  onbekend, en het detailtotaal mag niet als sitetotaal worden gelezen.\n"
         : `  PROPERTYTOTAAL ${stand.dekking.vanaf} t/m ${stand.dekking.tot}\n` +
           `    Google zelf:  ${stand.dekking.propertyKliks} kliks   ` +
           `${stand.dekking.propertyImpressies} impressies   positie ` +
           `${stand.dekking.propertyPositie === null ? "n.v.t." : stand.dekking.propertyPositie.toFixed(2)}\n` +
           `    detaillaag:   ${stand.dekking.detailKliks} kliks   ` +
           `${stand.dekking.detailImpressies} impressies   ${stand.dekking.detailRijen} rijen\n` +
-          `    dekking:      ${
-            stand.dekking.kliksDekking === null
+          `    verhouding:   detailmetingen/propertytotaal — kliks ${
+            stand.dekking.kliksVerhouding === null
               ? "NIET GEMETEN"
-              : `${(stand.dekking.kliksDekking * 100).toFixed(0)} % van de kliks`
-          }, ${
-            stand.dekking.impressiesDekking === null
+              : `${(stand.dekking.kliksVerhouding * 100).toFixed(0)} %`
+          }, impressies ${
+            stand.dekking.impressiesVerhouding === null
               ? "NIET GEMETEN"
-              : `${(stand.dekking.impressiesDekking * 100).toFixed(0)} % van de impressies`
-          }\n`) +
+              : `${(stand.dekking.impressiesVerhouding * 100).toFixed(0)} %`
+          }\n` +
+          `                  GEEN percentage datavolledigheid; kan boven 100 % uitkomen.\n`) +
       "\n" +
       (stand.dekkingsrijen === 0
         ? "  NUL DEKKINGSVENSTERS betekent NIET 'nul vertoningen'. Het betekent dat er nooit\n" +

@@ -176,18 +176,18 @@ describe("GSC-integriteit: host, propertytotaal en koppelbewijs", () => {
 
   /* ---------- 2 · propertytotaal tegen detailtotaal ---------- */
 
-  test("2 · zonder propertytotaal is de dekkingsgraad ONBEKEND, niet 100%", async () => {
+  test("2 · zonder propertytotaal is de verhouding ONBEKEND, niet 100%", async () => {
     await metOrganisatie(db.pool, { organisatieId: org }, async (c) => {
       const stand = await gscStand(c, org);
       assert.equal(stand.dekking, null, "er is nog geen propertytotaal gemeten");
       const r = await c.query<{ n: number }>(
-        "select count(*)::int as n from intel.analytics_dekkingsgraad",
+        "select count(*)::int as n from intel.analytics_verhoudingen",
       );
       assert.equal(r.rows[0]?.n, 0);
     });
   });
 
-  test("2b · met propertytotaal rekent de view de dekkingsgraad uit", async () => {
+  test("2b · met propertytotaal rekent de view de verhouding uit", async () => {
     await metOrganisatie(db.pool, { organisatieId: org }, async (c) => {
       /* De gemeten cijfers van 5 november 2026. */
       await c.query(
@@ -202,11 +202,11 @@ describe("GSC-integriteit: host, propertytotaal en koppelbewijs", () => {
       const r = await c.query<{
         property_kliks: number;
         property_positie: string;
-        kliks_dekking: string;
-        impressies_dekking: string;
+        kliks_verhouding: string;
+        impressies_verhouding: string;
       }>(
-        `select property_kliks, property_positie::text, kliks_dekking::text, impressies_dekking::text
-           from intel.analytics_dekkingsgraad where organisatie_id = $1`,
+        `select property_kliks, property_positie::text, kliks_verhouding::text, impressies_verhouding::text
+           from intel.analytics_verhoudingen where organisatie_id = $1`,
         [org],
       );
       const x = r.rows[0];
@@ -215,9 +215,9 @@ describe("GSC-integriteit: host, propertytotaal en koppelbewijs", () => {
          teller, dus moet er 26,21 uitkomen en niet 25,21. */
       assert.ok(Math.abs(Number(x?.property_positie) - 26.21) < 1e-6);
       /* 55 van 126 kliks = 43,7% — de detaillaag dekt NIET de site. */
-      assert.ok(Math.abs(Number(x?.kliks_dekking) - 55 / 126) < 1e-9);
-      assert.ok(Math.abs(Number(x?.impressies_dekking) - 7113 / 9891) < 1e-9);
-      assert.ok(Number(x?.kliks_dekking) < 0.5, "de dekking hoort onder de helft te liggen");
+      assert.ok(Math.abs(Number(x?.kliks_verhouding) - 55 / 126) < 1e-9);
+      assert.ok(Math.abs(Number(x?.impressies_verhouding) - 7113 / 9891) < 1e-9);
+      assert.ok(Number(x?.kliks_verhouding) < 0.5, "de kliksverhouding hoort onder de helft te liggen");
     });
   });
 
@@ -227,11 +227,50 @@ describe("GSC-integriteit: host, propertytotaal en koppelbewijs", () => {
       assert.notEqual(stand.dekking, null);
       assert.equal(stand.dekking?.propertyKliks, 126);
       assert.equal(stand.dekking?.detailKliks, 55);
-      assert.ok((stand.dekking?.kliksDekking ?? 1) < 0.5);
+      assert.ok((stand.dekking?.kliksVerhouding ?? 1) < 0.5);
     });
   });
 
-  test("2d · een propertytotaal van nul kliks geeft dekking NULL en niet een deling door nul", async () => {
+  test("2c2 · de verhouding MAG boven 1 uitkomen en wordt niet afgekapt", async () => {
+    /* DIT IS DE ZAAK DIE 0051 RECHTVAARDIGT, en hij is er om een
+       TOEKOMSTIGE reparatie tegen te houden.
+
+       Wie 124% ziet staan denkt al snel aan een bug en klemt de waarde
+       op 1. Dat zou de meting juist kapot maken: Google's totalen zijn
+       niet additief over dimensies, dus een detailsom boven het
+       propertytotaal is een ECHTE uitkomst. Gemeten op 5 november 2026
+       voor juni: 765 detailimpressies tegen 615 voor de property.
+
+       Zou iemand hier een LEAST(...,1) of een clamp in de view zetten,
+       dan valt deze zaak om. Dat is de bedoeling. */
+    await metOrganisatie(db.pool, { organisatieId: org }, async (c) => {
+      await c.query(
+        `insert into intel.analytics_propertytotalen
+           (organisatie_id, bron, property, datum_vanaf, datum_tot,
+            kliks, impressies, detail_kliks, detail_impressies, detail_rijen)
+         values ($1,$2,'sc-domain:vibeenergy.nl','2026-06-01'::date,'2026-06-30'::date,
+                 32, 615, 21, 765, 385)
+         on conflict (organisatie_id, bron, property, datum_vanaf, datum_tot)
+           do update set impressies = 615, detail_impressies = 765`,
+        [org, GSC_BRON],
+      );
+      const r = await c.query<{ kliks_verhouding: string; impressies_verhouding: string }>(
+        `select kliks_verhouding::text, impressies_verhouding::text
+           from intel.analytics_verhoudingen
+          where organisatie_id = $1 and datum_vanaf = '2026-06-01'`,
+        [org],
+      );
+      const imp = Number(r.rows[0]?.impressies_verhouding);
+      assert.ok(imp > 1, `de impressieverhouding hoort boven 1 te staan, niet ${imp}`);
+      assert.ok(Math.abs(imp - 765 / 615) < 1e-9, "en precies 765/615 te zijn");
+      /* De kliksverhouding blijft hier wél onder 1: daar is Google's
+         anonimisering dominant. De twee gedragen zich verschillend en
+         dat is precies waarom één label voor beide niet werkte. */
+      assert.ok(Number(r.rows[0]?.kliks_verhouding) < 1);
+    });
+  });
+
+  test("2d · een propertytotaal van nul kliks geeft de verhouding NULL en niet een deling door nul", async () => {
     await metOrganisatie(db.pool, { organisatieId: org }, async (c) => {
       await c.query(
         `insert into intel.analytics_propertytotalen
@@ -241,14 +280,14 @@ describe("GSC-integriteit: host, propertytotaal en koppelbewijs", () => {
                  0, 0, 0, 0, 0)`,
         [org, GSC_BRON],
       );
-      const r = await c.query<{ kliks_dekking: string | null; impressies_dekking: string | null }>(
-        `select kliks_dekking::text, impressies_dekking::text
-           from intel.analytics_dekkingsgraad
+      const r = await c.query<{ kliks_verhouding: string | null; impressies_verhouding: string | null }>(
+        `select kliks_verhouding::text, impressies_verhouding::text
+           from intel.analytics_verhoudingen
           where organisatie_id = $1 and property = 'sc-domain:leeg.nl'`,
         [org],
       );
-      assert.equal(r.rows[0]?.kliks_dekking, null, "nul kliks mag geen 0% dekking opleveren");
-      assert.equal(r.rows[0]?.impressies_dekking, null);
+      assert.equal(r.rows[0]?.kliks_verhouding, null, "nul kliks mag geen 0% verhouding opleveren");
+      assert.equal(r.rows[0]?.impressies_verhouding, null);
     });
   });
 
@@ -422,7 +461,7 @@ describe("GSC-integriteit: host, propertytotaal en koppelbewijs", () => {
       assert.match(s?.meting ?? "", /HOSTS in deze property/);
       assert.match(s?.meting ?? "", /dashboard\.vibeenergy\.nl/);
       assert.match(s?.meting ?? "", /Propertytotaal 126 kliks/);
-      assert.match(s?.meting ?? "", /dekking 44% van de kliks/);
+      assert.match(s?.meting ?? "", /verhouding detailmetingen\/propertytotaal kliks 44%/);
       assert.match(s?.meting ?? "", /dragen nog geen host/);
     }
   });

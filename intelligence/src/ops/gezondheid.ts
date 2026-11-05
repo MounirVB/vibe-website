@@ -1315,20 +1315,20 @@ export async function meetGezondheid(
                   : ` met ${stand.website.impressies} impressies en ${stand.website.kliks} kliks`)
               : "") +
             (stand.dekking === null
-              ? ". PROPERTYTOTAAL NIET GEMETEN, dus de dekkingsgraad van de detaillaag is " +
-                "onbekend — en dan mag dit detailtotaal niet als sitetotaal gelden."
+              ? ". PROPERTYTOTAAL NIET GEMETEN, dus de verhouding detailmetingen/propertytotaal " +
+                "is onbekend — en dan mag dit detailtotaal niet als sitetotaal gelden."
               : `. Propertytotaal ${stand.dekking.propertyKliks} kliks / ` +
                 `${stand.dekking.propertyImpressies} impressies tegen detail ` +
-                `${stand.dekking.detailKliks} / ${stand.dekking.detailImpressies} — dekking ` +
-                `${
-                  stand.dekking.kliksDekking === null
+                `${stand.dekking.detailKliks} / ${stand.dekking.detailImpressies} — verhouding ` +
+                `detailmetingen/propertytotaal kliks ${
+                  stand.dekking.kliksVerhouding === null
                     ? "NIET GEMETEN"
-                    : `${(stand.dekking.kliksDekking * 100).toFixed(0)}% van de kliks`
-                } en ${
-                  stand.dekking.impressiesDekking === null
+                    : `${(stand.dekking.kliksVerhouding * 100).toFixed(0)}%`
+                }, impressies ${
+                  stand.dekking.impressiesVerhouding === null
                     ? "NIET GEMETEN"
-                    : `${(stand.dekking.impressiesDekking * 100).toFixed(0)}% van de impressies`
-                }`) +
+                    : `${(stand.dekking.impressiesVerhouding * 100).toFixed(0)}%`
+                } (GEEN datavolledigheid; kan boven 100% uitkomen)`) +
             (stand.rijenZonderHost > 0
               ? `. ${stand.rijenZonderHost} rij(en) dragen nog geen host: opgehaald vóór ` +
                 `migratie 0050, de volgende ronde over dat venster ruimt ze op.`

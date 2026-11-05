@@ -2773,15 +2773,15 @@ ${tabel(
         detail_kliks: number | null;
         detail_impressies: number | null;
         detail_rijen: number | null;
-        kliks_dekking: string | null;
-        impressies_dekking: string | null;
+        kliks_verhouding: string | null;
+        impressies_verhouding: string | null;
       }>(
         c,
         `select property, datum_vanaf::text as vanaf, datum_tot::text as tot,
                 property_kliks, property_impressies, property_positie::text,
                 detail_kliks, detail_impressies, detail_rijen,
-                kliks_dekking::text, impressies_dekking::text
-           from intel.analytics_dekkingsgraad
+                kliks_verhouding::text, impressies_verhouding::text
+           from intel.analytics_verhoudingen
           where bron = 'gsc'
           order by datum_tot desc limit 1`,
       ),
@@ -2872,14 +2872,19 @@ ${tabel(
 <h2>Propertytotaal tegen detailtotaal</h2>
 <p class="uitleg">Dit zijn <strong>twee verschillende getallen</strong> en het grote mag nooit uit
 het kleine worden afgelezen. Google laat zeldzame zoekvragen uit elke gedimensioneerde respons weg,
-dus de detaillaag is per definitie een <strong>deelverzameling</strong>. Op 5 november 2026 gemeten:
-de detaillaag droeg 44% van de kliks en 72% van de vertoningen. Zonder propertytotaal is de
-dekkingsgraad <strong>ONBEKEND</strong> &mdash; niet 100%.</p>
+dus het detailtotaal is niet het sitetotaal: op 5 november 2026 gemeten 57 kliks tegen 126 voor de
+hele property.</p>
+<p class="uitleg"><strong>De verhouding hieronder is geen percentage datavolledigheid.</strong> Hij
+<strong>kan boven 100% uitkomen</strong> &mdash; gemeten 124% voor juni 2026 &mdash; omdat Google de
+totalen <em>niet additief over dimensies</em> berekent: het ongedimensioneerde totaal ontdubbelt op
+zoekvertoning, de gedimensioneerde rijen niet. Lees hem dus als de uitkomst van een deling tussen
+twee verschillend berekende getallen, niet als &#8220;welk deel van de gegevens hebben we&#8221;.
+Zonder propertytotaal staat hij op <strong>ONBEKEND</strong>, niet op 100%.</p>
 ${
   d.propertyDekking[0] === undefined
     ? '<p class="onbekend">PROPERTYTOTAAL NIET GEMETEN. Het detailtotaal hieronder is dus een ondergrens van onbekende omvang en geen sitetotaal.</p>'
     : tabel(
-        ["Laag", "Kliks", "Vertoningen", "Gem. positie", "Dekking"],
+        ["Laag", "Kliks", "Vertoningen", "Gem. positie", "Verhouding detail/property"],
         [
           [
             `<div>Google zelf, zonder dimensies</div><div class="klein">${esc(d.propertyDekking[0].property)} &middot; ${esc(d.propertyDekking[0].vanaf)} t/m ${esc(d.propertyDekking[0].tot)}</div>`,
@@ -2895,15 +2900,15 @@ ${
             `<span class="num">${d.propertyDekking[0].detail_kliks ?? 0}</span>`,
             `<span class="num">${d.propertyDekking[0].detail_impressies ?? 0}</span>`,
             '<div class="klein">zie de tabel hieronder</div>',
-            `<div class="klein">${
-              d.propertyDekking[0].kliks_dekking === null
+            `<div class="klein">kliks ${
+              d.propertyDekking[0].kliks_verhouding === null
                 ? '<span class="onbekend">ONBEKEND</span>'
-                : `${(Number(d.propertyDekking[0].kliks_dekking) * 100).toFixed(0)}% van de kliks`
-            }, ${
-              d.propertyDekking[0].impressies_dekking === null
+                : `${(Number(d.propertyDekking[0].kliks_verhouding) * 100).toFixed(0)}%`
+            }, vertoningen ${
+              d.propertyDekking[0].impressies_verhouding === null
                 ? '<span class="onbekend">ONBEKEND</span>'
-                : `${(Number(d.propertyDekking[0].impressies_dekking) * 100).toFixed(0)}% van de vertoningen`
-            }</div>`,
+                : `${(Number(d.propertyDekking[0].impressies_verhouding) * 100).toFixed(0)}%`
+            }<br>geen datavolledigheid; kan &gt;100% zijn</div>`,
           ],
         ],
       )
