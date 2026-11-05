@@ -5,6 +5,21 @@
      npm run pijplijn                alle stappen na het verzamelen
      npm run pijplijn -- --cluster   alleen clusteren
      npm run pijplijn -- --max 200   begrens het aantal versies
+     npm run pijplijn -- --herverwerk  neem OOK versies mee die al aan
+                                       een gebeurtenis hangen, zodat een
+                                       verbeterde extractie de bestaande
+                                       documenten bereikt
+
+   HERVERWERKEN VERWIJDERT NIETS. schrijfUitspraken() slaat een claim
+   over die er al staat (zelfde versie, soort, tekst, waarde, eenheid)
+   en telt die overslag; de koppeling naar de gebeurtenis gaat via
+   'on conflict do nothing'. Een historische claim blijft dus staan, en
+   de correctieketen in intel.uitspraak_correcties blijft de enige weg
+   waarlangs een waarde verandert.
+
+   Dit is UITDRUKKELIJK NIET 'npm run herbouw'. Die wist de afgeleide
+   lagen om ze te herberekenen; dat verliest de historische claims en de
+   subjecten van de correctieketen.
      npm run pijplijn -- --herclassificeer        bestaande gebeurtenissen
                                                   een bedrijfsrelevantie geven
      npm run pijplijn -- --herclassificeer --alles  ook die er al een hebben
@@ -53,9 +68,10 @@ async function main(): Promise<number> {
     return 0;
   }
 
-  const rapport = await clusterNieuweVersies(pool, organisatieId, { max });
+  const herverwerk = process.argv.includes("--herverwerk");
+  const rapport = await clusterNieuweVersies(pool, organisatieId, { max, herverwerk });
 
-  process.stdout.write("PIJPLIJN — CLUSTEREN\n\n");
+  process.stdout.write(`PIJPLIJN — CLUSTEREN${herverwerk ? " (HERVERWERKEN: ook al gekoppelde versies)" : ""}\n\n`);
   const r = (label: string, waarde: unknown) =>
     process.stdout.write(`${label.padEnd(32)} ${String(waarde)}\n`);
   r("versies bekeken", rapport.versiesBekeken);
@@ -64,6 +80,7 @@ async function main(): Promise<number> {
   r("gebeurtenissen verrijkt", rapport.gebeurtenissenVerrijkt);
   r("uitspraken aangemaakt", rapport.uitsprakenAangemaakt);
   r("uitspraken bevestigd", rapport.uitsprakenBevestigd);
+  r("uitspraken overgeslagen (al aanwezig)", rapport.uitsprakenOvergeslagen);
   r("gebeurtenissen met tegenspraak", rapport.tegenspraken);
 
   process.stdout.write("\nPER ONDERWERP\n");
