@@ -69,6 +69,10 @@ export type ClusterRapport = {
   readonly gebeurtenissenVerrijkt: number;
   readonly uitsprakenAangemaakt: number;
   readonly uitsprakenBevestigd: number;
+  /* HOEVEEL CLAIMS AL BESTONDEN. Bij een herverwerking is dit het
+     bewijs van idempotentie: een tweede ronde over dezelfde versies
+     hoort hier alles te tellen en nul aan te maken. */
+  readonly uitsprakenOvergeslagen: number;
   readonly tegenspraken: number;
   readonly perOnderwerp: Readonly<Record<string, number>>;
 };
@@ -171,6 +175,7 @@ async function verwerkVersie(
   bedrijfsrelevantie: number;
   nieuw: boolean;
   uitsprakenAangemaakt: number;
+  uitsprakenOvergeslagen: number;
   uitsprakenBevestigd: number;
   tegenspraak: boolean;
 }> {
@@ -222,6 +227,7 @@ async function verwerkVersie(
       bedrijfsrelevantie: geen.bedrijfsrelevantie,
       nieuw: false,
       uitsprakenAangemaakt: 0,
+      uitsprakenOvergeslagen: 0,
       uitsprakenBevestigd: 0,
       tegenspraak: false,
     };
@@ -410,6 +416,7 @@ async function verwerkVersie(
     bedrijfsrelevantie: relevantie.bedrijfsrelevantie,
     nieuw: gebeurtenis.is_nieuw,
     uitsprakenAangemaakt: uitspraken.aangemaakt,
+    uitsprakenOvergeslagen: uitspraken.overgeslagen,
     uitsprakenBevestigd: uitspraken.bevestigd,
     tegenspraak: tegenspraak.tegenspraak,
   };
@@ -418,9 +425,30 @@ async function verwerkVersie(
 export async function clusterNieuweVersies(
   pool: Pool,
   organisatieId: number,
-  opties: { max?: number } = {},
+  opties: { max?: number; herverwerk?: boolean } = {},
 ): Promise<ClusterRapport> {
   const max = opties.max ?? 500;
+  /* HERVERWERKEN NEEMT DE AL GEKOPPELDE VERSIES MEE.
+     ------------------------------------------------------------------
+     De normale werkvoorraad sluit versies uit die al aan een
+     gebeurtenis hangen, en dat is juist: zonder die grens zou elke
+     ronde alles opnieuw doen. Maar het betekent ook dat een verbeterde
+     extractie de BESTAANDE documenten nooit bereikt. Op 5 november 2026
+     stonden er 192 gebeurtenissen zonder claim terwijl de reparatie aan
+     uitspraken.ts er 17 van had kunnen vullen.
+
+     DIT IS VEILIG OM TWEE REDENEN, en beide zitten al in de code.
+     schrijfUitspraken() kijkt vóór elke insert of er op dezelfde
+     versie al een claim met dezelfde soort, tekst, waarde en eenheid
+     staat, en slaat hem anders over — de schrijfkant is dus idempotent
+     en telt zijn overslagen. En de koppeling naar de gebeurtenis gaat
+     via `on conflict (gebeurtenis_id, versie_id) do nothing`, dus een
+     tweede ronde maakt geen tweede koppeling.
+
+     Er wordt NIETS verwijderd en niets overschreven. Een historische
+     claim blijft staan; de correctieketen in intel.uitspraak_correcties
+     blijft de enige weg waarlangs een waarde verandert. */
+  const alleenNieuwe = opties.herverwerk !== true;
 
   const versies = await metOrganisatie(pool, { organisatieId }, (c) =>
     rijen<VersieRij>(
@@ -442,12 +470,12 @@ export async function clusterNieuweVersies(
          join intel.bronnen b on b.id = d.bron_id
         where v.organisatie_id = $1
           and b.levert_gebeurtenissen
-          and not exists (
+          and ($3::boolean = false or not exists (
             select 1 from intel.gebeurtenis_documenten gd where gd.versie_id = v.id
-          )
+          ))
         order by d.gepubliceerd_op desc nulls last, v.id desc
         limit $2`,
-      [organisatieId, max],
+      [organisatieId, max, alleenNieuwe],
     ),
   );
 
@@ -455,6 +483,7 @@ export async function clusterNieuweVersies(
   let nieuw = 0;
   let verrijkt = 0;
   let uitsprakenAangemaakt = 0;
+  let uitsprakenOvergeslagen = 0;
   let uitsprakenBevestigd = 0;
   let tegenspraken = 0;
   const perOnderwerp: Record<string, number> = {};
@@ -471,6 +500,7 @@ export async function clusterNieuweVersies(
       if (r.nieuw) nieuw += 1;
       else verrijkt += 1;
       uitsprakenAangemaakt += r.uitsprakenAangemaakt;
+      uitsprakenOvergeslagen += r.uitsprakenOvergeslagen;
       uitsprakenBevestigd += r.uitsprakenBevestigd;
       if (r.tegenspraak) tegenspraken += 1;
       perOnderwerp[r.onderwerp] = (perOnderwerp[r.onderwerp] ?? 0) + 1;
@@ -489,6 +519,7 @@ export async function clusterNieuweVersies(
     gebeurtenissenNieuw: nieuw,
     gebeurtenissenVerrijkt: verrijkt,
     uitsprakenAangemaakt,
+    uitsprakenOvergeslagen,
     uitsprakenBevestigd,
     tegenspraken,
     perOnderwerp,
