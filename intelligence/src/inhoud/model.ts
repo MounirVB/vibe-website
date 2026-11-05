@@ -208,41 +208,219 @@ export function kiesProvider(opties: { forceerDeterministisch?: boolean } = {}):
 // Budget en boekhouding
 // ------------------------------------------------------------
 
-export type BudgetUitkomst = { mag: boolean; reden: string; gebruiktVandaag: number; plafond: number };
+export type BudgetUitkomst = {
+  readonly mag: boolean;
+  readonly reden: string;
+  readonly gebruiktVandaag: number;
+  readonly plafond: number;
+  /** Wat er vandaag in geld is uitgegeven, of null als dat niet te meten is. */
+  readonly kostenVandaag: number | null;
+  /** De geldgrens per dag, of null als er geen actief plafond is. */
+  readonly kostenPlafondPerDag: number | null;
+  /** De geschatte kosten van DEZE aanroep, of null bij een onbekend tarief. */
+  readonly geschatteKosten: number | null;
+};
 
-/** Controleert het dagplafond VOORDAT er een aanroep gedaan wordt. */
+/**
+ * Controleert de plafonds VOORDAT er een aanroep gedaan wordt.
+ *
+ * VIER GRENZEN, en de volgorde is niet willekeurig.
+ *
+ *   1 het aanroepenplafond   vangt een doorgeschoten lus het snelst
+ *   2 het tarief             zonder tarief geen geldgrens, dus weigeren
+ *   3 het artikelplafond     de geschatte kosten van DEZE aanroep
+ *   4 het dagplafond         de som van vandaag plus deze aanroep
+ *
+ * WAAROM STAP 2 EEN WEIGERING IS EN GEEN WAARSCHUWING. intel.ai_prijzen
+ * is bij installatie leeg, met opzet: "een verzonnen tarief is erger
+ * dan geen tarief". Dan is kosten_schatting NULL, en een som over NULL
+ * komt op nul uit. Een geldplafond dat over onbekende kosten optelt
+ * meldt dus €0,00 besteed terwijl er onbeperkt wordt uitgegeven — een
+ * ontbrekende meting die voor een nul wordt aangezien, nu met geld.
+ *
+ * Een budget dat je niet kunt meten is geen budget. Dus: geen tarief,
+ * geen aanroep, met de tabel en het model in de reden zodat duidelijk
+ * is welke rij er moet komen.
+ */
 export async function controleerBudget(
   c: pg.PoolClient,
   organisatieId: number,
+  opties: {
+    /** Het model dat aangeroepen gaat worden; nodig om het tarief te vinden. */
+    readonly provider?: string;
+    readonly model?: string;
+    /** Het maximum aan uitvoertokens, voor de kostenschatting vooraf. */
+    readonly maxTokensUit?: number;
+    /** De verwachte invoertokens; een ruwe bovengrens volstaat. */
+    readonly tokensIn?: number;
+  } = {},
 ): Promise<BudgetUitkomst> {
-  const plafond = await eenRij<{ max_ai_aanroepen_per_dag: number; actief: boolean }>(
+  const plafond = await eenRij<{
+    max_ai_aanroepen_per_dag: number;
+    actief: boolean;
+    max_kosten_per_dag: string;
+    max_kosten_per_artikel: string;
+    kosten_valuta: string;
+  }>(
     c,
-    "select max_ai_aanroepen_per_dag, actief from intel.kostenplafonds where organisatie_id = $1",
+    `select max_ai_aanroepen_per_dag, actief,
+            max_kosten_per_dag::text, max_kosten_per_artikel::text, kosten_valuta
+       from intel.kostenplafonds where organisatie_id = $1`,
     [organisatieId],
   );
+  const leeg = { kostenVandaag: null, kostenPlafondPerDag: null, geschatteKosten: null };
   if (!plafond || !plafond.actief) {
-    return { mag: true, reden: "geen actief plafond ingesteld", gebruiktVandaag: 0, plafond: 0 };
+    return {
+      mag: true,
+      reden: "geen actief plafond ingesteld",
+      gebruiktVandaag: 0,
+      plafond: 0,
+      ...leeg,
+    };
   }
-  const gebruik = await eenRij<{ n: number }>(
+
+  /* ---------- 1 · het aanroepenplafond ---------- */
+  const gebruik = await eenRij<{ n: number; kosten: string | null; onbekend: number }>(
     c,
-    `select count(*)::int as n from intel.ai_aanroepen
+    `select count(*)::int                                  as n,
+            sum(kosten_schatting)::text                    as kosten,
+            count(*) filter (where kosten_schatting is null)::int as onbekend
+       from intel.ai_aanroepen
       where organisatie_id = $1 and op >= date_trunc('day', now())`,
     [organisatieId],
   );
   const n = gebruik?.n ?? 0;
+  const maxPerDag = Number(plafond.max_kosten_per_dag);
+  const maxPerArtikel = Number(plafond.max_kosten_per_artikel);
+  const kostenVandaag = gebruik?.kosten === null || gebruik?.kosten === undefined
+    ? 0
+    : Number(gebruik.kosten);
+
   if (n >= plafond.max_ai_aanroepen_per_dag) {
     return {
       mag: false,
       reden: `dagplafond bereikt: ${n} van ${plafond.max_ai_aanroepen_per_dag} aanroepen`,
       gebruiktVandaag: n,
       plafond: plafond.max_ai_aanroepen_per_dag,
+      kostenVandaag,
+      kostenPlafondPerDag: maxPerDag,
+      geschatteKosten: null,
     };
   }
-  return {
-    mag: true,
-    reden: `${n} van ${plafond.max_ai_aanroepen_per_dag} aanroepen vandaag`,
+
+  /* ---------- 2 · het tarief ----------
+     Alleen als er een model is opgegeven. Zonder model is dit een
+     generieke budgetvraag en blijven de geldgrenzen buiten beschouwing;
+     de aanroeper die geld gaat uitgeven geeft zijn model mee. */
+  const basis = {
     gebruiktVandaag: n,
     plafond: plafond.max_ai_aanroepen_per_dag,
+    kostenVandaag,
+    kostenPlafondPerDag: maxPerDag,
+  };
+  if (opties.model === undefined || opties.provider === undefined) {
+    return {
+      mag: true,
+      reden:
+        `${n} van ${plafond.max_ai_aanroepen_per_dag} aanroepen vandaag; ` +
+        `geldgrenzen niet getoetst omdat er geen model is opgegeven`,
+      ...basis,
+      geschatteKosten: null,
+    };
+  }
+
+  const tarief = await eenRij<{
+    prijs_in_per_miljoen: string;
+    prijs_uit_per_miljoen: string;
+    valuta: string;
+  }>(
+    c,
+    `select prijs_in_per_miljoen::text, prijs_uit_per_miljoen::text, valuta
+       from intel.ai_prijzen where provider = $1 and model = $2`,
+    [opties.provider, opties.model],
+  );
+  if (!tarief) {
+    return {
+      mag: false,
+      reden:
+        `GEEN GEMETEN TARIEF voor ${opties.provider}/${opties.model} in intel.ai_prijzen. ` +
+        `Een geldplafond van ${maxPerDag} ${plafond.kosten_valuta} per dag is dan niet te ` +
+        `handhaven: zonder tarief blijft kosten_schatting NULL en telt een som daarover op ` +
+        `tot nul, terwijl er onbeperkt wordt uitgegeven. Voeg een rij toe met prijs, valuta, ` +
+        `bron_url en gemeten_op`,
+      ...basis,
+      geschatteKosten: null,
+    };
+  }
+  if (tarief.valuta !== plafond.kosten_valuta) {
+    return {
+      mag: false,
+      reden:
+        `het tarief staat in ${tarief.valuta} en het plafond in ${plafond.kosten_valuta}; ` +
+        `zonder omrekenkoers vergelijkt deze controle appels met peren en weigert hij`,
+      ...basis,
+      geschatteKosten: null,
+    };
+  }
+
+  /* ---------- 3 · het artikelplafond ----------
+     De schatting gaat over het MAXIMUM aan tokens, niet over het
+     verwachte aantal. Een plafond dat op een gemiddelde rekent, laat de
+     uitschieter er juist door. */
+  const tokensUit = opties.maxTokensUit ?? 0;
+  const tokensIn = opties.tokensIn ?? 0;
+  const geschatteKosten =
+    (tokensIn / 1_000_000) * Number(tarief.prijs_in_per_miljoen) +
+    (tokensUit / 1_000_000) * Number(tarief.prijs_uit_per_miljoen);
+
+  if (geschatteKosten > maxPerArtikel) {
+    return {
+      mag: false,
+      reden:
+        `geschatte kosten ${geschatteKosten.toFixed(4)} ${plafond.kosten_valuta} gaan over het ` +
+        `artikelplafond van ${maxPerArtikel.toFixed(4)}`,
+      ...basis,
+      geschatteKosten,
+    };
+  }
+
+  /* ---------- 4 · het dagplafond ----------
+     ONBEKENDE KOSTEN VAN VANDAAG MAKEN DE SOM ONBETROUWBAAR. Staan er
+     aanroepen van vandaag zonder tarief, dan is het bedrag van vandaag
+     een ONDERGRENS en kan de grens al overschreden zijn zonder dat het
+     te zien is. Dat is een weigering, niet een gok. */
+  const onbekend = gebruik?.onbekend ?? 0;
+  if (onbekend > 0) {
+    return {
+      mag: false,
+      reden:
+        `${onbekend} aanroep(en) van vandaag hebben GEEN gemeten kosten, dus het bedrag van ` +
+        `vandaag (${kostenVandaag.toFixed(4)} ${plafond.kosten_valuta}) is een ondergrens. ` +
+        `Het dagplafond van ${maxPerDag.toFixed(4)} is dan niet te handhaven`,
+      ...basis,
+      geschatteKosten,
+    };
+  }
+  if (kostenVandaag + geschatteKosten > maxPerDag) {
+    return {
+      mag: false,
+      reden:
+        `dagplafond in geld bereikt: ${kostenVandaag.toFixed(4)} besteed plus ` +
+        `${geschatteKosten.toFixed(4)} geschat gaat over ${maxPerDag.toFixed(4)} ` +
+        `${plafond.kosten_valuta}`,
+      ...basis,
+      geschatteKosten,
+    };
+  }
+
+  return {
+    mag: true,
+    reden:
+      `${n} van ${plafond.max_ai_aanroepen_per_dag} aanroepen vandaag; ` +
+      `${kostenVandaag.toFixed(4)} van ${maxPerDag.toFixed(4)} ${plafond.kosten_valuta} besteed, ` +
+      `deze aanroep geschat op ${geschatteKosten.toFixed(4)}`,
+    ...basis,
+    geschatteKosten,
   };
 }
 
