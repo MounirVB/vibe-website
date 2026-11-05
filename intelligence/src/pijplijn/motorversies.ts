@@ -22,6 +22,8 @@
 
 import { DOCUMENTSOORT_VERSIE } from "./documentsoort.ts";
 import { MODALITEIT_VERSIE } from "./claimmodaliteit.ts";
+import { CLAIMVORM_VERSIE } from "./claimvorm.ts";
+import { DATUMROL_VERSIE } from "./datumrol.ts";
 
 /**
  * De stempel die op intel.uitspraken.herbeoordeeld_onder wordt
@@ -31,4 +33,13 @@ import { MODALITEIT_VERSIE } from "./claimmodaliteit.ts";
  * hoort te kunnen zien ONDER WELKE MOTOR een claim is gewogen, zonder
  * een tabel met vingerafdrukken erbij te hoeven zoeken.
  */
-export const MOTORVERSIES = `${DOCUMENTSOORT_VERSIE} + ${MODALITEIT_VERSIE}`;
+/* CLAIMVORM EN DATUMROL HOREN IN DE STEMPEL, om precies de reden die
+   de kop hierboven noemt: "elke motor die het OORDEEL over een claim
+   kan veranderen". vormpoort.ts beslist de verwoordbaarheid van een
+   vorm- of datumclaim op grond van die twee motoren, dus een wijziging
+   daarin verandert het oordeel. Zonder ze in de stempel zou een nieuwe
+   vormversie de bestaande vormclaims onzichtbaar maken voor de
+   herbeoordeling — hetzelfde defect dat deze stempel moest oplossen,
+   een laag verder. */
+export const MOTORVERSIES =
+  `${DOCUMENTSOORT_VERSIE} + ${MODALITEIT_VERSIE} + ${CLAIMVORM_VERSIE} + ${DATUMROL_VERSIE}`;

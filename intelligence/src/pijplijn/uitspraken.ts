@@ -27,6 +27,13 @@ import { maakLogger } from "../kern/log.ts";
 import { bepaalClaimAard, CLAIMAARD_VERSIE } from "./claimaard.ts";
 import { bepaalModaliteit } from "./claimmodaliteit.ts";
 import {
+  leesVormClaims,
+  CLAIMVORM_VERSIE,
+  type Claimvorm,
+  type Tijdstand,
+} from "./claimvorm.ts";
+import { bepaalDatumrol, herkenBetreft, type Datumrol } from "./datumrol.ts";
+import {
   bewijskrachtPlafond,
   magZelfBevestigen,
   EIGEN_GEZAG_NAMEN,
@@ -168,6 +175,23 @@ export type RuweUitspraak = {
   readonly geldigVanaf: string | null;
   readonly geldigTot: string | null;
   readonly vindplaats: string;
+  /* ----------------------------------------------------------------
+     DE VELDEN VAN DE NIET-NUMERIEKE ROUTE (migratie 0054).
+
+     Alle vier optioneel, en dat is geen slordigheid: een getalclaim
+     HEEFT geen vorm en geen datumrol. Ze op null laten staan is de
+     juiste waarde en niet een ontbrekende, precies zoals LOSSE_DATUM
+     een uitkomst is en geen leegte.
+     ---------------------------------------------------------------- */
+  readonly claimvorm?: Claimvorm | null;
+  readonly tijdstand?: Tijdstand | null;
+  readonly datumrol?: Datumrol | null;
+  /** Het letterlijke fragment uit de bron dat de vorm of rol aanwijst. */
+  readonly bronpassage?: string | null;
+  /** WAT de claim betreft, uit herkenBetreft(). */
+  readonly betreft?: string | null;
+  /** De semantiek_soort die bij deze vorm hoort. */
+  readonly semantiekSoort?: string | null;
 };
 
 function zoekGetallen(zin: string): RuweUitspraak[] {
@@ -320,9 +344,33 @@ function zoekDatums(zin: string): RuweUitspraak[] {
   const uit: RuweUitspraak[] = [];
   const maandNamen = Object.keys(MAANDEN).join("|");
 
+  /* DE ROL VAN DE DATUM, UIT DE HELE ZIN.
+     ------------------------------------------------------------------
+     Gemeten op 6 november 2026: 39 datumclaims in productie, alle 39
+     onbeoordeeld, omdat semantiekopslag.verrijk() elke claim zonder
+     `waarde_numeriek` teruggeeft als null. Zonder rol is er ook niets
+     te beoordelen: '1 juli 2027' is geen bewering.
+
+     De rol komt uit de ZIN en niet uit het voorzetsel alleen, want
+     "gepubliceerd op 2 juni 2026" en "geldt per 2 juni 2026" hebben
+     dezelfde datum en een tegengestelde betekenis. Zie datumrol.ts. */
+  const rol = bepaalDatumrol(zin);
+
   // '1 januari 2027', eventueel met 'per', 'vanaf', 'tot' ervoor.
+  /* 'van' STAAT ERBIJ, EN MET EEN VOORWAARDE.
+     Gemeten in het corpus: "aanvragen kunnen van 1 maart tot en met
+     30 september worden ingediend" — 'van' is daar de startgrens van
+     een aanvraagperiode, en zonder dat woord kreeg die datum geen
+     geldig_vanaf en bleef de periode half.
+
+     MAAR 'van' is ook de genitief: "de brief van 3 juni 2026" is een
+     publicatiedatum en geen ingangsdatum. Daarom geldt 'van' alleen
+     als startgrens wanneer er LATER IN DE ZIN een eindgrens staat. Een
+     losse 'van'-datum blijft zonder grens, en dat is juist: dan beslist
+     de rol wat hij is. */
+  const heeftEindgrens = /\b(tot\s+en\s+met|tot|t\/m|uiterlijk)\b/iu.test(zin);
   const patroon = new RegExp(
-    `\\b(per|vanaf|met ingang van|tot en met|tot|uiterlijk|voor)?\\s*(\\d{1,2})\\s+(${maandNamen})\\s+(\\d{4})`,
+    `\\b(per|vanaf|met ingang van|tot en met|tot|uiterlijk|voor|van)?\\s*(\\d{1,2})\\s+(${maandNamen})\\s+(\\d{4})`,
     "giu",
   );
   let m: RegExpExecArray | null;
@@ -336,7 +384,9 @@ function zoekDatums(zin: string): RuweUitspraak[] {
     if (!datum) continue;
 
     const isEinde = ["tot en met", "tot", "uiterlijk", "voor"].includes(voorzetsel);
-    const isStart = ["per", "vanaf", "met ingang van"].includes(voorzetsel);
+    const isStart =
+      ["per", "vanaf", "met ingang van"].includes(voorzetsel) ||
+      (voorzetsel === "van" && heeftEindgrens);
     uit.push({
       tekst: kort(zin, 600),
       soort: "datum",
@@ -344,10 +394,80 @@ function zoekDatums(zin: string): RuweUitspraak[] {
       eenheid: null,
       geldigVanaf: isStart ? datum : null,
       geldigTot: isEinde ? datum : null,
-      vindplaats: `tekenpositie ${m.index}`,
+      vindplaats: `tekenpositie ${m.index} (${rol.rol})`,
+      datumrol: rol.rol,
+      /* DE PASSAGE IS VERPLICHT ZODRA ER EEN ROL STAAT (0054), en bij
+         LOSSE_DATUM is hij leeg. Daarom valt een lege passage terug op
+         null voor beide velden: geen rol zonder passage, geen passage
+         zonder rol. Zo kan de constraint niet struikelen over een
+         LOSSE_DATUM. */
+      ...(rol.passage.length >= 10
+        ? { bronpassage: rol.passage }
+        : { datumrol: null, bronpassage: null }),
+      betreft: rol.betreft,
+      semantiekSoort: "datum",
     });
   }
+
+  /* EEN AANVRAAGPERIODE IS ÉÉN CLAIM MET TWEE GRENZEN.
+     ------------------------------------------------------------------
+     "van 1 maart tot en met 30 september 2027" levert hierboven twee
+     rijen: een met geldig_vanaf en een met geldig_tot. Dat zijn geen
+     twee feiten. Een lezer die alleen de tweede ziet, leest een
+     einddatum zonder begin; een lezer die alleen de eerste ziet, leest
+     een regeling die nooit sluit.
+
+     Daarom: bij rol AANVRAAGPERIODE met een start én een einde komt er
+     één claim met beide grenzen, en vervangen de twee halve rijen. De
+     constraint uitspraken_geldigheid_logisch eist dat tot >= vanaf, dus
+     een omgekeerd paar wordt niet samengevoegd maar blijft staan zoals
+     het was — dan is er iets anders aan de hand dan een periode. */
+  if (rol.rol === "AANVRAAGPERIODE" && uit.length >= 2) {
+    const vanaf = uit.map((u) => u.geldigVanaf).filter((d): d is string => d !== null).sort()[0];
+    const tot = uit
+      .map((u) => u.geldigTot)
+      .filter((d): d is string => d !== null)
+      .sort()
+      .at(-1);
+    const eerste = uit[0];
+    if (vanaf !== undefined && tot !== undefined && eerste && tot >= vanaf) {
+      return [{ ...eerste, geldigVanaf: vanaf, geldigTot: tot }];
+    }
+  }
+
   return uit;
+}
+
+/**
+ * De niet-numerieke claims uit één zin: de acht vormen uit §4.
+ *
+ * APART VAN zoekGetallen() EN zoekDatums(), met opzet. Een vormclaim
+ * heeft geen waarde en geen eenheid; hem door de getalroute duwen zou
+ * daar overslagtakken inbouwen, en elke overslagtak in de laag die
+ * claims maakt is een plek waar later een getalclaim per ongeluk langs
+ * kan.
+ */
+function zoekVormen(zin: string): RuweUitspraak[] {
+  return leesVormClaims(zin).map((v) => ({
+    tekst: v.tekst,
+    soort: v.soort,
+    waardeNumeriek: null,
+    eenheid: null,
+    /* EEN VORMCLAIM KRIJGT GEEN geldig_vanaf UIT DE VORM ZELF.
+       uitspraken_aangekondigd_is_niet_in_werking (0054) weigert een
+       AANGEKONDIGDE claim met een geldig_vanaf, en dat is precies de
+       bedoeling: wie wil vastleggen dat de regel ook echt geldt, zet de
+       tijdstand op IN_WERKING en neemt daarmee de bewijslast. De
+       datumroute legt de datums vast; deze route legt de vorm vast. */
+    geldigVanaf: null,
+    geldigTot: null,
+    vindplaats: v.vindplaats,
+    claimvorm: v.vorm,
+    tijdstand: v.tijdstand,
+    bronpassage: v.passage,
+    betreft: v.betreft,
+    semantiekSoort: v.semantiekSoort,
+  }));
 }
 
 /**
@@ -360,10 +480,21 @@ export function extraheerUitspraken(titel: string, tekst: string): RuweUitspraak
   const gezien = new Set<string>();
 
   for (const zin of zinnen) {
-    for (const u of [...zoekGetallen(zin), ...zoekDatums(zin)]) {
+    for (const u of [...zoekGetallen(zin), ...zoekDatums(zin), ...zoekVormen(zin)]) {
       // Dedup binnen één document: dezelfde waarde in dezelfde zin is
       // één uitspraak, ook als de regex hem twee keer vindt.
-      const sleutel = `${u.soort}|${u.waardeNumeriek}|${u.eenheid}|${u.geldigVanaf}|${u.geldigTot}|${u.tekst}`;
+      /* DE VORM HOORT IN DE SLEUTEL.
+         "Per 1 augustus 2026 gelden de nieuwe Aansluitspecificaties 4.0"
+         is een SPECIFICATIE én een INWERKINGTREDING. Beide komen uit op
+         dezelfde zin, en INWERKINGTREDING heeft soort 'regel' terwijl
+         SPECIFICATIE soort 'specificatie' heeft — maar BESLUIT,
+         VERPLICHTING en INWERKINGTREDING hebben alle drie soort 'regel'.
+         Zonder de vorm in de sleutel zou van die drie alleen de eerste
+         overblijven, en dat zijn drie verschillende beweringen met een
+         eigen bewijslast. */
+      const sleutel =
+        `${u.soort}|${u.waardeNumeriek}|${u.eenheid}|${u.geldigVanaf}|${u.geldigTot}` +
+        `|${u.claimvorm ?? ""}|${u.datumrol ?? ""}|${u.tekst}`;
       if (gezien.has(sleutel)) continue;
       gezien.add(sleutel);
       uit.push(u);
@@ -388,6 +519,48 @@ export function herzieningstermijnDagen(onderwerp: Onderwerp): number {
     default:
       return 180;
   }
+}
+
+/**
+ * De drie vormen die naar hun AARD over recht gaan.
+ *
+ * GEEXPORTEERD EN PUUR, om dezelfde reden als bepaalClaimAard(): een
+ * regel die alleen als neveneffect op een databaserij zichtbaar is, kan
+ * niet rechtstreeks worden getoetst — en dan is niet te meten of hij er
+ * nog is.
+ */
+export const JURIDISCHE_VORMEN: ReadonlySet<string> = new Set([
+  "BESLUIT",
+  "VERPLICHTING",
+  "INWERKINGTREDING",
+]);
+
+/**
+ * Is deze claim een uitspraak over RECHT, en moet hij dus langs
+ * steltStukDeClaimVast() voordat een stuk hem mag bevestigen?
+ *
+ * TWEE INGANGEN, EN BEIDE ZIJN NODIG:
+ *
+ *   1 een juridische markering IN DE ZIN (bepaalClaimAard) — dat vangt
+ *     "geldt vanaf", "is verplicht", "maximumtarief";
+ *   2 de VORM van de claim — dat vangt wat (1) mist.
+ *
+ * Gemeten gat dat (2) toevoegde: "Geschilbesluit Jumbo – Liander over
+ * congestierapport" (productieversie 3673, een OFFICIEEL_BESLUIT van
+ * BEVOEGD_GEZAG) draagt geen enkele markering uit JURIDISCH — geen
+ * verplichting, geen gebod, geen inwerkingtreding. De claim zou dus met
+ * juridisch=false langs de vaststellingstoets zijn gegaan en zichzelf
+ * hebben bevestigd. Betrapt door
+ * test/eenheid/vocabulaire-uitbreiding.test.ts, die eist dat deze vijf
+ * productiedocumenten geen ongewogen bevestiging opleveren.
+ *
+ * STRIKT BEPERKENDER: dit kan een claim alleen MEER bewijslast geven.
+ */
+export function isJuridischeClaim(
+  aardJuridisch: boolean,
+  claimvorm: string | null,
+): boolean {
+  return aardJuridisch || (claimvorm !== null && JURIDISCHE_VORMEN.has(claimvorm));
 }
 
 export type UitspraakSchrijfRapport = {
@@ -513,6 +686,19 @@ export async function schrijfUitspraken(
       magBevestigen ? VERTROUWEN_PLAFOND[u.soort] : VERTROUWEN_PLAFOND[u.soort] * 0.7,
     );
 
+    /* DE VORM EN DE ROL HOREN IN DE DEDUPSLEUTEL.
+       ----------------------------------------------------------------
+       Deze query bepaalt of een claim AL BESTAAT voor deze bronversie.
+       BESLUIT, VERPLICHTING en INWERKINGTREDING hebben alle drie soort
+       'regel', dus zonder claimvorm erin zouden twee van de drie uit
+       dezelfde zin als 'al aanwezig' worden overgeslagen — stil, en
+       met een overslagteller die zegt dat het goed ging.
+
+       `coalesce(..., '')` houdt het gedrag voor de BESTAANDE rijen
+       exact gelijk: die hebben claimvorm en datumrol NULL, en een
+       getalclaim levert hier ook NULL aan, dus '' = '' en de
+       vergelijking valt weg zoals hij altijd deed. Er is dus geen
+       bestaande claim die hierdoor opnieuw wordt aangemaakt. */
     const bestaand = await eenRij<{ id: number }>(
       c,
       `select u.id
@@ -523,8 +709,18 @@ export async function schrijfUitspraken(
           and u.tekst = $3
           and coalesce(u.waarde_numeriek, -1) = coalesce($4::numeric, -1)
           and coalesce(u.eenheid, '') = coalesce($5, '')
+          and coalesce(u.claimvorm, '') = coalesce($6, '')
+          and coalesce(u.datumrol, '') = coalesce($7, '')
         limit 1`,
-      [invoer.versieId, u.soort, u.tekst, u.waardeNumeriek, u.eenheid],
+      [
+        invoer.versieId,
+        u.soort,
+        u.tekst,
+        u.waardeNumeriek,
+        u.eenheid,
+        u.claimvorm ?? null,
+        u.datumrol ?? null,
+      ],
     );
     if (bestaand) {
       overgeslagen += 1;
@@ -551,10 +747,12 @@ export async function schrijfUitspraken(
           verificatie_status, bewijs_kwaliteit, risico_klasse, vertrouwen,
           is_interpretatie, interpretatie_door,
           modaliteit, modaliteit_zekerheid, modaliteit_versie, modaliteit_grondslag,
-          bewijskracht_plafond, herbeoordeeld_onder)
+          bewijskracht_plafond, herbeoordeeld_onder,
+          claimvorm, tijdstand, bronpassage, datumrol)
        values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,now(),
                'ongeverifieerd',$11,$12,$13,false,null,
-               $14,$15,$16,$17,$18,$19)
+               $14,$15,$16,$17,$18,$19,
+               $20,$21,$22,$23)
        returning id`,
       [
         organisatieId,
@@ -585,6 +783,12 @@ export async function schrijfUitspraken(
            beschrijft voor `herbeoordeeld_op`, en hij geldt onverkort
            voor dit veld. */
         MOTORVERSIES,
+        /* DE VIER VELDEN VAN 0054. Voor een getalclaim zijn ze alle
+           vier null, en dan raakt geen enkele nieuwe CHECK. */
+        u.claimvorm ?? null,
+        u.tijdstand ?? null,
+        u.bronpassage ?? null,
+        u.datumrol ?? null,
       ],
     );
     if (!nieuw) {
@@ -677,6 +881,40 @@ export async function schrijfUitspraken(
        bewijs van achtergrond. Zie de kop van vaststelling.ts voor de
        meting waarom "bewijs dat hij in het dictum staat" de keten
        breekt. */
+    /* EEN VORMCLAIM OVER RECHT IS JURIDISCH, OOK ALS DE ZIN GEEN
+       JURIDISCHE MARKERING DRAAGT.
+       ----------------------------------------------------------------
+       GEVONDEN DOOR DE BESTAANDE TOETS, niet bedacht.
+       test/eenheid/vocabulaire-uitbreiding.test.ts eist dat vijf echte
+       productiedocumenten NUL claims opleveren, met deze grond erbij:
+       "magZelfBevestigen() laat OFFICIEEL_BESLUIT bij BEVOEGD_GEZAG
+       juist WEL zichzelf bevestigen. Versie 3673 is zo'n document. Zou
+       hij een claim produceren, dan werd die direct bevestigd — en dan
+       had het toevoegen van een vocabulaireterm een juridische
+       bevestiging opgeleverd die niemand heeft gewogen."
+
+       Die toets werd rood zodra de vormextractie erbij kwam. Versie
+       3673 is "Geschilbesluit Jumbo – Liander over congestierapport",
+       en dat IS een feitelijk besluit — de claim hoort er te zijn.
+       Maar bepaalClaimAard() vuurde er niet op: 'geschilbesluit' is
+       geen verplichting, geen gebod, geen inwerkingtreding. De claim
+       zou dus met juridisch=false langs steltStukDeClaimVast() zijn
+       gegaan en zichzelf hebben bevestigd.
+
+       Een BESLUIT, een VERPLICHTING en een INWERKINGTREDING zijn naar
+       hun aard uitspraken over RECHT. Of dit stuk dat recht ook
+       vaststelt, is precies de vraag die steltStukDeClaimVast()
+       beantwoordt. Die vraag moet dus altijd gesteld worden.
+
+       STRIKT BEPERKENDER: dit voegt een voorwaarde toe. Geen claim die
+       eerder bevestigde, bevestigt hierdoor minder vaak niet — want
+       deze vormen bestonden gisteren nog niet. Voor een ECHT
+       ACM-besluit (OFFICIEEL_BESLUIT, BEKENDMAKING, BEVOEGD_GEZAG)
+       antwoordt de vaststellingstoets bevestigend, en dat is juist: dat
+       stuk IS de authentieke bron. Een nieuwsbericht dat hetzelfde
+       besluit navertelt, komt er niet door. */
+    const juridischeClaim = isJuridischeClaim(aard.juridisch, u.claimvorm ?? null);
+
     const vaststelling = steltStukDeClaimVast({
       claimTekst: u.tekst,
       documentTitel: invoer.titel,
@@ -687,7 +925,7 @@ export async function schrijfUitspraken(
       modaliteit: mod.modaliteit,
       eigenGezagNamen: EIGEN_GEZAG_NAMEN[invoer.bronSleutel] ?? [],
     });
-    const juridischZonderGrondslag = aard.juridisch && !vaststelling.steltVast;
+    const juridischZonderGrondslag = juridischeClaim && !vaststelling.steltVast;
 
     if (magBevestigen && !juridischZonderGrondslag) {
       await c.query(
@@ -706,6 +944,11 @@ export async function schrijfUitspraken(
         documentsoort: invoer.documentsoort,
         reden: aard.reden,
         markeringen: aard.markeringen,
+        /* WAAROM deze claim juridisch is. Zonder dit onderscheid is een
+           blokkade op een markering in de zin niet te onderscheiden van
+           een blokkade op de VORM van de claim, en dan is hij niet na
+           te meten. */
+        juridischVia: aard.juridisch ? "markering in de zin" : `claimvorm ${u.claimvorm}`,
         /* WAAROM hij niet vaststelt, en niet alleen DAT hij het niet
            doet. Zonder deze uitslag is een blokkade op 'achtergrond'
            niet te onderscheiden van een blokkade op 'verkeerde vorm',

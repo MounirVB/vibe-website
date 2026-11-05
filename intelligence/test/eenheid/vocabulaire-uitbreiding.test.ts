@@ -84,30 +84,99 @@ describe("de twee vocabulairetermen", () => {
     });
   }
 
-  test("DE KERNEIS — deze documenten leveren GEEN claim op", () => {
+  test("DE KERNEIS — geen van deze documenten levert een claim op die zichzelf bevestigt", () => {
     /* WAAROM DIT DE BELANGRIJKSTE ZAAK VAN DIT BESTAND IS.
        magZelfBevestigen() laat OFFICIEEL_BESLUIT bij BEVOEGD_GEZAG juist
        WEL zichzelf bevestigen. Versie 3673 is zo'n document. Zou hij een
-       claim produceren, dan werd die direct bevestigd — en dan had het
-       toevoegen van een vocabulaireterm een juridische bevestiging
-       opgeleverd die niemand heeft gewogen.
+       claim produceren die NIET als juridisch geldt, dan werd die direct
+       bevestigd — en dan had het toevoegen van een vocabulaireterm een
+       juridische bevestiging opgeleverd die niemand heeft gewogen.
 
-       Gemeten op de echte ruwe_tekst van alle vijf documenten: 0 claims
-       uit versie 18, 3673, 1325 en 1405. Ze bevatten geen getal met een
-       eenheid, en extraheerUitspraken() heeft een getal nodig.
+       ------------------------------------------------------------------
+       HERSCHREVEN OP 6 NOVEMBER 2026, EN DE EIS IS NIET VERZWAKT.
 
-       Hier wordt de TITEL getoetst, want die staat in deze toets
-       letterlijk vast; de volledige teksten zijn apart tegen productie
-       gemeten en gaven dezelfde nul. */
+       Tot die dag stond hier `claims.length === 0` voor alle vier de
+       documenten, met als grond: "Ze bevatten geen getal met een
+       eenheid, en extraheerUitspraken() heeft een getal nodig."
+
+       Die grond is vervallen. De vormextractie (§4) leest nu ook
+       niet-numerieke claims, en versie 3673 — "Geschilbesluit Jumbo –
+       Liander over congestierapport" — levert er terecht één op: dat IS
+       een feitelijk besluit. Een nieuwskanaal over netcongestie dat een
+       ACM-geschilbesluit niet als claim kan opslaan, mist zijn
+       onderwerp.
+
+       WAT DEZE TOETS BEWAAKTE is niet "nul claims" maar "geen
+       ONGEWOGEN bevestiging". Die eigenschap wordt hier nu DIRECT
+       getoetst in plaats van via een getal dat er toevallig nul was:
+       een BESLUIT, een VERPLICHTING en een INWERKINGTREDING gelden in
+       uitspraken.ts als JURIDISCHE claim, ongeacht wat
+       bepaalClaimAard() in de zin vindt, en moeten dus langs
+       steltStukDeClaimVast() voordat ze zichzelf mogen bevestigen.
+
+       En deze toets heeft dat gat ook echt gevonden: hij werd rood toen
+       de vormextractie erbij kwam, en de reparatie in uitspraken.ts
+       (JURIDISCHE_VORMEN) is er het gevolg van. */
+    const JURIDISCHE_VORMEN = new Set(["BESLUIT", "VERPLICHTING", "INWERKINGTREDING"]);
+
     for (const d of DOCUMENTEN) {
       const claims = extraheerUitspraken(d.titel, d.titel);
+
+      /* 1 · GEEN ENKELE GETALCLAIM. Dat was en blijft nul: deze titels
+         bevatten geen getal met een eenheid. */
+      const getalclaims = claims.filter((c) => c.waardeNumeriek !== null);
       assert.equal(
-        claims.length,
+        getalclaims.length,
         0,
-        `versie ${d.versie} hoort geen claim te produceren; gevonden: ` +
-          JSON.stringify(claims.map((c) => [c.soort, c.waardeNumeriek, c.eenheid])),
+        `versie ${d.versie} hoort geen getalclaim te produceren; gevonden: ` +
+          JSON.stringify(getalclaims.map((c) => [c.soort, c.waardeNumeriek, c.eenheid])),
       );
+
+      /* 2 · ELKE VORMCLAIM OVER RECHT MOET LANGS DE VASTSTELLINGSTOETS.
+         Een claim die WEL uit deze documenten komt en NIET juridisch
+         zou gelden, is precies het gat dat deze toets bewaakt. */
+      for (const c of claims) {
+        if (c.claimvorm == null) {
+          assert.fail(
+            `versie ${d.versie} leverde een claim zonder vorm en zonder getal: ` +
+              JSON.stringify([c.soort, c.tekst.slice(0, 60)]),
+          );
+        }
+        if (c.soort === "regel") {
+          assert.ok(
+            JURIDISCHE_VORMEN.has(c.claimvorm),
+            `versie ${d.versie} leverde een claim van soort 'regel' met vorm ` +
+              `${c.claimvorm}, die niet als juridisch geldt en dus zichzelf zou ` +
+              `kunnen bevestigen`,
+          );
+        }
+        /* 3 · EN HIJ DRAAGT ZIJN BRONPASSAGE. Zonder passage is niet na
+           te gaan waarop het oordeel rust; 0054 weigert hem ook. */
+        assert.ok(
+          (c.bronpassage ?? "").length >= 10,
+          `versie ${d.versie}: vorm ${c.claimvorm} zonder bronpassage`,
+        );
+      }
     }
+
+    /* 4 · EN DE GEMETEN UITKOMST PER DOCUMENT, zodat een toekomstige
+       verbreding van het vocabulaire zichtbaar wordt in plaats van stil
+       door te glippen. */
+    const perVersie = Object.fromEntries(
+      DOCUMENTEN.map((d) => [
+        d.versie,
+        extraheerUitspraken(d.titel, d.titel)
+          .map((c) => c.claimvorm)
+          .filter((v): v is NonNullable<typeof v> => v != null)
+          .sort(),
+      ]),
+    );
+    assert.deepEqual(perVersie, {
+      18: [],
+      1325: [],
+      1405: [],
+      3673: ["BESLUIT"],
+    });
   });
 
   test("de termen matchen niet op losse stukken van zichzelf", () => {
