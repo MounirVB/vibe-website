@@ -1713,10 +1713,13 @@ ${tabel(
           : [];
       })();
 
+      /* 'afgewezen' en 'teruggedraaid' zijn de rode uitkomsten; hier
+         stond 'ingetrokken', een status die de database niet kent en die
+         dus nooit op het scherm kon komen. */
       const statusVlag =
         v.status === "goedgekeurd"
           ? vlag(v.status, "ok")
-          : v.status === "ingetrokken"
+          : v.status === "afgewezen" || v.status === "teruggedraaid"
             ? vlag(v.status, "fout")
             : vlag(v.status, "waarschuwing");
 
@@ -2059,9 +2062,27 @@ afdwingt.</p>`
               geblokkeerd = { reden: uitslag.reden, blokkades: uitslag.blokkades };
             }
           } else {
+            /* 'AFGEWEZEN', NIET 'INGETROKKEN'.
+               ----------------------------------------------------------
+               Hier stond `status = 'ingetrokken'`, en die waarde bestaat
+               niet: inhoud_versies_status_check laat alleen concept,
+               ter_review, goedgekeurd, gepubliceerd, afgewezen en
+               teruggedraaid toe (gemeten op de productiedatabase,
+               6 november 2026). De UPDATE gooide dus, de transactie rolde
+               terug en de knop Afwijzen gaf 400 — afwijzen was in de
+               Content Studio onmogelijk, en de bijbehorende auditregel
+               werd met de transactie teruggedraaid.
+
+               De reden gaat mee in `blokkades`: inhoud_versies_afwijzing
+               _heeft_reden eist cardinality(blokkades) > 0 bij
+               'afgewezen'. Een bestaande poortblokkade blijft staan; de
+               redactionele reden komt erbij, niet in de plaats. */
             await c.query(
-              "update intel.inhoud_versies set status = 'ingetrokken' where id = $1",
-              [Number(id)],
+              `update intel.inhoud_versies
+                  set status    = 'afgewezen',
+                      blokkades = array_append(coalesce(blokkades, array[]::text[]), $2)
+                where id = $1`,
+              [Number(id), `afgewezen door de redactie: ${motivatie.trim()}`],
             );
             await c.query(
               `insert into intel.publicatiebesluiten
