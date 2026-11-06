@@ -1726,12 +1726,20 @@ ${tabel(
           actor: string;
           op: string;
           motivatie: string | null;
+          /* DE FASE ZIT IN poortresultaten, en die hoort dus mee. Zonder
+             dit veld kan de pagina 'PR aangemaakt' niet onderscheiden van
+             'live geverifieerd' — beide heten in de besluitkolom
+             'ingediend' respectievelijk 'gepubliceerd'. */
+          poortresultaten: { fase?: string } & Record<string, unknown>;
+          door: string | null;
         }>(
           c,
-          `select besluit, actor_soort as actor, op::text as op, motivatie
-             from intel.publicatiebesluiten
-            where inhoud_versie_id = $1
-            order by id desc limit 6`,
+          `select pb.besluit, pb.actor_soort as actor, pb.op::text as op, pb.motivatie,
+                  pb.poortresultaten, g.email as door
+             from intel.publicatiebesluiten pb
+             left join intel.gebruikers g on g.id = pb.door_gebruiker_id
+            where pb.inhoud_versie_id = $1
+            order by pb.id desc limit 25`,
           [Number(id)],
         );
 
@@ -1834,6 +1842,28 @@ ${tabel(
 ${bronGebreken.map((g) => esc(g)).join("<br>")}<br>
 Een menselijke goedkeuring heft hiervan niets op: de hertoets na uw besluit draait dezelfde
 bewijstoets opnieuw, dus dit blijft een blokkade en het bericht blijft onpubliceerbaar.</p>`;
+
+      /* DE VIJF FASEN, UIT HET LOGBOEK EN NIET UIT EEN VERMOEDEN.
+         `inhoud_versies.status` gaat op 'gepubliceerd' zodra het
+         registerrecord is geschreven — vóór de merge en vóór de deploy.
+         Wie alleen die kolom leest, denkt dus dat een artikel live staat
+         terwijl er nog niets publiek is. De fase staat daarom in
+         `publicatiebesluiten.poortresultaten`; zie inhoud/actor.ts. */
+      const metFase = d.besluiten.map((b) => ({
+        fase: typeof b.poortresultaten?.fase === "string" ? b.poortresultaten.fase : null,
+        meting: b.poortresultaten,
+      }));
+      const fasen = {
+        goedgekeurd: v.goedgekeurd_door !== null,
+        record:
+          metFase.find((b) => b.fase === "RECORD_GESCHREVEN") === undefined
+            ? null
+            : (d.publicatie?.bestandspad ?? "geschreven"),
+        pr: (metFase.find((b) => b.fase === "PR_AANGEMAAKT")?.meting ?? null) as
+          | ({ branch?: unknown; commit?: unknown; prUrl?: unknown } | null),
+        live: (metFase.find((b) => b.fase === "LIVE_GEVERIFIEERD")?.meting ?? null) as
+          | ({ url?: unknown; httpStatus?: unknown; inSitemap?: unknown } | null),
+      };
 
       /* HET FORMULIER DRAAGT DE AFDRUK DIE DE BEOORDELAAR ZAG.
          Zelfde grendel als bij een voorstel: wijkt de afdruk bij het
@@ -2079,9 +2109,47 @@ ${tabel(
 )}
 
 <h2>Publicatiestand</h2>
+<p class="uitleg">Vijf fasen, en ze betekenen niet hetzelfde. <strong>Een geopende pull request is
+geen publicatie</strong>: daartussen zitten nog een merge, een deploy en een controle van de
+publieke URL. Elke fase komt uit het append-only publicatielogboek, niet uit een vermoeden.</p>
 ${tabel(
-  ["Veld", "Waarde"],
+  ["Fase", "Stand"],
   [
+    [
+      "1 · Goedgekeurd voor publicatie",
+      fasen.goedgekeurd
+        ? vlag(`door ${esc(v.goedkeurder ?? String(v.goedgekeurd_door))} op ${esc(v.goedgekeurd_op ?? "?")}`, "ok")
+        : vlag("nog niet", ""),
+    ],
+    [
+      "2 · Registerrecord geschreven",
+      fasen.record
+        ? vlag(esc(fasen.record), "ok")
+        : vlag("nog niet", ""),
+    ],
+    [
+      "3 · Pull request aangemaakt",
+      fasen.pr === null
+        ? vlag("nog niet", "")
+        : `${vlag("ja", "ok")}<div class="klein">branch <code>${esc(String(fasen.pr.branch ?? "-"))}</code>,
+           commit <code>${esc(String(fasen.pr.commit ?? "-").slice(0, 12))}</code>,
+           ${fasen.pr.prUrl ? `<a href="${esc(String(fasen.pr.prUrl))}" rel="noreferrer noopener nofollow" target="_blank">PR</a>` : "geen PR geopend"}</div>`,
+    ],
+    [
+      "4 · PR gemerged en website uitgerold",
+      fasen.live === null
+        ? vlag("niet vastgesteld", "waarschuwing")
+        : vlag(`commit in main, HTTP ${String(fasen.live.httpStatus ?? "?")}`, "ok"),
+    ],
+    [
+      "5 · Publieke URL gecontroleerd",
+      fasen.live === null
+        ? `${vlag("nog niet geverifieerd", "waarschuwing")}<div class="klein">draai
+           <code>npm run publiceer -- --versie ${v.id} --verifieer</code></div>`
+        : `${vlag("live", "ok")}<div class="klein"><a href="${esc(String(fasen.live.url ?? ""))}" rel="noreferrer noopener nofollow" target="_blank">${esc(String(fasen.live.url ?? ""))}</a>${
+            fasen.live.inSitemap ? " · in de sitemap" : " · NIET in de sitemap"
+          }</div>`,
+    ],
     [
       "Poorten na de laatste toets",
       v.poorten
@@ -2113,9 +2181,12 @@ ${tabel(
         : d.besluiten
             .map(
               (b) =>
-                `<div class="klein">${esc(b.op)} — <strong>${esc(b.besluit)}</strong> (${esc(
-                  b.actor,
-                )}) ${esc((b.motivatie ?? "").slice(0, 160))}</div>`,
+                `<div class="klein">${esc(b.op)} — <strong>${esc(b.besluit)}</strong> ${
+                  /* WIE het deed, en niet alleen WAT voor soort actor. Dit
+                     veld bleef op de publicatiezijde altijd leeg; zie
+                     migratie 0057. */
+                  b.door === null ? esc(b.actor) : `${esc(b.actor)}: ${esc(b.door)}`
+                } ${esc((b.motivatie ?? "").slice(0, 160))}</div>`,
             )
             .join(""),
     ],

@@ -9,6 +9,7 @@
      npm run publiceer -- --versie 4 --pr
      npm run publiceer -- --versie 4 --pr --open-pr
      npm run publiceer -- --terugdraaien <publicatieId>
+     npm run publiceer -- --versie 4 --verifieer
      npm run publiceer -- --lijst
 
    --pr draait de hele keten uit src/publicatie/pr.ts: een eigen branch,
@@ -18,18 +19,105 @@
    geopend. De PR mergen blijft een menselijke handeling, en die merge
    IS de productiedeploy van www.vibeenergy.nl.
 
+   --verifieer meet daarna of het er werkelijk staat: zit de commit in
+   main, geeft de publieke URL 200, sluit de canonical, en staat de URL
+   in de sitemap. Alleen dan komt er een regel met fase LIVE_GEVERIFIEERD
+   in het logboek. Een geopende PR is geen publicatie.
+
    Publiceren vraagt een goedgekeurde versie. Goedkeuren vraagt een
    gebruiker die niet de auteur is; de database dwingt dat af.
+
+   WIE DIT DRAAIT, IDENTIFICEERT ZICH
+   ----------------------------------
+   Elke handeling die iets schrijft vraagt twee dingen:
+
+     --door <e-mailadres>   WIE het doet
+     INTEL_SESSIE=<koekje>  het BEWIJS dat die persoon het is
+
+   Het koekje is hetzelfde `intel_sessie` dat het dashboard uitgeeft bij
+   inloggen; kopieer het uit de browser. De CLI leest het met
+   leesSessieCookie(), houdt de sessie-epoch tegen de database (een
+   ingetrokken sessie werkt dus niet), eist dat het adres bij DIE
+   gebruiker hoort, en toetst server-side het recht `inhoud.publiceren`.
+
+   Een kaal gebruikers-id is met opzet GEEN identiteitsbewijs: het
+   logboek moet kunnen zeggen wie iets deed, niet wie iemand beweerde te
+   zijn. `--lijst` vraagt niets, want dat leest alleen.
    ============================================================ */
 
 import { maakPool, metOrganisatie, rijen, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
 import { draaiTerug, keurGoed, publiceer } from "../inhoud/publiceer.ts";
+import { RECHT_PUBLICEREN, verifieerMens, type Actor } from "../inhoud/actor.ts";
+import { leesSessieCookie } from "../dashboard/auth.ts";
+import { IntelFout } from "../kern/fouten.ts";
+import type { Pool } from "../kern/db.ts";
 
 const heeft = (naam: string) => process.argv.includes(`--${naam}`);
 function argument(naam: string): string | undefined {
   const i = process.argv.indexOf(`--${naam}`);
   return i === -1 ? undefined : process.argv[i + 1];
+}
+
+const UITLEG_IDENTITEIT =
+  "Een publicatiehandeling vraagt een vastgestelde identiteit:\n" +
+  "  --door <e-mailadres>   wie het doet\n" +
+  "  INTEL_SESSIE=<koekje>  het bewijs (het intel_sessie-koekje uit het dashboard)\n" +
+  "Zonder beide schrijft dit commando niets. Alleen --lijst werkt zonder.";
+
+/**
+ * Stelt vast WIE dit draait, en weigert bij het minste gebrek.
+ *
+ * Drie onafhankelijke eisen, en alle drie moeten kloppen: het koekje is
+ * geldig en niet ingetrokken, het adres hoort bij dezelfde gebruiker, en
+ * die gebruiker heeft het publicatierecht. De autorisatie zelf staat in
+ * verifieerMens() — dus server-side en niet hier.
+ */
+async function bepaalActor(pool: Pool, organisatieId: number): Promise<Actor> {
+  const email = argument("door");
+  const koekje = process.env["INTEL_SESSIE"];
+
+  if (!email || !koekje) {
+    throw new IntelFout("autorisatie", `${!email ? "--door ontbreekt" : "INTEL_SESSIE ontbreekt"}.\n${UITLEG_IDENTITEIT}`);
+  }
+
+  const sessie = leesSessieCookie(koekje);
+  if (sessie === null) {
+    throw new IntelFout(
+      "autorisatie",
+      "INTEL_SESSIE is ongeldig of verlopen; log opnieuw in op het dashboard en kopieer het " +
+        "nieuwe intel_sessie-koekje",
+    );
+  }
+  if (sessie.organisatieId !== organisatieId) {
+    throw new IntelFout(
+      "autorisatie",
+      `het koekje hoort bij organisatie ${sessie.organisatieId} en niet bij ${organisatieId}`,
+    );
+  }
+
+  return metOrganisatie(pool, { organisatieId, gebruikerId: sessie.gebruikerId }, async (c) => {
+    const { zoekGebruikerOpEmail } = await import("../dashboard/auth.ts");
+    const genoemd = await zoekGebruikerOpEmail(c, email);
+    if (genoemd === null) {
+      throw new IntelFout("autorisatie", `er is geen actieve gebruiker met het adres ${email}`);
+    }
+    /* HET ADRES MOET BIJ HET KOEKJE HOREN. Zonder deze toets kon iemand
+       met zijn eigen geldige sessie de naam van een ander in het logboek
+       zetten — precies wat een auditspoor waardeloos maakt. */
+    if (genoemd.id !== sessie.gebruikerId) {
+      throw new IntelFout(
+        "autorisatie",
+        `het koekje is van gebruiker ${sessie.gebruikerId} maar --door noemt ${email} ` +
+          `(gebruiker ${genoemd.id}); een handeling wordt niet op andermans naam vastgelegd`,
+      );
+    }
+    return verifieerMens(c, organisatieId, {
+      gebruikerId: sessie.gebruikerId,
+      sessieEpoch: sessie.sessieEpoch,
+      vereistRecht: RECHT_PUBLICEREN,
+    });
+  });
 }
 
 async function main(): Promise<number> {
@@ -68,9 +156,17 @@ async function main(): Promise<number> {
     return 0;
   }
 
+  /* ALLES HIERONDER SCHRIJFT, dus alles hieronder vraagt een naam. De
+     actor wordt ÉÉN keer vastgesteld en daarna doorgegeven; zo kan geen
+     enkel pad eronderuit. */
+  const actor = await bepaalActor(pool, organisatieId);
+  process.stdout.write(
+    `IDENTITEIT  ${actor.soort === "mens" ? `${actor.email} (gebruiker ${actor.gebruikerId}, rol ${actor.rol ?? "-"})` : "systeem"}\n`,
+  );
+
   const terug = argument("terugdraaien");
   if (terug) {
-    const r = await draaiTerug(pool, organisatieId, Number.parseInt(terug, 10));
+    const r = await draaiTerug(pool, organisatieId, Number.parseInt(terug, 10), { actor });
     process.stdout.write(`TERUGDRAAIEN ${r.publicatieId}: ${r.reden} (${r.bestandspad})\n`);
     return 0;
   }
@@ -81,6 +177,30 @@ async function main(): Promise<number> {
     return 2;
   }
   const versieId = Number.parseInt(versieRuw, 10);
+
+  /* ---- de laatste schakel: staat het er werkelijk? ---- */
+  if (heeft("verifieer")) {
+    const { verifieerLivePublicatie } = await import("../publicatie/verificatie.ts");
+    const { configLezen } = await import("../kern/config.ts");
+    const uit = await metOrganisatie(pool, { organisatieId }, (c) =>
+      verifieerLivePublicatie(c, organisatieId, versieId, {
+        actor,
+        siteWortel: configLezen().siteWortel,
+      }),
+    );
+    process.stdout.write(
+      `LIVE-VERIFICATIE versie ${versieId}\n` +
+        `  uitkomst         ${uit.geslaagd ? "LIVE" : "NIET LIVE"}\n` +
+        `  url              ${uit.url ?? "-"}\n` +
+        `  http             ${uit.httpStatus ?? "-"}\n` +
+        `  commit           ${uit.commit ?? "-"}\n` +
+        `  in main          ${uit.gemergedInMain ? "ja" : "nee"}\n` +
+        `  reden            ${uit.reden}\n` +
+        "  grendels:\n" +
+        uit.grendels.map((g) => `    ${g.ok ? "PASS" : "FAIL"} ${g.naam} — ${g.meting}\n`).join(""),
+    );
+    return uit.geslaagd ? 0 : 1;
+  }
 
   const keurdoor = argument("goedkeuren");
   if (keurdoor) {
@@ -138,6 +258,7 @@ async function main(): Promise<number> {
     const uit = await metOrganisatie(pool, { organisatieId }, (c) =>
       maakPublicatiePr(c, organisatieId, versieId, {
         siteWortel,
+        actor,
         droog: heeft("droog"),
         openPr: heeft("open-pr"),
         pool,
@@ -157,7 +278,7 @@ async function main(): Promise<number> {
     return uit.geslaagd ? 0 : 1;
   }
 
-  const r = await publiceer(pool, organisatieId, versieId, { droog: heeft("droog") });
+  const r = await publiceer(pool, organisatieId, versieId, { actor, droog: heeft("droog") });
   process.stdout.write(
     `PUBLICATIE versie ${r.inhoudVersieId}\n` +
       `  geschreven       ${r.geschreven ? "ja" : "nee"}\n` +

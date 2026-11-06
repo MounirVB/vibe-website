@@ -45,6 +45,7 @@ import { join } from "node:path";
 import { promisify } from "node:util";
 
 import {
+  actorVan,
   alsEigenaar,
   maakDragendeVersie,
   maakGebruiker,
@@ -53,6 +54,7 @@ import {
   type Wegwerpdatabase,
 } from "../harnas.ts";
 import { metOrganisatie } from "../../src/kern/db.ts";
+import type { Actor } from "../../src/inhoud/actor.ts";
 import { hertoetsInhoudVersie, REDACTIONELE_BLOKKADE } from "../../src/inhoud/concept.ts";
 import { draaiTerug, keurGoed, publiceer } from "../../src/inhoud/publiceer.ts";
 import { branchVoor, maakGit, maakPublicatiePr } from "../../src/publicatie/pr.ts";
@@ -87,41 +89,17 @@ async function maakPubliceerbaar(
     publiceerbaar: true,
   });
 
-  const body = await alsEigenaar(db, async (c) => {
-    await c.query("select set_config('app.organisatie_id', $1, false)", [String(org)]);
-
-    const cl = await c.query<{ id: string }>(
-      `insert into intel.onderwerp_clusters (organisatie_id, sleutel, naam)
-       values ($1, $2, 'Netcongestie')
-       on conflict (organisatie_id, sleutel) do update set naam = excluded.naam
-       returning id::text`,
-      [org, CLUSTER],
-    );
-    const g = await c.query<{ id: string }>(
-      `insert into intel.markt_gebeurtenissen
-         (organisatie_id, sleutel, titel, gebeurtenis_soort, onderwerp_cluster_id, risico_klasse)
-       values ($1, $2, 'Fixture voor de publicatieketen', 'subsidie', $3::bigint, $4)
-       returning id::text`,
-      [org, `fixture-keten-${opties.slug}`, cl.rows[0]!.id, opties.risico ?? "hoog"],
-    );
-    const k = await c.query<{ id: string }>(
-      `insert into intel.inhoud_kandidaten
-         (organisatie_id, gebeurtenis_id, onderwerp_cluster_id, besluit, motor_versie, status)
-       values ($1, $2::bigint, $3::bigint, 'NEWS_ITEM', 'fixture-keten', 'in_concept')
-       returning id::text`,
-      [org, g.rows[0]!.id, cl.rows[0]!.id],
-    );
-
-    await c.query("update intel.inhoud_versies set kandidaat_id = $2::bigint where id = $1", [
-      v.versieId,
-      k.rows[0]!.id,
-    ]);
-
-    const rij = await c.query<{ body_markdown: string }>(
+  /* HET CLUSTER EN DE KANDIDAAT STAAN NU IN HET HARNAS.
+     Deze helper maakte ze eerst zelf, en toen de harnas dat overnam
+     botsten de twee op markt_gebeurtenissen_sleutel_uniek — beide
+     gebruikten dezelfde sleutel. Eén plek die het doet, en dat is
+     `publiceerbaar: true`; zie de toelichting daar. */
+  const body = await metOrganisatie(db.pool, { organisatieId: org }, async (c) => {
+    const r = await c.query<{ body_markdown: string }>(
       "select body_markdown from intel.inhoud_versies where id = $1",
       [v.versieId],
     );
-    return rij.rows[0]!.body_markdown;
+    return r.rows[0]!.body_markdown;
   });
 
   return { versieId: v.versieId, uitspraakId: v.uitspraakId, afdruk: v.afdruk, body };
@@ -192,6 +170,8 @@ describe("de goedkeuring herberekent de poorten die zij zelf opent", () => {
   let auteur = 0;
   let chef = 0;
   let redacteur = 0;
+  /* De GEVERIFIEERDE actor voor publiceer(); zie actorVan() in het harnas. */
+  let actor: Actor;
 
   before(async () => {
     db = await maakWegwerpdatabase("keten1");
@@ -199,6 +179,7 @@ describe("de goedkeuring herberekent de poorten die zij zelf opent", () => {
     auteur = await maakGebruiker(db, org, "schrijver@test.nl", "analist");
     chef = await maakGebruiker(db, org, "chef@test.nl", "beheerder");
     redacteur = await maakGebruiker(db, org, "redactie@test.nl", "redacteur");
+    actor = await actorVan(db, org, chef);
   });
 
   after(async () => {
@@ -304,7 +285,7 @@ describe("de goedkeuring herberekent de poorten die zij zelf opent", () => {
 
     /* EN DAN WEIGERT PUBLICEREN, met die reden. Een goedkeuring is geen
        vrijbrief. */
-    const r = await publiceer(db.pool, org, v.versieId);
+    const r = await publiceer(db.pool, org, v.versieId, { actor });
     assert.equal(r.geschreven, false);
     assert.match(r.reden, /poorten niet geslaagd/);
   });
@@ -346,7 +327,7 @@ describe("de goedkeuring herberekent de poorten die zij zelf opent", () => {
         [v.versieId],
       );
     });
-    const r = await publiceer(db.pool, org, v.versieId);
+    const r = await publiceer(db.pool, org, v.versieId, { actor });
     assert.equal(r.geschreven, false);
     assert.match(r.reden, /poorten niet geslaagd|alleen 'goedgekeurd'/);
   });
@@ -373,7 +354,7 @@ describe("de goedkeuring herberekent de poorten die zij zelf opent", () => {
       hertoetsInhoudVersie(c, org, v.versieId),
     );
     assert.equal(h?.poortenGeslaagd, false, "een voorstel als kernclaim mag niet door");
-    const r = await publiceer(db.pool, org, v.versieId);
+    const r = await publiceer(db.pool, org, v.versieId, { actor });
     assert.equal(r.geschreven, false, "en publiceren hoort dan te weigeren");
   });
 
@@ -652,6 +633,8 @@ describe("de publicatieketen tot de pull request", () => {
   let remote = "";
   let nepBin = "";
   let padVoor = "";
+  /* De GEVERIFIEERDE actor voor de PR-keten; zie actorVan() in het harnas. */
+  let actor: Actor;
 
   /** De generator die alleen gegenereerde paden aanraakt. */
   const GOEDE_GENERATOR = [
@@ -669,6 +652,7 @@ describe("de publicatieketen tot de pull request", () => {
     org = await maakOrganisatie(db, "vibe-energy");
     auteur = await maakGebruiker(db, org, "schrijver@test.nl", "analist");
     chef = await maakGebruiker(db, org, "chef@test.nl", "beheerder");
+    actor = await actorVan(db, org, chef);
 
     werk = await mkdtemp(join(tmpdir(), "intel-keten-"));
     site = join(werk, "site");
@@ -754,6 +738,7 @@ describe("de publicatieketen tot de pull request", () => {
         siteWortel: site,
         pool: db.pool,
         basisBranch: "main",
+        actor,
       }),
     );
     assert.ok(uit.geslaagd, `de keten hoort te slagen: ${verslag(uit)}`);
@@ -817,13 +802,13 @@ describe("de publicatieketen tot de pull request", () => {
     const versieId = await goedgekeurd("uitrol-dubbel");
     const git = maakGit(site);
     const eerste = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
-      maakPublicatiePr(c, org, versieId, { siteWortel: site, pool: db.pool, basisBranch: "main" }),
+      maakPublicatiePr(c, org, versieId, { siteWortel: site, pool: db.pool, basisBranch: "main", actor }),
     );
     assert.ok(eerste.geslaagd, eerste.reden);
     await git(["checkout", "main"]);
 
     const tweede = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
-      maakPublicatiePr(c, org, versieId, { siteWortel: site, pool: db.pool, basisBranch: "main" }),
+      maakPublicatiePr(c, org, versieId, { siteWortel: site, pool: db.pool, basisBranch: "main", actor }),
     );
     assert.equal(tweede.geslaagd, false, "dezelfde versie mag niet twee keer publiceren");
     /* De tweede aanvraag strandt al op grendel 1: de status is na de
@@ -855,6 +840,7 @@ describe("de publicatieketen tot de pull request", () => {
           siteWortel: site,
           pool: db.pool,
           basisBranch: "main",
+          actor,
           openPr: true,
         }),
       );
@@ -906,6 +892,7 @@ describe("de publicatieketen tot de pull request", () => {
           siteWortel: site,
           pool: db.pool,
           basisBranch: "main",
+          actor,
           openPr: true,
         }),
       );
@@ -935,6 +922,7 @@ describe("de publicatieketen tot de pull request", () => {
           siteWortel: site,
           pool: db.pool,
           basisBranch: "main",
+          actor,
           openPr: true,
         }),
       );
@@ -969,7 +957,7 @@ describe("de publicatieketen tot de pull request", () => {
 
     try {
       const uit = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
-        maakPublicatiePr(c, org, versieId, { siteWortel: site, pool: db.pool, basisBranch: "main" }),
+        maakPublicatiePr(c, org, versieId, { siteWortel: site, pool: db.pool, basisBranch: "main", actor }),
       );
       assert.equal(uit.geslaagd, false);
       assert.match(uit.reden, /niet mag aanraken/);
@@ -996,7 +984,7 @@ describe("de publicatieketen tot de pull request", () => {
        record hier NIET staan en de hele keten toch PASS melden. */
     const versieId = await goedgekeurd("uitrol-wortel");
     const uit = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
-      maakPublicatiePr(c, org, versieId, { siteWortel: site, pool: db.pool, basisBranch: "main" }),
+      maakPublicatiePr(c, org, versieId, { siteWortel: site, pool: db.pool, basisBranch: "main", actor }),
     );
     assert.ok(uit.geslaagd, uit.reden);
     const bestand = join(site, "data", "inhoud", "nieuws", "uitrol-wortel.json");
@@ -1009,7 +997,7 @@ describe("de publicatieketen tot de pull request", () => {
       );
       return r.rows[0]!.id;
     });
-    const terug = await draaiTerug(db.pool, org, publicatieId, { siteWortel: site });
+    const terug = await draaiTerug(db.pool, org, publicatieId, { siteWortel: site, actor });
     assert.match(terug.reden, /verwijderd|hersteld/);
     assert.ok(!existsSync(bestand), "terugdraaien hoort het record uit DEZE wortel te halen");
 

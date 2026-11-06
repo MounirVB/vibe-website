@@ -18,7 +18,8 @@
 
 import pg from "pg";
 import { configVergeten, laadEnvBestand } from "../src/kern/config.ts";
-import { maakPool, sluitAllePools, zonderOrganisatie, type Pool } from "../src/kern/db.ts";
+import { maakPool, metOrganisatie, sluitAllePools, zonderOrganisatie, type Pool } from "../src/kern/db.ts";
+import { verifieerMens, type Actor } from "../src/inhoud/actor.ts";
 import { migreer } from "../src/db/migraties.ts";
 /* DE ECHTE MOTORVERSIES EN DE ECHTE AFDRUKFUNCTIE, niet nagebouwde
    constanten. Een fixture met een hardgecodeerde versiestring blijft
@@ -282,6 +283,21 @@ export async function maakDragendeVersie(
      * geen enkele bestaande toets van vorm verandert.
      */
     readonly publiceerbaar?: boolean;
+    /**
+     * De sleutel van de bron in intel.bronnen.
+     *
+     * WAAROM DIT UITMAAKT VOOR DE GENERATOR. weigerNieuws() in
+     * scripts/seo/bouw-routes.mjs eist een DRAGENDE bron, en leidt die
+     * soort af uit de uitgeverscategorie in het bronregister in CODE
+     * (src/bronnen/register.ts). Een verzonnen sleutel staat daar niet
+     * en valt terug op MARKTPARTIJ — die kan een bericht niet alleen
+     * dragen, dus de generator maakt er GEEN pagina van. Een toets die
+     * de echte websitebuild wil bewijzen, geeft hier dus een echte
+     * sleutel mee (bijvoorbeeld 'acm-besluiten', uitgeverSoort
+     * 'toezichthouder'). Standaard blijft de fixturesleutel, zodat geen
+     * bestaande toets van vorm verandert.
+     */
+    readonly bronSleutel?: string;
   },
 ): Promise<DragendeVersie> {
   const titel = "Ondernemers krijgen in 2026 meer tijd voor hun SDE++-aanvraag";
@@ -312,6 +328,8 @@ export async function maakDragendeVersie(
     afdruk,
   };
 
+  let kandidaatId: string | null = null;
+
   await alsEigenaar(db, async (c) => {
     await c.query("select set_config('app.organisatie_id', $1, false)", [String(organisatieId)]);
 
@@ -328,6 +346,39 @@ export async function maakDragendeVersie(
          on conflict (organisatie_id, pad) do nothing`,
         [organisatieId],
       );
+
+      /* EN EEN ONDERWERP-EIGENAAR, want publiceerViaRegister() weigert
+         zonder. Hij leest het cluster van de KANDIDAAT en zoekt daarmee
+         de nationale pagina die de zoekintentie bezit
+         (CLUSTER_NAAR_ROUTE in site/routeregister.ts). Het cluster
+         'netcongestie' wijst naar kennis/netcongestie-uitgelegd, en die
+         route bestaat in het echte routeregister van de site — dus deze
+         fixture werkt zowel tegen een minimale als tegen de ECHTE
+         sitewortel. Zonder deze drie rijen weigert publiceren met "geen
+         onderwerp-eigenaar te bepalen". */
+      const cl = await c.query<{ id: string }>(
+        `insert into intel.onderwerp_clusters (organisatie_id, sleutel, naam)
+         values ($1, 'netcongestie', 'Netcongestie')
+         on conflict (organisatie_id, sleutel) do update set naam = excluded.naam
+         returning id::text`,
+        [organisatieId],
+      );
+      const geb = await c.query<{ id: string }>(
+        `insert into intel.markt_gebeurtenissen
+           (organisatie_id, sleutel, titel, gebeurtenis_soort, onderwerp_cluster_id, risico_klasse)
+         values ($1, $2, 'Fixture voor de publicatieketen', 'subsidie', $3::bigint, $4)
+         returning id::text`,
+        [organisatieId, `fixture-keten-${opties.slug}`, cl.rows[0]!.id, opties.risico ?? "laag"],
+      );
+      kandidaatId = (
+        await c.query<{ id: string }>(
+          `insert into intel.inhoud_kandidaten
+             (organisatie_id, gebeurtenis_id, onderwerp_cluster_id, besluit, motor_versie, status)
+           values ($1, $2::bigint, $3::bigint, 'NEWS_ITEM', 'fixture-keten', 'in_concept')
+           returning id::text`,
+          [organisatieId, geb.rows[0]!.id, cl.rows[0]!.id],
+        )
+      ).rows[0]!.id;
     }
 
     const bron = await c.query<{ id: number }>(
@@ -340,7 +391,7 @@ export async function maakDragendeVersie(
                'toegestaan', 'geen_voorbehoud', 'geverifieerd', 'fixture', 4, true)
        on conflict (organisatie_id, sleutel) do update set uitgever = excluded.uitgever
        returning id`,
-      [organisatieId, `rvo-${opties.slug}`],
+      [organisatieId, opties.bronSleutel ?? `rvo-${opties.slug}`],
     );
     const doc = await c.query<{ id: number }>(
       `insert into intel.brondocumenten
@@ -436,12 +487,12 @@ export async function maakDragendeVersie(
          (organisatie_id, pad, versie, soort, titel, meta_omschrijving, canonieke_url,
           direct_antwoord, body_markdown, structured_data, status, risico_klasse,
           auteur_soort, poorten_geslaagd, inhoud_afdruk, invoer_versies,
-          aangemaakt_door, bewerkt_door, bronnen_sectie, interne_links)
+          aangemaakt_door, bewerkt_door, bronnen_sectie, interne_links, kandidaat_id)
        values ($1, $2, 1, 'nieuw_artikel', $3,
                'Een metabeschrijving die lang genoeg is om de lengtepoort van het concept te halen.',
                'https://www.vibeenergy.nl' || $2,
                $4, $5, $6, $7, $8, 'ai', true, $9, array[$10::bigint], $11, $12,
-               $13::jsonb, $14::jsonb)
+               $13::jsonb, $14::jsonb, $15::bigint)
        returning id`,
       [
         organisatieId,
@@ -461,6 +512,7 @@ export async function maakDragendeVersie(
            toets al zag. */
         JSON.stringify(bronnenSectie),
         JSON.stringify(interneLinks),
+        kandidaatId,
       ],
     );
 
@@ -480,6 +532,29 @@ export async function maakDragendeVersie(
   });
 
   return uit;
+}
+
+/**
+ * Een GEVERIFIEERDE menselijke actor voor de publicatieketen.
+ *
+ * Sinds de auditcorrectie is `actor` een verplichte parameter van
+ * publiceer(), draaiTerug() en maakPublicatiePr(), en die actor komt
+ * alleen uit verifieerMens() — die de gebruiker, zijn organisatie, zijn
+ * actief-zijn en zijn RECHT in de database toetst. Een toets kan dus geen
+ * actor verzinnen, en dat is precies de bedoeling: een fixture die een
+ * identiteit mag faken, toetst de grendel niet die in productie geldt.
+ *
+ * De gebruiker moet het recht `inhoud.publiceren` hebben; de rollen
+ * `beheerder` en `redacteur` dragen dat (migratie 0001).
+ */
+export async function actorVan(
+  db: Wegwerpdatabase,
+  organisatieId: number,
+  gebruikerId: number,
+): Promise<Actor> {
+  return metOrganisatie(db.pool, { organisatieId }, (c) =>
+    verifieerMens(c, organisatieId, { gebruikerId }),
+  );
 }
 
 /** Alle invariantbevindingen; leeg betekent dat de aannames kloppen. */

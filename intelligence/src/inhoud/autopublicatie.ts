@@ -72,6 +72,7 @@ import type { Pool } from "pg";
 import { metOrganisatie, rijen, eenRij } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 import { publiceer } from "./publiceer.ts";
+import { systeemActor } from "./actor.ts";
 import { toetsGebondenBewijs, bewijsDraagt } from "../pijplijn/claimpoort.ts";
 import { herkenOnderwerpen } from "../pijplijn/onderwerpen.ts";
 
@@ -520,7 +521,13 @@ export async function automatischPubliceren(
       continue;
     }
 
-    const rapport = await publiceer(pool, organisatieId, v.id);
+    /* DE SYSTEEMACTOR, MET ZIJN GROND. Dit is de ENIGE plek in de keten
+       die zonder mens publiceert, en daarom de enige die systeemActor()
+       mag gebruiken. De grond noemt het beleid dat het toestond, zodat
+       het logboek 'systeem' nooit zonder uitleg laat staan. */
+    const rapport = await publiceer(pool, organisatieId, v.id, {
+      actor: systeemActor(`automatische publicatieronde onder beleid ${beleid.versie}`),
+    });
     if (rapport.publicatieId === null) {
       weiger("1 poorten", `publiceer() weigerde: ${rapport.reden}`);
       continue;

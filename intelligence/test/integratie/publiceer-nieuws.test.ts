@@ -29,6 +29,7 @@ import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
+  actorVan,
   alsEigenaar,
   maakGebruiker,
   maakOrganisatie,
@@ -36,6 +37,7 @@ import {
   type Wegwerpdatabase,
 } from "../harnas.ts";
 import { metOrganisatie } from "../../src/kern/db.ts";
+import type { Actor } from "../../src/inhoud/actor.ts";
 import { configVergeten } from "../../src/kern/config.ts";
 import { MODALITEIT_VERSIE } from "../../src/pijplijn/claimmodaliteit.ts";
 import { MOTORVERSIES } from "../../src/pijplijn/motorversies.ts";
@@ -47,6 +49,8 @@ describe("publiceren via het routeregister", () => {
   let db: Wegwerpdatabase;
   let org = 0;
   let auteur = 0;
+  /* De GEVERIFIEERDE actor voor publiceer(); zie actorVan() in het harnas. */
+  let actor: Actor;
   let goedkeurder = 0;
   let siteWortel = "";
   let versieId = 0;
@@ -61,6 +65,7 @@ describe("publiceren via het routeregister", () => {
     org = await maakOrganisatie(db, "publiceer-org");
     auteur = await maakGebruiker(db, org, "auteur@test.nl", "redacteur");
     goedkeurder = await maakGebruiker(db, org, "chef@test.nl", "beheerder");
+    actor = await actorVan(db, org, goedkeurder);
 
     /* Een sitewortel met het minimum uit Release 1. */
     siteWortel = await mkdtemp(join(tmpdir(), "intel-site-"));
@@ -220,7 +225,7 @@ describe("publiceren via het routeregister", () => {
 
   test("een versie die niet is goedgekeurd wordt geweigerd", async () => {
     const { publiceer } = await import("../../src/inhoud/publiceer.ts");
-    const r = await publiceer(db.pool, org, versieId);
+    const r = await publiceer(db.pool, org, versieId, { actor });
     assert.equal(r.geschreven, false);
     assert.match(r.reden, /alleen 'goedgekeurd'/);
   });
@@ -257,7 +262,7 @@ describe("publiceren via het routeregister", () => {
     });
 
     const { publiceer } = await import("../../src/inhoud/publiceer.ts");
-    const r = await publiceer(db.pool, org, versieId);
+    const r = await publiceer(db.pool, org, versieId, { actor });
 
     assert.equal(r.geschreven, true, `publiceren mislukte: ${r.reden}`);
     assert.equal(r.sitemapBijgewerkt, false, "de sitemap is van de generator van Release 1");
@@ -374,7 +379,7 @@ describe("publiceren via het routeregister", () => {
     });
 
     const { publiceer } = await import("../../src/inhoud/publiceer.ts");
-    const r = await publiceer(db.pool, org, tweede);
+    const r = await publiceer(db.pool, org, tweede, { actor });
     assert.equal(r.geschreven, false);
     assert.match(r.reden, /buiten data\/inhoud\/nieuws/);
     assert.match(r.reden, /schrijver per bestand/);
@@ -395,7 +400,7 @@ describe("publiceren via het routeregister", () => {
     assert.ok(existsSync(pad), "aanname: het record staat er nog");
 
     const { draaiTerug } = await import("../../src/inhoud/publiceer.ts");
-    const r = await draaiTerug(db.pool, org, publicatieId);
+    const r = await draaiTerug(db.pool, org, publicatieId, { actor });
 
     assert.equal(r.teruggezet, "verwijderd_uit_sitemap");
     assert.ok(!existsSync(pad), "het record had verwijderd moeten zijn");
@@ -423,7 +428,7 @@ describe("publiceren via het routeregister", () => {
 
   test("tweemaal terugdraaien is geen fout en verandert niets meer", async () => {
     const { draaiTerug } = await import("../../src/inhoud/publiceer.ts");
-    const r = await draaiTerug(db.pool, org, publicatieId);
+    const r = await draaiTerug(db.pool, org, publicatieId, { actor });
     assert.equal(r.teruggezet, "niets");
     assert.match(r.reden, /alleen een geschreven publicatie/);
   });
