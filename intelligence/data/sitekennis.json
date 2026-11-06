@@ -1,6 +1,6 @@
 {
   "schema": 3,
-  "websiteVersie": "24ea7059ecfddfd82492233bc3688a4df1c7c67183e5ab4ada12195ab2263eaf",
+  "websiteVersie": "0d1e83f8de7814c6cf62833a77032d0c1f4c7d433838690f891caf3d90b62ba6",
   "routesGegenereerd": "2026-10-28",
   "aantalPaginas": 431,
   "paginas": [
@@ -3936,39 +3936,29 @@
       "canoniekeUrl": "https://www.vibeenergy.nl/nieuws",
       "staat": "gepubliceerd",
       "soort": "nieuws",
-      "titel": "Nieuws en marktontwikkelingen | Vibe Energy",
-      "h1": "Nieuws en marktontwikkelingen",
-      "tekst": "Nieuws en marktontwikkelingen | Vibe Energy\n\nNieuws en marktontwikkelingen\nOntwikkelingen in netcongestie, nettarieven, regelgeving en subsidies die iets veranderen aan de businesscase van een zakelijke energie-installatie. Er staan nog geen berichten op deze pagina. Hieronder staat waar dit kanaal ",
-      "woorden": 441,
-      "vingerafdruk": "dcf90aa10806a7ea63de95854a8db4f6d8c68ad48ff544ffda8eebd726624e23",
+      "titel": "Nieuws &amp; inzichten over de energiemarkt | Vibe Energy",
+      "h1": "Nieuws &amp; inzichten",
+      "tekst": "Nieuws &amp; inzichten over de energiemarkt | Vibe Energy\n\nNieuws &amp; inzichten\nBlijf op de hoogte van ontwikkelingen in energie, netcongestie, batterijopslag, laadinfrastructuur en verduurzaming.\n\nWaar we over schrijven\nBinnenkort vindt u hier het laatste nieuws en praktische inzichten over de energiemarkt. Tot die tijd vindt u per onderwerp de achtergrond die er nu al is.\n\nNetcongestie\nNetcongestie\nHet net zit vol. Wat dat betekent voor uw aansluiting, en wat er binnen uw eigen grens nog kan.\nLees de achtergrond &rarr;\n\nBatterijopslag\nBatterijopslag\nCapaciteit vrijspelen op de aansluiting die u al heeft, in plaats van wachten op verzwaring.\nLees de achtergrond &rarr;\n\nLaadinfrastructuur\nLaadinfrastructuur\nMeer laadpunten op het vermogen dat er al ligt, zonder dat de piek erdoorheen schiet.\nLees de achtergrond &rarr;\n\nOpwek\nZonne-energie\nEen dak levert pas rendement als de opwek ook benut wordt. Wat opslag en sturing daaraan veranderen.\nLees de achtergrond &rarr;\n\nVerduurzaming\nVerduurzaming en energielabel\nHet energielabel is een berekening, de meter is de werkelijkheid. Wat telt voor uw label en uw exploitatie.\nLees de achtergrond &rarr;\n\nSubsidies\nSubsidies en regelingen\nWelke regelingen er zijn, wat ze wel en niet dekken, en wat een batterij subsidiabel maakt.\nLees de achtergrond &rarr;\n\nUit de kennisbank\nDe begrippen en rekenregels achter het nieuws, los van de dag van vandaag.\n\nNetcongestie uitgelegd\nWaar in het net de grens werkelijk zit.\n\nDe businesscase van een ba",
+      "woorden": 366,
+      "vingerafdruk": "e1f18fc2a06828a0174325c299f51efdf54aac797a9dac15e9570a4dbdedf566",
       "voorbehoud": null,
       "secties": [
         {
-          "kop": "Staan hier al berichten?",
-          "tekst": ""
+          "kop": "Waar we over schrijven",
+          "tekst": "Binnenkort vindt u hier het laatste nieuws en praktische inzichten over de energiemarkt. Tot die tijd vindt u per onderwerp de achtergrond die er nu al is.\n\nNetcongestie\nNetcongestie\nHet net zit vol. Wat dat betekent voor uw aansluiting, en wat er binnen uw eigen grens nog kan.\nLees de achtergrond &rarr;\n\nBatterijopslag\nBatterijopslag\nCapaciteit vrijspelen op de aansluiting die u al heeft, in plaats van wachten op verzwaring.\nLees de achtergrond &rarr;\n\nLaadinfrastructuur\nLaadinfrastructuur\nMeer"
         },
         {
-          "kop": "Wanneer een bericht hier verschijnt",
-          "tekst": ""
-        },
-        {
-          "kop": "Waar dit kanaal over gaat",
-          "tekst": ""
-        },
-        {
-          "kop": "Verder lezen",
-          "tekst": ""
+          "kop": "Uit de kennisbank",
+          "tekst": "De begrippen en rekenregels achter het nieuws, los van de dag van vandaag.\n\nNetcongestie uitgelegd\nWaar in het net de grens werkelijk zit.\n\nDe businesscase van een batterij\nWat het rendement van een batterij werkelijk bepaalt.\n\nPeak shaving\nDe piek afvlakken in plaats van hem inkopen.\n\nLaadinfrastructuur dimensioneren\nDrie vragen bepalen het ontwerp van uw laadplein.\n\nHoe subsidiemechanismen werken\nHoe een regeling werkt, en wanneer hij geld oplevert.\n\nTerugleverbeperking\nWat u werkelijk kwijtra"
         },
         {
           "kop": "Wat betekent dit voor uw locatie?",
-          "tekst": ""
+          "tekst": "Een marktontwikkeling zegt nog niets over uw aansluiting, uw verbruiksprofiel of uw contract. In een adviesgesprek leggen we ze naast uw situatie.\n\nPlan een adviesgesprek\nBekijk het energieadvies"
         }
       ],
       "sectiekoppen": [
-        "Staan hier al berichten?",
-        "Wanneer een bericht hier verschijnt",
-        "Waar dit kanaal over gaat",
-        "Verder lezen",
+        "Waar we over schrijven",
+        "Uit de kennisbank",
         "Wat betekent dit voor uw locatie?"
       ],
       "interneLinks": [
@@ -3992,25 +3982,36 @@
         "/privacy",
         "/algemene-voorwaarden",
         "/cookiebeleid",
-        "/energieadvies"
+        "/verduurzaming-bedrijfspanden",
+        "/kennis/netcongestie-uitgelegd",
+        "/kennis/businesscase-batterij",
+        "/kennis/peak-shaving",
+        "/kennis/laadinfrastructuur-dimensioneren"
       ],
       "termfrequenties": {
-        "budget": 1,
-        "netbeheer": 2,
-        "netbeheerder": 2,
-        "netcongestie": 3,
-        "nettarieven": 1,
-        "regelgeving": 1,
+        "batterij": 6,
+        "batterijopslag": 3,
+        "energielabel": 2,
+        "laadinfra": 4,
+        "laadinfrastructuur": 4,
+        "laadplein": 1,
+        "laadpunt": 1,
+        "laadpunten": 1,
+        "netcongestie": 4,
+        "peak shaving": 1,
         "regeling": 3,
-        "schaarste": 1,
         "subsidie": 3,
-        "toezichthouder": 1,
-        "transportschaarste": 1,
-        "wachttijd": 1,
-        "wetgeving": 1
+        "zonne-energie": 1
       },
-      "onderwerpen": [],
-      "oplossingen": []
+      "onderwerpen": [
+        "laadinfrastructuur",
+        "bess"
+      ],
+      "oplossingen": [
+        "laadinfrastructuur",
+        "batterijopslag",
+        "energiemanagement"
+      ]
     },
     {
       "route": "/over-ons",
@@ -43929,5 +43930,5 @@
       ]
     }
   ],
-  "inhoudsHash": "1fcaa6a3542bd947e2c79980996351cfae66cf8e1c2772c1ad65eeca1a05bc3f"
+  "inhoudsHash": "7f301ec4a04183add2f33cc5935612db4a909141283194904bb34897da35bc3b"
 }

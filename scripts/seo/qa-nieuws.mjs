@@ -33,6 +33,15 @@ const FIXTURE_ROUTE = 'nieuws/qa-fixture-testbericht';
 /* De fixture leent het onderwerp van een pagina die echt op INDEX staat. */
 const EIGENAAR = 'netcongestie';
 
+/* De TWEEDE fixture. Met één bericht is de gevulde hub niet volledig te meten:
+   het uitgelichte bericht verschijnt pas vanaf twee berichten (anders zou de
+   pagina hetzelfde bericht twee keer tonen) en de onderwerpenbalk pas vanaf
+   twee onderwerpen. Deze fixture leent daarom een ANDER onderwerp en draagt een
+   latere datum, zodat hij het uitgelichte bericht wordt. */
+const FIXTURE2 = resolve(NIEUWSMAP, 'qa-fixture-tweede-bericht.json');
+const FIXTURE2_ROUTE = 'nieuws/qa-fixture-tweede-bericht';
+const EIGENAAR2 = 'systeem-energieopslag';
+
 let geslaagd = 0;
 const mislukt = [];
 
@@ -170,13 +179,40 @@ function fixture() {
   };
 }
 
-function zetFixture(j) {
+/* De tweede fixture: ander onderwerp, latere datum. Verder identiek van vorm,
+   zodat hij dezelfde twaalf voorwaarden van weigerNieuws() haalt. */
+function fixture2() {
+  const b = fixture();
+  return {
+    ...b,
+    route: FIXTURE2_ROUTE,
+    titel: 'Tweede QA-testbericht van het nieuwskanaal | Vibe',
+    og_titel: 'Tweede QA-testbericht van het nieuwskanaal',
+    h1: 'Tweede QA-testbericht van het nieuwskanaal',
+    kruimel_label: 'Tweede QA-testbericht',
+    beschrijving:
+      'Tweede testbericht waarmee het uitgelichte bericht en de categorie-indeling van de nieuwshub worden gemeten. Geen marktbewering.',
+    gepubliceerd: '2026-10-12',
+    gewijzigd: '2026-10-12',
+    onderwerp_eigenaar: EIGENAAR2,
+    direct_antwoord: {
+      vraag: 'Waar dient dit tweede testbericht voor?',
+      antwoord:
+        'Dit bericht bestaat alleen om te meten of de hub met meer dan een bericht het nieuwste ' +
+        'bericht uitlicht en de onderwerpen als categorie-indeling toont. Het bevat geen feit over ' +
+        'de energiemarkt.',
+      voorbehoud: 'Dit bericht zegt niets over netcongestie, tarieven of regelgeving.',
+    },
+  };
+}
+
+function zetFixture(j, pad = FIXTURE) {
   mkdirSync(NIEUWSMAP, { recursive: true });
-  writeFileSync(FIXTURE, JSON.stringify(j, null, 2) + '\n');
+  writeFileSync(pad, JSON.stringify(j, null, 2) + '\n');
 }
 
 function ruimFixtureOp() {
-  if (existsSync(FIXTURE)) rmSync(FIXTURE);
+  for (const p of [FIXTURE, FIXTURE2]) if (existsSync(p)) rmSync(p);
   if (existsSync(NIEUWSMAP) && readdirSync(NIEUWSMAP).length === 0) rmSync(NIEUWSMAP, { recursive: true });
 }
 
@@ -313,10 +349,31 @@ try {
       ? readFileSync(resolve(wortel, 'nieuws.html'), 'utf8')
       : '';
     toets('lege hub is geschreven', !!leegHtml);
-    toets('lege hub draagt de redactienorm', /id="redactienorm"/.test(leegHtml));
+    /* De redactienorm stond tot 6 november 2026 ALS TEKST op deze pagina en
+       werd hier op het anker id="redactienorm" getoetst. Die norm is interne
+       werking en is verhuisd naar intelligence/docs/REDACTIENORM.md. De toets
+       is meeverhuisd, niet geschrapt: hij eist nu dat de norm daar compleet
+       staat, dat de publieke pagina de interne werking NIET toont, en dat de
+       publieke onderwerpenindeling er wel is. Zie
+       data/seo/nieuws-architectuur.json, _correctie_op_dit_contract_4. */
+    const normPad = resolve(wortel, 'intelligence', 'docs', 'REDACTIENORM.md');
+    const normTekst = existsSync(normPad) ? readFileSync(normPad, 'utf8') : '';
+    toets('de redactienorm staat intern', !!normTekst, normPad);
+    for (const v of ['VRIJGAVE_DOOR_EEN_MENS', 'DRAGENDE_BRON', 'PEILDATUM_PER_CIJFER', 'GELEEND_ONDERWERP']) {
+      toets(`interne redactienorm draagt ${v}`, new RegExp(`VOORWAARDE:\\s*${v}\\b`).test(normTekst));
+    }
+    const leegMain = /<main\b[^>]*>([\s\S]*)<\/main>/i.exec(leegHtml)?.[1] || '';
+    for (const zin of ['redactioneel vrijgegeven', 'redactionele staat', 'proces dat zichzelf publiceert',
+      'niet automatisch gevuld', 'publicatiebesluit']) {
+      toets(`lege hub toont de interne werking niet: '${zin}'`, !leegMain.toLowerCase().includes(zin));
+    }
+    toets('lege hub draagt de publieke onderwerpenindeling', /id="onderwerpen"/.test(leegHtml));
     toets('lege hub toont geen berichtdatum', !/data-nieuws-datum/.test(leegHtml));
+    /* De description mag geen lijst beloven die er niet is. Eerder stond hier
+       letterlijk 'nog geen berichten'; dat is de interne toestand in het
+       zoekresultaat. 'Binnenkort' zegt hetzelfde tegen een lezer. */
     toets('lege hub belooft geen berichten in de description',
-      /<meta name="description" content="[^"]*[Nn]og geen berichten/.test(leegHtml));
+      /<meta name="description" content="[^"]*([Bb]innenkort|[Nn]og geen berichten)/.test(leegHtml));
     toets('lege hub is zelfverwijzend canoniek',
       /<link rel="canonical" href="https:\/\/www\.vibeenergy\.nl\/nieuws"/.test(leegHtml));
     toets('lege hub is indexeerbaar', !/noindex/.test(leegHtml));
@@ -377,6 +434,17 @@ try {
   toets('hub linkt naar het artikel', hubHtml.includes(`href="/${FIXTURE_ROUTE}"`));
   toets('hub groepeert op onderwerp', hubHtml.includes(`id="onderwerp-${EIGENAAR}"`));
 
+  /* Wat de bezoeker van een bericht ziet op de hub: de huiskaart met beeldvlak
+     (.ve-proj), de samenvatting en een leesbare datum. Zonder deze toetsen kan
+     de kaart stilletjes terugvallen op een kale link zonder dat iets rood wordt. */
+  toets('hub toont het bericht als kaart in de huisvorm', /class="ve-proj"/.test(hubHtml));
+  toets('hub toont de samenvatting van het bericht', hubHtml.includes('Testbericht waarmee de publicatieketen'));
+  toets(
+    'hub toont een leesbare publicatiedatum',
+    /<time datetime="2026-10-10">10 oktober 2026<\/time>/.test(hubHtml)
+  );
+  toets('hub licht met een enkel bericht niets uit', !/id="uitgelicht"/.test(hubHtml));
+
   /* Sinds Release 3.1 is sitemap.xml een sitemapINDEX en staan de URL's in
      deelbestanden. Deze toets keek alleen in sitemap.xml en vond daar nog
      twee <loc>-regels die naar de deelbestanden wijzen — en meldde terecht
@@ -413,6 +481,51 @@ try {
     'de bevinding hoort te verdwijnen zodra de link er staat'
   );
 
+  /* --------------------------------------------------------------- FASE B2
+     Met twee berichten hoort de hub het NIEUWSTE bericht uit te lichten en de
+     onderwerpen als categorie-indeling te tonen. Met één bericht is dat niet
+     te meten: het uitgelichte blok verschijnt pas vanaf twee berichten, want
+     anders zou de pagina hetzelfde bericht twee keer tonen. */
+  console.log('\nFASE B2 — met twee berichten licht de hub het nieuwste uit');
+
+  zetFixture(fixture2(), FIXTURE2);
+  const b2 = draai('bouw-routes.mjs');
+  toets('bouw-routes draait met twee berichten', b2.ok, b2.ok ? '' : b2.uit.slice(0, 200));
+  const rec2 = registerVan(FIXTURE2_ROUTE);
+  toets(
+    'tweede artikel staat op INDEX',
+    rec2 && rec2.staat === 'INDEX',
+    rec2 ? `${rec2.staat}: ${rec2.reden}` : 'niet gevonden'
+  );
+
+  const g2 = draai('genereer.mjs');
+  toets('genereer draait met twee berichten', g2.ok, g2.ok ? '' : g2.uit.slice(-400));
+
+  const hub2 = existsSync(hubPad) ? readFileSync(hubPad, 'utf8') : '';
+  toets('hub licht een bericht uit', /id="uitgelicht"/.test(hub2));
+  toets(
+    'het uitgelichte bericht is het nieuwste',
+    /id="uitgelicht"[\s\S]*?href="\/nieuws\/qa-fixture-tweede-bericht"/.test(hub2)
+  );
+  toets(
+    'hub toont beide onderwerpen als categorie',
+    hub2.includes(`id="onderwerp-${EIGENAAR}"`) && hub2.includes(`id="onderwerp-${EIGENAAR2}"`)
+  );
+  toets('hub draagt de onderwerpenbalk', /class="nw-chips"/.test(hub2));
+  toets('de onderwerpenbalk telt de berichten per onderwerp', /nw-chip"[^>]*>[^<]*\(1\)</.test(hub2));
+  toets(
+    'hub linkt naar beide berichten',
+    hub2.includes(`href="/${FIXTURE_ROUTE}"`) && hub2.includes(`href="/${FIXTURE2_ROUTE}"`)
+  );
+
+  const p2 = draai('audit.mjs');
+  const poort16b = /16 Nieuwskanaal\s+(PASS|FAIL)\s+(.*)/.exec(p2.uit);
+  toets(
+    'poort 16 blijft groen met twee berichten',
+    !!poort16b && poort16b[1] === 'PASS',
+    poort16b ? poort16b[2] : 'poort 16 niet gevonden'
+  );
+
   /* ---------------------------------------------------------------- FASE C */
   console.log('\nFASE C — opruimen laat geen spoor achter');
 } finally {
@@ -446,7 +559,7 @@ try {
   );
   if (vrijgaveNa && hubBestaatNa) {
     const na = readFileSync(resolve(wortel, 'nieuws.html'), 'utf8');
-    toets('de teruggezette hub is weer de lege staat', /id="redactienorm"/.test(na));
+    toets('de teruggezette hub is weer de lege staat', /id="onderwerpen"/.test(na));
     toets('de teruggezette hub noemt de fixture niet', !/qa-fixture/i.test(na));
   }
   const staatNa = werkboomstaat();

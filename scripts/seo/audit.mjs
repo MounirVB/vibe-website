@@ -797,11 +797,58 @@ poort('15 Projectverwijzingen', true, () => {
 });
 
 /* ======================================================= 16 · NIEUWSKANAAL */
+
+/* DE REDACTIENORM STAAT INTERN, NIET IN DE ETALAGE.
+   De vier voorwaarden waaronder een bericht verschijnt, stonden tot 6 november
+   2026 als zichtbare tekst op /nieuws. Ze zijn verhuisd naar het document
+   hieronder; deze poort bewaakt sindsdien twee dingen tegelijk: dat de norm op
+   zijn nieuwe plek compleet is, en dat hij niet terugkruipt naar de publieke
+   pagina. De markeringen zijn HTML-commentaar in dat document, zodat de toets
+   niet op proza hoeft te matchen — de tekst mag scherper, de voorwaarden mogen
+   niet stilletjes verdwijnen. Zie data/seo/nieuws-architectuur.json,
+   _correctie_op_dit_contract_4. */
+const REDACTIENORM_PAD = resolve(wortel, 'intelligence', 'docs', 'REDACTIENORM.md');
+const REDACTIENORM_VOORWAARDEN = [
+  'VRIJGAVE_DOOR_EEN_MENS',
+  'DRAGENDE_BRON',
+  'PEILDATUM_PER_CIJFER',
+  'GELEEND_ONDERWERP',
+];
+/* Formuleringen uit het publicatieproces. Ze zijn met opzet lang: losse
+   woorden als 'bron' of 'datum' horen juist wél op een nieuwspagina. */
+const INTERNE_ZINSNEDEN = [
+  'redactioneel vrijgegeven',
+  'redactionele staat',
+  'proces dat zichzelf publiceert',
+  'niet automatisch gevuld',
+  'publicatiebesluit',
+];
+
 poort('16 Nieuwskanaal', true, () => {
   const fouten = [];
   const advies = [];
   const artikelen = indexRoutes.filter((x) => x.subsoort === 'nieuws');
   const hub = reg.routes.find((r) => r.route === 'nieuws');
+
+  /* De norm moet op zijn interne plek aanwezig en compleet zijn. Dit geldt
+     altijd — met of zonder gepubliceerd bericht. */
+  let normStaat = 'document ontbreekt';
+  if (!existsSync(REDACTIENORM_PAD)) {
+    fouten.push(
+      'intelligence/docs/REDACTIENORM.md ontbreekt: de redactienorm van het kanaal heeft geen thuisbasis [NIEUW — blokkeert]'
+    );
+  } else {
+    const norm = readFileSync(REDACTIENORM_PAD, 'utf8');
+    const ontbreekt = REDACTIENORM_VOORWAARDEN.filter(
+      (v) => !new RegExp(`VOORWAARDE:\\s*${v}\\b`).test(norm)
+    );
+    normStaat = `${REDACTIENORM_VOORWAARDEN.length - ontbreekt.length}/${REDACTIENORM_VOORWAARDEN.length} voorwaarden intern`;
+    if (ontbreekt.length) {
+      fouten.push(
+        `intelligence/docs/REDACTIENORM.md mist voorwaarde(n) ${ontbreekt.join(', ')} [NIEUW — blokkeert]`
+      );
+    }
+  }
 
   /* Een artikel dat op INDEX staat zonder goedkeuring in het register is de
      ernstigste fout die dit kanaal kan maken. De toestandsmachine hoort dat
@@ -880,18 +927,43 @@ poort('16 Nieuwskanaal', true, () => {
         }
       }
 
+      /* DE PUBLIEKE PAGINA TOONT GEEN INTERNE WERKING.
+         Tot 6 november 2026 stond de redactienorm — vrijgave door een mens,
+         dragende bron, peildatum per cijfer, geleend onderwerp — als zichtbare
+         tekst op /nieuws. Dat is interne werking in de etalage. De norm is
+         verhuisd naar intelligence/docs/REDACTIENORM.md (hierboven getoetst)
+         en mag hier niet terugkomen. De zinsneden hieronder zijn met opzet
+         specifiek: het zijn formuleringen uit het publicatieproces, niet
+         woorden die in een gewoon bericht over de energiemarkt voorkomen. */
+      const etalage = tekstVan(mainVan(h)).toLowerCase();
+      for (const zin of INTERNE_ZINSNEDEN) {
+        if (etalage.includes(zin)) {
+          fouten.push(`de hub /nieuws toont interne werking in de publieke tekst: '${zin}' [NIEUW — blokkeert]`);
+        }
+      }
+
       /* De lege staat mag geen restpagina zijn. Deze drie toetsen zijn er
          zodat 'leeg' niet stilletjes 'kapot' of 'misleidend' gaat betekenen:
-         de norm moet er staan, de pagina moet een uitgang hebben, en hij mag
-         geen bericht suggereren dat er niet is. */
+         de publieke onderwerpenindeling moet er staan, de pagina moet de lezer
+         ergens heen sturen, en hij mag geen bericht suggereren dat er niet is.
+
+         DE UITGANGENTELLING IS AANGESCHERPT. Hij las eerder het HELE bestand,
+         en daardoor voldeed de noscript-navigatie er in haar eentje al aan —
+         een volledig leeggehaalde <main> kwam er ongezien doorheen. Nu telt
+         alleen wat in <main> staat, en alleen verschillende bestemmingen. Let
+         op de vorm van het patroon: het matcht één padsegment, dus een diepe
+         link als /kennis/peak-shaving telt hier NIET in mee. Dat is bewust —
+         een lege hub hoort naar hoofdingangen te wijzen. */
       if (!artikelen.length) {
-        if (!/id="redactienorm"/.test(h)) {
-          fouten.push('de lege hub /nieuws mist de sectie met de redactienorm [NIEUW — blokkeert]');
+        if (!/id="onderwerpen"/.test(h)) {
+          fouten.push(
+            'de lege hub /nieuws mist de publieke onderwerpenindeling (sectie id="onderwerpen") [NIEUW — blokkeert]'
+          );
         }
-        const uitgangen = alle(/href="\/([a-z0-9-]+)"/gi, h).filter((p) => p !== 'nieuws');
+        const uitgangen = [...new Set(alle(/href="\/([a-z0-9-]+)"/gi, mainVan(h)))].filter((p) => p !== 'nieuws');
         if (uitgangen.length < 2) {
           fouten.push(
-            `de lege hub /nieuws heeft ${uitgangen.length} interne uitgang(en) in de pagina; een lege overzichtspagina moet de lezer ergens heen sturen [NIEUW — blokkeert]`
+            `de lege hub /nieuws heeft ${uitgangen.length} interne uitgang(en) in <main>; een lege overzichtspagina moet de lezer ergens heen sturen [NIEUW — blokkeert]`
           );
         }
         if (/data-nieuws-datum/.test(h)) {
@@ -945,7 +1017,7 @@ poort('16 Nieuwskanaal', true, () => {
   const blokkerend = fouten.filter((f) => f.includes('[NIEUW'));
   return {
     ok: blokkerend.length === 0,
-    meting: `${artikelen.length} gepubliceerd artikel(en) · hub ${hub ? hub.staat : 'niet in register'} · ${fouten.length} bevindingen`,
+    meting: `${artikelen.length} gepubliceerd artikel(en) · hub ${hub ? hub.staat : 'niet in register'} · redactienorm: ${normStaat} · ${fouten.length} bevindingen`,
     details: fouten,
     advies,
   };
