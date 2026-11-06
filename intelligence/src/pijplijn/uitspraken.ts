@@ -25,7 +25,7 @@ import { kort, normaliseerTekst } from "../kern/tekst.ts";
 import type { Onderwerp } from "../bronnen/soorten.ts";
 import { maakLogger } from "../kern/log.ts";
 import { bepaalClaimAard, CLAIMAARD_VERSIE } from "./claimaard.ts";
-import { bepaalModaliteit } from "./claimmodaliteit.ts";
+import { bepaalModaliteit, type Modaliteit } from "./claimmodaliteit.ts";
 import {
   leesVormClaims,
   CLAIMVORM_VERSIE,
@@ -42,7 +42,11 @@ import {
   type Gezag,
 } from "./documentsoort.ts";
 import { vormKanVaststellen, type Documentvorm } from "./documentvorm.ts";
-import { steltStukDeClaimVast, VASTSTELLING_VERSIE } from "./vaststelling.ts";
+import {
+  steltStukDeClaimVast,
+  VASTSTELLING_VERSIE,
+  type Vaststelling,
+} from "./vaststelling.ts";
 import { MOTORVERSIES } from "./motorversies.ts";
 import { vraagOmBeoordeling } from "./claimbeoordeling.ts";
 
@@ -564,6 +568,97 @@ export function isJuridischeClaim(
   return aardJuridisch || (claimvorm !== null && JURIDISCHE_VORMEN.has(claimvorm));
 }
 
+/* ------------------------------------------------------------------
+   DE PASSAGEGROND — ÉÉN ALGORITME, TWEE AANROEPERS
+   ------------------------------------------------------------------
+   WAAROM DEZE FUNCTIE BESTAAT. De poort hieronder stond tot nu toe
+   alleen in schrijfUitspraken(), en gold daarmee alleen voor NIEUWE
+   claims. De herbeoordeling van BESTAANDE claims kon hem niet
+   toepassen: herbeoordeelClaim() kreeg de documenttekst niet eens als
+   invoer. Gevolg, gemeten in productie op 6 november 2026: claim 138
+   ("Jumbo stelt dat ...") stond op bevestigd met bewijsniveau
+   DIRECT_BEVESTIGD, en geen enkele bestaande taak kon dat corrigeren.
+
+   De reparatie is NIET een tweede classificatie in de
+   herbeoordelingsweg. Het is deze functie, die beide wegen aanroepen.
+   Zou de regel op twee plekken staan, dan lopen ze uiteen — precies de
+   fout die motorversies.ts al eens voor de versiestempel heeft moeten
+   oplossen.
+
+   EENZIJDIG, en dat is de kern. steltStukDeClaimVast() blokkeert
+   alleen bij POSITIEF bewijs dat de zin buiten het vaststellende deel
+   staat. Een leeg `documentTekst` laat de passagetoets dus vervallen;
+   dan is `zonderGrondslag` onwaar en verandert er niets. Dat is met
+   opzet: afwezigheid van tekst is geen bewijs van achtergrond, en een
+   herbeoordeling die op afwezig bewijs intrekt zou bij elke
+   mislukte tekstextractie bevestigingen slopen.
+   ------------------------------------------------------------------ */
+
+export type Passagegrond = {
+  /** Moest deze claim langs de passagetoets? */
+  readonly moetLangsPassagetoets: boolean;
+  /** Draagt het stuk de vorm waarin recht wordt vastgesteld? */
+  readonly officieelVaststellendStuk: boolean;
+  readonly juridischeClaim: boolean;
+  readonly vaststelling: Vaststelling;
+  /** De claim moest langs de toets en kwam er niet door. */
+  readonly zonderGrondslag: boolean;
+  /** WAAROM hij langs moest. Zonder dit is een blokkade niet na te meten. */
+  readonly langsPassageVia: string;
+};
+
+/**
+ * Mag deze claim zich op DIT stuk bevestigen?
+ *
+ * Aangeroepen door schrijfUitspraken() voor nieuwe claims en door
+ * herbeoordeelClaim() voor bestaande. Puur: geen database, geen log.
+ */
+export function beoordeelPassagegrond(inv: {
+  readonly claimTekst: string;
+  readonly claimvorm: string | null;
+  readonly documentTitel: string;
+  /** Leeg mag: dan vervalt de passagetoets. Zie de kop hierboven. */
+  readonly documentTekst: string;
+  readonly documentsoort: Documentsoort;
+  readonly gezag: Gezag;
+  readonly documentvorm: Documentvorm;
+  readonly modaliteit: Modaliteit;
+  readonly eigenGezagNamen: readonly string[];
+}): Passagegrond {
+  const aard = bepaalClaimAard(inv.claimTekst);
+  const juridischeClaim = isJuridischeClaim(aard.juridisch, inv.claimvorm);
+
+  const vaststelling = steltStukDeClaimVast({
+    claimTekst: inv.claimTekst,
+    documentTitel: inv.documentTitel,
+    documentTekst: inv.documentTekst,
+    documentsoort: inv.documentsoort,
+    gezag: inv.gezag,
+    documentvorm: inv.documentvorm,
+    modaliteit: inv.modaliteit,
+    eigenGezagNamen: inv.eigenGezagNamen,
+  });
+
+  const officieelVaststellendStuk =
+    inv.gezag === "BEVOEGD_GEZAG" && vormKanVaststellen(inv.documentvorm);
+  const moetLangsPassagetoets = officieelVaststellendStuk || juridischeClaim;
+
+  return {
+    moetLangsPassagetoets,
+    officieelVaststellendStuk,
+    juridischeClaim,
+    vaststelling,
+    zonderGrondslag: moetLangsPassagetoets && !vaststelling.steltVast,
+    langsPassageVia: aard.juridisch
+      ? "juridische markering in de zin"
+      : inv.claimvorm != null && JURIDISCHE_VORMEN.has(inv.claimvorm)
+        ? `juridische claimvorm ${inv.claimvorm}`
+        : officieelVaststellendStuk
+          ? `officieel vaststellend stuk (${inv.gezag} / ${inv.documentvorm})`
+          : "geen grond — deze claim hoefde niet langs de passagetoets",
+  };
+}
+
 /**
  * De canonieke afdruk van een ruwe uitspraak.
  *
@@ -948,10 +1043,14 @@ export async function schrijfUitspraken(
        antwoordt de vaststellingstoets bevestigend, en dat is juist: dat
        stuk IS de authentieke bron. Een nieuwsbericht dat hetzelfde
        besluit navertelt, komt er niet door. */
-    const juridischeClaim = isJuridischeClaim(aard.juridisch, u.claimvorm ?? null);
-
-    const vaststelling = steltStukDeClaimVast({
+    /* ÉÉN AANROEP, want de herbeoordelingsweg doet precies dezelfde.
+       Zie beoordeelPassagegrond() hierboven: die functie bevat de
+       claimaard, de vaststellingstoets en de poort die eruit volgt.
+       Stond de regel hier nog apart, dan konden de twee wegen
+       uiteenlopen zonder dat een toets dat merkt. */
+    const grond = beoordeelPassagegrond({
       claimTekst: u.tekst,
+      claimvorm: u.claimvorm ?? null,
       documentTitel: invoer.titel,
       documentTekst: invoer.tekst,
       documentsoort: invoer.documentsoort,
@@ -960,6 +1059,7 @@ export async function schrijfUitspraken(
       modaliteit: mod.modaliteit,
       eigenGezagNamen: EIGEN_GEZAG_NAMEN[invoer.bronSleutel] ?? [],
     });
+    const vaststelling = grond.vaststelling;
     /* DE PASSAGETOETS GELDT VOOR ÉLKE CLAIM UIT EEN OFFICIEEL STUK,
        EN NIET ALLEEN VOOR DE JURIDISCHE.
        ----------------------------------------------------------------
@@ -1020,10 +1120,7 @@ export async function schrijfUitspraken(
        NIETS aan de 109 claims van vóór de PDF-route; de wijziging
        raakt uitsluitend documenten die zich als vastgesteld recht
        aandienen, en dáár is hij strikt beperkender. */
-    const officieelVaststellendStuk =
-      invoer.gezag === "BEVOEGD_GEZAG" && vormKanVaststellen(invoer.documentvorm);
-    const moetLangsPassagetoets = officieelVaststellendStuk || juridischeClaim;
-    const juridischZonderGrondslag = moetLangsPassagetoets && !vaststelling.steltVast;
+    const juridischZonderGrondslag = grond.zonderGrondslag;
 
     if (magBevestigen && !juridischZonderGrondslag) {
       await c.query(
@@ -1052,11 +1149,7 @@ export async function schrijfUitspraken(
            vaststellen onderwerpt ELKE claim aan de passagetoets, ook
            een getal of een datum. Zie de toelichting bij
            officieelVaststellendStuk hierboven. */
-        langsPassageVia: aard.juridisch
-          ? "juridische markering in de zin"
-          : u.claimvorm != null && JURIDISCHE_VORMEN.has(u.claimvorm)
-            ? `juridische claimvorm ${u.claimvorm}`
-            : `officieel vaststellend stuk (${invoer.gezag} / ${invoer.documentvorm})`,
+        langsPassageVia: grond.langsPassageVia,
         /* WAAROM hij niet vaststelt, en niet alleen DAT hij het niet
            doet. Zonder deze uitslag is een blokkade op 'achtergrond'
            niet te onderscheiden van een blokkade op 'verkeerde vorm',

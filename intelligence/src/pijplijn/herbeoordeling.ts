@@ -69,10 +69,13 @@ import { bepaalModaliteit, MODALITEIT_VERSIE } from "./claimmodaliteit.ts";
 import {
   bewijskrachtPlafond,
   DOCUMENTSOORT_VERSIE,
+  EIGEN_GEZAG_NAMEN,
   magZelfBevestigen,
   type Documentsoort,
   type Gezag,
 } from "./documentsoort.ts";
+import { beoordeelPassagegrond } from "./uitspraken.ts";
+import type { Documentvorm } from "./documentvorm.ts";
 import { classificeerVersie, slaDocumentsoortOp } from "./documentclassificatie.ts";
 import { MOTORVERSIES } from "./motorversies.ts";
 
@@ -91,6 +94,11 @@ export type HerbeoordeelRapport = {
   readonly zonderBrongegevens: number;
   /** Claims die na de ronde bevestigd zijn maar niet als feit dragen. */
   readonly vraagtMenselijkeControle: number;
+  /** Bevestigingen die de PASSAGETOETS intrekt, los van het plafond. */
+  readonly passageIngetrokken: number;
+  /** Claims waarvoor de passagetoets niet is gelopen (geen vorm, of niet bevestigd). */
+  readonly passageNietGelopen: number;
+  readonly perPassageUitslag: Readonly<Record<string, number>>;
   readonly perDocumentsoort: Readonly<Record<string, number>>;
   readonly getroffenGebeurtenissen: readonly number[];
   readonly droog: boolean;
@@ -115,6 +123,12 @@ type ClaimRij = {
   documentsoort: string | null;
   documentsoort_gezag: string | null;
   documentsoort_versie: string | null;
+  /* VOOR DE PASSAGETOETS. documentvorm hoort bij het STUK, claimvorm
+     bij de CLAIM; beide bepalen of de claim langs de toets moet. */
+  documentvorm: string | null;
+  claimvorm: string | null;
+  bewijsniveau: string | null;
+  verwoordbaar: string | null;
 };
 
 /**
@@ -132,6 +146,23 @@ export function herbeoordeelClaim(inv: {
   readonly gezag: Gezag;
   readonly claimTekst: string;
   readonly brondatum: string | null;
+  /* ---- DE PASSAGETOETS, optioneel meegegeven ----------------------
+     OPTIONEEL EN NIET VERPLICHT, met opzet. herbeoordeelClaim() wordt
+     ook aangeroepen door toetsen die alleen de plafond- en
+     modaliteitsregel narekenen; die hoeven geen brontekst op te
+     tuigen. Ontbreekt `stuk`, dan vervalt de passagetoets en is het
+     gedrag exact als voorheen.
+
+     Ontbreekt de documentTEKST terwijl `stuk` er wel is, dan vervalt
+     de toets ook — steltStukDeClaimVast() is eenzijdig en blokkeert
+     alleen bij positief bewijs. Zie beoordeelPassagegrond(). */
+  readonly stuk?: {
+    readonly documentTitel: string;
+    readonly documentTekst: string;
+    readonly documentvorm: Documentvorm;
+    readonly claimvorm: string | null;
+    readonly eigenGezagNamen: readonly string[];
+  };
 }): {
   readonly nieuweStatus: string;
   readonly nieuweBewijskracht: number;
@@ -141,6 +172,10 @@ export function herbeoordeelClaim(inv: {
   readonly modaliteitGrondslag: unknown;
   readonly draagbaarAlsFeit: boolean;
   readonly reden: string;
+  /** De uitslag van de passagetoets, of null als hij niet is gelopen. */
+  readonly passageUitslag: string | null;
+  /** Trekt de passagetoets deze bevestiging in? */
+  readonly passageTrektIn: boolean;
 } {
   const plafond = bewijskrachtPlafond(inv.documentsoort, inv.gezag);
   const nieuweBewijskracht = Math.min(inv.oudeBewijskracht, plafond);
@@ -156,7 +191,7 @@ export function herbeoordeelClaim(inv: {
      module kent daarom nooit een bevestiging TOE: hij laat staan of hij
      trekt in. Dat staat hier als code en niet als aanname, zodat een
      latere wijziging in de voorwaarden hem niet stil kan omdraaien. */
-  const nieuweStatus =
+  const statusNaPlafond =
     inv.oudeStatus === "bevestigd" && !mag ? "ongeverifieerd" : inv.oudeStatus;
 
   const mod = bepaalModaliteit({
@@ -165,8 +200,60 @@ export function herbeoordeelClaim(inv: {
     ...(inv.brondatum === null ? {} : { peildatum: inv.brondatum }),
   });
 
-  const reden =
-    nieuweStatus === inv.oudeStatus
+  /* ---------------------------------------------------------------
+     DE PASSAGETOETS, MET EXACT HETZELFDE ALGORITME ALS DE SCHRIJFWEG
+     ---------------------------------------------------------------
+     HET GEMETEN DEFECT, productie 6 november 2026. Claim 138 stond op
+     bevestigd met bewijsniveau DIRECT_BEVESTIGD en de reden "bron
+     acm-besluiten (OFFICIEEL_BESLUIT / BEVOEGD_GEZAG) noemt dit feit
+     in zijn eigen publicatie". De tekst begint met "Jumbo stelt dat
+     ..." en staat in de sectie 'Standpunten van partijen'. Het
+     standpunt van een supermarkt stond dus als vaststelling van de
+     toezichthouder in de database.
+
+     magZelfBevestigen() kon dat niet zien: die kijkt naar de SOORT en
+     het GEZAG van het stuk, en een ACM-besluit haalt beide. De vraag
+     is niet of het stuk kan vaststellen, maar of DEZE PASSAGE dat
+     doet. Dat is precies wat beoordeelPassagegrond() beantwoordt, en
+     die functie wordt ook door schrijfUitspraken() aangeroepen — één
+     algoritme, twee aanroepers.
+
+     DE RICHTING BLIJFT EENZIJDIG. De passagetoets kan alleen
+     INTREKKEN: hij wordt pas gesteld als de oude status 'bevestigd'
+     is, en hij kent nooit een bevestiging toe. Dat is dezelfde
+     eigenschap die de kop van dit bestand voor de plafondregel
+     beschrijft, en om dezelfde reden: een halve ronde die kan
+     promoveren is erger dan geen ronde. */
+  let passageUitslag: string | null = null;
+  let passageTrektIn = false;
+  let passageReden = "";
+  if (inv.stuk !== undefined && statusNaPlafond === "bevestigd") {
+    const grond = beoordeelPassagegrond({
+      claimTekst: inv.claimTekst,
+      claimvorm: inv.stuk.claimvorm,
+      documentTitel: inv.stuk.documentTitel,
+      documentTekst: inv.stuk.documentTekst,
+      documentsoort: inv.documentsoort,
+      gezag: inv.gezag,
+      documentvorm: inv.stuk.documentvorm,
+      modaliteit: mod.modaliteit,
+      eigenGezagNamen: inv.stuk.eigenGezagNamen,
+    });
+    passageUitslag = grond.vaststelling.uitslag;
+    passageTrektIn = grond.zonderGrondslag;
+    if (passageTrektIn) {
+      passageReden =
+        `bevestiging ingetrokken op de passagetoets: ${grond.vaststelling.uitslag} — ` +
+        `${grond.vaststelling.reden}; de claim moest langs de toets via ` +
+        `${grond.langsPassageVia}`;
+    }
+  }
+
+  const nieuweStatus = passageTrektIn ? "ongeverifieerd" : statusNaPlafond;
+
+  const reden = passageTrektIn
+    ? passageReden
+    : nieuweStatus === inv.oudeStatus
       ? `oordeel blijft ${inv.oudeStatus}; documentsoort ${inv.documentsoort} bij gezag ${inv.gezag} ` +
         `geeft plafond ${plafond}`
       : `bevestiging ingetrokken: ${inv.documentsoort} bij gezag ${inv.gezag} mag niet zelf ` +
@@ -181,6 +268,8 @@ export function herbeoordeelClaim(inv: {
     modaliteitGrondslag: mod.grondslag,
     draagbaarAlsFeit: mod.draagbaarAlsFeit,
     reden,
+    passageUitslag,
+    passageTrektIn,
   };
 }
 
@@ -219,7 +308,8 @@ export async function herbeoordeelClaims(
             b.betrouwbaarheid, b.is_primaire_bron,
             coalesce(bd.gepubliceerd_op, bv.opgehaald_op)::date::text as brondatum,
             u.tekst, u.verificatie_status, u.bewijs_kwaliteit, u.oordeel_bron,
-            bv.documentsoort, bv.documentsoort_gezag, bv.documentsoort_versie
+            bv.documentsoort, bv.documentsoort_gezag, bv.documentsoort_versie,
+            bv.documentvorm, u.claimvorm, u.bewijsniveau, u.verwoordbaar
        from intel.uitspraken u
        -- ROL = PRIMAIR, en dat is een correctie. Zonder die voorwaarde
        -- gaf een claim met twee bindingen TWEE rijen: hij werd in
@@ -271,6 +361,9 @@ export async function herbeoordeelClaims(
   let menselijk = 0;
   let zonderBron = 0;
   let vraagtControle = 0;
+  let passageIngetrokken = 0;
+  let passageNietGelopen = 0;
+  const perPassageUitslag: Record<string, number> = {};
   const perSoort: Record<string, number> = {};
   const gebeurtenissen = new Set<number>();
 
@@ -320,9 +413,32 @@ export async function herbeoordeelClaims(
       gezag,
       claimTekst: r.tekst,
       brondatum: r.brondatum,
+      /* DE DOCUMENTCONTEXT. De query haalde ruwe_tekst en titel al op;
+         ze werden alleen niet doorgegeven. documentvorm is er nu bij,
+         want zonder vorm kan vormKanVaststellen() niet antwoorden en
+         valt de passagetoets stil terug op 'niet officieel'. Is de
+         vorm nog niet geclassificeerd, dan blijft hij null en vervalt
+         de toets — eenzijdig, zoals de rest. */
+      ...(r.documentvorm === null
+        ? {}
+        : {
+            stuk: {
+              documentTitel: r.titel,
+              documentTekst: r.ruwe_tekst,
+              documentvorm: r.documentvorm as Documentvorm,
+              claimvorm: r.claimvorm,
+              eigenGezagNamen: EIGEN_GEZAG_NAMEN[r.bron_sleutel] ?? [],
+            },
+          }),
     });
 
     perSoort[soort] = (perSoort[soort] ?? 0) + 1;
+    if (oordeel.passageUitslag === null) passageNietGelopen += 1;
+    if (oordeel.passageTrektIn) {
+      passageIngetrokken += 1;
+      perPassageUitslag[oordeel.passageUitslag ?? "onbekend"] =
+        (perPassageUitslag[oordeel.passageUitslag ?? "onbekend"] ?? 0) + 1;
+    }
     const trektIn = r.verificatie_status === "bevestigd" && oordeel.nieuweStatus !== "bevestigd";
     if (trektIn) {
       ingetrokken += 1;
@@ -346,6 +462,45 @@ export async function herbeoordeelClaims(
               modaliteit_versie    = $7,
               modaliteit_grondslag = $8,
               oordeel_bron         = 'motor',
+              /* ---- AFHANKELIJKE STATUSSEN, IN DEZELFDE UPDATE ----
+                 EIS 4 VAN DE OPDRACHT: bewijsniveau en
+                 verificatiestatus mogen niet met elkaar in strijd
+                 zijn, en de verwoordbaarheid moet opnieuw worden
+                 bepaald zodra de onderliggende verificatie verandert.
+
+                 Een claim die zijn bevestiging verliest maar
+                 DIRECT_BEVESTIGD houdt, is precies die strijd: 0055
+                 staat dat toe (de CHECK eist alleen het omgekeerde),
+                 dus een laag die op bewijsniveau filtert zou hem nog
+                 als hard bewijs zien. Het niveau gaat daarom op null,
+                 en de eerstvolgende semantiekronde vult hem opnieuw —
+                 vulBewijsniveauIn() selecteert standaard precies op
+                 'bewijsniveau is null'. Dat is het BESTAANDE
+                 mechanisme -- en let op: GEEN backticks in dit
+                 commentaar, want het staat in een template literal.
+                 Dezelfde valkuil die de SELECT hierboven al noemt.
+
+                 De verwoordbaarheid gaat alleen van 'VERWOORDBAAR'
+                 naar 'VERIFICATIE_NODIG'. Alle andere waarden blijven
+                 staan: die drukken al een beperking uit, en ze
+                 omzetten zou een oordeel overschrijven dat niet door
+                 deze ronde is weerlegd. De CASE leest de OUDE waarde,
+                 want een UPDATE evalueert al zijn uitdrukkingen tegen
+                 de rij van vóór de wijziging.
+
+                 IN DEZELFDE UPDATE, om de reden die bij de stempel
+                 hieronder staat: in twee statements bestaat er een
+                 venster waarin de status is ingetrokken en het niveau
+                 nog hard bewijs beweert. */
+              bewijsniveau         = case when $11 then null else bewijsniveau end,
+              bewijsniveau_reden   = case when $11 then null else bewijsniveau_reden end,
+              bewijsniveau_op      = case when $11 then null else bewijsniveau_op end,
+              verwoordbaar         = case when $11 and verwoordbaar = 'VERWOORDBAAR'
+                                          then 'VERIFICATIE_NODIG' else verwoordbaar end,
+              verwoordbaar_reden   = case when $11 and verwoordbaar = 'VERWOORDBAAR'
+                                          then $12 else verwoordbaar_reden end,
+              verwoordbaar_op      = case when $11 and verwoordbaar = 'VERWOORDBAAR'
+                                          then now() else verwoordbaar_op end,
               herbeoordeeld_op     = now(),
               /* DE STEMPEL, EN HIJ MOET IN DEZELFDE UPDATE STAAN.
                  Zou hij in een tweede statement staan, dan bestaat er
@@ -368,6 +523,9 @@ export async function herbeoordeelClaims(
         JSON.stringify(oordeel.modaliteitGrondslag),
         organisatieId,
         MOTORVERSIES,
+        trektIn,
+        "de bevestiging van deze claim is bij de herbeoordeling ingetrokken, " +
+          "dus de verwoordbaarheid vraagt opnieuw verificatie",
       ],
     );
 
@@ -388,6 +546,11 @@ export async function herbeoordeelClaims(
         JSON.stringify({
           verificatie_status: r.verificatie_status,
           bewijs_kwaliteit: r.bewijs_kwaliteit,
+          /* DE OORSPRONKELIJKE STAAT, zodat de ronde omkeerbaar is
+             zonder dat deze module een eigen terugdraaipad heeft —
+             eis 3 van de opdracht. */
+          bewijsniveau: r.bewijsniveau,
+          verwoordbaar: r.verwoordbaar,
         }),
         JSON.stringify({
           verificatie_status: oordeel.nieuweStatus,
@@ -397,6 +560,13 @@ export async function herbeoordeelClaims(
           modaliteit_zekerheid: Number(oordeel.modaliteitZekerheid.toFixed(2)),
           documentsoort: soort,
           documentsoort_gezag: gezag,
+          /* DE PASSAGE-UITSLAG HOORT IN HET SPOOR. Zonder deze twee
+             velden is een intrekking op de passagetoets niet te
+             scheiden van een intrekking op het plafond, en dan is de
+             ronde niet na te meten. */
+          passage_uitslag: oordeel.passageUitslag,
+          passage_trekt_in: oordeel.passageTrektIn,
+          bewijsniveau_gewist: trektIn,
         }),
         oordeel.reden,
         `${DOCUMENTSOORT_VERSIE} + ${MODALITEIT_VERSIE}`,
@@ -413,6 +583,9 @@ export async function herbeoordeelClaims(
     menselijkOvergeslagen: menselijk,
     zonderBrongegevens: zonderBron,
     vraagtMenselijkeControle: vraagtControle,
+    passageIngetrokken,
+    passageNietGelopen,
+    perPassageUitslag,
     perDocumentsoort: perSoort,
     getroffenGebeurtenissen: [...gebeurtenissen].sort((a, b) => a - b),
     droog,
