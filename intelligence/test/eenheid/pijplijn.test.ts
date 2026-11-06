@@ -238,6 +238,76 @@ test("poorten: een net concept haalt alles", () => {
 });
 
 /* ------------------------------------------------------------------
+   REGRESSIE — DE JURISDICTIEPOORT KREEG DE UITGEVER NIET
+   ------------------------------------------------------------------
+   bepaalToepassingsgebied() kent drie signalen: het woord in de zin,
+   de uitgever, en of die uitgever een PRIMAIRE bron is. semantiek.ts
+   geeft alle drie mee; deze poort gaf alleen de zin.
+
+   GEMETEN, 6 november 2026: het ACM-geschilbesluit ACM/UIT/1123013
+   blokkeerde op "bronversie 1 heeft toepassingsgebied ONBEKEND: ... er
+   is geen uitgever meegegeven" — terwijl de uitgever de Nederlandse
+   toezichthouder zelf is. Zonder die drie velden kon geen enkel
+   nieuwsbericht dat op een besluittekst rust de poort halen, want een
+   juridische zin noemt zelden het woord "Nederland".
+
+   DE DREMPEL BLIJFT: alleen een PRIMAIRE bron mag met zijn uitgever
+   meewegen. De tweede zaak hieronder zet dat vast.
+   ------------------------------------------------------------------ */
+
+test("REGRESSIE poort toepassingsgebied: de uitgever van een PRIMAIRE bron telt mee", () => {
+  const zonderSignaal =
+    "Het rapport voldoet niet aan de eisen die artikel 9.10 van de Netcode stelt.";
+  /* Zonder herkomst: oordeel op de zin alleen, en die noemt geen gebied. */
+  const stil = vatPoortenSamen(
+    toetsConcept(basisConcept({ bronteksten: [zonderSignaal] })),
+  );
+  assert.equal(stil.geslaagd, false, "zonder gebiedssignaal hoort de poort dicht te staan");
+  assert.ok(
+    stil.blokkades.some((b) => /toepassingsgebied/.test(b)),
+    stil.blokkades.join(" | "),
+  );
+
+  /* Met de uitgever erbij: dezelfde zin, nu van de Nederlandse
+     toezichthouder, en dan is het gebied wél vastgesteld. */
+  const metUitgever = vatPoortenSamen(
+    toetsConcept(
+      basisConcept({
+        bronteksten: [zonderSignaal],
+        bronherkomst: [
+          {
+            tekst: zonderSignaal,
+            uitgever: "Autoriteit Consument & Markt",
+            isPrimaireBron: true,
+          },
+        ],
+      }),
+    ),
+  );
+  assert.equal(metUitgever.geslaagd, true, metUitgever.blokkades.join(" | "));
+});
+
+test("REGRESSIE poort toepassingsgebied: een NIET-primaire uitgever telt niet mee", () => {
+  const zonderSignaal =
+    "Het rapport voldoet niet aan de eisen die artikel 9.10 van de Netcode stelt.";
+  const s = vatPoortenSamen(
+    toetsConcept(
+      basisConcept({
+        bronteksten: [zonderSignaal],
+        bronherkomst: [
+          { tekst: zonderSignaal, uitgever: "Energie-Nederland", isPrimaireBron: false },
+        ],
+      }),
+    ),
+  );
+  assert.equal(s.geslaagd, false, "een belangenbehartiger maakt een feit niet Nederlands");
+  assert.ok(
+    s.blokkades.some((b) => /toepassingsgebied/.test(b)),
+    s.blokkades.join(" | "),
+  );
+});
+
+/* ------------------------------------------------------------------
    DE POORT `commerciele_doorverwijzing`
    ------------------------------------------------------------------
    De opdracht eist dat nieuws niet alleen informeert maar zakelijke

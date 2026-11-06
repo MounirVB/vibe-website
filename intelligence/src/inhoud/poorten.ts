@@ -50,6 +50,32 @@ export type GebondenUitspraak = {
   readonly waaromNietDragend: string | null;
 };
 
+/* DE HERKOMST VAN EEN BRONZIN, VOOR DE JURISDICTIEPOORT.
+   ------------------------------------------------------------------
+   bepaalToepassingsgebied() kent drie signalen: het woord in de zin,
+   de uitgever, en of die uitgever een PRIMAIRE bron is. semantiek.ts
+   geeft alle drie mee (regel 618-621); deze poort gaf alleen de zin en
+   kwam daardoor op ONBEKEND uit waar de semantieklaag NEDERLAND zag.
+   Twee lezers van dezelfde module met een andere uitkomst — precies
+   wat de toelichting bij deze poort uitsluit.
+
+   GEMETEN, 6 november 2026: het ACM-geschilbesluit achter
+   nieuwskandidaat 245 blokkeerde op "bronversie 1 heeft
+   toepassingsgebied ONBEKEND: ... er is geen uitgever meegegeven",
+   terwijl de uitgever de Nederlandse toezichthouder zelf is.
+
+   DIT VERLAAGT GEEN DREMPEL. De regel dat alleen een primaire bron met
+   zijn uitgever mag meewegen staat in jurisdictie.ts en blijft daar;
+   hier wordt alleen doorgegeven wat die module nodig heeft om zijn
+   eigen regel toe te passen. Een belangenbehartiger verandert er niets
+   door, en een aanroeper die dit veld niet vult krijgt exact het oude
+   gedrag: oordelen op de zin alleen. */
+export type Bronherkomst = {
+  readonly tekst: string;
+  readonly uitgever: string | null;
+  readonly isPrimaireBron: boolean;
+};
+
 export type ConceptTeToetsen = {
   readonly pad: string;
   readonly titel: string;
@@ -65,6 +91,8 @@ export type ConceptTeToetsen = {
   readonly uitspraken: readonly GebondenUitspraak[];
   /** Genormaliseerde brontekst van elke invoerversie. */
   readonly bronteksten: readonly string[];
+  /** Dezelfde bronzinnen, met hun uitgever. Zie Bronherkomst hierboven. */
+  readonly bronherkomst?: readonly Bronherkomst[];
   readonly injectieInBron: boolean;
   /** Paden die in het pagina-register bestaan. */
   readonly bestaandePaden: ReadonlySet<string>;
@@ -272,7 +300,10 @@ export function toetsConcept(c: ConceptTeToetsen): PoortUitkomst[] {
      ONBEKEND wordt net zo hard geweigerd als BELGIE: een leeg gebied is
      geen bewijs van Nederlandse herkomst, en juist die aanname maakte
      een Belgisch tarief tot een Nederlands feit. */
-  const gebieden = c.bronteksten.map((t, i) => ({ i, oordeel: bepaalToepassingsgebied({ tekst: t }) }));
+  const herkomst: readonly Bronherkomst[] =
+    c.bronherkomst ??
+    c.bronteksten.map((t) => ({ tekst: t, uitgever: null, isPrimaireBron: false }));
+  const gebieden = herkomst.map((h, i) => ({ i, oordeel: bepaalToepassingsgebied(h) }));
   const buiten = gebieden.filter(
     (g) => g.oordeel.gebied !== "NEDERLAND" && g.oordeel.gebied !== "EU",
   );
