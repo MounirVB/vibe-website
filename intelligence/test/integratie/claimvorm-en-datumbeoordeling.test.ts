@@ -461,6 +461,92 @@ describe("vormclaims en datumbeoordeling", () => {
     }
   });
 
+  test("11b · DE PRODUCTIEFOUT — een LOSSE datum laat zich wegschrijven", async () => {
+    /* GEMETEN IN PRODUCTIE op 6 november 2026, direct na de uitrol van
+       0055:
+
+         uitspraken bekeken 84, verrijkt 33, mislukt 38
+         new row for relation "uitspraken" violates check constraint
+         "uitspraken_vorm_vereist_passage"
+
+       De oorzaak: een afgeleide LOSSE_DATUM is een ROL met een LEGE
+       passage, en verrijkVorm() schreef die rol weg met
+       bronpassage NULL. 0055 weigert die combinatie terecht.
+
+       zoekDatums() in uitspraken.ts deed het al goed — die zet bij een
+       te korte passage ALLE TWEE op null. Twee schrijvers naar dezelfde
+       kolommen, en maar één kende de regel.
+
+       GEEN ENKELE TOETS VING DIT, en dat is de echte tekortkoming: de
+       eenheidstoetsen keken naar bepaalDatumrol() en de integratietoets
+       naar claims MET een rol. Deze zaak legt een claim neer waarvan de
+       rol LOSSE_DATUM wordt en eist dat de verrijking slaagt. */
+    const losseDatum =
+      "Tijdens het congres op 14 maart 2027 spreken deskundigen over het nettarief.";
+    const id = await alsEigenaar(db, async (c) => {
+      await c.query("select set_config('app.organisatie_id', $1, false)", [String(org)]);
+      const r = await c.query<{ id: number }>(
+        `insert into intel.uitspraken
+           (organisatie_id, tekst, soort, onderwerp, risico_klasse,
+            modaliteit, modaliteit_zekerheid, modaliteit_versie)
+         values ($1,$2,'datum','netbeheer','laag','VASTGESTELD',0.80,'toets')
+         returning id`,
+        [org, losseDatum],
+      );
+      const uid = r.rows[0]!.id;
+      await c.query(
+        `insert into intel.uitspraak_bronnen
+           (organisatie_id, uitspraak_id, versie_id, rol, vindplaats)
+         values ($1,$2,$3,'primair','toets')`,
+        [org, uid, versieId],
+      );
+      return uid;
+    });
+
+    /* DE VERRIJKING MOET SLAGEN. Mislukt hij, dan telt backfillSemantiek
+       hem als `onveranderd` — en dat is precies wat in productie 38 keer
+       gebeurde. */
+    const r = await backfillSemantiek(db.pool, org, { max: 200, alles: true });
+    assert.equal(
+      r.onveranderd,
+      0,
+      `${r.onveranderd} verrijking(en) mislukt; dat is de productiefout van 6 november`,
+    );
+
+    const na = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      c.query<{ datumrol: string | null; passage: string | null; verwoordbaar: string | null; reden: string | null }>(
+        `select datumrol, bronpassage as passage, verwoordbaar, verwoordbaar_reden as reden
+           from intel.uitspraken where id = $1`,
+        [id],
+      ),
+    );
+    const rij = na.rows[0]!;
+    /* EEN ROL EN EEN PASSAGE GAAN SAMEN, OF GEEN VAN BEIDE. */
+    assert.equal(rij.datumrol, null, "een losse datum krijgt geen rol");
+    assert.equal(rij.passage, null, "en dus ook geen passage");
+    /* MAAR DE UITKOMST VERDWIJNT NIET: hij staat in het oordeel.
+
+       EN DE UITSLAG WORDT HIER VASTGEPIND, niet alleen "niet
+       verwoordbaar". Mijn eerste versie van deze zaak liet zowel
+       CONTEXT_ONVOLLEDIG als VERIFICATIE_NODIG passeren, en daardoor
+       kon het commentaar bij de fix een uitkomst beweren die de code
+       niet gaf — vier onafhankelijke lezingen van PR #73 hebben dat
+       weerlegd. Gemeten uitslag: met rol en passage beide null komt de
+       claim bij vormpoort() niet bij de datumrolcontrole maar bij
+       CONTROLE 2, de passage-eis. */
+    assert.equal(
+      rij.verwoordbaar,
+      "VERIFICATIE_NODIG",
+      `verwachtte VERIFICATIE_NODIG uit controle 2 van vormpoort, kreeg ${rij.verwoordbaar}`,
+    );
+    assert.match(
+      rij.reden ?? "",
+      /geen concrete bronpassage/,
+      `de reden hoort de ontbrekende passage te noemen: ${rij.reden}`,
+    );
+    assert.ok((rij.reden ?? "").length >= 15, rij.reden ?? "geen reden");
+  });
+
   test("12 · een onbevestigde datumclaim wordt niet verwoordbaar", async () => {
     /* GEEN DREMPEL VERLAAGD. De poort eist verificatie_status
        'bevestigd', net als de getalpoort. Deze fixture komt uit een
