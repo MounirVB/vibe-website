@@ -44,7 +44,7 @@ import {
 /* GEEN KRINGVERWIJZING. inhoud/concept.ts importeert dit bestand niet;
    de pijl loopt één kant op (publiceer -> concept). Nagegaan met grep
    op 'publiceer.ts' in concept.ts: nul treffers. */
-import { inhoudAfdruk } from "./concept.ts";
+import { hertoetsInhoudVersie, inhoudAfdruk } from "./concept.ts";
 import {
   heeftRouteregister,
   leesRouteregister,
@@ -283,7 +283,22 @@ export function sitemapZonderPad(
  * langs laten met een plausibel ogende regel.
  */
 export type GoedkeurUitslag =
-  | { readonly goedgekeurd: true }
+  | {
+      readonly goedgekeurd: true;
+      /* DE POORTSTAND NA DE GOEDKEURING, en niet alleen 'ja'.
+         Poort 9 (hoog_risico_vereist_mens) en poort 10 (injectieverdachte
+         bron) staan dicht ZOLANG `goedgekeurd_door` leeg is. Keurde een
+         mens goed en werd daarna niets hertoetst, dan bleef
+         `poorten_geslaagd` op false staan en weigerde publiceer() op
+         regel 358 — met een blokkade die alleen deze goedkeuring kon
+         opheffen. Daarom hertoetst keurGoed() nu zelf, en daarom draagt
+         de uitslag die stand naar buiten: de aanroeper hoort te weten of
+         er nog iets dicht staat. */
+      readonly naHertoets: {
+        readonly poortenGeslaagd: boolean;
+        readonly blokkades: readonly string[];
+      } | null;
+    }
   | {
       readonly goedgekeurd: false;
       readonly reden: string;
@@ -303,9 +318,17 @@ export async function publiceer(
   pool: Pool,
   organisatieId: number,
   inhoudVersieId: number,
-  opties: { droog?: boolean } = {},
+  /* DE SITEWORTEL KAN MEE, en dat repareert een gemeten gat.
+     maakPublicatiePr() draait git, de generator en de slugcontrole op
+     ZIJN siteWortel, maar deze functie kende die parameter niet en nam
+     altijd INTEL_SITE_WORTEL. Liepen die twee uiteen, dan landde het
+     registerrecord in een ANDERE werkboom, zag `git status` niets
+     nieuws, en kwam er een commit zonder het geauteurde bestand — met
+     alle grendels op PASS. Eén waarheid, doorgegeven in plaats van twee
+     keer afgeleid. Niet meegegeven? Dan precies het oude gedrag. */
+  opties: { droog?: boolean; siteWortel?: string } = {},
 ): Promise<PublicatieRapport> {
-  const config = configLezen();
+  const config = { ...configLezen(), siteWortel: opties.siteWortel ?? configLezen().siteWortel };
 
   return metOrganisatie(pool, { organisatieId }, async (c) => {
     const v = await eenRij<{
@@ -348,7 +371,21 @@ export async function publiceer(
                 on pr.organisatie_id = v.organisatie_id and pr.pad = v.pad
          left join intel.gebruikers g
                 on g.id = v.goedgekeurd_door
-        where v.organisatie_id = $1 and v.id = $2`,
+        where v.organisatie_id = $1 and v.id = $2
+          /* HET SLOT OP DE RIJ, en niet alleen een vraag.
+             GEEN BACKTICKS IN DIT COMMENTAAR: deze query staat in een
+             template literal en een backtick sluit die af.
+             Zonder dit slot lazen twee gelijktijdige publicatieaanroepen
+             beide status 'goedgekeurd', schreven beide het bestand en
+             boekten beide een rij in intel.publicaties — de tweede met
+             de AL GEPUBLICEERDE inhoud als vorige_inhoud, waarmee
+             terugdraaien de verkeerde tekst terugzet. Deze functie
+             draait binnen de transactie van metOrganisatie(), dus het
+             slot valt samen met de statuswijziging onderaan. Alleen v
+             wordt gegrepen: de twee left joins mogen niet meegelockt
+             worden (en Postgres staat dat op de nullable kant ook niet
+             toe). */
+          for update of v`,
       [organisatieId, inhoudVersieId],
     );
     if (!v) throw new IntelFout("configuratie", `inhoudsversie ${inhoudVersieId} bestaat niet`);
@@ -971,8 +1008,12 @@ export async function draaiTerug(
   pool: Pool,
   organisatieId: number,
   publicatieId: number,
+  /* Dezelfde doorgifte als bij publiceer(): terugdraaien moet in de boom
+     gebeuren waarin is geschreven, niet in de boom die de omgeving
+     toevallig noemt. */
+  opties: { siteWortel?: string } = {},
 ): Promise<TerugdraaiRapport> {
-  const config = configLezen();
+  const config = { ...configLezen(), siteWortel: opties.siteWortel ?? configLezen().siteWortel };
 
   return metOrganisatie(pool, { organisatieId }, async (c) => {
     const p = await eenRij<{
@@ -1305,6 +1346,48 @@ export async function keurGoed(
       where id = $1`,
     [inhoudVersieId, gebruikerId],
   );
+  /* ---- EN DE POORTEN OPNIEUW, MET DE GOEDKEURING ERIN ----
+     DIT WAS DE DOODLOPENDE WEG. Poort 9 luidt: risicoklasse hoog met
+     `goedgekeurdDoor === null` is dicht (inhoud/poorten.ts:400-408).
+     keurGoed() zette wel de status maar raakte `poorten_geslaagd` en
+     `blokkades` niet aan, en de twee enige aanroepers van de hertoets
+     weigeren een versie op 'goedgekeurd' (dashboard/server.ts:2169,
+     cli/concept.ts:125). Gevolg, gemeten op de productiecode van
+     e1461e6: na een goedkeuring bleef `hoog_risico_vereist_mens` staan,
+     weigerde publiceer() op regel 358, en kon NIETS die blokkade nog
+     opheffen. Een goedkeuring maakte publiceren dus onmogelijk.
+
+     De hertoets draait HIER, binnen dezelfde transactie en NA de
+     statusupdate, zodat hij de goedkeuring ziet die hij moet wegen.
+
+     DIT HEFT ALLEEN DE TWEE MENSPOORTEN OP. De hertoets draait alle
+     poorten plus toetsGebondenBewijs() opnieuw (concept.ts:1295-1297);
+     een inhoudelijke bronfout blijft daarom in `blokkades` staan en
+     houdt `poorten_geslaagd` op false. Een mens kan met deze
+     goedkeuring geen ontbrekend bewijs wegtekenen.
+
+     DE AFDRUK MAG NIET SCHUIVEN. De hertoets herberekent
+     `inhoud_afdruk`; de goedkeuring hierboven bond
+     `goedgekeurde_afdruk` daaraan. Was de tekst tussen de controle op
+     regel 1268 en dit punt gewijzigd, dan botst de UPDATE op
+     inhoud_versies_goedkeuring_bindt en rolt de hele goedkeuring terug.
+     Dat is de bedoelde uitkomst; alleen de foutregel hoort leesbaar te
+     zijn in plaats van een ruwe constraintnaam. */
+  let naHertoets: { poortenGeslaagd: boolean; blokkades: readonly string[] } | null = null;
+  try {
+    const h = await hertoetsInhoudVersie(c, v.organisatie_id, inhoudVersieId);
+    naHertoets = h === null ? null : { poortenGeslaagd: h.poortenGeslaagd, blokkades: h.blokkades };
+  } catch (e) {
+    const bericht = (e as Error).message;
+    if (/inhoud_versies_goedkeuring_bindt/.test(bericht)) {
+      throw new IntelFout(
+        "validatie",
+        "de tekst is gewijzigd terwijl deze goedkeuring werd vastgelegd; er is niets goedgekeurd",
+      );
+    }
+    throw e;
+  }
+
   await c.query(
     `insert into intel.publicatiebesluiten
        (organisatie_id, inhoud_versie_id, besluit, door_gebruiker_id, actor_soort, motivatie,
@@ -1334,8 +1417,12 @@ export async function keurGoed(
           primaireVersieId: k.primaireVersieId,
           draagt: k.draagt,
         })),
+        /* De poortstand na de goedkeuring hoort bij het besluit: zonder
+           dit is later niet te zien of er na de goedkeuring nog een
+           blokkade stond, en dus waarom er niet is gepubliceerd. */
+        naHertoets,
       }),
     ],
   );
-  return { goedgekeurd: true };
+  return { goedgekeurd: true, naHertoets };
 }

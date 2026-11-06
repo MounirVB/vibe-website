@@ -79,6 +79,55 @@ async function main(): Promise<number> {
   const max = Number.parseInt(argument("max") ?? "5", 10);
 
   /* ---------------------------------------------------------------
+     ALLEEN HERTOETSEN, zonder een letter te wijzigen.
+     ----------------------------------------------------------------
+     DE NOODUITGANG. De poortkolommen worden alleen door maakConcept() en
+     door de hertoets geschreven, en de hertoets zat tot deze ronde
+     achter een tekstwijziging. Bleef er na een goedkeuring of na een
+     reparatie elders in de keten een blokkade staan, dan was er geen
+     enkele manier om de stand opnieuw te laten berekenen — ook niet als
+     de oorzaak intussen weg was. Dit commando raakt de inhoud niet aan
+     en is daarom ook op een goedgekeurde versie veilig: de afdruk komt
+     uit dezelfde tekst, dus de goedkeuringsbinding blijft staan.
+     'gepubliceerd' blijft dicht, want daar hoort een nieuwe versie bij. */
+  const hertoetsVersie = argument("hertoets");
+  if (hertoetsVersie !== undefined) {
+    if (!/^\d+$/.test(hertoetsVersie)) {
+      process.stderr.write("gebruik: npm run concept -- --hertoets <versieId>\n");
+      return 2;
+    }
+    const uit = await metOrganisatie(pool, { organisatieId }, async (c) => {
+      const nu = await rijen<{ status: string }>(
+        c,
+        "select status from intel.inhoud_versies where organisatie_id = $1 and id = $2",
+        [organisatieId, Number(hertoetsVersie)],
+      );
+      const status = nu[0]?.status;
+      if (status === undefined) return { fout: `versie ${hertoetsVersie} bestaat niet` } as const;
+      if (status === "gepubliceerd") {
+        return {
+          fout: `deze versie staat op 'gepubliceerd'; een gepubliceerde versie hertoets je niet`,
+        } as const;
+      }
+      const h = await hertoetsInhoudVersie(c, organisatieId, Number(hertoetsVersie));
+      return { status, hertoets: h } as const;
+    });
+    if ("fout" in uit) {
+      process.stderr.write(`${uit.fout}\n`);
+      return 1;
+    }
+    const h = uit.hertoets;
+    process.stdout.write(
+      `HERTOETS versie ${hertoetsVersie}\n` +
+        `  status blijft   ${uit.status}\n` +
+        `  poorten         ${h?.poortenGeslaagd ? "GESLAAGD" : "GEBLOKKEERD"}\n` +
+        `  afdruk          ${h?.afdruk.slice(0, 16) ?? "-"}\n`,
+    );
+    for (const b of h?.blokkades ?? []) process.stdout.write(`  !! ${b.slice(0, 220)}\n`);
+    return 0;
+  }
+
+  /* ---------------------------------------------------------------
      DE REDACTIEWEG: een tekst vervangen en opnieuw door de poorten. */
   const tekstVersie = argument("tekst");
   if (tekstVersie !== undefined) {

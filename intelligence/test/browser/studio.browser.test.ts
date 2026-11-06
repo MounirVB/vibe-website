@@ -683,6 +683,17 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
     const tekst = await p.locator("body").innerText();
     assert.match(tekst, /Wat er is vastgelegd/, "de body_markdown hoort op de pagina te staan");
     assert.match(tekst, /vastgelegd door de fixture-uitgever/);
+
+    /* EN HIJ IS OPGEMAAKT, met dezelfde omzetting als de website. Een
+       beoordelaar hoort te lezen wat er gepubliceerd zou worden; de ruwe
+       markdown staat eronder in een <details> voor wie bewerkt. Deze
+       assertie staat HIER en niet in zaak 25c, omdat die na een
+       bewerking draait die de koppen uit de tekst haalt. */
+    assert.equal(
+      await p.locator(".conceptweergave h2").count(),
+      1,
+      "een markdownkop hoort als <h2> gerenderd te worden",
+    );
     assert.deepEqual(fouten, []);
   });
 
@@ -753,10 +764,24 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
       /voorstel . geen feit/i,
       "een voorstel hoort als 'geen feit' gemarkeerd te zijn",
     );
+    /* DE SLOTREGEL TELT NU KERNCLAIMS, en dat is een correctie.
+       Hij luidde "Claims die dragen: 1 van 2" en telde met een eigen,
+       mildere regel over ÁLLE claims — ook over de ondersteunende claim
+       die niet hoeft te dragen. De publicatiepoort kijkt uitsluitend
+       naar dragendeKern, dus dat hoort er te staan. De fixture bindt één
+       kernclaim (vastgesteld, bevestigd) en één ondersteunende (voorstel). */
     assert.match(
       tekst,
-      /Claims die dragen: 1 van 2/,
-      "precies één van de twee claims hoort te dragen",
+      /Dragende kernclaims: 1 van 1/,
+      "de kernclaim hoort te dragen en als zodanig geteld te worden",
+    );
+    assert.match(tekst, /2 claims gebonden in totaal/, "het totaal hoort er ook te staan");
+    /* En de ZIN van de claim staat er nu bij; zonder die tekst beoordeelt
+       een mens labels in plaats van een bewering. */
+    assert.match(
+      tekst,
+      /Het tarief wordt per 1 januari 2027 verhoogd met 12 procent\./,
+      "de claimtekst hoort in de ketentabel te staan",
     );
   });
 
@@ -872,8 +897,23 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
     assert.equal(r.rows[0]!.door, gebruikers["beheerder"]);
   });
 
-  test("25. een goedgekeurd concept is niet meer te bewerken", async () => {
+  test("25. een goedgekeurd concept bewerken LAAT DE GOEDKEURING VERVALLEN", async () => {
+    /* DEZE TOETS IS OMGEDRAAID, EN DAT IS EEN BESLUIT.
+       Hij eiste eerder een 400 met "een goedgekeurde tekst wijzig je
+       niet". Dat was ook precies de doodlopende weg: bewerken geweigerd,
+       hertoetsen geweigerd, dus een goedkeuring met een resterende
+       blokkade was onherstelbaar. Nu mag bewerken wél en VERVALT de
+       goedkeuring, zodat een inhoudelijke wijziging opnieuw door alle
+       controles gaat. 'gepubliceerd' blijft dicht; dat dekt de
+       integratietoets, omdat publiceren niet over HTTP gaat. */
     const p = await alsRol("beheerder");
+
+    /* Eerst de weergave: de pagina hoort te WAARSCHUWEN voordat iemand
+       op opslaan drukt. */
+    await p.goto(`/studio/${conceptVersie}`, { waitUntil: "domcontentloaded" });
+    const zichtbaar = await p.locator("body").innerText();
+    assert.match(zichtbaar, /opslaan laat die goedkeuring\s+VERVALLEN/i);
+
     const csrf = (await context.cookies()).find((c) => c.name === CSRF_KOEKJE)?.value ?? "";
     const antwoord = await p.request.post(`/studio/${conceptVersie}/tekst`, {
       form: {
@@ -882,9 +922,85 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
           "Een volledig andere tekst die lang genoeg is om de minimumlengte van tachtig tekens te halen.",
         inhoud_afdruk: conceptAfdruk,
       },
+      maxRedirects: 0,
     });
-    assert.equal(antwoord.status(), 400, `verwacht 400, kreeg ${antwoord.status()}`);
-    assert.match(await antwoord.text(), /goedgekeurde tekst wijzig je niet/);
+    assert.equal(antwoord.status(), 303, `verwacht een redirect, kreeg ${antwoord.status()}`);
+
+    const na = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      c.query<{
+        status: string;
+        goedgekeurd_door: number | null;
+        goedgekeurde_afdruk: string | null;
+        inhoud_afdruk: string;
+      }>(
+        `select status, goedgekeurd_door, goedgekeurde_afdruk, inhoud_afdruk
+           from intel.inhoud_versies where id = $1::bigint`,
+        [conceptVersie],
+      ),
+    );
+    assert.equal(na.rows[0]!.status, "ter_review", "de goedkeuring hoort te vervallen");
+    assert.equal(na.rows[0]!.goedgekeurd_door, null);
+    assert.equal(na.rows[0]!.goedgekeurde_afdruk, null);
+    assert.notEqual(na.rows[0]!.inhoud_afdruk, conceptAfdruk, "de afdruk hoort mee te veranderen");
+
+    /* EN HET STAAT IN HET ONWISBARE SPOOR. */
+    const spoor = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      c.query<{ motivatie: string }>(
+        `select motivatie from intel.publicatiebesluiten
+          where inhoud_versie_id = $1::bigint order by id desc limit 1`,
+        [conceptVersie],
+      ),
+    );
+    assert.match(spoor.rows[0]!.motivatie, /goedkeuring vervallen/);
+  });
+
+  test("25b. de lijst linkt klikbaar naar het concept", async () => {
+    /* /studio/:id bestond, maar er stond nergens een href naartoe: een
+       beoordelaar moest de URL typen om het stuk te kunnen lezen dat hij
+       moest goedkeuren. Deze toets KLIKT, en bewijst daarmee de route én
+       de link. */
+    const p = await alsRol("beheerder");
+    await p.goto("/studio", { waitUntil: "domcontentloaded" });
+    const link = p.locator(`a[href="/studio/${conceptVersie}"]`).first();
+    assert.equal(await link.count(), 1, "er hoort een link naar het concept te staan");
+    await link.click();
+    await p.waitForURL(`**/studio/${conceptVersie}`);
+    const tekst = await p.locator("body").innerText();
+    assert.match(tekst, /Redactionele stand/, "de detailpagina hoort te openen");
+  });
+
+  test("25c. de conceptpagina draagt de opgemaakte tekst, de bronnen en de publicatiestand", async () => {
+    const p = await alsRol("beheerder");
+    const fouten = vangConsole(p);
+    await p.goto(`/studio/${conceptVersie}`, { waitUntil: "domcontentloaded" });
+
+    /* De opgemaakte weergave is dezelfde omzetting als de website
+       gebruikt; de ruwe markdown staat eronder in een <details>. */
+    assert.equal(
+      await p.locator(".conceptweergave").count(),
+      1,
+      "de opgemaakte artikelweergave hoort er te staan",
+    );
+    /* GEEN KOPASSERTIE HIER. Zaak 25 hierboven heeft de tekst vervangen
+       door één alinea zonder markdownkop; dat de omzetting een `##` als
+       <h2> rendert, staat daarom in zaak 15, die vóór de bewerking
+       draait. Hier geldt alleen: de tekst is als HTML-alinea's
+       gerenderd en niet als één blok platte tekst. */
+    assert.ok(
+      (await p.locator(".conceptweergave p").count()) >= 1,
+      "de tekst hoort als alinea's gerenderd te worden",
+    );
+    assert.equal(
+      await p.locator("pre.concepttekst").count(),
+      1,
+      "de ruwe markdown hoort er óók te staan",
+    );
+
+    const tekst = await p.locator("body").innerText();
+    assert.match(tekst, /Bronnen onder dit bericht/, "de bronnensectie hoort een kop te hebben");
+    assert.match(tekst, /Publicatiestand/, "de publicatiestand hoort erop te staan");
+    assert.match(tekst, /Gepubliceerd/, "de publicatiestand noemt of er is gepubliceerd");
+    assert.deepEqual(fouten, [], "geen consolefouten");
   });
 
   test("26. de conceptpagina scrollt ook op mobiel niet horizontaal", async () => {
