@@ -52,7 +52,7 @@ import { verifieerLivePublicatie, type Haler } from "../../src/publicatie/verifi
 
 const uitvoeren = promisify(execFile);
 
-/** De werkboom waarin deze toets draait; daar staat origin/main. */
+/** De werkboom waarin deze toets draait; HEAD is er altijd. */
 const REPO = join(dirname(new URL(import.meta.url).pathname), "..", "..", "..");
 
 /* ================================================================
@@ -376,13 +376,20 @@ describe("de websitebuild met het nieuwe artikel", () => {
     remote = join(werk, "remote.git");
     await mkdir(site, { recursive: true });
 
-    /* DE ECHTE REPOSITORY, uit origin/main. `git archive` geeft de boom
-       zonder geschiedenis; daarna maken we er een eigen git-repo van met
-       een eigen bare remote. Zo draait de ECHTE generator op de ECHTE
-       data, en raakt niets de werkelijke repository. */
+    /* DE ECHTE REPOSITORY, uit HEAD — en met opzet niet uit origin/main.
+       `actions/checkout` haalt in CI alleen de PR-ref op en zet GEEN
+       remote-tracking ref neer: daar gaf `git archive origin/main`
+       "fatal: not a valid object name: origin/main", terwijl het lokaal
+       werkte. Gemeten op PR #79. HEAD is bovendien het juiste
+       uitgangspunt: deze toets wil de generator draaien op de data en de
+       code zoals ze in DEZE commit staan.
+       `git archive` geeft de boom zonder geschiedenis; daarna maken we er
+       een eigen git-repo van met een eigen bare remote. Zo draait de
+       ECHTE generator op de ECHTE data, en raakt niets de werkelijke
+       repository. */
     await uitvoeren("bash", [
       "-c",
-      `git -C ${JSON.stringify(REPO)} archive origin/main | tar -x -C ${JSON.stringify(site)}`,
+      `git -C ${JSON.stringify(REPO)} archive HEAD | tar -x -C ${JSON.stringify(site)}`,
     ]);
     await uitvoeren("git", ["init", "--bare", "-b", "main", remote]);
     const git = maakGit(site);
