@@ -323,8 +323,91 @@ export function verrijkVorm(rij: SemantiekRij): VormVerrijking | null {
        door een mens gezet en hoort een backfill hem niet te
        overschrijven — dezelfde regel als voor elke andere kolom in dit
        bestand. */
-    const gebruikteRol = ((rij.datumrol ?? null) as Datumrol | null) ?? rol.rol;
-    const passage = rij.bronpassage ?? (rol.passage.length >= 10 ? rol.passage : null);
+    const vastgelegdeRol = (rij.datumrol ?? null) as Datumrol | null;
+    const afgeleideRol = rol.rol;
+    /* `?? null` omdat SemantiekRij.bronpassage optioneel is: de toetsen
+       bouwen een rij met de hand en laten hem weg. Een ontbrekend veld
+       en een leeg veld horen hier hetzelfde te betekenen. */
+    const vastgelegdePassage = rij.bronpassage ?? null;
+    const afgeleidePassage = rol.passage.length >= 10 ? rol.passage : null;
+
+    /* EEN ROL EN EEN PASSAGE GAAN SAMEN, OF GEEN VAN BEIDE.
+       ----------------------------------------------------------------
+       GEMETEN IN PRODUCTIE op 6 november 2026, direct na de uitrol van
+       0055 (de CHECK zelf komt uit 0054). De semantiekronde meldde:
+
+         uitspraken bekeken 84, verrijkt 33, mislukt 38
+         new row for relation "uitspraken" violates check constraint
+         "uitspraken_vorm_vereist_passage"
+
+       Fail-closed, dus er is niets fouts weggeschreven — maar 38 van de
+       84 claims bleven onverrijkt. De CHECK staat in migratie 0054.
+
+       DE OORZAAK. Een afgeleide LOSSE_DATUM is een ROL met een LEGE
+       passage: bepaalDatumrol() geeft bij een losse datum bewust
+       `passage: ""`, want er is geen fragment dat de rol aanwijst. Deze
+       regel schreef dan `datumrol = 'LOSSE_DATUM'` met
+       `bronpassage = null`, en dat is precies de combinatie die 0054
+       weigert.
+
+       EN DE EXTRACTIEWEG DEED HET AL GOED. zoekDatums() in
+       uitspraken.ts zet bij een te korte passage ALLE TWEE op null:
+
+         ...(rol.passage.length >= 10
+               ? { bronpassage: rol.passage }
+               : { datumrol: null, bronpassage: null })
+
+       Twee schrijvers naar dezelfde kolommen, en maar één kende de
+       regel. Dat is dezelfde klasse fout die deze repo bij SCHAAL in
+       uitspraken.ts en bij de dedupsleutel al heeft betaald, nu tussen
+       de extractie en de verrijking.
+
+       WAT LOSSE_DATUM DAARMEE WORDT, en dit is NAGEMETEN en niet
+       beredeneerd — mijn eerste versie van dit commentaar beschreef
+       hier een uitkomst die de code niet geeft, en vier onafhankelijke
+       lezingen van PR #73 hebben dat weerlegd.
+
+       Met rol en passage beide null komt de claim bij vormpoort() niet
+       bij tak 8 (de datumrolcontrole) maar bij CONTROLE 2, de
+       passage-eis. Gemeten op de zin van toets 11b:
+
+         datumrol    null
+         bronpassage null
+         uitslag     VERIFICATIE_NODIG
+         reden       "er is geen concrete bronpassage van minstens tien
+                      tekens vastgelegd (nu 0). Zonder aanwijsbaar
+                      fragment is niet na te gaan waarop dit oordeel
+                      rust."
+
+       Dus NIET 'CONTEXT_ONVOLLEDIG' met "een losse datum is niet
+       automatisch een verwoordbare claim" — die reden hoort bij een
+       rij die een rol WEL draagt, en die rij maakt deze weg niet meer.
+
+       EN DAT HEEFT EEN PRIJS DIE HIER HOORT TE STAAN. Na deze reparatie
+       kan GEEN ENKEL codepad de waarde datumrol='LOSSE_DATUM' nog
+       wegschrijven: zoekDatums() zette hem al op null bij een korte
+       passage, en deze regel doet dat nu ook. De kolom onderscheidt
+       daarmee niet langer "we hebben gekeken en het is een losse datum"
+       van "we hebben niet gekeken" — het ontwerpuitgangspunt in
+       datumrol.ts en in 0054 dat LOSSE_DATUM "een uitkomst en geen
+       leegte" is, geldt nog voor de pure motor maar niet meer voor de
+       opslag. Waar de uitkomst WEL staat, is `verwoordbaar` plus
+       `verwoordbaar_reden`, en die reden noemt de ontbrekende passage.
+
+       Dat is een bewuste afweging en geen vergissing: het alternatief
+       is uitspraken_vorm_vereist_passage oprekken voor LOSSE_DATUM, en
+       dat verzwakt een grendel om een schrijffout te verbergen.
+
+       DE CONSTRAINT IS NIET VERRUIMD. Hij staat in migratie 0054 (niet
+       0055) en is ongewijzigd. */
+    const rolEnPassage: { rol: Datumrol | null; passage: string | null } =
+      vastgelegdeRol !== null && vastgelegdePassage !== null
+        ? { rol: vastgelegdeRol, passage: vastgelegdePassage }
+        : afgeleidePassage !== null
+          ? { rol: vastgelegdeRol ?? afgeleideRol, passage: afgeleidePassage }
+          : { rol: null, passage: null };
+    const gebruikteRol = rolEnPassage.rol;
+    const passage = rolEnPassage.passage;
     const invoer = {
       vorm: null,
       datumrol: gebruikteRol,
@@ -361,7 +444,12 @@ export function verrijkVorm(rij: SemantiekRij): VormVerrijking | null {
          zin daar alsnog null zijn, dan weigert
          uitspraken_verwoordbaar_heeft_zin de rij — fail-closed, en
          zichtbaar in het logboek. */
-      kanVerwoorden: () => gebruikteRol !== "LOSSE_DATUM" && rol.betreft !== null,
+      /* ZONDER ROL IS ER GEEN ZIN. Een losse datum komt hier met
+         gebruikteRol null binnen; vormpoort.ts geeft dan
+         VERIFICATIE_NODIG met de reden dat er noch een vorm noch een rol
+         is. De uitkomst blijft dus zichtbaar en navolgbaar. */
+      kanVerwoorden: () =>
+        gebruikteRol !== null && gebruikteRol !== "LOSSE_DATUM" && rol.betreft !== null,
     });
     void invoer;
     return {
