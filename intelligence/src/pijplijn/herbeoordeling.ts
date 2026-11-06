@@ -306,7 +306,41 @@ export async function herbeoordeelClaims(
             bv.titel, bv.ruwe_tekst, bd.canonieke_url,
             b.sleutel as bron_sleutel, bv.injectie_verdacht,
             b.betrouwbaarheid, b.is_primaire_bron,
-            coalesce(bd.gepubliceerd_op, bv.opgehaald_op)::date::text as brondatum,
+            -- ALLEEN DE ECHTE PUBLICATIEDATUM, GEEN TERUGVAL OP
+            -- opgehaald_op. Dit veld is de peildatum voor
+            -- bepaalModaliteit(), en daar bepaalt hij of een zin over
+            -- een jaartal TERUGKIJKT of VOORUITKIJKT.
+            --
+            -- GEMETEN OP 6 NOVEMBER 2026, en dit was een echte
+            -- promotie. Het ACM-besluit (versie 4394) heeft
+            -- gepubliceerd_op = null met datum_herkomst 'onbekend': de
+            -- PDF-route kon geen publicatiedatum vaststellen. De oude
+            -- coalesce viel dan terug op opgehaald_op, dus op ONZE
+            -- klok. Gevolg: noemtAfgeslotenJaar() vuurde wel en de
+            -- modaliteitszekerheid sprong van 0,35 naar 0,80 -- over de
+            -- drempel NOODZAKELIJKE_ZEKERHEID (0,50) heen. Het aantal
+            -- claims dat claimDraagt() als feitdragend ziet ging van 10
+            -- naar 31: 22 claims werden stil tot feit gepromoveerd,
+            -- waaronder kale ECLI-verwijzingen.
+            --
+            -- schrijfUitspraken() deed het al goed: clusteren.ts geeft
+            -- 'peildatum: undefined' zodra gepubliceerd_op null is, met
+            -- de toelichting dat het ervan afhangt "wanneer de
+            -- schrijver hem opschreef -- niet van onze klok". Deze
+            -- regel liet de herbeoordeling van die regel afwijken.
+            --
+            -- Zonder terugval is brondatum null, laat herbeoordeelClaim()
+            -- de peildatum vervallen en blijft het jaartalsignaal uit --
+            -- dezelfde uitkomst als de schrijfweg. Gemeten na de
+            -- correctie: dragend 10 -> 9, nul promoties, en claim 125
+            -- wordt terecht ingetrokken in plaats van gepromoveerd.
+            --
+            -- 349 brondocumenten hebben geen gepubliceerd_op, dus dit
+            -- is geen eenmalig geval. LET OP: de andere coalesce-plekken
+            -- in deze repo (bronverificatie, nieuwsselectie, publiceer,
+            -- dashboard) zijn WEERGAVE- en RECENTHEIDSdatums met een
+            -- andere betekenis; die horen niet mee te veranderen.
+            bd.gepubliceerd_op::date::text as brondatum,
             u.tekst, u.verificatie_status, u.bewijs_kwaliteit, u.oordeel_bron,
             bv.documentsoort, bv.documentsoort_gezag, bv.documentsoort_versie,
             bv.documentvorm, u.claimvorm, u.bewijsniveau, u.verwoordbaar

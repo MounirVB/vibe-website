@@ -62,7 +62,11 @@ import {
   herbeoordeelClaims,
 } from "../../src/pijplijn/herbeoordeling.ts";
 import { DOCUMENTSOORT_VERSIE } from "../../src/pijplijn/documentsoort.ts";
-import { MODALITEIT_VERSIE } from "../../src/pijplijn/claimmodaliteit.ts";
+import {
+  MODALITEIT_VERSIE,
+  NOODZAKELIJKE_ZEKERHEID,
+} from "../../src/pijplijn/claimmodaliteit.ts";
+import { claimDraagt } from "../../src/pijplijn/claimpoort.ts";
 import { MOTORVERSIES } from "../../src/pijplijn/motorversies.ts";
 import { REGISTER } from "../../src/kern/taken.ts";
 
@@ -89,6 +93,37 @@ const BESLUIT = JSON.parse(
   readFileSync(new URL("../data/acm-uit-1123013.json", import.meta.url), "utf8"),
 ) as Fixture;
 
+/* ------------------------------------------------------------------
+   HET PEILDATUMBESLUIT — klein, en met opzet twee keer gebruikt
+   ------------------------------------------------------------------
+   De vaststellende zin noemt een AFGESLOTEN JAAR (2021). Dat is het
+   signaal waarop noemtAfgeslotenJaar() vuurt, en dat kan alleen als er
+   een peildatum is. Gemeten met bepaalModaliteit():
+
+     peildatum undefined   -> VASTGESTELD 0,35  draagbaarAlsFeit false
+     peildatum 2026-11-01  -> VASTGESTELD 0,80  draagbaarAlsFeit true
+
+   NOODZAKELIJKE_ZEKERHEID is 0,50; de drempel ligt dus precies tussen
+   die twee uitkomsten. Een document zonder publicatiedatum mag daarom
+   niet aan de bovenkant uitkomen.
+   ------------------------------------------------------------------ */
+const PEILDATUMCLAIM =
+  "Op 7 januari 2021 heeft Liander een aanbod gedaan voor een zwaardere aansluiting.";
+const PEILDATUMBESLUIT = [
+  "Ons kenmerk : ACM/UIT/9999001",
+  "Besluit van de Autoriteit Consument en Markt als bedoeld in artikel 5.4 van de Energiewet.",
+  "",
+  "3. Feiten",
+  PEILDATUMCLAIM,
+  "",
+  "6. Beoordeling van het geschil",
+  "De ACM stelt vast dat het aanbod toereikend was.",
+  "",
+  "7. Dictum",
+  "De Autoriteit Consument en Markt verklaart de klacht ongegrond.",
+  "Belanghebbenden kunnen tegen dit besluit beroep instellen bij de rechtbank.",
+].join("\n");
+
 /** Een zin die GEMETEN in sectie 6 'Beoordeling van het geschil' staat. */
 const EIGEN_VASTSTELLING = "De ACM stelt vast dat de klacht van Jumbo gegrond is.";
 
@@ -106,13 +141,25 @@ type ClaimSpec = {
   readonly tijdstand: string | null;
   readonly verwoordbaar: string;
   readonly bewijsniveau: string | null;
-  readonly versie: "besluit" | "leeg" | "nieuwsbericht";
+  /* DE GEMETEN PRODUCTIEWAARDEN. Mijn eerste fixture zette elke claim
+     op VASTGESTELD 0,80 — boven NOODZAKELIJKE_ZEKERHEID. Daardoor was
+     er geen claim die ONDER de drempel begon, en kon zaak 12e geen
+     promotie zien: met de oude coalesce teruggezet bleef zij groen.
+     Gemeten in productie op 6 november 2026:
+       79 VASTGESTELD 0,80 · 137 VERWACHTING 0,70 · 138-141
+       VASTGESTELD 0,35 · 161 VERWACHTING 0,70 · 3 0,65 · 4 0,75 */
+  readonly modaliteit: string;
+  readonly zekerheid: string;
+  readonly versie: "besluit" | "leeg" | "nieuwsbericht" | "zonderDatum" | "metDatum";
 };
 
 describe("de herbeoordeling past de passagetoets toe", () => {
   let db: Wegwerpdatabase;
   let org = 0;
   const id: Record<string, number> = {};
+  /* De dragende claims VOOR de ronde, zodat zaak 12e een echte
+     vergelijking is en niet een momentopname. */
+  let dragendVoor = new Set<number>();
 
   before(async () => {
     db = await maakWegwerpdatabase("herbpassage");
@@ -178,15 +225,24 @@ describe("de herbeoordeling past de passagetoets toe", () => {
         soort: string,
         gezag: string,
         vorm: string,
+        /* MET of ZONDER publicatiedatum. Zonder datum is geen randgeval
+           maar de regel voor de PDF-route: gemeten op 6 november 2026
+           hebben 349 brondocumenten in productie geen gepubliceerd_op,
+           waaronder het ACM-besluit zelf (datum_herkomst 'onbekend').
+           opgehaald_op staat op default now(), dus deze fixture
+           reproduceert exact de situatie waarin de oude terugval op
+           onze eigen klok vuurde. */
+        metPublicatiedatum = true,
       ): Promise<number> => {
         const doc = await c.query<{ id: number }>(
           `insert into intel.brondocumenten
              (organisatie_id, bron_id, extern_id, canonieke_url, titel, uitgever, soort,
-              gepubliceerd_op)
+              gepubliceerd_op, datum_herkomst)
            values ($1,$2,$3,'https://www.acm.nl/documents/' || $3,$4,'fixture','dataset',
-                   now() - interval '3 days')
+                   case when $5 then now() - interval '3 days' else null end,
+                   case when $5 then 'item_metadata' else 'onbekend' end)
            returning id`,
-          [org, bronId, externId, titel],
+          [org, bronId, externId, titel, metPublicatiedatum],
         );
         const v = await c.query<{ id: number }>(
           `insert into intel.brondocument_versies
@@ -201,6 +257,11 @@ describe("de herbeoordeling past de passagetoets toe", () => {
       };
 
       const versies: Record<string, number> = {
+        /* GEEN PUBLICATIEDATUM, en dat is de productiestand: versie
+           4394 heeft gepubliceerd_op = null met datum_herkomst
+           'onbekend', omdat de PDF-route er geen kon vaststellen. Een
+           fixture met een datum zou een document meten dat niet
+           bestaat. */
         besluit: await maakVersie(
           bronAcm.rows[0]!.id,
           "acm-uit-1123013",
@@ -209,6 +270,7 @@ describe("de herbeoordeling past de passagetoets toe", () => {
           BESLUIT.documentsoort,
           BESLUIT.gezag,
           BESLUIT.documentvorm,
+          false,
         ),
         /* ONTBREKENDE DOCUMENTTEKST. Eén leesteken, want tekst_lengte
            en de inhoudshash willen een waarde; de passagetoets heeft
@@ -221,6 +283,30 @@ describe("de herbeoordeling past de passagetoets toe", () => {
           BESLUIT.documentsoort,
           BESLUIT.gezag,
           BESLUIT.documentvorm,
+        ),
+        /* ---- DE PEILDATUMZAAK, twee keer hetzelfde besluit ----
+           Identieke tekst, identieke soort en vorm; het ENIGE verschil
+           is of gepubliceerd_op gevuld is. Daarmee meet dit paar de
+           peildatum en niets anders. ---- */
+        zonderDatum: await maakVersie(
+          bronAcm.rows[0]!.id,
+          "acm-zonder-publicatiedatum",
+          "ACM/UIT/9999001",
+          PEILDATUMBESLUIT,
+          "OFFICIEEL_BESLUIT",
+          "BEVOEGD_GEZAG",
+          "BEKENDMAKING",
+          false,
+        ),
+        metDatum: await maakVersie(
+          bronAcm.rows[0]!.id,
+          "acm-met-publicatiedatum",
+          "ACM/UIT/9999002",
+          PEILDATUMBESLUIT,
+          "OFFICIEEL_BESLUIT",
+          "BEVOEGD_GEZAG",
+          "BEKENDMAKING",
+          true,
         ),
         nieuwsbericht: await maakVersie(
           bronRvo.rows[0]!.id,
@@ -242,43 +328,43 @@ describe("de herbeoordeling past de passagetoets toe", () => {
       const zes = new Map(BESLUIT.productiestand.map((p) => [p.id, p.tekst]));
       const specs: ClaimSpec[] = [
         /* --- de zes echte, met hun productiewaarden --- */
-        { label: "p137", tekst: zes.get(137)!, soort: "status", claimvorm: "CONGESTIESTATUS",
+        { label: "p137", tekst: zes.get(137)!, soort: "status", claimvorm: "CONGESTIESTATUS", modaliteit: "VERWACHTING", zekerheid: "0.70",
           tijdstand: "ONBEPAALD", verwoordbaar: "CONTEXT_ONVOLLEDIG",
           bewijsniveau: "DIRECT_BEVESTIGD", versie: "besluit" },
-        { label: "p138", tekst: zes.get(138)!, soort: "datum", claimvorm: null,
+        { label: "p138", tekst: zes.get(138)!, soort: "datum", claimvorm: null, modaliteit: "VASTGESTELD", zekerheid: "0.35",
           tijdstand: null, verwoordbaar: "VERIFICATIE_NODIG",
           bewijsniveau: "DIRECT_BEVESTIGD", versie: "besluit" },
-        { label: "p139", tekst: zes.get(139)!, soort: "datum", claimvorm: null,
+        { label: "p139", tekst: zes.get(139)!, soort: "datum", claimvorm: null, modaliteit: "VASTGESTELD", zekerheid: "0.35",
           tijdstand: null, verwoordbaar: "VERIFICATIE_NODIG",
           bewijsniveau: "DIRECT_BEVESTIGD", versie: "besluit" },
-        { label: "p140", tekst: zes.get(140)!, soort: "status", claimvorm: "CONGESTIESTATUS",
+        { label: "p140", tekst: zes.get(140)!, soort: "status", claimvorm: "CONGESTIESTATUS", modaliteit: "VASTGESTELD", zekerheid: "0.35",
           tijdstand: "ONBEPAALD", verwoordbaar: "CONTEXT_ONVOLLEDIG",
           bewijsniveau: "DIRECT_BEVESTIGD", versie: "besluit" },
-        { label: "p141", tekst: zes.get(141)!, soort: "status", claimvorm: "CONGESTIESTATUS",
+        { label: "p141", tekst: zes.get(141)!, soort: "status", claimvorm: "CONGESTIESTATUS", modaliteit: "VASTGESTELD", zekerheid: "0.35",
           tijdstand: "ONBEPAALD", verwoordbaar: "CONTEXT_ONVOLLEDIG",
           bewijsniveau: "DIRECT_BEVESTIGD", versie: "besluit" },
-        { label: "p161", tekst: zes.get(161)!, soort: "status", claimvorm: "CONGESTIESTATUS",
+        { label: "p161", tekst: zes.get(161)!, soort: "status", claimvorm: "CONGESTIESTATUS", modaliteit: "VERWACHTING", zekerheid: "0.70",
           tijdstand: "TIJDELIJK", verwoordbaar: "CONTEXT_ONVOLLEDIG",
           bewijsniveau: "DIRECT_BEVESTIGD", versie: "besluit" },
 
         /* --- EIGEN VASTSTELLING: moet blijven staan. Zonder deze zaak
                zou een reparatie die ALLES intrekt ook groen staan, en
                dan meet dit bestand niets. --- */
-        { label: "dictum", tekst: EIGEN_VASTSTELLING, soort: "status",
+        { label: "dictum", modaliteit: "VASTGESTELD", zekerheid: "0.80", tekst: EIGEN_VASTSTELLING, soort: "status",
           claimvorm: null, tijdstand: null, verwoordbaar: "CONTEXT_ONVOLLEDIG",
           bewijsniveau: "DIRECT_BEVESTIGD", versie: "besluit" },
 
         /* --- ONTBREKENDE BRONPASSAGE: de zin staat NIET in het
                document. steltStukDeClaimVast() kan hem niet
                localiseren, dus er is geen bewijs van achtergrond. --- */
-        { label: "nietInStuk",
+        { label: "nietInStuk", modaliteit: "VASTGESTELD", zekerheid: "0.80",
           tekst: "Het gecontracteerde transportvermogen van deze aansluiting is verdubbeld in 2027.",
           soort: "status", claimvorm: null, tijdstand: null,
           verwoordbaar: "CONTEXT_ONVOLLEDIG", bewijsniveau: "DIRECT_BEVESTIGD",
           versie: "besluit" },
 
         /* --- ONTBREKENDE DOCUMENTTEKST --- */
-        { label: "zonderTekst", tekst: EIGEN_VASTSTELLING, soort: "status",
+        { label: "zonderTekst", modaliteit: "VASTGESTELD", zekerheid: "0.80", tekst: EIGEN_VASTSTELLING, soort: "status",
           claimvorm: null, tijdstand: null, verwoordbaar: "CONTEXT_ONVOLLEDIG",
           bewijsniveau: "DIRECT_BEVESTIGD", versie: "leeg" },
 
@@ -288,10 +374,21 @@ describe("de herbeoordeling past de passagetoets toe", () => {
         /* Dezelfde zin als p140, met opzet: dan dragen beide dezelfde
            claim_afdruk en telt de bewijsniveaustap ze als één bewering.
            Dat is precies de vorm die in productie voorkomt. */
-        { label: "verwoordbaar", tekst: zes.get(140)!,
+        { label: "verwoordbaar", modaliteit: "VASTGESTELD", zekerheid: "0.80", tekst: zes.get(140)!,
           soort: "prijs", claimvorm: null, tijdstand: null,
           verwoordbaar: "VERWOORDBAAR", bewijsniveau: "DIRECT_BEVESTIGD",
           versie: "besluit" },
+
+        /* --- DE PEILDATUMZAAK. Dezelfde zin, twee documenten; het
+               enige verschil is gepubliceerd_op. --- */
+        { label: "zonderDatum", tekst: PEILDATUMCLAIM, soort: "datum", claimvorm: null,
+          modaliteit: "VASTGESTELD", zekerheid: "0.35",
+          tijdstand: null, verwoordbaar: "CONTEXT_ONVOLLEDIG",
+          bewijsniveau: "DIRECT_BEVESTIGD", versie: "zonderDatum" },
+        { label: "metDatum", tekst: PEILDATUMCLAIM, soort: "datum", claimvorm: null,
+          modaliteit: "VASTGESTELD", zekerheid: "0.80",
+          tijdstand: null, verwoordbaar: "CONTEXT_ONVOLLEDIG",
+          bewijsniveau: "DIRECT_BEVESTIGD", versie: "metDatum" },
 
         /* --- EEN JURIDISCHE CLAIM OP EEN NIEUWSBERICHT. Woordelijk
                productieclaim 79, bron rijksoverheid-nieuws, titel
@@ -309,7 +406,7 @@ describe("de herbeoordeling past de passagetoets toe", () => {
                bestond — en de herbeoordeling is wat hem nu opruimt.
                Dat is precies het gat dat deze ronde moest dichten, dus
                hij hoort hier als zaak. --- */
-        { label: "p79",
+        { label: "p79", modaliteit: "VASTGESTELD", zekerheid: "0.80",
           tekst: "Per 1 juli 2027 gaat de rekenkundige ondergrens in, als aan de voorwaarden is voldaan.",
           soort: "datum", claimvorm: null, tijdstand: null,
           verwoordbaar: "CONTEXT_ONVOLLEDIG", bewijsniveau: "DIRECT_BEVESTIGD",
@@ -319,12 +416,12 @@ describe("de herbeoordeling past de passagetoets toe", () => {
                Bevoegd gezag, maar een NIEUWSBERICHT: vormKanVaststellen()
                geeft daar onwaar, dus de passagetoets hoort hen niet te
                raken. --- */
-        { label: "rect-oud",
+        { label: "rect-oud", modaliteit: "VASTGESTELD", zekerheid: "0.65",
           tekst: "In 2025 ruim 3 miljard euro aan milieu-investeringen door bedrijven.",
           soort: "prijs", claimvorm: null, tijdstand: null,
           verwoordbaar: "VERIFICATIE_NODIG", bewijsniveau: null,
           versie: "nieuwsbericht" },
-        { label: "rect-nieuw",
+        { label: "rect-nieuw", modaliteit: "VASTGESTELD", zekerheid: "0.75",
           tekst: "Bedrijven maakten in 2025 voor ruim 3 miljard euro aan milieu-investeringen.",
           soort: "prijs", claimvorm: null, tijdstand: null,
           verwoordbaar: "VERIFICATIE_NODIG", bewijsniveau: null,
@@ -355,7 +452,7 @@ describe("de herbeoordeling past de passagetoets toe", () => {
               bewijsniveau, bewijsniveau_reden, bewijsniveau_op,
               herbeoordeeld_onder)
            values ($1,$2,$3,$4,'hoog','ongeverifieerd',5,5,
-                   'VASTGESTELD',0.80,$5,
+                   $11,$12::numeric,$5,
                    $6::text,$7::text,
                    case when $6::text is null then null else
                      'passage uit de fixture, minstens tien tekens lang' end,
@@ -378,7 +475,7 @@ describe("de herbeoordeling past de passagetoets toe", () => {
             org, s.tekst, s.soort,
             s.versie === "nieuwsbericht" ? "subsidie" : "netcongestie",
             MODALITEIT_VERSIE, s.claimvorm, s.tijdstand, s.verwoordbaar,
-            s.bewijsniveau, OUDE_STEMPEL,
+            s.bewijsniveau, OUDE_STEMPEL, s.modaliteit, s.zekerheid,
           ],
         );
         id[s.label] = r.rows[0]!.id;
@@ -404,6 +501,8 @@ describe("de herbeoordeling past de passagetoets toe", () => {
         [org, id["rect-oud"]!, id["rect-nieuw"]!],
       );
     });
+
+    dragendVoor = await dragendeClaims();
   });
 
   after(async () => {
@@ -425,7 +524,7 @@ describe("de herbeoordeling past de passagetoets toe", () => {
     const droog = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
       herbeoordeelClaims(c, org, { droog: true }),
     );
-    assert.equal(droog.bekeken, 13, "dertien claims in de fixture");
+    assert.equal(droog.bekeken, 15, "vijftien claims in de fixture");
     assert.equal(droog.droog, true);
 
     /* Een droge ronde schrijft niets: de zes staan er na deze aanroep
@@ -439,13 +538,13 @@ describe("de herbeoordeling past de passagetoets toe", () => {
       );
       return r.rows[0]!.n;
     });
-    assert.equal(naDroog, 13, "de droge ronde heeft niets ingetrokken");
+    assert.equal(naDroog, 15, "de droge ronde heeft niets ingetrokken");
 
     ronde = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
       herbeoordeelClaims(c, org, {}),
     );
-    assert.equal(ronde.bekeken, 13);
-    assert.equal(ronde.herbeoordeeld, 13);
+    assert.equal(ronde.bekeken, 15);
+    assert.equal(ronde.herbeoordeeld, 15);
   });
 
   test("2 · de passagetoets trekt precies de acht onhoudbare bevestigingen in", async () => {
@@ -529,7 +628,7 @@ describe("de herbeoordeling past de passagetoets toe", () => {
       );
       return q.rows;
     });
-    assert.equal(sporen.length, 13, "één spoor per herbeoordeelde claim");
+    assert.equal(sporen.length, 15, "één spoor per herbeoordeelde claim");
 
     for (const [label, v] of Object.entries(verwacht)) {
       const spoor = sporen.find((s) => s.object_id === String(id[label]!));
@@ -644,7 +743,7 @@ describe("de herbeoordeling past de passagetoets toe", () => {
       );
       return q.rows[0]!.n;
     });
-    assert.equal(sporen, 13, "twee extra rondes mogen geen extra sporen schrijven");
+    assert.equal(sporen, 15, "twee extra rondes mogen geen extra sporen schrijven");
   });
 
   test("12b · de TAAK rapporteert de gronden, zodat de ronde na te meten is", async () => {
@@ -657,6 +756,64 @@ describe("de herbeoordeling past de passagetoets toe", () => {
     assert.ok(handler, "er hoort een handler voor 'herbeoordeling' te zijn");
     const log = await handler(db.pool, org, {});
     assert.match(log, /op de passagetoets ingetrokken 0/u, log);
+  });
+
+  /* ================================================================
+     DE PEILDATUM — geen kunstmatige zekerheid uit een ander datumveld
+     ================================================================ */
+  test("12c · ZONDER publicatiedatum blijft de zekerheid onder de drempel", async () => {
+    /* HET GEMETEN DEFECT, 6 november 2026. De selectie in
+       herbeoordeelClaims() las
+       coalesce(bd.gepubliceerd_op, bv.opgehaald_op) als peildatum. Voor
+       een document zonder publicatiedatum werd dat ONZE OPHAALDATUM, en
+       daarmee vuurde noemtAfgeslotenJaar() op een jaar dat de schrijver
+       misschien nooit als afgesloten bedoeld heeft. De zekerheid sprong
+       van 0,35 naar 0,80 en daarmee over NOODZAKELIJKE_ZEKERHEID (0,50)
+       heen: 22 productieclaims werden stil tot feitdragend
+       gepromoveerd, waaronder kale ECLI-verwijzingen.
+
+       opgehaald_op staat in deze fixture op default now(), dus de oude
+       terugval zou hier WEL vuren. Dat maakt deze zaak een meting en
+       geen formaliteit. */
+    const r = await leesModaliteit("zonderDatum");
+    assert.equal(r.verificatie_status, "bevestigd", "de zin staat in het vaststellende deel");
+    assert.equal(r.modaliteit, "VASTGESTELD");
+    assert.equal(
+      Number(r.modaliteit_zekerheid),
+      0.35,
+      "zonder publicatiedatum vuurt het jaartalsignaal niet",
+    );
+    assert.ok(
+      Number(r.modaliteit_zekerheid) < NOODZAKELIJKE_ZEKERHEID,
+      `${r.modaliteit_zekerheid} hoort onder de drempel ${NOODZAKELIJKE_ZEKERHEID} te blijven`,
+    );
+  });
+
+  test("12d · MEETHAAK — mét publicatiedatum vuurt het signaal wél", async () => {
+    /* Zonder deze zaak zou een reparatie die de peildatum volledig
+       weggooit ook groen staan, en dan meet 12c niets. Identieke tekst,
+       identiek besluit; het enige verschil is gepubliceerd_op. */
+    const r = await leesModaliteit("metDatum");
+    assert.equal(r.modaliteit, "VASTGESTELD");
+    assert.equal(Number(r.modaliteit_zekerheid), 0.8, "mét datum is 2021 een afgesloten jaar");
+    assert.ok(Number(r.modaliteit_zekerheid) >= NOODZAKELIJKE_ZEKERHEID);
+  });
+
+  test("12e · NUL PROMOTIES — geen claim wordt feitdragend die dat niet was", async () => {
+    /* claimDraagt() is het predicaat dat bepaalt of een claim een
+       bericht mag dragen. Deze zaak vergelijkt de stand vóór de ronde
+       (uit de snapshot in before()) met de stand erna, en eist dat de
+       verzameling dragende claims alleen KRIMPT. Dat is dezelfde
+       eenzijdigheid die de kop van herbeoordeling.ts voor de
+       plafondregel beschrijft.
+
+       Gemeten op de echte productiedata: met de oude coalesce ging
+       claimDraagt() van 10 naar 31 claims; met alleen gepubliceerd_op
+       van 10 naar 9. */
+    const na = await dragendeClaims();
+    const erbij = [...na].filter((x) => !dragendVoor.has(x));
+    assert.deepEqual(erbij, [], `deze claims werden gepromoveerd: ${erbij.join(", ")}`);
+    assert.ok(na.size <= dragendVoor.size, `${dragendVoor.size} -> ${na.size}`);
   });
 
   test("13 · bewijsniveau en verificatiestatus spreken elkaar niet tegen", async () => {
@@ -735,7 +892,7 @@ describe("de herbeoordeling past de passagetoets toe", () => {
       );
       return q.rows[0]!.n;
     });
-    assert.equal(bevestigd, 5, "dictum, niet-localiseerbaar, zonder tekst en de twee RVO-claims");
+    assert.equal(bevestigd, 7, "dictum, niet-localiseerbaar, zonder tekst, de twee RVO-claims\n      en de twee peildatumclaims");
   });
 
   test("16 · de PUBLICATIEBEVEILIGINGEN staan onaangeroerd", async () => {
@@ -834,6 +991,61 @@ describe("de herbeoordeling past de passagetoets toe", () => {
   });
 
   /* ---------------------------------------------------------------- */
+  /** De ids die claimDraagt() op dit moment als feitdragend ziet. */
+  async function dragendeClaims(): Promise<Set<number>> {
+    return metOrganisatie(db.pool, { organisatieId: org }, async (c) => {
+      const q = await c.query<{
+        id: number;
+        verificatie_status: string;
+        modaliteit: string | null;
+        modaliteit_zekerheid: string | null;
+        documentsoort: string | null;
+      }>(
+        `select u.id, u.verificatie_status, u.modaliteit,
+                u.modaliteit_zekerheid::text as modaliteit_zekerheid, bv.documentsoort
+           from intel.uitspraken u
+           join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id and ub.rol = 'primair'
+             and ub.organisatie_id = u.organisatie_id
+           join intel.brondocument_versies bv on bv.id = ub.versie_id
+          where u.organisatie_id = $1`,
+        [org],
+      );
+      const uit = new Set<number>();
+      for (const r of q.rows) {
+        if (
+          claimDraagt({
+            verificatieStatus: r.verificatie_status,
+            modaliteit: r.modaliteit,
+            modaliteitZekerheid: r.modaliteit_zekerheid === null ? null : Number(r.modaliteit_zekerheid),
+            documentsoort: r.documentsoort,
+          })
+        ) {
+          uit.add(Number(r.id));
+        }
+      }
+      return uit;
+    });
+  }
+
+  async function leesModaliteit(label: string): Promise<{
+    verificatie_status: string;
+    modaliteit: string | null;
+    modaliteit_zekerheid: string | null;
+  }> {
+    return metOrganisatie(db.pool, { organisatieId: org }, async (c) => {
+      const q = await c.query<{
+        verificatie_status: string;
+        modaliteit: string | null;
+        modaliteit_zekerheid: string | null;
+      }>(
+        `select verificatie_status, modaliteit, modaliteit_zekerheid::text as modaliteit_zekerheid
+           from intel.uitspraken where organisatie_id = $1 and id = $2`,
+        [org, id[label]!],
+      );
+      return q.rows[0]!;
+    });
+  }
+
   async function leesClaim(label: string): Promise<{
     tekst: string;
     verificatie_status: string;
