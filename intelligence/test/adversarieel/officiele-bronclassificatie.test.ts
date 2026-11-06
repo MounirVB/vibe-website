@@ -64,8 +64,24 @@ const ACM_BESLUIT = [
   "4. Wettelijk kader",
   "Op grond van artikel 5.4 van de Energiewet beslecht de ACM geschillen.",
   "",
-  "5. Standpunten van partijen:",
-  "Jumbo stelt dat de gronden om geen congestiemanagement toe te passen niet voldoen.",
+  /* DE KOP ZONDER DUBBELE PUNT, met het subparagraafnummer erachter —
+     exact de vorm in de opgeslagen tekst van het echte besluit
+     (brondocument_versie 4394):
+
+       "... bij dit besluit. 5. Standpunten van partijen\n5.1. Jumbo\n14. ..."
+
+     Een fixture met ':' achter de kop toetst een vorm die in productie
+     niet voorkomt; de terminator [:\n] van het patroon moet hier op de
+     NEWLINE aanslaan, niet op een dubbele punt. */
+  "5. Standpunten van partijen",
+  "5.1. Jumbo",
+  "14. Jumbo heeft kort samengevat het volgende naar voren gebracht.",
+  "15. Jumbo stelt dat de gronden om geen congestiemanagement toe te passen niet voldoen.",
+  /* EEN STANDPUNTZIN MET EEN GETAL EN EEN DATUM, zodat er uit deze
+     sectie ook werkelijk een claim te extraheren is. Zonder zo'n zin
+     levert de standpuntensectie geen enkele claim op en meet de zaak
+     "op het ECHTE besluit" niets — gemeten: oud 7, nieuw 7. */
+  "Volgens Jumbo is in het congestierapport van 17 april 2025 slechts 40 procent van de flexibiliteit onderzocht.",
   "Volgens Jumbo heeft Liander onvoldoende onderzocht of flexibiliteit beschikbaar is.",
   "Volgens Jumbo is het rapport ondeugdelijk. Volgens Jumbo stelt Liander te hoge eisen.",
   "Liander stelt dat het rapport wel aan de eisen voldoet. Volgens Liander is er geen ruimte.",
@@ -404,4 +420,227 @@ test("scope · 'verhogen' wordt als stijging herkend", () => {
   );
   assert.equal(r.uitslag, "VERWOORDBAAR");
   assert.match(r.zin ?? "", /stijgt/);
+});
+
+/* ================================================================
+   DE PASSAGETOETS GELDT VOOR ÉLKE CLAIM UIT EEN OFFICIEEL STUK
+   ------------------------------------------------------------------
+   HET GEMETEN DEFECT, 6 november 2026 — claim 138 in productie:
+
+     bron    acm-besluiten, OFFICIEEL_BESLUIT / BEVOEGD_GEZAG /
+             BEKENDMAKING, plafond 5
+     tekst   "Jumbo stelt dat de in het congestierapport van
+              17 april 2025 opgenomen gronden om geen …"
+     soort   datum, geen claimvorm
+     status  BEVESTIGD, en met 0055 ook DIRECT_BEVESTIGD
+
+   De zin staat gemeten binnen 'Standpunten van partijen'. Het is het
+   standpunt van een supermarkt, en het stond als vastgesteld feit van
+   de toezichthouder in de database.
+
+   isJuridischeClaim() liet hem langs: een datumclaim uit een
+   standpuntzin draagt geen juridische markering en geen juridische
+   claimvorm, dus de passagetoets werd niet eens geraadpleegd —
+   terwijl diezelfde toets de regel-claims uit dezelfde sectie wél
+   blokkeerde.
+   ================================================================ */
+
+import {
+  extraheerUitspraken,
+  isJuridischeClaim,
+} from "../../src/pijplijn/uitspraken.ts";
+import { bepaalModaliteit } from "../../src/pijplijn/claimmodaliteit.ts";
+import { bepaalClaimAard } from "../../src/pijplijn/claimaard.ts";
+import { vormKanVaststellen } from "../../src/pijplijn/documentvorm.ts";
+import type { Documentsoort, Gezag } from "../../src/pijplijn/documentsoort.ts";
+import type { Documentvorm } from "../../src/pijplijn/documentvorm.ts";
+
+type Stuk = {
+  readonly documentTitel: string;
+  readonly documentTekst: string;
+  readonly documentsoort: Documentsoort;
+  readonly gezag: Gezag;
+  readonly documentvorm: Documentvorm;
+  readonly modaliteit: "VASTGESTELD";
+  readonly eigenGezagNamen: readonly string[];
+};
+
+/** Bevestigt dit stuk deze claim, met de poort zoals uitspraken.ts hem stelt? */
+function bevestigt(claimTekst: string, stuk: Stuk) {
+  const mod = bepaalModaliteit({
+    tekst: claimTekst,
+    documentsoort: stuk.documentsoort,
+    peildatum: "2026-09-25",
+  });
+  const aard = bepaalClaimAard(claimTekst);
+  const vast = steltStukDeClaimVast({ ...stuk, claimTekst, modaliteit: mod.modaliteit });
+  const juridisch = isJuridischeClaim(aard.juridisch, null);
+  /* DE DRIE GRONDEN, woordelijk zoals in schrijfUitspraken(). */
+  const officieel =
+    stuk.gezag === "BEVOEGD_GEZAG" && vormKanVaststellen(stuk.documentvorm);
+  return {
+    oud: !(juridisch && !vast.steltVast),
+    nieuw: !((officieel || juridisch) && !vast.steltVast),
+    uitslag: vast.uitslag,
+    officieel,
+  };
+}
+
+test("DE KERNZAAK — een DATUMclaim uit een standpuntzin bevestigt niet meer", () => {
+  const r = bevestigt(
+    "Jumbo stelt dat de gronden om geen congestiemanagement toe te passen niet voldoen aan de Netcode van 17 april 2025.",
+    BESLUITSTUK,
+  );
+  assert.equal(r.officieel, true, "het stuk is bevoegd gezag in een vaststellende vorm");
+  assert.equal(r.uitslag, "ACHTERGRONDPASSAGE");
+  assert.equal(r.oud, true, "vóór de reparatie bevestigde deze claim wél — dat was het defect");
+  assert.equal(r.nieuw, false, "en na de reparatie niet meer");
+});
+
+test("en een CIJFERclaim uit een standpuntzin ook niet", () => {
+  /* DE ZIN STAAT LETTERLIJK IN DE FIXTURE. steltStukDeClaimVast()
+     localiseert de claim op de eerste 48 tekens van zijn tekst
+     (vaststelling.ts:263); een zin die niet in het document staat, is
+     niet te localiseren en valt dus buiten elke achtergrondregio. Mijn
+     eerste versie van deze zaak gebruikte een zin die er niet in stond
+     en kwam daardoor op STELT_VAST uit — de toets meette niets. */
+  const r = bevestigt(
+    "Volgens Jumbo is in het congestierapport van 17 april 2025 slechts 40 procent van de flexibiliteit onderzocht.",
+    BESLUITSTUK,
+  );
+  assert.equal(r.uitslag, "ACHTERGRONDPASSAGE");
+  assert.equal(r.nieuw, false, `uitslag ${r.uitslag}`);
+});
+
+test("maar een claim uit het DICTUM blijft bevestigen", () => {
+  /* Zonder deze zaak zou de reparatie alles kunnen blokkeren en nog
+     steeds groen staan. Dan meet hij niets. */
+  const r = bevestigt(
+    "De Autoriteit Consument en Markt verklaart de klacht van Jumbo gegrond.",
+    BESLUITSTUK,
+  );
+  assert.equal(r.uitslag, "STELT_VAST");
+  assert.equal(r.nieuw, true, `uitslag ${r.uitslag}`);
+});
+
+test("en een claim uit de BEOORDELING ook", () => {
+  const r = bevestigt(
+    "De ACM stelt vast dat het congestierapport van Liander niet in overeenstemming is met de eisen van de Netcode.",
+    BESLUITSTUK,
+  );
+  assert.equal(r.nieuw, true, `uitslag ${r.uitslag}`);
+});
+
+test("MEETHAAK — een NIET-vaststellend stuk houdt de OUDE grens", () => {
+  /* DIT IS DE BEGRENZING VAN DE REPARATIE, en zonder deze zaak zou hij
+     de keten breken. Gemeten: FEITELIJKE_MEDEDELING bij een
+     NETBEHEERDER heeft plafond 4 en MAG zichzelf bevestigen, maar
+     haalt vormKanVaststellen() niet. Zou de passagetoets ook daar voor
+     élke claim gelden, dan bevestigde geen enkele claim van een
+     netbeheerder, een statistiekbureau of een ministerieel
+     nieuwsbericht nog — en dan kan bronverificatie.ts nergens meer
+     ankeren. */
+  const nietVaststellend = {
+    ...BESLUITSTUK,
+    documentsoort: "FEITELIJKE_MEDEDELING" as const,
+    gezag: "NETBEHEERDER" as const,
+    documentvorm: "NIEUWSBERICHT" as const,
+  };
+  const r = bevestigt(
+    "Het aantal aansluitingen in de wachtrij bedroeg vorig jaar 8.500.",
+    nietVaststellend,
+  );
+  assert.equal(r.officieel, false, "dit stuk stelt geen recht vast");
+  assert.equal(r.oud, r.nieuw, "de reparatie verandert hier niets");
+  assert.equal(r.nieuw, true, "en een feitelijke mededeling blijft zijn eigen cijfer dragen");
+});
+
+test("op het ECHTE besluit: alle standpuntclaims vallen af, het dictum niet", () => {
+  /* Woordelijk de fixture uit dit bestand, door de hele extractie. */
+  const claims = extraheerUitspraken(ACM_BESLUIT_TITEL, ACM_BESLUIT);
+  let oud = 0;
+  let nieuw = 0;
+  const afgevallen: string[] = [];
+  for (const c of claims) {
+    const r = bevestigt(c.tekst, BESLUITSTUK);
+    if (r.oud) oud += 1;
+    if (r.nieuw) nieuw += 1;
+    if (r.oud && !r.nieuw) afgevallen.push(`${r.uitslag}: ${c.tekst.slice(0, 60)}`);
+  }
+  assert.ok(nieuw < oud, `verwacht dat er claims afvallen; oud ${oud}, nieuw ${nieuw}`);
+  assert.ok(nieuw > 0, "maar niet alle claims — het dictum hoort te blijven staan");
+  /* ELKE AFGEVALLEN CLAIM MOET EEN GROND HEBBEN. Een blokkade zonder
+     uitslag is niet na te meten. */
+  for (const a of afgevallen) {
+    assert.match(
+      a,
+      /^(ACHTERGRONDPASSAGE|NIET_VASTSTELLENDE_MODALITEIT|ANDER_GEZAG|ONTWERP|GEEN_AUTHENTIEK_STUK):/,
+      `afgevallen zonder bekende grond: ${a}`,
+    );
+  }
+});
+
+/* ================================================================
+   DE VORM VAN DE PARAGRAAFKOP, vastgepind op de productietekst
+   ------------------------------------------------------------------
+   WAAROM DEZE TWEE ZAKEN BESTAAN.
+
+   Bij het nameten van claim 138 gebruikte ik eerst een probe die
+   `documenttekst` meegaf in plaats van `documentTekst`, verborgen
+   achter een cast. De passagetoets kreeg dus GEEN documenttekst en
+   kwam op STELT_VAST uit. Ik las dat als een defect in de
+   achtergronddetectie en verbreedde de terminator van het
+   standpuntpatroon. Die wijziging is teruggedraaid: met de juiste
+   veldnamen geeft de ONGEWIJZIGDE code ACHTERGRONDPASSAGE.
+
+   Wat overbleef is een echte meetval. In de opgeslagen tekst
+   (brondocument_versie 4394) luidt de kop:
+
+     "... bij dit besluit. 5. Standpunten van partijen\n5.1. Jumbo\n14. ..."
+
+   Geen dubbele punt — de terminator [:\n] van het patroon slaat hier
+   aan op de NEWLINE. Beide fixtures in dit bestand hadden een ':'
+   achter de kop en toetsten dus een vorm die in productie niet
+   voorkomt. Deze twee zaken pinnen de echte vorm vast, zodat een
+   latere versmalling van die terminator rood wordt in plaats van
+   stil door te glippen.
+   ================================================================ */
+
+test("de paragraafkop ZONDER dubbele punt opent de achtergrondregio", () => {
+  const tekst = [
+    "Besluit van de Autoriteit Consument en Markt als bedoeld in artikel 5.4 van de Energiewet.",
+    "4. Wettelijk kader",
+    "Het wettelijk kader is opgenomen in de bijlage bij dit besluit.",
+    "5. Standpunten van partijen",
+    "5.1. Jumbo",
+    "14. Jumbo heeft kort samengevat het volgende naar voren gebracht.",
+    "15. Volgens Jumbo is slechts 40 procent van de flexibiliteit onderzocht in 2025.",
+  ].join("\n");
+  const r = bevestigt(
+    "Volgens Jumbo is slechts 40 procent van de flexibiliteit onderzocht in 2025.",
+    { ...BESLUITSTUK, documentTekst: tekst },
+  );
+  assert.equal(r.uitslag, "ACHTERGRONDPASSAGE", "de kop zonder ':' hoort te openen");
+  assert.equal(r.nieuw, false);
+});
+
+test("MEETHAAK — 'de standpunten van partijen' MIDDENIN een zin opent niets", () => {
+  /* De keerzijde. Zou het patroon ook midden in een zin aanslaan, dan
+     vergiftigde één terugblikkende zin de rest van het besluit,
+     inclusief het dictum. Het patroon eist daarom dat de kop aan het
+     begin van een zin staat, eventueel met een paragraafnummer ervoor:
+     in 'heeft de standpunten van partijen beoordeeld' staat 'de ' voor
+     'standpunten' en matcht hij niet. */
+  const tekst = [
+    "Besluit van de Autoriteit Consument en Markt als bedoeld in artikel 5.4 van de Energiewet.",
+    "6. Beoordeling van het geschil",
+    "De ACM heeft de standpunten van partijen beoordeeld en weegt ze hieronder.",
+    "De ACM stelt vast dat het gecontracteerde transportvermogen 630 kVA bedraagt.",
+  ].join("\n");
+  const r = bevestigt(
+    "De ACM stelt vast dat het gecontracteerde transportvermogen 630 kVA bedraagt.",
+    { ...BESLUITSTUK, documentTekst: tekst },
+  );
+  assert.equal(r.uitslag, "STELT_VAST", "een terugblikkende zin mag het dictum niet vergiftigen");
+  assert.equal(r.nieuw, true);
 });
