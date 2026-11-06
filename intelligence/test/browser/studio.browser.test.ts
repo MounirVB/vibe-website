@@ -954,6 +954,39 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
     assert.match(spoor.rows[0]!.motivatie, /goedkeuring vervallen/);
   });
 
+  test("25a. de PUBLICATIESTAND toont vijf fasen, en ze zijn niet hetzelfde", async () => {
+    /* Zaak 23 hierboven heeft dit concept goedgekeurd, en verder niets.
+       De pagina hoort dat precies zo te zeggen: fase 1 gedaan, de rest
+       niet — want een goedkeuring is geen publicatie en een geopende PR
+       al helemaal niet. De fasen komen uit het append-only logboek
+       (publicatiebesluiten.poortresultaten.fase), niet uit de
+       statuskolom; zie inhoud/actor.ts. */
+    const p = await alsRol("beheerder");
+    await p.goto(`/studio/${conceptVersie}`, { waitUntil: "domcontentloaded" });
+    const tekst = await p.locator("body").innerText();
+
+    assert.match(tekst, /1 . Goedgekeurd voor publicatie/);
+    assert.match(tekst, /2 . Registerrecord geschreven/);
+    assert.match(tekst, /3 . Pull request aangemaakt/);
+    assert.match(tekst, /4 . PR gemerged en website uitgerold/);
+    assert.match(tekst, /5 . Publieke URL gecontroleerd/);
+    assert.match(
+      tekst,
+      /Een geopende pull request is\s+geen publicatie/,
+      "de pagina hoort het onderscheid ook uit te leggen",
+    );
+
+    /* Fase 5 staat nog open, en de pagina zegt met welk commando je hem
+       sluit. (Geen locator op `table.paren`: de detailpagina gebruikt de
+       tabel()-vorm en niet de parentabel — gemeten, de locator liep af.) */
+    assert.match(tekst, /nog niet geverifieerd/, "fase 5 hoort open te staan");
+    assert.match(
+      tekst,
+      /--versie \d+ --verifieer/,
+      "en te zeggen met welk commando je hem sluit",
+    );
+  });
+
   test("25b. de lijst linkt klikbaar naar het concept", async () => {
     /* /studio/:id bestond, maar er stond nergens een href naartoe: een
        beoordelaar moest de URL typen om het stuk te kunnen lezen dat hij
