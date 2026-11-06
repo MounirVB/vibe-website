@@ -156,6 +156,9 @@ type UitspraakRij = {
   modaliteit_zekerheid: string | null;
   documentsoort: string | null;
   primaire_bron_bevestigd: boolean;
+  /* Voor de jurisdictiepoort: alleen een PRIMAIRE bron mag met zijn
+     uitgever meewegen in bepaalToepassingsgebied(). */
+  is_primaire_bron: boolean;
 };
 
 /**
@@ -790,7 +793,8 @@ export async function maakConcept(
                  bouwConcept() niet scheiden wat vaststaat van wat
                  gevraagd of verwacht wordt. */
               u.modaliteit, u.modaliteit_zekerheid::text as modaliteit_zekerheid,
-              v.documentsoort, u.primaire_bron_bevestigd
+              v.documentsoort, u.primaire_bron_bevestigd,
+              coalesce(b.is_primaire_bron, false) as is_primaire_bron
          from intel.uitspraken u
          /* ROL = PRIMAIR, en dat is een correctie van een echte fout.
             Hier stond geen rolvoorwaarde en eronder
@@ -1170,6 +1174,8 @@ export async function hertoetsInhoudVersie(
     modaliteit: string | null;
     modaliteit_zekerheid: string | null;
     documentsoort: string | null;
+    uitgever: string | null;
+    is_primaire_bron: boolean;
   }>(
     c,
     /* R3 — DE DRIE VELDEN DIE HIER ONTBRAKEN.
@@ -1184,12 +1190,19 @@ export async function hertoetsInhoudVersie(
     `select u.id, u.tekst, u.soort, u.waarde_numeriek, u.eenheid,
             u.geldig_vanaf, u.geldig_tot, u.verificatie_status, iu.rol,
             u.modaliteit, u.modaliteit_zekerheid::text as modaliteit_zekerheid,
-            bv.documentsoort
+            bv.documentsoort,
+            /* De uitgever en of die primair is: de jurisdictiepoort kan
+               zonder die twee alleen naar de zin kijken en komt dan op
+               ONBEKEND uit waar de semantieklaag NEDERLAND ziet. */
+            bb.uitgever,
+            coalesce(bb.is_primaire_bron, false) as is_primaire_bron
        from intel.inhoud_uitspraken iu
        join intel.uitspraken u on u.id = iu.uitspraak_id
        left join intel.uitspraak_bronnen ub
               on ub.uitspraak_id = u.id and ub.rol = 'primair'
        left join intel.brondocument_versies bv on bv.id = ub.versie_id
+       left join intel.brondocumenten bd on bd.id = bv.brondocument_id
+       left join intel.bronnen bb on bb.id = bd.bron_id
       where iu.organisatie_id = $1 and iu.inhoud_versie_id = $2
       order by u.id, bv.id`,
     [organisatieId, versieId],
@@ -1247,6 +1260,11 @@ export async function hertoetsInhoudVersie(
       };
     }),
     bronteksten: gebonden.map((u) => u.tekst),
+    bronherkomst: gebonden.map((u) => ({
+      tekst: u.tekst,
+      uitgever: u.uitgever,
+      isPrimaireBron: u.is_primaire_bron,
+    })),
     injectieInBron: injectie?.verdacht ?? false,
     bestaandePaden: new Set(paden.map((p) => p.pad)),
     siteBasisUrl: config.siteBasisUrl,
@@ -1375,6 +1393,11 @@ function toetsVoorConcept(
     uitspraken: gebonden,
     // De bronzinnen zelf, om herpublicatie te kunnen meten.
     bronteksten: uitspraken.map((u) => u.tekst),
+    bronherkomst: uitspraken.map((u) => ({
+      tekst: u.tekst,
+      uitgever: u.uitgever,
+      isPrimaireBron: u.is_primaire_bron,
+    })),
     injectieInBron,
     bestaandePaden,
     siteBasisUrl,
