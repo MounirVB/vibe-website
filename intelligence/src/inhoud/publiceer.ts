@@ -46,6 +46,14 @@ import {
    op 'publiceer.ts' in concept.ts: nul treffers. */
 import { hertoetsInhoudVersie, inhoudAfdruk } from "./concept.ts";
 import {
+  actorBeschrijving,
+  legPublicatieAuditVast,
+  legPublicatiebesluitVast,
+  verifieerMens,
+  type Actor,
+} from "./actor.ts";
+import { RECHT_BEOORDELEN } from "./beoordeling.ts";
+import {
   heeftRouteregister,
   leesRouteregister,
   leesRouteStaten,
@@ -325,8 +333,15 @@ export async function publiceer(
      registerrecord in een ANDERE werkboom, zag `git status` niets
      nieuws, en kwam er een commit zonder het geauteurde bestand — met
      alle grendels op PASS. Eén waarheid, doorgegeven in plaats van twee
-     keer afgeleid. Niet meegegeven? Dan precies het oude gedrag. */
-  opties: { droog?: boolean; siteWortel?: string } = {},
+     keer afgeleid. Niet meegegeven? Dan precies het oude gedrag.
+
+     DE ACTOR IS VERPLICHT, en dat is de hele auditcorrectie. Deze functie
+     schreef haar logregels met actor_soort 'systeem' zonder gebruiker,
+     ook wanneer een mens haar met de hand draaide. Een optionele
+     parameter zou dat gedrag laten bestaan voor elke aanroeper die hem
+     vergeet; een verplichte dwingt elke aanroeper om te zeggen wie dit
+     doet. Zie inhoud/actor.ts. */
+  opties: { actor: Actor; droog?: boolean; siteWortel?: string },
 ): Promise<PublicatieRapport> {
   const config = { ...configLezen(), siteWortel: opties.siteWortel ?? configLezen().siteWortel };
 
@@ -523,14 +538,22 @@ export async function publiceer(
       ],
     );
 
-    await c.query(
-      `insert into intel.publicatiebesluiten
-         (organisatie_id, inhoud_versie_id, besluit, actor_soort, motivatie)
-       values ($1, $2, 'gepubliceerd', 'systeem', $3)`,
-      [organisatieId, v.id, `geschreven naar ${bestandsnaam} (${html.length} bytes)`],
-    );
+    await legPublicatiebesluitVast(c, {
+      organisatieId,
+      inhoudVersieId: v.id,
+      besluit: "gepubliceerd",
+      fase: "RECORD_GESCHREVEN",
+      actor: opties.actor,
+      motivatie: `geschreven naar ${bestandsnaam} (${html.length} bytes)`,
+      meting: { bestandspad: bestandsnaam, bytes: html.length, weg: "html" },
+    });
 
-    log.info("gepubliceerd", { versie: v.id, bestand: bestandsnaam, bytes: html.length });
+    log.info("gepubliceerd", {
+      versie: v.id,
+      bestand: bestandsnaam,
+      bytes: html.length,
+      door: actorBeschrijving(opties.actor),
+    });
 
     return {
       inhoudVersieId: v.id,
@@ -673,7 +696,7 @@ async function publiceerViaRegister(
   organisatieId: number,
   v: VersieRij,
   config: { siteWortel: string },
-  opties: { droog?: boolean },
+  opties: { actor: Actor; droog?: boolean },
   weiger: (id: number, reden: string) => PublicatieRapport,
 ): Promise<PublicatieRapport> {
   if (!isNieuwsPad(v.pad)) {
@@ -958,18 +981,40 @@ async function publiceerViaRegister(
     [organisatieId, v.pad, v.canonieke_url, uit.bestandspad, v.titel],
   );
 
-  await c.query(
-    `insert into intel.publicatiebesluiten
-       (organisatie_id, inhoud_versie_id, besluit, actor_soort, motivatie)
-     values ($1, $2, 'gepubliceerd', 'systeem', $3)`,
-    [
-      organisatieId,
-      v.id,
+  /* FASE 'RECORD_GESCHREVEN' EN NIET 'GEPUBLICEERD'.
+     Het besluit heet 'gepubliceerd' omdat de CHECK-constraint in 0004
+     geen andere waarde kent, maar de FASE zegt wat er werkelijk is
+     gebeurd: er staat een registerrecord in de werkboom. De pagina is
+     dan nog niet live — daarvoor moeten de generator, de merge en de
+     deploy nog. De live-verificatie schrijft later een eigen regel met
+     fase 'LIVE_GEVERIFIEERD'. Zie publicatie/verificatie.ts. */
+  await legPublicatiebesluitVast(c, {
+    organisatieId,
+    inhoudVersieId: v.id,
+    besluit: "gepubliceerd",
+    fase: "RECORD_GESCHREVEN",
+    actor: opties.actor,
+    motivatie:
       `registerrecord ${uit.bestandspad} (${uit.inhoud.length} bytes), redactionele staat ` +
-        `${String(record["redactionele_staat"])}, eigenaar ${onderwerpEigenaar}, ` +
-        `${bronnen.length} bron(nen)`,
-    ],
-  );
+      `${String(record["redactionele_staat"])}, eigenaar ${onderwerpEigenaar}, ` +
+      `${bronnen.length} bron(nen)`,
+    meting: {
+      bestandspad: uit.bestandspad,
+      bytes: uit.inhoud.length,
+      redactioneleStaat: String(record["redactionele_staat"]),
+      onderwerpEigenaar,
+      bronnen: bronnen.length,
+      weg: "register",
+    },
+  });
+  await legPublicatieAuditVast(c, {
+    organisatieId,
+    actor: opties.actor,
+    handeling: "publicatierecord_geschreven",
+    objectId: v.id,
+    naWaarde: { bestandspad: uit.bestandspad, pad: v.pad, status: "gepubliceerd" },
+    motivatie: "registerrecord geschreven; de pagina is hiermee nog niet live",
+  });
 
   log.info("registerrecord gepubliceerd", {
     versie: v.id,
@@ -1010,8 +1055,9 @@ export async function draaiTerug(
   publicatieId: number,
   /* Dezelfde doorgifte als bij publiceer(): terugdraaien moet in de boom
      gebeuren waarin is geschreven, niet in de boom die de omgeving
-     toevallig noemt. */
-  opties: { siteWortel?: string } = {},
+     toevallig noemt. En dezelfde verplichte actor: terugdraaien is een
+     publicatiehandeling en hoort dus een naam te hebben. */
+  opties: { actor: Actor; siteWortel?: string },
 ): Promise<TerugdraaiRapport> {
   const config = { ...configLezen(), siteWortel: opties.siteWortel ?? configLezen().siteWortel };
 
@@ -1069,17 +1115,30 @@ export async function draaiTerug(
           where organisatie_id = $1 and bestandspad = $2`,
         [organisatieId, p.bestandspad, uit.hersteld],
       );
-      await c.query(
-        `insert into intel.publicatiebesluiten
-           (organisatie_id, inhoud_versie_id, besluit, actor_soort, motivatie)
-         values ($1, $2, 'teruggedraaid', 'systeem', $3)`,
-        [
-          organisatieId,
-          p.inhoud_versie_id,
+      await legPublicatiebesluitVast(c, {
+        organisatieId,
+        inhoudVersieId: p.inhoud_versie_id,
+        besluit: "teruggedraaid",
+        fase: "TERUGGEDRAAID",
+        actor: opties.actor,
+        motivatie:
           `registerrecord ${uit.hersteld ? "hersteld naar de vorige versie" : uit.verwijderd ? "verwijderd" : "ongemoeid"}; ` +
-            "de pagina verdwijnt bij de volgende generatorrun van Release 1",
-        ],
-      );
+          "de pagina verdwijnt bij de volgende generatorrun van Release 1",
+        meting: {
+          bestandspad: p.bestandspad,
+          hersteld: uit.hersteld,
+          verwijderd: uit.verwijderd,
+          weg: "register",
+        },
+      });
+      await legPublicatieAuditVast(c, {
+        organisatieId,
+        actor: opties.actor,
+        handeling: "publicatie_teruggedraaid",
+        objectId: p.inhoud_versie_id,
+        naWaarde: { publicatieId: p.id, bestandspad: p.bestandspad, status: "teruggedraaid" },
+        motivatie: "registerrecord teruggedraaid",
+      });
 
       log.info("registerrecord teruggedraaid", { publicatie: p.id, bestand: p.bestandspad, teruggezet });
 
@@ -1131,12 +1190,23 @@ export async function draaiTerug(
     await c.query("update intel.inhoud_versies set status = 'teruggedraaid' where id = $1", [
       p.inhoud_versie_id,
     ]);
-    await c.query(
-      `insert into intel.publicatiebesluiten
-         (organisatie_id, inhoud_versie_id, besluit, actor_soort, motivatie)
-       values ($1, $2, 'teruggedraaid', 'systeem', $3)`,
-      [organisatieId, p.inhoud_versie_id, `terugdraaien via ${teruggezet}`],
-    );
+    await legPublicatiebesluitVast(c, {
+      organisatieId,
+      inhoudVersieId: p.inhoud_versie_id,
+      besluit: "teruggedraaid",
+      fase: "TERUGGEDRAAID",
+      actor: opties.actor,
+      motivatie: `terugdraaien via ${teruggezet}`,
+      meting: { bestandspad: p.bestandspad, teruggezet, weg: "html" },
+    });
+    await legPublicatieAuditVast(c, {
+      organisatieId,
+      actor: opties.actor,
+      handeling: "publicatie_teruggedraaid",
+      objectId: p.inhoud_versie_id,
+      naWaarde: { publicatieId: p.id, bestandspad: p.bestandspad, teruggezet },
+      motivatie: "html-publicatie teruggedraaid",
+    });
 
     log.info("teruggedraaid", { publicatie: p.id, bestand: p.bestandspad, teruggezet });
 
@@ -1388,41 +1458,49 @@ export async function keurGoed(
     throw e;
   }
 
-  await c.query(
-    `insert into intel.publicatiebesluiten
-       (organisatie_id, inhoud_versie_id, besluit, door_gebruiker_id, actor_soort, motivatie,
-        poortresultaten)
-     values ($1, $2, 'goedgekeurd', $3, 'mens', $4, $5)`,
-    [
-      v.organisatie_id,
-      inhoudVersieId,
-      gebruikerId,
-      motivatie,
-      /* WAAROP IS GOEDGEKEURD, niet alleen DAT er is goedgekeurd. De
-         claimtoestand van dit moment hoort bij het besluit: zonder die
-         vastlegging is later niet na te gaan welk bewijs de goedkeuring
-         droeg. De tabel is append-only, dus dit is onwisbaar. */
-      JSON.stringify({
-        motorversies: bewijs.motorversies,
-        dragendeKern: bewijs.dragendeKern,
-        claims: bewijs.claims.map((k) => ({
-          uitspraakId: k.uitspraakId,
-          rol: k.rol,
-          verificatieStatus: k.verificatieStatus,
-          modaliteit: k.modaliteit,
-          modaliteitZekerheid: k.modaliteitZekerheid,
-          documentsoort: k.documentsoort,
-          bewijsKwaliteit: k.bewijsKwaliteit,
-          bewijskrachtPlafond: k.bewijskrachtPlafond,
-          primaireVersieId: k.primaireVersieId,
-          draagt: k.draagt,
-        })),
-        /* De poortstand na de goedkeuring hoort bij het besluit: zonder
-           dit is later niet te zien of er na de goedkeuring nog een
-           blokkade stond, en dus waarom er niet is gepubliceerd. */
-        naHertoets,
-      }),
-    ],
-  );
+  /* DEZELFDE SCHRIJFWEG ALS DE PUBLICATIEZIJDE, en niet langer een eigen
+     insert. Deze regel vulde `door_gebruiker_id` al — dat was hier nooit
+     het gat — maar `door_rol` bleef leeg en de FASE ontbrak. Via
+     legPublicatiebesluitVast() krijgt de goedkeuring dezelfde vorm als
+     elke andere stap, en is er precies één plek waar herkomst wordt
+     afgeleid. De rechten zijn hierboven al getoetst (strenger dan
+     verifieerMens(), want hoog risico verzwaart); deze aanroep levert de
+     actor met zijn rol erbij. */
+  const actor = await verifieerMens(c, v.organisatie_id, {
+    gebruikerId,
+    vereistRecht: RECHT_BEOORDELEN,
+  });
+  await legPublicatiebesluitVast(c, {
+    organisatieId: v.organisatie_id,
+    inhoudVersieId,
+    besluit: "goedgekeurd",
+    fase: "GOEDGEKEURD",
+    actor,
+    motivatie,
+    /* WAAROP IS GOEDGEKEURD, niet alleen DAT er is goedgekeurd. De
+       claimtoestand van dit moment hoort bij het besluit: zonder die
+       vastlegging is later niet na te gaan welk bewijs de goedkeuring
+       droeg. De tabel is append-only, dus dit is onwisbaar. */
+    meting: {
+      motorversies: bewijs.motorversies,
+      dragendeKern: bewijs.dragendeKern,
+      claims: bewijs.claims.map((k) => ({
+        uitspraakId: k.uitspraakId,
+        rol: k.rol,
+        verificatieStatus: k.verificatieStatus,
+        modaliteit: k.modaliteit,
+        modaliteitZekerheid: k.modaliteitZekerheid,
+        documentsoort: k.documentsoort,
+        bewijsKwaliteit: k.bewijsKwaliteit,
+        bewijskrachtPlafond: k.bewijskrachtPlafond,
+        primaireVersieId: k.primaireVersieId,
+        draagt: k.draagt,
+      })),
+      /* De poortstand na de goedkeuring hoort bij het besluit: zonder
+         dit is later niet te zien of er na de goedkeuring nog een
+         blokkade stond, en dus waarom er niet is gepubliceerd. */
+      naHertoets,
+    },
+  });
   return { goedgekeurd: true, naHertoets };
 }

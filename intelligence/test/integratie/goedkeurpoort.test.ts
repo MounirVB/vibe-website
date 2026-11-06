@@ -34,6 +34,7 @@ import { strict as assert } from "node:assert";
 import { after, before, describe, test } from "node:test";
 
 import {
+  actorVan,
   alsEigenaar,
   maakDragendeVersie,
   maakGebruiker,
@@ -42,6 +43,7 @@ import {
   type Wegwerpdatabase,
 } from "../harnas.ts";
 import { metOrganisatie } from "../../src/kern/db.ts";
+import type { Actor } from "../../src/inhoud/actor.ts";
 import { keurGoed, publiceer } from "../../src/inhoud/publiceer.ts";
 import { hertoetsInhoudVersie } from "../../src/inhoud/concept.ts";
 import {
@@ -60,6 +62,8 @@ describe("de tweede poort: goedkeuren en publiceren wegen de actuele claim", () 
   let org = 0;
   let auteur = 0;
   let chef = 0;
+  /* De GEVERIFIEERDE actor voor publiceer(); zie actorVan() in het harnas. */
+  let actor: Actor;
   let analist = 0;
 
   before(async () => {
@@ -68,6 +72,7 @@ describe("de tweede poort: goedkeuren en publiceren wegen de actuele claim", () 
     auteur = await maakGebruiker(db, org, "auteur@test.nl", "redacteur");
     chef = await maakGebruiker(db, org, "chef@test.nl", "beheerder");
     analist = await maakGebruiker(db, org, "analist@test.nl", "lezer");
+    actor = await actorVan(db, org, chef);
   });
 
   after(async () => {
@@ -178,7 +183,7 @@ describe("de tweede poort: goedkeuren en publiceren wegen de actuele claim", () 
 
     await zetClaim(v.uitspraakId, "verificatie_status", "tegengesproken");
 
-    const r = await publiceer(db.pool, org, v.versieId);
+    const r = await publiceer(db.pool, org, v.versieId, { actor });
     assert.equal(r.geschreven, false, "er mag niets geschreven zijn");
     assert.match(r.reden, /het bewijs draagt niet meer/);
     assert.match(r.reden, /tegengesproken/);

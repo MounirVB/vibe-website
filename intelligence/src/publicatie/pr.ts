@@ -52,6 +52,12 @@ import { configLezen } from "../kern/config.ts";
 import { eenRij, rijen } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 import { inhoudAfdruk } from "../inhoud/concept.ts";
+import {
+  actorBeschrijving,
+  legPublicatieAuditVast,
+  legPublicatiebesluitVast,
+  type Actor,
+} from "../inhoud/actor.ts";
 import { slugVanPad, NIEUWS_MAP } from "../site/nieuwsregister.ts";
 
 const uitvoeren = promisify(execFile);
@@ -68,7 +74,18 @@ export const TOEGESTAAN_AUTEURSPAD = /^data\/inhoud\/nieuws\/[a-z0-9][a-z0-9-]*\
 export const TOEGESTAAN_GEGENEREERD = [
   /^data\/seo\/routes\.json$/,
   /^data\/seo\/gegenereerd\.json$/,
-  /^sitemap\.xml$/,
+  /* DRIE PADEN DIE DE ECHTE GENERATOR WEL AANRAAKT EN DIE HIER NIET
+     STONDEN. Gemeten door de keten tegen een volledige kopie van
+     origin/main te draaien in plaats van tegen een nepgenerator:
+     `data/seo/vingerafdrukken.json` (de inhoudsvingerafdrukken waarmee
+     de lastmod klokonafhankelijk blijft) en de KINDSITEMAPS
+     sitemap-nationaal.xml en sitemap-regios.xml — sitemap.xml zelf is
+     alleen de index. Zonder deze drie brak de eerste echte publicatie af
+     op "bestanden gewijzigd die dit platform niet mag aanraken", terwijl
+     alle drie gegenereerde uitvoer zijn. De nepgenerator in de oudere
+     toetsen schreef ze niet, dus de allowlist leek compleet. */
+  /^data\/seo\/vingerafdrukken\.json$/,
+  /^sitemap(-[a-z0-9-]+)?\.xml$/,
   /^robots\.txt$/,
   /^nieuws\.html$/,
   /^nieuws\/[a-z0-9][a-z0-9-]*\.html$/,
@@ -135,6 +152,13 @@ export async function maakPublicatiePr(
   inhoudVersieId: number,
   opties: {
     siteWortel: string;
+    /**
+     * WIE DIT DOET. Verplicht, want een PR aanmaken is een
+     * publicatiehandeling en die hoort een naam te hebben. De actor komt
+     * uit verifieerMens() of systeemActor() en kan dus niet verzonnen
+     * worden; zie inhoud/actor.ts.
+     */
+    actor: Actor;
     droog?: boolean;
     git?: GitUitvoerder;
     basisBranch?: string;
@@ -332,6 +356,7 @@ export async function maakPublicatiePr(
   const { publiceer } = await import("../inhoud/publiceer.ts");
   const gepubliceerd = await publiceer(poolVoorPubliceer, organisatieId, v.id, {
     siteWortel: eigenWortel,
+    actor: opties.actor,
   });
   if (!gepubliceerd.geschreven) {
     await git(["checkout", "--", "."]);
@@ -359,10 +384,21 @@ export async function maakPublicatiePr(
      het enige nieuwe bestand precies het toegestane record was.
      Met -uall staat er "?? data/inhoud/nieuws/<slug>.json" en toetst de
      grendel wat hij belooft te toetsen. */
+  /* GEEN .trim() OP DE HELE UITVOER — dat was een echt defect, gevonden
+     door de toets tegen de ECHTE generator.
+     Een porcelainregel is twee statustekens plus een spatie, dus
+     `slice(3)` geeft het pad. Bij een ONGESPOORDE wijziging begint die
+     regel met een spatie (" M data/seo/gegenereerd.json"). Een .trim()
+     over de hele uitvoer haalde die eerste spatie weg, waardoor
+     `slice(3)` van de EERSTE regel één teken te veel at:
+     "ata/seo/gegenereerd.json". Dat pad matcht geen enkele regex, dus de
+     keten brak af op "bestanden gewijzigd die dit platform niet mag
+     aanraken" — terwijl het bestand gewoon gegenereerde uitvoer was.
+     De nepgenerator in de oudere toetsen schreef alleen NIEUWE bestanden
+     ("?? pad", drie tekens), en daar valt de fout niet op. */
   const gewijzigd = (await git(["status", "--porcelain", "-uall"]))
-    .trim()
     .split("\n")
-    .filter(Boolean)
+    .filter((r) => r.trim() !== "")
     .map((r) => r.slice(3).trim());
 
   const onverwacht = gewijzigd.filter(
@@ -389,6 +425,7 @@ export async function maakPublicatiePr(
       git,
       basis,
       eigenWortel,
+      opties.actor,
     );
     return afbreken(grendels, "er zijn bestanden gewijzigd die dit platform niet mag aanraken");
   }
@@ -416,6 +453,7 @@ export async function maakPublicatiePr(
       git,
       basis,
       eigenWortel,
+      opties.actor,
     );
     return afbreken(grendels, "deze publicatie veranderde de regionale publicatiestand");
   }
@@ -511,6 +549,7 @@ export async function maakPublicatiePr(
         git,
         basis,
         eigenWortel,
+        opties.actor,
       );
       return afbreken(
         grendels,
@@ -528,18 +567,46 @@ export async function maakPublicatiePr(
   }
 
   /* ---------------- het auditspoor ---------------- */
-  await c.query(
-    `insert into intel.publicatiebesluiten
-       (organisatie_id, inhoud_versie_id, besluit, actor_soort, motivatie)
-     values ($1,$2,'ingediend','systeem',$3)`,
-    [
-      organisatieId,
-      v.id,
+  /* HET AUDITSPOOR MET EEN NAAM EN EEN FASE.
+     Deze regel stond op actor_soort 'systeem' zonder gebruiker, ook als
+     een mens de keten draaide. Nu draagt hij de actor en de fase
+     PR_AANGEMAAKT — uitdrukkelijk NIET 'gepubliceerd', want een geopende
+     PR is geen publicatie. De branch, de commit en de PR-URL gaan
+     structureel mee in poortresultaten in plaats van alleen als tekst. */
+  await legPublicatiebesluitVast(c, {
+    organisatieId,
+    inhoudVersieId: v.id,
+    besluit: "ingediend",
+    fase: "PR_AANGEMAAKT",
+    actor: opties.actor,
+    motivatie:
       `publicatiebranch ${branch}, commit ${commit}` + (prUrl ? `, PR ${prUrl}` : ", geen PR geopend"),
-    ],
-  );
+    meting: {
+      branch,
+      commit,
+      prUrl,
+      prGeopend: prUrl !== null,
+      grendels: grendels.map((g) => ({ naam: g.naam, ok: g.ok })),
+    },
+  });
+  await legPublicatieAuditVast(c, {
+    organisatieId,
+    actor: opties.actor,
+    handeling: "publicatie_pr_aangemaakt",
+    objectId: v.id,
+    naWaarde: { branch, commit, prUrl, prGeopend: prUrl !== null },
+    motivatie: prUrl
+      ? "pull request geopend; mergen en deployen zijn aparte handelingen"
+      : "commit op de publicatiebranch; er is nog geen pull request",
+  });
 
-  log.info("publicatie-PR voorbereid", { versie: v.id, branch, commit, pr: prUrl });
+  log.info("publicatie-PR voorbereid", {
+    versie: v.id,
+    branch,
+    commit,
+    pr: prUrl,
+    door: actorBeschrijving(opties.actor),
+  });
 
   return {
     geslaagd: true,
@@ -609,10 +676,11 @@ async function herstelNaMislukking(
   git: GitUitvoerder,
   basis: string,
   siteWortel: string,
+  actor: Actor,
 ): Promise<void> {
   const { draaiTerug } = await import("../inhoud/publiceer.ts");
   if (publicatieId !== null) {
-    await draaiTerug(pool, organisatieId, publicatieId, { siteWortel });
+    await draaiTerug(pool, organisatieId, publicatieId, { siteWortel, actor });
     const terug = await c.query(
       `update intel.inhoud_versies
           set status = 'goedgekeurd'

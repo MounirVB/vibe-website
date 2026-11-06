@@ -26,8 +26,9 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
-import { alsEigenaar, maakGebruiker, maakOrganisatie, maakWegwerpdatabase, type Wegwerpdatabase } from "../harnas.ts";
+import { actorVan, alsEigenaar, maakGebruiker, maakOrganisatie, maakWegwerpdatabase, type Wegwerpdatabase } from "../harnas.ts";
 import { metOrganisatie } from "../../src/kern/db.ts";
+import type { Actor } from "../../src/inhoud/actor.ts";
 import {
   branchVoor,
   maakGit,
@@ -77,6 +78,8 @@ describe("de publicatie-PR tegen een echte git-repository", () => {
   let org = 0;
   let auteur = 0;
   let chef = 0;
+  /* De GEVERIFIEERDE actor voor de PR-keten; zie actorVan() in het harnas. */
+  let actor: Actor;
   let werk = "";
   let site = "";
   let remote = "";
@@ -89,6 +92,7 @@ describe("de publicatie-PR tegen een echte git-repository", () => {
     org = await maakOrganisatie(db, "pr-org");
     auteur = await maakGebruiker(db, org, "schrijver@test.nl", "redacteur");
     chef = await maakGebruiker(db, org, "chef@test.nl", "beheerder");
+    actor = await actorVan(db, org, chef);
 
     werk = await mkdtemp(join(tmpdir(), "intel-pr-"));
     site = join(werk, "site");
@@ -188,7 +192,7 @@ describe("de publicatie-PR tegen een echte git-repository", () => {
 
   test("zonder goedkeuring komt er geen branch en geen commit", async () => {
     const uit = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
-      maakPublicatiePr(c, org, versieId, { siteWortel: site, pool: db.pool, basisBranch: "main" }),
+      maakPublicatiePr(c, org, versieId, { siteWortel: site, pool: db.pool, basisBranch: "main", actor }),
     );
     assert.equal(uit.geslaagd, false);
     assert.equal(uit.branch, null);
@@ -219,7 +223,7 @@ describe("de publicatie-PR tegen een echte git-repository", () => {
     });
 
     const uit = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
-      maakPublicatiePr(c, org, versieId, { siteWortel: site, pool: db.pool, basisBranch: "main" }),
+      maakPublicatiePr(c, org, versieId, { siteWortel: site, pool: db.pool, basisBranch: "main", actor }),
     );
     assert.equal(uit.geslaagd, false);
     assert.match(uit.reden, /na de goedkeuring gewijzigd/);
@@ -253,6 +257,7 @@ describe("de publicatie-PR tegen een echte git-repository", () => {
         siteWortel: site,
         pool: db.pool,
         basisBranch: "main",
+        actor,
         droog: true,
       }),
     );
@@ -270,6 +275,7 @@ describe("de publicatie-PR tegen een echte git-repository", () => {
         siteWortel: site,
         pool: db.pool,
         basisBranch: "main",
+        actor,
         droog: true,
       }),
     );
@@ -283,7 +289,7 @@ describe("de publicatie-PR tegen een echte git-repository", () => {
   test("een vuile werkboom breekt de publicatie af", async () => {
     await writeFile(join(site, "rommel.txt"), "iemand anders was hier\n", "utf8");
     const uit = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
-      maakPublicatiePr(c, org, versieId, { siteWortel: site, pool: db.pool, basisBranch: "main" }),
+      maakPublicatiePr(c, org, versieId, { siteWortel: site, pool: db.pool, basisBranch: "main", actor }),
     );
     assert.equal(uit.geslaagd, false);
     assert.match(uit.reden, /vuile werkboom|andermans werk/);
