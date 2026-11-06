@@ -257,6 +257,91 @@ describe("claimidentiteit en bewijsniveau", () => {
   });
 
   /* ================================================================
+     DE REGRESSIE VAN 6 NOVEMBER 2026 — de ronde mag niet meer vallen
+     ----------------------------------------------------------------
+     GEMETEN OP PRODUCTIE: taak 6887 (semantiek:2026-11-06T08) stond in
+     de DLQ met "new row for relation uitspraken violates check
+     constraint uitspraken_bevestigd_vraagt_direct", na vijf pogingen.
+
+     De oorzaak: vulBewijsniveauIn() werkte ELKE rij met dezelfde afdruk
+     bij. Stond daar één rij tussen die al 'bevestigd' was, en kwam het
+     niveau niet op DIRECT_BEVESTIGD uit, dan weigerde 0055 de UPDATE —
+     en viel de hele ronde, de taak en daarmee de complete semantiekstap
+     om. Gevolg in productie: 150 van 170 claims zonder niveau, en de
+     nieuwe claims van die dag zonder verwoordbaarheidsoordeel.
+
+     DE GRENDEL BLIJFT STAAN. Deze toets eist niet dat de claim alsnog
+     een niveau krijgt — dat zou de drempel verlagen. Hij eist dat de
+     ronde doorloopt, dat de strijdige rij GEEN label krijgt, dat zijn
+     status onaangeroerd blijft en dat hij bij een mens terechtkomt.
+     ================================================================ */
+
+  test("7 · REGRESSIE — een al bevestigde rij laat de ronde niet vallen", async () => {
+    /* Eén rij terugzetten naar de productiesituatie: 'bevestigd' met
+       bewijsniveau NULL. Dat mag van 0055 (tak twee van de CHECK) en is
+       precies hoe de 85 bevestigde claims in productie stonden. */
+    const doel = await alsEigenaar(db, async (c) => {
+      await c.query("select set_config('app.organisatie_id', $1, false)", [String(org)]);
+      const r = await c.query<{ id: number; afdruk: string }>(
+        `update intel.uitspraken
+            set bewijsniveau = null, bewijsniveau_reden = null, bewijsniveau_op = null,
+                verificatie_status = 'bevestigd'
+          where id = (select min(id) from intel.uitspraken
+                       where organisatie_id = $1 and waarde_numeriek = 1775000)
+        returning id, claim_afdruk as afdruk`,
+        [org],
+      );
+      return r.rows[0]!;
+    });
+
+    /* DIT IS DE TOETS: geen uitzondering meer. Vóór de reparatie gooide
+       deze aanroep de constraintfout en viel de taak om. */
+    const ronde = await vulBewijsniveauIn(db.pool, org, { max: 500 });
+    assert.ok(ronde.strijdigMetStatus >= 1, `strijdig niet geteld: ${JSON.stringify(ronde)}`);
+    assert.ok(ronde.doorverwezen >= 1, `niet doorverwezen: ${JSON.stringify(ronde)}`);
+
+    const na = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      c.query<{ niveau: string | null; status: string }>(
+        `select bewijsniveau as niveau, verificatie_status as status
+           from intel.uitspraken where id = $1`,
+        [doel.id],
+      ),
+    );
+    /* GEEN LABEL IS GEEN BEWERING: de rij blijft zonder niveau staan in
+       plaats van er een te krijgen dat zijn status niet draagt. */
+    assert.equal(na.rows[0]?.niveau, null, "de strijdige rij kreeg alsnog een niveau");
+    /* EN ER IS NIETS AFGEWAARDEERD: de niveaulaag raakt geen status aan. */
+    assert.equal(na.rows[0]?.status, "bevestigd", "de verificatiestatus is aangeraakt");
+
+    const vraag = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      c.query<{ aanleiding: string; reden: string }>(
+        `select aanleiding, reden from intel.claimbeoordeling where uitspraak_id = $1`,
+        [doel.id],
+      ),
+    );
+    assert.equal(vraag.rows.length, 1, "de strijdige claim is niet doorverwezen");
+    assert.equal(vraag.rows[0]?.aanleiding, "BEWIJSNIVEAU_STRIJDIG_MET_STATUS");
+    assert.match(vraag.rows[0]?.reden ?? "", /MEERVOUDIG_BEVESTIGD/);
+  });
+
+  test("8 · REGRESSIE — de rest van de afdruk wordt gewoon bijgewerkt", async () => {
+    /* De twee andere rijen van dezelfde bewering staan niet op
+       'bevestigd' en horen hun niveau dus wél te houden. Zonder deze
+       toets zou een reparatie die simpelweg de hele afdruk overslaat
+       ook groen zijn — en dan zou de keten stilstaan in plaats van
+       omvallen. */
+    const r = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      c.query<{ niveau: string | null; n: number }>(
+        `select bewijsniveau as niveau, count(*)::int as n
+           from intel.uitspraken where waarde_numeriek = 1775000
+          group by bewijsniveau order by n desc`,
+      ),
+    );
+    const metNiveau = r.rows.find((x) => x.niveau === "MEERVOUDIG_BEVESTIGD")?.n ?? 0;
+    assert.ok(metNiveau >= 2, `verwacht minstens twee rijen mét niveau: ${JSON.stringify(r.rows)}`);
+  });
+
+  /* ================================================================
      DE GRENDELS VAN 0055 — elk met een echte update
      ================================================================ */
 

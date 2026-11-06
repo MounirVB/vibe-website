@@ -70,7 +70,11 @@
 
 import type pg from "pg";
 import { rijen } from "../kern/db.ts";
+import { maakLogger } from "../kern/log.ts";
 import type { Gezag } from "./documentsoort.ts";
+import { vraagOmBeoordeling } from "./claimbeoordeling.ts";
+
+const log = maakLogger("bewijsniveau");
 
 /** Verhoog dit bij elke wijziging die een uitslag kan veranderen. */
 export const BEWIJSNIVEAU_VERSIE = "bewijsniveau-v1";
@@ -337,6 +341,12 @@ export type BewijsniveauRonde = {
   readonly claimsBijgewerkt: number;
   readonly perNiveau: Readonly<Record<string, number>>;
   readonly zonderAfdruk: number;
+  /** Claims die 'bevestigd' heten terwijl hun niveau dat niet draagt.
+      Zij krijgen GEEN niveau — geen label is geen bewering — en gaan
+      naar het claimbeoordelingsregister. */
+  readonly strijdigMetStatus: number;
+  /** Hoeveel daarvan een NIEUWE beoordelingsvraag opleverden. */
+  readonly doorverwezen: number;
 };
 
 /**
@@ -387,6 +397,8 @@ export async function vulBewijsniveauIn(
 
   const perNiveau: Record<string, number> = {};
   let claimsBijgewerkt = 0;
+  let strijdigMetStatus = 0;
+  let doorverwezen = 0;
 
   for (const a of afdrukken) {
     const uitslag = await metOrganisatie(pool, { organisatieId }, async (c) => {
@@ -395,26 +407,113 @@ export async function vulBewijsniveauIn(
     });
     perNiveau[uitslag.niveau] = (perNiveau[uitslag.niveau] ?? 0) + a.claims;
 
-    await metOrganisatie(pool, { organisatieId }, async (c) => {
-      const r = await c.query(
-        `update intel.uitspraken
-            set bewijsniveau       = $3,
-                bewijsniveau_reden = $4,
-                bewijsniveau_op    = now()
-          where organisatie_id = $1 and claim_afdruk = $2`,
-        [
-          organisatieId,
-          a.afdruk,
-          uitslag.niveau,
-          /* De reden moet minstens 20 tekens zijn (0055). De regel
-             geeft altijd meer, maar een ondergrens hier maakt de
-             constraint onmogelijk te raken. */
-          uitslag.reden.length >= 20
-            ? `${uitslag.reden} [${uitslag.onafhankelijkeBronnen} bron(nen): ${uitslag.bronnen.join(", ")}]`
-            : `${uitslag.reden} (geen nadere grondslag vastgelegd)`,
-        ],
-      );
-      claimsBijgewerkt += r.rowCount ?? 0;
+    const reden =
+      /* De reden moet minstens 20 tekens zijn (0055). De regel
+         geeft altijd meer, maar een ondergrens hier maakt de
+         constraint onmogelijk te raken. */
+      uitslag.reden.length >= 20
+        ? `${uitslag.reden} [${uitslag.onafhankelijkeBronnen} bron(nen): ${uitslag.bronnen.join(", ")}]`
+        : `${uitslag.reden} (geen nadere grondslag vastgelegd)`;
+
+    try {
+      await metOrganisatie(pool, { organisatieId }, async (c) => {
+        /* DE GRENDEL VAN 0055 STAAT IN DE WHERE, NIET IN DE HOOP.
+           ------------------------------------------------------------
+           uitspraken_bevestigd_vraagt_direct laat op een rij die al
+           'bevestigd' is alleen DIRECT_BEVESTIGD toe. Deze UPDATE raakte
+           elke rij met dezelfde afdruk, dus één al bevestigde rij met een
+           ander niveau liet de hele UPDATE vallen — en daarmee de ronde,
+           de taak en na vijf pogingen de hele semantiekstap.
+
+           GEMETEN OP PRODUCTIE, 6 november 2026: taak 6887
+           (semantiek:2026-11-06T08) stond in de DLQ met precies deze
+           schending, 85 van 170 claims staan op 'bevestigd' en 150 hadden
+           daardoor nog geen niveau. De nieuwe claims van die dag — de
+           ACM-publicatie achter nieuwskandidaat 245 — kregen daardoor
+           nooit een verwoordbaarheidsoordeel.
+
+           De voorwaarde hieronder is dezelfde regel als de CHECK, nu als
+           filter: een bevestigde rij krijgt alleen een niveau als dat
+           niveau de bevestiging ook draagt. Er gaat GEEN drempel omlaag:
+           niets wordt opgewaardeerd, geen verificatiestatus verandert, en
+           de rijen die afvallen krijgen geen label in plaats van een te
+           zwak label. */
+        const r = await c.query(
+          `update intel.uitspraken
+              set bewijsniveau       = $3,
+                  bewijsniveau_reden = $4,
+                  bewijsniveau_op    = now()
+            where organisatie_id = $1
+              and claim_afdruk   = $2
+              and (verificatie_status <> 'bevestigd' or $3 = 'DIRECT_BEVESTIGD')`,
+          [organisatieId, a.afdruk, uitslag.niveau, reden],
+        );
+        claimsBijgewerkt += r.rowCount ?? 0;
+
+        /* WAT ER AFVIEL, WORDT GETELD EN DOORVERWEZEN.
+           Een claim die 'bevestigd' heet terwijl het bewijsniveau dat
+           niet draagt, is geen administratief detail: het is precies de
+           vraag die een mens hoort te beantwoorden. Het bestaande
+           claimbeoordelingsregister is daarvoor gemaakt — het kan per
+           constructie niets opwaarderen (zie claimbeoordeling.ts,
+           eigenschap 2) en vraagt dankzij de unieke index per claim en
+           motorversie precies EEN keer. */
+        if (uitslag.niveau !== "DIRECT_BEVESTIGD") {
+          /* De versie komt uit uitspraak_bronnen en niet uit de claimrij:
+             claimbeoordeling.versie_id is NOT NULL met een verwijzing naar
+             brondocument_versies (0047). De primaire waarneming heeft
+             voorrang; zonder waarneming is er niets om naar te verwijzen
+             en slaan we de doorverwijzing over. */
+          const strijdig = await c.query<{ id: number; versie_id: number | null }>(
+            `select u.id,
+                    (select ub.versie_id
+                       from intel.uitspraak_bronnen ub
+                      where ub.uitspraak_id = u.id
+                      order by (ub.rol = 'primair') desc, ub.versie_id
+                      limit 1) as versie_id
+               from intel.uitspraken u
+              where u.organisatie_id = $1
+                and u.claim_afdruk   = $2
+                and u.verificatie_status = 'bevestigd'
+                and u.bewijsniveau is null`,
+            [organisatieId, a.afdruk],
+          );
+          strijdigMetStatus += strijdig.rows.length;
+          for (const rij of strijdig.rows) {
+            if (rij.versie_id === null) continue;
+            const nieuw = await vraagOmBeoordeling(c, organisatieId, {
+              uitspraakId: rij.id,
+              versieId: rij.versie_id,
+              aanleiding: "BEWIJSNIVEAU_STRIJDIG_MET_STATUS",
+              reden:
+                `De claim staat op 'bevestigd', maar het bewijsniveau komt uit op ` +
+                `${uitslag.niveau}. ${reden}`,
+              motorversies: BEWIJSNIVEAU_VERSIE,
+            });
+            if (nieuw) doorverwezen += 1;
+          }
+        }
+      });
+    } catch (e) {
+      /* FAIL-OPEN OP DE AFDRUK, FAIL-CLOSED OP HET OORDEEL — dezelfde
+         keuze als in vulClaimAfdrukkenIn() hieronder. Een afdruk die niet
+         bijgewerkt kan worden houdt zijn claims op bewijsniveau NULL, en
+         dat is de veilige kant: geen label is geen bewering. Eén
+         onbekende rand mag de ronde niet meer laten vallen. */
+      log.waarschuwing("bewijsniveau niet vastgelegd voor afdruk", {
+        afdruk: a.afdruk.slice(0, 16),
+        niveau: uitslag.niveau,
+        fout: e instanceof Error ? e.message.slice(0, 200) : "onbekend",
+      });
+    }
+  }
+
+  if (strijdigMetStatus > 0) {
+    log.waarschuwing("claims met een bewijsniveau dat hun status niet draagt", {
+      strijdigMetStatus,
+      doorverwezen,
+      toelichting:
+        "bevestigd zonder DIRECT_BEVESTIGD: geen niveau vastgelegd, wel doorverwezen naar beoordeling",
     });
   }
 
@@ -423,6 +522,8 @@ export async function vulBewijsniveauIn(
     claimsBijgewerkt,
     perNiveau,
     zonderAfdruk,
+    strijdigMetStatus,
+    doorverwezen,
   };
 }
 

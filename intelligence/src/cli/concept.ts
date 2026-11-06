@@ -8,14 +8,63 @@
      npm run concept -- --met-model     laat een model herschrijven
      npm run concept -- --toon          de volledige tekst tonen
 
+     npm run concept -- --tekst 7 --bestand artikel.md --model <naam>
+                                        de tekst van concept 7 vervangen
+       ... --titel "..."                en de SEO-titel
+       ... --meta "..."                 en de metabeschrijving
+       ... --slug nieuws/mijn-bericht   en het pad + de canonieke URL
+
    Zonder --met-model wordt er geen enkele modelaanroep gedaan. Dat is
    de standaard, want het deterministische concept haalt alle poorten
    en kost niets.
+
+   ------------------------------------------------------------
+   WAAROM --tekst BESTAAT
+
+   Het deterministische concept schrijft alleen wat de semantische laag
+   VERWOORDBAAR heeft gemaakt. Voor alles daarbuiten zet het letterlijk
+   "TE VERWOORDEN DOOR DE REDACTIE" in de tekst en blokkeert het de
+   publicatie. De Content Studio heeft daar een knop voor
+   (POST /studio/:id/tekst), maar die vraagt een browsersessie — en een
+   redactie die vanaf de commandoregel werkt had geen enkele weg.
+
+   Deze optie is DIEZELFDE weg, met dezelfde drie regels als de route:
+   minstens tachtig tekens, niet op een goedgekeurde of gepubliceerde
+   versie, en daarna hertoetsInhoudVersie() zodat alle poorten opnieuw
+   over de nieuwe tekst gaan.
+
+   WAT HIJ NIET DOET: publiceren, goedkeuren, een poort overslaan of
+   een status verzetten. De versie blijft staan waar hij stond, met
+   verse poortuitslagen. --model is VERPLICHT: wie de tekst schreef
+   hoort in het auditspoor te staan, en 'deterministisch' laten staan
+   terwijl een ander de pen vasthield is precies de onwaarheid die
+   auteur_soort hierboven al eens heeft gekost.
+
+   WAAROM OOK --titel, --meta EN --slug
+
+   bouwConcept() leidt titel en pad af uit de GEBEURTENISTITEL, en die
+   is de titel van het brondocument. Voor een ACM-besluit is dat
+   "ACM/UIT/1123013": een correcte documentaanduiding en een onbruikbare
+   krantenkop. De gebeurtenistitel zelf aanpassen zou een gemeten feit
+   over de bron vervalsen, dus de kop hoort op de PUBLICATIE te worden
+   gezet en niet op de waarneming.
+
+   --slug verzet `pad` en `canonieke_url` samen, en trekt de url en de
+   headline in de structured data mee. Daarna draait hertoetsInhoudVersie
+   alle poorten opnieuw, inclusief canoniek_correct en structured_data:
+   een pad en een canonieke URL die uit de pas lopen worden daar
+   gevangen en niet hier beweerd.
    ============================================================ */
+
+import { readFile } from "node:fs/promises";
 
 import { maakPool, metOrganisatie, rijen, sluitAllePools } from "../kern/db.ts";
 import { huidigeOrganisatie } from "../db/zaai.ts";
-import { CONCEPTEERBARE_BESLUITEN, maakConcept } from "../inhoud/concept.ts";
+import {
+  CONCEPTEERBARE_BESLUITEN,
+  hertoetsInhoudVersie,
+  maakConcept,
+} from "../inhoud/concept.ts";
 
 const heeft = (naam: string) => process.argv.includes(`--${naam}`);
 function argument(naam: string): string | undefined {
@@ -28,6 +77,108 @@ async function main(): Promise<number> {
   const organisatieId = await huidigeOrganisatie(pool);
   const een = argument("kandidaat");
   const max = Number.parseInt(argument("max") ?? "5", 10);
+
+  /* ---------------------------------------------------------------
+     DE REDACTIEWEG: een tekst vervangen en opnieuw door de poorten. */
+  const tekstVersie = argument("tekst");
+  if (tekstVersie !== undefined) {
+    const pad = argument("bestand");
+    const model = argument("model");
+    if (!/^\d+$/.test(tekstVersie) || !pad || !model) {
+      process.stderr.write(
+        "gebruik: npm run concept -- --tekst <versieId> --bestand <pad.md> --model <naam>\n",
+      );
+      return 2;
+    }
+    const tekst = await readFile(pad, "utf8");
+    if (tekst.trim().length < 80) {
+      process.stderr.write("Een conceptteksttekst van minder dan tachtig tekens is geen artikel.\n");
+      return 2;
+    }
+
+    const nieuweTitel = argument("titel");
+    const nieuweMeta = argument("meta");
+    const nieuweSlug = argument("slug")?.replace(/^\/+/, "");
+    if (nieuweSlug !== undefined && !/^nieuws\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(nieuweSlug)) {
+      process.stderr.write(
+        "--slug moet de vorm nieuws/<kleine-letters-en-koppeltekens> hebben; het nieuwspad is " +
+          "vastgelegd in data/seo/nieuws-architectuur.json\n",
+      );
+      return 2;
+    }
+
+    const uit = await metOrganisatie(pool, { organisatieId }, async (c) => {
+      const nu = await rijen<{
+        status: string;
+        pad: string;
+        titel: string;
+        canonieke_url: string;
+        structured_data: Record<string, unknown> | null;
+      }>(
+        c,
+        `select status, pad, titel, canonieke_url, structured_data
+           from intel.inhoud_versies where organisatie_id = $1 and id = $2`,
+        [organisatieId, Number(tekstVersie)],
+      );
+      const v = nu[0];
+      if (!v) return { fout: `versie ${tekstVersie} bestaat niet` };
+      if (v.status === "goedgekeurd" || v.status === "gepubliceerd") {
+        return {
+          fout: `deze versie staat op '${v.status}'; een goedgekeurde tekst wijzig je niet, daar hoort een nieuwe versie bij`,
+        };
+      }
+
+      const pad = nieuweSlug === undefined ? v.pad : `/${nieuweSlug}`;
+      const titel = nieuweTitel ?? v.titel;
+      /* De basis-URL komt uit dezelfde config als de poort hem leest,
+         zodat canoniek_correct geen verschil kan vinden tussen wat hier
+         wordt geschreven en wat daar wordt getoetst. */
+      const { configLezen } = await import("../kern/config.ts");
+      const basis = configLezen().siteBasisUrl.replace(/\/+$/, "");
+      const canoniek = nieuweSlug === undefined ? v.canonieke_url : `${basis}${pad}`;
+      const sd = { ...(v.structured_data ?? {}) } as Record<string, unknown>;
+      if (nieuweSlug !== undefined) sd["url"] = canoniek;
+      if (nieuweTitel !== undefined) sd["headline"] = nieuweTitel;
+
+      await c.query(
+        `update intel.inhoud_versies
+            set body_markdown    = $2,
+                model            = $3,
+                titel            = $4,
+                meta_omschrijving = coalesce($5, meta_omschrijving),
+                pad              = $6,
+                canonieke_url    = $7,
+                structured_data  = $8::jsonb
+          where id = $1`,
+        [
+          Number(tekstVersie),
+          tekst,
+          model,
+          titel,
+          nieuweMeta ?? null,
+          pad,
+          canoniek,
+          JSON.stringify(sd),
+        ],
+      );
+      const h = await hertoetsInhoudVersie(c, organisatieId, Number(tekstVersie));
+      return { pad, status: v.status, hertoets: h };
+    });
+
+    if ("fout" in uit && uit.fout) {
+      process.stderr.write(`${uit.fout}\n`);
+      return 1;
+    }
+    const h = "hertoets" in uit ? uit.hertoets : null;
+    process.stdout.write(
+      `TEKST VERVANGEN  versie ${tekstVersie}  ${"pad" in uit ? uit.pad : ""}\n` +
+        `  status blijft   ${"status" in uit ? uit.status : "?"}\n` +
+        `  model           ${model}\n` +
+        `  poorten         ${h?.poortenGeslaagd ? "GESLAAGD" : "GEBLOKKEERD"}\n`,
+    );
+    for (const b of h?.blokkades ?? []) process.stdout.write(`  !! ${b.slice(0, 220)}\n`);
+    return 0;
+  }
 
   const kandidaten = een
     ? [{ id: Number.parseInt(een, 10) }]

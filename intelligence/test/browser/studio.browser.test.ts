@@ -54,6 +54,7 @@ import { CSRF_KOEKJE, CSRF_VELD, maakCsrfToken } from "../../src/dashboard/besch
 import { inhoudAfdruk } from "../../src/inhoud/concept.ts";
 import { DOCUMENTSOORT_VERSIE } from "../../src/pijplijn/documentsoort.ts";
 import { MODALITEIT_VERSIE } from "../../src/pijplijn/claimmodaliteit.ts";
+import { MOTORVERSIES } from "../../src/pijplijn/motorversies.ts";
 import { inhoudsHashVan } from "../../src/inhoud/voorstel.ts";
 import { bouwNieuwePaginaVoorstel } from "../../src/inhoud/nieuwepagina.ts";
 
@@ -341,12 +342,27 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
           zekerheid: 0.75,
         },
       ]) {
+        /* DE STEMPEL herbeoordeeld_onder HOORT ERBIJ, en het ontbreken
+           ervan was de oorzaak van vier rode tests (8, 23, 24 en 25) op
+           main en op elke commit daarvoor.
+
+           schrijfUitspraken() zet hem in productie bij de geboorte van
+           elke claim (uitspraken.ts), en test/harnas.ts doet hetzelfde
+           met de toelichting "Gemeten: 22 integratietoetsen vielen
+           daarop om". Deze browsertoets bouwt zijn fixture inline en
+           heeft die correctie nooit meegekregen: beide claims bleven op
+           NULL staan, de claimpoort telde ze als "nog te herbeoordelen"
+           en hield de goedkeuring dicht met "een voorstelgoedkeuring kan
+           geen bewijs wegen".
+
+           GEEN POORT GAAT HIERMEE OMLAAG. De poort blijft precies even
+           streng; de fixture gaat zich alleen gedragen als productie. */
         const u = await c.query<{ id: string }>(
           `insert into intel.uitspraken
              (organisatie_id, tekst, soort, waarde_numeriek, eenheid, verificatie_status,
               bewijs_kwaliteit, modaliteit, modaliteit_zekerheid, modaliteit_versie,
-              modaliteit_grondslag, bewijskracht_plafond)
-           values ($1,$2,'cijfer',$3,$4,'ongeverifieerd',5,$5,$6,$8,$7::jsonb,5)
+              modaliteit_grondslag, bewijskracht_plafond, herbeoordeeld_onder)
+           values ($1,$2,'cijfer',$3,$4,'ongeverifieerd',5,$5,$6,$8,$7::jsonb,5,$9)
            returning id::text`,
           [
             org,
@@ -357,6 +373,7 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
             claim.zekerheid,
             JSON.stringify({ uitleg: `fixture: ${claim.modaliteit}` }),
             MODALITEIT_VERSIE,
+            MOTORVERSIES,
           ],
         );
         await c.query(
@@ -899,5 +916,108 @@ describe("Content Studio in een echte browser", { skip: keuze === null ? INSTRUC
     const r = await p.goto("/bestaat-niet-fixture", { waitUntil: "domcontentloaded" });
     assert.equal(r?.status(), 404);
     assert.ok((await p.content()).length > 200, "een 404 hoort een leesbare pagina te zijn");
+  });
+
+  /* ================================================================
+     27 · REGRESSIE — AFWIJZEN WERKTE NIET
+     ----------------------------------------------------------------
+     De route schreef `status = 'ingetrokken'`, en die waarde bestaat
+     niet: inhoud_versies_status_check laat alleen concept, ter_review,
+     goedgekeurd, gepubliceerd, afgewezen en teruggedraaid toe (gemeten
+     op de productiedatabase, 6 november 2026). De UPDATE gooide, de
+     transactie rolde terug — inclusief de auditregel — en de knop gaf
+     400. Afwijzen was in de Content Studio dus onmogelijk, en geen
+     enkele toets raakte dat pad.
+
+     Deze toets gebruikt een EIGEN concept: het gedeelde fixture-concept
+     is in toets 23 goedgekeurd en kan niet meer worden beoordeeld.
+     ================================================================ */
+  test("27. een BEHEERDER kan een concept AFWIJZEN, met reden", async () => {
+    const afdruk = "afdruk-afwijsfixture";
+    const versie = await metOrganisatie(db.pool, { organisatieId: org }, async (c) => {
+      const r = await c.query<{ id: string }>(
+        `insert into intel.inhoud_versies
+           (organisatie_id, kandidaat_id, pad, versie, soort, titel, meta_omschrijving,
+            canonieke_url, direct_antwoord, body_markdown, structured_data, interne_links,
+            bronnen_sectie, cta_sleutel, status, risico_klasse, auteur_soort,
+            poorten_geslaagd, inhoud_afdruk, poortresultaten, blokkades, aangemaakt_door)
+         select $1, v.kandidaat_id, '/nieuws/fixture-afwijzen-niet-live', v.versie + 10,
+                'nieuw_artikel', 'Fixturebericht dat wordt afgewezen',
+                v.meta_omschrijving, 'https://www.vibeenergy.nl/nieuws/fixture-afwijzen-niet-live',
+                v.direct_antwoord, v.body_markdown, v.structured_data, v.interne_links,
+                v.bronnen_sectie, v.cta_sleutel, 'ter_review', 'laag', 'ai',
+                false, $2, v.poortresultaten, '{}', v.aangemaakt_door
+           from intel.inhoud_versies v where v.id = $3::bigint
+         returning id::text`,
+        [org, afdruk, conceptVersie],
+      );
+      return r.rows[0]!.id;
+    });
+
+    const p = await alsRol("beheerder");
+    const csrf = (await context.cookies()).find((c) => c.name === CSRF_KOEKJE)?.value ?? "";
+    const antwoord = await p.request.post(`/studio/${versie}/beoordeel`, {
+      form: {
+        [CSRF_VELD]: csrf,
+        besluit: "AFGEWEZEN",
+        motivatie: "de bron draagt deze bewering niet; dit bericht gaat niet door",
+        inhoud_afdruk: afdruk,
+      },
+      maxRedirects: 0,
+    });
+    assert.equal(antwoord.status(), 303, `verwacht een redirect, kreeg ${antwoord.status()}`);
+
+    const na = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      c.query<{ status: string; blokkades: string[] }>(
+        "select status, blokkades from intel.inhoud_versies where id = $1::bigint",
+        [versie],
+      ),
+    );
+    assert.equal(na.rows[0]?.status, "afgewezen", "de status hoort 'afgewezen' te zijn");
+    /* inhoud_versies_afwijzing_heeft_reden eist een reden; hij hoort de
+       motivatie van de beoordelaar te zijn en niet een lege plaatshouder. */
+    assert.ok(
+      (na.rows[0]?.blokkades ?? []).some((b) => /afgewezen door de redactie/.test(b)),
+      `de reden ontbreekt: ${JSON.stringify(na.rows[0]?.blokkades)}`,
+    );
+
+    /* EN HET BESLUIT STAAT IN HET APPEND-ONLY SPOOR. Dat was de stilste
+       schade: de auditregel rolde mee terug met de mislukte UPDATE. */
+    const spoor = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      c.query<{ besluit: string; motivatie: string }>(
+        `select besluit, motivatie from intel.publicatiebesluiten
+          where inhoud_versie_id = $1::bigint`,
+        [versie],
+      ),
+    );
+    assert.equal(spoor.rows.length, 1, "het afwijsbesluit staat niet in het logboek");
+    assert.equal(spoor.rows[0]?.besluit, "afgewezen");
+    assert.match(spoor.rows[0]?.motivatie ?? "", /de bron draagt deze bewering niet/);
+  });
+
+  test("28. een afgewezen concept is niet meer te beoordelen", async () => {
+    /* De grendel die er al was, nu ook werkelijk bereikbaar: zodra een
+       concept is afgewezen, is het besluit definitief. */
+    const versie = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
+      c.query<{ id: string }>(
+        `select id::text from intel.inhoud_versies
+          where organisatie_id = $1 and status = 'afgewezen' order by id desc limit 1`,
+        [org],
+      ),
+    );
+    const id = versie.rows[0]!.id;
+    const p = await alsRol("beheerder");
+    const csrf = (await context.cookies()).find((c) => c.name === CSRF_KOEKJE)?.value ?? "";
+    const antwoord = await p.request.post(`/studio/${id}/beoordeel`, {
+      form: {
+        [CSRF_VELD]: csrf,
+        besluit: "GOEDGEKEURD",
+        motivatie: "alsnog goedkeuren na een afwijzing",
+        inhoud_afdruk: "afdruk-afwijsfixture",
+      },
+      maxRedirects: 0,
+    });
+    assert.equal(antwoord.status(), 400, `verwacht 400, kreeg ${antwoord.status()}`);
+    assert.match(await antwoord.text(), /afgewezen/, "de melding hoort de status te noemen");
   });
 });
