@@ -85,7 +85,7 @@
 /** Verhoog dit bij elke wijziging die een uitslag kan veranderen. */
 export const CLAIMAARD_VERSIE = "claimaard-v1";
 
-type Markering = {
+export type Markering = {
   readonly naam: string;
   readonly patroon: RegExp;
   readonly reden: string;
@@ -100,7 +100,18 @@ type Markering = {
    onderscheid uit de opdracht weg — een benoeming is een eigen
    activiteit en hoort zichzelf te kunnen bevestigen.
    ------------------------------------------------------------------ */
-const JURIDISCH: readonly Markering[] = [
+/* GEEXPORTEERD, EN DAT IS EEN ONTWERPKEUZE MET EEN MEETGESCHIEDENIS.
+   ------------------------------------------------------------------
+   claimvorm.ts moet voor twee van zijn acht vormen — VERPLICHTING en
+   INWERKINGTREDING — precies weten wat hier als zodanig geldt. Die
+   patronen daar OPNIEUW opschrijven is de fout die uitspraken.ts en
+   uitdrukking.ts maanden hebben gedragen: twee lagen met hetzelfde doel
+   en een iets ander woordenboek, waardoor een geldige claim in de ene
+   laag wordt gevonden en in de andere stil wegvalt (zie de toelichting
+   bij SCHAAL in uitspraken.ts). Eén vocabulaire, twee lezers.
+
+   Deze export verandert geen enkele uitkomst van bepaalClaimAard(). */
+export const JURIDISCH: readonly Markering[] = [
   {
     naam: "verplichting",
     patroon: /\b(verplicht|verplichte|verplichting(en)?|verplichtstelling)\b/iu,
@@ -130,7 +141,20 @@ const JURIDISCH: readonly Markering[] = [
   {
     naam: "inwerkingtreding",
     patroon:
-      /\b(treedt\s+in\s+werking|treden\s+in\s+werking|inwerkingtreding|van\s+kracht|met\s+ingang\s+van|geldt\s+(vanaf|per)|gelden\s+(vanaf|per)|geldig\s+vanaf)\b/iu,
+      /* DE OMGEKEERDE WOORDORDE STOND ER NIET.
+         Gemeten op de echte brontekst: "Per 1 augustus 2026 gelden de
+         nieuwe Aansluitspecificaties 4.0 voor publieke laadpalen."
+         Dit patroon kende 'gelden vanaf' en 'gelden per', maar niet de
+         vorm waarin het voorzetsel VOOROP staat — en dat is de vorm die
+         deze bronnen gebruiken. claimmodaliteit.ts kende hem al
+         ('geldt-nu'), dus het was opnieuw een asymmetrie tussen twee
+         lagen en geen ontbrekende functie.
+
+         STRIKT BEPERKENDER: meer zinnen gelden hierdoor als JURIDISCHE
+         vaststelling, en die mogen zichzelf juist NIET bevestigen
+         zonder authentieke juridische bron. Geen claim die eerder niet
+         bevestigde, bevestigt nu wel. */
+      /\b(tre(?:edt|den)\s+in\s+werking|inwerkingtreding|van\s+kracht|met\s+ingang\s+van|geld(?:t|en)\s+(?:vanaf|per)|geldig\s+vanaf|(?:per|vanaf|sinds)\s+\d{1,2}\s+\w+\s+20\d\d\s+(?:geldt|gelden|gaat|gaan|moet|moeten))\b/iu,
     reden: "de zin stelt vast vanaf wanneer een regel geldt",
   },
   {

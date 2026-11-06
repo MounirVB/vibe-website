@@ -53,7 +53,28 @@
 export type Modaliteit = "VASTGESTELD" | "VOORSTEL" | "VERWACHTING";
 
 /** Verhoog dit bij elke wijziging die een uitslag kan veranderen. */
-export const MODALITEIT_VERSIE = "claimmodaliteit-v1";
+/* v2, 6 november 2026 — twee onderscheidingen uit de opdracht die deze
+   motor nog niet maakte:
+
+     "Kan ≠ zal."
+     "Voornemen ≠ vastgesteld besluit."
+
+   'kan' stond in geen enkel patroon. Gemeten op een corpus van 3.610
+   zinnen uit 135 bronversies komt 'kan' of 'kunnen' in 505 zinnen voor
+   tegen 32 met 'zal' of 'zullen' — het is dus niet een randgeval maar
+   de dominante modale vorm in deze bronnen. Een zin als "het uitvoeren
+   van alle IBO-maatregelen kan tot 30 miljard euro besparen" kwam
+   daardoor op VASTGESTELD of VOORSTEL uit, nooit op wat het is: een
+   mogelijkheid.
+
+   'voornemens' en 'van plan' stonden er ook niet; alleen het afgeleide
+   'voorgenomen'. "Het kabinet is voornemens de regeling te verruimen"
+   viel daardoor buiten elk voorstelsignaal.
+
+   DEZE WIJZIGING IS STRIKT BEPERKENDER. Beide nieuwe signalen halen een
+   claim WEG van VASTGESTELD; geen enkele claim die eerder niet droeg,
+   draagt nu wel. */
+export const MODALITEIT_VERSIE = "claimmodaliteit-v2";
 
 /**
  * De zekerheid die een claim minstens moet hebben om een bericht te
@@ -89,9 +110,13 @@ const VOORSTEL: readonly Signaal[] = [
   },
   {
     naam: "voorstelwoord",
+    /* 'voornemens', 'voornemen' en 'van plan' erbij — "voornemen is
+       geen vastgesteld besluit" uit de opdracht. Alleen 'voorgenomen'
+       stond er, en dat is de bijvoeglijke vorm; de werkwoordsvorm die
+       bronnen vaker gebruiken viel erbuiten. */
     patroon:
-      /\b(voorstel|voorgesteld|voorgenomen|advies\s+(?:is|luidt)|aanbeveling|concept(regeling|wet|besluit)|ter\s+consultatie)\b/iu,
-    reden: "de zin noemt het expliciet een voorstel of advies",
+      /\b(voorstel|voorgesteld|voorgenomen|voornemen(?:s)?|is\s+van\s+plan|zijn\s+van\s+plan|advies\s+(?:is|luidt)|aanbeveling|concept(regeling|wet|besluit)|ter\s+consultatie)\b/iu,
+    reden: "de zin noemt het expliciet een voorstel, advies of voornemen",
   },
   {
     naam: "zou-moeten",
@@ -112,6 +137,42 @@ const VERWACHTING: readonly Signaal[] = [
     naam: "doelstelling",
     patroon: /\b(streeft?\s+naar|ambitie|doelstelling|moet\s+in\s+20\d\d\s+\w+\s+zijn|beoogt)\b/iu,
     reden: "de zin noemt een doel of ambitie, geen stand",
+  },
+  /**
+   * EEN MOGELIJKHEID IS GEEN VASTSTELLING — "kan ≠ zal".
+   *
+   * HET PATROON IS MET OPZET SMAL. 'kan' komt in 505 van 3.610 gemeten
+   * zinnen voor; een patroon op dat woord alleen zou de modaliteit van
+   * een zevende van het corpus omzetten, ook waar 'kan' niets over de
+   * claim zegt ("u kan hier meer lezen"). De eis is daarom dat het
+   * modale werkwoord de KERN van de bewering regeert: kan + worden /
+   * leiden / helpen / besparen / oplopen / stijgen, of 'is mogelijk'.
+   *
+   * GEMETEN VOORBEELD uit netbeheer-nederland-nieuws, claim 103 in
+   * productie: "Het uitvoeren van alle IBO-maatregelen kan tot 30
+   * miljard euro besparen." Een bedrag dat MOGELIJK wordt bespaard, nu
+   * met een modaliteit die dat zegt.
+   *
+   * WAAROM VERWACHTING EN GEEN VIERDE WAARDE. uitspraken_modaliteit
+   * staat drie waarden toe. Een vierde zou een migratie en een
+   * wijziging in elke lezende laag vragen, en zou niets toevoegen aan
+   * waar het om gaat: VERWACHTING is al "niet vastgesteld" en draagt al
+   * geen feit. Het onderscheid dat de opdracht eist — 'kan' is niet
+   * 'zal' — is daarmee gemaakt, en de grondslagregel zegt letterlijk
+   * welk woord het was.
+   */
+  {
+    naam: "mogelijkheid",
+    patroon:
+      /* VIJF WOORDEN ERTUSSEN, EN NIET DRIE. Gemeten op de echte
+         productieclaim 103: "kan tot 30 miljard euro besparen" heeft
+         vier woorden tussen het modale werkwoord en de kern. Met een
+         grens van drie vuurde het signaal niet, en kwam de zin uit op
+         VASTGESTELD 0,35 — niet draagbaar, maar met een grondslag die
+         zweeg over het woord 'kan'. De werkwoordenlijst blijft
+         gesloten; dat is wat het patroon smal houdt, niet de afstand. */
+      /\b(kan|kunnen)\s+(?:\w+\s+){0,5}?(?:worden|zijn|gaan|leiden|helpen|bijdragen|oplopen|toenemen|afnemen|stijgen|dalen|besparen|opleveren|zorgen|betekenen|schelen)\b|\b(?:is|zijn)\s+mogelijk\b|\bmogelijk\s+(?:maken|maakt)\b/iu,
+    reden: "de zin noemt een mogelijkheid en geen stand: 'kan' is niet 'zal'",
   },
 ];
 
@@ -349,9 +410,37 @@ export function bepaalModaliteit(inv: ModaliteitInvoer): ModaliteitUitslag {
     );
   }
   if (vastgesteld.length > 0) {
+    /* EEN MOGELIJKHEID NAAST EEN VASTSTELLING: DE MOGELIJKHEID WINT OP
+       DE ZEKERHEID, NIET OP DE MODALITEIT.
+       ----------------------------------------------------------------
+       "Liander concludeert dat congestiemanagement niet kan worden
+       toegepast" bevat een vaststellingssignaal ('concludeert' valt
+       onder verslag-verleden-tijd) EN een mogelijkheidssignaal. De orde
+       hierboven omgooien zou elke zin met 'kan' uit de vaststellingstak
+       halen, en dat is te grof: in die zin IS er iets vastgesteld.
+
+       Maar de claim mag dan geen feit dragen. Daarom een PLAFOND op de
+       zekerheid in plaats van een andere modaliteit: 0,45 ligt onder
+       NOODZAKELIJKE_ZEKERHEID (0,50), dus draagbaarAlsFeit wordt false
+       en de poortlaag laat hem niet door als vaststaand feit. Het label
+       blijft eerlijk — er is iets vastgesteld — en de zekerheid zegt
+       dat het om een mogelijkheid gaat.
+
+       STRIKT BEPERKENDER: dit kan een zekerheid alleen verlagen. */
+    const mogelijk = verwachting.some((v) => v.naam === "mogelijkheid");
+    const basis = Math.min(0.95, 0.7 + 0.1 * vastgesteld.length) - demping;
+    if (mogelijk) {
+      return klaar(
+        "VASTGESTELD",
+        Math.min(basis, 0.45),
+        `${vastgesteld.length} vaststellingssignaal(en), maar de zin stelt een MOGELIJKHEID ` +
+          `vast en geen stand ('kan' is niet 'zal'). De zekerheid is daarom geplafonneerd op ` +
+          `0,45, onder de grens van ${NOODZAKELIJKE_ZEKERHEID}, zodat deze claim geen feit draagt.`,
+      );
+    }
     return klaar(
       "VASTGESTELD",
-      Math.min(0.95, 0.7 + 0.1 * vastgesteld.length) - demping,
+      basis,
       benaderd
         ? `${vastgesteld.length} vaststellingssignaal(en), maar het getal is afgerond`
         : `${vastgesteld.length} vaststellingssignaal(en)`,

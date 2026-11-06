@@ -35,6 +35,12 @@ import {
   type Verwoordbaarheid,
 } from "./semantiek.ts";
 import { verwoord } from "./verwoord.ts";
+import { leesVormClaims, type Claimvorm, type Tijdstand } from "./claimvorm.ts";
+import { bepaalDatumrol, type Datumrol } from "./datumrol.ts";
+import { vormpoort } from "./vormpoort.ts";
+import { verwoordVorm } from "./vormverwoording.ts";
+import { bepaalToepassingsgebied, type Toepassingsgebied } from "./jurisdictie.ts";
+import type { Modaliteit } from "./claimmodaliteit.ts";
 
 const log = maakLogger("semantiek");
 
@@ -72,6 +78,28 @@ export type SemantiekRij = {
   brondatum: string | null;
   vervangen_door: number | null;
   vervangen_soort: string | null;
+  /* ------------------------------------------------------------------
+     DE VELDEN VAN DE NIET-NUMERIEKE ROUTE (0054 + vormpoort.ts).
+
+     Voor de 39 datumclaims die op 6 november 2026 in productie stonden
+     zijn claimvorm, datumrol en bronpassage NULL: die claims zijn
+     ouder dan 0054. verrijkVorm() LEIDT ZE AF uit `tekst`, precies
+     zoals de getalroute de uitdrukking uit `tekst` afleidt. Dat is de
+     reden dat een backfill hier niets hoeft te verzinnen: de bronzin is
+     bewaard.
+     ------------------------------------------------------------------ */
+  /* OPTIONEEL, en dat is geen slordigheid. De toetsen bouwen een
+     SemantiekRij met de hand om één poortcontrole te kunnen forceren;
+     zouden deze zes velden verplicht zijn, dan moest elke bestaande
+     toets ze meegeven zonder dat ze er iets mee doet. Elke leesplek
+     hieronder normaliseert met `?? null`, dus een ontbrekend veld en
+     een leeg veld geven hetzelfde oordeel. */
+  claimvorm?: string | null;
+  datumrol?: string | null;
+  tijdstand?: string | null;
+  bronpassage?: string | null;
+  modaliteit?: string | null;
+  modaliteit_zekerheid?: string | null;
 };
 
 export type Verrijking = {
@@ -224,6 +252,205 @@ export function verrijk(rij: SemantiekRij): Verrijking | null {
   };
 }
 
+/* ==================================================================
+   DE TWEEDE ROUTE — vorm- en datumclaims
+   ------------------------------------------------------------------
+   verrijk() hierboven geeft null voor elke claim zonder
+   `waarde_numeriek`, en dat is de juiste keuze voor de getalroute: de
+   koppeling tussen zo'n claim en een willekeurig getal uit zijn bronzin
+   is nooit vastgesteld (zie de toelichting daar). Het gevolg was wel
+   dat de 39 datumclaims in productie nooit beoordeeld werden.
+
+   Deze route is het antwoord. Hij leidt de VORM of de ROL af uit
+   `tekst` — de bronzin staat er, dus er wordt gemeten en niet geraden —
+   en laat vormpoort.ts erop los.
+
+   WAT DEZE ROUTE NOOIT DOET, identiek aan de lijst in de kop van dit
+   bestand: geen verificatiestatus verhogen, geen bestaande waarde
+   overschrijven, geen mensbesluit aanraken, geen veld vullen dat niet
+   uit de bronzin volgt.
+   ================================================================== */
+
+/** De soorten die via de vormroute gaan, en niet via de getalroute. */
+const VORMSOORTEN: ReadonlySet<string> = new Set([
+  "datum",
+  "regel",
+  "status",
+  "specificatie",
+  "feit",
+]);
+
+export type VormVerrijking = {
+  readonly id: number;
+  readonly semantiekSoort: string;
+  readonly claimvorm: Claimvorm | null;
+  readonly datumrol: Datumrol | null;
+  readonly tijdstand: Tijdstand | null;
+  readonly bronpassage: string | null;
+  readonly betreft: string | null;
+  readonly toepassingsgebied: Toepassingsgebied;
+  readonly toepassingsgebiedGrondslag: string;
+  readonly uitslag: Verwoordbaarheid;
+  readonly reden: string;
+  readonly zin: string | null;
+};
+
+/**
+ * Leidt vorm of datumrol af voor één rij en laat de vormpoort erop los.
+ *
+ * Geeft null als deze rij niet op deze route hoort — dan is het geen
+ * uitslag maar een verkeerde aanroep, en telt de aanroeper hem niet mee.
+ */
+export function verrijkVorm(rij: SemantiekRij): VormVerrijking | null {
+  if (!rij.tekst) return null;
+  if (!VORMSOORTEN.has(rij.soort)) return null;
+
+  /* HET TOEPASSINGSGEBIED, uit dezelfde motor als de getalroute. Een
+     eigen beslisregel hier zou betekenen dat een Belgisch besluit langs
+     een andere maatstaf wordt gewogen dan een Belgisch tarief. */
+  const jur = bepaalToepassingsgebied({
+    tekst: rij.tekst,
+    uitgever: rij.uitgever,
+    isPrimaireBron: rij.is_primaire_bron,
+  });
+  const gebiedGrondslag = jur.grondslag.join("; ");
+
+  /* ---------- DE DATUMROUTE ---------- */
+  if (rij.soort === "datum") {
+    const rol = bepaalDatumrol(rij.tekst);
+    /* DE VASTGELEGDE ROL GAAT VOOR DE AFGELEIDE. Staat er al een
+       datumrol in de database, dan is die door een eerdere ronde of
+       door een mens gezet en hoort een backfill hem niet te
+       overschrijven — dezelfde regel als voor elke andere kolom in dit
+       bestand. */
+    const gebruikteRol = ((rij.datumrol ?? null) as Datumrol | null) ?? rol.rol;
+    const passage = rij.bronpassage ?? (rol.passage.length >= 10 ? rol.passage : null);
+    const invoer = {
+      vorm: null,
+      datumrol: gebruikteRol,
+      datumBetreft: rol.betreft,
+      tijdstand: null,
+      geldigVanaf: null as string | null,
+      geldigTot: null as string | null,
+      uitgever: rij.uitgever,
+    };
+    const poort = vormpoort({
+      vorm: null,
+      datumrol: gebruikteRol,
+      datumBetreft: rol.betreft,
+      passage,
+      tijdstand: null,
+      modaliteit: (rij.modaliteit ?? null) as Modaliteit | null,
+      modaliteitZekerheid:
+        rij.modaliteit_zekerheid == null ? null : Number(rij.modaliteit_zekerheid),
+      verificatieStatus: rij.verificatie_status,
+      heeftBewijs: rij.heeft_bewijs,
+      vervangenDoor:
+        rij.vervangen_door !== null
+          ? { id: rij.vervangen_door, soort: rij.vervangen_soort ?? "onbekend" }
+          : null,
+      dagenOud: rij.dagen_oud,
+      houdbaarheidDagen: HOUDBAARHEID_DAGEN["datum"] ?? null,
+      magCiteren: rij.mag_citeren,
+      toepassingsgebied: jur.gebied,
+      toepassingsgebiedGrondslag: gebiedGrondslag,
+      /* DE ZIN WORDT HIER GEMAAKT MET DE GELDIGHEIDSDATUMS UIT DE
+         DATABASE, en die staan niet in SemantiekRij. De poort toetst
+         daarom of er een zin te maken IS met de velden die hij kent;
+         schrijfVormSemantiek() maakt hem met de echte datums. Zou de
+         zin daar alsnog null zijn, dan weigert
+         uitspraken_verwoordbaar_heeft_zin de rij — fail-closed, en
+         zichtbaar in het logboek. */
+      kanVerwoorden: () => gebruikteRol !== "LOSSE_DATUM" && rol.betreft !== null,
+    });
+    void invoer;
+    return {
+      id: rij.id,
+      semantiekSoort: "datum",
+      claimvorm: null,
+      datumrol: gebruikteRol,
+      tijdstand: null,
+      bronpassage: passage,
+      betreft: rol.betreft,
+      toepassingsgebied: jur.gebied,
+      toepassingsgebiedGrondslag: gebiedGrondslag,
+      uitslag: poort.uitslag,
+      reden: poort.reden,
+      zin: null,
+    };
+  }
+
+  /* ---------- DE VORMROUTE ---------- */
+  const vormen = leesVormClaims(rij.tekst);
+  /* WELKE VORM HOORT BIJ DEZE RIJ. Eén zin kan meer vormen dragen, en
+     dan staan er in de database ook meer claims — één per vorm. Staat de
+     vorm al vastgelegd, dan is dat de juiste; anders is er maar iets te
+     kiezen als de soort het aanwijst, en dat doet hij niet eenduidig
+     (BESLUIT, VERPLICHTING en INWERKINGTREDING hebben alle drie soort
+     'regel'). Zonder vastgelegde vorm EN met meer dan één kandidaat is
+     de koppeling niet vast te stellen, en dan wordt er niets gekozen. */
+  const vastgelegd = (rij.claimvorm ?? null) as Claimvorm | null;
+  const kandidaten = vormen.filter((v) => v.soort === rij.soort);
+  const gekozen =
+    vastgelegd !== null
+      ? (vormen.find((v) => v.vorm === vastgelegd) ?? null)
+      : kandidaten.length === 1
+        ? (kandidaten[0] ?? null)
+        : null;
+  if (gekozen === null) return null;
+
+  const passage = rij.bronpassage ?? gekozen.passage;
+  const tijdstand = ((rij.tijdstand ?? null) as Tijdstand | null) ?? gekozen.tijdstand;
+
+  const verwoordInvoer = {
+    vorm: gekozen.vorm,
+    datumrol: null,
+    datumBetreft: gekozen.betreft,
+    tijdstand,
+    geldigVanaf: null,
+    geldigTot: null,
+    uitgever: rij.uitgever,
+  };
+
+  const poort = vormpoort({
+    vorm: gekozen.vorm,
+    datumrol: null,
+    datumBetreft: gekozen.betreft,
+    passage,
+    tijdstand,
+    modaliteit: (rij.modaliteit ?? null) as Modaliteit | null,
+    modaliteitZekerheid:
+      rij.modaliteit_zekerheid == null ? null : Number(rij.modaliteit_zekerheid),
+    verificatieStatus: rij.verificatie_status,
+    heeftBewijs: rij.heeft_bewijs,
+    vervangenDoor:
+      rij.vervangen_door !== null
+        ? { id: rij.vervangen_door, soort: rij.vervangen_soort ?? "onbekend" }
+        : null,
+    dagenOud: rij.dagen_oud,
+    houdbaarheidDagen: HOUDBAARHEID_DAGEN[gekozen.semantiekSoort] ?? null,
+    magCiteren: rij.mag_citeren,
+    toepassingsgebied: jur.gebied,
+    toepassingsgebiedGrondslag: gebiedGrondslag,
+    kanVerwoorden: () => verwoordVorm(verwoordInvoer) !== null,
+  });
+
+  return {
+    id: rij.id,
+    semantiekSoort: gekozen.semantiekSoort,
+    claimvorm: gekozen.vorm,
+    datumrol: null,
+    tijdstand,
+    bronpassage: passage,
+    betreft: gekozen.betreft,
+    toepassingsgebied: jur.gebied,
+    toepassingsgebiedGrondslag: gebiedGrondslag,
+    uitslag: poort.uitslag,
+    reden: poort.reden,
+    zin: poort.uitslag === "VERWOORDBAAR" ? verwoordVorm(verwoordInvoer) : null,
+  };
+}
+
 function factorVan(schaalwoord: string): number {
   const t: Record<string, number> = {
     duizend: 1e3,
@@ -241,6 +468,8 @@ function factorVan(schaalwoord: string): number {
 const LEESQUERY = `
   select u.id, u.gebeurtenis_id, u.tekst, u.soort, u.waarde_numeriek, u.eenheid,
          u.onderwerp, u.verificatie_status, u.bewijs_kwaliteit, u.semantiek_soort,
+         u.claimvorm, u.datumrol, u.tijdstand, u.bronpassage,
+         u.modaliteit, u.modaliteit_zekerheid,
          exists (select 1 from intel.uitspraak_bronnen ub
                   where ub.uitspraak_id = u.id and ub.rol = 'primair') as heeft_bewijs,
          coalesce(bool_and(b.mag_citeren), false) as mag_citeren,
@@ -315,7 +544,42 @@ export async function backfillSemantiek(
     laatsteId = rij.id;
     const v = verrijk(rij);
     if (!v) {
-      zonderUitdrukking += 1;
+      /* GEEN GETALUITDRUKKING IS NIET HETZELFDE ALS NIETS TE DOEN.
+         ----------------------------------------------------------------
+         Hier stopte de ronde: `zonderUitdrukking += 1; continue;`. Dat
+         is de reden dat de 39 datumclaims in productie op 6 november
+         2026 alle 39 onbeoordeeld stonden — ze hebben geen
+         `waarde_numeriek`, dus verrijk() gaf null en de rij bleef
+         liggen.
+
+         De vormroute kijkt nu naar diezelfde rij met een andere vraag:
+         draagt deze zin een BESLUIT, een VERPLICHTING, een
+         INWERKINGTREDING, een SUBSIDIEVENSTER, een CONGESTIESTATUS, een
+         PROJECTSTATUS, een SPECIFICATIE, een BELEIDSWIJZIGING of een
+         datum met een rol? Zo ja, dan gaat hij door vormpoort.ts.
+
+         DE GETALROUTE IS ONGEWIJZIGD. Deze tak wordt alleen bereikt als
+         verrijk() null gaf, dus geen enkele getalclaim verandert van
+         route of van oordeel. */
+      const vv = verrijkVorm(rij);
+      if (!vv) {
+        zonderUitdrukking += 1;
+        continue;
+      }
+      perUitslag[vv.uitslag] = (perUitslag[vv.uitslag] ?? 0) + 1;
+      if (opties.droog) {
+        verrijkt += 1;
+        continue;
+      }
+      try {
+        await metOrganisatie(pool, { organisatieId }, (c) =>
+          schrijfVormSemantiek(c, organisatieId, vv),
+        );
+        verrijkt += 1;
+      } catch (e) {
+        log.fout("vormsemantiek wegschrijven mislukt", { uitspraak: rij.id, fout: e });
+        onveranderd += 1;
+      }
       continue;
     }
     perUitslag[v.uitslag] = (perUitslag[v.uitslag] ?? 0) + 1;
@@ -342,6 +606,122 @@ export async function backfillSemantiek(
     perUitslag,
     laatsteId,
   };
+}
+
+/**
+ * Schrijft de vorm- of datumsemantiek weg.
+ *
+ * DRIE DINGEN DIE HIJ NIET DOET, en elk daarvan is een regel uit de kop
+ * van dit bestand:
+ *
+ *   - hij raakt `waarde_numeriek`, `eenheid`, `uitdrukking`, `exactheid`,
+ *     `bereik_min`, `bereik_max` en `schaalwoord` NIET aan. Die velden
+ *     horen bij de getalroute; een vormclaim heeft er niets te zoeken.
+ *   - hij verhoogt geen verificatiestatus.
+ *   - hij overschrijft een al vastgelegde claimvorm, datumrol, tijdstand
+ *     of bronpassage NIET: `coalesce(bestaand, nieuw)`. Wat er al staat
+ *     is door een eerdere ronde of door een mens gezet.
+ *
+ * DE ZIN WORDT HIER OPNIEUW GEMAAKT, met de echte geldigheidsdatums uit
+ * de database erbij. verrijkVorm() kent die niet (ze staan niet in
+ * SemantiekRij) en toetst daarom alleen of er een zin te maken IS.
+ * Levert dit alsnog niets op terwijl de uitslag VERWOORDBAAR is, dan
+ * wordt de uitslag teruggezet op CONTEXT_ONVOLLEDIG — fail-closed, in
+ * plaats van de database laten weigeren op
+ * uitspraken_verwoordbaar_heeft_zin.
+ */
+export async function schrijfVormSemantiek(
+  c: pg.PoolClient,
+  organisatieId: number,
+  v: VormVerrijking,
+): Promise<void> {
+  const huidig = await c.query<{
+    geldig_vanaf: string | null;
+    geldig_tot: string | null;
+    uitgever: string | null;
+  }>(
+    `select u.geldig_vanaf::text as geldig_vanaf, u.geldig_tot::text as geldig_tot,
+            min(d.uitgever) as uitgever
+       from intel.uitspraken u
+       left join intel.uitspraak_bronnen ub on ub.uitspraak_id = u.id
+       left join intel.brondocument_versies bv on bv.id = ub.versie_id
+       left join intel.brondocumenten d on d.id = bv.brondocument_id
+      where u.organisatie_id = $1 and u.id = $2
+      group by u.id, u.geldig_vanaf, u.geldig_tot`,
+    [organisatieId, v.id],
+  );
+  const r = huidig.rows[0];
+
+  const zin =
+    v.uitslag === "VERWOORDBAAR"
+      ? verwoordVorm({
+          vorm: v.claimvorm,
+          datumrol: v.datumrol,
+          datumBetreft: v.betreft,
+          tijdstand: v.tijdstand,
+          geldigVanaf: r?.geldig_vanaf ?? null,
+          geldigTot: r?.geldig_tot ?? null,
+          uitgever: r?.uitgever ?? null,
+        })
+      : null;
+
+  /* FAIL-CLOSED. uitspraken_verwoordbaar_heeft_zin eist 25 tekens; een
+     kortere of ontbrekende zin is geen reden om de constraint te laten
+     vuren maar om de uitslag eerlijk te verlagen. */
+  const uitslag =
+    v.uitslag === "VERWOORDBAAR" && (zin === null || zin.length < 25)
+      ? "CONTEXT_ONVOLLEDIG"
+      : v.uitslag;
+  const reden =
+    uitslag === v.uitslag
+      ? v.reden
+      : `alle poortcontroles zijn gehaald, maar er komt met de vastgelegde datums geen ` +
+        `Nederlandse zin van minstens 25 tekens uit (nu: ${zin === null ? "geen zin" : `${zin.length} tekens`}). ` +
+        `Dat is een gat in de verwoorder, niet in het bewijs.`;
+
+  await c.query(
+    `update intel.uitspraken
+        set semantiek_soort     = $3,
+            claimvorm           = coalesce(claimvorm, $4),
+            datumrol            = coalesce(datumrol, $5),
+            tijdstand           = coalesce(tijdstand, $6),
+            bronpassage         = coalesce(bronpassage, $7),
+            grondtal            = coalesce(grondtal, $8),
+            toepassingsgebied   = $9,
+            toepassingsgebied_grondslag = $10,
+            verwoorde_zin       = $11,
+            verwoordbaar        = $12,
+            verwoordbaar_reden  = $13,
+            verwoordbaar_op     = now(),
+            semantiek_herkomst  = 'bron_patroon',
+            semantiek_op        = now()
+      where organisatie_id = $1 and id = $2`,
+    [
+      organisatieId,
+      v.id,
+      v.semantiekSoort,
+      v.claimvorm,
+      v.datumrol,
+      v.tijdstand,
+      v.bronpassage,
+      /* `grondtal` draagt hier WAT de claim betreft. Geen nieuwe kolom:
+         uitspraken_kwalitatief_heeft_onderwerp vraagt al naar fenomeen
+         of subject, en `grondtal` is het veld dat de verwoorder voor
+         "van wat" gebruikt. Alleen vullen als hij leeg is. */
+      v.betreft,
+      v.toepassingsgebied,
+      /* uitspraken_gebied_heeft_grondslag eist 15 tekens zodra er een
+         gebied staat. Een lege grondslag zou de rij laten weigeren; de
+         jurisdictiemotor geeft altijd een regel, maar niet altijd een
+         lange, dus hier een expliciete ondergrens met de uitslag erin. */
+      v.toepassingsgebiedGrondslag.length >= 15
+        ? v.toepassingsgebiedGrondslag
+        : `toepassingsgebied ${v.toepassingsgebied} bepaald zonder expliciet gebiedssignaal in de bronzin`,
+      zin,
+      uitslag,
+      reden.length >= 15 ? reden : `${reden} (geen nadere grondslag vastgelegd)`,
+    ],
+  );
 }
 
 /**
