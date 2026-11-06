@@ -154,11 +154,27 @@ describe("de tweede poort: goedkeuren en publiceren wegen de actuele claim", () 
      2 · geldig bij de goedkeuring, ongeldig vóór de publicatie
      --------------------------------------------------------------- */
   test("2 · een claim die ná de goedkeuring zijn bevestiging verliest blokkeert de publicatie", async () => {
-    const v = await klaar("zaak-2");
+    /* `publiceerbaar: true`, EN DAT IS GEEN VERSIERING.
+       Deze zaak wil bewijzen dat publiceer() struikelt op het BEWIJS. Hij
+       kan die poort alleen bereiken als de poort ervóór open staat, en
+       sinds keurGoed() na de goedkeuring hertoetst, is
+       `poorten_geslaagd` geen hardgecodeerde fixturewaarde meer maar een
+       gemeten uitkomst. Zonder commerciele pagina en zonder bronnensectie
+       weigert publiceer() dan al op 'poorten niet geslaagd' en toetst
+       deze zaak iets anders dan hij beweert. Zie de toelichting bij
+       `publiceerbaar` in test/harnas.ts. */
+    const v = await klaar("zaak-2", { publiceerbaar: true });
     const goed = await metOrganisatie(db.pool, { organisatieId: org }, (c) =>
       keurGoed(c, v.versieId, chef, "nagelopen"),
     );
     assert.equal(goed.goedgekeurd, true, "de goedkeuring hoort nu wel te slagen");
+    assert.equal(
+      goed.goedgekeurd && goed.naHertoets?.poortenGeslaagd,
+      true,
+      `na de goedkeuring horen de poorten open te staan: ${
+        goed.goedgekeurd ? (goed.naHertoets?.blokkades.join(" | ") ?? "") : ""
+      }`,
+    );
 
     await zetClaim(v.uitspraakId, "verificatie_status", "tegengesproken");
 

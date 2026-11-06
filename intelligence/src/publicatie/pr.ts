@@ -45,9 +45,10 @@
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import type pg from "pg";
+import { configLezen } from "../kern/config.ts";
 import { eenRij, rijen } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 import { inhoudAfdruk } from "../inhoud/concept.ts";
@@ -152,6 +153,26 @@ export async function maakPublicatiePr(
     return ok;
   };
 
+  /* ---------------- welke boom is dit eigenlijk? ----------------
+     GEMETEN GAT, NU GEREPAREERD AAN DE BRON. git, de generator en de
+     slugcontrole draaien op `opties.siteWortel`; publiceer() nam
+     INTEL_SITE_WORTEL. Liepen die twee uiteen, dan landde het
+     registerrecord in een ANDERE boom, zag `git status` niets nieuws, en
+     kwam er een commit zonder het geauteurde bestand — met alle grendels
+     op PASS. Sinds deze ronde geeft deze functie zijn eigen wortel door
+     aan publiceer() en draaiTerug(), dus de twee KUNNEN niet meer
+     uiteenlopen. Deze regel blijft staan als meting, want wie de
+     grendeltabel leest hoort te zien in welke boom er is geschreven. */
+  const eigenWortel = resolve(opties.siteWortel);
+  const configWortel = configLezen().siteWortel;
+  voeg(
+    "sitewortel van git en van het registerrecord",
+    true,
+    eigenWortel === configWortel
+      ? eigenWortel
+      : `${eigenWortel} (INTEL_SITE_WORTEL noemt ${configWortel}; de meegegeven wortel wint)`,
+  );
+
   const v = await eenRij<VersieRij>(
     c,
     `select v.id, v.pad, v.titel, v.direct_antwoord, v.body_markdown, v.structured_data,
@@ -182,7 +203,22 @@ export async function maakPublicatiePr(
         : `status is '${v.status}'`,
     )
   ) {
-    return afbreken(grendels, "zonder menselijke goedkeuring gaat er geen PR open");
+    /* EEN AL GEPUBLICEERDE VERSIE IS EEN ANDER VERHAAL dan een
+       onbeoordeelde. Beide stranden hier — grendel 1 eist status
+       'goedgekeurd' — maar "zonder menselijke goedkeuring gaat er geen
+       PR open" is voor een tweede publicatieaanvraag een verkeerde
+       uitleg: er IS goedgekeurd, en daarna gepubliceerd. Dit is precies
+       de plek waar een dubbele aanvraag strandt, dus hoort hij ook te
+       zeggen wat er aan de hand is. */
+    return afbreken(
+      grendels,
+      v.status === "gepubliceerd"
+        ? `inhoudsversie ${v.id} is al gepubliceerd; een tweede publicatie van dezelfde versie ` +
+            "wordt niet gemaakt. Wil je de tekst herzien, maak dan een nieuwe versie."
+        : v.status === "teruggedraaid"
+          ? `inhoudsversie ${v.id} is teruggedraaid en moet opnieuw worden goedgekeurd`
+          : "zonder menselijke goedkeuring gaat er geen PR open",
+    );
   }
 
   /* ---------------- grendel 2: de afdruk opnieuw ---------------- */
@@ -252,8 +288,14 @@ export async function maakPublicatiePr(
     return afbreken(grendels, "publiceren naar main is uitgesloten");
   }
 
-  /* ---------------- grendel 5: schone werkboom ---------------- */
-  const statusVoor = (await git(["status", "--porcelain"])).trim();
+  /* ---------------- grendel 5: schone werkboom ----------------
+     -uall EN NIET DE STANDAARD. `git status --porcelain` VOUWT een
+     volledig nieuwe map samen tot één regel met een afsluitende slash
+     ("?? data/inhoud/nieuws/") in plaats van de bestanden erin. Zie de
+     toelichting bij grendel 6, waar dat een echte publicatie tegenhield.
+     Hier is het effect milder (een map met rommel erin werd als één
+     wijziging geteld) maar de vraag is dezelfde, dus het antwoord ook. */
+  const statusVoor = (await git(["status", "--porcelain", "-uall"])).trim();
   if (
     !voeg(
       "de werkboom is schoon voordat er iets gebeurt",
@@ -287,8 +329,10 @@ export async function maakPublicatiePr(
      database en weigert zelf een niet-goedgekeurde versie, een
      gewijzigde afdruk en elk pad buiten data/inhoud/nieuws/. Een
      tweede implementatie zou een tweede waarheid zijn. */
-  const { publiceer, draaiTerug } = await import("../inhoud/publiceer.ts");
-  const gepubliceerd = await publiceer(poolVoorPubliceer, organisatieId, v.id);
+  const { publiceer } = await import("../inhoud/publiceer.ts");
+  const gepubliceerd = await publiceer(poolVoorPubliceer, organisatieId, v.id, {
+    siteWortel: eigenWortel,
+  });
   if (!gepubliceerd.geschreven) {
     await git(["checkout", "--", "."]);
     voeg("publiceer() schreef het registerrecord", false, gepubliceerd.reden);
@@ -303,7 +347,19 @@ export async function maakPublicatiePr(
     maxBuffer: 64 * 1024 * 1024,
   });
 
-  const gewijzigd = (await git(["status", "--porcelain"]))
+  /* -uall, EN DAT IS HIER GEEN DETAIL MAAR DE EERSTE PUBLICATIE.
+     `git status --porcelain` toont een map die in zijn geheel nieuw is
+     als ÉÉN regel: "?? data/inhoud/nieuws/". In de repository van
+     vibe-website bestaat data/inhoud/nieuws nog niet (gemeten op
+     origin/main e1461e6: data/inhoud heeft hub, kennis, oplossing,
+     sector en toepassing — geen nieuws). De eerste publicatie ooit
+     leverde dus die ene maplijn, die noch TOEGESTAAN_AUTEURSPAD noch
+     TOEGESTAAN_GEGENEREERD matcht, en de keten brak af op "er zijn
+     bestanden gewijzigd die dit platform niet mag aanraken" — terwijl
+     het enige nieuwe bestand precies het toegestane record was.
+     Met -uall staat er "?? data/inhoud/nieuws/<slug>.json" en toetst de
+     grendel wat hij belooft te toetsen. */
+  const gewijzigd = (await git(["status", "--porcelain", "-uall"]))
     .trim()
     .split("\n")
     .filter(Boolean)
@@ -324,11 +380,16 @@ export async function maakPublicatiePr(
   ) {
     /* De publicatie is al in de database geboekt, dus die moet terug.
        Een mislukte deploy mag NOOIT 'gepubliceerd' blijven. */
-    if (gepubliceerd.publicatieId) {
-      await draaiTerug(poolVoorPubliceer, organisatieId, gepubliceerd.publicatieId);
-    }
-    await git(["checkout", "--", "."]);
-    await git(["clean", "-fd", "--", "data/inhoud/nieuws"]);
+    await herstelNaMislukking(
+      c,
+      poolVoorPubliceer,
+      organisatieId,
+      v.id,
+      gepubliceerd.publicatieId,
+      git,
+      basis,
+      eigenWortel,
+    );
     return afbreken(grendels, "er zijn bestanden gewijzigd die dit platform niet mag aanraken");
   }
 
@@ -346,11 +407,16 @@ export async function maakPublicatiePr(
       `${regioPendingVoor} PENDING voor, ${regioPendingNa} na`,
     )
   ) {
-    if (gepubliceerd.publicatieId) {
-      await draaiTerug(poolVoorPubliceer, organisatieId, gepubliceerd.publicatieId);
-    }
-    await git(["checkout", "--", "."]);
-    await git(["clean", "-fd", "--", "data/inhoud/nieuws"]);
+    await herstelNaMislukking(
+      c,
+      poolVoorPubliceer,
+      organisatieId,
+      v.id,
+      gepubliceerd.publicatieId,
+      git,
+      basis,
+      eigenWortel,
+    );
     return afbreken(grendels, "deze publicatie veranderde de regionale publicatiestand");
   }
 
@@ -374,25 +440,85 @@ export async function maakPublicatiePr(
 
   let prUrl: string | null = null;
   if (opties.openPr) {
-    await git(["push", "--set-upstream", "origin", branch]);
-    const { stdout } = await uitvoeren(
-      "gh",
-      [
-        "pr",
-        "create",
-        "--base",
-        "main",
-        "--head",
-        branch,
-        "--title",
-        `publicatie: nieuws/${slug}`,
-        "--body",
-        prBeschrijving(v, slug!, nu, grendels),
-      ],
-      { cwd: opties.siteWortel, encoding: "utf8" },
-    );
-    prUrl = stdout.trim().split("\n").pop() ?? null;
-    voeg("pull request geopend", !!prUrl, prUrl ?? "geen URL terug");
+    /* DE ENIGE STAP DIE BUITEN DEZE MACHINE KAN FALEN.
+       Pushen en een PR openen hangen aan een remote, een token en een
+       dienst die plat kan liggen. Tot nu toe wierp dat een exceptie door
+       maakPublicatiePr heen: de aanroeper kreeg een stacktrace, de
+       database hield een publicatie die nooit ergens is aangekomen, en
+       de werkboom bleef op de publicatiebranch staan. Een mislukte
+       uitrol mag NOOIT 'gepubliceerd' blijven — de kop van dit bestand
+       zegt dat zelf. Daarom: afgevangen, teruggedraaid, en als FAIL in
+       de grendeltabel. */
+    try {
+      /* IDEMPOTENT PUSHEN. De branchnaam is deterministisch, dus een
+         tweede poging na een mislukte eerste vindt de branch al op de
+         remote — met een andere commit, want `checkout -B` heeft hem op
+         de basis herbouwd. Een gewone push wordt dan geweigerd als
+         non-fast-forward en een retry is onmogelijk.
+         --force-with-lease overschrijft alleen als de remote nog staat
+         waar wij hem zagen, en kan per de grendel hierboven nooit main
+         raken. */
+      await git(["push", "--force-with-lease", "--set-upstream", "origin", branch]);
+
+      /* GEEN TWEEDE PR OP DEZELFDE BRANCH. De kop van dit bestand belooft
+         idempotentie ("werkt de bestaande PR bij in plaats van een tweede
+         te openen"), maar de code riep onvoorwaardelijk `gh pr create`
+         aan. Op een branch die al een open PR heeft is dat een fout of,
+         bij een andere basis, een tweede PR voor hetzelfde artikel. */
+      const bestaand = await bestaandePr(opties.siteWortel, branch);
+      if (bestaand !== null) {
+        prUrl = bestaand;
+        voeg("bestaande pull request hergebruikt", true, bestaand);
+      } else {
+        const { stdout } = await uitvoeren(
+          "gh",
+          [
+            "pr",
+            "create",
+            "--base",
+            "main",
+            "--head",
+            branch,
+            "--title",
+            `publicatie: nieuws/${slug}`,
+            "--body",
+            prBeschrijving(v, slug!, nu, grendels),
+          ],
+          { cwd: opties.siteWortel, encoding: "utf8", maxBuffer: 8 * 1024 * 1024 },
+        );
+        /* ALLEEN EEN REGEL DIE EEN URL IS. `gh` schrijft soms een
+           waarschuwing als laatste regel; die zou anders als PR-URL in
+           het auditspoor belanden. */
+        prUrl =
+          stdout
+            .trim()
+            .split("\n")
+            .map((r) => r.trim())
+            .filter((r) => /^https?:\/\//.test(r))
+            .pop() ?? null;
+        if (prUrl === null) throw new Error("gh gaf geen pull-request-URL terug");
+        voeg("pull request geopend", true, prUrl);
+      }
+    } catch (e) {
+      const bericht = ((e as Error).message ?? "onbekende fout").split("\n")[0] ?? "onbekende fout";
+      voeg("pull request geopend", false, bericht);
+      await herstelNaMislukking(
+        c,
+        poolVoorPubliceer,
+        organisatieId,
+        v.id,
+        gepubliceerd.publicatieId,
+        git,
+        basis,
+        eigenWortel,
+      );
+      return afbreken(
+        grendels,
+        `de pull request kon niet worden geopend: ${bericht}. De publicatie is teruggedraaid, ` +
+          "de werkboom staat weer op de basis en het artikel staat weer op 'goedgekeurd'; " +
+          "dezelfde opdracht kan opnieuw worden gedraaid.",
+      );
+    }
   } else {
     voeg(
       "pull request NIET geopend",
@@ -430,6 +556,100 @@ export async function maakPublicatiePr(
 function afbreken(grendels: PrGrendel[], reden: string): PrUitkomst {
   log.waarschuwing("publicatie-PR geweigerd", { reden });
   return { geslaagd: false, branch: null, commit: null, prUrl: null, grendels, reden };
+}
+
+/**
+ * Is er al een open pull request voor deze branch?
+ *
+ * Geeft `null` bij ELKE onzekerheid — geen `gh`, geen autorisatie, geen
+ * remote. Dat is geen fout maar 'ik weet het niet': de aanroeper
+ * probeert daarna te openen en krijgt dán een foutmelding die de reden
+ * noemt, in plaats van hier een exceptie die de echte oorzaak verbergt.
+ */
+async function bestaandePr(wortel: string, branch: string): Promise<string | null> {
+  try {
+    const { stdout } = await uitvoeren(
+      "gh",
+      ["pr", "list", "--head", branch, "--state", "open", "--json", "url"],
+      { cwd: wortel, encoding: "utf8", maxBuffer: 8 * 1024 * 1024 },
+    );
+    const lijst = JSON.parse(stdout.trim() === "" ? "[]" : stdout) as { url?: string }[];
+    return lijst[0]?.url ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Zet alles terug na een mislukte publicatiepoging: de database, de
+ * redactionele status en de werkboom.
+ *
+ * DE STATUS MOET TERUG NAAR 'goedgekeurd', EN DAT IS DE KERN.
+ * `draaiTerug()` zet de inhoudsversie op 'teruggedraaid' (publiceer.ts
+ * regel 1051). Dat is juist voor een pagina die LIVE heeft gestaan, maar
+ * hier heeft hij dat nooit: alleen de PR- of grendelstap faalde.
+ * 'teruggedraaid' is bovendien een eindstand — publiceer() eist
+ * 'goedgekeurd' en het dashboard laat alleen 'ter_review' en 'concept'
+ * beoordelen — dus één mislukte PR zette een artikel mét geldige
+ * goedkeuring voorgoed vast. De goedkeuring is niet ingetrokken en de
+ * afdrukbinding staat nog, dus de rij hoort terug naar 'goedgekeurd' en
+ * de keten is opnieuw te draaien.
+ *
+ * De werkboom gaat met `reset --hard` naar de basis. Dat werkt zowel
+ * vóór de commit (dan is het een checkout van de gewijzigde bestanden)
+ * als erna (dan verdwijnt ook de commit), en het laat geen branch met
+ * een publicatie achter die nooit is aangekomen.
+ */
+async function herstelNaMislukking(
+  c: pg.PoolClient,
+  pool: import("../kern/db.ts").Pool,
+  organisatieId: number,
+  inhoudVersieId: number,
+  publicatieId: number | null,
+  git: GitUitvoerder,
+  basis: string,
+  siteWortel: string,
+): Promise<void> {
+  const { draaiTerug } = await import("../inhoud/publiceer.ts");
+  if (publicatieId !== null) {
+    await draaiTerug(pool, organisatieId, publicatieId, { siteWortel });
+    const terug = await c.query(
+      `update intel.inhoud_versies
+          set status = 'goedgekeurd'
+        where organisatie_id = $1 and id = $2 and status = 'teruggedraaid'
+          and goedgekeurd_door is not null
+          and goedgekeurde_afdruk is not null
+          and goedgekeurde_afdruk = inhoud_afdruk`,
+      [organisatieId, inhoudVersieId],
+    );
+    if ((terug.rowCount ?? 0) > 0) {
+      await c.query(
+        `insert into intel.publicatiebesluiten
+           (organisatie_id, inhoud_versie_id, besluit, actor_soort, motivatie)
+         values ($1, $2, 'ingediend', 'systeem', $3)`,
+        [
+          organisatieId,
+          inhoudVersieId,
+          "publicatiepoging mislukt en teruggedraaid; de goedkeuring stond nog en is niet " +
+            "ingetrokken, dus het artikel staat weer op 'goedgekeurd' en de keten kan opnieuw",
+        ],
+      );
+    }
+  }
+  await git(["reset", "--hard", basis]);
+  /* EN DE ONGESPOORDE UITVOER VAN DE GENERATOR MEE.
+     `reset --hard` herstelt alleen GESPOORDE bestanden. De generator van
+     Release 1 maakt bij een nieuw bericht ook een nieuw, ongespoord
+     bestand (nieuws/<slug>.html) en dat bleef na een mislukking staan.
+     Gevolg: de volgende poging struikelde op grendel 5 — de werkboom was
+     niet meer schoon — en dan is één mislukte PR genoeg om de keten
+     permanent te blokkeren.
+
+     DIT MAG ALLEEN OMDAT GRENDEL 5 HET BEWIJST. Die grendel liep met
+     -uall en eiste een VOLLEDIG schone boom voordat er iets gebeurde;
+     alles wat er nu ongespoord staat, is dus door deze run gemaakt.
+     Zonder -x, dus genegeerde bestanden (.env, node_modules) blijven. */
+  await git(["clean", "-fd"]);
 }
 
 function prBeschrijving(

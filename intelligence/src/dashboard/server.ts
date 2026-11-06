@@ -65,7 +65,13 @@ import { FASE_LABEL, type Fase } from "../commercieel/aanbesteding.ts";
 import { leesSitekennis } from "../site/sitekennis.ts";
 import { beoordeel, type Besluit } from "../inhoud/beoordeling.ts";
 import { hertoetsInhoudVersie } from "../inhoud/concept.ts";
-import { keurGoed } from "../inhoud/publiceer.ts";
+/* markdownNaarHtml is dezelfde omzetting die bouwPagina() voor de
+   website gebruikt. Hergebruik en geen tweede renderer: een leesbare
+   weergave die ANDERS opmaakt dan de publicatie laat een beoordelaar
+   iets goedkeuren wat hij niet heeft gezien. De functie escapet eerst
+   alles en laat alleen interne paden en https-links door
+   (inhoud/publiceer.ts:100-130), dus hij is veilig in het dashboard. */
+import { keurGoed, markdownNaarHtml } from "../inhoud/publiceer.ts";
 import { claimDraagt, herbeoordeelStand } from "../pijplijn/claimpoort.ts";
 import { IntelFout } from "../kern/fouten.ts";
 import { redacteerFout } from "../kern/geheimen.ts";
@@ -1495,11 +1501,19 @@ ${tabel(
 )}
 
 <h2>Conceptversies</h2>
+<p class="uitleg">Klik een concept open om de volledige tekst, de bronnen per claim en de
+verificatiestatus te lezen, en om het goed te keuren, af te wijzen of aan te passen.</p>
 ${tabel(
   ["ID", "Pad", "Soort", "Status", "Poorten", "Risico", "Kernclaims", "Bronnen", "Auteur"],
   d.versies.map((v) => [
-    `<span class="num">${v.id}</span>`,
-    `<code>${esc(v.pad)}</code><div class="klein">${esc(v.titel)}</div>`,
+    /* DE LIJST LINKT NU NAAR DE DETAILPAGINA.
+       /studio/:id bestond, vroeg hetzelfde recht en toonde alles wat een
+       beoordelaar nodig heeft — maar er stond nergens een href naar toe.
+       Een mens moest de URL typen om het artikel te kunnen lezen dat hij
+       moest goedkeuren. Gemeten: geen enkele treffer op href="/studio/
+       in de hele boom op e1461e6. */
+    `<a href="/studio/${v.id}"><span class="num">${v.id}</span></a>`,
+    `<a href="/studio/${v.id}"><code>${esc(v.pad)}</code></a><div class="klein">${esc(v.titel)}</div>`,
     esc(v.soort),
     esc(v.status),
     v.poorten
@@ -1597,6 +1611,7 @@ ${tabel(
           aangemaakt_door: number | null;
           bewerkt_door: number | null;
           goedgekeurd_door: number | null;
+          goedgekeurde_afdruk: string | null;
           goedkeurder: string | null;
           goedgekeurd_op: string | null;
           kandidaat_id: number | null;
@@ -1610,7 +1625,7 @@ ${tabel(
                   v.interne_links, v.bronnen_sectie, v.cta_sleutel,
                   v.soort, v.status, v.risico_klasse as risico,
                   v.poorten_geslaagd as poorten, v.blokkades, v.poortresultaten,
-                  v.model, v.auteur_soort, v.inhoud_afdruk,
+                  v.model, v.auteur_soort, v.inhoud_afdruk, v.goedgekeurde_afdruk,
                   v.aangemaakt_door, v.bewerkt_door, v.goedgekeurd_door,
                   g.naam as goedkeurder,
                   v.goedgekeurd_op::text as goedgekeurd_op,
@@ -1622,7 +1637,14 @@ ${tabel(
             where v.id = $1`,
           [Number(id)],
         );
-        if (!versie) return { versie: null, uitspraken: [] as never[] };
+        if (!versie) {
+          return {
+            versie: null,
+            uitspraken: [] as never[],
+            publicatie: null,
+            besluiten: [] as never[],
+          };
+        }
 
         /* DE GEBONDEN UITSPRAKEN MÉT HUN BRON-URL.
            Dit is de 'bronnen controleren'-eis: een beoordelaar moet de
@@ -1680,7 +1702,40 @@ ${tabel(
             order by iu.rol, u.id`,
           [Number(id)],
         );
-        return { versie, uitspraken };
+
+        /* DE PUBLICATIESTAND, en niet alleen de redactionele status.
+           'goedgekeurd' betekent niet 'staat live': daartussen zit
+           publiceer() en de PR-stap. Zonder deze twee queries kon een
+           beoordelaar op deze pagina niet zien of zijn goedkeuring ooit
+           tot iets heeft geleid. */
+        const publicatie = await eenRij<{
+          bestandspad: string;
+          status: string;
+          op: string | null;
+        }>(
+          c,
+          `select bestandspad, status, op::text as op
+             from intel.publicaties
+            where inhoud_versie_id = $1
+            order by id desc limit 1`,
+          [Number(id)],
+        );
+
+        const besluiten = await rijen<{
+          besluit: string;
+          actor: string;
+          op: string;
+          motivatie: string | null;
+        }>(
+          c,
+          `select besluit, actor_soort as actor, op::text as op, motivatie
+             from intel.publicatiebesluiten
+            where inhoud_versie_id = $1
+            order by id desc limit 6`,
+          [Number(id)],
+        );
+
+        return { versie, uitspraken, publicatie, besluiten };
       });
 
       if (!d.versie) {
@@ -1722,6 +1777,63 @@ ${tabel(
           : v.status === "afgewezen" || v.status === "teruggedraaid"
             ? vlag(v.status, "fout")
             : vlag(v.status, "waarschuwing");
+
+      /* DE KNOP VOLGT HET RECHT DAT ÉCHT NODIG IS.
+         `magGoedkeuren` kende alleen het basisrecht, maar keurGoed()
+         verzwaart bij risicoklasse hoog naar
+         inhoud.hoogrisico.goedkeuren (inhoud/publiceer.ts:1230-1235).
+         Een redacteur zag dus de knop Goedkeuren op precies de artikelen
+         die hij niet mag goedkeuren, en kreeg bij elke klik een fout —
+         dezelfde misleidende actie die bij /studio al was gerepareerd. */
+      const RECHT_HOOGRISICO_UI = "inhoud.hoogrisico.goedkeuren";
+      const magDezeGoedkeuren =
+        magGoedkeuren &&
+        (v.risico !== "hoog" || (req.gebruiker?.rechten.has(RECHT_HOOGRISICO_UI) ?? false));
+
+      /* DRAGENDE KERNCLAIMS, met dezelfde functie als de poort. De
+         slotregel onder de ketentabel telde met een eigen, mildere regel
+         (bevestigd + vastgesteld + 0.5) over ÁLLE claims. Dat gaf twee
+         fouten in één getal: een niet-dragende documentsoort werd
+         meegeteld, en een ondersteunende claim die niet hoeft te dragen
+         ook. De publicatiepoort kijkt alleen naar dragendeKern. */
+      const kernlijst = d.uitspraken.filter((u) => u.rol === "kern");
+      const kernClaims = kernlijst.length;
+      const dragendeKern = kernlijst.filter((u) =>
+        claimDraagt({
+          verificatieStatus: u.status,
+          modaliteit: u.modaliteit,
+          modaliteitZekerheid: u.zekerheid === null ? null : Number(u.zekerheid),
+          documentsoort: u.documentsoort,
+        }),
+      ).length;
+
+      /* DE WAARSCHUWING STAAT BOVEN HET BESLUIT, niet eronder.
+         Ontbrekend of te zwak bronbewijs is de enige reden waarom een
+         menselijke goedkeuring hier géén publicatie oplevert, en de
+         beoordelaar hoort dat te lezen vóór hij op Goedkeuren drukt. */
+      const bronGebreken = [
+        kernClaims === 0 ? "er is geen enkele KERNclaim aan dit bericht gebonden" : "",
+        kernClaims > 0 && dragendeKern === 0
+          ? "geen enkele kernclaim draagt nog; er is niets om op te publiceren"
+          : "",
+        (v.bronnen_sectie ?? []).length === 0
+          ? "de bronnensectie is leeg; het bericht zou zonder bronvermelding publiceren"
+          : "",
+        d.uitspraken.some((u) => u.bron_url === null)
+          ? "minstens één gebonden claim heeft geen primaire bronbinding"
+          : "",
+        d.uitspraken.some((u) => u.injectie)
+          ? "minstens één brondocument is injectieverdacht; lees de bron zelf voor je goedkeurt"
+          : "",
+      ].filter(Boolean);
+      const bronWaarschuwing =
+        bronGebreken.length === 0
+          ? ""
+          : `<p class="uitleg" style="border-left:3px solid #a11;padding-left:10px">
+<strong>LET OP HET BRONBEWIJS (${bronGebreken.length})</strong><br>
+${bronGebreken.map((g) => esc(g)).join("<br>")}<br>
+Een menselijke goedkeuring heft hiervan niets op: de hertoets na uw besluit draait dezelfde
+bewijstoets opnieuw, dus dit blijft een blokkade en het bericht blijft onpubliceerbaar.</p>`;
 
       /* HET FORMULIER DRAAGT DE AFDRUK DIE DE BEOORDELAAR ZAG.
          Zelfde grendel als bij een voorstel: wijkt de afdruk bij het
@@ -1907,7 +2019,12 @@ ${tabel(
       .filter(Boolean)
       .join("<br>");
     return [
-      esc(u.rol) + (draagt ? ` ${vlag("draagt", "ok")}` : ""),
+      /* DE ZIN ZELF HOORT ERBIJ. De tabel haalde `u.tekst` al op maar
+         rendeerde hem niet: een beoordelaar las rol, getal en modaliteit
+         en niet de bewering waarover hij een besluit nam. */
+      esc(u.rol) +
+        (draagt ? ` ${vlag("draagt", "ok")}` : "") +
+        `<div class="klein">${esc(u.tekst)}</div>`,
       u.waarde === null ? "<span class=\"bij\">geen getal</span>" : esc(`${u.waarde} ${u.eenheid ?? ""}`),
       u.status === "bevestigd" ? vlag(u.status, "ok") : vlag(u.status, "waarschuwing"),
       esc(String(u.kwaliteit ?? "-")),
@@ -1918,6 +2035,13 @@ ${tabel(
         ? `<a href="${esc(u.bron_url)}" rel="noreferrer noopener nofollow" target="_blank">${esc(
             (u.bron_titel ?? u.uitgever ?? u.bron_url).slice(0, 56),
           )}</a>${u.injectie ? ` ${vlag("injectieverdacht", "fout")}` : ""}${
+            /* DE UITGEVER APART, want als linklabel verschijnt hij nooit:
+               brondocumenten.titel is NOT NULL (migratie 0002 regel 125),
+               dus `bron_titel ?? uitgever` kiest altijd de titel. Wie de
+               bron moet wegen heeft de uitgever nodig, niet alleen de
+               documenttitel. */
+            u.uitgever ? `<div class="klein">uitgever: ${esc(u.uitgever)}</div>` : ""
+          }${
             grondslag ? `<details><summary class="klein">grondslag</summary><div class="klein">${grondslag}</div></details>` : ""
           }`
         : vlag("geen primaire bron", "fout"),
@@ -1926,23 +2050,99 @@ ${tabel(
   }),
   "Geen uitspraken gebonden. Zonder bewijs kan dit concept niet gepubliceerd worden.",
 )}
-<p class="uitleg">Claims die dragen: <strong>${
-  d.uitspraken.filter(
-    (u) =>
-      u.status === "bevestigd" &&
-      u.modaliteit === "VASTGESTELD" &&
-      (u.zekerheid === null ? 0 : Number(u.zekerheid)) >= 0.5,
-  ).length
-}</strong> van ${d.uitspraken.length}. Een bericht zonder dragende claim hoort niet gepubliceerd te worden.</p>
+<p class="uitleg">Dragende <strong>kern</strong>claims: <strong>${dragendeKern}</strong> van ${kernClaims}
+(${d.uitspraken.length} claims gebonden in totaal). Alleen een kernclaim hoeft te dragen; een
+ondersteunende claim staat in de tekst als wat hij is. De regel is dezelfde functie die de poort
+gebruikt &mdash; <code>claimDraagt()</code> &mdash; en niet een tweede, mildere nabouw.</p>
+
+${bronWaarschuwing}
 
 <h2>De tekst</h2>
-<pre class="concepttekst">${esc(v.body_markdown)}</pre>
+<p class="bij">De opgemaakte weergave is dezelfde omzetting die de website gebruikt
+(<code>markdownNaarHtml</code>), zodat je leest wat er gepubliceerd zou worden. De ruwe markdown
+staat eronder, want dát is wat je bewerkt en waarop de afdruk is berekend.</p>
+<div class="conceptweergave">${markdownNaarHtml(v.body_markdown)}</div>
+<details><summary>Ruwe markdown (${v.body_markdown.length} tekens)</summary>
+<pre class="concepttekst">${esc(v.body_markdown)}</pre></details>
+
+<h2>Bronnen onder dit bericht</h2>
+${tabel(
+  ["Uitgever", "URL", "Datum"],
+  (v.bronnen_sectie ?? []).map((b) => [
+    esc(b.uitgever),
+    `<a href="${esc(/^https:\/\//.test(b.url) ? b.url : "#")}" rel="noreferrer noopener nofollow" target="_blank">${esc(
+      b.url.slice(0, 72),
+    )}</a>`,
+    esc(b.datum ?? "-"),
+  ]),
+  "GEEN BRONNENSECTIE. Het bericht zou zonder bronvermelding publiceren; poort 'bronnen_sectie_gevuld' hoort dat tegen te houden.",
+)}
+
+<h2>Publicatiestand</h2>
+${tabel(
+  ["Veld", "Waarde"],
+  [
+    [
+      "Poorten na de laatste toets",
+      v.poorten
+        ? vlag("alle poorten open", "ok")
+        : `${vlag(`${v.blokkades.length} blokkade(s)`, "fout")}<div class="klein">${v.blokkades
+            .map((b) => esc(b))
+            .join("<br>")}</div>`,
+    ],
+    [
+      "Goedkeuring bindt aan de tekst",
+      v.goedgekeurd_door === null
+        ? vlag("nog niet goedgekeurd", "waarschuwing")
+        : v.goedgekeurde_afdruk !== null && v.goedgekeurde_afdruk === v.inhoud_afdruk
+          ? vlag("de goedgekeurde afdruk is nog de huidige", "ok")
+          : vlag("de tekst is na de goedkeuring gewijzigd; publiceren wordt geweigerd", "fout"),
+    ],
+    [
+      "Gepubliceerd",
+      d.publicatie === null
+        ? vlag("nog niet gepubliceerd", "")
+        : `${esc(d.publicatie.bestandspad)} <span class="bij">(${esc(d.publicatie.status)} op ${esc(
+            d.publicatie.op ?? "?",
+          )})</span>`,
+    ],
+    [
+      "Laatste publicatiebesluiten",
+      d.besluiten.length === 0
+        ? vlag("geen", "")
+        : d.besluiten
+            .map(
+              (b) =>
+                `<div class="klein">${esc(b.op)} — <strong>${esc(b.besluit)}</strong> (${esc(
+                  b.actor,
+                )}) ${esc((b.motivatie ?? "").slice(0, 160))}</div>`,
+            )
+            .join(""),
+    ],
+  ],
+)}
 
 ${
-  magBewerken && v.status !== "goedgekeurd" && v.status !== "gepubliceerd"
+  /* BEWERKEN MAG NU OOK OP EEN GOEDGEKEURD CONCEPT, en dat is de
+     uitweg uit de doodlopende weg. Tot nu toe was 'goedgekeurd' een
+     eindstand waaruit niets meer kon: bewerken geweigerd, hertoetsen
+     geweigerd. Een goedkeuring op een stuk met een resterende blokkade
+     was daarmee onherstelbaar. Bewerken LAAT DE GOEDKEURING VERVALLEN
+     (de route zet de status terug op ter_review en wist de
+     goedkeurvelden) en draait daarna alle poorten opnieuw — precies de
+     eis dat een inhoudelijke wijziging de controles opnieuw doorloopt.
+     'gepubliceerd' blijft wél dicht: wat live staat krijgt een nieuwe
+     versie, geen stille herschrijving. */
+  magBewerken && v.status !== "gepubliceerd"
     ? `<h2>Tekst aanpassen</h2>
 <p class="bij">Na opslaan lopen ALLE poorten opnieuw. Uw gebruiker wordt vastgelegd als
-laatste bewerker, en u kunt daarna dit concept zelf niet meer goedkeuren (vier ogen).</p>
+laatste bewerker, en u kunt daarna dit concept zelf niet meer goedkeuren (vier ogen).${
+        v.status === "goedgekeurd"
+          ? ` <strong>Dit concept is goedgekeurd: opslaan laat die goedkeuring
+VERVALLEN</strong> en zet het terug op <code>ter_review</code>. Dat wordt vastgelegd in het
+publicatiespoor.`
+          : ""
+      }</p>
 <form method="post" action="/studio/${v.id}/tekst">
   ${csrfVeld}${afdrukVeld}
   <textarea name="body_markdown" rows="18" style="width:100%;font-family:monospace">${esc(v.body_markdown)}</textarea>
@@ -1953,12 +2153,14 @@ laatste bewerker, en u kunt daarna dit concept zelf niet meer goedkeuren (vier o
 
 ${
   v.status === "ter_review" || v.status === "concept"
-    ? magGoedkeuren
+    ? magDezeGoedkeuren
       ? `<h2>Redactioneel besluit</h2>
-<p class="bij">Goedkeuren publiceert niets. Het zet de status op goedgekeurd en bindt die
-goedkeuring aan de afdruk van deze tekst. Publiceren vraagt daarna nog
-<code>npm run publiceer</code>, een generatorrun, een commit en een push — alle vier
-menselijke handelingen.</p>
+<p class="bij">Goedkeuren publiceert niets. Het zet de status op goedgekeurd, bindt die
+goedkeuring aan de afdruk van deze tekst, en <strong>toetst daarna alle poorten opnieuw met uw
+goedkeuring erin</strong> — zo gaat de poort <code>hoog_risico_vereist_mens</code> open zonder dat
+er een blokkade blijft hangen. Een bewijsblokkade gaat daar NIET van open. Publiceren vraagt
+daarna nog <code>npm run publiceer -- --versie ${v.id} --pr</code>, een generatorrun en het mergen
+van de pull request — menselijke handelingen, buiten dit dashboard.</p>
 <form method="post" action="/studio/${v.id}/beoordeel">
   ${csrfVeld}${afdrukVeld}
   <label>Motivatie<br><textarea name="motivatie" rows="3" style="width:100%" placeholder="Waarom keurt u dit goed of af?"></textarea></label>
@@ -1967,9 +2169,12 @@ menselijke handelingen.</p>
     <button type="submit" name="besluit" value="AFGEWEZEN">Afwijzen</button>
   </p>
 </form>`
-      : `<p class="leeg">U hebt het recht <code>inhoud.goedkeuren</code> niet; daarom staat hier
-geen besluitformulier. Dat is geen weergavekeuze maar dezelfde grendel die de server
-afdwingt.</p>`
+      : `<p class="leeg">U kunt dit concept niet beoordelen. ${
+          magGoedkeuren
+            ? `Dit bericht staat op risicoklasse <strong>hoog</strong> en dat vraagt het recht
+<code>inhoud.hoogrisico.goedkeuren</code>; u hebt alleen <code>inhoud.goedkeuren</code>.`
+            : `U hebt het recht <code>inhoud.goedkeuren</code> niet.`
+        } Dat is geen weergavekeuze maar dezelfde grendel die de server afdwingt.</p>`
     : ""
 }
 `,
@@ -2154,9 +2359,13 @@ afdwingt.</p>`
 
       try {
         await alsGebruiker(req, async (c) => {
-          const nu = await eenRij<{ inhoud_afdruk: string | null; status: string }>(
+          const nu = await eenRij<{
+            inhoud_afdruk: string | null;
+            status: string;
+            body_markdown: string;
+          }>(
             c,
-            "select inhoud_afdruk, status from intel.inhoud_versies where id = $1",
+            "select inhoud_afdruk, status, body_markdown from intel.inhoud_versies where id = $1",
             [Number(id)],
           );
           if (!nu) throw new IntelFout("validatie", "dit concept bestaat niet");
@@ -2166,11 +2375,42 @@ afdwingt.</p>`
               "iemand anders heeft deze tekst ondertussen gewijzigd; open de pagina opnieuw",
             );
           }
-          if (nu.status === "goedgekeurd" || nu.status === "gepubliceerd") {
+          /* WAT LIVE STAAT KRIJGT EEN NIEUWE VERSIE, geen herschrijving.
+             'goedgekeurd' is hier NIET meer dicht; zie hieronder. */
+          if (nu.status === "gepubliceerd") {
             throw new IntelFout(
               "validatie",
-              `dit concept staat op '${nu.status}'; een goedgekeurde tekst wijzig je niet, ` +
+              "dit concept staat op 'gepubliceerd'; een gepubliceerde tekst wijzig je niet, " +
                 "daar hoort een nieuwe versie bij",
+            );
+          }
+
+          /* DE GOEDKEURING VERVALT BIJ EEN ECHTE WIJZIGING.
+             ----------------------------------------------------------
+             Twee eisen komen hier samen. (1) Een goedgekeurd artikel moet
+             bij een inhoudelijke wijziging opnieuw door de controles —
+             dus niet alleen de afdrukgrendel bij het publiceren, maar de
+             hele poortenronde. (2) Een goedkeuring mag geen onherstelbare
+             toestand zijn; tot nu toe weigerden zowel deze route als de
+             CLI een versie op 'goedgekeurd', waardoor een resterende
+             blokkade nooit meer weg kon.
+
+             ALLEEN BIJ EEN ECHTE WIJZIGING. Dezelfde tekst opnieuw
+             opslaan is geen inhoudelijke wijziging en mag een geldige
+             goedkeuring niet slopen. De vergelijking is op de ruwe tekst;
+             de afdruk zou hetzelfde zeggen maar wordt pas na de hertoets
+             herberekend. */
+          const gewijzigd = tekst !== nu.body_markdown;
+          const goedkeuringVervalt = nu.status === "goedgekeurd" && gewijzigd;
+          if (goedkeuringVervalt) {
+            await c.query(
+              `update intel.inhoud_versies
+                  set status              = 'ter_review',
+                      goedgekeurd_door    = null,
+                      goedgekeurd_op      = null,
+                      goedgekeurde_afdruk = null
+                where id = $1`,
+              [Number(id)],
             );
           }
 
@@ -2182,6 +2422,46 @@ afdwingt.</p>`
           );
           const uit = await hertoetsInhoudVersie(c, req.gebruiker!.organisatieId, Number(id));
           if (!uit) throw new IntelFout("validatie", "hertoetsen mislukte");
+
+          if (goedkeuringVervalt) {
+            /* HET SPOOR, in dezelfde append-only tabel als de goedkeuring
+               zelf. 'ingediend' is de toegestane waarde die 'staat weer
+               op review' betekent; publicatiebesluiten_besluit_check kent
+               geen eigen waarde voor een vervallen goedkeuring en een
+               migratie is hier niet nodig om dit navolgbaar te maken. */
+            await c.query(
+              `insert into intel.publicatiebesluiten
+                 (organisatie_id, inhoud_versie_id, besluit, door_gebruiker_id, actor_soort, motivatie)
+               values ($1, $2, 'ingediend', $3, 'mens', $4)`,
+              [
+                req.gebruiker!.organisatieId,
+                Number(id),
+                gebruikerId,
+                `goedkeuring vervallen: de tekst is gewijzigd door ${
+                  req.gebruiker?.naam ?? "onbekend"
+                }; het concept staat weer op ter_review`,
+              ],
+            );
+            await c.query(
+              `insert into intel.audit_gebeurtenissen
+                 (organisatie_id, actor_soort, actor_id, actor_naam, handeling,
+                  objectsoort, object_id, na_waarde, herkomst, motivatie)
+               values ($1, 'mens', $2, $3, 'goedkeuring_vervallen', 'inhoud_versie', $4, $5,
+                       'dashboard', $6)`,
+              [
+                req.gebruiker!.organisatieId,
+                gebruikerId,
+                req.gebruiker?.naam ?? "onbekend",
+                id,
+                JSON.stringify({
+                  status: "ter_review",
+                  poortenGeslaagd: uit.poortenGeslaagd,
+                  blokkades: uit.blokkades,
+                }),
+                "tekst gewijzigd na goedkeuring",
+              ],
+            );
+          }
         });
       } catch (e) {
         weiger(res, 400, redacteerFout(e));
@@ -2293,9 +2573,18 @@ ${tabel(
     niet_relevant: "Niet relevant",
   };
 
-  /** Nederlandse labels voor het voorsteloordeel; nooit de enum zelf. */
+  /** Nederlandse labels voor het voorsteloordeel; nooit de enum zelf.
+   *
+   * ALLE ZEVEN WAARDEN, en dat was er niet. inhoud_voorstellen_eindoordeel
+   * _check (migratie 0035 regel 42-44) kent zeven waarden; deze kaart had
+   * er vijf. KLAAR_VOOR_LINKREVIEW en NIEUWE_PAGINA vielen dus terug op
+   * de ruwe enumwaarde in de kop van hun eigen kaart — precies wat de
+   * regel hierboven verbiedt, en juist bij de twee oordelen die een
+   * beoordelaar iets te doen geven. */
   const VOORSTEL_LABEL: Record<string, string> = {
     KLAAR_VOOR_REVIEW: "Klaar voor beoordeling",
+    KLAAR_VOOR_LINKREVIEW: "Klaar voor linkbeoordeling",
+    NIEUWE_PAGINA: "Voorstel voor een nieuwe pagina",
     NEEDS_RESEARCH: "Feit moet eerst worden uitgezocht",
     HERROUTEREN: "Hoort op een andere pagina",
     UITSTELLEN: "Uitstellen",

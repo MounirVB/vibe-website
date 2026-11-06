@@ -37,6 +37,7 @@
     "nieuws": "node src/cli/nieuws.ts",
     "voorstel": "node src/cli/voorstel.ts",
     "publiceer": "node src/cli/publiceer.ts",
+    "publicatieomgeving": "node src/cli/publicatieomgeving.ts",
     "precheck": "node src/cli/precheck.ts",
     "signalen": "node src/cli/signalen.ts",
     "kansen": "node src/cli/kansen.ts",

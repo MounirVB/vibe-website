@@ -121,6 +121,22 @@ pre.diff { background: #f4fbf4; border-left: 3px solid #3a7; padding: 8px 10px; 
 pre { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 100%; }
 pre.concepttekst { background: var(--vlak, #fafafa); border: 1px solid var(--rand);
                    border-radius: 8px; padding: 12px 14px; font-size: 13px; line-height: 1.55; }
+/* DE OPGEMAAKTE ARTIKELWEERGAVE. Dezelfde omzetting als de website
+   (markdownNaarHtml), zodat een beoordelaar leest wat er gepubliceerd
+   zou worden. De koppen die daar uitkomen dragen de websiteklassen
+   ve-h1/ve-h2/ve-h3 en ve-lijst; die bestaan hier niet, dus worden ze
+   binnen deze container gestyled in plaats van met nieuwe klassen in de
+   omzetter. GEEN max-height en GEEN overflow:hidden: de hele tekst moet
+   leesbaar zijn, dat is de hele reden dat dit blok bestaat. */
+.conceptweergave { background: var(--vlak, #fafafa); border: 1px solid var(--rand);
+                   border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.6;
+                   max-width: 100%; overflow-wrap: anywhere; }
+.conceptweergave .ve-h1 { font-size: 19px; margin: 0 0 10px; border: 0; }
+.conceptweergave .ve-h2 { font-size: 16px; margin: 18px 0 6px; border: 0; padding: 0; }
+.conceptweergave .ve-h3 { font-size: 14px; margin: 14px 0 4px; }
+.conceptweergave p { margin: 0 0 10px; }
+.conceptweergave .ve-lijst { margin: 0 0 10px 18px; }
+.conceptweergave a { overflow-wrap: anywhere; }
 /* Een <details> in een tabelcel mag de cel niet oprekken. */
 td > details { max-width: 100%; }
 td > details > pre { font-size: 12px; margin: 6px 0 0; }

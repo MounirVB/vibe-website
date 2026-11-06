@@ -1117,6 +1117,21 @@ export type HertoetsUitkomst = {
 };
 
 /**
+ * De aanhef van een blokkade die GEEN poortuitslag is maar een
+ * redactioneel besluit.
+ *
+ * EEN HERTOETS MAG EEN AFWIJZING NIET WISSEN. `blokkades` draagt twee
+ * soorten regels: poortuitslagen (herberekenbaar) en de reden van een
+ * menselijke afwijzing, die daar staat omdat
+ * `inhoud_versies_afwijzing_heeft_reden` een niet-lege lijst eist bij
+ * status 'afgewezen'. De hertoets overschreef de hele lijst, dus één
+ * bewerking op een afgewezen concept wiste de reden stil — of liet de
+ * UPDATE op diezelfde constraint stuklopen met een 400 die niets
+ * uitlegt. Beide uitkomsten zijn fout; daarom wordt deze soort bewaard.
+ */
+export const REDACTIONELE_BLOKKADE = "afgewezen door de redactie:";
+
+/**
  * Toetst een bestaande inhoudsversie opnieuw tegen alle poorten en
  * schrijft de uitslag terug.
  *
@@ -1144,11 +1159,16 @@ export async function hertoetsInhoudVersie(
     invoer_versies: number[] | null;
     doel_pagina_beheer: "handmatig" | "intelligence" | null;
     soort: string;
+    status: string;
+    blokkades: string[] | null;
   }>(
     c,
     `select v.pad, v.titel, v.meta_omschrijving, v.canonieke_url, v.direct_antwoord,
             v.body_markdown, v.structured_data, v.interne_links, v.bronnen_sectie,
             v.risico_klasse, v.goedgekeurd_door, v.invoer_versies, v.soort,
+            /* De bestaande lijst wordt gelezen om de redactionele regel
+               te kunnen bewaren; zie REDACTIONELE_BLOKKADE. */
+            v.status, v.blokkades,
             pr.beheer as doel_pagina_beheer
        from intel.inhoud_versies v
        left join intel.pagina_register pr
@@ -1294,8 +1314,12 @@ export async function hertoetsInhoudVersie(
      plekken waar werkelijk iets wordt besloten: goedkeuren en
      publiceren. */
   const bewijs = await toetsGebondenBewijs(c, organisatieId, versieId);
-  const blokkades = [...samenvatting.blokkades, ...bewijs.blokkades];
-  const geslaagd = samenvatting.geslaagd && bewijs.blokkades.length === 0;
+  /* De redactionele regel is geen poortuitslag en wordt dus niet
+     herberekend maar overgenomen. Hij telt wél mee als blokkade: een
+     afgewezen stuk is geen publiceerbaar stuk. */
+  const bewaard = (v.blokkades ?? []).filter((b) => b.startsWith(REDACTIONELE_BLOKKADE));
+  const blokkades = [...bewaard, ...samenvatting.blokkades, ...bewijs.blokkades];
+  const geslaagd = samenvatting.geslaagd && bewijs.blokkades.length === 0 && bewaard.length === 0;
 
   await c.query(
     `update intel.inhoud_versies

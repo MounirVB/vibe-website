@@ -259,12 +259,48 @@ export async function maakDragendeVersie(
      * mee om een claim te toetsen die NOG op herbeoordeling wacht.
      */
     readonly herbeoordeeldOnder?: string | null;
+    /**
+     * Maakt het concept ECHT publiceerbaar in plaats van alleen
+     * claim-dragend.
+     *
+     * WAAROM DIT EEN OPTIE IS EN GEEN STANDAARD. Deze fixture zette
+     * `poorten_geslaagd` hardgecodeerd op true zonder ooit een poort te
+     * draaien. Dat hield zolang niemand hertoetste, maar sinds keurGoed()
+     * na een goedkeuring zelf hertoetst, wordt die fictie vervangen door
+     * de gemeten waarheid — en dan blijkt het concept op twee poorten te
+     * staan die niets met claims te maken hebben: er staat geen
+     * commerciele pagina in het register (poort 11b, blokkerend voor een
+     * nieuw_artikel) en er is geen bronnensectie (poort 12). Een toets
+     * die daarna "het bewijs draagt niet meer" verwacht, krijgt die
+     * twee poorten te zien en meet dus iets anders dan hij beweert.
+     *
+     * Met `publiceerbaar: true` vult de fixture die twee aan: een
+     * /contact-pagina in het register, een CTA naar /contact in de body,
+     * en een bronnensectie met uitgever en https-URL. Dan is de ENIGE
+     * overblijvende blokkade bij risico 'hoog' de menselijke goedkeuring,
+     * en bij 'laag' is er geen enkele. De standaard blijft false, zodat
+     * geen enkele bestaande toets van vorm verandert.
+     */
+    readonly publiceerbaar?: boolean;
   },
 ): Promise<DragendeVersie> {
   const titel = "Ondernemers krijgen in 2026 meer tijd voor hun SDE++-aanvraag";
   const directAntwoord =
     "De aanvraagtermijn voor de SDE++ loopt in 2026 twee weken langer door dan vorig jaar.";
-  const bodyMarkdown = "De lead van het bericht.\n\n## Wat er is vastgelegd\n\nEen alinea.\n";
+  const bodyMarkdown = opties.publiceerbaar
+    ? "De lead van het bericht.\n\n## Wat er is vastgelegd\n\nEen alinea.\n\n" +
+      "## Wat dit voor u betekent\n\nWilt u weten wat dit betekent? [Plan een gesprek](/contact).\n"
+    : "De lead van het bericht.\n\n## Wat er is vastgelegd\n\nEen alinea.\n";
+  const bronnenSectie = opties.publiceerbaar
+    ? [
+        {
+          uitgever: "Rijksdienst voor Ondernemend Nederland",
+          url: "https://www.rvo.nl/subsidies-financiering/sde",
+          datum: "2026-10-27",
+        },
+      ]
+    : [];
+  const interneLinks = opties.publiceerbaar ? ["/contact"] : [];
   const structuredData = { "@context": "https://schema.org", "@type": "Article" };
   const afdruk = inhoudAfdruk({ titel, directAntwoord, bodyMarkdown, structuredData });
   const pad = `/nieuws/${opties.slug}`;
@@ -278,6 +314,21 @@ export async function maakDragendeVersie(
 
   await alsEigenaar(db, async (c) => {
     await c.query("select set_config('app.organisatie_id', $1, false)", [String(organisatieId)]);
+
+    if (opties.publiceerbaar) {
+      /* commercieleSelectie() (inhoud/concept.ts) neemt soort
+         'oplossing'/'systeem' plus het pad /contact; zonder zo'n rij
+         levert het register nul commerciele paden en kan poort 11b
+         niets vinden. */
+      await c.query(
+        `insert into intel.pagina_register
+           (organisatie_id, pad, canonieke_url, soort, bestaat_in_repo, in_sitemap, beheer)
+         values ($1, '/contact', 'https://www.vibeenergy.nl/contact', 'oplossing', true, true,
+                 'handmatig')
+         on conflict (organisatie_id, pad) do nothing`,
+        [organisatieId],
+      );
+    }
 
     const bron = await c.query<{ id: number }>(
       `insert into intel.bronnen
@@ -385,11 +436,12 @@ export async function maakDragendeVersie(
          (organisatie_id, pad, versie, soort, titel, meta_omschrijving, canonieke_url,
           direct_antwoord, body_markdown, structured_data, status, risico_klasse,
           auteur_soort, poorten_geslaagd, inhoud_afdruk, invoer_versies,
-          aangemaakt_door, bewerkt_door)
+          aangemaakt_door, bewerkt_door, bronnen_sectie, interne_links)
        values ($1, $2, 1, 'nieuw_artikel', $3,
                'Een metabeschrijving die lang genoeg is om de lengtepoort van het concept te halen.',
                'https://www.vibeenergy.nl' || $2,
-               $4, $5, $6, $7, $8, 'ai', true, $9, array[$10::bigint], $11, $12)
+               $4, $5, $6, $7, $8, 'ai', true, $9, array[$10::bigint], $11, $12,
+               $13::jsonb, $14::jsonb)
        returning id`,
       [
         organisatieId,
@@ -404,6 +456,11 @@ export async function maakDragendeVersie(
         bv.rows[0]!.id,
         opties.aangemaaktDoor ?? null,
         opties.bewerktDoor ?? null,
+        /* Beide kolommen zijn NOT NULL met default '[]' (migratie 0004
+           regel 182-183), dus een lege lijst is exact wat elke bestaande
+           toets al zag. */
+        JSON.stringify(bronnenSectie),
+        JSON.stringify(interneLinks),
       ],
     );
 
