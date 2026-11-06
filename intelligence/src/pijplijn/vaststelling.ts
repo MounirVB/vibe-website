@@ -96,6 +96,43 @@ const ACHTERGROND_OPENERS: readonly { naam: string; patroon: RegExp }[] = [
      Daar staat wat het bestuursorgaan in aanmerking neemt, niet wat het
      vaststelt. */
   { naam: "overwegende", patroon: /\boverwegende\s+(dat|het\s+volgende)\b/iu },
+  /* ------------------------------------------------------------------
+     DE STANDPUNTEN VAN PARTIJEN — §2, en dit is de keerzijde van de
+     reparatie in documentsoort.ts.
+
+     Daar is geregeld dat het woord 'standpunt' een officieel besluit
+     niet meer tot OPINIE degradeert. Dat besluit komt daarmee op
+     plafond 5 en MAG zijn eigen claims bevestigen — en juist dan wordt
+     deze vraag scherp: welke zinnen in dat besluit zijn een
+     vaststelling van het gezag, en welke zijn het standpunt van een
+     partij?
+
+     Gemeten op het ACM-geschilbesluit Jumbo – Liander. De
+     paragraafindeling is:
+
+       1. Verloop van de procedure
+       2. Het geschil
+       3. Feiten
+       4. Wettelijk kader
+       5. Standpunten van partijen      <-- achtergrondregio
+       6. Beoordeling van het geschil   <-- sluit hem
+       7. Dictum                        <-- sluit hem
+
+     In sectie 5 staat 'Volgens Jumbo' 14 keer en 'stelt dat' 5 keer.
+     Dat zijn beweringen VAN EEN PARTIJ, en de ACM neemt ze op om ze
+     te kunnen beoordelen — niet om ze vast te stellen. Een claim uit
+     die sectie met de bewijskracht van een ACM-besluit zou het
+     standpunt van een supermarkt tot vastgesteld recht maken.
+
+     EENZIJDIG, zoals de hele passagetoets: hij blokkeert alleen bij
+     positief bewijs dat de zin IN die sectie staat. Een besluit zonder
+     standpuntensectie wordt nergens door geblokkeerd.
+     ------------------------------------------------------------------ */
+  {
+    naam: "standpunten-van-partijen",
+    patroon:
+      /(^|[.\n])\s*\d*\.?\s*standpunt(?:en)?\s+van\s+(?:partijen|de\s+\w+|\w+)\s*[:\n]|(^|[.\n])\s*\d*\.?\s*zienswijze\s+van\s+\w+\s*[:\n]/iu,
+  },
 ];
 
 /* Wat een achtergrondregio weer SLUIT. Zonder sluiters zou één
@@ -110,6 +147,18 @@ const VASTSTELLEND_OPENERS: readonly { naam: string; patroon: RegExp }[] = [
   /* De rechtsmiddelenclausule staat ná het dictum en sluit de
      achtergrond dus ook. */
   { naam: "rechtsmiddel", patroon: /\b(bezwaar|beroep)\s+(maken|instellen)\b/iu },
+  /* DE SECTIES DIE NA DE STANDPUNTEN KOMEN, en die horen bij het
+     gezag. Gemeten op het ACM-geschilbesluit: '6. Beoordeling van het
+     geschil' en '7. Dictum' volgen op '5. Standpunten van partijen'.
+     Zonder deze sluiters zou één standpuntensectie halverwege de rest
+     van het besluit vergiftigen, inclusief het dictum — precies de
+     fout die de kop van dit bestand bij ACHTERGROND_OPENERS noemt. */
+  {
+    naam: "beoordeling-kop",
+    patroon:
+      /(^|[.\n])\s*\d*\.?\s*(beoordeling|oordeel\s+van\s+de\s+\w+|conclusie)\b/iu,
+  },
+  { naam: "dictum-kop", patroon: /(^|[.\n])\s*\d*\.?\s*dictum\b/iu },
 ];
 
 /* ------------------------------------------------------------------

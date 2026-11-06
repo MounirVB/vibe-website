@@ -268,7 +268,18 @@ const SUBJECT_PATRONEN: readonly { sleutel: string; patroon: RegExp }[] = [
    want na 'stijg' staat geen woordgrens. Daarmee verdween de richting
    uit 'De nettarieven stijgen met 8%' en werd de zin "betreft 8% van
    het nettarief" in plaats van "stijgt het nettarief met 8%". */
-const STIJGING = /stijg\w*|stijging\w*|toename|toeneem\w*|verhoog\w*|verhoging\w*|omhoog|duurder|groei\w*/i;
+/* 'verhogen' HEEFT STAM 'verhog-' EN NIET 'verhoog-', net als 'dalen'
+   hieronder: de klinker verkort bij de vervoeging. `verhoog\w*` matcht
+   'verhoogt' en 'verhoogde' wel en 'verhogen' NIET.
+
+   Gevonden op 6 november 2026 door de eigen controlezin "De
+   Nederlandse netbeheerders verhogen het nettarief in 2027 met 8%":
+   die kwam uit op richting 'niet vastgesteld' en daarmee op
+   CONTEXT_ONVOLLEDIG, terwijl de richting er letterlijk in staat.
+   Dezelfde klasse fout die bij DALING al met naam staat beschreven,
+   één werkwoord verder. */
+const STIJGING =
+  /stijg\w*|stijging\w*|toename|toeneem\w*|verhoog\w*|\bverhog(en|end|ende)\b|verhoging\w*|omhoog|duurder|groei\w*/i;
 /* 'dalen' heeft stam 'dal-', niet 'daal-': de klinker verandert bij de
    vervoeging. \bdaal\w* matcht 'daalt' wel en 'dalen' niet, en daarmee
    verdween de richting uit 'De tarieven dalen met 4,5%'. */
@@ -286,6 +297,98 @@ const ONGEWIJZIGD = /blijft gelijk|ongewijzigd|gelijk gebleven/i;
    algemene uitspraak over het nettarief. */
 const ORGANISATIE =
   /\b([A-Z][\p{L}&.-]+(?:\s+(?:[A-Z][\p{L}&.-]+|van|der|de|en))*\s+(?:B\.?V\.?|N\.?V\.?|Services|Transport|Nederland|Infra|Group|Holding))\b/u;
+
+/* ------------------------------------------------------------------
+   EEN GENOEMDE PARTIJ IS GEEN KLASSE — EN DIT DEFECT WAS PUBLICABEL.
+
+   GEMETEN OP 6 november 2026, op het echte ACM-geschilbesluit
+   Jumbo – Liander, nadat dat besluit door de classificatiereparatie op
+   plafond 5 kwam te staan en zijn claims dus MOCHT bevestigen:
+
+     bronzin  "Op 14 juni 2021 bracht Liander een offerte uit met
+               daarin opgenomen 0 kW aan transportvermogen."
+     subject  netbeheerder
+     poort    VERWOORDBAAR
+     zin      "Volgens Autoriteit Consument & Markt bedraagt het
+               gecontracteerde transportvermogen van DE NETBEHEERDERS
+               0 kW."
+
+   De bron zegt: één netbeheerder bracht aan één klant één offerte uit
+   met 0 kW. De gegenereerde zin zegt: het gecontracteerde
+   transportvermogen van de netbeheerders is 0 kW. Dat is onwaar als
+   algemene bewering, en het stond klaar om gepubliceerd te worden.
+
+   DE OORZAAK staat vier regels hierboven in SUBJECT_PATRONEN: de
+   sleutel 'netbeheerder' matcht óók op de namen van individuele
+   netbeheerders (TenneT, Liander, Stedin, Enexis). Een genoemde partij
+   werd daarmee de klasse. En de bestaande scopewaarschuwing vuurde
+   niet, want die is er alleen voor organisaties die NIET in het
+   vocabulaire staan — en deze stond er juist wél in.
+
+   Precies dezelfde klasse fout als het gemeten Gasunie-geval dat
+   hierboven bij ORGANISATIE staat beschreven, nu van de andere kant:
+   daar een onbekende organisatie, hier een te goed bekende.
+
+   DE REGEL: noemt de zin een SPECIFIEKE partij, en is het afgeleide
+   subject een GENERIEKE klasse, dan is de uitspraak niet veilig te
+   attribueren. Hij gaat over die partij en niet over de markt.
+
+   DE UITGEVER IS DE UITZONDERING. Een stuk van Netbeheer Nederland dat
+   'Netbeheer Nederland' noemt, noemt zichzelf — dat is geen
+   scopeprobleem maar een bronvermelding. Dezelfde gedachte als
+   EIGEN_GEZAG_NAMEN in vaststelling.ts. Zonder die uitzondering zouden
+   de bestaande verwoordbare claims over netinvesteringen wegvallen,
+   en die zijn juist WEL marktbreed. */
+const SPECIFIEKE_PARTIJ =
+  /\b(TenneT|Liander|Stedin|Enexis|Coteq|Rendo|Westland\s+Infra|Gasunie|Jumbo|Albert\s+Heijn|Action|Zonneplan|Vattenfall|Eneco|Essent|Greenchoice|Budget\s*Energie)\b/u;
+
+/* ------------------------------------------------------------------
+   EEN REGEL DIE IK HEB GEPROBEERD EN DIE DE SUITE HEEFT WEERLEGD.
+
+   Na de partijcontrole hierboven bleef er één geval staan dat ik wilde
+   blokkeren. Gemeten op het ACM-besluit:
+
+     bronzin  "elektriciteitsaansluiting met een capaciteit van
+               630 kVA en een gewenst transportvermogen van 250 kW"
+     zin      "Volgens de ACM bedraagt het aansluitvermogen 630 kVA."
+
+   De bron beschrijft één aansluiting van één klant. Ik heb geprobeerd
+   dat te weren met de regel "een onbepaald lidwoord vóór het gemeten
+   ding betekent één exemplaar, en zonder subject is dat geen
+   marktfeit".
+
+   DRIE BESTAANDE TOETSEN WEERLEGDEN HEM, en terecht:
+
+     "De batterij heeft een capaciteit van 232 kWh."
+       (bewijs-naar-tekst, de positieve ijkzaak van de adversariële
+        suite — een projectfeit in een artikel over dat project)
+     "De wachttijd voor een aansluiting loopt op tot 5 jaar."
+       (poort-en-verwoorder-eens — 'een aansluiting' is hier juist
+        GENERIEK: de wachttijd voor willekeurig welke aansluiting)
+
+   Het Nederlands gebruikt het onbepaald lidwoord voor béide: 'een
+   aansluiting' kan één specifieke zijn en 'willekeurig welke'. Dat
+   onderscheid zit niet in het lidwoord, dus de regel kan het niet
+   meten en is geschrapt.
+
+   WAT ER DAARMEE BLIJFT STAAN, expliciet: een getalclaim uit een
+   geschilbesluit over één aansluiting kan een zin opleveren die op
+   zichzelf dun is. Hij landt in een artikel OVER dat geschil, en
+   publiceren vraagt nog steeds een mens — automatische publicatie
+   staat uit en hoog risico vereist altijd goedkeuring. Dat is de
+   grens waarbinnen dit risico valt, en hij is niet verlaagd.
+   ------------------------------------------------------------------ */
+
+/** De subjectsleutels die een KLASSE zijn en geen partij. */
+const GENERIEKE_SUBJECTEN: ReadonlySet<string> = new Set([
+  "netbeheerder",
+  "huishouden",
+  "bedrijf",
+  "kleinverbruiker",
+  "grootverbruiker",
+  "aanvrager",
+  "opdrachtgever",
+]);
 
 /** '8% van de aanvragen' — het grondtal staat achter 'van de/het'. */
 const GRONDTAL_PATROON = /\bvan\s+(?:de|het|alle)\s+([a-zà-ſ-]+(?:\s+[a-zà-ſ-]+)?)/i;
@@ -481,6 +584,29 @@ export function leidSemantiekAf(
     org && !herkenSubject(org[0]) ? org[0].slice(0, 60) : null;
   if (orgOnbekend) grondslag.push(`organisatie '${orgOnbekend}' staat niet in het subjectvocabulaire`);
 
+  /* EEN SPECIFIEK GENOEMDE PARTIJ BIJ EEN GENERIEK SUBJECT.
+     Zie de toelichting bij SPECIFIEKE_PARTIJ: dit is het defect dat
+     "0 kW bij Liander" tot "0 kW bij de netbeheerders" maakte. */
+  const partij = SPECIFIEKE_PARTIJ.exec(zin)?.[0] ?? null;
+  const uitgever = bron?.uitgever ?? "";
+  const partijIsUitgever =
+    partij !== null && uitgever.length > 0 &&
+    uitgever.toLowerCase().includes(partij.toLowerCase());
+  const partijTeSpecifiek =
+    partij !== null &&
+    !partijIsUitgever &&
+    s !== null &&
+    GENERIEKE_SUBJECTEN.has(s.sleutel)
+      ? partij
+      : null;
+  if (partijTeSpecifiek) {
+    grondslag.push(
+      `de zin noemt '${partijTeSpecifiek}' maar het subject is de klasse '${s?.sleutel}'; ` +
+        "een zin over de klasse zou breder zijn dan de bron",
+    );
+  }
+
+
   /* Werkwoorden die een bedrag herkaderen: het getal is dan niet wat
      er gebeurt maar wat er WORDT VOORKOMEN, bespaard of beperkt. */
   const herkadering = HERKADERING.exec(zin)?.[0]?.toLowerCase() ?? null;
@@ -499,7 +625,7 @@ export function leidSemantiekAf(
   return {
     soort,
     herkadering,
-    scopeWaarschuwing: orgOnbekend,
+    scopeWaarschuwing: orgOnbekend ?? partijTeSpecifiek,
     fenomeen: f?.sleutel ?? null,
     subject: s?.sleutel ?? null,
     richting,
@@ -686,13 +812,39 @@ export function verwoordbaarheidspoort(inv: PoortInvoer): PoortUitslag {
 
   /* 6b. SCOPE. Gaat dit over de markt of over één partij? */
   if (inv.semantiek.scopeWaarschuwing) {
-    voeg("scope", false, `onbekende organisatie '${inv.semantiek.scopeWaarschuwing}'`);
+    /* TWEE REDENEN, ÉÉN UITKOMST. De waarschuwing komt óf van een
+       organisatie die niet in het vocabulaire staat, óf van een
+       partij die er juist te specifiek in staat (zie
+       SPECIFIEKE_PARTIJ). De reden hoort te zeggen welke van de twee:
+       "onbekende organisatie" bij Liander zou onwaar zijn, want die
+       staat er wél in — hij is alleen geen klasse. */
+    const genoemd = inv.semantiek.scopeWaarschuwing;
+    /* TWEE REDENEN, ÉÉN UITKOMST. De waarschuwing komt óf van een
+       organisatie die niet in het vocabulaire staat, óf van een partij
+       die er juist te specifiek in staat (zie SPECIFIEKE_PARTIJ). De
+       reden hoort te zeggen welke van de twee: "onbekende organisatie"
+       bij Liander zou onwaar zijn, want die staat er wél in — hij is
+       alleen geen klasse. */
+    const isKlasse = inv.semantiek.grondslag.some((g) =>
+      g.includes(`de zin noemt '${genoemd}'`),
+    );
+    voeg(
+      "scope",
+      false,
+      isKlasse
+        ? `partij '${genoemd}' bij het klassesubject '${inv.semantiek.subject}'`
+        : `onbekende organisatie '${genoemd}'`,
+    );
     return {
       uitslag: "CONTEXT_ONVOLLEDIG",
-      reden:
-        `de bronzin gaat over '${inv.semantiek.scopeWaarschuwing}', een organisatie die niet in ` +
-        `het subjectvocabulaire staat. Een algemene formulering zou de uitspraak breder maken ` +
-        `dan de bron hem doet; par. 8 verbiedt het oprekken van de scope.`,
+      reden: isKlasse
+        ? `de bronzin gaat over '${genoemd}', één genoemde partij, terwijl het subject de ` +
+          `klasse '${inv.semantiek.subject}' is. Een zin over de klasse zou de uitspraak ` +
+          `breder maken dan de bron hem doet: wat één netbeheerder in één offerte opnam, is ` +
+          `niet wat de netbeheerders doen. Par. 8 verbiedt het oprekken van de scope.`
+        : `de bronzin gaat over '${genoemd}', een organisatie die niet in ` +
+          `het subjectvocabulaire staat. Een algemene formulering zou de uitspraak breder maken ` +
+          `dan de bron hem doet; par. 8 verbiedt het oprekken van de scope.`,
       controles,
     };
   }

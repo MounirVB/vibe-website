@@ -19,7 +19,7 @@
 import type pg from "pg";
 import { eenRij, metOrganisatie, rijen, type Pool } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
-import { bepaalWijziging, inhoudHash, kort, normaliseerTekst } from "../kern/tekst.ts";
+import { bepaalWijziging, brontekst, inhoudHash, kort, normaliseerTekst } from "../kern/tekst.ts";
 import { haalBron } from "../bronnen/haal.ts";
 import { verrijkMetVolledigeTekst } from "../bronnen/volledigetekst.ts";
 import { classificeerStoring, type Storingssoort } from "../bronnen/storingssoort.ts";
@@ -199,9 +199,41 @@ export async function verwerkItem(
      branchevereniging kwamen.
      De samenvatting blijft eerst staan, dus de volledige tekst VULT
      AAN en overschrijft niets. */
-  const tekst = normaliseerTekst(
+  /* DE ENTITEITEN MOETEN HIER WEG, EN DAT GEBEURDE NIET.
+     ------------------------------------------------------------------
+     Hier stond `normaliseerTekst(...)`, en dat doet alleen witruimte.
+     decodeerEntiteiten() bestond al in kern/tekst.ts — met de volledige
+     tabel, met drie slagen, en met een commentaar dat precies deze twee
+     strings noemt — maar werd NERGENS aangeroepen. Gemeten op
+     6 november 2026: `grep -rn decodeerEntiteiten src/` gaf één
+     treffer, de definitie zelf.
+
+     Gevolg in productie:
+
+       intel.uitspraken 1: 'De Autoriteit Consument &amp;amp; Markt ...'
+       intel.uitspraken 6: '... zijn ge&amp;iuml;nstalleerd ...'
+
+     Nagespeeld met de echte functies: de ruwe feed draagt
+     '&amp;amp;amp;', xmlEntiteiten() maakt daar '&amp;amp;' van en
+     normaliseerTekst() laat dat staan. Byte voor byte wat er in de
+     database stond.
+
+     brontekst() doet beide in de juiste orde: eerst decoderen, dan
+     normaliseren. Een gedecodeerde '&nbsp;' is een harde spatie, en die
+     hoort de witruimteregel nog te zien.
+
+     HET ORIGINEEL BLIJFT BEWAARD. `ruwe_tekst_origineel` (migratie
+     0055) krijgt de tekst van vóór deze bewerking, en alleen als hij
+     verschilt. Zonder dat zou een normalisatiewijziging de brontekst
+     onherroepelijk herschrijven, en dan is niet meer na te gaan wat de
+     bron werkelijk stuurde. */
+  const ruw = normaliseerTekst(
     [item.samenvatting, item.tekst].filter((t): t is string => Boolean(t)).join("\n\n"),
   );
+  const tekst = brontekst(
+    [item.samenvatting, item.tekst].filter((t): t is string => Boolean(t)).join("\n\n"),
+  );
+  const origineel = ruw === tekst ? null : ruw;
   const hash = inhoudHash(titel, tekst);
 
   const bestaand = await eenRij<{
@@ -267,8 +299,8 @@ export async function verwerkItem(
     `insert into intel.brondocument_versies
        (organisatie_id, brondocument_id, versie, inhoud_hash, titel, ruwe_tekst,
         tekst_lengte, samenvatting_bron, wijziging_soort, vorige_versie_id,
-        verschil_ratio, injectie_verdacht, injectie_patronen)
-     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        verschil_ratio, injectie_verdacht, injectie_patronen, ruwe_tekst_origineel)
+     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
      on conflict (brondocument_id, inhoud_hash) do nothing
      returning id`,
     [
@@ -285,6 +317,9 @@ export async function verwerkItem(
       wijziging.ratio.toFixed(4),
       injectie.verdacht,
       injectie.patronen,
+      /* ALLEEN ALS HIJ VERSCHILT. Een kopie van elke onveranderde tekst
+         zou de tabel verdubbelen zonder iets vast te leggen. */
+      origineel,
     ],
   );
   if (!nieuweVersie) {
