@@ -524,9 +524,26 @@ describe("vormclaims en datumbeoordeling", () => {
     /* EEN ROL EN EEN PASSAGE GAAN SAMEN, OF GEEN VAN BEIDE. */
     assert.equal(rij.datumrol, null, "een losse datum krijgt geen rol");
     assert.equal(rij.passage, null, "en dus ook geen passage");
-    /* MAAR DE UITKOMST VERDWIJNT NIET: hij staat in het oordeel. */
-    assert.ok(rij.verwoordbaar !== null, "de claim hoort WEL beoordeeld te zijn");
-    assert.notEqual(rij.verwoordbaar, "VERWOORDBAAR");
+    /* MAAR DE UITKOMST VERDWIJNT NIET: hij staat in het oordeel.
+
+       EN DE UITSLAG WORDT HIER VASTGEPIND, niet alleen "niet
+       verwoordbaar". Mijn eerste versie van deze zaak liet zowel
+       CONTEXT_ONVOLLEDIG als VERIFICATIE_NODIG passeren, en daardoor
+       kon het commentaar bij de fix een uitkomst beweren die de code
+       niet gaf — vier onafhankelijke lezingen van PR #73 hebben dat
+       weerlegd. Gemeten uitslag: met rol en passage beide null komt de
+       claim bij vormpoort() niet bij de datumrolcontrole maar bij
+       CONTROLE 2, de passage-eis. */
+    assert.equal(
+      rij.verwoordbaar,
+      "VERIFICATIE_NODIG",
+      `verwachtte VERIFICATIE_NODIG uit controle 2 van vormpoort, kreeg ${rij.verwoordbaar}`,
+    );
+    assert.match(
+      rij.reden ?? "",
+      /geen concrete bronpassage/,
+      `de reden hoort de ontbrekende passage te noemen: ${rij.reden}`,
+    );
     assert.ok((rij.reden ?? "").length >= 15, rij.reden ?? "geen reden");
   });
 

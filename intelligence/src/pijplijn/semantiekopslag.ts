@@ -334,20 +334,20 @@ export function verrijkVorm(rij: SemantiekRij): VormVerrijking | null {
     /* EEN ROL EN EEN PASSAGE GAAN SAMEN, OF GEEN VAN BEIDE.
        ----------------------------------------------------------------
        GEMETEN IN PRODUCTIE op 6 november 2026, direct na de uitrol van
-       0055. De semantiekronde meldde:
+       0055 (de CHECK zelf komt uit 0054). De semantiekronde meldde:
 
          uitspraken bekeken 84, verrijkt 33, mislukt 38
          new row for relation "uitspraken" violates check constraint
          "uitspraken_vorm_vereist_passage"
 
        Fail-closed, dus er is niets fouts weggeschreven — maar 38 van de
-       84 claims bleven onverrijkt.
+       84 claims bleven onverrijkt. De CHECK staat in migratie 0054.
 
        DE OORZAAK. Een afgeleide LOSSE_DATUM is een ROL met een LEGE
        passage: bepaalDatumrol() geeft bij een losse datum bewust
        `passage: ""`, want er is geen fragment dat de rol aanwijst. Deze
        regel schreef dan `datumrol = 'LOSSE_DATUM'` met
-       `bronpassage = null`, en dat is precies de combinatie die 0055
+       `bronpassage = null`, en dat is precies de combinatie die 0054
        weigert.
 
        EN DE EXTRACTIEWEG DEED HET AL GOED. zoekDatums() in
@@ -362,13 +362,44 @@ export function verrijkVorm(rij: SemantiekRij): VormVerrijking | null {
        uitspraken.ts en bij de dedupsleutel al heeft betaald, nu tussen
        de extractie en de verrijking.
 
-       WAT LOSSE_DATUM DAARMEE WORDT: datumrol blijft NULL. De uitkomst
-       verdwijnt niet — `verwoordbaar` komt op CONTEXT_ONVOLLEDIG te
-       staan met de reden "een losse datum is niet automatisch een
-       verwoordbare claim" erbij. Daar staat het, en navolgbaar.
+       WAT LOSSE_DATUM DAARMEE WORDT, en dit is NAGEMETEN en niet
+       beredeneerd — mijn eerste versie van dit commentaar beschreef
+       hier een uitkomst die de code niet geeft, en vier onafhankelijke
+       lezingen van PR #73 hebben dat weerlegd.
 
-       DE CONSTRAINT IS NIET VERRUIMD. Hem oprekken voor LOSSE_DATUM zou
-       een grendel verzwakken om een schrijffout te verbergen. */
+       Met rol en passage beide null komt de claim bij vormpoort() niet
+       bij tak 8 (de datumrolcontrole) maar bij CONTROLE 2, de
+       passage-eis. Gemeten op de zin van toets 11b:
+
+         datumrol    null
+         bronpassage null
+         uitslag     VERIFICATIE_NODIG
+         reden       "er is geen concrete bronpassage van minstens tien
+                      tekens vastgelegd (nu 0). Zonder aanwijsbaar
+                      fragment is niet na te gaan waarop dit oordeel
+                      rust."
+
+       Dus NIET 'CONTEXT_ONVOLLEDIG' met "een losse datum is niet
+       automatisch een verwoordbare claim" — die reden hoort bij een
+       rij die een rol WEL draagt, en die rij maakt deze weg niet meer.
+
+       EN DAT HEEFT EEN PRIJS DIE HIER HOORT TE STAAN. Na deze reparatie
+       kan GEEN ENKEL codepad de waarde datumrol='LOSSE_DATUM' nog
+       wegschrijven: zoekDatums() zette hem al op null bij een korte
+       passage, en deze regel doet dat nu ook. De kolom onderscheidt
+       daarmee niet langer "we hebben gekeken en het is een losse datum"
+       van "we hebben niet gekeken" — het ontwerpuitgangspunt in
+       datumrol.ts en in 0054 dat LOSSE_DATUM "een uitkomst en geen
+       leegte" is, geldt nog voor de pure motor maar niet meer voor de
+       opslag. Waar de uitkomst WEL staat, is `verwoordbaar` plus
+       `verwoordbaar_reden`, en die reden noemt de ontbrekende passage.
+
+       Dat is een bewuste afweging en geen vergissing: het alternatief
+       is uitspraken_vorm_vereist_passage oprekken voor LOSSE_DATUM, en
+       dat verzwakt een grendel om een schrijffout te verbergen.
+
+       DE CONSTRAINT IS NIET VERRUIMD. Hij staat in migratie 0054 (niet
+       0055) en is ongewijzigd. */
     const rolEnPassage: { rol: Datumrol | null; passage: string | null } =
       vastgelegdeRol !== null && vastgelegdePassage !== null
         ? { rol: vastgelegdeRol, passage: vastgelegdePassage }
