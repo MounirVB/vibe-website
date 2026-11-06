@@ -33,6 +33,7 @@ import {
   type Tijdstand,
 } from "./claimvorm.ts";
 import { bepaalDatumrol, herkenBetreft, type Datumrol } from "./datumrol.ts";
+import { claimAfdruk, CLAIMIDENTITEIT_VERSIE } from "./claimidentiteit.ts";
 import {
   bewijskrachtPlafond,
   magZelfBevestigen,
@@ -563,6 +564,32 @@ export function isJuridischeClaim(
   return aardJuridisch || (claimvorm !== null && JURIDISCHE_VORMEN.has(claimvorm));
 }
 
+/**
+ * De canonieke afdruk van een ruwe uitspraak.
+ *
+ * APART, zodat de toetsen hem rechtstreeks op een RuweUitspraak kunnen
+ * houden zonder een database nodig te hebben.
+ */
+function afdrukVan(
+  u: RuweUitspraak,
+  onderwerp: Onderwerp,
+  modaliteit: string,
+): string {
+  return claimAfdruk({
+    soort: u.soort,
+    waardeNumeriek: u.waardeNumeriek,
+    eenheid: u.eenheid,
+    claimvorm: u.claimvorm ?? null,
+    datumrol: u.datumrol ?? null,
+    geldigVanaf: u.geldigVanaf,
+    geldigTot: u.geldigTot,
+    modaliteit,
+    tijdstand: u.tijdstand ?? null,
+    onderwerp,
+    tekst: u.tekst,
+  });
+}
+
 export type UitspraakSchrijfRapport = {
   readonly aangemaakt: number;
   readonly bevestigd: number;
@@ -748,11 +775,12 @@ export async function schrijfUitspraken(
           is_interpretatie, interpretatie_door,
           modaliteit, modaliteit_zekerheid, modaliteit_versie, modaliteit_grondslag,
           bewijskracht_plafond, herbeoordeeld_onder,
-          claimvorm, tijdstand, bronpassage, datumrol)
+          claimvorm, tijdstand, bronpassage, datumrol,
+          claim_afdruk, claim_afdruk_versie)
        values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,now(),
                'ongeverifieerd',$11,$12,$13,false,null,
                $14,$15,$16,$17,$18,$19,
-               $20,$21,$22,$23)
+               $20,$21,$22,$23,$24,$25)
        returning id`,
       [
         organisatieId,
@@ -789,6 +817,13 @@ export async function schrijfUitspraken(
         u.tijdstand ?? null,
         u.bronpassage ?? null,
         u.datumrol ?? null,
+        /* DE CANONIEKE AFDRUK (0055). Hij wordt HIER berekend en niet
+           in een latere ronde, om dezelfde reden als de motorstempel
+           hierboven: een claim zonder afdruk is onzichtbaar voor de
+           bewijsniveaulaag, en dan zou een nieuwe claim stil buiten de
+           telling van onafhankelijke bronnen vallen. */
+        afdrukVan(u, invoer.onderwerp, mod.modaliteit),
+        CLAIMIDENTITEIT_VERSIE,
       ],
     );
     if (!nieuw) {

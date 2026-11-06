@@ -331,6 +331,17 @@ export const REGISTER: Record<string, Handler> = {
   async semantiek(pool, organisatieId, payload) {
     const { backfillSemantiek } = await import("../pijplijn/semantiekopslag.ts");
     const { herstelSchaal } = await import("../pijplijn/schaalcorrectie.ts");
+    /* HET BEWIJSNIVEAU HOORT IN DEZE TAAK EN NIET IN EEN EIGEN TAAK.
+       ------------------------------------------------------------------
+       Dezelfde reden als bij de verificatie in `documentclassificatie`:
+       twee taken zouden een venster openen waarin de ene al wel en de
+       andere nog niet is gedraaid, en dan hangt de uitslag van de
+       planningsorde af. Het niveau leest `claim_afdruk`, en die wordt
+       bij het SCHRIJVEN van een claim gezet — dus na clusteren (20) en
+       vóór beoordelen (30) is deze taak de juiste plek. */
+    const { vulBewijsniveauIn, vulClaimAfdrukkenIn } = await import(
+      "../pijplijn/bewijsniveau.ts"
+    );
 
     const perBatch = 500;
     const maxRondes = 40;
@@ -353,6 +364,26 @@ export const REGISTER: Record<string, Handler> = {
       if (r.bekeken === 0 || r.laatsteId <= vanafId) break;
       vanafId = r.laatsteId;
     }
+
+    /* HET BEWIJSNIVEAU, NA DE SEMANTIEK.
+       ----------------------------------------------------------------
+       Hij leest `claim_afdruk` en telt de ONAFHANKELIJKE bronnen per
+       bewering. Hij raakt geen verificatiestatus aan: het niveau is een
+       label, en uitspraken_bevestigd_vraagt_direct (0055) laat ook niet
+       toe dat het er een rechtvaardigt die er niet was. */
+    /* EERST DE AFDRUKKEN. De claims van vóór 0055 hebben er geen, en
+       zonder afdruk zijn ze onzichtbaar voor de niveautelling. Niets
+       wordt verzonnen: alle velden die in de afdruk gaan, staan al in
+       de rij. */
+    const afdrukken = await vulClaimAfdrukkenIn(pool, organisatieId, {
+      max: 2000,
+      alles: payload["alles"] === true,
+    });
+
+    const niveau = await vulBewijsniveauIn(pool, organisatieId, {
+      max: 2000,
+      alles: payload["alles"] === true,
+    });
 
     /* DROOG, EN DAT BLIJFT ZO.
        Een schaalcorrectie verandert een BEWAARD FEIT. Dat de keten
@@ -417,9 +448,32 @@ export const REGISTER: Record<string, Handler> = {
         : `, CLAIMPOORT DICHT: ${schaal.claimpoortOpenstaand} claim(s) wachten op ` +
           "herbeoordeling — draai 'npm run documentsoort' en 'npm run herbeoordeel'";
 
+    /* HET BEWIJSNIVEAU IN HET TAAKLOG.
+       Zonder deze regel is van buiten niet te zien WAAROM een claim
+       niet bevestigd is, en dat is precies de vraag die §3 stelt. De
+       verdeling staat erbij, want een telling zonder verdeling zegt
+       niets: 100 claims op NIET_BEVESTIGD is iets anders dan 100 op
+       ALLEEN_BELANGENBEHARTIGING. */
+    const niveauRegel =
+      Object.keys(niveau.perNiveau).length === 0
+        ? `, afdrukken ${afdrukken.gevuld}/${afdrukken.bekeken}, bewijsniveau: niets te wegen`
+        : `, afdrukken ${afdrukken.gevuld}/${afdrukken.bekeken}` +
+          `${afdrukken.overgeslagen > 0 ? ` (${afdrukken.overgeslagen} mislukt)` : ""}` +
+          `, bewijsniveau ${niveau.claimsBijgewerkt} claim(s) over ` +
+          `${niveau.afdrukkenBekeken} bewering(en): ` +
+          Object.entries(niveau.perNiveau)
+            .sort((a, b) => b[1] - a[1])
+            .map(([k, v]) => `${k}=${v}`)
+            .join(" ") +
+          (niveau.zonderAfdruk > 0
+            ? `; ${niveau.zonderAfdruk} claim(s) ZONDER AFDRUK — die zijn ouder dan 0055 ` +
+              "en worden niet gewogen tot ze opnieuw worden geschreven"
+            : "");
+
     return (
       `bekeken ${bekeken}, verrijkt ${verrijkt}, zonder uitdrukking ${zonderUitdrukking}, ` +
-      `rondes ${rondes}, openstaande schaalcorrecties ${schaal.gevonden}${poortRegel}${schaalDetail}`
+      `rondes ${rondes}, openstaande schaalcorrecties ${schaal.gevonden}${poortRegel}` +
+      `${niveauRegel}${schaalDetail}`
     );
   },
 
