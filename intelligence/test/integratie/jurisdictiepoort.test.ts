@@ -44,7 +44,27 @@ import { vindCorrecties } from "../../src/pijplijn/semantiekopslag.ts";
 import { weegAf, type Controle } from "../../src/inhoud/voorstel.ts";
 
 const BELGISCH = "De Belgische netbeheerder Fluvius verhoogt het nettarief in 2027 met 8%.";
-const NEDERLANDS = "Netbeheerder Liander verhoogt het nettarief in Nederland in 2027 met 8%.";
+/* DE CONTROLEZIN NOEMT GEEN ENKELE PARTIJ MEER, en dat is een
+   correctie op de fixture en niet op deze toets.
+
+   Hier stond: "Netbeheerder Liander verhoogt het nettarief in
+   Nederland in 2027 met 8%." Die zin is Nederlands — waar het deze
+   toets om gaat — maar hij gaat over ÉÉN netbeheerder, en de
+   verwoorder maakt daar "het nettarief voor de netbeheerders" van.
+
+   Dat is precies het defect dat semantiek.ts bij ORGANISATIE al
+   beschrijft voor Gasunie Transport Services: "Een uitspraak over de
+   gastarieven van één partij werd een algemene uitspraak over het
+   nettarief." Liander ontsnapte daaraan alleen omdat die naam in
+   SUBJECT_PATRONEN staat, en sinds 6 november 2026 vangt
+   SPECIFIEKE_PARTIJ hem wel.
+
+   Deze toets gaat over de JURISDICTIE-as en moet aantonen dat die
+   controle niet alles blokkeert. Daarvoor is een marktbrede
+   Nederlandse zin de juiste controle; de assertie zelf is ongewijzigd
+   VERWOORDBAAR. */
+const NEDERLANDS =
+  "De Nederlandse netbeheerders verhogen het nettarief in 2027 met 8%.";
 
 /** De poort over één bronzin, zoals de pijplijn hem aanroept. */
 function poort(zin: string, bron: { uitgever?: string | null; isPrimaireBron?: boolean } = {}) {

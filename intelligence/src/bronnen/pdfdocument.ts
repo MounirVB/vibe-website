@@ -80,7 +80,13 @@ import { eenRij } from "../kern/db.ts";
 import { bepaalWijziging, inhoudHash } from "../kern/tekst.ts";
 import { maakLogger } from "../kern/log.ts";
 import { urlToegestaan, onzeUserAgentToken } from "./robots.ts";
-import { leesPdfTekst, PDF_VERSIE, type PdfWeigering, type PdfPagina } from "./pdf.ts";
+import {
+  leesPdfTekst,
+  PDF_VERSIE,
+  type PdfWeigering,
+  type PdfPagina,
+  type PdfUitkomst,
+} from "./pdf.ts";
 import { onderzoekInjectie } from "../pijplijn/injectie.ts";
 
 const log = maakLogger("pdfdocument");
@@ -269,6 +275,55 @@ export async function neemPdfOp(
     return weiger(`pdf_${gelezen.weigering}`, gelezen.reden);
   }
 
+  /* DE OPSLAG STAAT APART, EN DAT IS GEEN NETHEID MAAR EEN REPARATIE.
+
+     Mijn integratietoets bouwde deze INSERT na in plaats van hem aan
+     te roepen — de fetch zat ertussen en kon in de toetsomgeving niet
+     uitgaan. Gevolg: twee kopieën van hetzelfde opslagpad, en de echte
+     kopie viel in productie om op `malformed array literal: "[]"`
+     terwijl de toets groen stond.
+
+     Nu is er één opslagpad. slaPdfVersieOp() krijgt de GELEZEN tekst
+     en kent geen netwerk, dus de toets roept hem rechtstreeks aan met
+     bytes uit de hand. Wat de toets meet, is wat productie doet. */
+  return slaPdfVersieOp(c, organisatieId, {
+    gelezen,
+    bronId: bron.id,
+    uitgever: bron.uitgever,
+    url: invoer.url,
+    bronSleutel: invoer.bronSleutel,
+    ...(invoer.titel === undefined ? {} : { titel: invoer.titel }),
+  });
+}
+
+export type PdfOpslagInvoer = {
+  /** De uitkomst van leesPdfTekst(); altijd de geslaagde variant. */
+  readonly gelezen: Extract<PdfUitkomst, { ok: true }>;
+  readonly bronId: number;
+  readonly uitgever: string;
+  readonly url: string;
+  readonly bronSleutel: string;
+  readonly titel?: string;
+};
+
+/**
+ * Slaat één gelezen PDF op als brondocumentversie.
+ *
+ * GEEN NETWERK EN GEEN POORTEN. De zes poorten staan in neemPdfOp();
+ * deze functie vertrouwt erop dat ze gehaald zijn. Hij is apart
+ * geëxporteerd zodat de integratietoets het ECHTE opslagpad kan
+ * aanroepen in plaats van het na te bouwen — zie de toelichting bij de
+ * aanroep hierboven.
+ */
+export async function slaPdfVersieOp(
+  c: pg.PoolClient,
+  organisatieId: number,
+  inv: PdfOpslagInvoer,
+): Promise<PdfOpnameRapport> {
+  const gelezen = inv.gelezen;
+  const bron = { id: inv.bronId, uitgever: inv.uitgever };
+  const invoer = { url: inv.url, bronSleutel: inv.bronSleutel, titel: inv.titel };
+
   /* ---------- DE INJECTIEVERDENKING ----------
      Dezelfde motor als voor elke andere brontekst. Een PDF uit een
      vreemde hand krijgt geen vrijstelling omdat hij van een
@@ -389,7 +444,28 @@ export async function neemPdfOp(
       vorige?.id ?? null,
       wijziging.ratio.toFixed(4),
       injectie.verdacht,
-      JSON.stringify(injectie.patronen),
+      /* GEEN JSON.stringify — injectie_patronen IS EEN text[].
+         Gemeten in productie op 6 november 2026, bij de eerste echte
+         opname van het ACM-besluit:
+
+           IntelFout: malformed array literal: "[]"
+           at neemPdfOp (src/bronnen/pdfdocument.ts:361)
+
+         Ik had de kolom voor jsonb aangezien, zoals
+         `modaliteit_grondslag` dat wél is. Nagemeten in
+         information_schema: brondocument_versies.injectie_patronen
+         heeft udt_name '_text', dus een Postgres-array. verzamelen.ts
+         geeft de array daar al rechtstreeks door; één van de twee
+         aanroepers deed het anders, en dat is de klasse fout die deze
+         repo keer op keer betaalt.
+
+         WAAROM MIJN EIGEN INTEGRATIETOETS DIT NIET VING: die bouwde de
+         INSERT na in plaats van neemPdfOp() te gebruiken, en liet dit
+         veld weg. Twee kopieën van hetzelfde opslagpad — precies
+         waartegen ik in drie andere bestanden waarschuw. Daarom is de
+         opslag nu losgetrokken in slaPdfVersieOp(), die de toets
+         rechtstreeks aanroept. */
+      injectie.patronen,
     ],
   );
   if (!nieuw) {

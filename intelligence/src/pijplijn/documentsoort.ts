@@ -251,6 +251,144 @@ type Signaal = {
   readonly reden: string;
 };
 
+/* ==================================================================
+   DE STRUCTUUR VAN EEN VASTGESTELD BESLUIT
+   ------------------------------------------------------------------
+   §2 van de opdracht vraagt vier onderscheidingen:
+
+     a een officieel besluit waarin standpunten van partijen worden
+       beschreven
+     b een opinieartikel van een organisatie
+     c een aankondiging van een besluit
+     d een werkelijk vastgesteld besluit
+
+   (c) en (d) scheidde dit bestand al, en wel op de VORM: stap 4
+   geeft NIEUWSBERICHT_REGELGEVING aan een bevoegd gezag dat over zijn
+   eigen besluit bericht zonder het authentieke stuk te zijn, en
+   OFFICIEEL_BESLUIT aan het stuk zelf. Dat blijft ongewijzigd.
+
+   (a) en (b) scheidde het niet. Deze functie doet dat, en wel op
+   structuur in plaats van op losse woorden.
+
+   DE MARKERINGEN ZIJN GETELD OP HET ECHTE STUK, het ACM-geschilbesluit
+   Jumbo – Liander (8 pagina's, 24.054 tekens, 6 november 2026):
+
+     Ons kenmerk / Zaaknummer / Documentnr      16x
+     'als bedoeld in artikel' en varianten      12x
+     paragraafkop '7. Dictum'                    1x
+     'beroep instellen'                          2x
+     'Standpunten van partijen' (paragraafkop)   1x
+     'ons standpunt' / 'onze visie' / 'opinie'   0x
+
+   Een opinieartikel van een organisatie heeft geen zaaknummer, geen
+   wettelijke grondslag, geen dictum en geen rechtsmiddelenclausule.
+   Dat is het verschil, en het is te tellen.
+
+   PARTIJSTANDPUNTEN ZIJN GEEN DISKWALIFICATIE MAAR EEN KENMERK. Een
+   besluit dat de standpunten van partijen beschrijft, is juist een
+   zorgvuldig besluit. Het veld wordt vastgelegd omdat
+   vaststelling.ts het nodig heeft: een claim die IN die sectie staat,
+   is het standpunt van een partij en geen vaststelling van het gezag.
+   ================================================================== */
+
+export type Besluitstructuur = {
+  /** Een zaaknummer, kenmerk of documentnummer: de administratieve identiteit. */
+  readonly administratieveIdentiteit: boolean;
+  /** Een beroep op een wetsartikel als grondslag. */
+  readonly wettelijkeGrondslag: boolean;
+  /** Een dictum: het deel dat werkelijk beslist. */
+  readonly dictum: boolean;
+  /** Een rechtsmiddelenclausule; die staat per definitie ná het dictum. */
+  readonly rechtsmiddel: boolean;
+  /** Beschrijft het stuk de standpunten van partijen? */
+  readonly partijstandpunten: boolean;
+  readonly markeringen: readonly string[];
+  /**
+   * Draagt dit stuk de structuur van een VASTGESTELD besluit?
+   *
+   * DE REGEL: administratieve identiteit is noodzakelijk, plus een
+   * dictum OF de combinatie van een wettelijke grondslag met een
+   * rechtsmiddelenclausule.
+   *
+   * Waarom de identiteit noodzakelijk is: een aankondiging van een
+   * besluit noemt het besluit wel maar heeft geen zaaknummer — dat
+   * hoort bij het stuk, niet bij het nieuws erover. Dat is het
+   * onderscheid (c) tegen (d) uit de opdracht, nu ook zonder de
+   * vormcontrole zichtbaar.
+   *
+   * Waarom 'dictum OF (grondslag EN rechtsmiddel)': een tariefbesluit
+   * draagt zelden het woord 'dictum' maar wel 'Gelet op artikel 41'
+   * en 'binnen zes weken bezwaar'. Zie de meting in de kop van
+   * vaststelling.ts, waar precies dat stuk staat.
+   */
+  readonly isVastgesteldBesluit: boolean;
+};
+
+const STRUCTUUR_MARKERINGEN: readonly { naam: string; patroon: RegExp; veld: keyof Besluitstructuur }[] = [
+  {
+    naam: "administratieve-identiteit",
+    patroon:
+      /\b(ons\s+kenmerk|uw\s+kenmerk|zaaknummer|zaaknr\.?|documentnr\.?|besluitnummer|dossiernummer)\b/iu,
+    veld: "administratieveIdentiteit",
+  },
+  {
+    naam: "wettelijke-grondslag",
+    patroon:
+      /\b(als\s+bedoeld\s+in\s+artikel|op\s+grond\s+van\s+artikel|gelet\s+op\s+(?:artikel|het\s+bepaalde)|ingevolge\s+artikel|krachtens\s+artikel)\b/iu,
+    veld: "wettelijkeGrondslag",
+  },
+  {
+    naam: "dictum",
+    patroon:
+      /(^|\n)\s*\d*\.?\s*dictum\b|\b(besluit\s+de\s+(?:ACM|minister|staatssecretaris|autoriteit)|verklaart\s+(?:de\s+)?\w+\s+(?:on)?gegrond|wijst\s+(?:het|de)\s+\w+\s+af|legt\s+(?:een\s+)?(?:boete|last\s+onder\s+dwangsom)\s+op)\b/iu,
+    veld: "dictum",
+  },
+  {
+    naam: "rechtsmiddel",
+    patroon:
+      /\b(bezwaar\s+(?:maken|indienen)|beroep\s+instellen|binnen\s+zes\s+weken\s+(?:bezwaar|beroep)|rechtsmiddelen)\b/iu,
+    veld: "rechtsmiddel",
+  },
+  {
+    naam: "partijstandpunten",
+    patroon:
+      /\b(standpunt(?:en)?\s+van\s+(?:partijen|de\s+\w+|\w+)|zienswijze\s+van|het\s+standpunt\s+van)\b/iu,
+    veld: "partijstandpunten",
+  },
+];
+
+/**
+ * Leest de structuurmarkeringen van een officieel stuk.
+ *
+ * PUUR en zonder netwerk, zoals de hele module. Hij telt wat er staat
+ * en beslist niets over de bewijskracht; dat doet bepaalDocumentsoort()
+ * met deze uitslag erbij.
+ */
+export function leesBesluitStructuur(tekst: string): Besluitstructuur {
+  const gevonden = new Set<string>();
+  const markeringen: string[] = [];
+  for (const m of STRUCTUUR_MARKERINGEN) {
+    const t = m.patroon.exec(tekst);
+    if (t === null) continue;
+    gevonden.add(m.veld);
+    markeringen.push(`${m.naam}: "${t[0].trim().slice(0, 48)}"`);
+  }
+  const administratieveIdentiteit = gevonden.has("administratieveIdentiteit");
+  const wettelijkeGrondslag = gevonden.has("wettelijkeGrondslag");
+  const dictum = gevonden.has("dictum");
+  const rechtsmiddel = gevonden.has("rechtsmiddel");
+  return {
+    administratieveIdentiteit,
+    wettelijkeGrondslag,
+    dictum,
+    rechtsmiddel,
+    partijstandpunten: gevonden.has("partijstandpunten"),
+    markeringen: markeringen.length > 0 ? markeringen : ["geen structuurmarkering gevonden"],
+    isVastgesteldBesluit:
+      administratieveIdentiteit && (dictum || (wettelijkeGrondslag && rechtsmiddel)),
+  };
+}
+
 /** Een verzoek, een oproep, een wens. Verlaagt altijd. */
 const LOBBY: readonly Signaal[] = [
   {
@@ -285,8 +423,47 @@ const LOBBY: readonly Signaal[] = [
 const OPINIE: readonly Signaal[] = [
   {
     naam: "standpunt",
-    patroon: /\b(standpunt|onze\s+visie|opinie|column|blog)\b/iu,
-    reden: "de tekst presenteert zich als standpunt of opinie",
+    /* HET WOORD 'standpunt' ALLEEN IS GEEN OPINIESIGNAAL, EN DAT WAS
+       EEN GEMETEN FOUT MET GROTE GEVOLGEN.
+       ----------------------------------------------------------------
+       Gemeten op 6 november 2026 op het echte ACM-geschilbesluit
+       Jumbo – Liander (8 pagina's, 24.054 tekens):
+
+         soort        OPINIE
+         gezag        BEVOEGD_GEZAG
+         vorm         BEKENDMAKING
+         plafond      1
+         grondslag    1 opiniesignaal — "standpunt"
+
+       Eén woord haalde een besluit van het bevoegd gezag van plafond 5
+       naar plafond 1, en daarmee uit de enige bronsoort die een
+       bevestigde claim kan dragen. En dat woord stond er omdat het
+       besluit een PARAGRAAFKOP heeft die zo heet:
+
+         1. Verloop van de procedure
+         2. Het geschil
+         3. Feiten
+         4. Wettelijk kader
+         5. Standpunten van partijen      <-- hier
+         6. Beoordeling van het geschil
+         7. Dictum
+
+       Een besluit dat de standpunten van partijen beschrijft, is geen
+       opiniestuk. Het is juist de vorm die een zorgvuldig besluit
+       hóórt te hebben.
+
+       DE REGEL: 'standpunt' telt alleen als OPINIESIGNAAL wanneer het
+       het standpunt van de SCHRIJVER is. 'ons standpunt', 'onze visie',
+       'mijn standpunt' wel; 'standpunt van X' en 'standpunten van
+       partijen' niet. 'opinie', 'column' en 'blog' blijven onverkort
+       staan — die woorden benoemen het genre van het stuk zelf.
+
+       Nagemeten op datzelfde besluit: 'ons standpunt' 0x, 'onze visie'
+       0x, 'opinie' 0x, 'column' 0x, 'blog' 0x. Het stuk draagt dus
+       geen enkel opiniesignaal meer. */
+    patroon:
+      /\b(ons\s+standpunt|onze\s+standpunten|mijn\s+standpunt|onze\s+visie|opinie|column|blog)\b/iu,
+    reden: "de tekst presenteert zich als standpunt of opinie van de schrijver zelf",
   },
   {
     naam: "wij-vinden",
@@ -731,25 +908,72 @@ export function bepaalDocumentsoort(inv: DocumentsoortInvoer): DocumentsoortUits
     );
   }
 
-  /* ---------- 1 · lobby en opinie verlagen altijd ---------- */
+  /* ---------- 1 · lobby en opinie verlagen — TENZIJ DE STRUCTUUR EEN
+                    VASTGESTELD BESLUIT IS ----------
+
+     WAAROM HIER EEN UITZONDERING STAAT, en wat hem begrenst.
+
+     Deze stap kortsluit: één signaal en het stuk is klaar, nog vóór de
+     besluit- en vormcontroles van stap 3 en 4. Dat is voor een
+     lobbydocument juist — een position paper met besluittaal blijft een
+     position paper — maar het maakte één woord beslissend over een
+     heel besluit. Gemeten op het ACM-geschilbesluit Jumbo – Liander:
+     het woord 'standpunt' uit de paragraafkop 'Standpunten van
+     partijen' maakte er OPINIE van, plafond 1.
+
+     Het patroon van dat signaal is nu smal (zie OPINIE hierboven), maar
+     een smaller patroon is een reparatie van ÉÉN geval. De structurele
+     bescherming is dit: een stuk dat de VORM van een vastgesteld
+     besluit draagt — administratieve identiteit, wettelijke grondslag,
+     een dictum of een rechtsmiddelenclausule — wordt niet door een
+     woord in zijn eigen tekst gedegradeerd.
+
+     DRIE EISEN, EN ALLE DRIE MOETEN GELDEN:
+       1 de afzender kan het uitvaardigen      (BEVOEGD_GEZAG)
+       2 de vorm is de authentieke vorm        (vormKanVaststellen)
+       3 de structuur is die van een besluit   (leesBesluitStructuur)
+
+     Dat is geen verlaagde drempel maar een VERPLAATSTE: het stuk gaat
+     niet vrijuit, het gaat door naar stap 3 en 4 en moet daar nog
+     steeds de navertellings-, ontwerp- en vormcontroles halen. Een
+     opiniestuk van een belangenbehartiger raakt deze uitzondering
+     nooit: eis 1 valt al af.
+
+     EN DE OPINIESIGNALEN BLIJVEN IN DE GRONDSLAG STAAN. Ze zijn
+     gemeten, dus ze horen navolgbaar te zijn — ook als ze niet
+     beslissen. */
   const lobby = treffers(LOBBY, volledig);
   const opinie = treffers(OPINIE, volledig);
   for (const t of [...lobby, ...opinie]) {
     signalen.push(`${t.naam}: ${t.reden} — "${t.fragment}"`);
   }
-  if (lobby.length > 0) {
-    return uitslag(
-      "LOBBYDOCUMENT",
-      `${lobby.length} lobbysignaal(en); de tekst vraagt om iets in plaats van iets vast te stellen`,
-      opinie.length > 0 ? 0.1 : 0.2,
+  const structuur = leesBesluitStructuur(volledig);
+  const authentiekBesluit =
+    gezag === "BEVOEGD_GEZAG" &&
+    vormKanVaststellen(vorm.vorm) &&
+    structuur.isVastgesteldBesluit;
+
+  if (authentiekBesluit && (lobby.length > 0 || opinie.length > 0)) {
+    signalen.push(
+      `besluitstructuur: ${structuur.markeringen.join(", ")} — de ${lobby.length + opinie.length} ` +
+        `lobby-/opiniesignaal(en) verlagen dit stuk NIET, want afzender, vorm en structuur ` +
+        `wijzen alle drie op een vastgesteld besluit`,
     );
-  }
-  if (opinie.length > 0) {
-    return uitslag(
-      "OPINIE",
-      `${opinie.length} opiniesignaal(en); de tekst geeft een standpunt`,
-      0.2,
-    );
+  } else {
+    if (lobby.length > 0) {
+      return uitslag(
+        "LOBBYDOCUMENT",
+        `${lobby.length} lobbysignaal(en); de tekst vraagt om iets in plaats van iets vast te stellen`,
+        opinie.length > 0 ? 0.1 : 0.2,
+      );
+    }
+    if (opinie.length > 0) {
+      return uitslag(
+        "OPINIE",
+        `${opinie.length} opiniesignaal(en); de tekst geeft een standpunt`,
+        0.2,
+      );
+    }
   }
 
   /* ---------- 2 · persbericht ----------
@@ -864,8 +1088,48 @@ export function bepaalDocumentsoort(inv: DocumentsoortInvoer): DocumentsoortUits
      nieuwe aftakking geldt alleen bij BEVOEGD_GEZAG, want daar — en
      alleen daar — zat het gat. */
   if (regel.length > 0 || besluit.length > 0) {
+    /* WELK VAN DE TWEE: REGELGEVING OF BESLUIT.
+       ----------------------------------------------------------------
+       Hier stond `regel.length > 0 ? OFFICIELE_REGELGEVING : ...`, dus
+       één regelsignaal besliste. Gemeten op het ACM-geschilbesluit
+       Jumbo – Liander: het regelsignaal 'regelingvorm' vuurde op het
+       woord 'inwerkingtreding', dat daar staat omdat het stuk het
+       WETTELIJK KADER beschrijft — de inwerkingtreding van de Netcode.
+       Uitkomst: OFFICIELE_REGELGEVING.
+
+       Dat is het verkeerde label. Een geschilbesluit beslist een
+       geschil; het stelt geen regels vast. Voor de bewijskracht maakt
+       het niets uit (beide zijn plafond 5 bij bevoegd gezag), maar het
+       label is wat een lezer en `beschrijftBesluitVan` ervan maken, en
+       een besluit dat zich voordoet als regelgeving is onwaar.
+
+       DE REGEL: het stuk beslist, niet een woord in zijn
+       beschrijvende delen. Een markering die de IDENTITEIT van het
+       stuk raakt — zijn naam ('Geschilbesluit'), zijn kop
+       ('Besluit <onderwerp>'), zijn dictum, of een beslissing op een
+       klacht — weegt zwaarder dan een regelwoord in de tekst.
+
+       OMGEKEERD BLIJFT REGELGEVING STAAN: een wijzigingsregeling met
+       'Regeling van de minister' en 'wordt als volgt gewijzigd'
+       draagt geen van deze besluitmarkeringen en komt dus nog steeds
+       op OFFICIELE_REGELGEVING uit. */
+    const besluitIdentiteit =
+      besluit.some((t) => t.naam === "geschilbeslissing" || t.naam === "besluitvorm") ||
+      vorm.markeringen.some(
+        (m) => m === "besluitsoort-in-naam" || m === "besluitkop",
+      ) ||
+      structuur.dictum;
     const beoogd: Documentsoort =
-      regel.length > 0 ? "OFFICIELE_REGELGEVING" : "OFFICIEEL_BESLUIT";
+      regel.length > 0 && !besluitIdentiteit
+        ? "OFFICIELE_REGELGEVING"
+        : "OFFICIEEL_BESLUIT";
+    if (besluitIdentiteit && regel.length > 0) {
+      signalen.push(
+        "besluit-boven-regel: het stuk draagt een besluitidentiteit (naam, kop, dictum of " +
+          "geschilbeslissing), dus het regelsignaal in de beschrijvende delen bepaalt de " +
+          "soort niet",
+      );
+    }
     for (const t of [...regel, ...besluit]) {
       signalen.push(`${t.naam}: ${t.reden} — "${t.fragment}"`);
     }
