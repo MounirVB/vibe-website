@@ -647,6 +647,18 @@ describe("de herbeoordeling past de passagetoets toe", () => {
     assert.equal(sporen, 13, "twee extra rondes mogen geen extra sporen schrijven");
   });
 
+  test("12b · de TAAK rapporteert de gronden, zodat de ronde na te meten is", async () => {
+    /* DE ECHTE TAAK uit het REGISTER. In productie is de database niet
+       van buiten te bevragen, dus als de gronden niet in dit log staan
+       is een ronde daar niet na te meten. De selectie is na zaak 12
+       leeg, dus dit meet de 0-vorm van de regel — en die moet er ook
+       staan, want een ontbrekende regel leest als 'niets gebeurd'. */
+    const handler = REGISTER["herbeoordeling"];
+    assert.ok(handler, "er hoort een handler voor 'herbeoordeling' te zijn");
+    const log = await handler(db.pool, org, {});
+    assert.match(log, /op de passagetoets ingetrokken 0/u, log);
+  });
+
   test("13 · bewijsniveau en verificatiestatus spreken elkaar niet tegen", async () => {
     /* DE STRIJD IS NIET 'HEEFT EEN NIVEAU' MAAR 'BEWEERT BEWIJS'.
        NIET_BEVESTIGD op een ingetrokken claim is juist consistent — dat
