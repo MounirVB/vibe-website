@@ -516,10 +516,25 @@ export const REGISTER: Record<string, Handler> = {
     const r = await metOrganisatie(pool, { organisatieId }, (c) =>
       herbeoordeelClaims(c, organisatieId, {}),
     );
+    /* DE PASSAGEGRONDEN HOREN IN HET TAAKLOG.
+       Zonder deze regel is een intrekking op de passagetoets van buiten
+       niet te scheiden van een intrekking op het plafond, en in
+       productie is de database niet van buiten te bevragen — dan is de
+       ronde dus niet na te meten. De verdeling staat erbij om dezelfde
+       reden die de bewijsniveauregel hierboven noemt: een telling
+       zonder verdeling zegt niets, want ACHTERGRONDPASSAGE vraagt een
+       ander menselijk oordeel dan NIET_VASTSTELLENDE_MODALITEIT. */
+    const gronden = Object.entries(r.perPassageUitslag)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, n]) => `${k}=${n}`)
+      .join(" ");
     return (
       `bekeken ${r.bekeken}, herbeoordeeld ${r.herbeoordeeld}, ` +
       `bevestiging behouden ${r.bevestigingBehouden}, ingetrokken ${r.bevestigingIngetrokken}, ` +
       `bewijskracht verlaagd ${r.bewijskrachtVerlaagd}` +
+      (r.passageIngetrokken > 0
+        ? `, op de passagetoets ingetrokken ${r.passageIngetrokken} (${gronden})`
+        : ", op de passagetoets ingetrokken 0") +
       (r.menselijkOvergeslagen > 0 ? `, menselijk oordeel overgeslagen ${r.menselijkOvergeslagen}` : "") +
       (r.getroffenGebeurtenissen.length > 0
         ? ` — ${r.getroffenGebeurtenissen.length} gebeurtenis(sen) geraakt`

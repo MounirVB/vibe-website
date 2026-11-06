@@ -24,6 +24,7 @@ import { DOCUMENTSOORT_VERSIE } from "./documentsoort.ts";
 import { MODALITEIT_VERSIE } from "./claimmodaliteit.ts";
 import { CLAIMVORM_VERSIE } from "./claimvorm.ts";
 import { DATUMROL_VERSIE } from "./datumrol.ts";
+import { VASTSTELLING_VERSIE } from "./vaststelling.ts";
 
 /**
  * De stempel die op intel.uitspraken.herbeoordeeld_onder wordt
@@ -41,5 +42,21 @@ import { DATUMROL_VERSIE } from "./datumrol.ts";
    vormversie de bestaande vormclaims onzichtbaar maken voor de
    herbeoordeling — hetzelfde defect dat deze stempel moest oplossen,
    een laag verder. */
+/* VASTSTELLING HOORT ER OOK IN, en sinds 6 november 2026 is dat geen
+   theorie meer. De herbeoordeling past de passagetoets toe
+   (herbeoordeling.ts), dus steltStukDeClaimVast() kan het oordeel over
+   een bestaande claim veranderen — en dan geldt de regel uit de kop
+   hierboven: "elke motor die het OORDEEL over een claim kan
+   veranderen".
+
+   WAT DEZE TOEVOEGING DOET, en dat is met opzet. De stempel verandert,
+   dus elke bestaande claim is per definitie "nog niet onder deze motor
+   gewogen" en komt één keer door de herbeoordeling. Dat is precies hoe
+   de zes claims uit het ACM-besluit hun passagetoets krijgen: niet via
+   een eigen herextractie-engine of een eenmalig script, maar via het
+   mechanisme dat hier al voor gebouwd is. De selectie in
+   herbeoordeelClaims() is idempotent op deze stempel, dus een tweede
+   ronde vindt niets meer. */
 export const MOTORVERSIES =
-  `${DOCUMENTSOORT_VERSIE} + ${MODALITEIT_VERSIE} + ${CLAIMVORM_VERSIE} + ${DATUMROL_VERSIE}`;
+  `${DOCUMENTSOORT_VERSIE} + ${MODALITEIT_VERSIE} + ${CLAIMVORM_VERSIE} + ` +
+  `${DATUMROL_VERSIE} + ${VASTSTELLING_VERSIE}`;
