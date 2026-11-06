@@ -12,7 +12,21 @@
    machine die zijn eigen kruimelpad uittypt kan dat fout doen zonder dat
    iemand het merkt. Afleiden kan niet uit de pas lopen.
 
-   DRIE DINGEN DIE HIER BEWUST NIET GEBEUREN
+   WAT DE PAGINA TOONT (herzien in november 2026)
+   De hub is een publieke nieuws- en kennisomgeving: een opening met de
+   onderwerpenbalk, het uitgelichte bericht, de berichten per onderwerp, de
+   kennisbank en het slotblok. Hij toont GEEN interne werking meer — geen
+   redactioneel vrijgaveproces, geen publicatiestatus, geen claimcontrole.
+   Die norm is naar intelligence/docs/REDACTIENORM.md verhuisd en wordt daar
+   door poort 16 bewaakt; zie data/seo/nieuws-architectuur.json,
+   _correctie_op_dit_contract_4. Op deze pagina staat alleen wat een bezoeker
+   iets zegt.
+
+   VIER DINGEN DIE HIER BEWUST NIET GEBEUREN
+
+   0 · GEEN INTERNE TOESTAND IN DE ETALAGE. Zie hierboven. Een lezer hoort te
+       zien wat er IS, niet hoe de machine erachter werkt of waarom er iets
+       nog niet is.
 
    1 · GEEN CATEGORIEROUTES. De opdracht vraagt categorieën. Die zijn hier
        groepen OP de overzichtspagina, met een anker per onderwerp — niet
@@ -43,11 +57,11 @@ import {
   opening,
   directAntwoord,
   tekstsectie,
-  kaarten,
   faqSectie,
   verwant,
   conversie,
   esc,
+  ic,
 } from './lib/sjabloon.mjs';
 import { nieuwsartikel, faq as faqLd } from './lib/schema.mjs';
 import { naamVan } from './lib/links.mjs';
@@ -69,6 +83,155 @@ const BRONSOORT_LABEL = {
   MARKTPARTIJ: 'marktpartij',
   EIGEN_MEETDATA: 'eigen meetdata',
 };
+
+/* ===================================================== HET BEELDREGISTER ===
+   De gegenereerde laag gebruikte tot nu toe nul fotografie. Deze pagina wel:
+   een nieuws- en kennisomgeving zonder beeld leest als een linklijst.
+
+   TWEE REGELS DIE HIER WORDEN AFGEDWONGEN, NIET BELOOFD
+   1 · Alleen bestanden die werkelijk op schijf staan. beeldHtml() toetst elke
+       breedte met existsSync; een breedte die ontbreekt valt uit de srcset en
+       een sleutel waarvan niets bestaat levert een kaart ZONDER beeld op. Een
+       gebroken <img> kan deze pagina dus niet produceren.
+   2 · De alt-tekst beschrijft wat er werkelijk op de foto staat, niet wat de
+       pagina erachter verkoopt. Alle zes zijn bekeken voordat ze hier kwamen.
+
+   De beeldverhouding staat NIET op het bestand maar op het vlak eromheen
+   (.ve-proj__vlak = 16/10, .ve-media--16x9), zodat de kaarten in een raster
+   dezelfde hoogte houden en er geen layout shift is terwijl het beeld laadt. */
+const BEELDEN = {
+  'netcongestie-hero': {
+    breedtes: [960, 1600, 2400],
+    alt: 'Drie witte batterijcontainers van Vibe Energy op een bedrijfsterrein',
+  },
+  'energieopslag-hero': {
+    breedtes: [960, 1600, 2400],
+    alt: 'Twee batterijkasten in een houten omkasting naast een bedrijfspand',
+  },
+  'laadpalen-hero': {
+    breedtes: [960, 1600, 2400],
+    alt: 'Elektrische auto met laadkabel aan een laadpaal op een bedrijfsterrein',
+  },
+  'zonnepanelen-hero': {
+    breedtes: [960, 1600, 2400],
+    alt: 'Rijen zonnepanelen op het platte dak van een bedrijfspand',
+  },
+  'kantoor-hero': {
+    breedtes: [960, 1600, 2400],
+    alt: 'Luchtfoto van een bedrijfspand met zonnepanelen op het dak',
+  },
+  /* Subsidies draagt een batterij, geen dak. De pagina erachter gaat letterlijk
+     over "wat een batterij wel en niet subsidiabel maakt"; een derde dakfoto
+     was verwant maar niet het onderwerp. Dit beeld staat ook op /over-ons —
+     hergebruik tussen pagina's is in deze bibliotheek gebruikelijk (zie
+     netcongestie-hero op /index en /microgrids), twee keer op DEZELFDE pagina
+     niet. */
+  'bedrijf-hero': {
+    breedtes: [960, 1600, 2400],
+    alt: 'Batterijcontainer van Vibe Energy met het merklogo, op een bedrijfsterrein',
+  },
+};
+
+const BEELDMAP = resolve(wortel, 'assets');
+
+/* De kaarten staan op desktop in drie kolommen binnen een container van
+   1280px; 400px is daar de echte weergavebreedte. Daaronder twee kolommen en
+   op mobiel vol. */
+const KAART_SIZES = '(min-width:1200px) 400px, (min-width:768px) 33vw, (min-width:640px) 50vw, 100vw';
+const UITGELICHT_SIZES = '(min-width:1200px) 720px, (min-width:640px) 60vw, 100vw';
+
+function beeldHtml(sleutel, sizes, { eager = false } = {}) {
+  const b = BEELDEN[sleutel];
+  if (!b) return '';
+  const aanwezig = b.breedtes.filter((w) => existsSync(join(BEELDMAP, `${sleutel}-${w}.webp`)));
+  if (!aanwezig.length) return '';
+  const pad = (w) => `/assets/${sleutel}-${w}.webp`;
+  const grootste = aanwezig[aanwezig.length - 1];
+  return (
+    `<img src="${pad(grootste)}" srcset="${aanwezig.map((w) => `${pad(w)} ${w}w`).join(', ')}"` +
+    ` sizes="${sizes}" alt="${esc(b.alt)}"` +
+    (eager ? ' fetchpriority="high" decoding="async"' : ' loading="lazy" decoding="async"') +
+    '>'
+  );
+}
+
+/* ================================================== DE PAGINABOUWSTENEN ===
+   Alles hieronder is gebouwd uit klassen die al in vibe/vibe.css staan:
+   .ve-proj is de kaart met beeld van /projecten, .ve-media de beeldvlakken,
+   .ve-split het asymmetrische raster, .ve-rail de redactionele lijst. Nieuw
+   is alleen de onderwerpenbalk (.nw-chip), en die staat als paginalokale CSS
+   in dit bestand — net zoals /projecten zijn filterbalk lokaal houdt. Zo kan
+   deze pagina geen enkele andere pagina van vorm veranderen. */
+const PAGINA_CSS = `  /* Onderwerpenbalk — paginaspecifiek, dezelfde vorm als de filterbalk op /projecten. */
+  .nw-chips{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:var(--ve-s-xl)}
+  .nw-chip{
+    padding:.55rem 1.1rem;border-radius:var(--ve-r-pill);
+    border:1px solid var(--ve-line-strong);background:var(--ve-surface);
+    font-size:var(--ve-body-sm-size);font-weight:var(--ve-w-med);color:var(--ve-text-soft);
+    transition:border-color var(--ve-dur) var(--ve-ease),color var(--ve-dur) var(--ve-ease);
+  }
+  .nw-chip:hover{border-color:var(--ve-action);color:var(--ve-action-ink)}
+  /* Kaartraster: één kolom, vanaf 640 twee, vanaf 1024 drie — dezelfde trap als
+     .pr-raster op /projecten. ve-cols--3 springt al op 768 naar drie kolommen,
+     en dan is een kolom op een tablet ~230px breed: gemeten op 834px brak
+     "Laadinfrastructuur" daar middenin het woord af. */
+  .nw-raster{display:grid;gap:var(--ve-s-xl)}
+  @media (min-width:640px){.nw-raster{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (min-width:1024px){.nw-raster{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  /* Een beeldvlak dat zelf de link is; .ve-media zet geen display en zou als
+     <a> inline vallen, waardoor de beeldverhouding niet pakt. */
+  a.ve-media{display:block}
+  a.ve-media img{transition:transform var(--ve-dur-slow) var(--ve-ease)}
+  a.ve-media:hover img{transform:scale(1.04)}
+  /* Dezelfde vier bewegingen als .ve-proj, geen vijfde: de titel kleurt naar
+     het accent en het beeld schaalt. Niets anders beweegt. */
+  .nw-uit__t{margin:0}
+  .nw-uit__t a:hover{color:var(--ve-action-ink)}
+  a.ve-rail{display:block}
+  a.ve-rail:hover h3{color:var(--ve-action-ink)}`;
+
+/** Een kaart met beeld, in de vorm die /projecten al gebruikt.
+    `beeld` is een sleutel uit BEELDEN; `beeldHtml` is kant-en-klare markup —
+    die weg gebruikt een nieuwsbericht, dat zijn eigen beeld meebrengt.
+    Geen van beide? Dan dezelfde kaart, zonder beeldvlak. */
+function beeldkaart({ route, label, kop, tekst, voet, beeld, beeldHtml: vooraf, id, vlakAltijd = false }) {
+  const vlak = vooraf !== undefined ? vooraf : beeld ? beeldHtml(beeld, KAART_SIZES) : '';
+  return (
+    `        <a class="ve-proj" href="${href(route)}"${id ? ` id="${id}"` : ''}>\n` +
+    (vlak || vlakAltijd ? `          <div class="ve-proj__vlak">${vlak}</div>\n` : '') +
+    '          <div class="ve-proj__tekst">\n' +
+    (label ? `            <span class="ve-proj__sector">${esc(label)}</span>\n` : '') +
+    `            <h3 class="ve-proj__t">${esc(kop)}</h3>\n` +
+    `            <p class="ve-proj__d">${tekst}</p>\n` +
+    `            <span class="ve-proj__voet">${voet}</span>\n` +
+    '          </div>\n' +
+    '        </a>'
+  );
+}
+
+/** Een raster van kaarten onder een kop. */
+function kaartsectie({ id, kop, lead, cellen, variant = '' }) {
+  return `  <section class="ve-sec ve-sec--lg${variant ? ` ${variant}` : ''}"${id ? ` id="${id}"` : ''}>
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">${kop}</h2>${lead ? `\n        <p class="ve-lead">${lead}</p>` : ''}
+      </div>
+      <div class="nw-raster">
+${cellen.join('\n')}
+      </div>
+    </div>
+  </section>`;
+}
+
+/** De onderwerpenbalk onder de lead. Alleen zinvol vanaf twee onderwerpen. */
+function onderwerpenbalk(items) {
+  if (!items || items.length < 2) return '';
+  return (
+    '<nav class="nw-chips" aria-label="Onderwerpen">\n' +
+    items.map((i) => `        <a class="nw-chip" href="${i.href}">${esc(i.label)}</a>`).join('\n') +
+    '\n      </nav>'
+  );
+}
 
 /** Alle artikelbestanden onder data/inhoud/nieuws/, op route gesorteerd. */
 function artikelbestanden() {
@@ -240,90 +403,239 @@ function bouwArtikel({ j, route, motor, schrijf, geo }) {
   );
 }
 
+/* ======================================================= DE ONDERWERPEN ===
+   De publieke categorie-indeling van het kanaal: zes onderwerpen die Vibe
+   Energy volgt, elk gekoppeld aan de pagina die dat onderwerp nu al behandelt.
+
+   DRIE REGELS
+   1 · Elke route wordt gefilterd op INDEX (motor.isIndex). Een onderwerp
+       waarvan de pagina niet gepubliceerd is, verdwijnt hier vanzelf; een
+       dode link kan deze indeling dus niet opleveren.
+   2 · De kaarttekst beschrijft wat op de doelpagina staat, niet wat we zouden
+       willen dat er staat. De teksten zijn op de H1 van die pagina's geijkt.
+   3 · Elk onderwerp is een enkelsegmentroute. Dat is geen toeval: de poort
+       telt een uitgang met /href="\/([a-z0-9-]+)"/ en een diepe link
+       (/kennis/peak-shaving) telt daar NIET in mee. */
+const ONDERWERPEN = [
+  {
+    route: 'netcongestie',
+    label: 'Netcongestie',
+    kop: 'Netcongestie',
+    tekst: 'Het net zit vol. Wat dat betekent voor uw aansluiting, en wat er binnen uw eigen grens nog kan.',
+    beeld: 'netcongestie-hero',
+  },
+  {
+    route: 'systeem-energieopslag',
+    label: 'Batterijopslag',
+    kop: 'Batterijopslag',
+    tekst: 'Capaciteit vrijspelen op de aansluiting die u al heeft, in plaats van wachten op verzwaring.',
+    beeld: 'energieopslag-hero',
+  },
+  {
+    route: 'systeem-laadpalen',
+    label: 'Laadinfrastructuur',
+    kop: 'Laadinfrastructuur',
+    tekst: 'Meer laadpunten op het vermogen dat er al ligt, zonder dat de piek erdoorheen schiet.',
+    beeld: 'laadpalen-hero',
+  },
+  {
+    route: 'systeem-zonnepanelen',
+    label: 'Opwek',
+    kop: 'Zonne-energie',
+    tekst: 'Een dak levert pas rendement als de opwek ook benut wordt. Wat opslag en sturing daaraan veranderen.',
+    beeld: 'zonnepanelen-hero',
+  },
+  {
+    route: 'verduurzaming-bedrijfspanden',
+    label: 'Verduurzaming',
+    kop: 'Verduurzaming en energielabel',
+    tekst: 'Het energielabel is een berekening, de meter is de werkelijkheid. Wat telt voor uw label en uw exploitatie.',
+    beeld: 'kantoor-hero',
+  },
+  {
+    route: 'subsidies',
+    label: 'Subsidies',
+    kop: 'Subsidies en regelingen',
+    tekst: 'Welke regelingen er zijn, wat ze wel en niet dekken, en wat een batterij subsidiabel maakt.',
+    beeld: 'bedrijf-hero',
+  },
+];
+
+/* Zes kennisartikelen die er werkelijk staan, met de korte naam die /kennis
+   zelf voor ze gebruikt. Deze routes staan NIET in NAAM van lib/links.mjs,
+   dus de naam wordt hier expliciet meegegeven — naamVan() zou anders letterlijk
+   'kennis/peak-shaving' als kop zetten. */
+const KENNIS_UITGELICHT = [
+  ['kennis/netcongestie-uitgelegd', 'Netcongestie uitgelegd', 'Waar in het net de grens werkelijk zit.'],
+  ['kennis/businesscase-batterij', 'De businesscase van een batterij', 'Wat het rendement van een batterij werkelijk bepaalt.'],
+  ['kennis/peak-shaving', 'Peak shaving', 'De piek afvlakken in plaats van hem inkopen.'],
+  [
+    'kennis/laadinfrastructuur-dimensioneren',
+    'Laadinfrastructuur dimensioneren',
+    'Drie vragen bepalen het ontwerp van uw laadplein.',
+  ],
+  ['kennis/subsidiemechanismen', 'Hoe subsidiemechanismen werken', 'Hoe een regeling werkt, en wanneer hij geld oplevert.'],
+  ['kennis/terugleverbeperking', 'Terugleverbeperking', 'Wat u werkelijk kwijtraakt als het net dichtzit.'],
+];
+
+/** De zes onderwerpen, gefilterd op wat werkelijk gepubliceerd is. */
+function gepubliceerdeOnderwerpen(motor) {
+  return ONDERWERPEN.filter((o) => motor.isIndex(o.route));
+}
+
 /* ===================================================== de lege staat =====
    Wat een bezoeker ziet zolang er geen bericht is vrijgegeven.
 
-   DRIE DINGEN DIE HIER BEWUST NIET STAAN
-   1 · Geen "binnenkort meer" of een beloofde verschijningsdatum. We weten niet
-       wanneer er een bericht komt; dat opschrijven zou een verzinsel zijn.
-   2 · Geen voorbeeldbericht, geen placeholder-kaart, geen grijze skeletrij.
+   VIER DINGEN DIE HIER BEWUST NIET STAAN
+   1 · Geen voorbeeldbericht, geen placeholder-kaart, geen grijze skeletrij.
        Een lezer mag geen bericht zien dat niet bestaat.
+   2 · Geen verzonnen verschijningsdatum. 'Binnenkort' is het enige wat we
+       eerlijk kunnen zeggen; een datum zou een belofte zijn die we niet kennen.
    3 · Geen cijfer. Poort 10 laat de hub ongemoeid (die filtert op subsoort
        'nieuws', niet 'nieuws-hub'), maar een cijfer zonder zichtbare bron
        hoort op geen enkele pagina van deze site.
+   4 · GEEN REDACTIONEEL PROCES. De vier voorwaarden waaronder een bericht
+       verschijnt, de vrijgave door een mens en de claimcontrole stonden hier
+       tot november 2026 als zichtbare tekst. Dat is interne werking en hoort
+       op een publieke nieuwspagina niet thuis; de norm staat nu in
+       intelligence/docs/REDACTIENORM.md en wordt daar door poort 16 bewaakt.
+       Zie data/seo/nieuws-architectuur.json, _correctie_op_dit_contract_4.
 
-   Wat er WEL staat is de redactienorm: welke bronsoorten dragen, dat elk cijfer
-   een peildatum krijgt en dat een mens elk bericht vrijgeeft. Dat is op dag nul
-   waar en het is het enige wat deze pagina eerlijk kan beloven. Daarnaast de
-   onderwerpen die het kanaal bestrijkt, elk gelinkt aan de nationale pagina die
-   de intentie bezit — zo is de pagina ook leeg een echte ingang en geen
-   doodlopend eind. */
-const LEGE_STAAT_ONDERWERPEN = [
-  ['netcongestie', 'Wachttijden, transportschaarste en wat netbeheerders daarover vaststellen.'],
-  ['subsidies', 'Regelingen, budgetten en openstellingen — altijd met de datum waarop we ze hebben nagekeken.'],
-  ['energieadvies', 'Wat een marktontwikkeling betekent voor een businesscase op locatie.'],
-  ['kennis', 'De achtergrond bij een bericht: hoe het mechanisme werkt, los van het nieuws van vandaag.'],
-];
-
+   Wat er WEL staat: waar dit kanaal over gaat, en de inhoud die er nu al is.
+   Zo is de pagina ook zonder bericht een echte ingang en geen doodlopend eind. */
 function legeStaat(motor, route) {
   const uit = [];
+  const onderwerpen = gepubliceerdeOnderwerpen(motor);
 
-  uit.push(
-    directAntwoord({
-      vraag: 'Staan hier al berichten?',
-      antwoord:
-        'Nee. Het nieuwskanaal van Vibe Energy is open, maar er is nog geen bericht redactioneel ' +
-        'vrijgegeven. Dat is een bewuste keuze: een bericht verschijnt hier pas als een mens het heeft ' +
-        'goedgekeurd en als elk cijfer erin herleidbaar is tot een bron met de datum waarop die is ' +
-        'geraadpleegd. Liever geen bericht dan een bericht dat die toets niet doorstaat.',
-      voorbehoud:
-        'Deze pagina wordt niet automatisch gevuld. Er draait geen proces dat zichzelf publiceert.',
-    })
-  );
-
-  uit.push(
-    tekstsectie({
-      id: 'redactienorm',
-      kop: 'Wanneer een bericht hier verschijnt',
-      lead: 'Vier voorwaarden, en ze gelden alle vier tegelijk.',
-      prose: `        <ol>
-          <li><strong>Een mens heeft het vrijgegeven.</strong> Een bericht gaat nooit vanzelf live,
-            ook niet als het technisch in orde is. De goedkeuring draagt een naam en een datum.</li>
-          <li><strong>Er is een dragende bron.</strong> Wetgeving, een toezichthouder, een netbeheerder
-            of een statistiekbureau. Een persbericht van een marktpartij is een belanghebbende en
-            telt op zichzelf niet als vaststelling &mdash; ook niet als wij die marktpartij zijn.</li>
-          <li><strong>Elk cijfer draagt zijn peildatum.</strong> Een bedrag, een percentage of een
-            vermogen zonder de datum waarop het is nagekeken veroudert onzichtbaar. Die datum staat
-            zichtbaar op de pagina, niet alleen in de broncode.</li>
-          <li><strong>Het bericht leent zijn onderwerp.</strong> Een nieuwsbericht claimt zelf geen
-            commercieel onderwerp; het verwijst naar de pagina die dat onderwerp behandelt. Zo blijft
-            duidelijk wat een ontwikkeling is en wat een propositie.</li>
-        </ol>`,
-      variant: 've-sec--paper ve-sec--line-y',
-    })
-  );
-
-  const onderwerpen = LEGE_STAAT_ONDERWERPEN.filter(([r]) => motor.isIndex(r));
   if (onderwerpen.length) {
     uit.push(
-      kaarten({
+      kaartsectie({
         id: 'onderwerpen',
-        kop: 'Waar dit kanaal over gaat',
+        kop: 'Waar we over schrijven',
         lead:
-          'De onderwerpen die we volgen. Elk bericht hoort straks bij een van deze pagina&rsquo;s, ' +
-          'die het onderwerp nu al behandelen.',
-        kaarten: onderwerpen.map(([r, tekst]) => ({
-          kop: esc(naamVan(r, r)),
-          tekst,
-          route: r,
-          label: 'Lees de achtergrond',
-        })),
+          'Binnenkort vindt u hier het laatste nieuws en praktische inzichten over de energiemarkt. ' +
+          'Tot die tijd vindt u per onderwerp de achtergrond die er nu al is.',
+        cellen: onderwerpen.map((o) =>
+          beeldkaart({
+            route: o.route,
+            label: o.label,
+            kop: o.kop,
+            tekst: esc(o.tekst),
+            voet: 'Lees de achtergrond &rarr;',
+            beeld: o.beeld,
+          })
+        ),
       })
     );
-    motor.tel(route, motor.filter(onderwerpen.map(([r]) => ({ route: r, naam: naamVan(r, r) }))));
+    motor.tel(route, motor.filter(onderwerpen.map((o) => ({ route: o.route, naam: o.kop }))));
   }
 
   return uit;
+}
+
+/* De kennisbanksectie staat op de hub in BEIDE toestanden: zonder bericht is
+   het de inhoud die er al wel is, met berichten de achtergrond eronder. */
+function kennisSectie(motor, route) {
+  const kennis = KENNIS_UITGELICHT.filter(([r]) => motor.isIndex(r));
+  if (!kennis.length) return '';
+  motor.tel(route, motor.filter(kennis.map(([r, naam]) => ({ route: r, naam }))));
+  motor.tel(route, motor.filter([{ route: 'kennis', naam: 'Kennisbank' }]));
+  return `  <section class="ve-sec ve-sec--lg ve-sec--paper ve-sec--line-y" id="kennisbank">
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">Uit de kennisbank</h2>
+        <p class="ve-lead">De begrippen en rekenregels achter het nieuws, los van de dag van vandaag.</p>
+      </div>
+      <div class="ve-cols ve-cols--2 ve-cols--gap-xl">
+${kennis
+  .map(
+    ([r, naam, tekst]) => `        <a class="ve-rail" href="${href(r)}">
+          <h3 class="ve-h4">${esc(naam)}</h3>
+          <p class="ve-body">${esc(tekst)}</p>
+        </a>`
+  )
+  .join('\n')}
+      </div>
+      <div class="ve-row" style="margin-top:var(--ve-s-xl)">
+        <a class="ve-btn ve-btn--ghost" href="${href('kennis')}">Naar de kennisbank${ic('pijl')}</a>
+      </div>
+    </div>
+  </section>`;
+}
+
+/* ------------------------------------------------------------ de berichten */
+const MAANDEN = [
+  'januari', 'februari', 'maart', 'april', 'mei', 'juni',
+  'juli', 'augustus', 'september', 'oktober', 'november', 'december',
+];
+
+/** 2026-10-10 -> '10 oktober 2026'. Onbekende vorm gaat ongewijzigd door. */
+function datumNl(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+  const maand = m ? MAANDEN[Number(m[2]) - 1] : null;
+  if (!m || !maand) return esc(String(iso || ''));
+  return `${Number(m[3])} ${maand} ${m[1]}`;
+}
+
+/**
+ * Het beeld bij een bericht. Een artikel mag er een dragen, maar hoeft niet:
+ * `kaartbeeld` wijst naar een set uit BEELDEN, `og_beeld` mag een los bestand
+ * onder /assets zijn. Bestaat het bestand niet, dan krijgt de kaart geen beeld.
+ * Er wordt nooit een plaatje van een ander onderwerp bijgezocht.
+ */
+function artikelBeeld(j, sizes, opties) {
+  if (j.kaartbeeld && BEELDEN[j.kaartbeeld]) return beeldHtml(j.kaartbeeld, sizes, opties);
+  const los = String(j.og_beeld || '');
+  const m = /^\/assets\/([a-z0-9._-]+\.(?:webp|jpg|png))$/i.exec(los);
+  if (!m || !existsSync(join(BEELDMAP, m[1]))) return '';
+  const alt = esc(j.beeld_alt || j.og_titel || j.h1 || '');
+  return `<img src="${los}" sizes="${sizes}" alt="${alt}" loading="lazy" decoding="async">`;
+}
+
+/** Een bericht als kaart in het raster.
+    `vlakAltijd` houdt de kaarthoogtes gelijk zodra ÉÉN bericht in het raster
+    een beeld draagt: een kaart zonder beeld krijgt dan het lege beeldvlak dat
+    /projecten ook gebruikt. Draagt geen enkel bericht een beeld, dan staat er
+    ook geen leeg vlak en is het gewoon een tekstraster. */
+function artikelkaart(a, categorie, id, vlakAltijd) {
+  return beeldkaart({
+    route: a.route,
+    label: categorie,
+    kop: a.j.og_titel || a.j.h1,
+    tekst: esc(a.j.beschrijving),
+    voet: `<time datetime="${esc(a.j.gepubliceerd)}">${datumNl(a.j.gepubliceerd)}</time> &middot; lees het bericht &rarr;`,
+    beeldHtml: artikelBeeld(a.j, KAART_SIZES),
+    id,
+    vlakAltijd,
+  });
+}
+
+/** Het uitgelichte bericht: het nieuwste, groot, boven het raster. */
+function uitgelichtBericht(a, categorie) {
+  const beeld = artikelBeeld(a.j, UITGELICHT_SIZES, { eager: true });
+  return `  <section class="ve-sec ve-sec--lg ve-sec--paper ve-sec--line-y" id="uitgelicht">
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">Uitgelicht</h2>
+      </div>
+      <div class="ve-split ve-split--7-5 ve-split--top">
+${
+  beeld
+    ? `        <a class="ve-media ve-media--16x9 ve-media--lijn" href="${href(a.route)}" tabindex="-1" aria-hidden="true">${beeld}</a>\n`
+    : ''
+}        <div>
+          <h3 class="ve-h2 nw-uit__t"><a href="${href(a.route)}">${esc(a.j.og_titel || a.j.h1)}</a></h3>
+          <p class="ve-lead" style="margin-top:var(--ve-s-md)">${esc(a.j.beschrijving)}</p>
+          <p class="ve-small" style="margin-top:var(--ve-s-md)">${esc(categorie)} &middot; <time datetime="${esc(
+    a.j.gepubliceerd
+  )}">${datumNl(a.j.gepubliceerd)}</time></p>
+          <div class="ve-row" style="margin-top:var(--ve-s-lg)">
+            <a class="ve-btn ve-btn--ghost" href="${href(a.route)}">Lees het bericht${ic('pijl')}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>`;
 }
 
 /* ============================================================== de hub */
@@ -359,90 +671,89 @@ function bouwHub({ gepubliceerd, motor, schrijf }) {
   motor.tel(route, indexItems);
 
   /* De lege staat. Het kanaal staat open voordat er een bericht is; zie
-     data/seo/nieuws-architectuur.json, _correctie_op_dit_contract_3. De pagina
-     draagt dan niet zijn lijst maar zijn NORM, en die is op dag nul al waar.
-     Nergens staat een verzonnen bericht, een aankondiging met een datum die we
-     niet kennen, of een cijfer zonder bron. */
+     data/seo/nieuws-architectuur.json, _correctie_op_dit_contract_3 (de
+     vrijgave) en _4 (de verhuizing van de redactienorm naar binnen). De pagina
+     draagt dan geen lijst maar de onderwerpen die het kanaal bestrijkt, elk
+     gelinkt aan de pagina die er nu al over gaat. Nergens staat een verzonnen
+     bericht, een beloofde datum of een cijfer zonder bron. */
   const leeg = !gepubliceerd.length;
+
+  /* De onderwerpenbalk onder de lead. Met berichten springt hij naar de groep
+     op deze pagina; zonder berichten gaat hij naar de pagina die het onderwerp
+     behandelt. In beide gevallen een werkende link, geen decor. */
+  const balk = leeg
+    ? gepubliceerdeOnderwerpen(motor).map((o) => ({ href: href(o.route), label: o.label }))
+    : groepen.map(([eigenaar, lijst]) => ({
+        href: `#onderwerp-${eigenaar.replace(/\//g, '-')}`,
+        label: `${naamVan(eigenaar, eigenaar)} (${lijst.length})`,
+      }));
 
   const secties = [
     opening({
       kruimels: [],
       kruimelLabel: 'Nieuws',
-      h1: 'Nieuws en marktontwikkelingen',
-      lead: leeg
-        ? 'Ontwikkelingen in netcongestie, nettarieven, regelgeving en subsidies die iets veranderen ' +
-          'aan de businesscase van een zakelijke energie-installatie. Er staan nog geen berichten op ' +
-          'deze pagina. Hieronder staat waar dit kanaal over gaat en onder welke voorwaarden een ' +
-          'bericht hier verschijnt.'
-        : 'Ontwikkelingen in netcongestie, tarieven, regelgeving en subsidies die iets veranderen aan ' +
-          'de businesscase van een zakelijke energie-installatie. Elk bericht noemt zijn bron en de ' +
-          'datum waarop die is geraadpleegd.',
+      h1: 'Nieuws & inzichten',
+      lead:
+        'Blijf op de hoogte van ontwikkelingen in energie, netcongestie, batterijopslag, ' +
+        'laadinfrastructuur en verduurzaming.',
+      naLead: onderwerpenbalk(balk),
     }),
   ];
 
   if (leeg) secties.push(...legeStaat(motor, route));
 
-  /* Een ankerlijst als er meer dan één onderwerp is. Dit zijn de categorieën,
-     zonder er eigen URL's van te maken. */
-  if (groepen.length > 1) {
-    const ankers = groepen
-      .map(([eigenaar, lijst]) => {
-        const naam = naamVan(eigenaar, eigenaar);
-        return `<a class="ve-link" href="#onderwerp-${esc(eigenaar.replace(/\//g, '-'))}">${esc(naam)} (${lijst.length})</a>`;
-      })
-      .join(' &middot; ');
-    secties.push(`  <section class="ve-sec ve-sec--tight ve-sec--paper ve-sec--line-y">
-    <div class="ve-wrap">
-      <p class="ve-small">Onderwerpen: ${ankers}</p>
-    </div>
-  </section>`);
+  /* Het uitgelichte bericht. Pas vanaf twee berichten: met één bericht zou de
+     pagina datzelfde bericht twee keer tonen. */
+  if (!leeg && alles.length > 1) {
+    const eigenaar = String(nieuwste.j.onderwerp_eigenaar || '').replace(/^\/+/, '');
+    secties.push(uitgelichtBericht(nieuwste, naamVan(eigenaar, eigenaar)));
   }
 
-  for (const [eigenaar, lijst] of groepen) {
-    const naam = naamVan(eigenaar, eigenaar);
-    const kaartjes = lijst.map((a) => ({
-      kop: esc(a.j.og_titel || a.j.h1),
-      tekst: `${esc(a.j.beschrijving)} <span class="ve-small">(${esc(a.j.gepubliceerd)})</span>`,
-      route: motor.isIndex(a.route) ? a.route : null,
-      label: motor.isIndex(a.route) ? 'Lees het bericht' : null,
-    }));
-    secties.push(
-      kaarten({
-        id: `onderwerp-${eigenaar.replace(/\//g, '-')}`,
-        kop: naam,
-        lead: motor.isIndex(eigenaar)
-          ? `Deze berichten horen bij <a class="ve-link" href="${href(eigenaar)}">${esc(naam)}</a>.`
-          : null,
-        kaarten: kaartjes,
-      })
-    );
+  /* DE BERICHTEN IN ÉÉN RASTER, nieuwste eerst.
+
+     WAAROM NIET EEN SECTIE PER CATEGORIE. Dat was de eerste vorm en hij is
+     gemeten: met één bericht per onderwerp levert hij drie koppen met elk één
+     kaart in een driekolomsraster op — twee lege kolommen per sectie. Precies
+     de lege vlakken die deze herontwerp moest wegnemen. Eén raster blijft bij
+     elk aantal berichten dicht, en de categorie staat op de kaart zelf als
+     label. De categorie-ankers uit de onderwerpenbalk hangen aan de EERSTE
+     kaart van elk onderwerp, zodat een chip naar het nieuwste bericht van dat
+     onderwerp springt.
+
+     Er komen geen eigen categorie-URL's: met enkele berichten per onderwerp
+     zou elke categoriepagina een dunne pagina zijn die de nationale pagina op
+     dezelfde term beconcurreert, en dat verbiedt het contract. */
+  if (!leeg) {
+    const gezien = new Set();
+    const linkbaar = alles.filter((a) => motor.isIndex(a.route));
+    const metBeeld = linkbaar.some((a) => artikelBeeld(a.j, KAART_SIZES) !== '');
+    const cellen = linkbaar.map((a) => {
+      const eigenaar = String(a.j.onderwerp_eigenaar || '').replace(/^\/+/, '');
+      const anker = eigenaar && !gezien.has(eigenaar) ? `onderwerp-${eigenaar.replace(/\//g, '-')}` : null;
+      if (eigenaar) gezien.add(eigenaar);
+      return artikelkaart(a, naamVan(eigenaar, eigenaar), anker, metBeeld);
+    });
+    if (cellen.length) {
+      secties.push(
+        kaartsectie({
+          id: 'berichten',
+          kop: alles.length === 1 ? 'Het laatste bericht' : 'Alle berichten',
+          cellen,
+        })
+      );
+    }
   }
 
-  const onderwerpItems = motor.filter(groepen.map(([e]) => ({ route: e, naam: naamVan(e, e) })));
-  motor.tel(route, onderwerpItems);
-
-  /* Bij nul berichten zijn beide groepen leeg en geeft verwant() een lege
-     string terug. Dan valt hij terug op de onderwerpen uit de lege staat, zodat
-     de pagina ook zonder bericht een crawlbare uitgang houdt en poort 8
-     (weespagina's) geen doodlopend eind vindt. */
-  const terugval = leeg
-    ? motor.filter(LEGE_STAAT_ONDERWERPEN.map(([r]) => ({ route: r, naam: naamVan(r, r) })))
-    : [];
-  secties.push(
-    verwant([
-      { kop: 'Alle berichten', items: indexItems },
-      { kop: 'Onderwerpen', items: leeg ? terugval : onderwerpItems },
-    ])
-  );
+  secties.push(kennisSectie(motor, route));
 
   secties.push(
     conversie({
       kop: 'Wat betekent dit voor uw locatie?',
       tekst:
-        'Marktontwikkelingen zeggen nog niets over uw aansluiting, uw verbruiksprofiel of uw ' +
-        'contract. In een adviesgesprek leggen we ze naast uw situatie.',
+        'Een marktontwikkeling zegt nog niets over uw aansluiting, uw verbruiksprofiel of uw contract. ' +
+        'In een adviesgesprek leggen we ze naast uw situatie.',
       primair: { route: 'contact', label: 'Plan een adviesgesprek' },
+      secundair: motor.isIndex('energieadvies') ? { route: 'energieadvies', label: 'Bekijk het energieadvies' } : null,
     })
   );
 
@@ -450,20 +761,21 @@ function bouwHub({ gepubliceerd, motor, schrijf }) {
     route,
     pagina({
       route,
-      titel: 'Nieuws en marktontwikkelingen | Vibe Energy',
+      titel: 'Nieuws & inzichten over de energiemarkt | Vibe Energy',
       /* De beschrijving belooft geen berichten zolang die er niet zijn. Een
          snippet die een lijst suggereert op een pagina zonder lijst is een
          valse belofte in het zoekresultaat. */
       beschrijving: leeg
-        ? 'Het nieuwskanaal van Vibe Energy over netcongestie, nettarieven, regelgeving en subsidies. ' +
-          'Nog geen berichten; hier staat wanneer er een verschijnt.'
-        : 'Ontwikkelingen in netcongestie, nettarieven, regelgeving en subsidies die de businesscase ' +
-          'van een zakelijke energie-installatie veranderen. Met bron en peildatum.',
-      ogTitel: 'Nieuws en marktontwikkelingen',
+        ? 'Nieuws en inzichten van Vibe Energy over netcongestie, batterijopslag, laadinfrastructuur ' +
+          'en verduurzaming. De eerste berichten verschijnen binnenkort.'
+        : 'Nieuws en inzichten van Vibe Energy over netcongestie, batterijopslag, laadinfrastructuur ' +
+          'en verduurzaming voor zakelijke locaties.',
+      ogTitel: 'Nieuws & inzichten',
       dataPagina: 'nieuws',
       kruimels: [],
       kruimelLabel: 'Nieuws',
       gewijzigd: nieuwste ? nieuwste.j.gewijzigd || nieuwste.j.gepubliceerd : undefined,
+      paginaCss: PAGINA_CSS,
       inhoud: secties.filter(Boolean).join('\n\n'),
     })
   );
@@ -501,8 +813,8 @@ export function bouwNieuws({ register, motor, schrijf }) {
   for (const a of gepubliceerd) bouwArtikel({ ...a, motor, schrijf, geo });
 
   /* Tot Release 3.3 was een INDEX-hub zonder artikel hier een FOUT. Dat is
-     herzien: de hub rendert nu ook leeg, met de redactienorm als inhoud. De
-     beslissing of de hub überhaupt op INDEX staat ligt niet hier maar in
+     herzien: de hub rendert nu ook leeg, met de onderwerpen en de kennisbank
+     als inhoud. De beslissing of de hub überhaupt op INDEX staat ligt niet hier maar in
      bouw-routes.mjs, dat daarvoor het publicatiebesluit leest. Deze functie
      voert dat besluit alleen uit. */
   const hubIsIndex = register.get(NIEUWS_WORTEL)?.staat === 'INDEX';
