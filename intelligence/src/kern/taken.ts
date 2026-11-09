@@ -738,19 +738,82 @@ export const REGISTER: Record<string, Handler> = {
    * verruimt.
    *
    * IDEMPOTENT ZONDER EXTRA BOEKHOUDING. maakConcept() zet de kandidaat
-   * op 'in_concept' (inhoud/concept.ts), en de werkvoorraad hieronder
-   * vraagt 'open'. Twee rondes achter elkaar leveren dus niet twee
-   * artikelen over dezelfde gebeurtenis.
+   * op 'in_concept' (inhoud/concept.ts regel 1074), en de werkvoorraad
+   * hieronder vraagt 'open'. Twee rondes achter elkaar leveren dus niet
+   * twee artikelen over dezelfde gebeurtenis — ook niet als het concept
+   * de poorten NIET haalde, want die status hangt niet aan de
+   * poortuitslag. Gemeten in zaak 9 van test/integratie/concepttaak.test.ts:
+   * een geblokkeerd concept levert in de tweede ronde geen tweede versie.
+   * Niets in src/ zet een kandidaat van 'in_concept' terug naar 'open';
+   * een herselectie vraagt dus een menselijke handeling.
    *
    * DE CLAIMPOORT STAAT VOORAAN, net als bij de besluitmotor en de
    * nieuwsselectie: zolang er claims op herbeoordeling wachten mag deze
    * laag niet bouwen, want dan rust het artikel op een populatie die nog
    * kan verschuiven.
+   *
+   * ------------------------------------------------------------------
+   * DE SELECTIE IS SMALLER DAN DIE VAN DE CLI, EN DAT IS DE REPARATIE.
+   * ------------------------------------------------------------------
+   * WAT ER GEMETEN IS. Plannerronde 714, 9 november 2026 09:04, de eerste
+   * productieronde waarin deze taak meedraaide:
+   *
+   *   kandidaten 3 van maximaal 3, poorten ok 0, geblokkeerd 3
+   *
+   * De drie versies (v3, v4, v5) stonden alle drie op hetzelfde pad
+   * /kennis/transportvermogen-versus-aansluitwaarde met versienummer 1,
+   * 2 en 3, alle drie geblokkeerd op 'kernclaim_heeft_bewijs'. Het
+   * rondebudget was op voordat er één nieuwsitem aan de beurt was.
+   *
+   * DAT WAS GEEN TOEVAL MAAR DE SOM VAN DRIE REGELS DIE ELK KLOPPEN:
+   *
+   *   1. deze werkvoorraad las de HELE lijst CONCEPTEERBARE_BESLUITEN,
+   *      dus ook UPDATE_EXISTING en KNOWLEDGE_UPDATE;
+   *   2. het pad van zo'n update IS het pad van zijn doelpagina
+   *      (inhoud/concept.ts regel 372-375), dus drie kandidaten die naar
+   *      dezelfde pagina wijzen leveren drie versies op één pad;
+   *   3. maakConcept() neemt `max(versie) + 1 where pad = $2` (regel
+   *      983-988), dus die drie krijgen versienummer 1, 2 en 3 in plaats
+   *      van elkaar te verdringen.
+   *
+   * WAAROM DE CONSTANTE BLIJFT EN DE SELECTIE SMALLER WORDT.
+   * CONCEPTEERBARE_BESLUITEN zegt wat deze module KAN bouwen, en dat is
+   * voor alle vijf besluiten waar. `npm run concept` (cli/concept.ts) is
+   * de menselijke weg en hoort die vijf te houden: een redacteur die een
+   * kennispagina wil bijwerken vraagt daar precies om.
+   *
+   * Deze TAAK staat ergens anders in de keten. Hij hangt op 38, vóór de
+   * beleidsgoedkeuring (70) en de autonome uitgifte, en die weg is voor
+   * NIEUWS: het publicatiebeleid, weigerNieuws() en het nieuwsregister
+   * eisen allemaal een nieuwspad. Een kennisupdate die hier langskomt kan
+   * dus nooit iets anders worden dan een ongelezen concept op review — en
+   * ondertussen bezet hij wel een plek van de drie. Daarom selecteert de
+   * taak uitsluitend NEWS_ITEM, en blijft de bredere lijst staan voor wie
+   * er met de hand om vraagt.
+   *
+   * DRIE SLEUTELS HOUDEN HET BUDGET EERLIJK, en ze staan in de SQL omdat
+   * de database ze alle drie kent:
+   *
+   *   * per GEBEURTENIS één kandidaat. Eén bronbesluit is één bericht;
+   *     een tweede kandidaat op dezelfde gebeurtenis zou een tweede versie
+   *     op hetzelfde pad opleveren — de signatuur van ronde 714.
+   *   * per DOELPAD één kandidaat. Bij een nieuwsbericht is dat pad
+   *     `/nieuws/<slug van de gebeurtenistitel>`, dus de titel IS de
+   *     padsleutel. Twee gebeurtenissen met dezelfde kop leveren dus geen
+   *     twee versies op één pad meer.
+   *   * per ONDERWERP ten hoogste MAX_PER_ONDERWERP. Het plafond van drie
+   *     blijft, maar één cluster mag het niet in zijn geheel opeten: er
+   *     blijft altijd minstens één plek over voor een tweede onderwerp.
+   *     Is er geen tweede onderwerp, dan blijft die plek deze ronde leeg
+   *     en komt de rest de volgende ronde — niet weg, wel later.
    */
   async concept(pool, organisatieId) {
     const { maakConcept, CONCEPTEERBARE_BESLUITEN } = await import("../inhoud/concept.ts");
     const { eisHerbeoordeling } = await import("../pijplijn/claimpoort.ts");
     const { metOrganisatie, rijen } = await import("./db.ts");
+    const { IntelFout } = await import("./fouten.ts");
+    const { maakLogger } = await import("./log.ts");
+    const log = maakLogger("taak:concept");
 
     const MAX_PER_RONDE = 3;
     /* EN EEN PLAFOND OP DE ONGELEZEN STAPEL.
@@ -762,6 +825,29 @@ export const REGISTER: Record<string, Handler> = {
        voor de HELE stapel, niet per ronde, en dat is het verschil
        tussen een wachtrij en een lawine. */
     const MAX_OPEN_CONCEPTEN = 10;
+    /* HET PLAFOND MINUS ÉÉN, en die aftrekking is de hele eerlijkheid:
+       hoe hoog MAX_PER_RONDE ook staat, er blijft altijd minstens één
+       plek over voor een ander onderwerp. Een vast getal zou bij een
+       verruiming van het rondebudget stil zijn werking verliezen. */
+    const MAX_PER_ONDERWERP = MAX_PER_RONDE - 1;
+
+    /* UITSLUITEND HET NIEUWSBESLUIT; zie de kop voor de gemeten ronde
+       waarom. */
+    const NIEUWSBESLUIT = "NEWS_ITEM";
+    /* EN DE BINDING MET DE CLI-LIJST BLIJFT GETOETST. Zou NEWS_ITEM ooit
+       uit CONCEPTEERBARE_BESLUITEN verdwijnen, dan kan maakConcept() het
+       besluit niet meer afbeelden en zou deze taak stil nul kandidaten
+       vinden — een nieuwskanaal dat zwijgt zonder reden. Een
+       configuratiefout is niet herhaalbaar: opnieuw proberen levert
+       hetzelfde op. */
+    if (!CONCEPTEERBARE_BESLUITEN.includes(NIEUWSBESLUIT)) {
+      throw new IntelFout(
+        "configuratie",
+        `${NIEUWSBESLUIT} staat niet in CONCEPTEERBARE_BESLUITEN; de nieuwsketen kan geen ` +
+          "concept bouwen",
+        { context: { besluiten: [...CONCEPTEERBARE_BESLUITEN] } },
+      );
+    }
 
     await metOrganisatie(pool, { organisatieId }, (c) =>
       eisHerbeoordeling(c, organisatieId, "de conceptgeneratie"),
@@ -784,24 +870,86 @@ export const REGISTER: Record<string, Handler> = {
       );
     }
 
-    /* DEZELFDE WERKVOORRAAD ALS DE CLI, en met opzet niet een eigen
-       variant: cli/concept.ts leest 'open' kandidaten met een
-       concepteerbaar besluit, op score af. Twee lijsten zouden twee
-       waarheden zijn over wat er te doen staat. */
+    /* DE WERKVOORRAAD VAN DE TAAK, EN NIET DIE VAN DE CLI.
+       Hier stond "dezelfde werkvoorraad als de CLI" met
+       `besluit = any(CONCEPTEERBARE_BESLUITEN)`. Dat las als netheid en
+       was de oorzaak van ronde 714: de taak pakte kennisupdates op een
+       plek in de keten waar ze niet verder kunnen komen. De CLI houdt
+       zijn brede lijst; deze taak selecteert het nieuwsbesluit.
+
+       DE JOIN MET DE GEBEURTENIS IS EEN INNER JOIN, en dat verkleint
+       niets wat werkt: maakConcept() joint intel.markt_gebeurtenissen
+       zelf ook hard (inhoud/concept.ts regel 775-777) en werpt
+       "kandidaat <n> bestaat niet" bij een kandidaat zonder gebeurtenis.
+       Zo'n rij hier overslaan is dus geen uitsluiting maar het voorkomen
+       van een taakfout — en de titel die eruit komt is de padsleutel.
+
+       DE DRIE VENSTERS. row_number() per gebeurtenis, per padsleutel en
+       per onderwerp, elk op dezelfde orde als de selectie zelf
+       (score af, dan id), zodat bij een botsing de HOOGST scorende
+       kandidaat de plek krijgt en niet een willekeurige.
+
+       DE PADSLEUTEL IS DE TITEL, EN NIET DE DOELPAGINA. Dat is geen
+       vereenvoudiging maar de regel van de soort die hier geselecteerd
+       wordt: een NEWS_ITEM wordt soort 'nieuw_artikel' en krijgt het pad
+       `/nieuws/<slug(gebeurtenistitel)>` (inhoud/concept.ts regel
+       372-375). `doel_pagina_id` stuurt dat pad NIET — dat doet het
+       alleen bij een pagina- of kennisupdate, en die komen hier niet
+       langs. Wie deze selectie ooit verbreedt moet de sleutel meeverbreden
+       naar coalesce(doel_pagina_id, titel), anders dedupliceert hij op het
+       verkeerde veld.
+
+       WAT DE SLEUTEL NIET DEKT. slug() kapt op 80 tekens af
+       (kern/tekst.ts regel 490-498), dus twee titels die pas ná teken 80
+       verschillen krijgen hetzelfde pad en toch een eigen sleutel. Daar is
+       deze query blind voor; de vangrail in de lus hieronder vangt dat
+       geval af. */
     const kandidaten = await metOrganisatie(pool, { organisatieId }, (c) =>
       rijen<{ id: number; besluit: string; totaalscore: number | null }>(
         c,
-        `select id, besluit, totaalscore
-           from intel.inhoud_kandidaten
-          where organisatie_id = $1
-            and status = 'open'
-            and besluit = any($3::text[])
+        `with werkvoorraad as (
+           select k.id,
+                  k.besluit,
+                  k.totaalscore,
+                  k.gebeurtenis_id,
+                  coalesce(k.onderwerp_cluster_id::text, 'g' || k.gebeurtenis_id::text)
+                    as onderwerp,
+                  lower(btrim(g.titel)) as padsleutel
+             from intel.inhoud_kandidaten k
+             join intel.markt_gebeurtenissen g on g.id = k.gebeurtenis_id
+            where k.organisatie_id = $1
+              and k.status = 'open'
+              and k.besluit = $3
+         ),
+         eerlijk as (
+           select w.*,
+                  row_number() over (
+                    partition by w.gebeurtenis_id
+                    order by w.totaalscore desc nulls last, w.id) as n_bron,
+                  row_number() over (
+                    partition by w.padsleutel
+                    order by w.totaalscore desc nulls last, w.id) as n_pad,
+                  row_number() over (
+                    partition by w.onderwerp
+                    order by w.totaalscore desc nulls last, w.id) as n_onderwerp
+             from werkvoorraad w
+         )
+         select id, besluit, totaalscore
+           from eerlijk
+          where n_bron = 1
+            and n_pad = 1
+            and n_onderwerp <= $4
           order by totaalscore desc nulls last, id
           limit $2`,
         /* NOOIT MEER DAN DE RUIMTE DIE ER IS. Staan er al acht
            concepten op review, dan haalt deze ronde er twee en niet
            drie. */
-        [organisatieId, Math.min(MAX_PER_RONDE, MAX_OPEN_CONCEPTEN - open), [...CONCEPTEERBARE_BESLUITEN]],
+        [
+          organisatieId,
+          Math.min(MAX_PER_RONDE, MAX_OPEN_CONCEPTEN - open),
+          NIEUWSBESLUIT,
+          MAX_PER_ONDERWERP,
+        ],
       ),
     );
 
@@ -810,6 +958,15 @@ export const REGISTER: Record<string, Handler> = {
     let poortenOk = 0;
     let geblokkeerd = 0;
     const regels: string[] = [];
+    /* DE VANGRAIL ACHTER DE SELECTIE. De query voorspelt het pad uit de
+       titel; het ECHTE pad komt pas uit bouwConcept(). Vallen twee
+       kandidaten alsnog op hetzelfde pad — twee titels die na teken 80
+       uiteenlopen — dan stopt de ronde daar in plaats van een stapel
+       versies op één pad te maken. De versie die de botsing aantoonde
+       blijft staan: inhoudsversies worden niet verwijderd, want het
+       publicatiebesluit eraan is het auditspoor. */
+    const padenDezeRonde = new Set<string>();
+    let padbotsing: string | null = null;
     for (const k of kandidaten) {
       /* EEN GEBLOKKEERD CONCEPT IS GEEN TAAKFOUT. De poorten zijn de
          meting; een concept dat ze niet haalt is een uitkomst die in
@@ -824,11 +981,21 @@ export const REGISTER: Record<string, Handler> = {
         `k${k.id}->v${r.inhoudVersieId} ${r.pad}` +
           (r.poortenGeslaagd ? " POORTEN OK" : ` GEBLOKKEERD(${r.blokkades.length})`),
       );
+      if (padenDezeRonde.has(r.pad)) {
+        padbotsing = r.pad;
+        log.waarschuwing("tweede concept op hetzelfde pad; ronde gestopt", {
+          pad: r.pad,
+          kandidaat: k.id,
+        });
+        break;
+      }
+      padenDezeRonde.add(r.pad);
     }
 
     return (
       `kandidaten ${kandidaten.length} van maximaal ${MAX_PER_RONDE}, ` +
-      `poorten ok ${poortenOk}, geblokkeerd ${geblokkeerd} — ${regels.join(" ;; ")}`
+      `poorten ok ${poortenOk}, geblokkeerd ${geblokkeerd} — ${regels.join(" ;; ")}` +
+      (padbotsing === null ? "" : ` — GESTOPT: tweede versie op ${padbotsing}`)
     );
   },
 

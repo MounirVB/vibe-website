@@ -85,6 +85,7 @@ import {
   type Fase,
 } from "../inhoud/actor.ts";
 import { publiceer } from "../inhoud/publiceer.ts";
+import { meldUitgifteStoring } from "./melden.ts";
 import { branchVoor } from "../publicatie/pr.ts";
 import { siteKennisUitArtefact } from "../site/routeregister.ts";
 import { slugVanPad } from "../site/nieuwsregister.ts";
@@ -163,6 +164,23 @@ export type UitgifteOpdracht = {
   readonly websiteVersie: string | null;
   /** De fase waarin deze versie nu staat; de uitvoerder gaat verder. */
   readonly fase: Fase | null;
+};
+
+/**
+ * De identiteit van de GitHub-run die een fase meldt.
+ *
+ * KOMT UITSLUITEND UIT HET ONDERTEKENDE OIDC-TOKEN (dashboard/oidc.ts),
+ * nooit uit het lichaam van het verzoek. Optioneel, omdat een LOKALE
+ * aanroeper — een toets, een CLI op de machine van de eigenaar — geen
+ * GitHub-run is. Over HTTP is hij er altijd: de machinepoort geeft hem
+ * door en kan dat niet overslaan.
+ */
+export type UitvoerderRun = {
+  readonly runId: string;
+  readonly runAttempt: string | null;
+  readonly repository: string;
+  readonly workflowRef: string;
+  readonly sha: string | null;
 };
 
 export type Geweigerd = {
@@ -769,8 +787,9 @@ async function eisFase(
   organisatieId: number,
   inhoudVersieId: number,
   doel: Fase,
+  run?: UitvoerderRun,
 ): Promise<Fase | null> {
-  const { fase } = await metOrganisatie(pool, { organisatieId }, (c) =>
+  const { fase, meting, blokkade } = await metOrganisatie(pool, { organisatieId }, (c) =>
     huidigeFase(c, organisatieId, inhoudVersieId),
   );
   const toegestaan = TOEGESTAAN[doel] ?? [];
@@ -787,7 +806,49 @@ async function eisFase(
         `${toegestaan.map((f) => f ?? "GEEN FASE").join(" of ")}`,
     );
   }
+
+  /* ---------- DE RUNBINDING ----------
+     EEN OPDRACHT HOORT BIJ DE RUN DIE HEM UITVOERT. Zonder deze
+     controle kon run B de fasen melden van werk dat run A had gedaan:
+     het token van B is echt, de fase-orde klopt, en toch is de melding
+     niet van de uitvoerder die het bestand schreef. Dat is precies het
+     gat dat "bind opdrachten aan de runidentiteit" moet dichten.
+
+     DE REGEL, EN WAAROM HIJ NIET STRENGER IS. De melder moet dezelfde
+     run zijn als die van de VORIGE fase. Maar een keten kan stranden —
+     GitHub geeft 502, de runner valt om — en dan moet een LATERE run
+     hem kunnen hervatten; anders zou één netwerkfout een artikel voor
+     altijd halverwege laten staan. Een officiële stranding staat in het
+     logboek als een GEBLOKKEERD-regel ná de laatste voortgang, en dan
+     mag een andere run het overnemen.
+
+     Een LOKALE aanroeper (toets, CLI) geeft geen run mee en wordt niet
+     gebonden; die zit niet achter de machinepoort. */
+  if (run !== undefined && meting !== null) {
+    const vorigeRun = typeof meting["runId"] === "string" ? (meting["runId"] as string) : null;
+    if (vorigeRun !== null && vorigeRun !== run.runId && blokkade === null) {
+      throw new IntelFout(
+        "autorisatie",
+        `fase ${fase ?? "GEEN FASE"} is gemeld door run ${vorigeRun} en deze melding komt van run ` +
+          `${run.runId}. Een andere run mag een lopende keten niet overnemen; dat mag pas nadat ` +
+          `de keten officieel is gestrand (een GEBLOKKEERD-regel)`,
+      );
+    }
+  }
   return fase;
+}
+
+/** De runidentiteit zoals hij in het logboek belandt. */
+function runMeting(run?: UitvoerderRun): Record<string, unknown> {
+  if (run === undefined) return { gemetenDoor: "lokaal" };
+  return {
+    gemetenDoor: "uitvoerder",
+    runId: run.runId,
+    runAttempt: run.runAttempt,
+    repository: run.repository,
+    workflowRef: run.workflowRef,
+    runSha: run.sha,
+  };
 }
 
 /**
@@ -802,10 +863,15 @@ export async function aanvaardRecord(
   pool: Pool,
   organisatieId: number,
   inhoudVersieId: number,
-  bewijs: { readonly recordHash: string; readonly waar: string; readonly beleidVersie: string },
+  bewijs: {
+    readonly recordHash: string;
+    readonly waar: string;
+    readonly beleidVersie: string;
+    readonly run?: UitvoerderRun;
+  },
   opties: { readonly intelligenceWortel?: string } = {},
 ): Promise<{ ok: boolean; reden: string; publicatieId: number | null }> {
-  const huidig = await eisFase(pool, organisatieId, inhoudVersieId, "RECORD_GESCHREVEN");
+  const huidig = await eisFase(pool, organisatieId, inhoudVersieId, "RECORD_GESCHREVEN", bewijs.run);
   if (huidig === "RECORD_GESCHREVEN") {
     return { ok: true, reden: "deze fase stond al in het logboek", publicatieId: null };
   }
@@ -815,6 +881,10 @@ export async function aanvaardRecord(
     actor: systeemActor("uitgifte:record", { beleidVersie: bewijs.beleidVersie }),
     siteKennis: kennis,
     recordVanUitvoerder: { hash: bewijs.recordHash, waar: bewijs.waar },
+    /* DE RUN IN DE MEETWAARDEN VAN DEZE FASE. Hij is de ANKER voor de
+       binding: elke volgende fase moet van dezelfde run komen, tenzij
+       de keten officieel is gestrand. */
+    metingExtra: runMeting(bewijs.run),
   });
   return {
     ok: rapport.publicatieId !== null,
@@ -834,9 +904,10 @@ export async function aanvaardPr(
     readonly prNummer: number | null;
     readonly prUrl: string | null;
     readonly beleidVersie: string;
+    readonly run?: UitvoerderRun;
   },
 ): Promise<{ ok: boolean; reden: string }> {
-  const huidig = await eisFase(pool, organisatieId, inhoudVersieId, "PR_AANGEMAAKT");
+  const huidig = await eisFase(pool, organisatieId, inhoudVersieId, "PR_AANGEMAAKT", bewijs.run);
   if (huidig === "PR_AANGEMAAKT") return { ok: true, reden: "deze fase stond al in het logboek" };
 
   if (!/^[0-9a-f]{7,40}$/.test(bewijs.commit)) {
@@ -862,7 +933,7 @@ export async function aanvaardPr(
         commit: bewijs.commit,
         prNummer: bewijs.prNummer,
         prUrl: bewijs.prUrl,
-        gemetenDoor: "uitvoerder",
+        ...runMeting(bewijs.run),
       },
     });
     await legPublicatieAuditVast(c, {
@@ -887,9 +958,10 @@ export async function aanvaardMerge(
     readonly mergeCommit: string;
     readonly checksGroen: readonly string[];
     readonly beleidVersie: string;
+    readonly run?: UitvoerderRun;
   },
 ): Promise<{ ok: boolean; reden: string }> {
-  const huidig = await eisFase(pool, organisatieId, inhoudVersieId, "PR_GEMERGED");
+  const huidig = await eisFase(pool, organisatieId, inhoudVersieId, "PR_GEMERGED", bewijs.run);
   if (huidig === "PR_GEMERGED") return { ok: true, reden: "deze fase stond al in het logboek" };
 
   if (!/^[0-9a-f]{7,40}$/.test(bewijs.mergeCommit)) {
@@ -923,7 +995,7 @@ export async function aanvaardMerge(
       meting: {
         mergeCommit: bewijs.mergeCommit,
         checksGroen: bewijs.checksGroen,
-        gemetenDoor: "uitvoerder",
+        ...runMeting(bewijs.run),
       },
     });
     await legPublicatieAuditVast(c, {
@@ -958,10 +1030,11 @@ export async function verifieerUitgifteLive(
   bewijs: {
     readonly gemergedVolgensUitvoerder: boolean;
     readonly beleidVersie: string;
+    readonly run?: UitvoerderRun;
   },
   opties: { readonly haal?: import("../publicatie/verificatie.ts").Haler } = {},
 ): Promise<{ ok: boolean; reden: string; grendels: readonly { naam: string; ok: boolean; meting: string }[] }> {
-  const huidig = await eisFase(pool, organisatieId, inhoudVersieId, "LIVE_GEVERIFIEERD");
+  const huidig = await eisFase(pool, organisatieId, inhoudVersieId, "LIVE_GEVERIFIEERD", bewijs.run);
   if (huidig === "LIVE_GEVERIFIEERD") {
     return { ok: true, reden: "deze fase stond al in het logboek", grendels: [] };
   }
@@ -1005,12 +1078,27 @@ export async function verifieerUitgifteLive(
  * halve publicatie te herstellen is, hangt af van de fase waarin hij
  * strandde, en dat oordeel hoort niet in een foutmelding thuis. Het
  * dashboard toont de fase, zodat een mens ziet waar hij staat.
+ *
+ * EN SINDS V1.1 GAAT ER OOK IETS DE DEUR UIT. Deze functie heette al
+ * 'melden' terwijl ze uitsluitend REGISTREERDE; een mislukte uitgifte
+ * bereikte niemand. meldUitgifteStoring() uit uitgifte/melden.ts doet
+ * dat deel, en de aanroep staat hier bewust NA de commit van de twee
+ * regels hierboven: het meldpad vraagt een eigen verbinding, en bij een
+ * volle pool zou het binnen de transactie op zijn connectiontimeout
+ * wachten. Hij werpt nooit en de uitkomst is alleen een logregel — een
+ * kapotte ontvanger mag het auditspoor niet beschadigen, want dat spoor
+ * is het enige dat straks nog bewijst wat er is gebeurd.
  */
 export async function meldUitgifteFout(
   pool: Pool,
   organisatieId: number,
   inhoudVersieId: number,
-  bewijs: { readonly stap: string; readonly fout: string; readonly beleidVersie: string },
+  bewijs: {
+    readonly stap: string;
+    readonly fout: string;
+    readonly beleidVersie: string;
+    readonly run?: UitvoerderRun;
+  },
 ): Promise<void> {
   const actor = systeemActor("uitgifte:stop", { beleidVersie: bewijs.beleidVersie });
   const { fase } = await metOrganisatie(pool, { organisatieId }, (c) =>
@@ -1024,7 +1112,7 @@ export async function meldUitgifteFout(
       fase: "GEBLOKKEERD",
       actor,
       motivatie: `de uitgifte strandde bij '${bewijs.stap}': ${bewijs.fout.slice(0, 500)}`,
-      meting: { stap: bewijs.stap, faseVoorFout: fase, gemetenDoor: "uitvoerder" },
+      meting: { stap: bewijs.stap, faseVoorFout: fase, ...runMeting(bewijs.run) },
     });
     await legPublicatieAuditVast(c, {
       organisatieId,
@@ -1036,11 +1124,22 @@ export async function meldUitgifteFout(
       herkomst: "uitvoerder",
     });
   });
+  const aflevering = await meldUitgifteStoring(pool, organisatieId, {
+    inhoudVersieId,
+    stap: bewijs.stap,
+    fout: bewijs.fout,
+    beleidVersie: bewijs.beleidVersie,
+  });
   log.waarschuwing("uitgifte mislukt", {
     versie: inhoudVersieId,
     stap: bewijs.stap,
     fase,
     fout: bewijs.fout.slice(0, 200),
+    /* AFGELEVERD IS EEN EIGEN MEETWAARDE, geen bijzaak: 'de melding
+       staat open' en 'iemand heeft hem gezien' zijn twee dingen. */
+    meldkanaal: aflevering.kanaal,
+    meldingAfgeleverd: aflevering.afgeleverd,
+    meldreden: aflevering.reden,
   });
 }
 

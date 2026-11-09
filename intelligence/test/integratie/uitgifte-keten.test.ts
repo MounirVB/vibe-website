@@ -872,6 +872,56 @@ describe("de autonome uitgifte", () => {
     assert.equal(uit.opdrachten.length, 0, "en dan is de wachtrij leeg");
   });
 
+  test("2c · een mislukking opent een melding, en een lege bestemming breekt niets", async () => {
+    /* WAT HIER WORDT BEWEZEN — §4 van V1.1. meldUitgifteFout() heette
+       al 'melden' terwijl hij uitsluitend REGISTREERDE; een mislukte
+       uitgifte bereikte niemand. Deze zaak toetst de NAAD tussen de
+       uitgifte en uitgifte/melden.ts, niet het meldpad zelf (dat doet
+       test/integratie/uitgifte-melden.test.ts met een geïnjecteerd
+       afleverpad).
+
+       DRIE BEWERINGEN IN ÉÉN ZAAK, want ze horen bij elkaar:
+       (1) de melding staat in intel.meldingen met groep 'uitgifte' en
+           een ernst — zonder ernst is hij ook voor het mailkanaal
+           onzichtbaar (ops/meldmail.ts selecteert op ernst is not null);
+       (2) er is in deze omgeving GEEN bestemming gezet en het netwerk
+           staat uit, dus er wordt niets afgeleverd — en juist dan mag
+           de keten niet omvallen;
+       (3) het auditspoor staat er ONDANKS dat, want dat spoor is het
+           enige dat later nog bewijst wat er is gebeurd. */
+    const beleid = await zetBeleid();
+    const { versieId } = await maakVersie();
+    await meldUitgifteFout(db.pool, org, versieId, {
+      stap: "naadproef",
+      fout: "de uitvoerder meldde exit 1",
+      beleidVersie: beleid,
+    });
+
+    const melding = await metOrganisatie(db.pool, { organisatieId: org }, async (c) => {
+      const r = await c.query<{ sleutel: string; ernst: string | null; bezorgd_op: Date | null }>(
+        `select sleutel, ernst, bezorgd_op from intel.meldingen
+          where organisatie_id = $1 and groep = 'uitgifte' and gesloten_op is null
+          order by id desc limit 1`,
+        [org],
+      );
+      return r.rows[0] ?? null;
+    });
+    assert.ok(melding, "een gestrande uitgifte hoort een open melding achter te laten");
+    assert.equal(melding.sleutel, "uitgifte/naadproef", "de sleutel draagt de stap");
+    assert.ok(melding.ernst, "zonder ernst ziet het mailkanaal de melding niet");
+    assert.equal(melding.bezorgd_op, null, "zonder bestemming is er niets afgeleverd");
+
+    const besluiten = await metOrganisatie(db.pool, { organisatieId: org }, async (c) => {
+      const r = await c.query<{ fase: string }>(
+        `select poortresultaten->>'fase' as fase from intel.publicatiebesluiten
+          where organisatie_id = $1 and inhoud_versie_id = $2 order by id desc limit 1`,
+        [org, versieId],
+      );
+      return r.rows.map((x) => x.fase);
+    });
+    assert.deepEqual(besluiten, ["GEBLOKKEERD"], "en het auditspoor staat er ondanks de lege bestemming");
+  });
+
   test("10 · een BIJNA identiek artikel wordt door de generator tegengehouden", async () => {
     /* WAT HIER WORDT BEWEZEN. §1 van de opdracht eist dat het platform
        geen dubbele of vrijwel identieke artikelen publiceert.

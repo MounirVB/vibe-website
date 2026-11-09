@@ -59,7 +59,7 @@ hangt in een Railway-privénet zonder publieke poort, en dat blijft zo.
 |---|---|---|---|
 | 1 | **gebeurtenis** | de collector (`npm run collector`), daarna de pijplijn | een rij in de gebeurtenissenlaag met bron en ophaalmoment |
 | 2 | **kandidaat** | taak `nieuwsselectie` (prioriteit 35) | een `NEWS_ITEM`-kandidaat met een nieuwswaardescore |
-| 3 | **concept** | taak `concept` (prioriteit 38) | een inhoudsversie met status `in_concept`, de poortuitslag en een inhoudsafdruk |
+| 3 | **concept** | taak `concept` (prioriteit 38), **uitsluitend `NEWS_ITEM`** | een inhoudsversie met status `in_concept`, de poortuitslag en een inhoudsafdruk |
 | 4 | **poorten** | `concept.ts` / `publiceer()` | `poorten_geslaagd`, `blokkades[]`, de bewijshertoets |
 | 5 | **beleidsgoedkeuring** | taak `publiceren` (prioriteit 70) | status `goedgekeurd`, `goedkeuring_soort = 'beleid'`, `goedgekeurde_afdruk`, fase `GOEDGEKEURD` in `publicatiebesluiten` |
 | 6 | **uitgifteopdracht** | de SERVER, `maakUitgifteWachtrij()` | **niets** — deze stap schrijft met opzet niet; een opdracht die onderweg verloren gaat, mag geen spoor achterlaten |
@@ -70,6 +70,29 @@ hangt in een Railway-privénet zonder publieke poort, en dat blijft zo.
 | 11 | **merge** | de UITVOERDER, via de API; GitHub mag weigeren | fase `PR_GEMERGED` met de mergecommit en de namen van de groene checks |
 | 12 | **deploy** | Railway, op een push naar `main` | geen databaseregel; `/machine/stand` meldt de nieuwe `RAILWAY_GIT_COMMIT_SHA` |
 | 13 | **live-verificatie** | de **SERVER**, met vier eigen HTTP-metingen | fase `LIVE_GEVERIFIEERD` met HTTP-status, canonical, kop en sitemap |
+
+**Stap 3 verwerkt sinds V1.1 alleen nog NEWS_ITEM, en dat is een
+reparatie en geen versmalling uit netheid.** De werkvoorraad van de taak
+selecteerde op alle vier de besluitsoorten en wierp niets weg op
+doelpad. Drie kennisvoorstellen naar dezelfde doelpagina vulden daarmee
+de drie plekken van een ronde — `concept.ts` geeft een `pagina_update`
+het pad van de DOELPAGINA, en het versienummer loopt per pad op, dus ze
+verdrongen elkaar niet maar stapelden tot v1, v2 en v3, alle drie
+geblokkeerd. De nieuwsketen kwam niet aan de beurt, en een geblokkeerde
+versie is niet te verwijderen: de applicatierol heeft geen `delete` op
+`intel.inhoud_versies`. Voorkomen moet dus in de SELECTIE gebeuren.
+
+Daar staan nu drie eerlijkheidssleutels: één concept per gebeurtenis, één
+per padsleutel (de genormaliseerde TITEL — een `NEWS_ITEM` wordt
+`nieuw_artikel` en krijgt `/nieuws/<slug(titel)>`; `doel_pagina_id` stuurt
+dat pad niet) en ten hoogste twee van de drie plekken per onderwerp.
+Achter die voorspelling zit een vangrail: het echte pad komt pas uit
+`bouwConcept()`, dus bij een tweede versie op hetzelfde pad stopt de
+ronde en zegt dat in de uitkomstregel. Gevolg voor wie het leest:
+`UPDATE_EXISTING`, `KNOWLEDGE_UPDATE`, `NEW_ARTICLE` en `REGIONAL_PATCH`
+hebben geen geplande route meer — alleen `npm run concept`, de menselijke
+weg. Een cadans voor die kennisstroom is een eigen taak met een eigen
+budget, niet een verruiming van deze.
 
 Twee dingen aan deze tabel zijn het hele ontwerp.
 
@@ -143,7 +166,56 @@ Migratie 0057 legde op `publicatiebesluiten` vast dat `'mens'` nooit
 zonder gebruikers-id wordt geschreven; 0058 bracht diezelfde grendel naar
 `audit_gebeurtenissen` (`audit_mens_heeft_account`).
 
-**De machinesleutel.** `INTEL_MACHINE_SLEUTEL`, minimaal 32 tekens
+**De identiteit van de uitvoerder: GitHub ondertekent zelf.** Een
+werkstroom met `permissions: id-token: write` vraagt bij GitHub een JWT
+op met de repository, het werkstroompad, de run-id, de poging, de
+commit, de ref, de actor en het event erin. `dashboard/oidc.ts` doet
+acht controles, en elk punt staat er om één weg af te sluiten:
+
+| | controle | wat het afsluit |
+|---|---|---|
+| 1 | de vorm: drie delen, base64url | rommel komt niet verder dan de voordeur |
+| 2 | alleen `RS256` | `alg: none` en elke HMAC-variant — de klassieke aanval waarbij de aanroeper het algoritme kiest en de server hem gelooft. Bij HS256 is de PUBLIEKE sleutel het "geheim", en die is openbaar |
+| 3 | de sleutel op `kid` uit de JWKS van GitHub | een token ondertekend met een sleutel die GitHub niet heeft. Bij een onbekende `kid` wordt de cache één keer weggegooid, zodat een sleutelrotatie geen storing geeft |
+| 4 | de ondertekening, RSA-SHA256 over kop en lading | alles; dit is het enige punt dat niet te omzeilen is door iets anders mee te sturen |
+| 5 | de uitgever, letterlijk | een token van een andere uitgever |
+| 6 | het publiek (`aud`), letterlijk — **en ook als `aud` een lijst is** | een token dat GitHub voor een ÁNDERE dienst heeft uitgegeven. GitHub geeft dat token aan elke werkstroom die erom vraagt, dus zonder deze controle is elke andere werkstroom hier welkom. Een verificatie die alleen de stringvorm kent, toetst bij een lijst stilletjes niets |
+| 7 | `exp`, `nbf`, `iat`, 60s klokmarge en een EIGEN maximumleeftijd van 600s | een onderschept token dat nog een kwartier bruikbaar blijft. De werkstroom vraagt zijn token per aanroep op, dus hij heeft die ruimte niet nodig |
+| 8 | repository, werkstroompad, ref en event tegen de allowlist | een andere repository, een andere werkstroom in dezelfde repository, een kopie van de werkstroom op een eigen branch, en elk ander event dan `schedule` of `workflow_dispatch` — een `pull_request`-run van een fork komt er dus niet langs |
+
+**Drie dingen die cryptografie niet kan zien, en waar ze staan.**
+
+*Eenmaligheid.* Een onderschept token is ECHT; de ondertekening klopt.
+Alleen een geheugen van wat al is gebruikt houdt hem tegen. De `jti` is
+de primaire sleutel van `intel.machine_tokens` (migratie 0059), dus een
+herhaling botst op de database en niet op een controle die iemand kan
+vergeten — en dat werkt ook met twee instanties van de dienst, waar een
+Map in het proces niets zou betekenen. Verlopen rijen worden bij elke
+verificatie opgeruimd. Het token zelf komt er nooit in: een tabel met
+JWT's is een tabel met credentials, en die komt in elke back-up terecht.
+
+*Runbinding.* Een fase mag alleen worden gemeld door de run die de
+VORIGE fase deed. Zonder die regel kon run B de fasen melden van werk
+dat run A had gedaan: het token van B is echt en de fase-orde klopt. De
+regel is niet strenger dan nodig — een keten die officieel is gestrand
+(een `GEBLOKKEERD`-regel in het logboek) mag door een andere run worden
+hervat, anders zou één 502 van GitHub een artikel voor altijd halverwege
+laten staan.
+
+*De run komt uit het TOKEN.* Een veld `run_id`, `repository` of
+`organisatieId` in het lichaam van het verzoek doet niets. Dat is het
+verschil tussen een bewijs en een bewering.
+
+**Er is geen servergeheim meer.** Alleen de allowlist uit paragraaf 5.1.
+Een geheim dat niet bestaat, kan niet lekken — en de eigenaar hoeft er
+dus ook geen aan te maken of te rouleren.
+
+**De identiteit van de uitvoerder.** Sinds V1.1 een GitHub-OIDC-token in
+plaats van een statisch geheim; zie paragraaf 5.1 en
+`intelligence/src/dashboard/oidc.ts`. De oude tekst hieronder staat er
+nog omdat hij uitlegt waarom een geheim alléén niet volstond.
+
+**De machinesleutel (V1, VERVALLEN).** `INTEL_MACHINE_SLEUTEL`, minimaal 32 tekens
 (`MIN_SLEUTELLENGTE` in `machine.ts`). Niet gezet of te kort: elke route
 antwoordt `503` en er is geen uitgifte. De vergelijking is in constante
 tijd (`timingSafeEqual`), want een string-vergelijking lekt via de
@@ -243,45 +315,67 @@ inhoud_afdruk` — anders is de tekst na de goedkeuring veranderd.
 
 ### 5.1 Railway — service `vibe-intel-api`
 
-| naam | waarde | minimale rol | nodig voor |
-|---|---|---|---|
-| `INTEL_MACHINE_SLEUTEL` | ≥ 32 tekens, gegenereerd, **nergens anders gebruikt** | alleen deze service | de machinepoort; zonder deze variabele antwoordt `/machine/*` met `503` en is er geen uitgifte |
+**Er is sinds V1.1 geen servergeheim meer.** De machinepoort hing in V1
+aan `INTEL_MACHINE_SLEUTEL`, een statisch bearer-token. Dat bewees dat
+de aanroeper een string kende en verder niets — niet welke repository,
+niet welke werkstroom, niet welke run — en het bleef geldig tot iemand
+hem rouleerde. Nu ondertekent **GitHub zelf** een OIDC-token met al die
+gegevens erin, en de server verifieert dat tegen de publieke sleutels
+van GitHub. Wat de server nodig heeft is dus geen geheim maar een
+**allowlist**:
 
-Deze variabele is **nieuw** en staat niet in `deploy/railway.md`. Alle
-andere variabelen van die service (`INTEL_OMGEVING`, `INTEL_DB_URL`,
-`INTEL_DB_APP_ROL`, `INTEL_DB_ONDERHOUD_ROL`, `INTEL_ORGANISATIE`,
-`INTEL_SITE_BASIS_URL`, `INTEL_NETWERK_TOEGESTAAN`, `INTEL_LOG_NIVEAU`,
-`INTEL_SESSIE_GEHEIM`, `INTEL_DASHBOARD_POORT`, `INTEL_DASHBOARD_BIND`,
+| naam | waarde | nodig voor |
+|---|---|---|
+| `INTEL_OIDC_AUDIENCE` | `vibe-intel-uitgifte` (of een eigen reeks; moet gelijk zijn aan de GitHub-variabele) | het publiek waarvoor het token is uitgegeven; zonder deze controle is een token dat voor een ÁNDERE dienst is uitgegeven hier ook geldig |
+| `INTEL_UITGIFTE_REPOSITORY` | `MounirVB/vibe-website` | alleen deze repository mag terugmelden |
+| `INTEL_UITGIFTE_WORKFLOW` | `.github/workflows/uitgifte.yml` | alleen deze werkstroom, niet een andere in dezelfde repository |
+| `INTEL_UITGIFTE_REF` | optioneel; standaard `refs/heads/main` | alleen op deze branch; zonder dit zou een kopie van de werkstroom op een eigen branch mogen melden |
+
+Ontbreekt één van de eerste drie, dan antwoordt `/machine/*` met `503`
+en is er geen uitgifte. Dat is dezelfde fail-closed regel als V1 had,
+nu zonder een geheim dat kan lekken.
+
+Zet ze **niet** op `vibe-intel-worker` of `vibe-intel-planner`: daar
+draait geen HTTP-server. Alle andere variabelen van `vibe-intel-api`
+(`INTEL_OMGEVING`, `INTEL_DB_URL`, `INTEL_DB_APP_ROL`,
+`INTEL_DB_ONDERHOUD_ROL`, `INTEL_ORGANISATIE`, `INTEL_SITE_BASIS_URL`,
+`INTEL_NETWERK_TOEGESTAAN`, `INTEL_LOG_NIVEAU`, `INTEL_SESSIE_GEHEIM`,
+`INTEL_DASHBOARD_POORT`, `INTEL_DASHBOARD_BIND`,
 `INTEL_DASHBOARD_ACHTER_TLS_PROXY`) blijven zoals ze zijn; zie
 `deploy/railway.md` §3.
 
-Zet hem **niet** op `vibe-intel-worker` of `vibe-intel-planner`: daar
-draait geen HTTP-server, dus de sleutel zou daar alleen een extra plek
-zijn waar hij kan weglekken.
+**LET OP: de server moet `token.actions.githubusercontent.com` kunnen
+bereiken** om de publieke sleutels (JWKS) van GitHub op te halen. Die
+worden tien minuten gecached en bij een onbekende `kid` één keer
+opnieuw gehaald, zodat een sleutelrotatie bij GitHub geen storing geeft.
 
 **Controleren** (toont namen, geen waarden):
 
 ```bash
-railway variables -s vibe-intel-api --json | jq -r 'keys[]' | grep MACHINE
+railway variables -s vibe-intel-api --json | jq -r 'keys[]' | grep -E 'OIDC|UITGIFTE'
 ```
 
-**Controleren dat de poort leeft** — vanaf een machine met de sleutel,
-tegen het servicedomein van `vibe-intel-api`:
+**Controleren dat de poort fail-closed staat** — dit kan van elke
+machine, want er is geen geheim voor nodig:
 
 ```bash
-curl -sS -H "Authorization: Bearer $INTEL_MACHINE_SLEUTEL" \
-  "$INTEL_API_BASIS/machine/stand" | jq .
-# verwacht: {"sha":"<40 hex>","omgeving":"productie","dienst":"vibe-intel-api","op":"..."}
-# 503 = sleutel niet gezet of < 32 tekens
-# 401 = sleutel klopt niet
+curl -sS "$INTEL_API_BASIS/machine/stand" | jq .
+# zonder allowlist: 503 en de drie variabelenamen in de fout
+# met allowlist, zonder token: 401 "geen Bearer-token"
+# een verzonnen token: 401, met de reden erbij
 ```
+
+Een geldige meting van `/machine/stand` kan **alleen uit een
+GitHub-run** komen: het token moet door GitHub zijn ondertekend. Dat is
+precies de bedoeling — er is geen credential meer die een mens kan
+dragen.
 
 ### 5.2 GitHub — secrets op `MounirVB/vibe-website`
 
 | naam | soort | inhoud | minimale rechten |
 |---|---|---|---|
 | `UITGIFTE_TOKEN` | repository secret | een fine-grained personal access token, **alleen** op `MounirVB/vibe-website` | `Contents: Read and write` (pushen en een branch verwijderen), `Pull requests: Read and write` (PR openen en mergen), `Checks: Read` (de conclusie van de drie vereiste checks lezen), en `Metadata: Read` dat GitHub altijd verplicht meegeeft. **Geen** Actions, **geen** Secrets, **geen** Administration, **geen** Workflows. |
-| `INTEL_MACHINE_SLEUTEL` | repository secret | dezelfde waarde als in Railway | — |
+| `INTEL_OIDC_AUDIENCE` | repository **variabele** (geen secret) | dezelfde waarde als in Railway; standaard `vibe-intel-uitgifte` | het is geen geheim: het token is alleen geldig mét de ondertekening van GitHub |
 | `INTEL_API_BASIS` | repository secret (of variable) | de basis-URL van `vibe-intel-api`, **zonder** afsluitende slash, bijvoorbeeld `https://<servicedomein>` | — |
 
 **Waarom `Checks: Read` erbij hoort.** De server weigert een
@@ -325,9 +419,20 @@ gh variable list --repo MounirVB/vibe-website
 | migratie 0058 toegepast | nodig; de kolom `auto_uitgifte_aan` bestaat anders niet | `npm run migreer`, daarna `npm run migreer -- --droog` voor drift 0 |
 | `auto_publiceren_aan` | **false** (standaard) | `intel.publicatiebeleid` |
 | `auto_uitgifte_aan` | **false** (standaard, migratie 0058) | `intel.publicatiebeleid` |
+| migratie 0059 toegepast | nodig voor de machinepoort; zonder `intel.machine_tokens` weigert elke aanroep | `npm run migreer` |
 
 Deze twee kolommen zijn de enige echte aan/uit van de hele keten. Er is
 geen pad in de code dat ze zelf aanzet.
+
+**Migratie 0059 is additief en bevat geen inhoud.** Eén tabel,
+`intel.machine_tokens`, met de `jti` van een gebruikt OIDC-token als
+primaire sleutel; dat is de herhaalbescherming uit paragraaf 3. Het token
+ZELF komt er nooit in — een tabel met JWT's is een tabel met credentials,
+en die belandt in elke back-up. RLS staat aan met een policy op
+`app.organisatie_id`, en de rol krijgt `select, insert, delete` maar
+bewust GEEN `update`: een gebruikt bewijs mag niet worden teruggedraaid.
+Verlopen rijen worden bij elke verificatie opgeruimd, dus de tabel groeit
+niet mee met het aantal runs.
 
 ### 5.5 Wat NIET gezet wordt, bewust
 
@@ -367,7 +472,7 @@ niets.
 
 ### Stap 1 — de machinepoort aanzetten (nog geen publicatie mogelijk)
 
-1. `INTEL_MACHINE_SLEUTEL` op `vibe-intel-api` zetten (paragraaf 5.1).
+1. De drie allowlistvariabelen op `vibe-intel-api` zetten (paragraaf 5.1). Er is géén geheim om te genereren.
 2. Dezelfde waarde als GitHub-secret zetten, plus `INTEL_API_BASIS` en
    `UITGIFTE_TOKEN` (paragraaf 5.2).
 
@@ -443,7 +548,7 @@ te wachten.
 **De noodstop.** Zet `auto_uitgifte_aan = false` op de actieve
 beleidsrij. De volgende ronde meldt `STOP beleid_uit` en doet niets. Wil
 je ook de goedkeuring stil: `auto_publiceren_aan = false`. Wil je de hele
-machinepoort dicht: verwijder `INTEL_MACHINE_SLEUTEL` van
+machinepoort dicht: verwijder `INTEL_UITGIFTE_REPOSITORY` van
 `vibe-intel-api`; dan antwoordt elke route `503` en stopt de werkstroom
 op stap 2. Een lopende ronde wordt daarmee niet afgebroken — de
 `concurrency`-groep staat met opzet op `cancel-in-progress: false`, want
@@ -460,7 +565,7 @@ echte ronde voor het eerst draait.
 
 | wat | waarom niet |
 |---|---|
-| **de echte GitHub-API** — `gh pr create`, `gh pr view`, `gh api .../check-runs`, `PUT .../pulls/{n}/merge`, `DELETE .../git/refs/heads/...` | dat vraagt een echte push naar een publieke repository en een echte pull request. Daar is geen droge stand voor, en een testbranch op `MounirVB/vibe-website` is zichtbaar voor iedereen. **Gevolg:** of de drie vereiste checks werkelijk starten op een push met `UITGIFTE_TOKEN` is beredeneerd (de standaard `GITHUB_TOKEN` start ze niet), **niet gemeten**. |
+| **de echte GitHub-API** — `gh pr create`, `gh pr view`, `gh api .../check-runs`, `PUT .../pulls/{n}/merge`, `DELETE .../git/refs/heads/...` | dat vraagt een echte push naar een publieke repository en een echte pull request. Daar is geen droge stand voor, en een testbranch op `MounirVB/vibe-website` is zichtbaar voor iedereen. **Gevolg:** of de drie vereiste checks werkelijk starten op een push met `UITGIFTE_TOKEN` is beredeneerd (de standaard `GITHUB_TOKEN` start ze niet), **niet gemeten**. Dit punt staat na V1.1 ongewijzigd: de machinepoort is op een echte GitHub-run gemeten, de PUSH-weg niet. |
 | **de echte Railway-deploy** — of `/machine/stand` na een merge de mergecommit als `sha` meldt, en binnen welke tijd | dat vereist een echte merge naar `main`, en dat is een productiedeploy. De 30 minuten in `DEPLOY_POGINGEN × DEPLOY_INTERVAL` zijn een ruime schatting op grond van wat de deploy doet (`npm run migreer && npm run zaai && npm run geo` als `preDeployCommand`), **geen gemeten duur**. |
 | **de vier HTTP-metingen van de live-verificatie tegen een vers gepubliceerd artikel** | er is langs deze weg nog niets gepubliceerd. `verifieerLivePublicatie()` bestaat al uit #79 en wordt hier hergebruikt; dat die weg werkt, is in die release gemeten, maar niet op een artikel dat door de autonome keten is gegaan. |
 | **de branchbescherming zoals hierboven beschreven** | de stand in paragraaf 3 is overgenomen uit de opdracht van deze release en in déze sessie niet opnieuw bij GitHub opgevraagd. |
@@ -471,7 +576,7 @@ echte ronde voor het eerst draait.
 
 | | |
 |---|---|
-| de YAML is geldig | `ruby -ryaml` parst het bestand; 2 triggers, 15 stappen, `permissions: {contents: read}`, `cancel-in-progress: false` |
+| de YAML is geldig | `ruby -ryaml` parst het bestand; 2 triggers, 15 stappen, `permissions: {contents: read, id-token: write}`, `cancel-in-progress: false`. **LET OP: geldige YAML is niet hetzelfde als een werkstroom die GitHub kan starten** — zie de V1.1-regels hieronder |
 | elk `run:`-blok is geldige bash | `bash -n` per blok, na het vervangen van de `${{ }}`-uitdrukkingen; alle 14 run-blokken groen, alle met `set -euo pipefail`. Ook de gegenereerde `poort.sh` met de vijf hulpfuncties is apart met `bash -n` getoetst |
 | geen secret in een `run:`-regel, geen `set -x` | `secrets.*` komt uitsluitend in `env:`-blokken voor; `set -x` alleen in commentaar |
 | geen opdrachtveld via `${{ }}` in een script | gemeten: de enige `${{ }}` in `run:`-blokken zijn de eigen, gevalideerde step-outputs |
@@ -481,33 +586,73 @@ echte ronde voor het eerst draait.
 | de checkmatcher | vijf scenario's op een nagebouwde `check-runs`-uitvoer: alles groen (ook met een herstart: de laatste run wint), één rood, één bezig, een lege uitvoer, en een check waarvan de naam als deeltekst in een andere voorkomt — die laatste wordt terecht **niet** als groen geteld |
 | `haal` en `meld` tegen het contract van de machinepoort | tegen een nepserver op `127.0.0.1:4399` die `machine.ts` nabootst: `200` op `/machine/stand` en `/machine/uitgifte`, `401` bij een verkeerde sleutel, `503` zonder sleutel, `400` bij een onbekende fase, `409` bij een fase die niet kan. In alle gevallen de juiste exitcode en een foutregel voor de `GEBLOKKEERD`-melding, en nergens een sleutel in de uitvoer |
 
+### En wat V1.1 eraan heeft toegevoegd
+
+De eerste echte run van deze werkstroom faalde in **0 seconden**, drie
+keer, met nul jobs en nul check-runs. Dat is wat de regels hierboven niet
+dekten: alles was lokaal groen en GitHub kon het bestand niet lezen.
+
+| | |
+|---|---|
+| **de werkelijke startfout, bewezen en niet vermoed** | de dispatch-API is het ENIGE kanaal dat hem noemt: `failed to parse workflow: (Line: 232, Col: 14): An expression was expected`. De oorzaak was een COMMENTAARREGEL binnen een `run:`-blok met een leeg expressiehaakje erin. Actions vouwt expressies in een run-blok uit vóórdat de shell het script ziet, dus een shell-`#` beschermt niets. Mijn eerste hypothese (`inputs.droog` op jobniveau) was FOUT en is weerlegd door run 42594508325, waarin `DROOG: ja` gewoon uitkomt |
+| **die defectklasse kan niet terugkomen** | `ops/werkstroompoort.mjs`, 11 van 11 PASS, en hij hangt in de securityjob van `poort.yml`. Hij toetst: geen Actions-expressie binnen een `run:`-blok, expliciete `permissions`, geen secret in een `echo`, `set -euo pipefail` in elke meerregelige uitgiftestap, `id-token: write` aanwezig, geen `secrets.INTEL_MACHINE_SLEUTEL`, een OIDC-token per aanroep, geen `--admin` en geen kale `--force`. Mutatiebewijs: de oude commentaarregel teruggezet → FAIL met regelnummer |
+| **de werkstroom is fail-closed op een echte run** | run 42594508325 op `fa193303`: de werkstroom start, stap 1 meet dat de configuratie ontbreekt, en alle 15 stappen worden overgeslagen zonder één aanroep naar de server |
+| **de machinepoort, met echte sleutels** | 28 van 28 in `test/integratie/machinepoort.test.ts`: een eigen JWKS op `127.0.0.1`, zelfondertekende tokens, en de acht controles uit paragraaf 3 elk met hun eigen weigering — `alg: none`, HS256 met de publieke sleutel als geheim, verkeerde sleutel, onbekende `kid`, verkeerde uitgever, verkeerd publiek (ook als lijst), verlopen/te oud/in de toekomst, verkeerde repository/werkstroom/branch/event, hergebruikte `jti`, en een `run_id` uit het lichaam die niets doet |
+| **een meldfout beschadigt het auditspoor niet** | zaak 6 en 7 in `test/integratie/uitgifte-melden.test.ts` roepen het meldpad met een gegarandeerd kapot pad aan binnen de transactie die de auditregels schrijft, zonder `try/catch`; beide regels staan er daarna. Zaak `2c` in `uitgifte-keten.test.ts` meet de naad met een lege bestemming — rood bewezen door de aanroep weg te halen |
+
 ---
 
-## 9. Operationele meldingen: er is vandaag geen kanaal
+## 9. Operationele meldingen: het pad bestaat, en het mailkanaal levert af
 
-### Wat er is gemeten, 9 november 2026, in de productiecontainer
+### Wat er is gemeten, 9 november 2026, PER SERVICE
 
-| variabele | stand |
-|---|---|
-| `INTEL_MELD_WEBHOOK` | **niet gezet** |
-| `INTEL_MELD_TOKEN` | niet gezet |
-| `INTEL_MAIL_ACTIEF` | **niet gezet** |
-| `INTEL_MONITOR_URL` | niet gezet |
+**De eerste meting van deze paragraaf was in de verkeerde container
+gedaan, en de conclusie eruit was fout.** Hij stond in
+`vibe-intel-api`, en daar is geen enkele meldvariabele gezet — maar
+`meldmailRonde()` draait niet daar. Hij draait op `vibe-intel-worker`,
+en die heeft het mailkanaal volledig ingericht. Hieronder staat wat er
+werkelijk is gemeten, per service, want dat onderscheid IS het antwoord:
 
-De gezondheidstaak meldt dat ook zelf, letterlijk: *"bestemming UIT —
-INTEL_MELD_WEBHOOK is niet gezet. Er is geen door een mens goedgekeurde
-bestemming voor operationele meldingen"*, met daarachter
-`mail[resend -> marketing@vibeenergy.nl] gepland 8, nieuw 0, aangeboden 0,
-geaccepteerd 0`.
+| variabele | `vibe-intel-api` | `vibe-intel-worker` |
+|---|---|---|
+| `INTEL_MAIL_ACTIEF` | niet gezet | **`1`** |
+| `INTEL_MAIL_ONTVANGER` | niet gezet | **`marketing@vibeenergy.nl`** |
+| `INTEL_MAIL_AFZENDER` | niet gezet | **gezet** |
+| `RESEND_API_KEY` | niet gezet | **gezet** |
+| `INTEL_MELD_WEBHOOK` | niet gezet | niet gezet |
+| `INTEL_MELD_TOKEN` | niet gezet | niet gezet |
+| `INTEL_MONITOR_URL` | niet gezet | niet gezet |
+| `INTEL_GCS_BUCKET` | niet gezet | **gezet** |
 
-Er staat dus wel een mailbestemming klaar, maar `INTEL_MAIL_ACTIEF` staat
-niet aan, en `meldmail.ts` noemt die stand dan ook "GECONFIGUREERD MAAR
-NIET ACTIEF". De acht geplande berichten zijn nooit aangeboden.
+**En het kanaal levert werkelijk af.** `intel.meld_berichten`: 54
+berichten, 54 door Resend geaccepteerd, 0 opgegeven. Twee voorbeelden uit
+de afgelopen twee dagen:
 
-**De conclusie die daaruit volgt, en hij is ongemakkelijk:** een
-operationele melding uit de database bereikt vandaag niemand. Niet via
-een webhook (die bestaat niet), niet via mail (die staat uit). Wie nu
-niet in het dashboard kijkt, ziet een storing niet.
+```
+2026-11-08T20:03  CRITICAL  kritieke storing: backup/restorebewijs…   geaccepteerd
+2026-11-09T09:05  HERSTEL   opgelost: backup/externe kopie            geaccepteerd
+```
+
+Eén grens eerlijk benoemd: `afgeleverd_op` is bij alle 54 berichten
+leeg. Resend heeft ze GEACCEPTEERD; dat ze in de postbus zijn aangekomen
+is niet gemeten, want er komt geen bezorgsignaal terug.
+
+**Wat dat betekent voor de uitgifte.** `meldUitgifteStoring()` vult
+`ernst`, en dat is precies de voorwaarde waarop `meldmailRonde()` open
+meldingen selecteert. Een gestrande publicatie krijgt dus **wel** een
+bestemming: asynchroon, via de bestaande mailronde op de worker, naar
+`marketing@vibeenergy.nl`. Wat ontbreekt is het SYNCHRONE kanaal: zonder
+`INTEL_MELD_WEBHOOK` op de service die de uitgifte draait, levert de
+aanroep zelf niets af en meldt hij eerlijk `afgeleverd: false`.
+
+**Twee dingen om te weten.** Controleer of `marketing@vibeenergy.nl`
+werkelijk de bedoelde ontvanger is voor een operationele storing — een
+eigen adres (`storing@…`) is beter. En een melding die nooit meer als
+signaal wordt uitgegeven, sluit nooit meer: op 9 november stond
+`backup/restorebewijs leesbaar` nog op CRITICAL terwijl de oorzaak (de
+GCS-billingstoring) bewezen weg was en de gezondheidsronde `FOUT 0`
+meldde. Dat signaal wordt alleen bij een probleem uitgegeven, dus er komt
+geen OK om hem op te sluiten; dat is een handmatige afsluiting.
 
 ### Waarom de webhook ontbreekt, en waarom dat een keuze was
 
@@ -526,42 +671,125 @@ Twee dingen die daarbij horen en die je moet weten:
 * **Een melding sluit alleen op een gemeten OK.** Hernoem je een
   signaal, dan blijft de oude melding eeuwig open staan.
 
-### Wat de autonome uitgifte hier zelf aan doet
+### Wat de uitgifte sinds V1.1 zelf doet
 
-De uitgifte leunt met opzet **niet** op dit kanaal:
+**Tot V1.1 meldde `meldUitgifteFout()` niets.** De naam leest als een
+alarm, maar de functie schreef uitsluitend een `GEBLOKKEERD`-regel, een
+auditregel en één logregel. Een gestrande publicatie bereikte dus
+niemand, en dat is bij een fail-closed keten (drie fouten en hij staat
+stil) precies het verkeerde stiltepunt.
 
-1. **Een mislukte werkstroom is de melding.** Faalt een stap, dan faalt
-   de GitHub Actions-run, en GitHub mailt de eigenaar van de repository.
-   Dat kanaal werkt, is al ingericht en vraagt geen configuratie.
-2. **De stroomonderbreker is zichtbaar.** Na drie mislukkingen stopt de
-   uitgifte en staat de reden op `/uitgifte` onder "Waarom er NU niets
-   gebeurt".
-3. **Het logboek is volledig.** Elke mislukking staat als besluit met
-   fase `GEBLOKKEERD`, stap en reden in `intel.publicatiebesluiten`.
+`src/uitgifte/melden.ts` sluit dat gat, op de BESTAANDE infrastructuur en
+zonder nieuwe tabel, nieuwe dienst of nieuwe grant:
 
-### Het voorstel, met de drie opties in volgorde van voorkeur
+* De storing komt in `intel.meldingen` (migratie 0016) met groep
+  `uitgifte` en sleutel `uitgifte/<stap>`. De partiële unieke index
+  `meldingen_een_open_per_sleutel` IS de deduplicatie — tien mislukte
+  generatorstappen geven één open melding met een teller, geen tien
+  regels.
+* De **ernst** komt uit `ernstVan()` en wordt meegevuld, want
+  `meldmail.ts` selecteert open meldingen op `ernst is not null`. Een rij
+  zonder ernst staat alleen in het dashboard, en een melding die geen
+  kanaal kan halen is geen melding.
+* De webhook levert af **tijdens** de aanroep, met dezelfde
+  JSON-sleutels en dezelfde bezorgkolommen (`bezorgd_op`,
+  `bezorgpogingen`, `laatste_bezorgfout`) die `bezorgMeldingen()` al
+  gebruikt — dus een mislukte aflevering wordt later door de bestaande
+  monitorronde opnieuw geprobeerd, met dezelfde pogingengrens (5).
+* Het mailkanaal levert **niet** mee met de aanroep. Dat wordt eerlijk
+  gerapporteerd als kanaal `mail (asynchroon)` met `afgeleverd: false`,
+  in plaats van een acceptatie te claimen die niet is gemeten.
 
-**(a) Zet het bestaande MAILKANAAL aan — aanbevolen.** Eén variabele,
-`INTEL_MAIL_ACTIEF=1`, en een ontvanger die een mens heeft gekozen. Het
-pad bestaat, is getoetst en loopt via Resend; de bestemming staat al
-ingevuld. Controleer vóór het aanzetten of `marketing@vibeenergy.nl`
-werkelijk de bedoelde ontvanger is — een operationele storing hoort niet
-in een marketingpostbus. Een eigen adres (`storing@…`) is beter.
+**Een meldfout mag het auditspoor niet beschadigen**, en dat is op drie
+manieren vastgelegd in plaats van afgesproken:
 
-**(b) Een webhook naar een privékanaal.** `INTEL_MELD_WEBHOOK` moet
-https zijn (melden.ts weigert http) en mag een `INTEL_MELD_TOKEN`
-meekrijgen als `Authorization: Bearer`. Voorwaarden: het kanaal is
-privé, de URL is zelf een geheim (een Slack- of Teams-webhookadres is
-een credential), en de ontvanger is een mens die er iets mee doet.
+1. **Eigen verbinding.** Het meldpad krijgt de POOL en nooit de client
+   van de aanroeper, dus het schrijft in zijn eigen transactie en kan die
+   van `legPublicatiebesluitVast()` niet laten terugrollen. De aanroep
+   staat bovendien NA de commit.
+2. **Hij werpt nooit.** Elke fout — kapotte webhook, onbereikbare
+   database, gooiend afleverpad, uitgeputte pool — komt terug als
+   `{afgeleverd: false, kanaal, reden}`.
+3. **Harde tijdslimiet van 10 s.** Een hangende ontvanger houdt de
+   uitgifteketen niet vast.
+
+Toets `2c` in `test/integratie/uitgifte-keten.test.ts` meet de naad met
+een LEGE bestemming: de melding staat open, er is niets afgeleverd, en
+het auditspoor staat er ondanks dat. Zaak 6 en 7 in
+`test/integratie/uitgifte-melden.test.ts` roepen het meldpad met een
+gegarandeerd kapot pad aan BINNEN de transactie die de auditregels
+schrijft — zonder `try/catch` eromheen, zodat een worp die transactie
+zou terugrollen — en bewijzen daarna dat beide regels er staan.
+
+**En het is zichtbaar.** `/uitgifte` heeft vier nieuwe secties: de
+meldketen in tegels (open meldingen, laatste GELUKTE aflevering, open
+met bezorgfout, ontbrekende configuratie), de twee kanalen met per kanaal
+of hij tijdens de uitgifte aflevert, welke variabelen ontbreken (de
+namen, nooit de waarden), en de open meldingen met hun bezorgstand. Eén
+meting staat daar bewust als **niet gemeten**: `intel.meldingen` heeft
+geen tijdstempel per POGING, dus "wanneer mislukte de laatste aflevering"
+is niet te beantwoorden — `laatst_gezien_op` is het moment van de laatste
+DETECTIE en betekent iets anders.
+
+Daarnaast blijven de drie dingen gelden die ook zonder kanaal werken: een
+mislukte werkstroom faalt in GitHub Actions (en GitHub mailt de eigenaar
+van de repository), de stroomonderbreker staat op `/uitgifte` onder
+"Waarom er NU niets gebeurt", en elke mislukking staat als besluit met
+fase `GEBLOKKEERD` in `intel.publicatiebesluiten`.
+
+### Wat er nog te beslissen valt
+
+Het mailkanaal is ingericht en levert af (zie de meting hierboven), dus
+de vraag is niet meer OF een storing iemand bereikt, maar of dat snel
+genoeg is en bij de juiste persoon. Staat er op de service die de
+uitgifte draait géén `INTEL_MELD_WEBHOOK`, dan levert de aanroep zelf
+niets af en wacht de melding op de volgende mailronde. Het logboek zegt dat
+dan ook letterlijk; dit is een echte regel uit een testrun:
+
+> `"meldkanaal":"geen","meldingAfgeleverd":false,"meldreden":"er is geen
+> enkel meldkanaal geconfigureerd, dus deze storing bereikt op dit moment
+> NIEMAND. De melding staat open in intel.meldingen (id 6). Niet gezet:
+> INTEL_MELD_WEBHOOK, RESEND_API_KEY, INTEL_MAIL_ONTVANGER,
+> INTEL_MAIL_AFZENDER, INTEL_MAIL_ACTIEF."`
+
+**(a) Het bestaande MAILKANAAL — AL AAN.** Op `vibe-intel-worker` staan
+`INTEL_MAIL_ACTIEF=1`, `RESEND_API_KEY`, `INTEL_MAIL_ONTVANGER` en
+`INTEL_MAIL_AFZENDER`; 54 van 54 berichten zijn door Resend geaccepteerd.
+Er is hier dus niets te zetten. Twee dingen blijven open:
+`INTEL_MONITOR_URL` is niet gezet (dat is alleen de link in het bericht),
+en de ontvanger is een marketingpostbus — controleer of dat de bedoelde
+plek is voor een operationele storing.
+
+**(b) Een webhook, en dan op TWEE plekken.** `INTEL_MELD_WEBHOOK` moet
+https zijn (`melden.ts` weigert http) en mag een `INTEL_MELD_TOKEN`
+meekrijgen als `Authorization: Bearer`. Zet hem op elke service die de
+uitgifteketen draait (worker/planner) **én** op de dashboardservice:
+`uitgifteMeldconfiguratie()` leest de omgeving van zijn eigen proces, dus
+staat hij alleen op de worker, dan toont `/uitgifte` "UIT" terwijl er wel
+wordt afgeleverd. Let op twee bestaande vallen: een LEEG token is een
+geldige stand, dus een ontvanger zonder authenticatie geeft geen
+foutmelding, en de naam `INTEL_MELD_WEBHOOK_TOKEN` wordt NERGENS gelezen.
 
 **(c) Niets, en dat bewust vastleggen.** Verdedigbaar zolang de eigenaar
-dagelijks `/uitgifte` en het weekrapport leest. Dan hoort er wel ergens
-te staan DAT dit de afspraak is, want nu leest het als een vergeten
-variabele.
+`/uitgifte` en het weekrapport leest. Dan hoort er wel ergens te staan
+DAT dit de afspraak is, want nu leest het als een vergeten variabele.
+
+**Twee dingen die bewust NIET zijn veranderd.** `MELDWAARDIG` in
+`src/ops/melden.ts` bevat nog steeds alleen `FOUT` en `NIET GEMETEN`, dus
+een `LET OP`-signaal alarmeert structureel niet; dat breed meldwaardig
+maken zou in één ronde elk bestaand LET OP-signaal een melding laten
+openen — een mailburst als neveneffect. En een uitgiftemelding sluit
+nooit automatisch: `synchroniseerMeldingen()` sluit alleen meldingen
+waarvan de sleutel in de gezondheidssignalen voorkomt, en `gezondheid.ts`
+maakt geen signaal met groep `uitgifte`. Dat is zo gelaten omdat de
+uitgiftelaag niet namens een mens mag beweren dat een gestrande
+publicatie is opgelost — maar het betekent dat die lijst groeit tot
+iemand kijkt.
 
 **Wat hier níét is gedaan:** geen variabele gezet, geen webhook
-aangemaakt, geen ontvanger gewijzigd, geen mail aangezet. Dit is een
-voorstel en een meting, geen handeling.
+aangemaakt, geen ontvanger gewijzigd, geen mailcredential aangeraakt. Het
+PAD is gebouwd en getoetst; het mailkanaal was al ingericht en is niet
+door mij aangezet.
 
 ---
 
@@ -571,7 +799,10 @@ voorstel en een meting, geen handeling.
 |---|---|
 | `docs/RUNBOOK-PUBLICEREN.md` | dezelfde keten **met de hand**, door een mens, met de tunnel naar de privédatabase |
 | `src/uitgifte/opdracht.ts` | de beslisser: de wachtrij, de stopcondities, de toestandsmachine en de vijf fasen |
-| `src/dashboard/machine.ts` | het contract van de twee endpoints, en wat die poort niet aanneemt van de aanroeper |
+| `src/dashboard/machine.ts` | het contract van de drie endpoints, en wat die poort niet aanneemt van de aanroeper |
+| `src/dashboard/oidc.ts` | de acht controles op het GitHub-OIDC-token, met per controle wat hij afsluit |
+| `src/uitgifte/melden.ts` | het meldpad: waar een storing landt, welke twee kanalen er zijn, en waarom hij nooit werpt |
+| `ops/werkstroompoort.mjs` | de poort die de startfout van 9 november 2026 voor altijd tegenhoudt |
 | `.github/workflows/uitgifte.yml` | de uitvoerder |
 | `.github/workflows/poort.yml` | de drie vereiste checks |
 | `db/migraties/0058_uitgifte_is_een_tweede_besluit.sql` | waarom uitgifte een tweede schakelaar is en niet dezelfde |

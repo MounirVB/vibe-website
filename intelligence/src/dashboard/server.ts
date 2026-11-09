@@ -85,6 +85,13 @@ import {
   stopredenen,
   type Stopreden,
 } from "../uitgifte/opdracht.ts";
+/* DE MELDKETEN LEEST UIT ZIJN EIGEN LAAG, om dezelfde reden als de
+   stopcondities hierboven: de sleutelvorm van een uitgiftemelding
+   ('uitgifte/<stap>') staat in uitgifte/melden.ts, en een eigen query
+   hier zou bij een hernoemde groep stil een lege tabel tonen in plaats
+   van een fout. uitgifteMeldconfiguratie() noemt de exacte
+   variabelenamen; de WAARDEN komen hier nooit langs. */
+import { leesUitgifteMeldstand, uitgifteMeldconfiguratie } from "../uitgifte/melden.ts";
 import { IntelFout } from "../kern/fouten.ts";
 import { redacteerFout } from "../kern/geheimen.ts";
 
@@ -899,9 +906,10 @@ export function maakApp(pool: Pool): express.Express {
   /* ---------------- de machinepoort van de uitgifte ----------------
      STAAT VÓÓR vereistInlog EN HEEFT ZIJN EIGEN WACHT. De rest van dit
      dashboard hangt aan een sessiekoekje van een mens; deze router
-     hangt aan INTEL_MACHINE_SLEUTEL en legt alles vast als
-     actor_soort 'systeem'. Zie dashboard/machine.ts voor waarom die
-     twee gescheiden blijven. Zonder sleutel antwoordt hij 503. */
+     hangt aan een GitHub-OIDC-token dat GitHub zelf ondertekent, en
+     legt alles vast als actor_soort 'systeem'. Zie dashboard/machine.ts
+     voor waarom die twee gescheiden blijven. Zonder allowlist in de
+     serverconfiguratie antwoordt hij 503. Er is geen servergeheim. */
   app.use("/machine", maakMachineRouter(pool));
 
   /* ---------------- gezondheid en gereedheid ----------------
@@ -2861,6 +2869,12 @@ van de pull request — menselijke handelingen, buiten dit dashboard.</p>
           order by b.id desc
           limit 25`,
       ),
+      /* DE MELDKETEN VAN DE UITGIFTE. Dezelfde rijen uit
+         intel.meldingen die onderaan in 'Operationele waarschuwingen'
+         staan, maar afgebakend op groep 'uitgifte' en MET de
+         bezorgstand erbij — want de vraag die deze sectie beantwoordt is
+         niet 'is er een storing' maar 'heeft iemand het gehoord'. */
+      melden: await leesUitgifteMeldstand(c, organisatieId),
       /* DE PLANNER — intel.planner_runs. Een tick die niets deed moet
          te onderscheiden zijn van een tick die niet draaide; daarom
          zowel de laatste tien runs als de laatste GESLAAGDE apart.
@@ -3001,6 +3015,12 @@ van de pull request — menselijke handelingen, buiten dit dashboard.</p>
     const nieuwsTotaal = d.nieuwsKandidaten.reduce((s, k) => s + k.n, 0);
     const artikelTotaal = d.artikelen.reduce((s, a) => s + a.n, 0);
     const poortenTotaal = d.artikelen.reduce((s, a) => s + a.poorten, 0);
+
+    /* DE MELDCONFIGURATIE IS GEEN DATABASEVRAAG maar een meting aan de
+       OMGEVING van deze service: staat INTEL_MELD_WEBHOOK hier, en staat
+       het mailkanaal aan. Daarom buiten de query. Alleen de namen en
+       'gezet ja/nee' komen op het scherm — nooit een waarde. */
+    const meldConf = uitgifteMeldconfiguratie();
 
     res.type("text/html; charset=utf-8").send(
       pagina({
@@ -3197,6 +3217,123 @@ ${tabel(
   ]),
   "Geen mislukte uitgiftes in het logboek.",
 )}
+
+<h2>Meldketen van de uitgifte — is die mislukking ook ergens AANGEKOMEN?</h2>
+<p class="uitleg"><strong>Een melding die nergens aankomt, is geen melding.</strong> De tabel
+hierboven komt uit het publicatielogboek en wordt alleen gelezen door wie al kijkt; deze sectie zegt
+of er iemand is GEWAARSCHUWD. Een mislukte uitgifte wordt vastgelegd in <code>intel.meldingen</code>
+met groep <code>uitgifte</code> (zie <code>src/uitgifte/melden.ts</code>), en pas een geconfigureerd
+kanaal maakt daar een alarm van. Staat er hieronder geen enkel kanaal, dan is de lijst met open
+meldingen een stille lijst: het platform weet van de storing, en niemand anders.</p>
+<div class="rooster">
+  ${tegel("Open uitgiftemeldingen", getalOfOnbekend(d.melden.openTotaal), `${d.melden.totaal} in de hele historie`)}
+  ${tegel(
+    "Laatste GELUKTE aflevering",
+    d.melden.laatstBezorgd === null
+      ? vlag("NOOIT", "fout")
+      : esc(d.melden.laatstBezorgd.slice(0, 16)),
+    "meldingen.bezorgd_op, alleen het directe kanaal",
+  )}
+  ${tegel(
+    "Open met een bezorgfout",
+    getalOfOnbekend(d.melden.metBezorgfout),
+    "melding blijft bestaan; de monitorronde probeert opnieuw",
+  )}
+  ${tegel(
+    "Ontbrekende configuratie",
+    meldConf.ontbrekend.length === 0
+      ? vlag("niets", "ok")
+      : vlag(`${meldConf.ontbrekend.length} variabele(n)`, "fout"),
+    meldConf.kanWerken ? "er is minstens één werkend kanaal" : "er is GEEN werkend kanaal",
+  )}
+</div>
+
+<h2>De twee kanalen — en of ze tijdens de uitgifte zelf afleveren</h2>
+<p class="uitleg">Er zijn geen nieuwe diensten bijgekomen. Het <strong>webhookkanaal</strong>
+(<code>src/ops/melden.ts</code>) is het enige dat tijdens de uitgifte zelf aflevert. Het
+<strong>mailkanaal</strong> (<code>src/ops/mail.ts</code> en <code>meldmail.ts</code>) pakt de open
+melding op in zijn eigen ronde — dat is later en dus iets anders dan afgeleverd. En 'de provider
+heeft het geaccepteerd' is nog steeds niet 'de ontvanger heeft het gelezen': die twee laatste velden
+van <code>intel.meld_berichten</code> blijven leeg zolang er geen providerwebhook is.</p>
+${tabel(
+  ["Kanaal", "Stand", "Levert af tijdens de uitgifte", "Wat er gemeten is"],
+  meldConf.kanalen.map((k) => [
+    `<code>${esc(k.kanaal)}</code>`,
+    k.werkt ? vlag("werkt", "ok") : vlag("UIT", "fout"),
+    k.directAflevert ? vlag("ja", "") : vlag("nee — pas in de volgende ronde", "waarschuwing"),
+    `<div class="klein">${esc(k.reden)}</div>${
+      k.ontbrekend.length === 0
+        ? ""
+        : `<div class="klein">niet gezet: ${k.ontbrekend.map((n) => `<code>${esc(n)}</code>`).join(", ")}</div>`
+    }`,
+  ]),
+)}
+
+<h2>Welke configuratie ontbreekt — de exacte variabelenamen</h2>
+<p class="uitleg">Deze namen worden letterlijk door <code>src/uitgifte/melden.ts</code> uitgelezen.
+Een variabele die ergens anders zo lijkt te heten doet niets: <code>INTEL_MELD_WEBHOOK_TOKEN</code>
+is zo'n naam die nergens wordt gelezen. De <em>waarden</em> staan hier niet en komen hier ook niet
+langs — alleen of ze gezet zijn.</p>
+${tabel(
+  ["Variabele", "Kanaal", "Gezet", "Verplicht", "Waarvoor"],
+  meldConf.variabelen.map((v) => [
+    `<code>${esc(v.naam)}</code>`,
+    esc(v.kanaal),
+    v.gezet ? vlag("gezet", "ok") : v.verplicht ? vlag("NIET GEZET", "fout") : vlag("niet gezet", ""),
+    v.verplicht ? "ja" : '<span class="klein">optioneel</span>',
+    `<div class="klein">${esc(v.waarvoor)}</div>`,
+  ]),
+)}
+
+<h2>Open meldingen uit de uitgifteketen — met hun bezorgstand</h2>
+<p class="uitleg">De sleutel is <code>uitgifte/&lt;stap&gt;</code>, en dat is met opzet de
+deduplicatiegrens: dezelfde stap die twee keer faalt is één melding die twee keer is gezien, niet
+twee meldingen. Deze rijen staan ook in de algemene lijst onderaan deze pagina — het is hetzelfde
+register, hier afgebakend op de uitgifte en mét de bezorgkolommen. <strong>Het moment van de laatste
+MISLUKTE poging is niet gemeten:</strong> <code>intel.meldingen</code> heeft
+<code>bezorgd_op</code>, <code>bezorgpogingen</code> en <code>laatste_bezorgfout</code>, maar geen
+tijdstempel per poging. <code>laatst_gezien_op</code> is het moment van de laatste DETECTIE en
+betekent iets anders.</p>
+${tabel(
+  ["Stap", "Ernst", "Geopend", "Laatst gezien", "Keren", "Bezorgd", "Laatste bezorgfout"],
+  d.melden.open.map((m) => [
+    `<code>${esc(m.sleutel)}</code><div class="klein">${esc(m.laatste_meting.slice(0, 240))}</div>`,
+    m.ernst === null ? vlag("geen ernst — belt niemand", "waarschuwing") : vlag(m.ernst, "fout"),
+    esc(m.geopend_op.slice(0, 16)),
+    esc(m.laatst_gezien_op.slice(0, 16)),
+    `<span class="num">${m.keren_gezien}</span>`,
+    m.bezorgd_op === null
+      ? `${vlag("NIET BEZORGD", "fout")}<div class="klein">${m.bezorgpogingen} poging(en)</div>`
+      : `${vlag(m.bezorgd_op.slice(0, 16), "ok")}<div class="klein">${esc(m.bestemming ?? "bestemming onbekend")}</div>`,
+    m.laatste_bezorgfout === null
+      ? '<span class="klein">—</span>'
+      : `<div class="klein">${esc(m.laatste_bezorgfout.slice(0, 240))}</div>`,
+  ]),
+  "Geen open meldingen uit de uitgifteketen. Dat betekent niet 'de uitgifte loopt': met " +
+    "auto_uitgifte_aan uit is er ook niets dat kan mislukken.",
+)}
+<div class="tegel" style="margin-top:10px">
+  ${
+    d.melden.mail === null
+      ? `${vlag("GEEN MELDBERICHT", "waarschuwing")}
+         <div class="klein" style="margin-top:6px">Er staat geen enkel bericht in
+         <code>intel.meld_berichten</code> dat over een uitgiftemelding gaat. Met het mailkanaal uit
+         is dat de verwachte stand.</div>`
+      : `Laatste meldbericht over de uitgifte: <code>${esc(d.melden.mail.soort)}</code> —
+         ${esc(d.melden.mail.onderwerp.slice(0, 120))}
+         <div class="klein" style="margin-top:6px">
+           aangemaakt ${esc(d.melden.mail.aangemaakt_op.slice(0, 16))},
+           aangeboden ${d.melden.mail.aangeboden_op === null ? vlag("nee", "waarschuwing") : esc(d.melden.mail.aangeboden_op.slice(0, 16))},
+           geaccepteerd door de provider ${
+             d.melden.mail.geaccepteerd_op === null
+               ? vlag("nee", "fout")
+               : vlag(d.melden.mail.geaccepteerd_op.slice(0, 16), "ok")
+           }${d.melden.mail.opgegeven_op === null ? "" : `, ${vlag("OPGEGEVEN", "fout")}`},
+           ${d.melden.mail.pogingen} poging(en).
+           ${d.melden.mail.laatste_fout === null ? "" : `Laatste fout: ${esc(d.melden.mail.laatste_fout.slice(0, 240))}`}
+         </div>`
+  }
+</div>
 
 <h2>De planner — intel.planner_runs en de laatste 'gereed' taken per soort</h2>
 <div class="tegel">

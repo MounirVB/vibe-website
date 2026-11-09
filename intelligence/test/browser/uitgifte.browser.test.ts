@@ -62,6 +62,12 @@ import { maakSessieCookie } from "../../src/dashboard/auth.ts";
 import { CSRF_KOEKJE, CSRF_VELD, maakCsrfToken } from "../../src/dashboard/bescherming.ts";
 import { legPublicatiebesluitVast, systeemActor } from "../../src/inhoud/actor.ts";
 import { meldUitgifteFout } from "../../src/uitgifte/opdracht.ts";
+/* OOK HET MELDPAD VIA ZIJN ECHTE FUNCTIE. meldUitgifteStoring() zet de
+   groep, de ernst, de bundel en de bezorgkolommen; een losse insert zou
+   een rijvorm opleveren die in productie niet kan bestaan — precies de
+   fout die de kop van dit bestand voor de fasen al benoemt. Het
+   afleverpad wordt geïnjecteerd, dus er gaat niets de deur uit. */
+import { meldUitgifteStoring } from "../../src/uitgifte/melden.ts";
 
 /* De callbacks van page.evaluate() draaien IN de browser, dus `document`
    bestaat daar wel en in de Node-typings niet. DOM-typings project-breed
@@ -116,6 +122,23 @@ describe("Uitgifteoverzicht in een echte browser", { skip: keuze === null ? INST
   before(async () => {
     process.env["INTEL_SESSIE_GEHEIM"] = GEHEIM;
     process.env["INTEL_OMGEVING"] = "test";
+
+    /* GEEN ENKEL MELDKANAAL, EN DAT IS DE PRODUCTIESTAND.
+       Gemeten op 9 november 2026 in de productiecontainer: deze vier
+       variabelen staan er niet. Zaak 22 rekent erop dat de pagina ze
+       als NIET GEZET toont; zou de machine van de ontwikkelaar er één
+       hebben, dan zou die zaak per machine iets anders meten. */
+    for (const naam of [
+      "INTEL_MELD_WEBHOOK",
+      "INTEL_MELD_TOKEN",
+      "RESEND_API_KEY",
+      "INTEL_MAIL_ONTVANGER",
+      "INTEL_MAIL_AFZENDER",
+      "INTEL_MAIL_ACTIEF",
+      "INTEL_MONITOR_URL",
+    ]) {
+      delete process.env[naam];
+    }
 
     db = await maakWegwerpdatabase("browseruitgifte");
     org = await maakOrganisatie(db, "vibe-energy");
@@ -244,6 +267,38 @@ describe("Uitgifteoverzicht in een echte browser", { skip: keuze === null ? INST
       fout: "browserfixture: scripts/seo/bouw.mjs gaf exitcode 1 op poort 11",
       beleidVersie: BELEIDSVERSIE,
     });
+
+    /* TWEE MELDINGEN UIT DE UITGIFTEKETEN, met de twee bezorgstanden die
+       op het scherm uiteenlopen: één die NERGENS aankwam en één die wel
+       is afgeleverd. Zonder dat verschil kan de sectie 'is het ergens
+       aangekomen' niet worden bewezen — een tabel met alleen onbezorgde
+       rijen laat niet zien dat de geslaagde tak ook rendert. */
+    await meldUitgifteStoring(
+      db.pool,
+      org,
+      {
+        inhoudVersieId: versies.mislukt,
+        stap: "generator",
+        fout: "browserfixture: scripts/seo/bouw.mjs gaf exitcode 1 op poort 11",
+        beleidVersie: BELEIDSVERSIE,
+      },
+      {
+        afleverpad: async () => {
+          throw new Error("browserfixture: de ontvanger weigerde met HTTP 503");
+        },
+      },
+    );
+    await meldUitgifteStoring(
+      db.pool,
+      org,
+      {
+        inhoudVersieId: versies.mislukt,
+        stap: "live-verificatie",
+        fout: "browserfixture: de publieke URL gaf HTTP 404",
+        beleidVersie: BELEIDSVERSIE,
+      },
+      { afleverpad: async () => undefined },
+    );
 
     /* TWEE REGISTERRECORDS in intel.publicaties, zodat de kolom
        'Publiek' beide takken toont: versie A is geschreven maar niet
@@ -436,6 +491,10 @@ describe("Uitgifteoverzicht in een echte browser", { skip: keuze === null ? INST
       "De vijf fasen",
       "Gepubliceerd",
       "Mislukte uitgiftes",
+      "Meldketen van de uitgifte",
+      "De twee kanalen",
+      "Welke configuratie ontbreekt",
+      "Open meldingen uit de uitgifteketen",
       "De planner",
       "Taken",
       "Bronstoringen",
@@ -724,5 +783,116 @@ describe("Uitgifteoverzicht in een echte browser", { skip: keuze === null ? INST
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
     assert.ok(overloop <= 2, `de pagina scrollt ${overloop}px horizontaal op 390px breed`);
+  });
+
+  /* ------------------------------------------------------------------
+     DE MELDKETEN. Vier zaken, en ze meten iets anders dan de rest van
+     dit bestand: niet 'staat de storing in het logboek' maar 'zou
+     iemand het hebben gehoord'. Met nul kanalen geconfigureerd — de
+     gemeten productiestand — is het antwoord nee, en juist dan moet de
+     pagina dat HARD zeggen in plaats van een lege lijst te tonen.
+     ------------------------------------------------------------------ */
+
+  test("21. de meldsectie zegt dat een melding die nergens aankomt geen melding is", async () => {
+    const html = await laad();
+    const sectie = sectieVan(html, "Meldketen van de uitgifte");
+    assert.match(
+      sectie,
+      /melding die nergens aankomt, is geen melding/i,
+      "de alinea die de hele sectie verantwoordt hoort er letterlijk te staan",
+    );
+    assert.ok(
+      sectie.includes("intel.meldingen"),
+      "de tabel waaruit deze sectie komt hoort genoemd te worden",
+    );
+    assert.ok(
+      sectie.includes("Laatste GELUKTE aflevering"),
+      "wanneer de laatste aflevering lukte is een van de vier gevraagde metingen",
+    );
+    /* De fixture leverde er één af, dus de tegel hoort een GEMETEN
+       tijdstip te tonen en niet de vlag NOOIT. */
+    assert.ok(
+      !sectie.includes("NOOIT"),
+      "er IS een geslaagde aflevering in de fixture; 'NOOIT' zou betekenen dat de meting niet leest",
+    );
+    /* En de ontbrekende configuratie wordt GETELD, niet weggelaten: met
+       nul kanalen zijn er vijf verplichte variabelen niet gezet. */
+    assert.match(
+      sectie,
+      /\d+ variabele\(n\)/,
+      "de tegel hoort te tellen hoeveel verplichte variabelen ontbreken",
+    );
+  });
+
+  test("22. de ontbrekende configuratie staat er met de EXACTE variabelenamen", async () => {
+    const html = await laad();
+    const sectie = sectieVan(html, "Welke configuratie ontbreekt");
+    for (const naam of [
+      "INTEL_MELD_WEBHOOK",
+      "INTEL_MELD_TOKEN",
+      "RESEND_API_KEY",
+      "INTEL_MAIL_ONTVANGER",
+      "INTEL_MAIL_AFZENDER",
+      "INTEL_MAIL_ACTIEF",
+      "INTEL_MONITOR_URL",
+    ]) {
+      assert.ok(sectie.includes(naam), `de variabelenaam ${naam} staat niet op de pagina`);
+    }
+    assert.ok(
+      sectie.includes("NIET GEZET"),
+      "met nul kanalen hoort er minstens één verplichte variabele als NIET GEZET te staan",
+    );
+    /* EN GEEN WAARDEN. Een scherm dat de naam noemt helpt; een scherm
+       dat de waarde toont is een geheimlek. Deze zaak houdt dat zo: het
+       sessiegeheim van deze toets staat in de omgeving en mag nergens
+       in de HTML opduiken. */
+    assert.ok(!html.includes(GEHEIM), "er staat een omgevingsWAARDE op de pagina");
+  });
+
+  test("23. de twee kanalen staan er, met of ze TIJDENS de uitgifte afleveren", async () => {
+    const html = await laad();
+    const sectie = sectieVan(html, "De twee kanalen");
+    assert.ok(sectie.includes("webhook"), "het webhookkanaal hoort in de tabel");
+    assert.ok(sectie.includes("mail"), "het mailkanaal hoort in de tabel");
+    assert.match(
+      sectie,
+      /pas in de volgende ronde/,
+      "het mailkanaal levert niet tijdens de uitgifte af, en dat verschil hoort zichtbaar te zijn",
+    );
+    assert.ok(
+      sectie.includes("UIT"),
+      "zonder configuratie hoort een kanaal als UIT te staan en niet als leeg vakje",
+    );
+  });
+
+  test("24. de open uitgiftemeldingen staan er met hun bezorgstand", async () => {
+    const html = await laad();
+    const sectie = sectieVan(html, "Open meldingen uit de uitgifteketen");
+    assert.ok(
+      sectie.includes("uitgifte/generator"),
+      "de melding van de gestrande generatorstap hoort erbij te staan",
+    );
+    assert.ok(
+      sectie.includes("uitgifte/live-verificatie"),
+      "de tweede uitgiftemelding hoort er ook te staan",
+    );
+    assert.ok(
+      sectie.includes("NIET BEZORGD"),
+      "een melding die nergens aankwam hoort als NIET BEZORGD te staan",
+    );
+    assert.ok(
+      sectie.includes("HTTP 503"),
+      "de laatste bezorgfout hoort leesbaar op het scherm te staan",
+    );
+    /* En de andere tak: de afgeleverde melding toont zijn bestemming in
+       plaats van een poginggetal. */
+    assert.ok(
+      sectie.includes("ingespoten afleverpad"),
+      "de bestemming van de geslaagde aflevering hoort erbij te staan",
+    );
+    /* HET MOMENT VAN DE LAATSTE MISLUKTE POGING IS NIET GEMETEN, en de
+       pagina hoort dat te zeggen in plaats van laatst_gezien_op te
+       tonen alsof dat hetzelfde is. */
+    assert.match(sectie, /niet gemeten/i, "de ontbrekende meting hoort benoemd te zijn");
   });
 });

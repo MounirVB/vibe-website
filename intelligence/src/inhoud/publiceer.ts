@@ -400,6 +400,14 @@ export async function publiceer(
        Zonder die vergelijking zou "een uitvoerder die de bytes krijgt"
        een uitvoerder zijn die de inhoud kan kiezen. */
     recordVanUitvoerder?: { readonly hash: string; readonly waar: string };
+    /* EXTRA MEETWAARDEN VOOR HET BESLUIT.
+       De autonome uitgifte moet de GITHUB-RUN die deze fase meldde in
+       het logboek kwijt, want de volgende fase bindt zich eraan (zie
+       eisFase() in uitgifte/opdracht.ts). Die fase wordt HIER
+       geschreven, dus hier moeten de waarden erbij kunnen. Een tweede
+       besluitregel schrijven zou het logboek vervuilen met een regel
+       die geen besluit is. */
+    metingExtra?: Readonly<Record<string, unknown>>;
   },
 ): Promise<PublicatieRapport> {
   const config = {
@@ -839,6 +847,7 @@ async function publiceerViaRegister(
     droog?: boolean;
     alleenRecord?: boolean;
     recordVanUitvoerder?: { readonly hash: string; readonly waar: string };
+    metingExtra?: Readonly<Record<string, unknown>>;
   },
   weiger: (id: number, reden: string) => PublicatieRapport,
 ): Promise<PublicatieRapport> {
@@ -1196,6 +1205,7 @@ async function publiceerViaRegister(
       onderwerpEigenaar,
       bronnen: bronnen.length,
       weg: "register",
+      ...(opties.metingExtra ?? {}),
     },
   });
   await legPublicatieAuditVast(c, {
