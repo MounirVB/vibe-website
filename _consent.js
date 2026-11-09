@@ -36,35 +36,18 @@
     window.dataLayer.push({event:'vibe_consent_update',vibe_analytics:!!state.analytics,vibe_marketing:!!state.marketing});
     fire();
   }
-  /* ---------- opruimen wat een eerdere toestemming heeft achtergelaten ----------
-     Een weigering moet ook TERUGWERKEN. Wie eerst accepteert en later
-     terugzet naar 'Alleen noodzakelijk', houdt anders de marketingcookies
-     die in de tussentijd zijn geplaatst — de keuze zou dan alleen voor de
-     toekomst gelden en de eerder geplaatste cookie 90 dagen laten staan.
-     Gemeten op 9 november 2026: de Meta Pixel zette `_fbp` met een looptijd
-     van 90 dagen, plus lastExternalReferrer en lastExternalReferrerTime in
-     localStorage, en "Alleen noodzakelijk" ruimde daar niets van op.
-
-     We wissen alleen wat we zelf benoemen. Een onbekende cookie van een
-     onbekende partij blind verwijderen zou ook de werking van de site kunnen
-     raken; `functionality_storage` en `security_storage` staan immers op
-     'granted'. Het domein moet twee keer worden geprobeerd: de pixel zet
-     `_fbp` op het registreerbare domein (.vibeenergy.nl), maar op een
-     ontwikkel- of previewhost staat hij op de host zelf. */
-  /* _gcl_* komt van de Conversion Linker in GTM-container GTM-KM2V7VQ3.
-     Gemeten op 9 november 2026 met de echte container: na 'Alles accepteren'
-     en daarna terugzetten naar 'Alleen noodzakelijk' bleven de cookie _gcl_au
-     en de localStorage-sleutel _gcl_ls staan. De intrekking ruimde _fbp wel op
-     en deze niet — dezelfde fout, andere partij. */
+  /* ---------- opruimen na een geweigerde marketingkeuze ----------
+     Een weigering moet ook TERUGWERKEN: wie eerst accepteert en later
+     terugzet, hield anders de cookies die intussen zijn geplaatst.
+     Alleen benoemde sleutels — blind wissen kan de site raken.
+     Zie de commit voor de meetwaarden. */
+  /* _gcl_* komt van de Conversion Linker in GTM-KM2V7VQ3; gemeten bleven die
+     na een intrekking staan terwijl _fbp wel werd gewist. */
   var MARKETING_COOKIES=['_fbp','_fbc','_gcl_au','_gcl_aw','_gcl_dc','_gcl_gb','_gcl_gs'];
   var MARKETING_LOCALSTORAGE=['lastExternalReferrer','lastExternalReferrerTime','_gcl_ls'];
-  /* sessionStorage-sleutels die Custom HTML-tag 10 in de GTM-container
-     wegschrijft zodra de bezoeker met een advertentieparameter binnenkomt.
-     Gemeten: met ?gclid=... in de URL staan vibe_gclid en drie vibe_utm_*
-     sleutels er VOORDAT er een keuze is gemaakt, en 'Alleen noodzakelijk'
-     verwijderde ze niet. De tag zelf kan ik niet repareren — die staat in de
-     container en niet in deze repository — maar de weigering kan zijn sporen
-     hier wel opruimen. */
+  /* Een Custom HTML-tag in de GTM-container schrijft deze weg zodra iemand met
+     een advertentieparameter binnenkomt — ook zonder toestemming. Die tag zit
+     niet in deze repository; de weigering ruimt zijn sporen hier wel op. */
   var MARKETING_SESSIONSTORAGE=['vibe_gclid','vibe_gbraid','vibe_wbraid','vibe_utm_source','vibe_utm_medium','vibe_utm_campaign','vibe_utm_term'];
   function wisMarketingSporen(){
     var host=location.hostname;
@@ -102,7 +85,10 @@
   };
   if(state) push();
 
-  /* ---------- styles ---------- */
+  /* ---------- styles ----------
+     De mobiele regels (max-width:560px) zijn omgedraaid: niet drie gestapelde
+     knoppen op volle breedte, maar twee naast elkaar met een sticky actierij
+     en een hoogteplafond. Reden en meetwaarden staan in de commit. */
   var CSS="\
   .vck-ov{position:fixed;inset:0;z-index:100000;display:flex;align-items:flex-end;justify-content:center;padding:18px;font-family:'IBM Plex Sans',system-ui,-apple-system,sans-serif;pointer-events:none}\
   .vck-ov.pref{align-items:center;background:rgba(4,12,20,.6);backdrop-filter:blur(5px);pointer-events:auto;opacity:0;transition:opacity .28s ease}\
@@ -137,56 +123,16 @@
   .vck-sw:focus-visible{outline:2px solid #00ADEF;outline-offset:2px}\
   @media(max-width:560px){\
     .vck-in{padding:16px 16px 14px}\
-    /* WAAROM DEZE REGEL IS OMGEDRAAID\
-       Hij zette .vck-b1 op min-width:100%. Daardoor stapelden de drie knoppen\
-       alle drie op volle breedte en groeide de kaart in de HOOGTE in plaats van\
-       in de breedte. Gemeten op 9 november 2026, bij scrollY=0 en de melding nog\
-       open: op 360x640 was de kaart 485px = 75,7% van de viewport en bleef er\
-       tussen de sticky header (65px) en de bovenkant van de kaart 66px over —\
-       10,4% van het scherm. Op 390x844 onderschepte de kaart 4 van de 5\
-       interactieve elementen in beeld, waaronder de twee hero-CTA's\
-       'Vraag een energiescan aan' en 'Kies uw gemeente': elementFromPoint op\
-       het midden van die knoppen gaf DIV.vck-act in plaats van de knop.\
-       Nu staan de twee keuzeknoppen naast elkaar op één regel en zakt\
-       'Instellingen' naar een eigen, lagere regel: twee regels in plaats van\
-       drie. De drempel van 44px raakhoogte blijft gehaald via min-height. */\
-    /* De eyebrow 'Cookies' zegt op mobiel niets wat de kop eronder niet al\
-       zegt ('Deze site gebruikt cookies') en kost 21px van een scherm waar de\
-       hoogte het knelpunt is. Alleen verborgen onder 560px; op desktop blijft\
-       de melding ongewijzigd. */\
     .vck-eb{display:none}\
     .vck-t{font-size:16.5px;margin-bottom:6px}\
     .vck-p{font-size:12.5px;line-height:1.5}\
-    /* De knoppenrij blijft ALTIJD in beeld, ook als de tekst erboven binnen de\
-       kaart wegscrolt. Zonder dit konden 'Alles accepteren' en 'Alleen\
-       noodzakelijk' onder de onderrand van de kaart verdwijnen zodra de\
-       max-height hieronder bindt — gemeten op 320, 360 en 375px. Een\
-       toestemmingsvraag waarvan de antwoorden weggescrold zijn is erger dan een\
-       te hoge kaart. */\
-    /* De schaduw aan de bovenkant maakt zichtbaar DAT er tekst onder de rij\
-       doorloopt. Zonder die rand leest een halve tekstregel die achter een\
-       witte balk verdwijnt als afgekapte tekst in plaats van als scrollbare\
-       inhoud. */\
     .vck-act{margin-top:12px;gap:8px;position:sticky;bottom:0;background:#fff;padding:8px 0 2px;box-shadow:0 -10px 12px -8px rgba(4,12,20,.18)}\
-    /* De twee keuzeknoppen naast elkaar: twee regels in plaats van drie.\
-       Hun tekst mag WEL afbreken. Met white-space:nowrap werd 'Alleen\
-       noodzakelijk' binnen de halve kaartbreedte afgekapt — een onleesbaar\
-       label op een toestemmingsknop is een defect, en een knop van twee regels\
-       is dat niet. */\
     .vck-b{min-height:44px;padding:11px 10px;font-size:12.5px;white-space:normal}\
     .vck-b1,.vck-b2{flex:1 1 calc(50% - 4px);min-width:0}\
     .vck-b3{flex:1 1 100%}\
   }\
-  /* Onder 376px past 'Alles accepteren' niet op een halve kaartbreedte.\
-     Gemeten op 320px: het label werd afgekapt tot 'Alles accepter'. Een\
-     toestemmingsknop waarvan het label half wegvalt is een defect, dus daar\
-     krijgen de twee keuzeknoppen hun volle breedte terug. De kaart wordt\
-     daarvan hoger, maar blijft ruim onder de oorspronkelijke 533px/93,8%. */\
   @media(max-width:375px){\
     .vck-b1,.vck-b2{flex:1 1 100%}\
-    /* Harde bovengrens, zodat geen enkele tekstlengte of door de bezoeker\
-       vergrote lettergrootte de kaart ooit verder kan laten groeien. De\
-       knoppenrij hierboven is sticky, dus de grens kost nooit een antwoord. */\
     .vck{max-height:58vh;overflow-y:auto}\
   }\
   ";
@@ -195,24 +141,11 @@
 
   function el(tag,cls,html){ var n=document.createElement(tag); if(cls)n.className=cls; if(html!=null)n.innerHTML=html; return n; }
 
-  /* ---------- waar de melding in de DOM komt ----------
-     VOORAAN, maar NA de skip-link.
-
-     Achteraan was fout: als laatste kind van <body> was de melding de 58e
-     tabstop, dus een toetsenbord- of schermlezergebruiker kwam eerst door de
-     hele pagina heen voordat hij de toestemmingsvraag bereikte — terwijl die
-     vraag over diezelfde pagina heen staat.
-
-     Maar HELEMAAL vooraan was ook fout, en dat is met axe-core gemeten: zet je
-     de melding voor <a class="ve-skip">, dan is de skip-link niet langer het
-     eerste element van de body en valt hij buiten de uitzondering die
-     axe daarvoor kent. Resultaat op 9 november 2026: 30 schendingen van de
-     regel 'region' over 15 pagina's, in zowel Chromium als WebKit, en alleen
-     wanneer de melding open stond. De skip-link hoort de eerste tabstop te
-     zijn — dat is zijn hele bestaansreden — en de melding de tweede.
-
-     De melding is position:fixed, dus de DOM-positie verandert niets aan de
-     weergave; alleen de leesorde en de taborde kloppen nu met wat er staat. */
+  /* ---------- plaats in de DOM: VOORAAN, maar NA de skip-link ----------
+     Achteraan was de melding de 58e tabstop. Maar helemaal vooraan verloor
+     .ve-skip zijn axe-uitzondering: 30 region-schendingen in beide engines.
+     De skip-link is de eerste tabstop, de melding de tweede.
+     position:fixed, dus de weergave verandert niet. */
   function plaatsMelding(n){
     var skip=document.querySelector('.ve-skip');
     if(skip&&skip.parentNode===document.body){
@@ -235,21 +168,11 @@
   }
 
   /* ---------- scrollreserve ----------
-     De melding staat position:fixed op de onderrand en legt zich daarmee OVER
-     de pagina. Zonder reserve is alles wat onder die kaart valt niet alleen
-     onzichtbaar maar ook ONBEREIKBAAR zolang de bezoeker geen keuze maakt —
-     en voor inhoud helemaal onderaan het document geldt dat permanent, want
-     daar valt niet verder te scrollen.
-
-     Gemeten op 9 november 2026 op /regios/groningen bij 390x844: de hero-CTA's
-     staan op y=697 en y=768. Een melding die beide vrijlaat zou maximaal 13px
-     hoog mogen zijn, en dat is geen melding. Kleiner maken lost het dus niet
-     op; niet-permanent-afdekken wel. Met deze reserve kan ELK element onder
-     de kaart vandaan worden gescrold.
-
-     Alleen voor de onderaan verankerde melding. Het voorkeurenpaneel is een
-     gecentreerde modale dialoog met een achtergrond; daar is de pagina
-     sowieso niet bedoeld om te bedienen. */
+     De melding ligt fixed over de pagina; zonder reserve is alles eronder
+     onbereikbaar, en onderaan het document permanent. Kleiner maken helpt
+     niet: op 390x844 staan de hero-CTA's op y=697 en 768, dus een melding
+     die beide vrijlaat mag 13px hoog zijn. Niet-afdekken helpt wel.
+     Alleen voor de onderaan verankerde melding, niet voor het modale paneel. */
   var reserveWaarnemer=null;
   function zetReserve(){
     if(!card||prefsOpen){ wisReserve(); return; }
@@ -281,12 +204,8 @@
     inn.appendChild(el('div','vck-eb','Cookies'));
     if(!prefsOpen){
       inn.appendChild(el('h2','vck-t','Deze site gebruikt cookies'));
-      /* DEZE TEKST NOEMT NU OOK MARKETING, EN DAT IS EEN CORRECTIE.
-         De vorige formulering sprak alleen van 'noodzakelijke cookies ... en
-         analytische cookies', terwijl het voorkeurenpaneel eronder WEL een
-         categorie Marketing aanbiedt en de Meta Pixel daar valt. De vraag
-         onderschatte dus wat er werd gevraagd. Korter EN vollediger: de drie
-         categorieen staan er nu alle drie, met wie de keuze maakt erbij. */
+        /* Noemt nu ook marketing: het paneel biedt die categorie wel aan, dus de
+         oude formulering onderschatte wat er werd gevraagd. */
       inn.appendChild(el('p','vck-p','Noodzakelijke cookies laten de site werken. Analytische en marketingcookies plaatsen wij alleen met uw toestemming. Meer hierover in ons <a href="/privacy">privacybeleid</a>.'));
       var a=el('div','vck-act');
       var b1=el('button','vck-b vck-b1','Alles accepteren'); b1.type='button';
@@ -320,14 +239,9 @@
     laatsteFocus=document.activeElement&&document.activeElement!==document.body?document.activeElement:null;
     tmpA=!!(state&&state.analytics); tmpM=!!(state&&state.marketing); prefsOpen=!!openPrefs;
     ov=el('div','vck-ov'); ov.setAttribute('role','dialog'); ov.setAttribute('aria-label','Cookiemelding');
-    /* aria-modal alleen waar de melding WERKELIJK modaal is. Het
-       voorkeurenpaneel (.pref) heeft een achtergrond en pointer-events:auto en
-       sluit de pagina af; de eerste melding niet — die laat de pagina
-       bruikbaar en mag zich dus niet als modaal aankondigen.
-       De eerdere combinatie role="dialog" + aria-live="polite" op hetzelfde
-       element was tegenstrijdig: een dialoog kondigt zich via zijn rol aan, en
-       een live region op een container met knoppen erin levert een dubbele
-       aankondiging. aria-live is daarom weg. */
+    /* aria-modal alleen waar de melding werkelijk modaal is: het paneel heeft
+       een achtergrond, de eerste melding laat de pagina bruikbaar.
+       role=dialog met aria-live was tegenstrijdig en is weg. */
     ov.setAttribute('aria-modal',openPrefs?'true':'false');
     card=el('div','vck');
     if(openPrefs) ov.classList.add('pref');
@@ -356,18 +270,10 @@
     });
   }
 
-  /* Escape op het VOORKEURENPANEEL. Het paneel is een echte modale dialoog —
-     achtergrond, pointer-events:auto, sluit de pagina af — en moet dus met
-     Escape dicht kunnen.
-
-     Maar niet altijd naar nul. Is er nog GEEN keuze vastgelegd, dan is het
-     paneel bereikt via 'Instellingen' in de eerste melding, en zou sluiten de
-     toestemmingsvraag laten verdwijnen zonder antwoord. Escape gaat dan één
-     stap terug naar de keuzevraag in plaats van weg. Is er wél een keuze, dan
-     sluit hij echt — precies zoals een heropend voorkeurenpaneel hoort te doen.
-
-     De eerste melding zelf reageert niet op Escape: daar bestaat geen
-     "sluiten" dat geen stilzwijgende weigering is. */
+  /* Escape sluit het modale voorkeurenpaneel. Is er nog GEEN keuze, dan gaat
+     hij een stap terug naar de keuzevraag in plaats van hem te laten
+     verdwijnen — sluiten zonder antwoord zou een stilzwijgende weigering zijn.
+     De eerste melding zelf reageert niet op Escape. */
   document.addEventListener('keydown',function(e){
     if(e.key!=='Escape'||!ov||!prefsOpen) return;
     e.preventDefault();
@@ -385,13 +291,9 @@
       var t=e.target.closest&&e.target.closest('[data-cookie-prefs],a[href="#cookies"],a[href$="#cookies"]');
       if(t){ e.preventDefault(); show(true); }
     });
-    /* EEN FRAME WACHTEN, EN DAAR IS EEN REDEN VOOR.
-       vibe/chrome.js plaatst de header en de skip-link ook op DOMContentLoaded,
-       maar registreert zijn luisteraar LATER dan dit bestand: _consent.js is
-       een synchroon script in de <head>, chrome.js draagt defer. Zonder dit
-       uitstel bestaat .ve-skip nog niet wanneer de melding wordt geplaatst, en
-       belandt de melding er alsnog voor — precies de situatie die axe met 30
-       region-schendingen afstrafte. Een frame later staat de chrome er. */
+    /* Een frame wachten: chrome.js plaatst .ve-skip ook op DOMContentLoaded
+       maar registreert zijn luisteraar later (defer tegen synchroon in head).
+       Zonder uitstel bestaat de skip-link nog niet. */
     if(!state){
       if(window.requestAnimationFrame) requestAnimationFrame(function(){ show(false); });
       else show(false);
