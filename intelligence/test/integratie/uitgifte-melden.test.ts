@@ -504,6 +504,13 @@ describe("meldketen van de uitgifte", () => {
       {
         inhoudVersieId: versieId,
         stap: "zaak11-geheim",
+        /* DEZE REGEL MOET CREDENTIALVORM HEBBEN, anders toetst de zaak
+           niets: het hele punt is dat redigeer() hem uit de database, uit
+           het log en uit de lading haalt. De markering hieronder is het
+           bedoelde mechanisme van ops/geheimenscan.mjs — per REGEL en met
+           een reden, zodat een echt geheim dat hier later belandt alsnog
+           wordt gevonden. */
+        // geheimenscan: ok — verzonnen verbindingsreeks naar een niet bestaande host
         fout: "pg_dump faalde: postgresql://vibe:hetgeheimpje@db.intern:5432/intel",
         beleidVersie: BELEIDSVERSIE,
       },
