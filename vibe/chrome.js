@@ -465,6 +465,37 @@
     knop.addEventListener('click', function () { zet(!open); });
     menu.addEventListener('click', function (e) { if (e.target.closest('a')) zet(false); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && open) zet(false); });
+
+    /* ---- focusval ----
+       Het paneel zette de focus al op zijn eerste link, maar hield hem er niet.
+       Gemeten op 9 november 2026 op 390px: na 23 keer Tab stond de cursor op
+       inhoud ACHTER het dichtgezette paneel — onzichtbaar, want het paneel ligt
+       er met een dekkende achtergrond over. Een toetsenbord- of
+       schermlezergebruiker raakte daarmee de weg kwijt in een menu dat hij niet
+       kon verlaten omdat hij niet zag waar hij was.
+       De menuknop zit bewust IN de cyclus: dat is de sluitknop, dus met
+       Shift+Tab vanaf het eerste item kom je er direct bij.
+       De lijst wordt bij elke Tab opnieuw opgebouwd — het paneel is aan de
+       breedte gebonden en zijn inhoud kan tussentijds van zichtbaarheid
+       veranderen; een lijst die bij het openen is vastgelegd zou dan naar een
+       element wijzen dat niet meer te focussen is. */
+    menu.addEventListener('keydown', function (e) {
+      if (e.key !== 'Tab' || !open) return;
+      var focusbaar = [knop].concat(Array.prototype.slice.call(
+        menu.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')
+      )).filter(function (n) { return n.offsetWidth > 0 || n.offsetHeight > 0 || n === document.activeElement; });
+      if (!focusbaar.length) return;
+      var eerste = focusbaar[0], laatste = focusbaar[focusbaar.length - 1];
+      if (e.shiftKey && document.activeElement === eerste) { e.preventDefault(); laatste.focus(); }
+      else if (!e.shiftKey && document.activeElement === laatste) { e.preventDefault(); eerste.focus(); }
+    });
+    /* De menuknop staat buiten het paneel, dus Tab vanaf de knop zelf bereikt
+       de bovenstaande handler niet. Vandaar dezelfde sprong hier. */
+    knop.addEventListener('keydown', function (e) {
+      if (e.key !== 'Tab' || !open || e.shiftKey) return;
+      var eerste = menu.querySelector('a[href],button:not([disabled])');
+      if (eerste) { e.preventDefault(); eerste.focus(); }
+    });
     /* boven de desktop-breakpoint hoort het paneel nooit open te staan */
     window.addEventListener('resize', function () {
       if (open && window.innerWidth >= 1200) zet(false);
