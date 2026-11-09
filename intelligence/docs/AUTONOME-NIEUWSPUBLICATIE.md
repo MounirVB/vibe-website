@@ -71,6 +71,28 @@ hangt in een Railway-privénet zonder publieke poort, en dat blijft zo.
 | 12 | **deploy** | Railway, op een push naar `main` | geen databaseregel; `/machine/stand` meldt de nieuwe `RAILWAY_GIT_COMMIT_SHA` |
 | 13 | **live-verificatie** | de **SERVER**, met vier eigen HTTP-metingen | fase `LIVE_GEVERIFIEERD` met HTTP-status, canonical, kop en sitemap |
 
+**DE TWEEDE STROOM, en waar hij heen gaat.** De kennisweg is geen
+variant van de nieuwsweg maar een eigen keten, en die bestond al: taak
+`voorstel` (prioriteit 60) neemt de `UPDATE_EXISTING`-kandidaten met een
+doelpagina en maakt er WIJZIGINGSVOORSTELLEN van, met vier eigen
+controles — bronverwijzing, actualiteit, duplicatie en SEO-eigendom.
+Sinds V1.2 heeft die stroom een EIGEN budget: 25 kandidaten per ronde en
+ten hoogste 3 per doelpagina, los van het nieuwsbudget op prioriteit 38.
+Die tweede sleutel is er om de stapel uit oktober 2026 te voorkomen —
+vijf kandidaten die alle vijf naar
+`/kennis/transportvermogen-versus-aansluitwaarde` wezen.
+
+En de twee wegen eindigen ook ergens anders, met een grendel ertussen:
+`publiceerViaRegister()` weigert bij de INGANG elke versie waarvan de
+soort niet `nieuw_artikel` is. Het nieuwsregister
+(`data/inhoud/nieuws/<slug>.json`) wordt door de nieuwsindex en de
+nieuws-sitemap gelezen; een kennisupdate hoort daar niet en gaat via de
+HTML-weg, die `dataPagina: "kennis"` zet en het pagina-register met
+soort `kennis` bijwerkt. Die grendel staat in de weg zelf en niet alleen
+in de wachtrij die hem voedt, want de enige reden dat er vandaag geen
+kennisupdate langskomt is dat `auto_toegestane_soorten` leeg staat — en
+dat is een beleidswaarde, één regel in een update.
+
 **Stap 3 verwerkt sinds V1.1 alleen nog NEWS_ITEM, en dat is een
 reparatie en geen versmalling uit netheid.** De werkvoorraad van de taak
 selecteerde op alle vier de besluitsoorten en wierp niets weg op
@@ -420,6 +442,7 @@ gh variable list --repo MounirVB/vibe-website
 | `auto_publiceren_aan` | **false** (standaard) | `intel.publicatiebeleid` |
 | `auto_uitgifte_aan` | **false** (standaard, migratie 0058) | `intel.publicatiebeleid` |
 | migratie 0059 toegepast | nodig voor de machinepoort; zonder `intel.machine_tokens` weigert elke aanroep | `npm run migreer` |
+| migratie 0060 toegepast | nodig om een BOUNCE te kunnen vastleggen; `intel.meld_berichten.geweigerd_op` | `npm run migreer` |
 
 Deze twee kolommen zijn de enige echte aan/uit van de hele keten. Er is
 geen pad in de code dat ze zelf aanzet.
@@ -479,6 +502,31 @@ niets.
 **Verwacht:** `curl .../machine/stand` geeft `200` met
 `"omgeving":"productie"`. Zonder de sleutel: `503`. Met een verkeerde
 sleutel: `401`.
+
+### Stap 1b — de OIDC-proef, ZONDER schrijfcredential
+
+**Nieuw in V1.2, en de reden dat deze stap bestaat.** Tot V1.1 eiste stap
+1 van de werkstroom `UITGIFTE_TOKEN`, ook in droge modus. Daardoor was de
+authenticatie niet te bewijzen zonder eerst een schrijfcredential aan te
+maken die voor die proef niets doet — gemeten: de enige twee stappen die
+OIDC doen (2 en 3) gebruiken dat token NIET.
+
+Een droge ronde eist nu alleen de leesconfiguratie. Het schrijfpad hangt
+aan een TWEEDE uitgang, `magSchrijven`, die elke stap met het token apart
+eist (4a, 4d, 6, 7, 8) — en `ops/werkstroompoort.mjs` toetst die
+koppeling, zodat één weggevallen regel hem niet stil opheft.
+
+| stand | uitkomst |
+|---|---|
+| droog, niets gezet | groen, `NIET GEACTIVEERD` |
+| **droog, alleen `INTEL_API_BASIS`** | **groen, `geactiveerd=ja`, `magSchrijven=nee` — de OIDC-proef draait** |
+| droog, alles gezet | groen, `magSchrijven=nee` — droog schrijft nooit |
+| echt, half gezet | **rood**, `HALF geconfigureerd` |
+| echt, alles gezet | `magSchrijven=ja` |
+
+Een droge ronde komt bovendien per ontwerp niet verder dan het eind van
+stap 3: stap 4b zet daar `doorgaan=nee` met *"geen checkout, geen
+bestand, geen commit, geen PR, geen merge"*.
 
 ### Stap 2 — de werkstroom droog draaien
 
@@ -545,12 +593,61 @@ te wachten.
 | gemerged en uitgerold, maar de inhoud blijkt fout | het artikel staat publiek | `npm run publiceer -- --terugdraaien <publicatieId> --door <adres>` zet het record terug (de volledige vorige inhoud staat in `publicaties.vorige_inhoud`), daarna een revert-PR |
 | drie keer op rij mislukt | niets extra | de stroomonderbreker staat uit; de wachtrij blijft leeg tot er één geslaagde `PR_GEMERGED` of `LIVE_GEVERIFIEERD` is. Zet hem niet "even terug": de bedoeling is dat een mens kijkt |
 
-**De noodstop.** Zet `auto_uitgifte_aan = false` op de actieve
-beleidsrij. De volgende ronde meldt `STOP beleid_uit` en doet niets. Wil
-je ook de goedkeuring stil: `auto_publiceren_aan = false`. Wil je de hele
-machinepoort dicht: verwijder `INTEL_UITGIFTE_REPOSITORY` van
-`vibe-intel-api`; dan antwoordt elke route `503` en stopt de werkstroom
-op stap 2. Een lopende ronde wordt daarmee niet afgebroken — de
+### De noodstop: twee mechanismen, en één ervan werkt NIET onmiddellijk
+
+**PRIMAIR — `auto_uitgifte_aan = false` op de actieve beleidsrij.** Dit
+is de noodstop die je wilt gebruiken. De server leest die vlag **per
+verzoek** uit de database, dus hij werkt bij de volgende aanroep en
+vraagt geen herstart. De ronde meldt dan `STOP beleid_uit` en doet
+niets; gemeten op 9 november 2026 tegen productie:
+
+```
+STOPREDEN: beleid_uit — "beleid 'v1-propose-only': auto_publiceren_aan=false,
+           auto_uitgifte_aan=false. Beide moeten AAN staan"
+OPDRACHTEN: 0    GEWEIGERD: 0    VANDAAG GEPUBLICEERD: 0
+```
+
+Wil je ook de goedkeuring stil: `auto_publiceren_aan = false`. Een
+lopende ronde wordt niet afgebroken — de `concurrency`-groep staat met
+opzet op `cancel-in-progress: false`, want een ronde die tussen de merge
+en de live-verificatie wordt afgekapt laat een publicatie achter die
+publiek staat maar in het logboek op `PR_GEMERGED` blijft hangen.
+
+**SECUNDAIR — de machine-allowlist weghalen, PLUS een herstart.** Hier
+stond dat het verwijderen van `INTEL_UITGIFTE_REPOSITORY` van
+`vibe-intel-api` genoeg was. **Dat is onjuist, en het is gemeten.** Op
+9 november 2026:
+
+| | |
+|---|---|
+| variabele verwijderd om ~11:40Z | de opgeslagen configuratie toonde hem direct niet meer |
+| negen minuten later | `/machine/stand` gaf nog steeds **401**, dus de poort stond nog open |
+| het draaiende proces én een verse `railway ssh`-shell | zagen de variabele nog |
+| laatste deploy | die van het ZETTEN (11:26:47Z) — verwijderen triggert géén herdeploy |
+| na een geforceerde herdeploy | binnen ~70 seconden **503** |
+
+Een noodstop die pas na een herstart werkt, is geen noodstop. De juiste
+handeling is daarom:
+
+```bash
+railway variable delete INTEL_UITGIFTE_REPOSITORY -s vibe-intel-api
+railway redeploy -s vibe-intel-api        # ZONDER DEZE REGEL DOET HET NIETS
+```
+
+En controleer het effect in plaats van het aan te nemen:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' https://vibe-intel-api-production.up.railway.app/machine/stand
+# 503 = de poort is dicht. 401 = hij staat nog open.
+```
+
+**Welke wanneer.** De primaire noodstop stopt de UITGIFTE en laat het
+dashboard, de ingestie en de meldketen draaien; dat is wat je wilt bij
+een inhoudelijk probleem. De secundaire sluit de hele machinepoort en
+vraagt een herstart van `vibe-intel-api`, waarbij het dashboard even weg
+is; dat is wat je wilt bij een vermoeden over de MACHINEWEG zelf — een
+lekkend token, een vreemde run. Geen van beide raakt de database, de
+publicaties of het auditspoor. Een lopende ronde wordt daarmee niet afgebroken — de
 `concurrency`-groep staat met opzet op `cancel-in-progress: false`, want
 een ronde die tussen de merge en de live-verificatie wordt afgekapt,
 laat een publicatie achter die publiek staat maar in het logboek op

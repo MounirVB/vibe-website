@@ -202,6 +202,38 @@ if (existsSync(uitgifte)) {
     /ACTIONS_ID_TOKEN_REQUEST_URL/.test(t) && /oidc\(\)/.test(t),
     "een token werkt precies één keer (migratie 0059), dus hergebruik binnen één run zou falen",
   );
+  /* ---------- 6. elke tokenstap eist OOK het schrijfrecht ----------
+     Sinds V1.2 mag een DROGE ronde draaien zonder UITGIFTE_TOKEN, zodat
+     de OIDC-authenticatie te bewijzen is zonder een schrijfcredential
+     die er voor niets zou zijn. Dat mag nooit betekenen dat een droge
+     ronde alsnog kan pushen, een PR openen of mergen. De grendel is
+     `steps.deur.outputs.magSchrijven == 'ja'` op elke stap die het
+     token in zijn omgeving krijgt — en die koppeling moet hard blijven,
+     want hij is met één weggevallen regel ongedaan te maken. */
+  const stappen = t.split(/\n      - name: /).slice(1);
+  const zonderGrendel = [];
+  for (const st of stappen) {
+    const naam = st.split("\n")[0].trim();
+    const kop = st.split("run:")[0];
+    /* Alleen de kop telt: daar staat `if:` en daar staat `env:`/`token:`. */
+    const gebruiktToken = /UITGIFTE_TOKEN/.test(kop);
+    if (!gebruiktToken) continue;
+    /* DE DEURSTAP IS DE UITZONDERING, en precies één: hij LEEST het
+       token om te beslissen of er geschreven mag worden, en kan zijn
+       eigen uitvoer niet als voorwaarde hebben. De uitzondering hangt
+       aan zijn `id` en niet aan zijn naam, zodat een hernoeming hem niet
+       stil uitsluit. */
+    if (/id:\s*deur/.test(kop)) continue;
+    if (!/magSchrijven == 'ja'/.test(kop)) zonderGrendel.push(naam.slice(0, 44));
+  }
+  toets(
+    "uitgifte.yml: elke stap met UITGIFTE_TOKEN eist magSchrijven",
+    zonderGrendel.length === 0,
+    zonderGrendel.length === 0
+      ? `${stappen.filter((x) => /UITGIFTE_TOKEN/.test(x.split("run:")[0])).length} tokenstap(pen), alle met de grendel`
+      : `zonder grendel: ${zonderGrendel.join(" ;; ")}. Een droge ronde zou daarmee kunnen schrijven`,
+  );
+
   toets(
     "uitgifte.yml: forceert geen merge",
     !/--admin|--force(?!-with-lease)/.test(t),

@@ -202,6 +202,21 @@ jobs:
         # (zie oidc.ts). Wat hier wordt geteld is uitsluitend of de
         # NAMEN gezet zijn.
         #
+        # EN SINDS V1.2 HANGT DE EIS AAN DE STAND VAN DE RONDE, want
+        # anders is de authenticatie niet te bewijzen zonder een
+        # schrijfcredential die er voor niets is. Gemeten: de enige twee
+        # stappen die OIDC doen — 2 en 3 — gebruiken UITGIFTE_TOKEN
+        # NIET; dat token zit alleen in stap 4a, 4d, 6, 7 en 8. En een
+        # droge ronde komt per ontwerp niet verder dan het eind van stap
+        # 3: stap 4b zet daar `doorgaan=nee` met "geen checkout, geen
+        # bestand, geen commit, geen PR, geen merge".
+        #
+        # Een DROGE ronde eist daarom alleen de leesconfiguratie. Een
+        # ECHTE ronde eist het token er onverkort bij, en dat is geen
+        # formaliteit: `magSchrijven` hieronder is een TWEEDE grendel op
+        # elke stap die het token gebruikt, zodat een latere wijziging
+        # een droge ronde niet per ongeluk kan laten schrijven.
+        #
         # TWEE SOORTEN STILTE, EN DAT IS HET HELE PUNT VAN DEZE STAP.
         # "Niets geconfigureerd" betekent: deze keten is niet
         # geactiveerd, en dat is de BEDOELDE stand — auto_uitgifte_aan
@@ -221,13 +236,20 @@ jobs:
           # DE ACTIVERINGSSIGNALEN ZIJN DEZE TWEE. Het publiek heeft een
           # ingebouwde standaard en is dus nooit leeg; dat is geen signaal.
           gezet=0
+          [ -n "${UITGIFTE_TOKEN:-}" ] && gezet=$((gezet + 1))
+          [ -n "${API_BASIS:-}" ] && gezet=$((gezet + 1))
+
+          # WAT ER MOET ZIJN, afhankelijk van de stand van deze ronde.
           ontbreekt=""
-          if [ -n "${UITGIFTE_TOKEN:-}" ]; then gezet=$((gezet + 1)); else ontbreekt="${ontbreekt} UITGIFTE_TOKEN"; fi
-          if [ -n "${API_BASIS:-}" ]; then gezet=$((gezet + 1)); else ontbreekt="${ontbreekt} INTEL_API_BASIS"; fi
+          [ -n "${API_BASIS:-}" ]     || ontbreekt="${ontbreekt} INTEL_API_BASIS"
           [ -n "${OIDC_AUDIENCE:-}" ] || ontbreekt="${ontbreekt} INTEL_OIDC_AUDIENCE"
+          if [ "${DROOG}" != "ja" ]; then
+            [ -n "${UITGIFTE_TOKEN:-}" ] || ontbreekt="${ontbreekt} UITGIFTE_TOKEN"
+          fi
 
           if [ "${gezet}" -eq 0 ]; then
             echo "geactiveerd=nee" >> "${GITHUB_OUTPUT}"
+            echo "magSchrijven=nee" >> "${GITHUB_OUTPUT}"
             echo "::notice::De autonome uitgifte is niet geactiveerd; er is geen configuratie gezet. Deze ronde stopt zonder iets te doen."
             {
               echo "## Autonome uitgifte — NIET GEACTIVEERD"
@@ -242,6 +264,7 @@ jobs:
 
           if [ -n "${ontbreekt}" ]; then
             echo "geactiveerd=nee" >> "${GITHUB_OUTPUT}"
+            echo "magSchrijven=nee" >> "${GITHUB_OUTPUT}"
             echo "::error::HALF geconfigureerd. Ontbrekend:${ontbreekt}. Deze werkstroom doet niets zonder; zie intelligence/docs/AUTONOME-NIEUWSPUBLICATIE.md paragraaf 5."
             {
               echo "## Autonome uitgifte — NIET GEDRAAID"
@@ -257,12 +280,20 @@ jobs:
           # variabelen niet, en dan is er geen identiteit te bewijzen.
           # Dat hoort hier te stranden en niet pas bij de eerste aanroep.
           if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]; then
-            echo "::error::GitHub injecteert geen OIDC-variabelen. Deze job mist 'permissions: id-token: write'."
+            echo "magSchrijven=nee" >> "${GITHUB_OUTPUT}"
+          echo "::error::GitHub injecteert geen OIDC-variabelen. Deze job mist 'permissions: id-token: write'."
             exit 1
           fi
           echo "geactiveerd=ja" >> "${GITHUB_OUTPUT}"
+          # DE TWEEDE GRENDEL. Alleen een echte ronde MET token mag
+          # schrijven; elke stap die het token gebruikt eist dit apart.
+          if [ "${DROOG}" != "ja" ] && [ -n "${UITGIFTE_TOKEN:-}" ]; then
+            echo "magSchrijven=ja" >> "${GITHUB_OUTPUT}"
+          else
+            echo "magSchrijven=nee" >> "${GITHUB_OUTPUT}"
+          fi
           echo "configuratie aanwezig; het OIDC-kanaal van GitHub staat open"
-          echo "stand van deze ronde: droog=${DROOG}"
+          echo "stand van deze ronde: droog=${DROOG}, schrijven toegestaan: $([ "${DROOG}" != "ja" ] && [ -n "${UITGIFTE_TOKEN:-}" ] && echo ja || echo nee)"
 
       # ----------------------------------------------------------------
       #  1b. Het gereedschap dat elke volgende stap gebruikt.
@@ -605,7 +636,7 @@ jobs:
       #  4. De bytes schrijven, bouwen, committen en pushen.
       # ----------------------------------------------------------------
       - name: 4a — Checkout van main met volledige historie
-        if: steps.wachtrij.outputs.doorgaan == 'ja'
+        if: steps.wachtrij.outputs.doorgaan == 'ja' && steps.deur.outputs.magSchrijven == 'ja'
         uses: actions/checkout@v4
         with:
           ref: main
@@ -702,7 +733,7 @@ jobs:
           node scripts/seo/bouw.mjs --offline
 
       - name: 4d — Committen en pushen
-        if: steps.wachtrij.outputs.doorgaan == 'ja'
+        if: steps.wachtrij.outputs.doorgaan == 'ja' && steps.deur.outputs.magSchrijven == 'ja'
         id: push
         env:
           GIT_NAAM: ${{ vars.UITGIFTE_GIT_NAAM || github.actor }}
@@ -802,7 +833,7 @@ jobs:
       #  6. De pull request.
       # ----------------------------------------------------------------
       - name: 6 — Pull request openen en PR_AANGEMAAKT melden
-        if: steps.wachtrij.outputs.doorgaan == 'ja'
+        if: steps.wachtrij.outputs.doorgaan == 'ja' && steps.deur.outputs.magSchrijven == 'ja'
         id: pr
         env:
           GH_TOKEN: ${{ secrets.UITGIFTE_TOKEN }}
@@ -896,7 +927,7 @@ jobs:
       #  7. Wachten op de drie verplichte checks.
       # ----------------------------------------------------------------
       - name: 7 — Wachten tot de drie verplichte checks groen zijn
-        if: steps.wachtrij.outputs.doorgaan == 'ja'
+        if: steps.wachtrij.outputs.doorgaan == 'ja' && steps.deur.outputs.magSchrijven == 'ja'
         env:
           GH_TOKEN: ${{ secrets.UITGIFTE_TOKEN }}
           COMMIT: ${{ steps.push.outputs.commit }}
@@ -1006,7 +1037,7 @@ jobs:
       #  8. De merge. Via de gewone API; GitHub mag weigeren.
       # ----------------------------------------------------------------
       - name: 8 — Squash-mergen en PR_GEMERGED melden
-        if: steps.wachtrij.outputs.doorgaan == 'ja'
+        if: steps.wachtrij.outputs.doorgaan == 'ja' && steps.deur.outputs.magSchrijven == 'ja'
         id: merge
         env:
           GH_TOKEN: ${{ secrets.UITGIFTE_TOKEN }}

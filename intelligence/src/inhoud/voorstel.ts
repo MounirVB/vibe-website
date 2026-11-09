@@ -1578,9 +1578,18 @@ export async function voorstelronde(
   pool: Pool,
   organisatieId: number,
   kennis: SitekennisBestand,
-  opties: { vandaag?: string; kandidaatIds?: readonly number[] } = {},
+  opties: {
+    vandaag?: string;
+    kandidaatIds?: readonly number[];
+    /** Hoeveel kandidaten deze ronde ten hoogste verwerkt. */
+    max?: number;
+    /** Hoeveel kandidaten ten hoogste per DOELPAGINA, binnen die ronde. */
+    maxPerDoelpagina?: number;
+  } = {},
 ): Promise<VoorstelrondeRapport> {
   const vandaag = opties.vandaag ?? new Date().toISOString().slice(0, 10);
+  const max = opties.max ?? 25;
+  const maxPerDoelpagina = opties.maxPerDoelpagina ?? 3;
 
   const ids =
     opties.kandidaatIds ??
@@ -1588,12 +1597,49 @@ export async function voorstelronde(
       await metOrganisatie(pool, { organisatieId }, (c) =>
         rijen<{ id: number }>(
           c,
-          `select k.id
-             from intel.inhoud_kandidaten k
-            where k.besluit = 'UPDATE_EXISTING'
-              and k.doel_pagina_id is not null
-              and k.status <> 'afgehandeld'
-            order by k.id`,
+          /* EEN EIGEN BUDGET VOOR DE KENNISSTROOM, EN EEN EIGEN
+             EERLIJKHEID. ---------------------------------------------
+             Hier stond `order by k.id` zonder grens. Dat is vandaag
+             onschuldig — 20 open kandidaten — maar het is dezelfde vorm
+             als het defect dat de NIEUWSketen stillegde: een
+             werkvoorraad zonder grens die bij groei een hele ronde
+             opeet. bouwVoorstel() doet per kandidaat echt werk (de
+             pagina lezen, claims wegen, de vier controles), dus een
+             ronde met duizend kandidaten zou de taak laten aflopen en
+             elke volgende ronde opnieuw bij k.id = 1 beginnen. Dan
+             komen de hoogste ids nooit aan de beurt.
+
+             TWEE SLEUTELS, en ze doen verschillende dingen.
+             `maxPerDoelpagina` verdeelt BINNEN de ronde: vijf
+             kandidaten die alle vijf naar
+             /kennis/transportvermogen-versus-aansluitwaarde wijzen —
+             precies de stapel die deze laag in oktober 2026 aantrof —
+             mogen niet samen het budget vullen terwijl andere pagina's
+             wachten. `max` begrenst de ronde zelf.
+
+             DE ORDE IS DEZELFDE als in het venster, zodat bij een
+             botsing de LAAGSTE id wint. Dat is bewust anders dan bij
+             nieuws (daar wint de hoogste score): een voorstel is een
+             PATCH op een bestaande pagina en de oudste openstaande
+             patch hoort eerst te worden afgehandeld, anders blijft hij
+             eeuwig achter nieuwere staan.
+
+             NIETS VERZWAKT: wat buiten het budget valt blijft op zijn
+             status staan en komt de volgende ronde terug. Er wordt niets
+             afgewezen en niets overgeslagen — het schuift op. */
+          `with w as (
+             select k.id, k.doel_pagina_id,
+                    row_number() over (partition by k.doel_pagina_id order by k.id) as n_pagina
+               from intel.inhoud_kandidaten k
+              where k.besluit = 'UPDATE_EXISTING'
+                and k.doel_pagina_id is not null
+                and k.status <> 'afgehandeld'
+           )
+           select w.id from w
+            where w.n_pagina <= $1
+            order by w.id
+            limit $2`,
+          [maxPerDoelpagina, max],
         ),
       )
     ).map((r) => r.id);
