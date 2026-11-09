@@ -293,7 +293,21 @@ ${prose}
   </section>`;
 }
 
-/** Kaartenrij. kaarten: [{kop, tekst, route?, label?}] */
+/** Kaartenrij. kaarten: [{kop, tekst, route?, label?}]
+    DEZELFDE FOUT ALS IN verwant(), EN ZE STOND HIER NOG.
+    Deze bouwsteen wikkelde zijn kaarten in `ve-cols ve-cols--gap-xl` — letterlijk
+    dezelfde string, zonder kolomtelling-modifier. De kolomregels in vibe.css
+    hangen alleen aan .ve-cols--2 t/m --5, dus EEN kolom op elke breedte.
+    Geteld op basis 8e3e5875: 56 rasters op 44 pagina's (kennis/ 15, sectoren/ 11,
+    toepassingen/ 9, en 9 wortelpagina's), met 2 tot 12 kaarten per raster.
+    Gemeten op /sectoren bij 1440px: vier rasters van 5, 5, 6 en 5 kaarten, elk
+    1184px breed, sectiehoogtes 1398, 1422, 1714 en 1302px — samen 36% van de
+    paginahoogte. Op /regios: 12 provinciekaarten in een kolom, 3805px hoog.
+    Het ergste gevolg is niet de lege breedte maar de LEESMAAT: de kaarttekst
+    liep over 1054px door, gemeten 99 tot 150 tekens per regel, terwijl het
+    systeem zijn eigen leesbreedte op .ve-measure 42rem (672px) zet.
+    `.ve-kaarten` draagt nu een eigen auto-fit raster. Geen vaste --N, want het
+    kaartaantal loopt van 2 tot 12; auto-fit kan niet opnieuw vergeten worden. */
 export function kaarten({ id, kop, lead, kaarten: lijst, variant = '' }) {
   const cellen = lijst
     .map((k) => {
@@ -307,7 +321,7 @@ export function kaarten({ id, kop, lead, kaarten: lijst, variant = '' }) {
       <div class="ve-head">
         <h2 class="ve-h2">${kop}</h2>${lead ? `\n        <p class="ve-lead">${lead}</p>` : ''}
       </div>
-      <div class="ve-cols ve-cols--gap-xl">
+      <div class="ve-kaarten">
 ${cellen}
       </div>
     </div>

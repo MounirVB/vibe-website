@@ -62,6 +62,18 @@
   --ve-line-strong:rgba(195,197,217,.75);
   --ve-line-on-dark:rgba(255,255,255,.10);
 
+  /* RAND VAN EEN BESTURINGSELEMENT — losgetrokken van de haarlijn hierboven.
+     --ve-line-strong is een DECORATIEVE lijn: over wit gemengd komt hij uit op
+     rgb(210,212,227) en dat is 1,47:1 tegen zijn omgeving. Voor een scheiding
+     is dat prima, maar hij lag ook op de rand van de invoervelden, de
+     secundaire knop, de mobiele menuknop en de knop 'Alleen noodzakelijk' in
+     de toestemmingsmelding. Een besturingselement heeft 3:1 nodig; 1,47 haalt
+     de helft. Op /contact — de enige pagina waar een lead ontstaat — was
+     daardoor niet te zien waar een veld begint en eindigt.
+     --ve-slate-400 heet hierboven al 'outline' en geeft 4,49:1 tegen wit.
+     De decoratieve haarlijn blijft ongemoeid, dus .ve-fase verandert niet. */
+  --ve-edge-control:var(--ve-slate-400);
+
   /* status — alleen als er echt een toestand te melden is */
   --ve-live:#10b981;       /* Constitution: Live Dispatch Green */
   --ve-live-bright:#26e1a0;/* tertiary-fixed-dim, op donker     */
