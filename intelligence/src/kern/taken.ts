@@ -137,6 +137,26 @@ export const PLAN: readonly PlanRegel[] = [
   { soort: "documentclassificatie", prioriteit: 21, toelichting: "documentversies zonder of met een verouderde soort classificeren" },
   { soort: "herbeoordeling", prioriteit: 22, toelichting: "historische claims wegen onder de huidige documentsoort- en modaliteitsregels" },
   { soort: "nieuwsselectie", prioriteit: 35, toelichting: "gebeurtenissen op nieuwswaarde wegen en NEWS_ITEM-kandidaten schrijven" },
+  /* NIEUW — DE BRUG DIE ER NIET WAS.
+     Gemeten op 9 november 2026: `maakConcept()` had in heel src/ precies
+     één aanroeper, en dat was cli/concept.ts. PLAN kende geen soort
+     'concept' en REGISTER geen handler. De keten liep dus tot en met de
+     kandidaat (nieuwsselectie, 35) en stopte daar: de werkvoorraad van
+     de autopublicatie vraagt inhoudsversies op 'ter_review', en er was
+     geen enkele geplande taak die zo'n versie maakte. Een
+     "automatische nieuwsredactie" zonder deze schakel keurt dus niets
+     goed, want er is nooit iets om goed te keuren.
+
+     PRIORITEIT 38: direct ná de nieuwsselectie die de kandidaten
+     schrijft en vóór voorstel (60) en publiceren (70). Daardoor legt
+     één uurlijkse ronde de hele weg af: gebeurtenis -> kandidaat ->
+     concept -> beleidsgoedkeuring. Dat is bedoeld, want een nieuwsitem
+     dat drie uur op een volgende taak wacht is geen nieuws meer.
+
+     DEZE TAAK PUBLICEERT NIETS. maakConcept() zet een versie op
+     'ter_review' met de poortuitslag erbij; wat daarna gebeurt beslist
+     het publicatiebeleid, en dat staat standaard uit. */
+  { soort: "concept", prioriteit: 38, toelichting: "van NEWS_ITEM-kandidaten een conceptartikel met poortuitslag maken" },
   { soort: "regio", prioriteit: 40, toelichting: "gebieden binden en regiovoorstellen maken" },
   { soort: "signaleren", prioriteit: 50, toelichting: "commerciele signalen uit SALES_SIGNAL-kandidaten" },
   /* NIEUW IN 3.0.4. Moet ná beoordelen, want hij werkt de kandidaten af
@@ -692,6 +712,123 @@ export const REGISTER: Record<string, Handler> = {
       `geschreven ${r.kandidatenGeschreven}` +
       (gronden ? ` — zwaarste gronden: ${gronden}` : "") +
       (r.top.length ? ` — hoogste: ${r.top[0]!.score}/100 g${r.top[0]!.gebeurtenisId}` : "")
+    );
+  },
+
+  /**
+   * VAN KANDIDAAT NAAR CONCEPT — de schakel die de keten miste.
+   *
+   * WAT DEZE TAAK WEL DOET. Hij neemt de openstaande kandidaten die de
+   * nieuwsselectie heeft geschreven en laat `maakConcept()` er een
+   * inhoudsversie van maken: titel, lead, H2-structuur, SEO-velden,
+   * canonical, interne links, bronvermelding, en alle zeventien poorten
+   * met hun uitslag. De versie komt op 'ter_review'.
+   *
+   * WAT HIJ MET OPZET NIET DOET. Hij keurt niets goed en publiceert
+   * niets. Een concept met geslaagde poorten is nog steeds een concept;
+   * de beleidsgoedkeuring in de taak 'publiceren' (70) beslist daarover,
+   * en die staat standaard uit.
+   *
+   * DRIE PER RONDE, EN DAT IS EEN REDACTIONELE KEUZE. De kandidatenlijst
+   * kan lang zijn na een inhaalronde, en een nieuwskanaal dat in één uur
+   * twintig berichten publiceert is geen redactie maar een sluis. Drie
+   * per uurlijkse ronde is ruim genoeg om een echte nieuwsdag bij te
+   * houden en smal genoeg om zichtbaar te blijven. Het getal staat als
+   * constante in het bestand zodat wie hem verruimt ziet wat hij
+   * verruimt.
+   *
+   * IDEMPOTENT ZONDER EXTRA BOEKHOUDING. maakConcept() zet de kandidaat
+   * op 'in_concept' (inhoud/concept.ts), en de werkvoorraad hieronder
+   * vraagt 'open'. Twee rondes achter elkaar leveren dus niet twee
+   * artikelen over dezelfde gebeurtenis.
+   *
+   * DE CLAIMPOORT STAAT VOORAAN, net als bij de besluitmotor en de
+   * nieuwsselectie: zolang er claims op herbeoordeling wachten mag deze
+   * laag niet bouwen, want dan rust het artikel op een populatie die nog
+   * kan verschuiven.
+   */
+  async concept(pool, organisatieId) {
+    const { maakConcept, CONCEPTEERBARE_BESLUITEN } = await import("../inhoud/concept.ts");
+    const { eisHerbeoordeling } = await import("../pijplijn/claimpoort.ts");
+    const { metOrganisatie, rijen } = await import("./db.ts");
+
+    const MAX_PER_RONDE = 3;
+    /* EN EEN PLAFOND OP DE ONGELEZEN STAPEL.
+       Drie per ronde is per uur te overzien, maar een etmaal van 24
+       rondes is dat niet: dan staan er zonder tegenwicht tientallen
+       concepten op review. Een redactie met tien ongelezen stukken
+       heeft geen elfde nodig; de kandidaten blijven gewoon staan en de
+       volgende ronde pakt ze op zodra er ruimte is. Dit plafond geldt
+       voor de HELE stapel, niet per ronde, en dat is het verschil
+       tussen een wachtrij en een lawine. */
+    const MAX_OPEN_CONCEPTEN = 10;
+
+    await metOrganisatie(pool, { organisatieId }, (c) =>
+      eisHerbeoordeling(c, organisatieId, "de conceptgeneratie"),
+    );
+
+    const open = await metOrganisatie(pool, { organisatieId }, async (c) => {
+      const r = await rijen<{ n: number }>(
+        c,
+        `select count(*)::int as n
+           from intel.inhoud_versies
+          where organisatie_id = $1 and status = 'ter_review'`,
+        [organisatieId],
+      );
+      return r[0]?.n ?? 0;
+    });
+    if (open >= MAX_OPEN_CONCEPTEN) {
+      return (
+        `overgeslagen: er staan al ${open} concepten op review en het plafond is ` +
+        `${MAX_OPEN_CONCEPTEN}; de kandidaten blijven staan`
+      );
+    }
+
+    /* DEZELFDE WERKVOORRAAD ALS DE CLI, en met opzet niet een eigen
+       variant: cli/concept.ts leest 'open' kandidaten met een
+       concepteerbaar besluit, op score af. Twee lijsten zouden twee
+       waarheden zijn over wat er te doen staat. */
+    const kandidaten = await metOrganisatie(pool, { organisatieId }, (c) =>
+      rijen<{ id: number; besluit: string; totaalscore: number | null }>(
+        c,
+        `select id, besluit, totaalscore
+           from intel.inhoud_kandidaten
+          where organisatie_id = $1
+            and status = 'open'
+            and besluit = any($3::text[])
+          order by totaalscore desc nulls last, id
+          limit $2`,
+        /* NOOIT MEER DAN DE RUIMTE DIE ER IS. Staan er al acht
+           concepten op review, dan haalt deze ronde er twee en niet
+           drie. */
+        [organisatieId, Math.min(MAX_PER_RONDE, MAX_OPEN_CONCEPTEN - open), [...CONCEPTEERBARE_BESLUITEN]],
+      ),
+    );
+
+    if (kandidaten.length === 0) return "geen openstaande kandidaten";
+
+    let poortenOk = 0;
+    let geblokkeerd = 0;
+    const regels: string[] = [];
+    for (const k of kandidaten) {
+      /* EEN GEBLOKKEERD CONCEPT IS GEEN TAAKFOUT. De poorten zijn de
+         meting; een concept dat ze niet haalt is een uitkomst die in
+         het log hoort, niet een storing die de backoff moet laten
+         draaien. Alleen een onverwachte fout uit maakConcept() zelf
+         (ontbrekend artefact, databasefout) hoort de taak te laten
+         falen, en die werpt daar vanzelf. */
+      const r = await maakConcept(pool, organisatieId, k.id);
+      if (r.poortenGeslaagd) poortenOk += 1;
+      else geblokkeerd += 1;
+      regels.push(
+        `k${k.id}->v${r.inhoudVersieId} ${r.pad}` +
+          (r.poortenGeslaagd ? " POORTEN OK" : ` GEBLOKKEERD(${r.blokkades.length})`),
+      );
+    }
+
+    return (
+      `kandidaten ${kandidaten.length} van maximaal ${MAX_PER_RONDE}, ` +
+      `poorten ok ${poortenOk}, geblokkeerd ${geblokkeerd} — ${regels.join(" ;; ")}`
     );
   },
 

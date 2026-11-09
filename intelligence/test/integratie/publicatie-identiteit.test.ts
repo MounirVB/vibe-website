@@ -45,6 +45,7 @@ import {
   legPublicatiebesluitVast,
   systeemActor,
   verifieerMens,
+  type SysteemGrond,
 } from "../../src/inhoud/actor.ts";
 import { draaiTerug, keurGoed, publiceer } from "../../src/inhoud/publiceer.ts";
 
@@ -199,11 +200,22 @@ describe("identiteit en bevoegdheid bij publiceren", () => {
     }
   });
 
-  test("7b · een systeemactor zonder grond is geen herkomst", () => {
-    assert.throws(() => systeemActor(""), /grond/);
-    assert.throws(() => systeemActor("  "), /grond/);
-    const a = systeemActor("automatische ronde");
+  test("7b · een systeemactor zonder grond UIT HET REGISTER is geen herkomst", () => {
+    /* De cast is het punt van deze zaak. De typechecker houdt een
+       onbekende sleutel tegen bij het compileren; deze toets gaat na dat
+       de RUNTIME-controle er ook nog is, want een waarde uit de
+       database, uit JSON of uit JavaScript komt langs de typechecker. */
+    assert.throws(() => systeemActor("" as SysteemGrond), /register|grond/);
+    assert.throws(() => systeemActor("  " as SysteemGrond), /register|grond/);
+    assert.throws(() => systeemActor("automatische ronde" as SysteemGrond), /register/);
+    assert.throws(() => systeemActor("uitgifte" as SysteemGrond), /register/);
+    const a = systeemActor("taak:gepland");
     assert.equal(a.soort, "systeem");
+    assert.equal(a.soort === "systeem" && a.grond, "taak:gepland");
+    assert.ok(
+      a.soort === "systeem" && a.toelichting.length > 10,
+      "de toelichting komt uit het register, niet van de aanroeper",
+    );
   });
 
   /* ---------------- de databasegrendel uit 0057 ---------------- */
@@ -247,9 +259,11 @@ describe("identiteit en bevoegdheid bij publiceren", () => {
         door_gebruiker_id: number | null;
         door_rol: string | null;
         motivatie: string;
-        poortresultaten: { fase?: string };
+        beleid_versie: string | null;
+        poortresultaten: { fase?: string; grond?: string };
       }>(
-        `select besluit, actor_soort, door_gebruiker_id, door_rol, motivatie, poortresultaten
+        `select besluit, actor_soort, door_gebruiker_id, door_rol, motivatie, beleid_versie,
+                poortresultaten
            from intel.publicatiebesluiten where inhoud_versie_id = $1 order by id`,
         [versieId],
       );
@@ -358,7 +372,7 @@ describe("identiteit en bevoegdheid bij publiceren", () => {
       keurGoed(c, v.versieId, chef, "akkoord"),
     );
     const rapport = await publiceer(db.pool, org, v.versieId, {
-      actor: systeemActor("automatische publicatieronde onder beleid v1-propose-only"),
+      actor: systeemActor("uitgifte:record", { beleidVersie: "v1-propose-only" }),
       siteWortel: site,
     });
     assert.ok(rapport.geschreven, rapport.reden);
@@ -368,7 +382,9 @@ describe("identiteit en bevoegdheid bij publiceren", () => {
     assert.ok(p);
     assert.equal(p.actor_soort, "systeem");
     assert.equal(p.door_gebruiker_id, null, "het systeem heeft met opzet geen gebruikersrij");
-    assert.match(p.motivatie, /\[automatische publicatieronde onder beleid v1-propose-only\]/);
+    assert.match(p.motivatie, /\[uitgifte:record\]/, "de grond staat leesbaar in de motivatie");
+    assert.equal(p.poortresultaten.grond, "uitgifte:record", "en machineleesbaar in de meting");
+    assert.equal(p.beleid_versie, "v1-propose-only", "0052 eist het mandaat bij een automatisch besluit");
   });
 
   test("13 · een mens en het systeem zijn in het logboek niet te verwisselen", async () => {
@@ -392,7 +408,7 @@ describe("identiteit en bevoegdheid bij publiceren", () => {
         inhoudVersieId: v.versieId,
         besluit: "ingediend",
         fase: "PR_AANGEMAAKT",
-        actor: systeemActor("geplande taak"),
+        actor: systeemActor("taak:gepland", { beleidVersie: "v1-propose-only" }),
         motivatie: "door een taak",
       });
     });

@@ -338,6 +338,40 @@ try {
     );
   }
 
+  /* ---------------- 38. de autonome uitgifte staat uit ----------------
+     NIEUW BIJ DE AUTONOME UITGIFTE. Zaak 8 hierboven toetst dat geen
+     beleidsregel hoog risico automatisch toestaat. Daar komt nu een
+     tweede vraag bij, en die gaat over de zwaarste schakelaar die dit
+     platform heeft: `auto_uitgifte_aan` laat het zelf naar main mergen
+     en daarmee een productiedeploy van een publieke website doen.
+
+     Deze zaak meet DAT hij uit staat. Dat is geen wens maar de
+     afgesproken toestand: activeren is een apart besluit van de
+     eigenaar, en als die schakelaar ooit per ongeluk aan gaat — door
+     een migratie, een zaailoop of een handmatige update — hoort de
+     poort dat te zien in plaats van het pas te merken aan een artikel
+     dat publiek staat. */
+  {
+    const r = await metOrganisatie(pool, { organisatieId }, (c) =>
+      rijen<{ versie: string; uitgifte: boolean; publiceren: boolean }>(
+        c,
+        `select versie, auto_uitgifte_aan as uitgifte, auto_publiceren_aan as publiceren
+           from intel.publicatiebeleid
+          where organisatie_id = $1 and actief`,
+        [organisatieId],
+      ),
+    );
+    const aan = r.filter((x) => x.uitgifte);
+    meld(
+      38,
+      "De autonome uitgifte staat uit: geen beleidsregel mag zelf naar main mergen",
+      aan.length === 0 ? "PASS" : "FAIL",
+      aan.length === 0
+        ? `${r.length} actieve beleidsregel(s), alle met auto_uitgifte_aan = false`
+        : `AAN bij: ${aan.map((x) => x.versie).join(", ")}`,
+    );
+  }
+
   /* ---------------- 9. publicatieketen en terugdraaien ---------------- */
   {
     const r = draai("node", [join(SITE, "scripts", "seo", "qa-nieuws.mjs")], SITE);

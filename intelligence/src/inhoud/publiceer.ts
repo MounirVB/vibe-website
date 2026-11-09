@@ -55,6 +55,7 @@ import {
 import { RECHT_BEOORDELEN } from "./beoordeling.ts";
 import {
   heeftRouteregister,
+  type ArtefactSiteKennis,
   leesRouteregister,
   leesRouteStaten,
   routeVoorCluster,
@@ -320,6 +321,31 @@ export type PublicatieRapport = {
   readonly sitemapBijgewerkt: boolean;
   readonly publicatieId: number | null;
   readonly reden: string;
+  /**
+   * Het registerrecord zoals het op schijf zou staan, alleen gevuld bij
+   * `alleenRecord`.
+   *
+   * WAAROM DIT HIER HOORT EN NIET IN EEN TWEEDE FUNCTIE. De autonome
+   * uitgifte laat het schrijven door een uitvoerder doen die de hele
+   * repo heeft (een GitHub-werkstroom), terwijl alleen de SERVER de
+   * database heeft. Die uitvoerder mag de inhoud niet zelf samenstellen
+   * — dan zou de inhoud buiten de poorten om tot stand komen. Hij
+   * krijgt dus de BYTES, met hun hash, en schrijft precies die.
+   *
+   * Dat betekent dat het record op twee plekken nodig is, en daarom
+   * bouwt dezelfde functie hem: zou de uitgifte een eigen bouwer
+   * krijgen, dan konden de twee records uiteen gaan lopen zonder dat
+   * iets dat merkt. `inhoud` is letterlijk wat schrijfNieuwsRecord()
+   * zou schrijven.
+   */
+  readonly record?: {
+    readonly inhoud: string;
+    readonly hash: string;
+    readonly bestandspad: string;
+    readonly redactioneleStaat: string;
+    readonly onderwerpEigenaar: string;
+    readonly bronnen: number;
+  };
 };
 
 export async function publiceer(
@@ -341,9 +367,46 @@ export async function publiceer(
      parameter zou dat gedrag laten bestaan voor elke aanroeper die hem
      vergeet; een verplichte dwingt elke aanroeper om te zeggen wie dit
      doet. Zie inhoud/actor.ts. */
-  opties: { actor: Actor; droog?: boolean; siteWortel?: string },
+  /* DE ROUTEBRON KAN MEE, EN DAARMEE KAN DEZE FUNCTIE OOK ZONDER
+     WERKBOOM WERKEN.
+     `siteKennis` is het routeregister en de routestaten zoals
+     siteKennisUitArtefact() ze uit data/sitekennis.json haalt. In de
+     productiecontainer is dat de ENIGE bron: daar bestaat geen
+     data/inhoud en geen data/seo/routes.json. Niet meegegeven? Dan
+     precies het oude gedrag: lezen uit de sitewortel.
+
+     `alleenRecord` bouwt het registerrecord, draait alle poorten en de
+     bewijshertoets, en schrijft NIETS — geen bestand en geen
+     databaseregel. Dat is wat de autonome uitgifte nodig heeft om een
+     opdracht af te geven. */
+  opties: {
+    actor: Actor;
+    droog?: boolean;
+    siteWortel?: string;
+    siteKennis?: ArtefactSiteKennis;
+    alleenRecord?: boolean;
+    /* DE UITVOERDER HEEFT HET BESTAND AL GESCHREVEN.
+       Bij de autonome uitgifte schrijft een GitHub-werkstroom de bytes
+       in de echte repo; de server doet alles eromheen. Met deze optie
+       draait publiceer() dus WEL alle poorten, de bewijshertoets en de
+       hele boekhouding (intel.publicaties, de status, het
+       pagina-register, het besluit en de auditregel), maar raakt hij
+       geen bestand aan.
+
+       DE HASH IS DE BINDING. publiceer() bouwt het record zelf opnieuw
+       en vergelijkt zijn eigen hash met de hash die de uitvoerder meldt.
+       Komen ze niet overeen, dan heeft de uitvoerder iets anders
+       geschreven dan de poorten hebben gezien, en dat is een weigering.
+       Zonder die vergelijking zou "een uitvoerder die de bytes krijgt"
+       een uitvoerder zijn die de inhoud kan kiezen. */
+    recordVanUitvoerder?: { readonly hash: string; readonly waar: string };
+  },
 ): Promise<PublicatieRapport> {
-  const config = { ...configLezen(), siteWortel: opties.siteWortel ?? configLezen().siteWortel };
+  const config = {
+    ...configLezen(),
+    siteWortel: opties.siteWortel ?? configLezen().siteWortel,
+    siteKennis: opties.siteKennis,
+  };
 
   return metOrganisatie(pool, { organisatieId }, async (c) => {
     const v = await eenRij<{
@@ -367,6 +430,9 @@ export async function publiceer(
       goedgekeurd_op: string | null;
       goedkeurder_naam: string | null;
       interne_links: string[] | null;
+      goedkeuring_soort: string | null;
+      goedkeurend_beleid: string | null;
+      risico_klasse: string | null;
     }>(
       c,
       `select v.id, v.pad, v.titel, v.meta_omschrijving, v.canonieke_url,
@@ -379,6 +445,14 @@ export async function publiceer(
               -- template literal en een backtick sluit die af.
               v.interne_links,
               v.goedgekeurd_op::date::text as goedgekeurd_op,
+              -- DE GOEDKEURINGSCATEGORIE HOORT IN HET RECORD.
+              -- Een door beleid goedgekeurd artikel heeft geen mens in
+              -- goedgekeurd_door (migratie 0052), en het registerrecord
+              -- moet dan zeggen WAT het wel heeft: de beleidsversie en
+              -- de risicoklasse. Zonder die velden kan de poort het
+              -- verschil tussen 'onverantwoord' en 'onder beleid' niet
+              -- zien, en weigert de generator de pagina.
+              v.goedkeuring_soort, v.goedkeurend_beleid, v.risico_klasse,
               g.naam as goedkeurder_naam,
               pr.beheer as pagina_beheer
          from intel.inhoud_versies v
@@ -410,7 +484,20 @@ export async function publiceer(
     if (!v.poorten_geslaagd) {
       return weiger(v.id, `poorten niet geslaagd: ${v.blokkades.join(" | ")}`);
     }
-    if (v.status !== "goedgekeurd") {
+    /* EEN RECORD BOUWEN MAG OOK NA DE PUBLICATIE, PUBLICEREN NIET.
+       `alleenRecord` schrijft niets: hij leidt de bytes van het
+       registerrecord opnieuw af uit de database. Dat moet kunnen voor
+       een versie die al op 'gepubliceerd' staat, want de uitgifte zet
+       die status op fase 2 van de vijf en kan daarna nog stranden op de
+       pull request of de merge. Zonder deze uitzondering was een
+       gestrande keten niet te HERVATTEN: de wachtrij vroeg het record
+       opnieuw op en kreeg een weigering op de status. Gemeten.
+
+       Voor elke andere weg blijft de regel staan: alleen 'goedgekeurd'
+       wordt gepubliceerd, en propose-only is de standaard. */
+    const statusMag =
+      v.status === "goedgekeurd" || (opties.alleenRecord === true && v.status === "gepubliceerd");
+    if (!statusMag) {
       return weiger(
         v.id,
         `status is '${v.status}'; alleen 'goedgekeurd' mag gepubliceerd worden ` +
@@ -453,8 +540,56 @@ export async function publiceer(
     // alleen dubbelop maar actief schadelijk: de volgende generatorrun
     // gooit onze sitemapregel weg en onze pagina staat in geen register.
     // De route is dan een registerrecord, niet een bestand.
-    if (heeftRouteregister(config.siteWortel)) {
+    /* DE REGISTERWEG GELDT OOK MET EEN MEEGEGEVEN ROUTEBRON. Het
+       artefact is voor de twee vragen die deze weg stelt — wie bezit
+       dit cluster, en staat deze link publiek — een volwaardige bron;
+       zie de sectiekop bij siteKennisUitArtefact(). */
+    if (heeftRouteregister(config.siteWortel) || config.siteKennis?.register.aanwezig === true) {
       return await publiceerViaRegister(c, organisatieId, v, config, opties, weiger);
+    }
+
+    /* ---------- IS DIT EIGENLIJK WEL DE WERKBOOM VAN DE SITE? ----------
+       GEEN ROUTEREGISTER KAN TWEE DINGEN BETEKENEN, en tot nu toe nam
+       deze functie stilzwijgend de ene aan.
+
+       (a) Een oude checkout van vóór Release 1: dan is de HTML-weg
+           hieronder juist, en er staat een sitemap.xml naast.
+       (b) Een omgeving die de site helemaal niet heeft. Dat is de
+           PRODUCTIECONTAINER: `rootDirectory: intelligence` maakt /app
+           gelijk aan de intelligence-map, INTEL_SITE_WORTEL is daar
+           leeg, dus siteWortel valt terug op REPO_WORTEL = "/". Gemeten
+           in de productiecontainer op 9 november 2026: /data bestaat
+           niet, /app/.git bestaat niet, en "/" is schrijfbaar want de
+           container draait als root.
+
+       In geval (b) deed deze functie precies het ergste wat ze kon
+       doen: een .html in de wortel van een wegwerpcontainer schrijven,
+       een sitemapregel aan een niet-bestaand bestand proberen te
+       plakken, de versie op 'gepubliceerd' zetten en een rij in
+       intel.publicaties schrijven. De database zegt dan GEPUBLICEERD
+       terwijl er publiek niets verschijnt en het registerrecord niet
+       bestaat — en de volgende deploy gooit het bestand weg.
+
+       cli/publicatieomgeving.ts BESCHRIJFT dit al, en dat was de hele
+       bescherming: een preflight die je met de hand moet draaien. Zodra
+       `auto_publiceren_aan` aan gaat draait de uurlijkse taak 'publiceren'
+       deze keten zonder dat iemand die preflight heeft gezien.
+
+       Daarom is het nu een WEIGERING met een meting. Het onderscheid
+       tussen (a) en (b) is geen vlag maar een bestand: een checkout van
+       de site heeft een sitemap.xml, een container heeft dat niet. Een
+       vlag zou hier verkeerd zijn — wie hem zet om een toets groen te
+       krijgen, zet hem ook in productie. */
+    const sitemapBestand = join(config.siteWortel, "sitemap.xml");
+    if (!existsSync(sitemapBestand)) {
+      return weiger(
+        v.id,
+        `de sitewortel ${config.siteWortel} draagt geen routeregister (data/seo/routes.json) EN ` +
+          `geen sitemap.xml; dit is geen werkboom van vibeenergy.nl. Publiceren zou een bestand ` +
+          `in een omgeving schrijven die de site niet is, terwijl de database 'gepubliceerd' zou ` +
+          `zeggen. Draai 'npm run publicatieomgeving' om te zien wat deze omgeving mist, of zet ` +
+          `INTEL_SITE_WORTEL op een echte checkout`,
+      );
     }
 
     const bestandsnaam = `${v.pad.replace(/^\//, "")}.html`;
@@ -681,6 +816,9 @@ type VersieRij = {
   goedkeurder_naam: string | null;
   /** Berekend door bouwConcept(), getoetst door poort 11. */
   interne_links: string[] | null;
+  goedkeuring_soort: string | null;
+  goedkeurend_beleid: string | null;
+  risico_klasse: string | null;
 };
 
 /**
@@ -695,8 +833,13 @@ async function publiceerViaRegister(
   c: pg.PoolClient,
   organisatieId: number,
   v: VersieRij,
-  config: { siteWortel: string },
-  opties: { actor: Actor; droog?: boolean },
+  config: { siteWortel: string; siteKennis?: ArtefactSiteKennis },
+  opties: {
+    actor: Actor;
+    droog?: boolean;
+    alleenRecord?: boolean;
+    recordVanUitvoerder?: { readonly hash: string; readonly waar: string };
+  },
   weiger: (id: number, reden: string) => PublicatieRapport,
 ): Promise<PublicatieRapport> {
   if (!isNieuwsPad(v.pad)) {
@@ -709,7 +852,7 @@ async function publiceerViaRegister(
     );
   }
 
-  const register = await leesRouteregister(config.siteWortel);
+  const register = config.siteKennis?.register ?? (await leesRouteregister(config.siteWortel));
 
   // De onderwerp-eigenaar: de nationale pagina die de zoekintentie bezit.
   // Komt uit het cluster van de kandidaat, via dezelfde kaart die de
@@ -877,7 +1020,7 @@ async function publiceerViaRegister(
   /* De interne links, nu wél. De routestaten komen uit hetzelfde
      bestand dat weigerNieuws() straks leest (data/seo/routes.json), dus
      wat hier door de filter komt haalt daar dezelfde eis. */
-  const staten = await leesRouteStaten(config.siteWortel);
+  const staten = config.siteKennis?.staten ?? (await leesRouteStaten(config.siteWortel));
   const staatVanRoute = new Map(staten.routes.map((r) => [r.route, r.staat]));
   const links = splitsInterneLinks(v.interne_links ?? [], staatVanRoute, onderwerpEigenaar);
   if (links.afgevallen.length > 0) {
@@ -909,6 +1052,9 @@ async function publiceerViaRegister(
     status: v.status,
     goedgekeurdDoor: v.goedkeurder_naam,
     goedgekeurdOp: v.goedgekeurd_op,
+    goedkeuringSoort: v.goedkeuring_soort === "beleid" ? "beleid" : "mens",
+    goedkeurendBeleid: v.goedkeurend_beleid,
+    risicoKlasse: v.risico_klasse ?? "",
     onderwerpEigenaar,
     oplossingLinks: staten.aanwezig ? links.oplossingLinks : [],
     kennisLinks: staten.aanwezig ? links.kennisLinks : [],
@@ -929,7 +1075,52 @@ async function publiceerViaRegister(
     },
   });
 
-  const uit = await schrijfNieuwsRecord(config.siteWortel, record, { droog: opties.droog });
+  const uit = await schrijfNieuwsRecord(config.siteWortel, record, {
+    /* ALLEENRECORD SCHRIJFT NOOIT. Hij deelt de droge weg van
+       schrijfNieuwsRecord(), die de inhoud wél samenstelt maar het
+       bestand niet aanraakt — precies wat nodig is om de bytes aan een
+       uitvoerder te kunnen geven. */
+    droog:
+      opties.droog === true ||
+      opties.alleenRecord === true ||
+      opties.recordVanUitvoerder !== undefined,
+  });
+
+  /* ---------- DE HASH VAN DE UITVOERDER TEGEN DE EIGEN HASH ---------- */
+  if (opties.recordVanUitvoerder !== undefined) {
+    const eigen = sha256hex(uit.inhoud);
+    if (eigen !== opties.recordVanUitvoerder.hash) {
+      return weiger(
+        v.id,
+        `de uitvoerder meldt een registerrecord met hash ${opties.recordVanUitvoerder.hash.slice(0, 12)} ` +
+          `(${opties.recordVanUitvoerder.waar}), maar dit platform bouwt ${eigen.slice(0, 12)} uit ` +
+          `dezelfde versie. Er is dus iets ANDERS geschreven dan de poorten hebben gezien; ` +
+          `er wordt niets vastgelegd`,
+      );
+    }
+  }
+
+  if (opties.alleenRecord === true) {
+    return {
+      inhoudVersieId: v.id,
+      bestandspad: uit.bestandspad,
+      geschreven: false,
+      sitemapBijgewerkt: false,
+      publicatieId: null,
+      reden:
+        `RECORD GEBOUWD: ${uit.inhoud.length} bytes, redactionele staat ` +
+        `${String(record["redactionele_staat"])}, eigenaar ${onderwerpEigenaar}, ` +
+        `${bronnen.length} bron(nen). Er is niets geschreven.`,
+      record: {
+        inhoud: uit.inhoud,
+        hash: sha256hex(uit.inhoud),
+        bestandspad: uit.bestandspad,
+        redactioneleStaat: String(record["redactionele_staat"]),
+        onderwerpEigenaar,
+        bronnen: bronnen.length,
+      },
+    };
+  }
 
   if (opties.droog) {
     return {

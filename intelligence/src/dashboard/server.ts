@@ -51,6 +51,7 @@ import {
   type Gebruiker,
 } from "./auth.ts";
 import { leesInstelsleutel, wisselInstelsleutelIn } from "./instellen.ts";
+import { maakMachineRouter } from "./machine.ts";
 import {
   esc,
   getalOfOnbekend,
@@ -73,6 +74,17 @@ import { hertoetsInhoudVersie } from "../inhoud/concept.ts";
    (inhoud/publiceer.ts:100-130), dus hij is veilig in het dashboard. */
 import { keurGoed, markdownNaarHtml } from "../inhoud/publiceer.ts";
 import { claimDraagt, herbeoordeelStand } from "../pijplijn/claimpoort.ts";
+/* DE STOPCONDITIES KOMEN UIT DE UITGIFTELAAG ZELF, en worden hier niet
+   nagebouwd. Zou dit dashboard zijn eigen versie van "mag er nu iets
+   uit" hebben, dan kan het scherm groen staan terwijl de machinepoort
+   een lege wachtrij afgeeft — of omgekeerd. De drempels komen mee zodat
+   de pagina kan vertellen WAARTEGEN hij telt. */
+import {
+  MAX_AUTONOME_PUBLICATIES_PER_DAG,
+  MAX_OPEENVOLGENDE_FOUTEN,
+  stopredenen,
+  type Stopreden,
+} from "../uitgifte/opdracht.ts";
 import { IntelFout } from "../kern/fouten.ts";
 import { redacteerFout } from "../kern/geheimen.ts";
 
@@ -100,6 +112,82 @@ import { fileURLToPath } from "node:url";
 
 /** De wortel van de intelligence-map; daar staat data/sitekennis.json. */
 const INTEL_WORTEL = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
+
+/**
+ * De vijf fasen van de uitgifte, in hun orde, met het nummer erbij.
+ *
+ * DEZELFDE VORM ALS DE PUBLICATIESTAND OP /studio/:id, en met opzet
+ * dezelfde woorden. Een lezer die op de detailpagina heeft geleerd dat
+ * fase 3 "pull request aangemaakt" heet, hoort hier niet een ander
+ * woord voor hetzelfde te zien.
+ *
+ * `GOEDGEKEURD` staat er als eerste fase in, want dat is het besluit dat
+ * de rest mogelijk maakt. `GEBLOKKEERD` en `TERUGGEDRAAID` staan er NIET
+ * in: dat zijn geen stappen vooruit maar uitkomsten, en ze krijgen op de
+ * pagina hun eigen rode vlag.
+ */
+const UITGIFTEFASE_LABEL: Readonly<Record<string, string>> = {
+  GOEDGEKEURD: "1 · Goedgekeurd voor publicatie",
+  RECORD_GESCHREVEN: "2 · Registerrecord geschreven",
+  PR_AANGEMAAKT: "3 · Pull request aangemaakt",
+  PR_GEMERGED: "4 · PR gemerged en website uitgerold",
+  LIVE_GEVERIFIEERD: "5 · Publieke URL gecontroleerd",
+  GEBLOKKEERD: "GEBLOKKEERD — de uitgifte strandde",
+  TERUGGEDRAAID: "TERUGGEDRAAID",
+};
+
+/**
+ * Het REGISTER van stopcondities, en waarom het een register is.
+ *
+ * `stopredenen()` geeft alleen de stops terug die NU gelden. Een pagina
+ * die daar een tabel van maakt, toont dus een leeg vakje als er niets
+ * aan de hand is — en dan weet een lezer niet of de condities zijn
+ * gemeten of niet eens bestaan. Dit register noemt ze alle vijf, en de
+ * pagina zet ernaast of de meting ze actief vond.
+ *
+ * `gemeten` staat bij alle vijf op true, en dat hoort zo te blijven:
+ * een sleutel die hier staat terwijl stopredenen() hem nooit pusht,
+ * leest als een bescherming die er niet is. Er stond er één zo
+ * ('websiteversie_verschoven'); die is uit het type gehaald in plaats
+ * van hier als 'niet gemeten' getoond. De verwante bescherming bestaat
+ * wel, maar bij de UITVOERDER: die vergelijkt de productie-SHA uit
+ * /machine/stand met de SHA die hij verwacht.
+ */
+const STOPREDEN_REGISTER: readonly {
+  readonly sleutel: Stopreden["sleutel"];
+  readonly wat: string;
+  readonly gemeten: boolean;
+}[] = [
+  {
+    sleutel: "geen_beleid",
+    wat: "er is geen ACTIEVE beleidsrij; zonder beleid geeft dit platform niets uit",
+    gemeten: true,
+  },
+  {
+    sleutel: "beleid_uit",
+    wat:
+      "auto_publiceren_aan én auto_uitgifte_aan moeten AAN staan; beide staan standaard uit " +
+      "(migratie 0058)",
+    gemeten: true,
+  },
+  {
+    sleutel: "dagplafond",
+    wat: `maximaal ${MAX_AUTONOME_PUBLICATIES_PER_DAG} autonome publicaties per dag, geteld op wat er echt is gepubliceerd`,
+    gemeten: true,
+  },
+  {
+    sleutel: "stroomonderbreker",
+    wat: `${MAX_OPEENVOLGENDE_FOUTEN} mislukte uitgiftes na de laatste geslaagde zetten de uitgifte stil tot een mens kijkt`,
+    gemeten: true,
+  },
+  {
+    sleutel: "artefact_onbruikbaar",
+    wat:
+      "het sitekennis-artefact moet routes leveren; zonder dat artefact kan de server de " +
+      "onderwerp-eigenaar en de interne links niet vaststellen",
+    gemeten: true,
+  },
+];
 
 const log = maakLogger("dashboard");
 
@@ -808,6 +896,14 @@ export function maakApp(pool: Pool): express.Express {
     }),
   );
 
+  /* ---------------- de machinepoort van de uitgifte ----------------
+     STAAT VÓÓR vereistInlog EN HEEFT ZIJN EIGEN WACHT. De rest van dit
+     dashboard hangt aan een sessiekoekje van een mens; deze router
+     hangt aan INTEL_MACHINE_SLEUTEL en legt alles vast als
+     actor_soort 'systeem'. Zie dashboard/machine.ts voor waarom die
+     twee gescheiden blijven. Zonder sleutel antwoordt hij 503. */
+  app.use("/machine", maakMachineRouter(pool));
+
   /* ---------------- gezondheid en gereedheid ----------------
      Twee endpoints met een ANDERE betekenis, en dat verschil is geen
      formaliteit:
@@ -1277,6 +1373,14 @@ ${tabel(
 <h1>Content Studio</h1>
 <p class="uitleg">Kandidaten uit de besluitmotor, conceptversies met hun poortuitslag, en het
 onveranderlijke publicatiespoor.</p>
+<!-- DE LINK NAAR DE UITGIFTE STAAT BOVEN DE LIJSTEN, en niet onderaan.
+     Deze pagina laat zien WAT er klaarligt; /uitgifte laat zien of het
+     platform op dit moment iets mag doen en waarom niet. Zonder die
+     tweede pagina leest een lege studio als "rust" terwijl de oorzaak
+     een actieve stopconditie kan zijn. -->
+<p><strong><a href="/uitgifte">Naar het operationele overzicht van de uitgifte &rarr;</a></strong>
+<span class="klein">— stopcondities, de vijf fasen, mislukte uitgiftes, bronstoringen en open
+meldingen.</span></p>
 
 <h2>Sitekennis — kan de pijplijn de website zien?</h2>
 ${
@@ -2541,6 +2645,690 @@ van de pull request — menselijke handelingen, buiten dit dashboard.</p>
       res.redirect(303, `/studio/${id}`);
     }),
   );
+
+  /* ----------------------------------------------------------------
+     UITGIFTE — het operationele overzicht van de autonome redactie
+     ----------------------------------------------------------------
+     WAT HIER NIET WAS, EN WAAROM DAT ERGER IS DAN EEN ONTBREKEND SCHERM.
+
+     Gemeten in src/dashboard op 9 november 2026, vóór deze route:
+
+       goedkeuring_soort        0 treffers
+       goedkeurend_beleid       0 treffers
+       planner_runs             0 treffers
+       meld_berichten           0 treffers
+       storingssoort            0 treffers (de taxonomie van 0028)
+       ophalen_opgeschort_tot   0 treffers
+       taken telling            alleen 'wachtend' en 'dlq', terwijl
+                                intel.taken ook 'mislukt' en 'afgebroken'
+                                kent
+
+     Een platform dat zichzelf mag publiceren en waarvan je niet kunt
+     zien WAT het zelf heeft goedgekeurd, WAAROM het nu stilstaat en
+     WELKE bron is uitgevallen, is niet bestuurbaar. De belangrijkste
+     tegel is daarom niet een getal maar de lijst stopcondities: die
+     vertelt waarom er NU niets gebeurt.
+
+     ELK GETAL OP DEZE PAGINA KOMT UIT EEN QUERY, en de kop noemt de
+     tabel of de kolom waaruit hij komt. Dat is geen documentatiestijl
+     maar de enige manier waarop een lezer een bewering kan narekenen.
+
+     DE STOPCONDITIES WORDEN BUITEN DE TRANSACTIE GEMETEN. stopredenen()
+     doet zijn eigen metOrganisatie() EN leest het sitekennis-artefact
+     van schijf (1,7 MB). Hem binnen alsGebruiker() aanroepen zou een
+     tweede verbinding uit dezelfde pool vragen terwijl de eerste nog
+     open staat — bij een pool van vier is dat een wachtrij die zich bij
+     gelijktijdige verzoeken vastdraait. Een fout eruit is bovendien geen
+     500: dan staat er op de pagina dat de meting niet is gelukt, met de
+     reden, en de rest blijft leesbaar. */
+  app.get("/uitgifte", async_(vereistInlog), vereistRecht("inhoud.lezen"), async_(async (req: MetGebruiker, res) => {
+    const organisatieId = req.gebruiker!.organisatieId;
+
+    let stand: Awaited<ReturnType<typeof stopredenen>> | null = null;
+    let standFout = "";
+    try {
+      stand = await stopredenen(pool, organisatieId, { intelligenceWortel: INTEL_WORTEL });
+    } catch (e) {
+      standFout = redacteerFout(e);
+      log.waarschuwing("stopcondities niet te meten", { fout: standFout });
+    }
+
+    const d = await alsGebruiker(req, async (c) => ({
+      /* GEVONDEN NIEUWS — intel.inhoud_kandidaten, besluit 'NEWS_ITEM'.
+         Per STATUS en niet als één totaal: 'open' is werkvoorraad,
+         'in_concept' loopt, 'vervallen' is weggevallen, en die drie
+         zeggen iets anders over de redactie. */
+      nieuwsKandidaten: await rijen<{ status: string; n: number; score: number | null }>(
+        c,
+        `select k.status, count(*)::int as n, max(k.totaalscore)::int as score
+           from intel.inhoud_kandidaten k
+          where k.besluit = 'NEWS_ITEM'
+          group by k.status
+          order by k.status`,
+      ),
+      /* GEGENEREERDE ARTIKELEN — intel.inhoud_versies, soort
+         'nieuw_artikel'. Met de poortuitslag ernaast, want een concept
+         dat de poorten niet haalt is geen werkvoorraad maar een
+         blokkade. */
+      artikelen: await rijen<{ status: string; n: number; poorten: number }>(
+        c,
+        `select v.status, count(*)::int as n,
+                count(*) filter (where v.poorten_geslaagd)::int as poorten
+           from intel.inhoud_versies v
+          where v.soort = 'nieuw_artikel'
+          group by v.status
+          order by v.status`,
+      ),
+      /* AUTOMATISCH GOEDGEKEURD — goedkeuring_soort 'beleid' (0052).
+         De beleidsversie hoort er bij te staan: zonder die versie is
+         niet na te rekenen ONDER WELKE REGELS het platform zelf heeft
+         besloten. */
+      doorBeleid: await rijen<{
+        id: number;
+        pad: string;
+        titel: string;
+        status: string;
+        risico: string;
+        beleid: string | null;
+        op: string | null;
+      }>(
+        c,
+        `select v.id, v.pad, v.titel, v.status, v.risico_klasse as risico,
+                v.goedkeurend_beleid as beleid, v.goedgekeurd_op::text as op
+           from intel.inhoud_versies v
+          where v.goedkeuring_soort = 'beleid'
+          order by v.goedgekeurd_op desc nulls last, v.id desc
+          limit 25`,
+      ),
+      /* GEBLOKKEERD OP HOOG RISICO. Deze lijst hoort nooit leeg te
+         hoeven zijn om het platform veilig te maken: hoog risico kan
+         langs geen enkele weg automatisch (0004, 0052, autopublicatie.ts
+         en de wachtrij van de uitgifte). Wat hier staat, wacht dus op
+         een mens met het recht inhoud.hoogrisico.goedkeuren. */
+      hoogRisico: await rijen<{
+        id: number;
+        pad: string;
+        titel: string;
+        status: string;
+        poorten: boolean;
+        blokkades: string[];
+      }>(
+        c,
+        `select v.id, v.pad, v.titel, v.status, v.poorten_geslaagd as poorten, v.blokkades
+           from intel.inhoud_versies v
+          where v.risico_klasse = 'hoog' and v.status = 'ter_review'
+          order by v.id desc
+          limit 25`,
+      ),
+      /* DE HUIDIGE FASE PER VERSIE. De fase is de LAATSTE regel in het
+         append-only logboek en geen kolom; distinct on + id desc geeft
+         precies die regel. Zie huidigeFase() in uitgifte/opdracht.ts,
+         die dezelfde orde gebruikt — één waarheid, twee lezers. */
+      fasen: await rijen<{
+        versie: number;
+        pad: string;
+        titel: string;
+        risico: string;
+        fase: string;
+        grond: string | null;
+        actor: string;
+        beleid: string | null;
+        op: string;
+        motivatie: string | null;
+      }>(
+        c,
+        `with laatste as (
+           select distinct on (b.inhoud_versie_id)
+                  b.inhoud_versie_id as versie,
+                  b.poortresultaten->>'fase'  as fase,
+                  b.poortresultaten->>'grond' as grond,
+                  b.actor_soort as actor,
+                  b.beleid_versie as beleid,
+                  b.op,
+                  b.motivatie
+             from intel.publicatiebesluiten b
+            where b.poortresultaten->>'fase' is not null
+            order by b.inhoud_versie_id, b.id desc
+         )
+         select l.versie, l.fase, l.grond, l.actor, l.beleid,
+                l.op::text as op, l.motivatie,
+                v.pad, v.titel, v.risico_klasse as risico
+           from laatste l
+           join intel.inhoud_versies v on v.id = l.versie
+          order by l.op desc
+          limit 30`,
+      ),
+      /* GEPUBLICEERD — intel.publicaties met status 'geschreven'. Met
+         ernaast of er een besluit met fase 'LIVE_GEVERIFIEERD' bestaat,
+         want een geschreven registerrecord is geen publieke pagina. */
+      publicaties: await rijen<{
+        versie: number;
+        pad: string;
+        bestandspad: string;
+        op: string | null;
+        live: boolean;
+      }>(
+        c,
+        `select p.inhoud_versie_id as versie, v.pad, p.bestandspad, p.op::text as op,
+                exists (select 1
+                          from intel.publicatiebesluiten b
+                         where b.inhoud_versie_id = p.inhoud_versie_id
+                           and b.poortresultaten->>'fase' = 'LIVE_GEVERIFIEERD') as live
+           from intel.publicaties p
+           join intel.inhoud_versies v on v.id = p.inhoud_versie_id
+          where p.status = 'geschreven'
+          order by p.op desc
+          limit 25`,
+      ),
+      publicatieTotalen: await eenRij<{ geschreven: number; mislukt: number; teruggedraaid: number }>(
+        c,
+        `select count(*) filter (where status = 'geschreven')::int    as geschreven,
+                count(*) filter (where status = 'mislukt')::int       as mislukt,
+                count(*) filter (where status = 'teruggedraaid')::int as teruggedraaid
+           from intel.publicaties`,
+      ),
+      liveTotaal: await eenRij<{ n: number }>(
+        c,
+        `select count(distinct b.inhoud_versie_id)::int as n
+           from intel.publicatiebesluiten b
+          where b.poortresultaten->>'fase' = 'LIVE_GEVERIFIEERD'`,
+      ),
+      /* MISLUKTE UITGIFTES. Fase 'GEBLOKKEERD' plus een grond die met
+         'uitgifte:' begint — dat laatste is de scheiding met een
+         beleidsblokkade uit autopublicatie.ts, die ook GEBLOKKEERD
+         heet maar geen mislukte uitgifte is. De grond staat sinds #79
+         machineleesbaar in poortresultaten, dus dit filter leest geen
+         vrije tekst. Nieuwste eerst: een oude fout is geen alarm. */
+      mislukt: await rijen<{
+        versie: number;
+        pad: string;
+        op: string;
+        stap: string | null;
+        faseVoor: string | null;
+        grond: string | null;
+        motivatie: string | null;
+      }>(
+        c,
+        `select b.inhoud_versie_id as versie, v.pad, b.op::text as op,
+                b.poortresultaten->>'stap'         as stap,
+                b.poortresultaten->>'faseVoorFout' as "faseVoor",
+                b.poortresultaten->>'grond'        as grond,
+                b.motivatie
+           from intel.publicatiebesluiten b
+           join intel.inhoud_versies v on v.id = b.inhoud_versie_id
+          where b.poortresultaten->>'fase' = 'GEBLOKKEERD'
+            and b.poortresultaten->>'grond' like 'uitgifte:%'
+          order by b.id desc
+          limit 25`,
+      ),
+      /* DE PLANNER — intel.planner_runs. Een tick die niets deed moet
+         te onderscheiden zijn van een tick die niet draaide; daarom
+         zowel de laatste tien runs als de laatste GESLAAGDE apart.
+         'ok', 'fout' en 'overgeslagen' zijn de drie waarden die de
+         kolom toestaat (0007); 'gereed' is een TAAKstatus en geen
+         runresultaat. */
+      runs: await rijen<{
+        soort: string;
+        gestart: string;
+        resultaat: string | null;
+        aangemaakt: number;
+        overgeslagen: number;
+        fout: string | null;
+      }>(
+        c,
+        `select soort, gestart_op::text as gestart, resultaat,
+                taken_aangemaakt as aangemaakt, taken_overgeslagen as overgeslagen,
+                fout_bericht as fout
+           from intel.planner_runs
+          order by gestart_op desc
+          limit 10`,
+      ),
+      laatsteGeslaagdeRun: await eenRij<{
+        soort: string;
+        gestart: string;
+        resultaat: string;
+        aangemaakt: number;
+      }>(
+        c,
+        `select soort, gestart_op::text as gestart, resultaat, taken_aangemaakt as aangemaakt
+           from intel.planner_runs
+          where resultaat = 'ok'
+          order by gestart_op desc
+          limit 1`,
+      ),
+      gereedPerSoort: await rijen<{ soort: string; n: number; laatst: string | null }>(
+        c,
+        `select soort, count(*)::int as n, max(gereed_op)::text as laatst
+           from intel.taken
+          where status = 'gereed'
+          group by soort
+          order by max(gereed_op) desc nulls last`,
+      ),
+      /* ALLE ZES TAAKSTATUSSEN. Het overzicht op / telt alleen
+         'wachtend' en 'dlq'; 'mislukt' en 'afgebroken' bleven daardoor
+         onzichtbaar, en dat zijn precies de twee die zeggen dat er iets
+         niet is gelukt zonder dat het de dead-letter heeft gehaald. */
+      taken: await eenRij<{
+        wachtend: number;
+        bezig: number;
+        gereed: number;
+        mislukt: number;
+        afgebroken: number;
+        dlq: number;
+      }>(
+        c,
+        `select count(*) filter (where status = 'wachtend')::int   as wachtend,
+                count(*) filter (where status = 'bezig')::int      as bezig,
+                count(*) filter (where status = 'gereed')::int     as gereed,
+                count(*) filter (where status = 'mislukt')::int    as mislukt,
+                count(*) filter (where status = 'afgebroken')::int as afgebroken,
+                count(*) filter (where status = 'dlq')::int        as dlq
+           from intel.taken`,
+      ),
+      /* BRONSTORINGEN — de taxonomie van 0028 op intel.bronnen. Negen
+         soorten die elk een ander antwoord vragen: opnieuw proberen,
+         een parser, een nieuw adres, of de uitgever bellen. Oudste
+         storing bovenaan, want hoe lang al is de helft van het
+         antwoord. */
+      storingen: await rijen<{
+        sleutel: string;
+        uitgever: string;
+        soort: string;
+        sinds: string | null;
+        detail: string | null;
+        opgeschort: string | null;
+        gezondheid: string;
+        actief: boolean;
+      }>(
+        c,
+        `select sleutel, uitgever, storingssoort as soort,
+                storing_sinds::text as sinds, storing_detail as detail,
+                ophalen_opgeschort_tot::text as opgeschort, gezondheid, actief
+           from intel.bronnen
+          where storingssoort is not null
+          order by storing_sinds asc nulls last`,
+      ),
+      /* OPERATIONELE WAARSCHUWINGEN — intel.meldingen, open.
+         LET OP DE KOLOMNAAM. De opdracht noemt `opgelost_op`, maar
+         gemeten in migratie 0016 heet het sluitveld van intel.meldingen
+         `gesloten_op`; `opgelost_op` bestaat op de ANDERE meldingentabel
+         (intel.systeem_meldingen, 0007). Beide staan hieronder, elk met
+         zijn eigen veld, want het zijn twee registers: meldingen is de
+         gededupliceerde storingsmelding met een bezorgstand, en
+         systeem_meldingen is de ruwe systeemmelding. */
+      meldingen: await rijen<{
+        sleutel: string;
+        groep: string;
+        niveau: string;
+        geopend: string;
+        keren: number;
+        meting: string;
+        advies: string | null;
+        bezorgd: string | null;
+        pogingen: number;
+      }>(
+        c,
+        `select sleutel, groep, niveau, geopend_op::text as geopend,
+                keren_gezien as keren, laatste_meting as meting, laatste_advies as advies,
+                bezorgd_op::text as bezorgd, bezorgpogingen as pogingen
+           from intel.meldingen
+          where gesloten_op is null
+          order by geopend_op desc
+          limit 25`,
+      ),
+      systeemMeldingen: await rijen<{
+        ernst: string;
+        soort: string;
+        bericht: string;
+        aantal: number;
+        laatst: string;
+      }>(
+        c,
+        `select ernst, soort, bericht, aantal, laatst_op::text as laatst
+           from intel.systeem_meldingen
+          where opgelost_op is null
+          order by laatst_op desc
+          limit 25`,
+      ),
+    }));
+
+    const stopActief = new Map((stand?.stop ?? []).map((s) => [s.sleutel, s.reden]));
+    const beleid = stand?.beleid ?? null;
+
+    /* DE VIER TEGELS ZIJN SOMMEN VAN GEQUERYDE RIJEN, niet aparte
+       tellingen. Twee tellingen van hetzelfde kunnen uit elkaar lopen;
+       deze kunnen dat niet. */
+    const nieuwsTotaal = d.nieuwsKandidaten.reduce((s, k) => s + k.n, 0);
+    const artikelTotaal = d.artikelen.reduce((s, a) => s + a.n, 0);
+    const poortenTotaal = d.artikelen.reduce((s, a) => s + a.poorten, 0);
+
+    res.type("text/html; charset=utf-8").send(
+      pagina({
+        titel: "Uitgifte",
+        huidigPad: "/uitgifte",
+        gebruiker: req.gebruiker ?? null,
+        inhoud: `
+<p><a href="/studio">&larr; naar Content Studio</a></p>
+<h1>Uitgifte — de autonome redactie, operationeel</h1>
+<p class="uitleg">Vijf fasen, en ze betekenen niet hetzelfde. <strong>Een geopende pull request is
+geen publicatie</strong>: daartussen zitten nog een merge, een deploy en een controle van de
+publieke URL. Alleen de LAATSTE fase zegt of een artikel publiek staat, en elke fase komt uit het
+append-only publicatielogboek — niet uit een vermoeden. Elk getal hieronder komt uit een query op de
+tabel die in de kop staat; een ontbrekende meting staat als ONBEKEND en niet als nul.</p>
+
+<div class="rooster">
+  ${tegel("Gevonden nieuws", getalOfOnbekend(nieuwsTotaal), "kandidaten met besluit NEWS_ITEM")}
+  ${tegel("Gegenereerde artikelen", getalOfOnbekend(artikelTotaal), `${poortenTotaal} met alle poorten geslaagd`)}
+  ${tegel("Door beleid goedgekeurd", getalOfOnbekend(d.doorBeleid.length), "goedkeuring_soort 'beleid'")}
+  ${tegel("Hoog risico op review", getalOfOnbekend(d.hoogRisico.length), "wacht altijd op een mens")}
+  ${tegel("Registerrecords geschreven", getalOfOnbekend(d.publicatieTotalen?.geschreven), "intel.publicaties, status 'geschreven'")}
+  ${tegel("Live geverifieerd", getalOfOnbekend(d.liveTotaal?.n), "besluit met fase LIVE_GEVERIFIEERD")}
+  ${tegel("Mislukte uitgiftes", getalOfOnbekend(d.mislukt.length), "fase GEBLOKKEERD, grond uitgifte:*")}
+  ${tegel("Vandaag autonoom gepubliceerd", getalOfOnbekend(stand?.vandaag), `plafond ${MAX_AUTONOME_PUBLICATIES_PER_DAG} per dag`)}
+</div>
+
+<h2>Waarom er NU niets gebeurt — de stopcondities</h2>
+<p class="uitleg">Dit is de belangrijkste tabel op deze pagina. De uitgifte is fail-closed: één
+actieve stopconditie betekent een LEGE wachtrij op <code>/machine/uitgifte</code>, hoe groen de rest
+hieronder ook staat. De condities worden gemeten door <code>stopredenen()</code> in
+<code>src/uitgifte/opdracht.ts</code>, dus deze pagina en de machinepoort lezen dezelfde functie.</p>
+${
+  stand === null
+    ? `<p class="uitleg" style="border-left:3px solid #a11;padding-left:10px">
+         <strong>DE STOPCONDITIES ZIJN NIET GEMETEN</strong><br>${esc(standFout)}<br>
+         Dat is geen "er is niets aan de hand": zolang deze meting niet lukt, weet dit scherm niet
+         of de uitgifte loopt of stilstaat.</p>`
+    : tabel(
+        ["Stopconditie", "Stand", "Wat hij betekent"],
+        STOPREDEN_REGISTER.map((s) => [
+          `<code>${esc(s.sleutel)}</code>`,
+          !s.gemeten
+            ? vlag("NIET GEMETEN", "waarschuwing")
+            : stopActief.has(s.sleutel)
+              ? `${vlag("ACTIEF — stopt de uitgifte", "fout")}
+                 <div class="klein">${esc(stopActief.get(s.sleutel) ?? "")}</div>`
+              : vlag("niet actief", "ok"),
+          `<div class="klein">${esc(s.wat)}</div>`,
+        ]),
+      )
+}
+<div class="tegel" style="margin-top:10px">
+  ${
+    beleid === null
+      ? `${vlag("GEEN ACTIEF BELEID", "fout")}
+         <div class="klein" style="margin-top:6px">Zonder een actieve rij in
+         <code>intel.publicatiebeleid</code> geeft dit platform niets uit.</div>`
+      : `Beleid <code>${esc(beleid.versie)}</code>:
+         <code>auto_publiceren_aan</code> ${beleid.autoAan ? vlag("AAN", "waarschuwing") : vlag("UIT", "ok")},
+         <code>auto_uitgifte_aan</code> ${beleid.uitgifteAan ? vlag("AAN", "waarschuwing") : vlag("UIT", "ok")},
+         maximaal risico <code>${esc(beleid.maxRisico)}</code>.
+         <div class="klein" style="margin-top:6px">Beide schakelaars staan standaard UIT (migratie
+         0058) en de database weigert uitgifte zonder automatische goedkeuring. Hoog risico kan
+         onder geen enkele stand automatisch.</div>`
+  }
+</div>
+
+<h2>Gevonden nieuws — intel.inhoud_kandidaten, besluit 'NEWS_ITEM', per status</h2>
+${tabel(
+  ["Status", "Aantal", "Hoogste score"],
+  d.nieuwsKandidaten.map((k) => [
+    esc(k.status),
+    `<span class="num">${k.n}</span>`,
+    getalOfOnbekend(k.score),
+  ]),
+  "Geen enkele kandidaat met besluit NEWS_ITEM. Dat betekent niet 'geen nieuws': het kan ook betekenen dat de besluitmotor niet heeft gedraaid of de website niet kan zien.",
+)}
+
+<h2>Gegenereerde artikelen — intel.inhoud_versies, soort 'nieuw_artikel', per status</h2>
+${tabel(
+  ["Status", "Aantal", "Waarvan poorten_geslaagd"],
+  d.artikelen.map((a) => [
+    esc(a.status),
+    `<span class="num">${a.n}</span>`,
+    a.poorten === a.n
+      ? `${vlag(String(a.poorten), "ok")}`
+      : `<span class="num">${a.poorten}</span> ${vlag(`${a.n - a.poorten} geblokkeerd`, "fout")}`,
+  ]),
+  "Nog geen nieuwsartikelen gegenereerd.",
+)}
+
+<h2>Automatisch goedgekeurd — goedkeuring_soort 'beleid', met de beleidsversie</h2>
+<p class="uitleg">Deze artikelen zijn door het platform zelf vrijgegeven, zonder mens. De
+beleidsversie is het mandaat: zonder die versie is niet na te rekenen onder welke regels dat mocht
+(migratie 0052). <code>goedgekeurd_door</code> is bij deze route per ontwerp leeg — er is geen
+nepgebruiker voor "het systeem".</p>
+${tabel(
+  ["ID", "Pad", "Status", "Risico", "Beleidsversie", "Goedgekeurd op"],
+  d.doorBeleid.map((v) => [
+    `<a href="/studio/${v.id}"><span class="num">${v.id}</span></a>`,
+    `<a href="/studio/${v.id}"><code>${esc(v.pad)}</code></a><div class="klein">${esc(v.titel)}</div>`,
+    esc(v.status),
+    v.risico === "hoog" ? vlag(v.risico, "fout") : vlag(v.risico, ""),
+    v.beleid === null
+      ? vlag("ONTBREEKT", "fout")
+      : `<code>${esc(v.beleid)}</code>`,
+    esc(v.op?.slice(0, 16) ?? "-"),
+  ]),
+  "Nog geen enkel artikel is door beleid goedgekeurd. Met auto_publiceren_aan uit is dat de verwachte stand.",
+)}
+
+<h2>Geblokkeerd op hoog risico — risico_klasse 'hoog', status 'ter_review'</h2>
+<p class="uitleg">Een hoogrisico-artikel vraagt ALTIJD een mens, en wel een mens met het recht
+<code>inhoud.hoogrisico.goedkeuren</code>. Dat zit op vier niveaus dicht: het beleid mag het niet
+(0004), de versierij mag het niet (0052), <code>autopublicatie.ts</code> weigert het, en de
+uitgiftewachtrij eist <code>goedkeuring_soort 'beleid'</code> — wat bij hoog risico niet kan
+bestaan. Deze lijst is dus geen achterstand van de machine maar werk voor de redactie.</p>
+${tabel(
+  ["ID", "Pad", "Poorten", "Blokkades"],
+  d.hoogRisico.map((v) => [
+    `<a href="/studio/${v.id}"><span class="num">${v.id}</span></a>`,
+    `<a href="/studio/${v.id}"><code>${esc(v.pad)}</code></a><div class="klein">${esc(v.titel)}</div>`,
+    v.poorten ? vlag("geslaagd", "ok") : vlag(`${v.blokkades.length} blokkade(s)`, "fout"),
+    v.blokkades.length === 0
+      ? '<span class="klein">geen</span>'
+      : `<div class="klein">${v.blokkades.map((b) => esc(b)).join("<br>")}</div>`,
+  ]),
+  "Geen hoogrisico-artikel op review.",
+)}
+
+<h2>De vijf fasen — de LAATSTE regel per versie uit intel.publicatiebesluiten</h2>
+<p class="uitleg">De fase staat in <code>poortresultaten-&gt;&gt;'fase'</code> en niet in een
+statuskolom: <code>publicatiebesluiten</code> is append-only, dus de geschiedenis is volledig en de
+huidige stand is de laatste regel. Een eigen statuskolom zou een tweede waarheid zijn die kan
+afwijken van het bewijs.</p>
+${tabel(
+  ["Versie", "Pad", "Huidige fase", "Grond", "Actor", "Beleid", "Sinds"],
+  d.fasen.map((f) => [
+    `<a href="/studio/${f.versie}"><span class="num">${f.versie}</span></a>`,
+    `<a href="/studio/${f.versie}"><code>${esc(f.pad)}</code></a>`,
+    f.fase === "LIVE_GEVERIFIEERD"
+      ? vlag(UITGIFTEFASE_LABEL[f.fase] ?? f.fase, "ok")
+      : f.fase === "GEBLOKKEERD" || f.fase === "TERUGGEDRAAID"
+        ? vlag(UITGIFTEFASE_LABEL[f.fase] ?? f.fase, "fout")
+        : vlag(UITGIFTEFASE_LABEL[f.fase] ?? f.fase, "waarschuwing"),
+    f.grond === null ? '<span class="klein">—</span>' : `<code>${esc(f.grond)}</code>`,
+    esc(f.actor),
+    f.beleid === null ? '<span class="klein">—</span>' : `<code>${esc(f.beleid)}</code>`,
+    `${esc(f.op.slice(0, 16))}<div class="klein">${esc((f.motivatie ?? "").slice(0, 120))}</div>`,
+  ]),
+  "Nog geen enkele versie heeft een fase in het publicatielogboek.",
+)}
+
+<h2>Gepubliceerd — intel.publicaties met status 'geschreven', en LIVE geverifieerd</h2>
+<p class="uitleg">Een rij in <code>intel.publicaties</code> betekent dat het registerrecord is
+geschreven. Dat is fase 2 van de vijf. <strong>Live</strong> hieronder is het bestaan van een
+besluit met fase <code>LIVE_GEVERIFIEERD</code>, en dat is de enige fase die de SERVER zelf meet in
+plaats van aanneemt: HTTP 200, een zelfverwijzende canonical, de kop op de pagina en de URL in de
+sitemap.</p>
+${tabel(
+  ["Versie", "Pad", "Bestandspad", "Geschreven op", "Publiek"],
+  d.publicaties.map((p) => [
+    `<a href="/studio/${p.versie}"><span class="num">${p.versie}</span></a>`,
+    `<code>${esc(p.pad)}</code>`,
+    `<code>${esc(p.bestandspad)}</code>`,
+    esc(p.op?.slice(0, 16) ?? "-"),
+    p.live
+      ? vlag("LIVE geverifieerd", "ok")
+      : `${vlag("niet geverifieerd", "waarschuwing")}<div class="klein">het record is geschreven; een merge, een deploy en de URL-controle komen nog</div>`,
+  ]),
+  "Nog geen registerrecord geschreven.",
+)}
+<p class="klein">Daarnaast in <code>intel.publicaties</code>:
+${getalOfOnbekend(d.publicatieTotalen?.mislukt)} met status 'mislukt' en
+${getalOfOnbekend(d.publicatieTotalen?.teruggedraaid)} teruggedraaid.</p>
+
+<h2>Mislukte uitgiftes — fase 'GEBLOKKEERD' met een grond uit de uitgifte</h2>
+<p class="uitleg">Nieuwste eerst. Deze regels voeden de stroomonderbreker hierboven:
+${MAX_OPEENVOLGENDE_FOUTEN} mislukte uitgiftes ná de laatste geslaagde zetten de uitgifte stil tot
+een mens kijkt. De versie wordt bij een mislukking NIET teruggezet — of een halve publicatie te
+herstellen is, hangt af van de fase waarin hij strandde, en dat oordeel hoort niet in een
+foutmelding.</p>
+${tabel(
+  ["Versie", "Pad", "Wanneer", "Stap", "Fase vóór de fout", "Reden"],
+  d.mislukt.map((m) => [
+    `<a href="/studio/${m.versie}"><span class="num">${m.versie}</span></a>`,
+    `<code>${esc(m.pad)}</code>`,
+    esc(m.op.slice(0, 16)),
+    m.stap === null ? '<span class="onbekend">ONBEKEND</span>' : `<code>${esc(m.stap)}</code>`,
+    m.faseVoor === null
+      ? '<span class="klein">geen fase</span>'
+      : esc(UITGIFTEFASE_LABEL[m.faseVoor] ?? m.faseVoor),
+    `<div class="klein">${esc((m.motivatie ?? "").slice(0, 300))}</div>`,
+  ]),
+  "Geen mislukte uitgiftes in het logboek.",
+)}
+
+<h2>De planner — intel.planner_runs en de laatste 'gereed' taken per soort</h2>
+<div class="tegel">
+  ${
+    d.laatsteGeslaagdeRun
+      ? `Laatste GESLAAGDE run: <code>${esc(d.laatsteGeslaagdeRun.soort)}</code> gestart
+         ${esc(d.laatsteGeslaagdeRun.gestart.slice(0, 16))}, resultaat
+         ${vlag(d.laatsteGeslaagdeRun.resultaat, "ok")}, ${d.laatsteGeslaagdeRun.aangemaakt}
+         taak/taken aangemaakt.`
+      : `${vlag("GEEN GESLAAGDE RUN", "fout")}
+         <div class="klein" style="margin-top:6px">Er staat geen enkele run met resultaat 'ok' in
+         <code>intel.planner_runs</code>. Een tick die niets deed hoort te verschillen van een tick
+         die niet draaide; dit is het tweede geval.</div>`
+  }
+</div>
+${tabel(
+  ["Soort", "Gestart", "Resultaat", "Taken aangemaakt", "Overgeslagen", "Fout"],
+  d.runs.map((r) => [
+    esc(r.soort),
+    esc(r.gestart.slice(0, 16)),
+    r.resultaat === "ok"
+      ? vlag(r.resultaat, "ok")
+      : r.resultaat === "fout"
+        ? vlag(r.resultaat, "fout")
+        : r.resultaat === null
+          ? vlag("nog niet afgerond", "waarschuwing")
+          : /* vlag() escapet zelf; esc() eromheen zou een tweede keer
+               escapen en een '&' als '&amp;amp;' op het scherm zetten. */
+            vlag(r.resultaat, "waarschuwing"),
+    `<span class="num">${r.aangemaakt}</span>`,
+    `<span class="num">${r.overgeslagen}</span>`,
+    `<div class="klein">${esc((r.fout ?? "").slice(0, 200))}</div>`,
+  ]),
+  "Nog geen plannerruns vastgelegd.",
+)}
+${tabel(
+  ["Taaksoort", "Gereed", "Laatst gereed"],
+  d.gereedPerSoort.map((t) => [
+    esc(t.soort),
+    `<span class="num">${t.n}</span>`,
+    t.laatst === null ? '<span class="onbekend">ONBEKEND</span>' : esc(t.laatst.slice(0, 16)),
+  ]),
+  "Nog geen enkele taak op 'gereed'.",
+)}
+
+<h2>Taken — alle zes statussen, dus ook 'mislukt' en 'afgebroken'</h2>
+<p class="uitleg">Het overzicht op de voorpagina telt alleen <code>wachtend</code> en
+<code>dlq</code>. <code>mislukt</code> en <code>afgebroken</code> bleven daardoor onzichtbaar, en
+dat zijn precies de twee die zeggen dat er iets niet is gelukt zonder dat het de dead-letter heeft
+gehaald.</p>
+${tabel(
+  ["Status", "Aantal", "Wat het betekent"],
+  [
+    ["wachtend", getalOfOnbekend(d.taken?.wachtend), "staat in de wachtrij"],
+    ["bezig", getalOfOnbekend(d.taken?.bezig), "een worker heeft hem geclaimd; een verlopen lease geeft hem terug"],
+    ["gereed", getalOfOnbekend(d.taken?.gereed), "afgerond"],
+    ["mislukt", getalOfOnbekend(d.taken?.mislukt), "gefaald, maar nog niet door max_pogingen heen"],
+    ["afgebroken", getalOfOnbekend(d.taken?.afgebroken), "met de hand of door een pauze gestopt"],
+    ["dlq", getalOfOnbekend(d.taken?.dlq), "definitief mislukt na max_pogingen; blokkeert de rest niet"],
+  ].map(([status, aantal, wat]) => [
+    `<code>${esc(status ?? "")}</code>`,
+    aantal ?? "",
+    `<div class="klein">${esc(wat ?? "")}</div>`,
+  ]),
+)}
+
+<h2>Bronstoringen — intel.bronnen met storingssoort (taxonomie van migratie 0028)</h2>
+<p class="uitleg">Negen soorten, en elk vraagt een ander antwoord: opnieuw proberen, een parser, een
+nieuw adres, of de uitgever bellen. <code>ophalen_opgeschort_tot</code> betekent dat de planner deze
+bron overslaat tot dat moment. Een storing zonder <code>storing_sinds</code> kan niet bestaan — dat
+is een databaseconstraint — want "hoe lang al" is de helft van het antwoord.</p>
+${tabel(
+  ["Bron", "Uitgever", "Storingssoort", "Sinds", "Ophalen opgeschort tot", "Gezondheid", "Detail"],
+  d.storingen.map((s) => [
+    `<code>${esc(s.sleutel)}</code>${s.actief ? "" : ` ${vlag("inactief", "")}`}`,
+    esc(s.uitgever),
+    vlag(s.soort, s.soort === "LEEG_MAAR_GEZOND" ? "ok" : "fout"),
+    s.sinds === null ? '<span class="onbekend">ONBEKEND</span>' : esc(s.sinds.slice(0, 16)),
+    s.opgeschort === null
+      ? '<span class="klein">niet opgeschort</span>'
+      : vlag(s.opgeschort.slice(0, 16), "waarschuwing"),
+    gezondheidVlag(s.gezondheid),
+    `<div class="klein">${esc((s.detail ?? "").slice(0, 240))}</div>`,
+  ]),
+  "Geen enkele bron draagt een storingssoort.",
+)}
+
+<h2>Operationele waarschuwingen — open meldingen</h2>
+<p class="uitleg">Twee registers, en met opzet geen samengevoegde lijst.
+<code>intel.meldingen</code> is de gededupliceerde storingsmelding met een bezorgstand erbij (open =
+<code>gesloten_op is null</code>); <code>intel.systeem_meldingen</code> is de ruwe systeemmelding
+(open = <code>opgelost_op is null</code>). Een melding die niet bezorgd kon worden is nog steeds een
+melding, en dat hoort hier te staan in plaats van verloren te gaan.</p>
+${tabel(
+  ["Niveau", "Sleutel", "Groep", "Geopend", "Keren gezien", "Bezorgd", "Meting en advies"],
+  d.meldingen.map((m) => [
+    vlag(m.niveau, m.niveau === "FOUT" ? "fout" : m.niveau === "LET OP" ? "waarschuwing" : ""),
+    `<code>${esc(m.sleutel)}</code>`,
+    esc(m.groep),
+    esc(m.geopend.slice(0, 16)),
+    `<span class="num">${m.keren}</span>`,
+    m.bezorgd === null
+      ? `${vlag("niet bezorgd", "waarschuwing")}<div class="klein">${m.pogingen} poging(en)</div>`
+      : esc(m.bezorgd.slice(0, 16)),
+    `<div class="klein">${esc(m.meting.slice(0, 240))}${
+      m.advies === null ? "" : `<br><em>${esc(m.advies.slice(0, 240))}</em>`
+    }</div>`,
+  ]),
+  "Geen open meldingen in intel.meldingen.",
+)}
+${tabel(
+  ["Ernst", "Soort", "Bericht", "Aantal", "Laatst gezien"],
+  d.systeemMeldingen.map((m) => [
+    vlag(
+      m.ernst,
+      m.ernst === "fout" || m.ernst === "kritiek"
+        ? "fout"
+        : m.ernst === "waarschuwing"
+          ? "waarschuwing"
+          : "",
+    ),
+    esc(m.soort),
+    `<div class="klein">${esc(m.bericht.slice(0, 240))}</div>`,
+    `<span class="num">${m.aantal}</span>`,
+    esc(m.laatst.slice(0, 16)),
+  ]),
+  "Geen open meldingen in intel.systeem_meldingen.",
+)}
+`,
+      }),
+    );
+  }));
 
   // ---------------- regio ----------------
 

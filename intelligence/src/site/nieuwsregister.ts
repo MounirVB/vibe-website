@@ -28,8 +28,10 @@
 
    WAT DE REDACTIONELE STAAT BETEKENT
    Het contract (data/seo/nieuws-architectuur.json) kent vijf standen en
-   laat alleen GOEDGEKEURD door naar INDEX. Die stand wordt hier niet
-   verzonnen maar OVERGENOMEN uit de database:
+   laat alleen GOEDGEKEURD door naar INDEX; zie daar
+   _correctie_op_dit_contract_5 voor wat GOEDGEKEURD sinds de autonome
+   nieuwsredactie precies betekent. Die stand wordt hier niet verzonnen
+   maar OVERGENOMEN uit de database:
 
      inhoud_versies.status     ->  redactionele_staat
      ------------------------      -------------------
@@ -44,6 +46,30 @@
    goedkeuring aan een afdruk van de inhoud
    (inhoud_versies_goedkeuring_bindt). De naam in het registerrecord is
    dus een echte tweede persoon, geen vlag die dit platform zelf zet.
+
+   WIE DE GOEDKEURING GAF IS SINDS 0052 EEN CATEGORIE, GEEN NAAMVELD
+   Bovenstaande alinea beschreef de ENIGE goedkeuringsvorm die er was:
+   een mens met een naam. Migratie 0052 heeft daar een tweede naast
+   gezet, en die kan per definitie geen naam dragen:
+
+     goedkeuring_soort  'mens'    goedgekeurd_door = de tweede persoon
+     goedkeuring_soort  'beleid'  goedgekeurd_door = NULL,
+                                  goedkeurend_beleid = de beleidsversie
+
+   `goedgekeurd_door` IS DAAR MET OPZET LEEG. 0052 legt uit waarom dat
+   eerlijker is dan een nepgebruiker die 'systeem' heet: zo'n rij maakt
+   elke latere lezing van "was hier een mens bij" onbetrouwbaar, voor
+   alle rijen, ook de echte. Een leeg naamveld is daarom geen gebrek in
+   het record maar het antwoord zelf — en dan moet het record de
+   CATEGORIE meedragen, anders is dat antwoord op schijf niet meer te
+   lezen. Vandaar `goedkeuring_soort`, `goedkeurend_beleid` en
+   `risico_klasse` in het record hieronder.
+
+   `risico_klasse` reist mee omdat de poorten hem nodig hebben, niet
+   omdat de pagina hem toont: de combinatie beleid + hoog risico is in
+   de database verboden (inhoud_versies_beleid_nooit_hoog_risico) en
+   zonder het veld in het bestand kan een poort die regel op een met de
+   hand geschreven JSON niet nameten.
 
    EN DIT PUBLICEERT NOG NIETS
    Een record op schijf is geen pagina. Er moet daarna nog een
@@ -121,6 +147,46 @@ export type NieuwsInvoer = {
   readonly status: string;
   readonly goedgekeurdDoor: string | null;
   readonly goedgekeurdOp: string | null;
+  /**
+   * De goedkeuringscategorie uit intel.inhoud_versies.goedkeuring_soort.
+   *
+   * OPTIONEEL MET STANDAARD 'mens', en dat is geen gemak maar de
+   * eerlijke waarde. Migratie 0052 gaf de kolom precies die default en
+   * gaf elke BESTAANDE rij 'mens' — want die rijen zijn allemaal door
+   * een mens goedgekeurd. Een aanroeper die de categorie niet meegeeft
+   * zegt dus hetzelfde als de database zelf zou zeggen.
+   *
+   * Dat de standaard niets nieuws doorlaat, is te zien aan de twee
+   * velden samen: 'mens' zonder `goedgekeurdDoor` levert een record met
+   * een leeg naamveld, en dat weigeren de poorten onverkort. Een
+   * beleidsgoedkeuring kan dus nooit per ongeluk ontstaan door een veld
+   * weg te laten; hij moet expliciet worden gezet.
+   */
+  readonly goedkeuringSoort?: "mens" | "beleid";
+  /**
+   * De beleidsversie die de automatische goedkeuring toestond —
+   * intel.inhoud_versies.goedkeurend_beleid, verplicht zodra
+   * `goedkeuringSoort` 'beleid' is.
+   *
+   * Hij staat in het record zodat achteraf na te rekenen is ONDER WELKE
+   * REGELS er is gepubliceerd. Zonder dat veld is 'beleid' een lege
+   * bewering: het zegt dat er geen mens was en noemt niets wat er in
+   * plaats daarvan stond.
+   */
+  readonly goedkeurendBeleid?: string | null;
+  /**
+   * De risicoklasse uit intel.inhoud_versies.risico_klasse ('laag',
+   * 'midden' of 'hoog').
+   *
+   * STANDAARD DE LEGE STRING, met opzet geen 'laag'. 'laag' zou een
+   * meting CLAIMEN die niet is meegegeven, en juist dit veld is de
+   * grond waarop de poorten een beleidsgoedkeuring toelaten. De lege
+   * string is de enige waarde die de database nooit kan opleveren (de
+   * kolom is not null met een check op de drie klassen), dus hij is op
+   * schijf herkenbaar als 'niet meegegeven' en de poorten weigeren een
+   * beleidsrecord dat hem draagt.
+   */
+  readonly risicoKlasse?: string;
   readonly onderwerpEigenaar: string | null;
   readonly oplossingLinks: readonly string[];
   readonly kennisLinks: readonly string[];
@@ -386,7 +452,16 @@ export function bouwNieuwsRecord(inv: NieuwsInvoer): Record<string, unknown> {
     gepubliceerd: inv.gepubliceerd,
     gewijzigd: inv.gewijzigd,
     redactionele_staat: staat,
+    /* DE GOEDKEURING ALS CATEGORIE PLUS GROND, niet als één naamveld.
+       `goedgekeurd_door` blijft leeg bij een beleidsgoedkeuring; zie de
+       toelichting bovenaan dit bestand. De poorten lezen deze drie
+       velden samen: scripts/seo/bouw-routes.mjs (weigerNieuws) beslist
+       of de route INDEX wordt en intelligence/ops/publicatiecontract.mjs
+       toetst hetzelfde nog eens op het bestand zelf. */
+    goedkeuring_soort: inv.goedkeuringSoort ?? "mens",
     goedgekeurd_door: inv.goedgekeurdDoor ?? "",
+    goedkeurend_beleid: inv.goedkeurendBeleid ?? null,
+    risico_klasse: inv.risicoKlasse ?? "",
     goedgekeurd_op: inv.goedgekeurdOp ?? "",
     onderwerp_eigenaar: inv.onderwerpEigenaar ?? "",
     oplossing_links: [...inv.oplossingLinks],

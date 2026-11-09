@@ -72,7 +72,9 @@ import type { Pool } from "pg";
 import { metOrganisatie, rijen, eenRij } from "../kern/db.ts";
 import { maakLogger } from "../kern/log.ts";
 import { publiceer } from "./publiceer.ts";
-import { systeemActor } from "./actor.ts";
+import { legPublicatieAuditVast, legPublicatiebesluitVast, systeemActor } from "./actor.ts";
+import { hertoetsInhoudVersie, inhoudAfdruk } from "./concept.ts";
+import { IntelFout } from "../kern/fouten.ts";
 import { toetsGebondenBewijs, bewijsDraagt } from "../pijplijn/claimpoort.ts";
 import { herkenOnderwerpen } from "../pijplijn/onderwerpen.ts";
 
@@ -112,6 +114,17 @@ function risicoBinnen(klasse: string, maximum: string | null): boolean {
 export type Beleid = {
   readonly versie: string;
   readonly autoAan: boolean;
+  /**
+   * Mag het platform ook ZELF naar main mergen?
+   *
+   * EEN TWEEDE SCHAKELAAR, EN DAARMEE EEN TWEEDE BESLUIT (migratie
+   * 0058). Staat hij uit, dan keurt deze module goed en schrijft hij
+   * het registerrecord zoals altijd — de bestaande weg, waarbij een
+   * mens de PR opent. Staat hij AAN, dan stopt deze module ná de
+   * goedkeuring en neemt de uitgiftelaag het over, want die kan het
+   * record door een uitvoerder met een echte werkboom laten schrijven.
+   */
+  readonly uitgifteAan: boolean;
   readonly maxRisico: string | null;
   readonly toegestaneSoorten: readonly string[];
   readonly minBronnen: number;
@@ -135,6 +148,14 @@ export type Gepubliceerd = {
 
 export type AutoPublicatieRapport = {
   readonly beleid: Beleid | null;
+  /**
+   * Goedgekeurd, en nu wachtend op de uitgiftelaag.
+   *
+   * Dit is de uitkomst wanneer auto_uitgifte_aan AAN staat: de
+   * goedkeuring is er, het registerrecord nog niet, want dat schrijft
+   * een uitvoerder met een echte werkboom. Zie uitgifte/opdracht.ts.
+   */
+  readonly wachtOpUitgifte: readonly { readonly inhoudVersieId: number; readonly pad: string }[];
   /** Waarom er niets is gedaan, als het beleid het niet toestaat. */
   readonly beleidReden: string | null;
   readonly bekeken: number;
@@ -151,14 +172,15 @@ export async function leesBeleid(
   const r = await rijen<{
     versie: string;
     auto_publiceren_aan: boolean;
+    auto_uitgifte_aan: boolean;
     auto_max_risico: string | null;
     auto_toegestane_soorten: string[] | null;
     auto_min_bronnen: number;
     auto_min_bewijskwaliteit: number;
   }>(
     c,
-    `select versie, auto_publiceren_aan, auto_max_risico, auto_toegestane_soorten,
-            auto_min_bronnen, auto_min_bewijskwaliteit
+    `select versie, auto_publiceren_aan, auto_uitgifte_aan, auto_max_risico,
+            auto_toegestane_soorten, auto_min_bronnen, auto_min_bewijskwaliteit
        from intel.publicatiebeleid
       where organisatie_id = $1 and actief
       order by vastgesteld_op desc
@@ -170,6 +192,7 @@ export async function leesBeleid(
   return {
     versie: b.versie,
     autoAan: b.auto_publiceren_aan,
+    uitgifteAan: b.auto_uitgifte_aan,
     maxRisico: b.auto_max_risico,
     toegestaneSoorten: b.auto_toegestane_soorten ?? [],
     minBronnen: b.auto_min_bronnen,
@@ -232,6 +255,7 @@ export async function automatischPubliceren(
       bekeken: 0,
       gepubliceerd: [],
       geweigerd: [],
+      wachtOpUitgifte: [],
       droog,
     };
   }
@@ -277,6 +301,7 @@ export async function automatischPubliceren(
 
   const geweigerd: Weigering[] = [];
   const gepubliceerd: Gepubliceerd[] = [];
+  const wachtOpUitgifte: { inhoudVersieId: number; pad: string }[] = [];
 
   for (const v of kandidaten) {
     const weiger = (voorwaarde: string, reden: string) => {
@@ -478,7 +503,55 @@ export async function automatischPubliceren(
        dan een gebruikersrij die 'systeem' heet. De afdruk wordt mee
        vastgelegd, zodat tekstwijziging na goedkeuring publiceren
        onmogelijk blijft maken. */
-    const goedgekeurd = await metOrganisatie(pool, { organisatieId }, async (c) => {
+    const actor = systeemActor("autopublicatie:goedkeuring", { beleidVersie: beleid.versie });
+    const motivatie =
+      `automatisch goedgekeurd onder beleid '${beleid.versie}': risico ${v.risico_klasse} ` +
+      `binnen ${beleid.maxRisico}, soort ${v.soort} toegestaan, ${bronnen} onafhankelijke ` +
+      `bron(nen) >= ${beleid.minBronnen}, bewijskwaliteit ${besteKwaliteit} >= ` +
+      `${beleid.minBewijskwaliteit}, gebeurtenis ${dagen} dagen oud`;
+
+    const goedkeuring = await metOrganisatie(pool, { organisatieId }, async (c) => {
+      /* ---- DE AFDRUK MOET BIJ DE TEKST HOREN, NU AL ----
+         Dezelfde controle die keurGoed() voor een mens doet
+         (publiceer.ts:1410-1429), en om dezelfde reden: de goedkeuring
+         bindt `goedgekeurde_afdruk` aan `inhoud_afdruk`, en die hele
+         keten is waardeloos als de opgeslagen afdruk niet bij de
+         opgeslagen tekst past. Dan bindt de goedkeuring aan een hash van
+         iets anders.
+
+         Zonder deze controle merkte de ronde dat pas aan een
+         constraintfout uit de hertoets hieronder — een kale
+         `inhoud_versies_goedkeuring_bindt` in het taaklog in plaats van
+         een reden. Gemeten: de fixture van de bestaande suite droeg een
+         VERZONNEN afdruk, en dat is precies de toestand die een
+         rechtstreekse databasewijziging ook oplevert. */
+      const tekst = await eenRij<{
+        titel: string;
+        direct_antwoord: string | null;
+        body_markdown: string;
+        structured_data: unknown;
+        inhoud_afdruk: string | null;
+      }>(
+        c,
+        `select titel, direct_antwoord, body_markdown, structured_data, inhoud_afdruk
+           from intel.inhoud_versies where organisatie_id = $1 and id = $2`,
+        [organisatieId, v.id],
+      );
+      if (tekst === null) return { ok: false as const, reden: "race" };
+      const nu = inhoudAfdruk({
+        titel: tekst.titel,
+        directAntwoord: tekst.direct_antwoord ?? "",
+        bodyMarkdown: tekst.body_markdown,
+        structuredData: tekst.structured_data,
+      });
+      if (tekst.inhoud_afdruk !== nu) {
+        throw new IntelFout(
+          "validatie",
+          `de opgeslagen inhoudsafdruk (${tekst.inhoud_afdruk?.slice(0, 12) ?? "GEEN"}) hoort niet ` +
+            `bij de huidige tekst (${nu.slice(0, 12)}); deze versie is niet automatisch goed te keuren`,
+        );
+      }
+
       const r = await c.query(
         `update intel.inhoud_versies
             set status             = 'goedgekeurd',
@@ -494,30 +567,97 @@ export async function automatischPubliceren(
             and cardinality(blokkades) = 0`,
         [organisatieId, v.id, beleid.versie],
       );
-      if ((r.rowCount ?? 0) === 0) return false;
-      await c.query(
-        `insert into intel.publicatiebesluiten
-           (organisatie_id, inhoud_versie_id, besluit, actor_soort, motivatie, beleid_versie)
-         values ($1, $2, 'goedgekeurd', 'systeem', $3, $4)`,
-        [
-          organisatieId,
-          v.id,
-          `automatisch goedgekeurd onder beleid '${beleid.versie}': risico ${v.risico_klasse} ` +
-            `binnen ${beleid.maxRisico}, soort ${v.soort} toegestaan, ${bronnen} onafhankelijke ` +
-            `bron(nen) >= ${beleid.minBronnen}, bewijskwaliteit ${besteKwaliteit} >= ` +
-            `${beleid.minBewijskwaliteit}, gebeurtenis ${dagen} dagen oud`,
-          beleid.versie,
-        ],
-      );
-      return true;
-    });
+      if ((r.rowCount ?? 0) === 0) return { ok: false as const, reden: "race" };
 
-    if (!goedgekeurd) {
+      /* ---- EN DE POORTEN OPNIEUW, MET DE GOEDKEURING ERIN ----
+         Dit is wat de MENSELIJKE weg sinds #78 doet (publiceer.ts:1463
+         e.v.) en wat hier ontbrak: de UPDATE hierboven zette de status
+         en raakte `poorten_geslaagd` en `blokkades` niet aan. Voor de
+         twee menspoorten maakt dat hier niets uit — deze module weigert
+         risico 'hoog' al drie regels eerder — maar de hertoets draait
+         ook alle INHOUDELIJKE poorten plus toetsGebondenBewijs()
+         opnieuw, en dat is precies de meting die je wil hebben op het
+         moment dat een machine zonder mens goedkeurt.
+
+         Faalt hij, dan rollen we de goedkeuring TERUG door te werpen.
+         De menselijke weg laat een mislukte hertoets staan (een mens kan
+         de tekst aanpassen en opnieuw proberen); een autonome ronde
+         heeft dat niemand, dus een goedkeuring die niet kan publiceren
+         hoort niet te blijven staan. */
+      const h = await hertoetsInhoudVersie(c, organisatieId, v.id);
+      if (h !== null && !h.poortenGeslaagd) {
+        throw new IntelFout(
+          "validatie",
+          `de hertoets na de beleidsgoedkeuring faalt: ${h.blokkades.join(" | ")}`,
+        );
+      }
+
+      /* ÉÉN SCHRIJFPAD, OOK HIER. Tot 9 november 2026 stond hier een
+         eigen insert met 'systeem' in de hand gezet en zonder fase, en
+         er werd geen auditregel geschreven. Daarmee omzeilde juist de
+         enige handeling die nooit een mens heeft het schrijfpad dat voor
+         die vraag is gebouwd (#79). */
+      await legPublicatiebesluitVast(c, {
+        organisatieId,
+        inhoudVersieId: v.id,
+        besluit: "goedgekeurd",
+        fase: "GOEDGEKEURD",
+        actor,
+        motivatie,
+        meting: {
+          risico: v.risico_klasse,
+          soort: v.soort,
+          bronnen,
+          bewijskwaliteit: besteKwaliteit,
+          gebeurtenisLeeftijdDagen: dagen,
+          poortenNaHertoets: h === null ? null : h.poortenGeslaagd,
+        },
+      });
+      await legPublicatieAuditVast(c, {
+        organisatieId,
+        actor,
+        handeling: "beleidsgoedkeuring",
+        objectId: v.id,
+        naWaarde: { pad: v.pad, status: "goedgekeurd", goedkeuring_soort: "beleid" },
+        motivatie,
+        herkomst: "taak",
+      });
+      return { ok: true as const, reden: "" };
+    }).catch((e: unknown) => ({ ok: false as const, reden: (e as Error).message }));
+
+    if (!goedkeuring.ok) {
       /* DE RACE. Tussen de werkvoorraad en deze update kan een mens of
          een andere ronde de versie hebben aangeraakt. De update eist de
          toestand opnieuw; raakt hij nul rijen, dan is er iets veranderd
          en publiceren we niet. */
-      weiger("9 race", "de versie is tussen de selectie en de goedkeuring van toestand veranderd");
+      weiger(
+        "9 race",
+        goedkeuring.reden === "race"
+          ? "de versie is tussen de selectie en de goedkeuring van toestand veranderd"
+          : `de goedkeuring is teruggerold: ${goedkeuring.reden}`,
+      );
+      continue;
+    }
+
+    /* ---------- STOPPEN ALS DE UITGIFTELAAG HET OVERNEEMT ----------
+       Met auto_uitgifte_aan AAN schrijft deze module het registerrecord
+       NIET. Dat is geen taakverdeling uit netheid maar uit noodzaak:
+       publiceer() heeft een werkboom van de site nodig, en op de plek
+       waar deze taak draait — de Railway-container — bestaat die niet
+       (gemeten 9 november 2026: geen /data/inhoud, geen .git, geen
+       generator). De uitgiftelaag laat het record schrijven door een
+       uitvoerder die de hele repo heeft, en controleert de bytes op hun
+       hash. Zie uitgifte/opdracht.ts.
+
+       De goedkeuring hierboven is al vastgelegd met fase GOEDGEKEURD;
+       de versie staat dus klaar in de uitgiftewachtrij. */
+    if (beleid.uitgifteAan) {
+      wachtOpUitgifte.push({ inhoudVersieId: v.id, pad: v.pad });
+      log.info("goedgekeurd en doorgegeven aan de uitgifte", {
+        versie: v.id,
+        pad: v.pad,
+        beleid: beleid.versie,
+      });
       continue;
     }
 
@@ -526,7 +666,7 @@ export async function automatischPubliceren(
        mag gebruiken. De grond noemt het beleid dat het toestond, zodat
        het logboek 'systeem' nooit zonder uitleg laat staan. */
     const rapport = await publiceer(pool, organisatieId, v.id, {
-      actor: systeemActor(`automatische publicatieronde onder beleid ${beleid.versie}`),
+      actor: systeemActor("autopublicatie:record", { beleidVersie: beleid.versie }),
     });
     if (rapport.publicatieId === null) {
       weiger("1 poorten", `publiceer() weigerde: ${rapport.reden}`);
@@ -552,6 +692,7 @@ export async function automatischPubliceren(
     bekeken: kandidaten.length,
     gepubliceerd,
     geweigerd,
+    wachtOpUitgifte,
     droog,
   };
 }
