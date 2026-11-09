@@ -34,6 +34,7 @@
 
 import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
+import { restorebewijsSignaal } from "../../src/ops/gezondheid.ts";
 import { describe, it } from "node:test";
 
 import {
@@ -437,25 +438,51 @@ describe("7+8. storage-403 en netwerkstoringen stemmen niet tegen", () => {
   });
 
   it("de drie uitkomsten krijgen DRIE verschillende ernsten in de meting", () => {
-    /* Structurele grendel op de reparatie van twee regressies die ik
-       zelf had ingebouwd: `nietOpgesomd` en `afgekapt` mochten nooit
-       FOUT worden, en alleen `bedorven` wel. Een gedragstoets op
-       inventariseerBucketBewijs kan dat niet vangen — het gaat om wat
-       de LEZER ermee doet. */
+    /* Grendel op de reparatie van twee regressies die ik zelf had
+       ingebouwd: `nietOpgesomd` en `afgekapt` mochten nooit FOUT
+       worden, en alleen `bedorven` wel.
+
+       DEZE ZAAK WAS EEN BRONCODETOETS, en dat was toen juist: de regel
+       stond inline in meetGezondheid() en een gedragstoets op
+       inventariseerBucketBewijs() kan niet vangen wat de LEZER ermee
+       doet. Sinds de lezer een zuivere functie is — gezondheid.ts
+       `restorebewijsSignaal()`, uitgetild om de vier
+       toestandsovergangen toetsbaar te maken — kan hetzelfde GEDRAG
+       rechtstreeks worden gemeten. Dat is strenger dan een tekstmatch:
+       een regex die blijft kloppen terwijl de uitkomst verandert, is
+       geen grendel. De structurele match staat er daarom nog bij, nu op
+       de nieuwe plek. */
+    const basis = { nieuwste: { uitslag: "PASS" }, gevonden: 8, nietOpgesomd: null, bedorven: [], afgekapt: 0 };
+
+    const bedorven = restorebewijsSignaal("b", { ...basis, bedorven: ["restoretest/x.json: stuk"] });
+    assert.equal(bedorven?.niveau, "FOUT", "een bedorven object hoort FOUT te zijn");
+
+    const stil = restorebewijsSignaal("b", { ...basis, nieuwste: null, nietOpgesomd: "HTTP 403" });
+    assert.equal(stil, null, "een onbereikbare bucket wordt weer als signaal gemeld; dat hoort te zwijgen");
+
+    const afgekapt = restorebewijsSignaal("b", { ...basis, afgekapt: 5 });
+    assert.equal(afgekapt?.niveau, "OK", "een afgekapte inventarisatie wordt weer als FOUT gemeld");
+    assert.match(afgekapt.meting, /niet opgehaald/, "de begrenzing hoort zichtbaar te blijven in de meettekst");
+
+    /* EN DE NIEUWE EIGENSCHAP, in dezelfde grendel omdat hij bij
+       dezelfde drie uitkomsten hoort: gezond hoort OK te geven, want
+       zonder gemeten OK sluit een eerdere melding nooit. */
+    assert.equal(restorebewijsSignaal("b", basis)?.niveau, "OK", "zonder OK kan een melding nooit sluiten");
+
     const G = readFileSync(new URL("../../src/ops/gezondheid.ts", import.meta.url), "utf8");
     assert.match(
       G,
-      /if \(bucketInventaris\.bedorven\.length > 0\)/,
+      /if \(inv\.bedorven\.length > 0\)/,
       "het FOUT-signaal hangt niet (meer) uitsluitend aan bedorven objecten",
     );
     assert.doesNotMatch(
       G,
-      /bucketInventaris\.nietOpgesomd[\s\S]{0,200}niveau: "FOUT"/,
+      /inv\.nietOpgesomd[\s\S]{0,200}niveau: "FOUT"/,
       "een onbereikbare bucket wordt weer als FOUT gemeld",
     );
     assert.doesNotMatch(
       G,
-      /bucketInventaris\.afgekapt[\s\S]{0,200}niveau: "FOUT"/,
+      /inv\.afgekapt[\s\S]{0,200}niveau: "FOUT"/,
       "een afgekapte inventarisatie wordt weer als FOUT gemeld",
     );
     /* En ze moeten WEL zichtbaar zijn, in de meettekst. */

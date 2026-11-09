@@ -258,6 +258,83 @@ export function backupAanvaardbaar(inv: {
   };
 }
 
+/**
+ * Het signaal over de LEESBAARHEID van het restorebewijs in de bucket.
+ *
+ * WAAROM DIT EEN EIGEN FUNCTIE IS. Hier stond alleen een FOUT, inline.
+ * Een melding sluit in ops/melden.ts uitsluitend op een GEMETEN OK —
+ * "een signaal dat verdwijnt sluit niets, want dan weten we het niet" —
+ * dus een sleutel die alleen bij een probleem wordt uitgegeven levert
+ * een melding op die NOOIT meer dichtgaat.
+ *
+ * GEMETEN OP 9 NOVEMBER 2026. `backup/restorebewijs leesbaar` stond op
+ * CRITICAL sinds 8 november 20:03, met als oorzaak `The billing account
+ * for the owning project is disabled in state delinquent`. Die
+ * facturatie was dezelfde dag hersteld, alle negen bewijsobjecten waren
+ * weer leesbaar en de gezondheidsronde meldde FOUT 0 — maar
+ * `laatst_gezien_op` van die melding bleef op 08:00:58 staan terwijl
+ * elke andere open melding om 11:03:20 opnieuw werd gezien. De storing
+ * was weg en het alarm bleef staan. Op een kanaal dat de eigenaar per
+ * mail bereikt is dat erger dan een gemiste melding: het maakt het
+ * kanaal onleesbaar.
+ *
+ * DRIE UITKOMSTEN, EN DE DERDE IS HET HELE PUNT.
+ *
+ *   FOUT   er staat een object dat BESTAAT maar niet te lezen is.
+ *   OK     de bucket is werkelijk opgesomd, er is minstens één gelezen
+ *          bewijs, en niets was bedorven. Alleen dit sluit een melding.
+ *   null   de bucket was niet op te sommen. De bron zegt niets, dus er
+ *          komt GEEN signaal — en een melding die open staat blijft
+ *          open. Een melding sluiten op een stille bron zou precies de
+ *          bug zijn die het type BucketInventaris beschrijft.
+ *
+ * `afgekapt` weegt met opzet niet mee: oudere objecten niet ophalen is
+ * een begrenzing en geen fout, en er komt er elke week een bij. Hoeveel
+ * er werkelijk zijn gelezen staat daarom in de meettekst, zodat de OK
+ * niet meer belooft dan hij heeft gemeten.
+ *
+ * De eis `nieuwste !== null` sluit bovendien de TWEEDE foutmelding met
+ * dezelfde sleutel uit (de lokale terugval, die alleen draait als er
+ * geen bucketbewijs is), zodat deze sleutel nooit tegelijk OK en FOUT
+ * kan zijn.
+ */
+export function restorebewijsSignaal(
+  bucket: string,
+  inv: {
+    readonly nieuwste: unknown | null;
+    readonly gevonden: number;
+    readonly nietOpgesomd: string | null;
+    readonly bedorven: readonly string[];
+    readonly afgekapt: number;
+  },
+): Signaal | null {
+  if (inv.bedorven.length > 0) {
+    return {
+      groep: "backup",
+      naam: "restorebewijs leesbaar",
+      niveau: "FOUT",
+      meting:
+        `${inv.gevonden} bewijsobject(en) onder gs://${bucket}/${RESTOREBEWIJS_VOORVOEGSEL}, ` +
+        `maar ${inv.bedorven.length} daarvan is niet te lezen: ` +
+        `${inv.bedorven.join(" | ").slice(0, 400)}`,
+      advies: "kijk waarom deze objecten bedorven zijn vóór je op het restorebewijs vertrouwt",
+    };
+  }
+  if (inv.nietOpgesomd !== null || inv.nieuwste === null) return null;
+  const gelezen = inv.gevonden - inv.afgekapt;
+  return {
+    groep: "backup",
+    naam: "restorebewijs leesbaar",
+    niveau: "OK",
+    meting:
+      `${inv.gevonden} bewijsobject(en) onder gs://${bucket}/${RESTOREBEWIJS_VOORVOEGSEL}, ` +
+      `waarvan ${gelezen} gelezen en alle ${gelezen} leesbaar` +
+      (inv.afgekapt > 0
+        ? `; ${inv.afgekapt} ouder(e) object(en) is niet opgehaald, dus hierover zegt dit signaal niets`
+        : ""),
+  };
+}
+
 async function meetExterneBackup(
   gcs: ReturnType<typeof gcsConfigUitOmgeving>,
 ): Promise<Signaal> {
@@ -1605,18 +1682,12 @@ export async function meetGezondheid(
          afgekapt      er zijn oudere objecten niet opgehaald. Een
                        begrenzing, en er komt er elke week een bij
                        -> alleen een vermelding in de meettekst */
-    if (bucketInventaris.bedorven.length > 0) {
-      voeg({
-        groep: "backup",
-        naam: "restorebewijs leesbaar",
-        niveau: "FOUT",
-        meting:
-          `${bucketInventaris.gevonden} bewijsobject(en) onder gs://${gcs.bucket}/${RESTOREBEWIJS_VOORVOEGSEL}, ` +
-          `maar ${bucketInventaris.bedorven.length} daarvan is niet te lezen: ` +
-          `${bucketInventaris.bedorven.join(" | ").slice(0, 400)}`,
-        advies: "kijk waarom deze objecten bedorven zijn vóór je op het restorebewijs vertrouwt",
-      });
-    }
+    /* DE REGEL STAAT IN restorebewijsSignaal(), zodat de vier
+       toestandsovergangen zonder bucket te toetsen zijn. Null betekent
+       daar "de bron zegt niets"; dan komt er — net als voorheen — geen
+       signaal, en sluit een open melding dus niet. */
+    const leesbaar = restorebewijsSignaal(gcs.bucket, bucketInventaris);
+    if (leesbaar !== null) voeg(leesbaar);
   }
 
   /* De lokale kopie is de terugval voor een machine zonder bucket. Hij

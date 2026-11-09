@@ -162,7 +162,7 @@ export const PLAN: readonly PlanRegel[] = [
   /* NIEUW IN 3.0.4. Moet ná beoordelen, want hij werkt de kandidaten af
      die de motor heeft geschreven. Publiceert niets: een voorstel komt
      in READY_FOR_REVIEW en wacht op een mens. */
-  { soort: "voorstel", prioriteit: 60, toelichting: "kandidaten met een doelpagina naar wijzigingsvoorstellen" },
+  { soort: "voorstel", prioriteit: 60, toelichting: "DE KENNISSTROOM: UPDATE_EXISTING-kandidaten met een doelpagina naar wijzigingsvoorstellen, met een EIGEN budget van 25 per ronde en 3 per doelpagina, los van het nieuwsbudget op prioriteit 38" },
   /* NA VOORSTEL, EN STANDAARD EEN NO-OP. Deze taak handhaaft het
      publicatiebeleid. Staat auto_publiceren_aan op false — de
      standaard, en de enige toestand waarin dit platform nooit zelf
@@ -1094,15 +1094,39 @@ export const REGISTER: Record<string, Handler> = {
       );
     }
 
+    /* HET BUDGET VAN DE KENNISSTROOM, apart van dat van het nieuws.
+       ------------------------------------------------------------------
+       De conceptaak (prioriteit 38) verwerkt uitsluitend NEWS_ITEM en
+       heeft zijn eigen MAX_PER_RONDE. Deze taak verwerkt de
+       UPDATE_EXISTING-kandidaten en heeft die van zichzelf, zodat de
+       twee stromen elkaars ronde niet kunnen opeten. Dat was tot V1.1
+       niet zo: één werkvoorraad voedde beide, en drie kennisvoorstellen
+       naar dezelfde doelpagina vulden de drie plekken van de
+       nieuwsronde.
+
+       HOGER DAN BIJ NIEUWS, met een reden: een voorstel maakt geen
+       nieuwe URL en geen nieuwe inhoudsversie. `bewaarVoorstel()` doet
+       een upsert per kandidaat, dus een tweede ronde over dezelfde
+       kandidaat werkt het voorstel BIJ in plaats van er een tweede naast
+       te zetten. Er kan hier dus geen reviewstapel ontstaan zoals bij
+       concepten; het budget is er tegen een ronde die niet afloopt, niet
+       tegen stapeling. */
+    const MAX_KENNIS_PER_RONDE = 25;
+    const MAX_KENNIS_PER_DOELPAGINA = 3;
+
     const r = await voorstelronde(pool, organisatieId, uitslag.kennis, {
       vandaag: tekstOf(payload, "vandaag"),
+      max: MAX_KENNIS_PER_RONDE,
+      maxPerDoelpagina: MAX_KENNIS_PER_DOELPAGINA,
     });
     const oordelen = Object.entries(r.perEindoordeel)
       .sort((a, b) => b[1] - a[1])
       .map(([k, v]) => `${k} ${v}`)
       .join(", ");
     return (
-      `kandidaten ${r.kandidaten}, gebouwd ${r.gebouwd}, nieuw ${r.nieuw}, ` +
+      `kandidaten ${r.kandidaten} van maximaal ${MAX_KENNIS_PER_RONDE} ` +
+      `(ten hoogste ${MAX_KENNIS_PER_DOELPAGINA} per doelpagina), ` +
+      `gebouwd ${r.gebouwd}, nieuw ${r.nieuw}, ` +
       `bijgewerkt ${r.bijgewerkt}, zonder voorstel ${r.zonderVoorstel}` +
       (oordelen ? ` — ${oordelen}` : "")
     );

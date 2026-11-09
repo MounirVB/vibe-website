@@ -351,8 +351,8 @@ describe("publiceren via het routeregister", () => {
             body_markdown, status, risico_klasse, auteur_soort, poorten_geslaagd,
             inhoud_afdruk, goedgekeurde_afdruk, goedgekeurd_door, goedgekeurd_op, aangemaakt_door,
             invoer_versies)
-         values ($1,'/kennis/netcongestie-uitgelegd',1,'pagina_update','Patch | Vibe',
-                 'Een patchvoorstel voor een bestaande pagina van Release 1.',
+         values ($1,'/kennis/netcongestie-uitgelegd',1,'nieuw_artikel','Patch | Vibe',
+                 'Een nieuwsartikel dat op het pad van een Release 1-pagina mikt.',
                  'https://www.vibeenergy.nl/kennis/netcongestie-uitgelegd',
                  'Lead.\n\n## Kop\n\nTekst.\n','goedgekeurd','laag','ai',true,
                  'afdruk-2','afdruk-2',$2, now(), $3, array[$4::bigint])
@@ -360,7 +360,15 @@ describe("publiceren via het routeregister", () => {
         [org, goedkeurder, auteur, versieIdBron],
       );
       tweede = iv.rows[0]!.id;
-      /* DEZE VERSIE KRIJGT OOK EEN DRAGENDE CLAIM, en dat is nodig om
+      /* DE SOORT IS 'nieuw_artikel' EN DAT IS NODIG, want sinds V1.2
+         weigert publiceerViaRegister() bij de INGANG elke andere soort
+         — zie de zaak 'een KENNISUPDATE met een NIEUWSPAD'. Stond hier
+         nog 'pagina_update', dan zou die soortgrendel vuren en zei deze
+         zaak niets meer over het PAD. Een nieuwsartikel dat op het pad
+         van een Release 1-kennispagina mikt is bovendien het geval dat
+         de padregel echt moet tegenhouden.
+
+         DEZE VERSIE KRIJGT OOK EEN DRAGENDE CLAIM, en dat is nodig om
          te blijven toetsen waar deze zaak over gaat. De claimpoort
          staat vóór publiceerViaRegister(), dus zonder gebonden bewijs
          zou de weigering nu 'geen enkele uitspraak gebonden' luiden in
@@ -393,6 +401,61 @@ describe("publiceren via het routeregister", () => {
       await readFile(join(siteWortel, "data", "inhoud", "kennis", "netcongestie-uitgelegd.json"), "utf8"),
     ) as Record<string, unknown>;
     assert.equal(nog["titel"], "Netcongestie uitgelegd", "het bestand van Release 1 is gewijzigd");
+  });
+
+  test("een KENNISUPDATE met een NIEUWSPAD wordt op zijn SOORT geweigerd", async () => {
+    /* HET VERMOMDE GEVAL, en het enige waarin de soortgrendel werkelijk
+       nodig is. De zaak hierboven wordt geweigerd op zijn PAD: een
+       /kennis/-pad ligt buiten data/inhoud/nieuws en daar heeft
+       schrijfNieuwsRecord() een schrijver per bestand. Die weigering
+       zegt dus niets over de SOORT.
+
+       Een versie met soort 'pagina_update' en een /nieuws/-pad ligt WEL
+       binnen het nieuwsdomein. Zonder de soortgrendel in publiceer()
+       zou `bouwNieuwsRecord()` daar een gewoon nieuwsrecord van maken:
+       een kennisupdate die als nieuwsartikel in de nieuwsindex en de
+       nieuws-sitemap belandt, op een nieuwe URL, voor een zoekintentie
+       die al een eigenaar heeft. Precies wat UPDATE_EXISTING juist
+       voorkomt.
+
+       MUTATIEBEWIJS: haal de soortcontrole uit publiceer() en deze zaak
+       faalt met `geschreven: true` en een gebouwd record. */
+    let vermomd = 0;
+    await alsEigenaar(db, async (c) => {
+      await c.query("select set_config('app.organisatie_id', $1, false)", [String(org)]);
+      const iv = await c.query<{ id: number }>(
+        `insert into intel.inhoud_versies
+           (organisatie_id, pad, versie, soort, titel, meta_omschrijving, canonieke_url,
+            body_markdown, status, risico_klasse, auteur_soort, poorten_geslaagd,
+            inhoud_afdruk, goedgekeurde_afdruk, goedgekeurd_door, goedgekeurd_op, aangemaakt_door,
+            invoer_versies)
+         values ($1,'/nieuws/vermomde-kennisupdate',1,'pagina_update','Vermomd | Vibe',
+                 'Een kennisupdate die zich voordoet als nieuwsartikel.',
+                 'https://www.vibeenergy.nl/nieuws/vermomde-kennisupdate',
+                 'Lead.\n\n## Kop\n\nTekst.\n','goedgekeurd','laag','ai',true,
+                 'afdruk-3','afdruk-3',$2, now(), $3, array[$4::bigint])
+         returning id`,
+        [org, goedkeurder, auteur, versieIdBron],
+      );
+      vermomd = iv.rows[0]!.id;
+      await c.query(
+        `insert into intel.inhoud_uitspraken
+           (organisatie_id, inhoud_versie_id, uitspraak_id, rol)
+         values ($1,$2,$3,'kern')`,
+        [org, vermomd, uitspraakIdBron],
+      );
+    });
+
+    const { publiceer } = await import("../../src/inhoud/publiceer.ts");
+    const r = await publiceer(db.pool, org, vermomd, { actor });
+    assert.equal(r.geschreven, false, "een kennisupdate mag nooit een nieuwsrecord worden");
+    assert.match(r.reden, /soort 'pagina_update'/, `de reden was: ${r.reden}`);
+    assert.match(r.reden, /NIEUWSREGISTER/, "de weigering hoort het register te noemen");
+    assert.match(r.reden, /HTML-weg/, "en de goede weg te wijzen");
+    assert.ok(
+      !existsSync(join(siteWortel, "data", "inhoud", "nieuws", "vermomde-kennisupdate.json")),
+      "er mag geen registerrecord zijn geschreven",
+    );
   });
 
   test("terugdraaien verwijdert het registerrecord", async () => {

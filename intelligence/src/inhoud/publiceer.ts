@@ -851,6 +851,37 @@ async function publiceerViaRegister(
   },
   weiger: (id: number, reden: string) => PublicatieRapport,
 ): Promise<PublicatieRapport> {
+  /* ---------- EERST: IS DIT WEL DE JUISTE WEG? ----------
+     De registerweg schrijft data/inhoud/nieuws/<slug>.json, en dat
+     bestand wordt door de nieuwsindex en de nieuws-sitemap gelezen. Een
+     kennisupdate hoort daar niet: die wijzigt een BESTAANDE pagina onder
+     /kennis/ en gaat via de HTML-weg, die `dataPagina: "kennis"` zet en
+     het pagina-register met soort 'kennis' bijwerkt.
+
+     DEZE CONTROLE STAAT VÓÓR ALLE ANDERE, en dat is geen smaak. De twee
+     controles hieronder — het pad en de onderwerp-eigenaar — weigeren
+     een kennisupdate vandaag al, maar om een ANDERE reden: een
+     /kennis/-pad ligt buiten het nieuwsdomein, en zonder eigenaar kan
+     een nieuwsartikel zijn intentie niet lenen. Dat dekt het geval dat
+     ertussendoor glipt niet: een versie met soort 'pagina_update', een
+     /nieuws/-pad EN een geldige eigenaar haalt beide controles en zou
+     als gewoon nieuwsrecord worden geschreven. `bouwNieuwsRecord()`
+     kijkt namelijk niet naar de soort.
+
+     Dat is vandaag onbereikbaar omdat `auto_toegestane_soorten` in het
+     beleid leeg staat, maar dat is een BELEIDSwaarde — één regel in een
+     update. Een contract dat op een lege lijst leunt, is geen contract.
+     De weigering staat daarom hier, in de weg zelf, en niet alleen in
+     de wachtrij die hem voedt. */
+  if (v.soort !== "nieuw_artikel") {
+    return weiger(
+      v.id,
+      `versie ${v.id} heeft soort '${v.soort}' en hoort niet in het NIEUWSREGISTER. ` +
+        `Een kennisupdate publiceert via de HTML-weg naar ${v.pad}, die het pagina-register ` +
+        `met soort 'kennis' bijwerkt; het nieuwsregister is uitsluitend voor 'nieuw_artikel'`,
+    );
+  }
+
   if (!isNieuwsPad(v.pad)) {
     return weiger(
       v.id,

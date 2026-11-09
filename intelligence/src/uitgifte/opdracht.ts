@@ -486,6 +486,12 @@ export async function maakUitgifteWachtrij(
              versies door die werkelijk midden in deze keten staan. */
           and v.status in ('goedgekeurd', 'gepubliceerd')
           and v.goedkeuring_soort = 'beleid'
+          -- DE AUTONOME UITGIFTE IS DE NIEUWSWEG. De keten eindigt in
+          -- data/inhoud/nieuws/<slug>.json; een kennisupdate hoort daar
+          -- niet en publiceert via de HTML-weg. publiceer() weigert hem
+          -- ook, maar een opdracht die nooit wordt gemaakt kost geen
+          -- ronde en laat geen GEBLOKKEERD-regel achter.
+          and v.soort = 'nieuw_artikel'
           and v.risico_klasse <> 'hoog'
           and v.poorten_geslaagd
           and cardinality(v.blokkades) = 0
