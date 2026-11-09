@@ -552,6 +552,27 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
 .ve-btn--lg{padding:1rem 2rem}
 .ve-btn--blok{width:100%}
 
+/* Op smalle schermen mag de knoptekst WEL afbreken.
+   white-space:nowrap hierboven is op desktop goed — een CTA van twee regels
+   leest daar als een ongeluk — maar op een telefoon kan een Nederlandse
+   CTA-tekst niet binnen de kolom blijven. Gemeten op 9 november 2026 over alle
+   448 routes: 61 routes kregen document.scrollWidth > window.innerWidth op
+   320px, 33 op 360px en 12 op 390px, en bij 45 daarvan was het breedst
+   overlopende element een .ve-btn--primair.ve-btn--lg. Ergste geval:
+   /energie-als-vastgoedopbrengst, waar 'Vraag een energieprestatie-analyse aan'
+   122,8px buiten de viewport stak op 320px en 52,8px op 390px — de breedte van
+   een iPhone 14/15/16. Daarmee kreeg de hele pagina horizontale scroll, die bij
+   verticaal vegen zijwaarts wegglijdt.
+   Alleen deze ene regel is nodig: met white-space:normal geïnjecteerd gingen
+   /oplossing-netcongestie (52/12/0), /energie-als-vastgoedopbrengst (82/42/12)
+   en /sectoren/automotive (74/34/4) alle drie naar 0/0/0 op 320/360/390.
+   De padding-inline van --lg zakt mee, want 2rem aan elke kant is op 320px een
+   vijfde van het scherm. */
+@media (max-width:767px){
+  .ve-btn{white-space:normal}
+  .ve-btn--lg{padding:.9rem 1.25rem}
+}
+
 /* tekstlink met pijl */
 .ve-link{
   display:inline-flex;align-items:center;gap:.4rem;
@@ -1082,6 +1103,21 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
 .ve-veld input:focus,.ve-veld select:focus,.ve-veld textarea:focus{border-color:var(--ve-action);outline:none}
 .ve-veld textarea{min-height:8rem;resize:vertical}
 .ve-veld__hint{font-size:var(--ve-body-sm-size);color:var(--ve-text-muted)}
+
+/* 16px op de velden, en alleen op mobiel.
+   De velden erven hun lettergrootte via font:inherit en komen daarmee op 15px
+   uit. iOS Safari zoomt de hele pagina in zodra een veld met een lettergrootte
+   ONDER 16px focus krijgt, en zoomt daarna niet terug. Op het contactformulier
+   — het enige leadkanaal van de site — betekent dat: tik in 'Naam' en de
+   pagina springt ingezoomd, met de rest van het formulier buiten beeld.
+   16px is de drempel, niet een voorkeur; daarom precies 16px en geen token.
+   Alleen binnen de mediaquery, zodat de desktoptypografie ongemoeid blijft.
+   min-height dekt de 44px-raakhoogte voor select en input af; textarea heeft
+   zijn eigen min-height van 8rem. */
+@media (max-width:767px){
+  .ve-veld input,.ve-veld select,.ve-veld textarea{font-size:16px}
+  .ve-veld input,.ve-veld select{min-height:44px}
+}
 
 /* ---- cookiemelding ----
    _consent.js regelt Google Consent Mode v2 en blijft functioneel ongewijzigd;
