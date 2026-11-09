@@ -51,8 +51,21 @@
      'granted'. Het domein moet twee keer worden geprobeerd: de pixel zet
      `_fbp` op het registreerbare domein (.vibeenergy.nl), maar op een
      ontwikkel- of previewhost staat hij op de host zelf. */
-  var MARKETING_COOKIES=['_fbp','_fbc'];
-  var MARKETING_LOCALSTORAGE=['lastExternalReferrer','lastExternalReferrerTime'];
+  /* _gcl_* komt van de Conversion Linker in GTM-container GTM-KM2V7VQ3.
+     Gemeten op 9 november 2026 met de echte container: na 'Alles accepteren'
+     en daarna terugzetten naar 'Alleen noodzakelijk' bleven de cookie _gcl_au
+     en de localStorage-sleutel _gcl_ls staan. De intrekking ruimde _fbp wel op
+     en deze niet — dezelfde fout, andere partij. */
+  var MARKETING_COOKIES=['_fbp','_fbc','_gcl_au','_gcl_aw','_gcl_dc','_gcl_gb','_gcl_gs'];
+  var MARKETING_LOCALSTORAGE=['lastExternalReferrer','lastExternalReferrerTime','_gcl_ls'];
+  /* sessionStorage-sleutels die Custom HTML-tag 10 in de GTM-container
+     wegschrijft zodra de bezoeker met een advertentieparameter binnenkomt.
+     Gemeten: met ?gclid=... in de URL staan vibe_gclid en drie vibe_utm_*
+     sleutels er VOORDAT er een keuze is gemaakt, en 'Alleen noodzakelijk'
+     verwijderde ze niet. De tag zelf kan ik niet repareren — die staat in de
+     container en niet in deze repository — maar de weigering kan zijn sporen
+     hier wel opruimen. */
+  var MARKETING_SESSIONSTORAGE=['vibe_gclid','vibe_gbraid','vibe_wbraid','vibe_utm_source','vibe_utm_medium','vibe_utm_campaign','vibe_utm_term'];
   function wisMarketingSporen(){
     var host=location.hostname;
     /* van 'www.vibeenergy.nl' ook '.vibeenergy.nl' proberen: de pixel zet de
@@ -69,6 +82,7 @@
       });
     });
     MARKETING_LOCALSTORAGE.forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+    MARKETING_SESSIONSTORAGE.forEach(function(k){ try{ sessionStorage.removeItem(k); }catch(e){} });
   }
 
   function save(analytics,marketing){
@@ -191,8 +205,38 @@
     r.appendChild(t); r.appendChild(sw); return r;
   }
 
+  /* ---------- scrollreserve ----------
+     De melding staat position:fixed op de onderrand en legt zich daarmee OVER
+     de pagina. Zonder reserve is alles wat onder die kaart valt niet alleen
+     onzichtbaar maar ook ONBEREIKBAAR zolang de bezoeker geen keuze maakt —
+     en voor inhoud helemaal onderaan het document geldt dat permanent, want
+     daar valt niet verder te scrollen.
+
+     Gemeten op 9 november 2026 op /regios/groningen bij 390x844: de hero-CTA's
+     staan op y=697 en y=768. Een melding die beide vrijlaat zou maximaal 13px
+     hoog mogen zijn, en dat is geen melding. Kleiner maken lost het dus niet
+     op; niet-permanent-afdekken wel. Met deze reserve kan ELK element onder
+     de kaart vandaan worden gescrold.
+
+     Alleen voor de onderaan verankerde melding. Het voorkeurenpaneel is een
+     gecentreerde modale dialoog met een achtergrond; daar is de pagina
+     sowieso niet bedoeld om te bedienen. */
+  var reserveWaarnemer=null;
+  function zetReserve(){
+    if(!card||prefsOpen){ wisReserve(); return; }
+    var h=Math.ceil(card.getBoundingClientRect().height);
+    if(h>0) document.body.style.setProperty('padding-bottom', h+'px');
+  }
+  function wisReserve(){
+    try{ document.body.style.removeProperty('padding-bottom'); }catch(e){}
+    if(reserveWaarnemer){ try{ reserveWaarnemer.disconnect(); }catch(e){} reserveWaarnemer=null; }
+    window.removeEventListener('resize',zetReserve);
+    window.removeEventListener('orientationchange',zetReserve);
+  }
+
   function close(){
     if(!ov) return;
+    wisReserve();
     card.classList.remove('on'); ov.classList.remove('on');
     setTimeout(function(){ if(ov&&ov.parentNode) ov.parentNode.removeChild(ov); ov=null; },320);
     /* De focus terugzetten waar hij vandaan kwam. Zonder dit valt de focus na
@@ -208,14 +252,20 @@
     inn.appendChild(el('div','vck-eb','Cookies'));
     if(!prefsOpen){
       inn.appendChild(el('h2','vck-t','Deze site gebruikt cookies'));
-      inn.appendChild(el('p','vck-p','Wij gebruiken noodzakelijke cookies om de website te laten werken, en analytische cookies om te zien hoe de site wordt gebruikt en waar die beter kan. Meer hierover leest u in ons <a href="/privacy">privacybeleid</a>.'));
+      /* DEZE TEKST NOEMT NU OOK MARKETING, EN DAT IS EEN CORRECTIE.
+         De vorige formulering sprak alleen van 'noodzakelijke cookies ... en
+         analytische cookies', terwijl het voorkeurenpaneel eronder WEL een
+         categorie Marketing aanbiedt en de Meta Pixel daar valt. De vraag
+         onderschatte dus wat er werd gevraagd. Korter EN vollediger: de drie
+         categorieen staan er nu alle drie, met wie de keuze maakt erbij. */
+      inn.appendChild(el('p','vck-p','Noodzakelijke cookies laten de site werken. Analytische en marketingcookies plaatsen wij alleen met uw toestemming. Meer hierover in ons <a href="/privacy">privacybeleid</a>.'));
       var a=el('div','vck-act');
       var b1=el('button','vck-b vck-b1','Alles accepteren'); b1.type='button';
       var b2=el('button','vck-b vck-b2','Alleen noodzakelijk'); b2.type='button';
       var b3=el('button','vck-b vck-b3','Instellingen'); b3.type='button';
       b1.addEventListener('click',function(){ save(true,true); close(); });
       b2.addEventListener('click',function(){ save(false,false); close(); });
-      b3.addEventListener('click',function(){ prefsOpen=true; ov.classList.add('pref'); setTimeout(function(){ov.classList.add('on');},10); render(); });
+      b3.addEventListener('click',function(){ prefsOpen=true; ov.classList.add('pref'); ov.setAttribute('aria-modal','true'); setTimeout(function(){ov.classList.add('on');},10); render(); zetReserve(); });
       a.appendChild(b1); a.appendChild(b2); a.appendChild(b3); inn.appendChild(a);
     } else {
       inn.appendChild(el('h2','vck-t','Cookievoorkeuren'));
@@ -265,6 +315,15 @@
     render();
     requestAnimationFrame(function(){
       card.classList.add('on');
+      /* De reserve pas NA de eerste opmaakronde, want daarvoor is de hoogte
+         van de kaart nog niet bekend. De waarnemer houdt hem gelijk als de
+         tekst herschikt bij draaien of een andere lettergrootte. */
+      zetReserve();
+      window.addEventListener('resize',zetReserve);
+      window.addEventListener('orientationchange',zetReserve);
+      if(window.ResizeObserver&&!prefsOpen){
+        try{ reserveWaarnemer=new ResizeObserver(zetReserve); reserveWaarnemer.observe(card); }catch(e){}
+      }
       if(openPrefs){
         ov.classList.add('on');
         /* In het modale paneel hoort de focus naar binnen. Bij de eerste
@@ -296,6 +355,7 @@
     ov.classList.remove('on'); ov.classList.remove('pref');
     ov.setAttribute('aria-modal','false');
     render();
+    zetReserve();
   });
 
   function boot(){
