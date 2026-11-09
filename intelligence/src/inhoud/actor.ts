@@ -54,6 +54,49 @@ import { leesGebruiker } from "../dashboard/auth.ts";
 /** Het recht dat een publicatiehandeling vraagt. Bestond al in 0001. */
 export const RECHT_PUBLICEREN = "inhoud.publiceren";
 
+/**
+ * De gronden waarop dit platform zonder mens mag handelen, als REGISTER.
+ *
+ * WAAROM EEN REGISTER EN GEEN VRIJE TEKST. Tot 9 november 2026 nam
+ * `systeemActor()` elke string van drie tekens aan. De grond belandde
+ * tussen blokhaken in de motivatie en in `actor_naam`, en dat was de
+ * hele herkomst: wie wilde weten WELKE automatische handeling een regel
+ * had geschreven, moest vrije tekst parsen. Met de autonome uitgifte
+ * erbij zijn dat zes verschillende handelingen die alle zes 'systeem'
+ * heten — en dan is "een concrete uitvoeringsgrond" alleen nog waar als
+ * hij uit een gesloten lijst komt.
+ *
+ * De sleutel gaat daarom óók machineleesbaar het logboek in
+ * (`poortresultaten.grond`), zodat het operationele overzicht kan
+ * tellen zonder blokhaken te lezen.
+ */
+export const SYSTEEMGRONDEN = {
+  "autopublicatie:goedkeuring":
+    "een laagrisico-artikel haalde alle negen beleidsvoorwaarden en is onder het publicatiebeleid goedgekeurd",
+  "autopublicatie:blokkade":
+    "een artikel haalde de beleidsvoorwaarden niet en is door het platform geblokkeerd",
+  /* DE OUDE WEG HEEFT ZIJN EIGEN GROND, en dat is geen smaakkwestie.
+     Met auto_uitgifte_aan UIT schrijft de autopublicatieronde zelf het
+     registerrecord en opent een MENS daarna de pull request. Met die
+     schakelaar AAN doet de uitgiftelaag dat, en mag een machine
+     doorgaan. Het logboek is de enige plek waar dat verschil staat:
+     de uitgiftewachtrij hervat alleen een keten met een grond die met
+     'uitgifte:' begint. Deelden de twee wegen één grond, dan zou de
+     wachtrij een publicatie overnemen die op een mens wacht. */
+  "autopublicatie:record":
+    "de autopublicatieronde schreef zelf het registerrecord; de pull request wacht op een mens",
+  "uitgifte:opdracht": "een uitgifteopdracht is afgegeven aan de uitvoerder",
+  "uitgifte:record": "het registerrecord van een autonoom goedgekeurd artikel is vastgelegd",
+  "uitgifte:pr": "de uitgifte opende een pull request voor een autonoom goedgekeurd artikel",
+  "uitgifte:merge": "de uitgifte mergede een groene pull request naar main",
+  "uitgifte:live": "de uitgifte stelde vast dat het artikel publiek staat",
+  "uitgifte:herstel": "de uitgifte draaide een mislukte stap terug",
+  "uitgifte:stop": "de uitgifte is stilgezet door een stopconditie",
+  "taak:gepland": "een geplande taak zonder mens in de lus",
+} as const;
+
+export type SysteemGrond = keyof typeof SYSTEEMGRONDEN;
+
 export type Actor =
   | {
       readonly soort: "mens";
@@ -63,8 +106,20 @@ export type Actor =
     }
   | {
       readonly soort: "systeem";
-      /** Waarom het systeem dit zonder mens deed; komt in de motivatie. */
-      readonly grond: string;
+      /** De sleutel uit SYSTEEMGRONDEN; machineleesbaar. */
+      readonly grond: SysteemGrond;
+      /** De tekst uit het register, plus eventueel detail van de aanroeper. */
+      readonly toelichting: string;
+      /**
+       * Onder WELK beleid het systeem dit deed.
+       *
+       * 0052 zegt bij de kolom `beleid_versie`: "VERPLICHT te vullen bij
+       * een automatisch besluit, zodat achteraf vaststaat onder welke
+       * regels er is gepubliceerd." Gemeten op 9 november 2026 gaf geen
+       * enkele productie-aanroeper hem mee. Hij hoort bij de ACTOR en
+       * niet bij de aanroepplek, want het is het mandaat van die actor.
+       */
+      readonly beleidVersie: string | null;
     };
 
 /**
@@ -76,11 +131,30 @@ export type Actor =
  * onbetrouwbaar. Het systeem heeft dus geen id, en dat is het verschil
  * dat het logboek moet kunnen tonen.
  */
-export function systeemActor(grond: string): Actor {
-  if (grond.trim().length < 3) {
-    throw new IntelFout("validatie", "een systeemactor zonder grond is geen herkomst");
+export function systeemActor(
+  grond: SysteemGrond,
+  opties: { readonly detail?: string; readonly beleidVersie?: string | null } = {},
+): Actor {
+  /* DE RUNTIME-CONTROLE BLIJFT, en is nu strenger dan de typechecker.
+     TypeScript houdt een onbekende sleutel tegen bij het compileren;
+     een aanroeper uit JavaScript, een gecaste waarde of een string uit
+     de database komt daar langs. Een grond die niet in het register
+     staat is geen grond. */
+  const tekst = SYSTEEMGRONDEN[grond];
+  if (typeof tekst !== "string") {
+    throw new IntelFout(
+      "validatie",
+      `'${String(grond)}' staat niet in SYSTEEMGRONDEN; een systeemactor zonder grond uit het ` +
+        `register is geen herkomst (bekend: ${Object.keys(SYSTEEMGRONDEN).join(", ")})`,
+    );
   }
-  return { soort: "systeem", grond: grond.trim() };
+  const detail = opties.detail?.trim();
+  return {
+    soort: "systeem",
+    grond,
+    toelichting: detail ? `${tekst} — ${detail}` : tekst,
+    beleidVersie: opties.beleidVersie ?? null,
+  };
 }
 
 /**
@@ -151,7 +225,9 @@ export async function verifieerMens(
 
 /** Hoe deze actor in een logregel heet. Nooit met de hand samengesteld. */
 export function actorBeschrijving(a: Actor): string {
-  return a.soort === "mens" ? `${a.email} (gebruiker ${a.gebruikerId})` : `systeem: ${a.grond}`;
+  return a.soort === "mens"
+    ? `${a.email} (gebruiker ${a.gebruikerId})`
+    : `systeem: ${a.grond}${a.beleidVersie ? ` onder beleid ${a.beleidVersie}` : ""}`;
 }
 
 export type Besluit =
@@ -175,9 +251,29 @@ export type Fase =
   | "GOEDGEKEURD"
   | "RECORD_GESCHREVEN"
   | "PR_AANGEMAAKT"
+  | "PR_GEMERGED"
   | "LIVE_GEVERIFIEERD"
   | "TERUGGEDRAAID"
   | "GEBLOKKEERD";
+
+/**
+ * De fasen waarin een handeling de publieke site RAAKT.
+ *
+ * Een systeemactor moet in deze fasen zijn mandaat noemen: zonder
+ * `beleidVersie` is niet na te gaan onder welke regels het platform
+ * publiek iets heeft gedaan. GOEDGEKEURD staat er ook in, want dat is
+ * het besluit dat de rest mogelijk maakt. GEBLOKKEERD en TERUGGEDRAAID
+ * staan er NIET in: dat zijn handelingen die iets tegenhouden of
+ * ongedaan maken, en die mogen nooit afhangen van een beleidsrij die
+ * misschien net is ingetrokken.
+ */
+const MANDAAT_VEREIST: readonly Fase[] = [
+  "GOEDGEKEURD",
+  "RECORD_GESCHREVEN",
+  "PR_AANGEMAAKT",
+  "PR_GEMERGED",
+  "LIVE_GEVERIFIEERD",
+];
 
 /**
  * Schrijft één regel in het append-only publicatielogboek.
@@ -202,6 +298,21 @@ export async function legPublicatiebesluitVast(
   },
 ): Promise<void> {
   const mens = inv.actor.soort === "mens" ? inv.actor : null;
+  const systeem = inv.actor.soort === "systeem" ? inv.actor : null;
+
+  /* HET MANDAAT VAN EEN AUTOMATISCHE HANDELING.
+     De aanroeper mag `beleidVersie` nog meegeven (de goedkeuringskant
+     deed dat al), maar de ACTOR is de eerste bron: het beleid is zijn
+     mandaat, niet een eigenschap van de aanroepplek. */
+  const beleidVersie = inv.beleidVersie ?? systeem?.beleidVersie ?? null;
+  if (systeem !== null && beleidVersie === null && MANDAAT_VEREIST.includes(inv.fase)) {
+    throw new IntelFout(
+      "validatie",
+      `een automatisch besluit in fase ${inv.fase} zonder beleidsversie is niet herleidbaar; ` +
+        `0052 eist die versie juist bij een besluit zonder mens (grond ${systeem.grond})`,
+    );
+  }
+
   await c.query(
     `insert into intel.publicatiebesluiten
        (organisatie_id, inhoud_versie_id, besluit, door_gebruiker_id, door_rol,
@@ -224,11 +335,17 @@ export async function legPublicatiebesluitVast(
          dezelfde waarheid twee keer opschrijven en de motivatie van de
          aanroeper veranderen — en daar rekenen bestaande toetsen
          letterlijk op. */
-      inv.actor.soort === "systeem"
-        ? `${inv.motivatie} [${inv.actor.grond}]`
-        : inv.motivatie,
-      JSON.stringify({ fase: inv.fase, ...(inv.meting ?? {}) }),
-      inv.beleidVersie ?? null,
+      systeem !== null ? `${inv.motivatie} [${systeem.grond}]` : inv.motivatie,
+      /* DE GROND OOK MACHINELEESBAAR. De blokhaken in de motivatie zijn
+         voor een mens die het logboek leest; `grond` is voor het
+         operationele overzicht, dat moet kunnen tellen hoe vaak welke
+         automatische handeling liep zonder vrije tekst te parsen. */
+      JSON.stringify({
+        fase: inv.fase,
+        ...(systeem !== null ? { grond: systeem.grond } : {}),
+        ...(inv.meting ?? {}),
+      }),
+      beleidVersie,
     ],
   );
 }
@@ -267,7 +384,15 @@ export async function legPublicatieAuditVast(
       mens?.email ?? `systeem (${inv.actor.soort === "systeem" ? inv.actor.grond : "?"})`,
       inv.handeling,
       String(inv.objectId),
-      JSON.stringify(inv.naWaarde),
+      JSON.stringify(
+        inv.actor.soort === "systeem"
+          ? {
+              ...inv.naWaarde,
+              grond: inv.actor.grond,
+              beleid_versie: inv.actor.beleidVersie,
+            }
+          : inv.naWaarde,
+      ),
       inv.herkomst ?? (mens ? "cli" : "taak"),
       inv.motivatie,
     ],

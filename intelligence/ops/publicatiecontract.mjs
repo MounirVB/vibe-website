@@ -14,7 +14,7 @@
    een reviewer. De gevaarlijke PR is er een die er NORMAAL uitziet en
    een regel sloopt die niemand per commit nakijkt:
 
-     · een nieuwsartikel op INDEX zonder menselijke goedkeuring
+     · een nieuwsartikel op INDEX zonder verantwoorde goedkeuring
      · een artikel dat zijn eigen commerciële intentie claimt in
        plaats van die te lenen
      · een tweede route met dezelfde slug
@@ -83,31 +83,157 @@ const index = routes.filter((r) => r.staat === "INDEX");
 const nieuwsRoutes = routes.filter((r) => r.subsoort === "nieuws");
 const hub = routes.find((r) => r.route === "nieuws");
 
+/* ---------------- de nieuwsbestanden, één keer gelezen ----------------
+
+   Stap 1 en stap 2 stelden allebei een vraag over dezelfde bestanden en
+   lazen er maar één van. Stap 1 keek alleen in het REGISTER (is deze
+   INDEX-route als GOEDGEKEURD geboekt?) en stap 2 alleen in het BESTAND
+   (draagt dit goedgekeurde bestand een goedkeurder?). Samen dekten ze de
+   regel, maar alleen zolang register en bestand hetzelfde zeggen — en
+   data/seo/routes.json is gegenereerd, dus een PR kan hem met de hand
+   anders maken dan het bestand waaruit hij hoort te volgen. Een nieuwsroute
+   die in het register op INDEX en GOEDGEKEURD staat terwijl het bestand
+   CONCEPT is, kwam door beide stappen heen.
+
+   De bestanden worden daarom hier één keer gelezen en vanaf nu door beide
+   stappen gebruikt. De twee toetsen blijven gescheiden en in dezelfde orde,
+   zodat de CI-uitvoer leesbaar blijft. */
+const nieuwsBestandenMap = resolve(WORTEL, "data", "inhoud", "nieuws");
+const nieuwsBestandnamen = existsSync(nieuwsBestandenMap)
+  ? readdirSync(nieuwsBestandenMap)
+      .filter((b) => b.endsWith(".json"))
+      .sort()
+  : [];
+/** route -> { bestand, inhoud } voor elk leesbaar bestand in data/inhoud/nieuws/. */
+const nieuwsPerRoute = new Map();
+const nieuwsBestanden = [];
+for (const b of nieuwsBestandnamen) {
+  const j = JSON.parse(readFileSync(join(nieuwsBestandenMap, b), "utf8"));
+  nieuwsBestanden.push({ bestand: b, inhoud: j });
+  const route = String(j.route ?? "").replace(/^\/+/, "");
+  if (!nieuwsPerRoute.has(route)) nieuwsPerRoute.set(route, { bestand: b, inhoud: j });
+}
+
+const ISO_DATUM = /^\d{4}-\d{2}-\d{2}$/;
+
+/* De twee risicoklassen die een beleidsgoedkeuring mag dragen. 'hoog' staat
+   er niet bij en dat is de hele regel; de klassen komen uit de check op
+   intel.inhoud_versies.risico_klasse ('laag', 'midden', 'hoog'). */
+const RISICO_ZONDER_MENS = new Set(["laag", "midden"]);
+
+/* ============================================================
+   DE GOEDKEURINGSCATEGORIE
+   ------------------------------------------------------------
+   Geeft de reden terug waarom de goedkeuring in dit bestand NIET
+   verantwoord is; null betekent verantwoord.
+
+   WAAROM DIT NIET MEER 'EEN NIET-LEGE NAAM' IS.
+   Deze poort toetste `goedgekeurd_door`, en dat was juist zolang er één
+   goedkeuringsvorm bestond. Er zijn er nu twee, en de tweede kan geen
+   naam dragen:
+
+     A een MENS     goedkeuring_soort 'mens' (of afwezig, voor de
+                    bestanden van vóór deze regel) MET een niet-lege
+                    `goedgekeurd_door`
+     B het BELEID   goedkeuring_soort 'beleid' MET een niet-lege
+                    `goedkeurend_beleid` (de beleidsversie), ZONDER naam,
+                    en met een `risico_klasse` die niet 'hoog' is
+
+   Bij B is het lege naamveld het ANTWOORD en niet een gebrek:
+   intelligence/db/migraties/0052 legt uit dat een nepgebruiker die
+   'systeem' heet elke latere lezing van "was hier een mens bij"
+   onbetrouwbaar maakt — voor álle rijen, ook de echte. De oude toets zou
+   B dus weigeren op precies de eigenschap die hem eerlijk maakt.
+
+   WAT NIET WIJKT. Een leeg of ontbrekend goedkeuringsveld blijft een
+   FOUT en geen waarschuwing; een onbekende `goedkeuring_soort` ook; en
+   beleid plus hoog risico is een harde fout. Dat laatste staat in de
+   database op twee niveaus dicht (publicatiebeleid_hoog_risico_nooit_-
+   automatisch en inhoud_versies_beleid_nooit_hoog_risico), maar een
+   JSON-bestand in deze repository kan met de hand zijn geschreven en
+   komt dus nooit langs die constraints — daarom staat de regel hier ook.
+
+   DEZELFDE REGEL STAAT EEN TWEEDE KEER IN scripts/seo/bouw-routes.mjs
+   (weigerNieuws), EN DAT IS OPZET. Dit is de poort náást de generator:
+   zou hij de functie van de generator importeren, dan kon hij per
+   definitie geen fout in die functie meer zien en zag een reviewer één
+   oordeel voor twee. Wat de twee kopieën in de pas houdt is
+   intelligence/test/integratie/publicatiecontract-goedkeuring.test.ts:
+   die draait BEIDE scripts echt als kindproces, op dezelfde zeven
+   gevallen.
+   ============================================================ */
+function onverantwoordeGoedkeuring(j) {
+  const soort = String(j.goedkeuring_soort ?? "mens").trim().toLowerCase() || "mens";
+  const naam = String(j.goedgekeurd_door ?? "").trim();
+
+  if (soort !== "mens" && soort !== "beleid") {
+    return `goedkeuring_soort '${soort}' is geen van 'mens' of 'beleid'`;
+  }
+  if (!ISO_DATUM.test(String(j.goedgekeurd_op ?? ""))) {
+    return "GOEDGEKEURD zonder geldige goedgekeurd_op";
+  }
+
+  if (soort === "mens") {
+    if (!naam) return "GOEDGEKEURD door een mens zonder goedgekeurd_door";
+    return null;
+  }
+
+  /* Vanaf hier: goedkeuring_soort 'beleid'. */
+  if (!String(j.goedkeurend_beleid ?? "").trim()) {
+    return "GOEDGEKEURD door beleid zonder goedkeurend_beleid";
+  }
+  /* De database eist dat `goedgekeurd_door` bij 'beleid' NULL is
+     (inhoud_versies_goedkeuring_herkomst). Een bestand dat beide draagt
+     claimt twee herkomsten en één ervan is onwaar. */
+  if (naam) return `GOEDGEKEURD door beleid maar met '${naam}' in goedgekeurd_door`;
+  const risico = String(j.risico_klasse ?? "").trim().toLowerCase();
+  if (risico === "hoog") return "GOEDGEKEURD door beleid met risico_klasse 'hoog'";
+  if (!RISICO_ZONDER_MENS.has(risico)) {
+    return `GOEDGEKEURD door beleid met risico_klasse '${risico || "ontbreekt"}'`;
+  }
+  return null;
+}
+
 /* ---------------- 1. goedkeuring ---------------- */
 {
-  const zonderGoedkeuring = nieuwsRoutes.filter(
-    (r) => r.staat === "INDEX" && r.redactionele_staat !== "GOEDGEKEURD",
-  );
+  const zonderGoedkeuring = [];
+  for (const r of nieuwsRoutes.filter((x) => x.staat === "INDEX")) {
+    if (r.redactionele_staat !== "GOEDGEKEURD") {
+      zonderGoedkeuring.push(`${r.route}=${r.redactionele_staat ?? "onbekend"}`);
+      continue;
+    }
+    /* En nu het bestand waaruit die boeking hoort te volgen. */
+    const b = nieuwsPerRoute.get(String(r.route).replace(/^\/+/, ""));
+    if (b === undefined) {
+      zonderGoedkeuring.push(`${r.route}: geen inhoudsbestand in data/inhoud/nieuws/`);
+      continue;
+    }
+    if (String(b.inhoud.redactionele_staat ?? "") !== "GOEDGEKEURD") {
+      zonderGoedkeuring.push(
+        `${r.route}: register zegt GOEDGEKEURD, ${b.bestand} zegt ${b.inhoud.redactionele_staat ?? "niets"}`,
+      );
+      continue;
+    }
+    const reden = onverantwoordeGoedkeuring(b.inhoud);
+    if (reden !== null) zonderGoedkeuring.push(`${r.route}: ${reden}`);
+  }
   toets(
-    "geen nieuwsartikel op INDEX zonder redactionele staat GOEDGEKEURD",
+    "geen nieuwsartikel op INDEX zonder verantwoorde goedkeuring (een mens met naam, of het beleid met zijn versie)",
     zonderGoedkeuring.length === 0,
     zonderGoedkeuring.length
-      ? zonderGoedkeuring.map((r) => `${r.route}=${r.redactionele_staat ?? "onbekend"}`).join(", ")
+      ? zonderGoedkeuring.slice(0, 3).join(" | ")
       : `${nieuwsRoutes.length} nieuwsroute(s), ${nieuwsRoutes.filter((r) => r.staat === "INDEX").length} op INDEX`,
   );
 }
 
 /* ---------------- 2. de inhoudsbestanden zelf ---------------- */
 {
-  const map = resolve(WORTEL, "data", "inhoud", "nieuws");
-  const bestanden = existsSync(map) ? readdirSync(map).filter((b) => b.endsWith(".json")) : [];
   const fouten = [];
   const slugs = new Map();
 
   const DRAGEND = new Set(["WETGEVING", "TOEZICHTHOUDER", "NETBEHEERDER", "STATISTIEK"]);
 
-  for (const b of bestanden) {
-    const j = JSON.parse(readFileSync(join(map, b), "utf8"));
+  for (const { bestand: b, inhoud: j } of nieuwsBestanden) {
     const route = String(j.route ?? "");
     const staat = String(j.redactionele_staat ?? "");
 
@@ -116,12 +242,8 @@ const hub = routes.find((r) => r.route === "nieuws");
 
     if (staat !== "GOEDGEKEURD") continue; // alleen goedgekeurde moeten de rest halen
 
-    if (!j.goedgekeurd_door || !String(j.goedgekeurd_door).trim()) {
-      fouten.push(`${b}: GOEDGEKEURD zonder goedgekeurd_door`);
-    }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(j.goedgekeurd_op ?? ""))) {
-      fouten.push(`${b}: GOEDGEKEURD zonder geldige goedgekeurd_op`);
-    }
+    const goedkeuring = onverantwoordeGoedkeuring(j);
+    if (goedkeuring !== null) fouten.push(`${b}: ${goedkeuring}`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(String(j.gepubliceerd ?? ""))) {
       fouten.push(`${b}: geen geldige publicatiedatum`);
     }
@@ -138,9 +260,11 @@ const hub = routes.find((r) => r.route === "nieuws");
   }
 
   toets(
-    "elk goedgekeurd nieuwsbestand draagt goedkeurder, datum, eigenaar en een dragende bron",
+    "elk goedgekeurd nieuwsbestand draagt een verantwoorde goedkeuring, datum, eigenaar en een dragende bron",
     fouten.length === 0,
-    fouten.length ? fouten.slice(0, 3).join(" | ") : `${bestanden.length} bestand(en) in data/inhoud/nieuws/`,
+    fouten.length
+      ? fouten.slice(0, 3).join(" | ")
+      : `${nieuwsBestanden.length} bestand(en) in data/inhoud/nieuws/`,
   );
 }
 

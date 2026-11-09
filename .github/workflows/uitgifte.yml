@@ -1,0 +1,1151 @@
+# ============================================================
+#  VIBE ENERGY — AUTONOME UITGIFTE (DE UITVOERDER)
+#  ------------------------------------------------------------
+#  Deze werkstroom is de UITVOERDER van de publicatieketen. De beslisser
+#  staat ergens anders: in de Railway-container bij de database, in
+#  intelligence/src/uitgifte/opdracht.ts. Daar wordt besloten WAT er
+#  uitgegeven mag worden en WELKE bytes dat zijn; hier worden die bytes
+#  geschreven, gebouwd, in een pull request gezet, gemerged en
+#  terugverteld.
+#
+#  WAAROM DIE SPLITSING BESTAAT (gemeten 9 november 2026)
+#  In de productiecontainer ontbreken git, /app/.git, gh en /app/scripts;
+#  /data/inhoud bestaat niet en INTEL_SITE_WORTEL is leeg. De plek waar
+#  de database vanzelf bereikbaar is, kan de git-helft dus niet draaien.
+#  En de plek waar de hele repository wél staat — een GitHub-runner —
+#  kan de database niet bereiken, want die hangt in een Railway-privénet
+#  zonder publieke poort en dat moet zo blijven.
+#
+#  WAT DEZE WERKSTROOM BEWUST NIET DOET
+#
+#  · Hij BEDENKT NIETS. Er is geen stap die inhoud kiest, een slug
+#    verzint, een datum zet of een record samenstelt. Hij schrijft de
+#    bytes uit `recordInhoud` en verder niets. De server bouwt het
+#    record daarna OPNIEUW uit de database en vergelijkt zijn eigen
+#    sha256 met de hash die hier wordt gemeld; wijken ze af, dan legt de
+#    server niets vast. Een uitvoerder die de inhoud zou kunnen kiezen,
+#    is geen uitvoerder maar een tweede redactie.
+#  · Hij raakt GEEN database aan. Er is geen DB-credential in deze
+#    werkstroom en er hoort er geen in te komen. Alles gaat via twee
+#    endpoints van de machinepoort (/machine/stand en /machine/uitgifte).
+#  · Hij FORCEERT GEEN MERGE. De merge gaat via de normale
+#    pull-request-API. main is beschermd met drie verplichte checks,
+#    strict=true en enforce_admins=true; een merge zonder groene poort
+#    weigert GITHUB zelf, niet dit bestand. Dat is met opzet: een poort
+#    die de aanvrager zelf kan overrulen is geen poort.
+#  · Hij meet NIET of het artikel publiek staat. Dat doet de server, met
+#    vier eigen HTTP-metingen (status 200, zelfverwijzende canonical, de
+#    kop op de pagina, de URL in de sitemap). Zou de uitvoerder mogen
+#    melden "hij staat live", dan kon een fout in zijn eigen stappen
+#    zich als succes voordoen.
+#  · Hij publiceert NIETS zolang twee schakelaars in de database uit
+#    staan: auto_publiceren_aan en auto_uitgifte_aan (migratie 0058).
+#    Beide staan standaard uit. Dan geeft /machine/uitgifte een LEGE
+#    wachtrij met een stopreden, en stopt deze werkstroom netjes. Dat is
+#    de normale, verwachte uitkomst.
+#
+#  DE REPOSITORY IS PUBLIEK. Daarom staat `permissions` op alleen-lezen,
+#  gaat geen secret ooit in een `run:`-regel, en draait geen enkele stap
+#  met `set -x`.
+#
+#  GEEN ENKEL VELD UIT DE OPDRACHT GAAT VIA ${{ }} IN EEN SHELLSCRIPT.
+#  Een `${{ ... }}`-uitdrukking wordt door Actions als TEKST in het
+#  script gezet voordat de shell hem ziet. Een waarde die over het
+#  netwerk binnenkwam en `$(` of een backtick bevat, zou dan worden
+#  UITGEVOERD. Alles uit de opdracht wordt daarom met `jq` uit een
+#  bestand in een shellvariabele gelezen, en de velden die een pad, een
+#  branch of een git-commando worden, zijn in stap 3 eerst op hun
+#  patroon getoetst.
+# ============================================================
+name: Autonome uitgifte
+
+on:
+  # DE HANDMATIGE WEG IS STANDAARD DROOG. Wie deze werkstroom met de
+  # hand start wil in negen van de tien gevallen weten WAT er zou
+  # gebeuren, niet dat het gebeurt. `droog` doet stap 1 t/m 3 en stopt.
+  workflow_dispatch:
+    inputs:
+      droog:
+        description: "Droog draaien: alleen lezen, niets schrijven, geen PR, geen merge"
+        type: boolean
+        required: false
+        default: true
+
+  # TWEE KEER PER WERKDAG, EN DAT IS EEN REDACTIONELE CADANS.
+  #
+  # Niet elk uur. De server begrenst zichzelf al op drie publicaties per
+  # dag (MAX_AUTONOME_PUBLICATIES_PER_DAG in uitgifte/opdracht.ts), dus
+  # 24 ronden per dag zouden 21 keer een lege wachtrij ophalen en één
+  # keer iets doen. Dat is geen vangnet maar ruis: elke ronde opent een
+  # geautoriseerde schrijfweg naar een publieke repository, en die wil je
+  # zo weinig mogelijk openen.
+  #
+  # Niet één keer per dag. Een nieuwskanaal dat 's ochtends een
+  # gebeurtenis mist, publiceert hem dan pas de volgende dag.
+  #
+  # Alleen op werkdagen (1-5). Er is in het weekend geen mens die een
+  # rode pull request of een gestrande fase oppakt, en een publicatie die
+  # niemand kan terugdraaien hoort niet zonder toezicht de deur uit.
+  #
+  # DE TIJDEN STAAN IN UTC, want GitHub kent geen tijdzone in `cron`.
+  # 07:40 en 13:40 UTC is 08:40 en 14:40 in Amsterdam in de winter en
+  # 09:40 en 15:40 in de zomer; die uurschuif is bewust geaccepteerd in
+  # plaats van twee halfjaarlijkse wijzigingen aan dit bestand. Niet op
+  # het hele uur: een `schedule` is bij GitHub geen garantie op de
+  # minuut, en een tijdstip buiten het hele uur staat minder in de rij.
+  #
+  # LET OP: een `schedule` draait uitsluitend vanaf de DEFAULT-branch.
+  # Zolang dit bestand niet in main staat, start alleen workflow_dispatch.
+  schedule:
+    - cron: "40 7 * * 1-5"
+    - cron: "40 13 * * 1-5"
+
+# MINIMALE RECHTEN, EN DE STANDAARDTOKEN DOET HIER HET ECHTE WERK NIET.
+#
+# `contents: read` is alles wat GITHUB_TOKEN hier mag, en dat is genoeg
+# voor de checkout. Pushen, de pull request openen en mergen gebeurt met
+# een EIGEN credential (UITGIFTE_TOKEN), en dat is geen smaakkwestie:
+#
+#   EEN PUSH OF PULL REQUEST DIE MET DE STANDAARD GITHUB_TOKEN WORDT
+#   GEMAAKT, START GEEN WORKFLOWS. GitHub doet dat met opzet, om
+#   oneindige ketens te voorkomen. Gevolg hier: de drie VERPLICHTE checks
+#   van .github/workflows/poort.yml zouden nooit lopen, de pull request
+#   zou blijven staan op "Expected — Waiting for status to be reported",
+#   en mergen zou — terecht — onmogelijk zijn.
+#
+# UITGIFTE_TOKEN is daarom een eigen, begrensde credential op ALLEEN DEZE
+# repository. Zie intelligence/docs/AUTONOME-NIEUWSPUBLICATIE.md
+# paragraaf 5 voor de exacte rechten. Ontbreekt hij, dan stopt stap 1 en
+# gebeurt er niets: fail-closed, want een halve uitgifte is erger dan
+# geen uitgifte.
+permissions:
+  contents: read
+
+# NOOIT TWEE RONDEN TEGELIJK, EN NOOIT EEN LOPENDE RONDE AFBREKEN.
+# `cancel-in-progress: false` is hier het belangrijkste woord van het
+# bestand: een ronde die tussen de merge en de LIVE_GEVERIFIEERD-melding
+# wordt afgekapt, laat een publicatie achter die publiek staat maar in
+# het logboek op PR_GEMERGED blijft hangen. Liever wachten.
+concurrency:
+  group: autonome-uitgifte
+  cancel-in-progress: false
+
+env:
+  # DE DRIE VERPLICHTE CHECKS, LETTERLIJK ZOALS ZE IN GITHUB HETEN.
+  # Dit zijn de `name:`-waarden van de drie jobs in poort.yml, en dat is
+  # wat de branchbescherming op main als vereist heeft staan. Ze worden
+  # gescheiden door een pijp omdat de namen zelf spaties en liggende
+  # streepjes bevatten.
+  #
+  # Deze lijst is GEEN tweede waarheid: GitHub blijft de instantie die de
+  # merge weigert. Hij staat hier omdat de server de NAMEN van de groene
+  # checks eist bij de PR_GEMERGED-melding (aanvaardMerge weigert een
+  # merge zonder gemelde checks), en die namen horen gemeten te zijn bij
+  # GitHub in plaats van aangenomen.
+  VEREISTE_CHECKS: "Release 1 — SEO/GEO-poorten en reproduceerbaarheid|Release 2 — typecheck, tests en invarianten|Geheimen, kwetsbaarheden en publicatiecontract"
+
+  # Hoe lang wachten we op de drie checks en op de Railway-deploy?
+  # De poort draait drie jobs waarvan één een PostgreSQL 17-client
+  # installeert en de hele regressiesuite draait; de deploy draait
+  # bovendien `npm run migreer && npm run zaai && npm run geo` als
+  # preDeployCommand. Ruim nemen is hier goedkoper dan een valse
+  # GEBLOKKEERD-melding: 120 x 20 s = 40 minuten voor de poort,
+  # 90 x 20 s = 30 minuten voor de deploy.
+  CHECK_POGINGEN: "120"
+  CHECK_INTERVAL: "20"
+  DEPLOY_POGINGEN: "90"
+  DEPLOY_INTERVAL: "20"
+
+jobs:
+  uitgifte:
+    name: Uitgifte — opdracht ophalen, uitvoeren en terugmelden
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    env:
+      # Welke stand draait deze ronde? 'ja' betekent: lezen en stoppen.
+      # Een GEPLANDE ronde is nooit droog — dan zou de autonome weg nooit
+      # publiceren — en een HANDMATIGE ronde is droog tenzij je het
+      # vinkje uitzet. De echte rem zit niet hier maar in de database.
+      DROOG: ${{ (github.event_name == 'workflow_dispatch' && inputs.droog) && 'ja' || 'nee' }}
+      GH_REPO: ${{ github.repository }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+    steps:
+      # ----------------------------------------------------------------
+      #  1. Bestaan de secrets? Zo niet: stoppen zonder iets te doen.
+      # ----------------------------------------------------------------
+      - name: 1 — Secrets aanwezig (fail-closed)
+        env:
+          UITGIFTE_TOKEN: ${{ secrets.UITGIFTE_TOKEN }}
+          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
+        # EERST DE DEUR, DAN DE KAMER. Een ronde die halverwege op een
+        # ontbrekend secret struikelt, kan al een branch hebben gepusht
+        # of een PR hebben geopend. Daarom staat deze controle vóór de
+        # eerste netwerkoproep en vóór de checkout.
+        #
+        # ER WORDT GEEN WAARDE GEPRINT, en ook geen lengte. Van de
+        # machinesleutel wordt alleen getoetst of hij de ondergrens van
+        # de machinepoort haalt (MIN_SLEUTELLENGTE = 32 in
+        # dashboard/machine.ts); zonder die lengte antwoordt die poort
+        # zelf 503 en is er geen uitgifte.
+        run: |
+          set -euo pipefail
+          ontbreekt=""
+          [ -n "${UITGIFTE_TOKEN:-}" ]  || ontbreekt="${ontbreekt} UITGIFTE_TOKEN"
+          [ -n "${MACHINE_SLEUTEL:-}" ] || ontbreekt="${ontbreekt} INTEL_MACHINE_SLEUTEL"
+          [ -n "${API_BASIS:-}" ]       || ontbreekt="${ontbreekt} INTEL_API_BASIS"
+          if [ -n "${ontbreekt}" ]; then
+            echo "::error::Ontbrekende configuratie:${ontbreekt}. Deze werkstroom doet niets zonder; zie intelligence/docs/AUTONOME-NIEUWSPUBLICATIE.md paragraaf 5."
+            {
+              echo "## Autonome uitgifte — NIET GEDRAAID"
+              echo
+              echo "Ontbrekende configuratie: \`${ontbreekt}\`"
+              echo
+              echo "Er is niets opgehaald, niets geschreven en geen pull request geopend."
+            } >> "${GITHUB_STEP_SUMMARY}"
+            exit 1
+          fi
+          if [ "${#MACHINE_SLEUTEL}" -lt 32 ]; then
+            echo "::error::INTEL_MACHINE_SLEUTEL is korter dan 32 tekens. De machinepoort antwoordt dan zelf 503 (MIN_SLEUTELLENGTE in dashboard/machine.ts)."
+            exit 1
+          fi
+          echo "drie waarden aanwezig; de machinesleutel haalt de ondergrens van 32 tekens"
+          echo "stand van deze ronde: droog=${DROOG}"
+
+      # ----------------------------------------------------------------
+      #  1b. Het gereedschap dat elke volgende stap gebruikt.
+      # ----------------------------------------------------------------
+      - name: 1b — Hulpfuncties klaarzetten
+        # WAAROM DIT EEN BESTAND IS EN GEEN HERHALING PER STAP. Elke stap
+        # hieronder moet hetzelfde kunnen: een GET of POST naar de
+        # machinepoort doen, de HTTP-code toetsen, de huidige stapnaam
+        # vastleggen voor de foutmelder, en een foutregel bewaren. Dat
+        # tien keer uitschrijven is tien plekken waar het anders kan.
+        #
+        # ER STAAT GEEN SECRET IN DIT BESTAND. De heredoc is GEQUOOT
+        # ('SH'), dus er wordt niets uitgevouwen; de functies lezen
+        # ${MACHINE_SLEUTEL} en ${API_BASIS} pas bij aanroep, uit de
+        # omgeving van de stap die ze sourcet. Een stap die ze niet nodig
+        # heeft — de generatorstap — krijgt ze dus ook niet.
+        run: |
+          set -euo pipefail
+          cat > "${RUNNER_TEMP}/poort.sh" <<'SH'
+          # Welke stap draait nu? De foutmelder aan het eind leest dit.
+          # Een nieuwe stap wist de foutregel van de vorige, zodat een
+          # transiënte fout die daarna goedkwam niet als oorzaak in het
+          # logboek van de server belandt.
+          stap() {
+            printf '%s' "$1" > "${RUNNER_TEMP}/stap"
+            : > "${RUNNER_TEMP}/fout"
+          }
+
+          # Een foutregel bewaren voor de GEBLOKKEERD-melding.
+          foutvast() { printf '%s' "$1" > "${RUNNER_TEMP}/fout"; }
+
+          # GET op de machinepoort. $1 = pad, $2 = uitvoerbestand.
+          # De sleutel gaat via de omgeving naar curl en komt niet in een
+          # logregel: geen `set -x`, en GitHub maskeert secrets bovendien
+          # in de uitvoer. Een bestand met de sleutel erin zou de hele
+          # job overleven; een argv-regel leeft alleen in deze curl.
+          haal() {
+            pad="$1"; uit="$2"
+            code="$(curl -sS -m 30 -o "${uit}" -w '%{http_code}' \
+              -H "Authorization: Bearer ${MACHINE_SLEUTEL}" \
+              "${API_BASIS}${pad}" || true)"
+            if [ "${code}" != "200" ]; then
+              echo "::error::GET ${pad} gaf HTTP ${code:-geen antwoord}"
+              head -c 2000 "${uit}" 2>/dev/null || true
+              echo
+              foutvast "GET ${pad} gaf HTTP ${code:-geen antwoord}"
+              return 1
+            fi
+          }
+
+          # Een fase terugmelden. $1 = inhoudsversie-id, $2 = jsonbestand.
+          # 200 = aanvaard. 409 = een melding die niet kan (de server
+          # bouwde een andere hash, of de fase volgt niet op de vorige).
+          # Dat is geen serverfout en wordt dus niet opnieuw geprobeerd.
+          meld() {
+            versie="$1"; bestand="$2"
+            code="$(curl -sS -m 90 -o "${RUNNER_TEMP}/antwoord.json" -w '%{http_code}' \
+              -X POST \
+              -H "Authorization: Bearer ${MACHINE_SLEUTEL}" \
+              -H "Content-Type: application/json" \
+              --data-binary @"${bestand}" \
+              "${API_BASIS}/machine/uitgifte/${versie}" || true)"
+            echo "fase gemeld, HTTP ${code:-geen antwoord}:"
+            # Het antwoord is een `reden` of een `fout` van de server en
+            # bevat geen credential; het is juist de nuttigste regel in
+            # de hele log als iets wordt geweigerd.
+            head -c 2000 "${RUNNER_TEMP}/antwoord.json" 2>/dev/null || true
+            echo
+            if [ "${code}" != "200" ]; then
+              foutvast "fasemelding gaf HTTP ${code:-geen antwoord}: $(head -c 300 "${RUNNER_TEMP}/antwoord.json" 2>/dev/null || true)"
+              return 1
+            fi
+          }
+
+          # Eén veld uit de opdracht, veilig: via jq uit het bestand en
+          # nooit via een ${{ }}-uitdrukking in het script.
+          veld() { jq -r "$1" "${RUNNER_TEMP}/opdracht.json"; }
+          SH
+          echo "hulpfuncties in ${RUNNER_TEMP}/poort.sh"
+
+      # ----------------------------------------------------------------
+      #  2. Welke SHA draait er nu op productie, en is het productie?
+      # ----------------------------------------------------------------
+      - name: 2 — De stand van de server (/machine/stand)
+        id: stand
+        env:
+          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
+        # TWEE DINGEN WORDEN HIER GEMETEN EN BEIDE ZIJN HARD.
+        #
+        # (1) `omgeving` moet 'productie' zijn. Een werkstroom die naar
+        #     main merget en daarmee www.vibeenergy.nl uitrolt, mag niet
+        #     per ongeluk tegen een ontwikkel- of testdatabase staan: dan
+        #     zou een artikel uit een testdatabase publiek gaan.
+        #
+        # (2) De SHA die de server NU draait. Die is straks het ijkpunt
+        #     voor "is de deploy er al?" in stap 9. RAILWAY_GIT_COMMIT_SHA
+        #     staat in de container (gemeten 9 november 2026) en is geen
+        #     geheim: deze repository is publiek.
+        run: |
+          set -euo pipefail
+          . "${RUNNER_TEMP}/poort.sh"
+          stap "2 de stand van de server ophalen"
+          haal "/machine/stand" "${RUNNER_TEMP}/stand.json"
+
+          omgeving="$(jq -r '.omgeving // ""' "${RUNNER_TEMP}/stand.json")"
+          sha="$(jq -r '.sha // ""' "${RUNNER_TEMP}/stand.json")"
+          dienst="$(jq -r '.dienst // "onbekend"' "${RUNNER_TEMP}/stand.json")"
+
+          if [ "${omgeving}" != "productie" ]; then
+            echo "::error::De machinepoort meldt omgeving '${omgeving}' in plaats van 'productie'. Een merge naar main is een productiedeploy; die wordt niet op gezag van een andere omgeving gedaan."
+            foutvast "omgeving is '${omgeving}', niet 'productie'"
+            exit 1
+          fi
+
+          # De SHA wordt getoetst voordat hij een git-argument wordt in
+          # stap 9. Leeg mag: dan valt die stap terug op "de SHA is
+          # veranderd" zonder een git-vraag te stellen.
+          if [ -n "${sha}" ] && ! printf '%s' "${sha}" | grep -Eq '^[0-9a-f]{7,40}$'; then
+            echo "::error::De server meldt '${sha}' als commit-sha; dat is geen sha."
+            foutvast "de server meldde een onbruikbare commit-sha"
+            exit 1
+          fi
+
+          echo "dienst=${dienst} omgeving=${omgeving} sha=${sha:-onbekend}"
+          echo "sha_voor=${sha}" >> "${GITHUB_OUTPUT}"
+
+      # ----------------------------------------------------------------
+      #  3. De wachtrij. Hier eindigt de normale ronde.
+      # ----------------------------------------------------------------
+      - name: 3 — De uitgiftewachtrij (/machine/uitgifte)
+        id: wachtrij
+        env:
+          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
+        # EEN LEGE WACHTRIJ IS DE NORMALE UITKOMST, GEEN FOUT. Zolang
+        # auto_publiceren_aan of auto_uitgifte_aan uit staat, geeft de
+        # server een lege lijst met een stopreden en is er niets te doen.
+        # Deze stap faalt dus NIET; hij schrijft een samenvatting en zet
+        # `doorgaan=nee`, waarop elke volgende stap zichzelf overslaat.
+        #
+        # MAXIMAAL ÉÉN OPDRACHT PER RONDE, EN DAAR ZIJN DRIE REDENEN VOOR.
+        #  · Elke uitgifte eindigt in een merge naar main, en dat IS de
+        #    productiedeploy van www.vibeenergy.nl. Twee in één ronde
+        #    betekent dat de tweede op een main wordt gebouwd die
+        #    intussen onder hem vandaan is verschoven. De sleutel
+        #    `websiteversie_verschoven` staat wel in het type Stopreden,
+        #    maar wordt gemeten over src/ door geen enkele regel gepusht
+        #    (zie STOPREDEN_REGISTER in dashboard/server.ts, waar hij
+        #    als NIET GEMETEN staat). Die conditie vangt dit dus NIET op;
+        #    één opdracht per ronde doet het wel.
+        #  · De poort moet drie keer groen zijn per artikel; twee
+        #    artikelen in één ronde verdubbelen de kans dat de ronde
+        #    halverwege strandt met één gepubliceerd en één half artikel.
+        #  · Twee ronden per werkdag maal één opdracht is twee per dag,
+        #    onder het serverplafond van drie. Daar past een menselijke
+        #    publicatie nog bij.
+        #
+        # DE VELDEN WORDEN GEVALIDEERD VOORDAT ZE IETS WORDEN. `branch`,
+        # `bestandspad` en `slug` komen over het netwerk binnen en worden
+        # verderop een git-commando en een pad op de schijf. De patronen
+        # zijn dezelfde als TOEGESTAAN_AUTEURSPAD en branchVoor() in
+        # publicatie/pr.ts; wijkt er één af, dan is dat een weigering en
+        # geen poging.
+        run: |
+          set -euo pipefail
+          . "${RUNNER_TEMP}/poort.sh"
+          stap "3 de wachtrij ophalen"
+          haal "/machine/uitgifte" "${RUNNER_TEMP}/wachtrij.json"
+
+          beleid="$(jq -r '.beleid.versie // "GEEN ACTIEVE BELEIDSRIJ"' "${RUNNER_TEMP}/wachtrij.json")"
+          autoAan="$(jq -r '.beleid.autoAan // false' "${RUNNER_TEMP}/wachtrij.json")"
+          uitgifteAan="$(jq -r '.beleid.uitgifteAan // false' "${RUNNER_TEMP}/wachtrij.json")"
+          aantalStop="$(jq -r '.stop | length' "${RUNNER_TEMP}/wachtrij.json")"
+          aantalOpdr="$(jq -r '.opdrachten | length' "${RUNNER_TEMP}/wachtrij.json")"
+          vandaag="$(jq -r '.vandaagGepubliceerd // 0' "${RUNNER_TEMP}/wachtrij.json")"
+
+          if [ "${DROOG}" = "ja" ]; then
+            standtekst="DROOG — lezen en stoppen"
+          else
+            standtekst="echt — tot en met de merge"
+          fi
+
+          {
+            echo "## Autonome uitgifte"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| stand van deze ronde | ${standtekst} |"
+            echo "| beleid | \`${beleid}\` |"
+            echo "| auto_publiceren_aan | ${autoAan} |"
+            echo "| auto_uitgifte_aan | ${uitgifteAan} |"
+            echo "| vandaag autonoom gepubliceerd | ${vandaag} |"
+            echo "| opdrachten in de rij | ${aantalOpdr} |"
+            echo
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          if [ "${aantalStop}" != "0" ]; then
+            {
+              echo "### Stopcondities"
+              echo
+              jq -r '.stop[] | "- **" + .sleutel + "** — " + .reden' "${RUNNER_TEMP}/wachtrij.json"
+              echo
+            } >> "${GITHUB_STEP_SUMMARY}"
+            jq -r '.stop[] | "STOP  " + .sleutel + "  " + .reden' "${RUNNER_TEMP}/wachtrij.json"
+          fi
+
+          if [ "$(jq -r '.geweigerd | length' "${RUNNER_TEMP}/wachtrij.json")" != "0" ]; then
+            {
+              echo "### Geweigerd door de server"
+              echo
+              jq -r '.geweigerd[] | "- versie " + (.inhoudVersieId|tostring) + " (" + .pad + ") — " + .reden' "${RUNNER_TEMP}/wachtrij.json"
+              echo
+            } >> "${GITHUB_STEP_SUMMARY}"
+          fi
+
+          # --- de gronden om hier te stoppen, elk zonder fout ---
+          if [ "${aantalStop}" != "0" ]; then
+            echo "doorgaan=nee" >> "${GITHUB_OUTPUT}"
+            echo "Er is minstens één stopconditie actief. Niets gedaan."
+            echo "_Er is niets geschreven en geen pull request geopend._" >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
+          if [ "${aantalOpdr}" = "0" ]; then
+            echo "doorgaan=nee" >> "${GITHUB_OUTPUT}"
+            echo "Geen opdrachten. Niets te doen."
+            echo "_Geen opdrachten in de rij; er is niets geschreven._" >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
+
+          # --- de eerste opdracht apart zetten en valideren ---
+          jq '.opdrachten[0]' "${RUNNER_TEMP}/wachtrij.json" > "${RUNNER_TEMP}/opdracht.json"
+
+          versie="$(veld '.inhoudVersieId')"
+          slug="$(veld '.slug')"
+          branch="$(veld '.branch')"
+          bestandspad="$(veld '.bestandspad')"
+          recordhash="$(veld '.recordHash')"
+
+          keur() {
+            if ! printf '%s' "$2" | grep -Eq "$3"; then
+              echo "::error::Veld '$1' uit de opdracht is '$2' en past niet op ${3}. De uitvoerder maakt hier een pad en een git-commando van; een afwijkend veld is een weigering en geen poging."
+              foutvast "veld '$1' uit de opdracht past niet op het verwachte patroon"
+              exit 1
+            fi
+          }
+          keur inhoudVersieId "${versie}"      '^[0-9]+$'
+          keur slug           "${slug}"        '^[a-z0-9][a-z0-9-]*$'
+          keur branch         "${branch}"      '^publicatie/[a-z0-9][a-z0-9-]*-v[0-9]+$'
+          keur bestandspad    "${bestandspad}" '^data/inhoud/nieuws/[a-z0-9][a-z0-9-]*\.json$'
+          keur recordHash     "${recordhash}"  '^[0-9a-f]{64}$'
+
+          {
+            echo "### Gekozen opdracht"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| inhoudsversie | ${versie} |"
+            echo "| slug | \`${slug}\` |"
+            echo "| risico | $(veld '.risicoKlasse') |"
+            echo "| beleid | \`$(veld '.beleidVersie')\` |"
+            echo "| branch | \`${branch}\` |"
+            echo "| bestand | \`${bestandspad}\` |"
+            echo "| recordhash | \`${recordhash}\` |"
+            echo "| canonieke URL | $(veld '.canoniekeUrl') |"
+            echo "| fase nu | $(veld '.fase // "GEEN FASE"') |"
+            echo
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          # ALLEEN HET VERSIENUMMER GAAT NAAR GITHUB_OUTPUT, want alleen
+          # dat is nodig in een `if:`-uitdrukking (stap 11) en het is
+          # getoetst op cijfers. Al het andere wordt per stap met `veld`
+          # uit opdracht.json gelezen: een waarde met een newline erin
+          # zou een regel in GITHUB_OUTPUT kunnen injecteren.
+          echo "versie=${versie}" >> "${GITHUB_OUTPUT}"
+
+          if [ "${DROOG}" = "ja" ]; then
+            echo "doorgaan=nee" >> "${GITHUB_OUTPUT}"
+            echo "DROOG: hier stopt het. Geen checkout, geen bestand, geen commit, geen PR, geen merge."
+            {
+              echo "> **Droge ronde.** Stap 1 t/m 3 zijn gedraaid. Er is niets uitgecheckt,"
+              echo "> niets geschreven, geen pull request geopend en niets gemerged."
+              echo "> Start opnieuw met \`droog\` uit om deze opdracht werkelijk uit te voeren."
+            } >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
+
+          echo "doorgaan=ja" >> "${GITHUB_OUTPUT}"
+          # EEN `uses:`-STAP KAN ZIJN EIGEN STAPNAAM NIET VASTLEGGEN, dus
+          # doet deze stap dat voor de checkout hieronder.
+          stap "4a checkout van main"
+
+      # ----------------------------------------------------------------
+      #  4. De bytes schrijven, bouwen, committen en pushen.
+      # ----------------------------------------------------------------
+      - name: 4a — Checkout van main met volledige historie
+        if: steps.wachtrij.outputs.doorgaan == 'ja'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          # fetch-depth 0 om TWEE redenen. De sitemapgenerator leest
+          # git-commitdata voor lastmod (zie poort.yml), dus een shallow
+          # clone zou verkeerde datums opleveren. En stap 10 moet
+          # `git merge-base --is-ancestor` kunnen draaien, en dat vraagt
+          # echte historie.
+          fetch-depth: 0
+          # DE EIGEN CREDENTIAL, want met GITHUB_TOKEN zou de push geen
+          # workflows starten en zouden de drie verplichte checks nooit
+          # lopen. Zie de `permissions`-kop bovenaan dit bestand.
+          token: ${{ secrets.UITGIFTE_TOKEN }}
+          # De credential komt in .git/config terecht, zodat `git push`
+          # hem niet op zijn commandoregel nodig heeft. actions/checkout
+          # ruimt hem aan het eind van de job weer op.
+          persist-credentials: true
+
+      - name: 4b — Het registerrecord schrijven, EXACT deze bytes
+        if: steps.wachtrij.outputs.doorgaan == 'ja'
+        # `jq -j` EN NIET `jq -r`, EN DAT IS HIER HET VERSCHIL TUSSEN
+        # WERKEN EN NIET WERKEN.
+        #
+        # De hash in de opdracht is sha256 over de volledige bytes van
+        # het bestand: `JSON.stringify(record, null, 2) + "\n"`
+        # (site/nieuwsregister.ts) gehasht met sha256hex (kern/tekst.ts,
+        # `createHash("sha256").update(waarde, "utf8")`). `jq -r` zet er
+        # ZIJN EIGEN afsluitende newline achter, bovenop die van het
+        # record, en dan klopt de hash niet meer.
+        #
+        # Gemeten met jq 1.8.1 op een record met aanhalingstekens,
+        # newlines, een tab en non-ASCII:
+        #   jq -j  ->  9563a576e1829e56…  = de verwachte hash
+        #   jq -r  ->  54ae3f0d197a99b7…  = een andere
+        # Daarom ook geen `echo` of `printf` met de inhoud erin: dan
+        # vouwt de shell de newlines en de aanhalingstekens om.
+        #
+        # DE HASH WORDT HIER AL GETOETST, nog voordat er een branch
+        # bestaat. De server toetst hem straks opnieuw en is de echte
+        # grens, maar een bytefout die je hier vindt, kost geen pull
+        # request en geen GEBLOKKEERD-regel in het logboek.
+        run: |
+          set -euo pipefail
+          . "${RUNNER_TEMP}/poort.sh"
+          stap "4b het registerrecord schrijven"
+
+          branch="$(veld '.branch')"
+          bestandspad="$(veld '.bestandspad')"
+          verwacht="$(veld '.recordHash')"
+
+          # Een vuile boom zou andermans werk in de publicatiecommit
+          # trekken. Grendel 5 van publicatie/pr.ts weigert daar ook op.
+          # -uall en niet de standaard: `git status --porcelain` vouwt een
+          # volledig nieuwe map samen tot één regel.
+          vuil="$(git status --porcelain -uall)"
+          if [ -n "${vuil}" ]; then
+            echo "::error::De werkboom is niet schoon na de checkout:"
+            printf '%s\n' "${vuil}"
+            foutvast "de werkboom was niet schoon na de checkout"
+            exit 1
+          fi
+
+          git switch -c "${branch}"
+
+          mkdir -p "$(dirname "${bestandspad}")"
+          jq -j '.recordInhoud' "${RUNNER_TEMP}/opdracht.json" > "${bestandspad}"
+
+          gemeten="$(sha256sum "${bestandspad}" | cut -d' ' -f1)"
+          if [ "${gemeten}" != "${verwacht}" ]; then
+            echo "::error::Het geschreven bestand hasht naar ${gemeten} en de opdracht verwacht ${verwacht}. Er zijn andere bytes op de schijf gekomen dan de poorten hebben gezien; er wordt niets gepusht."
+            foutvast "sha256 van het geschreven record (${gemeten}) wijkt af van de opdracht (${verwacht})"
+            exit 1
+          fi
+          echo "${bestandspad}: $(wc -c < "${bestandspad}") bytes, sha256 ${gemeten} — gelijk aan de opdracht"
+
+      - name: 4c — De echte generator draaien (offline)
+        if: steps.wachtrij.outputs.doorgaan == 'ja'
+        # DEZELFDE AANROEP DIE DE POORT STRAKS OVERDOET. Release 1 eist
+        # dat de gecommitte uitvoer byte-identiek is aan wat de generator
+        # maakt; draait hij hier niet, dan valt de poort op de pull
+        # request om en komt er nooit een merge.
+        #
+        # --offline: geen enkele bron van derden wordt aangeroepen, net
+        # als in poort.yml. De runner hoort hun servers niet te belasten.
+        #
+        # DEZE STAP KRIJGT GEEN SECRET MEE. Er staat geen `env:` boven,
+        # dus noch de machinesleutel noch de uitgiftetoken staat in de
+        # omgeving van de generator. Dat is de hele reden dat de secrets
+        # in dit bestand per stap staan en niet op jobniveau.
+        run: |
+          set -euo pipefail
+          . "${RUNNER_TEMP}/poort.sh"
+          stap "4c de generator draaien"
+          node scripts/seo/bouw.mjs --offline
+
+      - name: 4d — Committen en pushen
+        if: steps.wachtrij.outputs.doorgaan == 'ja'
+        id: push
+        env:
+          GIT_NAAM: ${{ vars.UITGIFTE_GIT_NAAM || github.actor }}
+          GIT_ACTOR: ${{ github.actor }}
+          GIT_ACTOR_ID: ${{ github.actor_id }}
+        # DE COMMITBOODSCHAP KOMT UIT EEN BESTAND (`git commit -F`) en
+        # niet van de commandoregel. Hij is meerregelig en bevat de
+        # inhoudsafdruk en de recordhash; via `-m` met shell-expansie zou
+        # hij verminkt raken, en met `jq -r` zou er een regel bijkomen.
+        #
+        # DE AUTEUR IS GEEN VERZONNEN PERSOON. Zonder
+        # `vars.UITGIFTE_GIT_NAAM` valt de naam terug op de GitHub-actor
+        # van deze run en het adres op de noreply-vorm die GitHub zelf
+        # voor dat account hanteert. Er wordt dus geen bestaand
+        # e-mailadres van iemand anders toegeëigend.
+        run: |
+          set -euo pipefail
+          . "${RUNNER_TEMP}/poort.sh"
+          stap "4d committen en pushen"
+
+          branch="$(veld '.branch')"
+          bestandspad="$(veld '.bestandspad')"
+
+          git config user.name  "${GIT_NAAM}"
+          git config user.email "${GIT_ACTOR_ID}+${GIT_ACTOR}@users.noreply.github.com"
+
+          # -A, want de generator raakt ook de sitemaps, routes.json,
+          # vingerafdrukken.json en de HTML aan. WELKE paden daarbij
+          # toegestaan zijn, staat in TOEGESTAAN_AUTEURSPAD en
+          # TOEGESTAAN_GEGENEREERD in publicatie/pr.ts; die lijst hier in
+          # YAML nabouwen zou een tweede waarheid zijn die uit de pas kan
+          # lopen. De poort op de pull request is de instantie die het
+          # toetst (publiek-artefact.mjs en de reproduceerbaarheidspoort).
+          git add -A
+
+          # Eén ding wordt hier WEL getoetst: het eigen record moet in de
+          # commit zitten. Staat het er niet in, dan heeft stap 4b niets
+          # nieuws geschreven en zou de PR het artikel niet bevatten.
+          if ! git diff --cached --name-only | grep -Fqx "${bestandspad}"; then
+            echo "::error::${bestandspad} staat niet in de commit. Zonder het registerrecord publiceert deze pull request niets."
+            foutvast "${bestandspad} stond niet in de commit"
+            exit 1
+          fi
+          git diff --cached --name-only | sed 's/^/  gewijzigd: /'
+
+          jq -j '.commitBericht' "${RUNNER_TEMP}/opdracht.json" > "${RUNNER_TEMP}/commit.txt"
+          git commit -F "${RUNNER_TEMP}/commit.txt"
+          commit="$(git rev-parse HEAD)"
+
+          # DE BRANCHNAAM IS DETERMINISTISCH (branchVoor() in
+          # publicatie/pr.ts), dus een eerdere gestrande ronde kan hem al
+          # op de remote hebben gezet. Eerst die ref ophalen, dan
+          # --force-with-lease: zo overschrijft een herhaling de eigen
+          # vorige poging, maar nooit een ref die intussen door iets
+          # anders is verzet.
+          git fetch origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" 2>/dev/null || true
+          git push --force-with-lease --set-upstream origin "${branch}"
+
+          echo "commit=${commit}" >> "${GITHUB_OUTPUT}"
+          echo "gepusht: ${branch} op ${commit}"
+
+      # ----------------------------------------------------------------
+      #  5. Terugmelden: het record staat er.
+      # ----------------------------------------------------------------
+      - name: 5 — Fase RECORD_GESCHREVEN melden
+        if: steps.wachtrij.outputs.doorgaan == 'ja'
+        env:
+          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
+          COMMIT: ${{ steps.push.outputs.commit }}
+          VERSIE: ${{ steps.wachtrij.outputs.versie }}
+        # DIT IS DE STAP WAARIN DE SERVER HET ECHTE WERK DOET. Hij bouwt
+        # het record OPNIEUW uit de database, vergelijkt zijn eigen
+        # sha256 met de hash hieronder, draait alle poorten en de
+        # bewijshertoets, en legt pas dán de publicatie, de status, het
+        # pagina-register, het besluit en de auditregel vast.
+        #
+        # EEN 409 BETEKENT: NIET DOORGAAN. De server bouwde andere bytes
+        # dan hier zijn geschreven, of de fase volgt niet op de vorige.
+        # In beide gevallen is er iets mis met de opdracht en niet met
+        # het netwerk; opnieuw proberen helpt niet.
+        run: |
+          set -euo pipefail
+          . "${RUNNER_TEMP}/poort.sh"
+          stap "5 fase RECORD_GESCHREVEN melden"
+
+          jq -n \
+            --arg hash   "$(veld '.recordHash')" \
+            --arg waar   "$(veld '.branch')@${COMMIT}" \
+            --arg beleid "$(veld '.beleidVersie')" \
+            '{fase:"RECORD_GESCHREVEN", bewijs:{recordHash:$hash, waar:$waar, beleidVersie:$beleid}}' \
+            > "${RUNNER_TEMP}/melding.json"
+
+          meld "${VERSIE}" "${RUNNER_TEMP}/melding.json"
+
+      # ----------------------------------------------------------------
+      #  6. De pull request.
+      # ----------------------------------------------------------------
+      - name: 6 — Pull request openen en PR_AANGEMAAKT melden
+        if: steps.wachtrij.outputs.doorgaan == 'ja'
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.UITGIFTE_TOKEN }}
+          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
+          COMMIT: ${{ steps.push.outputs.commit }}
+          VERSIE: ${{ steps.wachtrij.outputs.versie }}
+        # GEEN TWEEDE PULL REQUEST OP DEZELFDE BRANCH. De branchnaam is
+        # deterministisch, dus een herhaling na een gestrande ronde zou
+        # zonder deze controle een tweede PR voor hetzelfde artikel
+        # openen. Dezelfde fout zat in publicatie/pr.ts en staat daar
+        # inmiddels ook dicht.
+        #
+        # `gh pr create` GEEFT GEEN JSON TERUG, alleen de URL op stdout.
+        # Het nummer wordt daarom erna met `gh pr view <branch>` gemeten
+        # en niet uit die URL geknipt.
+        #
+        # DE PR-BESCHRIJVING BEVAT GEEN INHOUD VAN HET ARTIKEL. Hij
+        # verwijst: naar de inhoudsversie, de recordhash, het beleid en
+        # deze run. De tekst zelf staat in het bestand in de diff, en dat
+        # is de enige plek waar hij hoort.
+        run: |
+          set -euo pipefail
+          . "${RUNNER_TEMP}/poort.sh"
+          stap "6 de pull request openen"
+
+          branch="$(veld '.branch')"
+          slug="$(veld '.slug')"
+          bestandspad="$(veld '.bestandspad')"
+          recordhash="$(veld '.recordHash')"
+          beleid="$(veld '.beleidVersie')"
+
+          nummer="$(gh pr list --head "${branch}" --base main --state open --json number --jq '.[0].number // ""')"
+          if [ -n "${nummer}" ]; then
+            echo "bestaande pull request #${nummer} hergebruikt"
+          else
+            cat > "${RUNNER_TEMP}/pr-body.md" <<EOF
+          Deze pull request is geopend door de **autonome uitgifte** van het
+          intelligenceplatform. De werkstroom heeft niets bedacht: hij heeft de
+          bytes geschreven die de server hem gaf en daarna
+          \`node scripts/seo/bouw.mjs --offline\` gedraaid.
+
+          | | |
+          |---|---|
+          | inhoudsversie | ${VERSIE} |
+          | registerrecord | \`${bestandspad}\` |
+          | sha256 van dat record | \`${recordhash}\` |
+          | publicatiebeleid | \`${beleid}\` |
+          | commit | \`${COMMIT}\` |
+          | werkstroomrun | ${RUN_URL} |
+
+          De server heeft de hash van dit record zelf herbouwd en vergeleken
+          vóór hij de fase \`RECORD_GESCHREVEN\` vastlegde. Al het andere in deze
+          diff is gegenereerd door \`scripts/seo/bouw.mjs\`.
+
+          **Deze pull request wordt pas gemerged als GitHub zelf meldt dat de
+          drie verplichte checks groen zijn.** Mergen gebeurt via de gewone API;
+          de branchbescherming op \`main\` is de instantie die weigert.
+          EOF
+            gh pr create \
+              --base main \
+              --head "${branch}" \
+              --title "publicatie: nieuws/${slug}" \
+              --body-file "${RUNNER_TEMP}/pr-body.md"
+            nummer="$(gh pr view "${branch}" --json number --jq '.number')"
+            echo "pull request #${nummer} geopend"
+          fi
+
+          if ! printf '%s' "${nummer}" | grep -Eq '^[0-9]+$'; then
+            echo "::error::'${nummer}' is geen pull-request-nummer."
+            foutvast "GitHub gaf geen bruikbaar pull-request-nummer terug"
+            exit 1
+          fi
+
+          url="$(gh pr view "${nummer}" --json url --jq '.url')"
+          echo "nummer=${nummer}" >> "${GITHUB_OUTPUT}"
+          echo "- pull request [#${nummer}](${url})" >> "${GITHUB_STEP_SUMMARY}"
+
+          stap "6 fase PR_AANGEMAAKT melden"
+          jq -n \
+            --arg branch "${branch}" \
+            --arg commit "${COMMIT}" \
+            --argjson nr "${nummer}" \
+            --arg url    "${url}" \
+            --arg beleid "${beleid}" \
+            '{fase:"PR_AANGEMAAKT", bewijs:{branch:$branch, commit:$commit, prNummer:$nr, prUrl:$url, beleidVersie:$beleid}}' \
+            > "${RUNNER_TEMP}/melding.json"
+          meld "${VERSIE}" "${RUNNER_TEMP}/melding.json"
+
+      # ----------------------------------------------------------------
+      #  7. Wachten op de drie verplichte checks.
+      # ----------------------------------------------------------------
+      - name: 7 — Wachten tot de drie verplichte checks groen zijn
+        if: steps.wachtrij.outputs.doorgaan == 'ja'
+        env:
+          GH_TOKEN: ${{ secrets.UITGIFTE_TOKEN }}
+          COMMIT: ${{ steps.push.outputs.commit }}
+          PR_NUMMER: ${{ steps.pr.outputs.nummer }}
+        # WAT HIER WEL EN NIET WORDT GEDAAN.
+        #
+        # Dit is GEEN poortbeslissing. GitHub handhaaft de drie
+        # verplichte checks zelf: main staat op strict=true en
+        # enforce_admins=true, dus een merge zonder groene poort wordt
+        # door GitHub geweigerd en niet door deze stap. Wat hier gebeurt
+        # is WACHTEN en METEN — wachten omdat de merge in stap 8 anders
+        # zinloos op 405 zou stuiten, en meten omdat de server bij de
+        # PR_GEMERGED-melding de NAMEN van de groene checks eist
+        # (aanvaardMerge weigert een merge zonder gemelde checks).
+        #
+        # Het antwoord komt van de check-runs van de commit, dus van
+        # GitHub, en niet van een aanname in dit bestand. Daarvoor heeft
+        # UITGIFTE_TOKEN leesrecht op Checks nodig; zie
+        # intelligence/docs/AUTONOME-NIEUWSPUBLICATIE.md paragraaf 5.
+        #
+        # ÉÉN RODE CHECK IS EINDE RONDE. Er wordt niet opnieuw gedraaid en
+        # niet gewacht op een herstart: stap 11 meldt GEBLOKKEERD met de
+        # stap en de fout, en de stroomonderbreker van de server telt die
+        # regel mee.
+        run: |
+          set -euo pipefail
+          . "${RUNNER_TEMP}/poort.sh"
+          stap "7 wachten op de verplichte checks"
+
+          printf '%s\n' "${VEREISTE_CHECKS}" | tr '|' '\n' > "${RUNNER_TEMP}/vereist.txt"
+          nodig="$(grep -c . "${RUNNER_TEMP}/vereist.txt")"
+          echo "verplichte checks (${nodig}):"
+          sed 's/^/  /' "${RUNNER_TEMP}/vereist.txt"
+
+          poging=0
+          while :; do
+            poging=$((poging + 1))
+            if [ "${poging}" -gt "${CHECK_POGINGEN}" ]; then
+              minuten=$(( CHECK_POGINGEN * CHECK_INTERVAL / 60 ))
+              echo "::error::Na ${minuten} minuten zijn de verplichte checks nog niet alle ${nodig} groen."
+              foutvast "de verplichte checks werden niet groen binnen ${minuten} minuten"
+              exit 1
+            fi
+
+            # NAAM, STATUS EN CONCLUSIE PER CHECK-RUN, als TSV. Er wordt
+            # met awk op VELD 1 gematcht en niet met grep op de hele
+            # regel: een checknaam die als deeltekst in een andere naam
+            # voorkomt, zou anders de verkeerde regel opleveren.
+            gh api --paginate \
+              "repos/${GH_REPO}/commits/${COMMIT}/check-runs?per_page=100" \
+              --jq '.check_runs[] | [.name, .status, (.conclusion // "")] | @tsv' \
+              > "${RUNNER_TEMP}/runs.tsv" || true
+
+            groen=0
+            rood=""
+            wacht=""
+            while IFS= read -r naam; do
+              [ -n "${naam}" ] || continue
+              # De LAATSTE run met deze naam, want een herstart levert
+              # een tweede check-run met dezelfde naam op.
+              regel="$(awk -F'\t' -v n="${naam}" '$1 == n { r = $2 ":" $3 } END { print r }' "${RUNNER_TEMP}/runs.tsv")"
+              case "${regel}" in
+                "")                wacht="${wacht} [nog niet gestart: ${naam}]" ;;
+                completed:success) groen=$((groen + 1)) ;;
+                completed:*)       rood="${rood} [ROOD ${naam} -> ${regel#completed:}]" ;;
+                *)                 wacht="${wacht} [${regel%%:*}: ${naam}]" ;;
+              esac
+            done < "${RUNNER_TEMP}/vereist.txt"
+
+            if [ -n "${rood}" ]; then
+              echo "::error::Een verplichte check is niet geslaagd:${rood}"
+              foutvast "verplichte check niet geslaagd:${rood}"
+              {
+                echo "### Poort ROOD"
+                echo
+                echo "\`${rood}\`"
+                echo
+                echo "_Er is NIET gemerged. De pull request blijft open voor een mens._"
+              } >> "${GITHUB_STEP_SUMMARY}"
+              exit 1
+            fi
+
+            if [ "${groen}" -eq "${nodig}" ]; then
+              echo "alle ${groen} verplichte checks zijn groen"
+              break
+            fi
+
+            echo "poging ${poging}/${CHECK_POGINGEN}: ${groen} groen;${wacht}"
+            sleep "${CHECK_INTERVAL}"
+          done
+
+          # DE MERGEBAARHEID ZELF, ALS TWEEDE MENING. Drie groene checks
+          # is niet hetzelfde als mergebaar: strict=true eist bovendien
+          # dat de branch bij is met main, en
+          # required_conversation_resolution eist dat openstaande
+          # gesprekken zijn afgerond. `mergeStateStatus` is het oordeel
+          # van GitHub daarover, en CLEAN is het enige dat doorgaat.
+          stand="$(gh pr view "${PR_NUMMER}" --json mergeStateStatus --jq '.mergeStateStatus')"
+          echo "mergeStateStatus=${stand}"
+          if [ "${stand}" != "CLEAN" ]; then
+            echo "::error::GitHub meldt mergeStateStatus '${stand}' in plaats van CLEAN. De checks zijn groen, maar de branchbescherming laat deze merge niet toe (bijvoorbeeld: niet bij met main, of een onafgerond gesprek). Er wordt niets geforceerd."
+            foutvast "mergeStateStatus was '${stand}' in plaats van CLEAN"
+            exit 1
+          fi
+
+      # ----------------------------------------------------------------
+      #  8. De merge. Via de gewone API; GitHub mag weigeren.
+      # ----------------------------------------------------------------
+      - name: 8 — Squash-mergen en PR_GEMERGED melden
+        if: steps.wachtrij.outputs.doorgaan == 'ja'
+        id: merge
+        env:
+          GH_TOKEN: ${{ secrets.UITGIFTE_TOKEN }}
+          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
+          COMMIT: ${{ steps.push.outputs.commit }}
+          PR_NUMMER: ${{ steps.pr.outputs.nummer }}
+          VERSIE: ${{ steps.wachtrij.outputs.versie }}
+        # DEZE MERGE IS DE PRODUCTIEDEPLOY VAN www.vibeenergy.nl. Hij
+        # gaat via PUT /pulls/{n}/merge, en dat is met opzet dezelfde weg
+        # die een mens in de browser gebruikt: faalt de bescherming, dan
+        # geeft GitHub 405 en is er niets gebeurd. Er is geen vlag en geen
+        # omweg in deze werkstroom die dat kan overrulen.
+        #
+        # `sha=` STAAT ERBIJ ALS SLOT. GitHub weigert de merge als de kop
+        # van de branch intussen is verschoven; zonder dat veld zou een
+        # commit die na de poort is bijgekomen meegemerged worden zonder
+        # dat de poort hem ooit heeft gezien.
+        #
+        # SQUASH, want de branch bevat één inhoudscommit plus de
+        # gecommitte generatoruitvoer; de historie van main hoeft daar
+        # niet uit te bestaan. De squash-merge moet op de repository zijn
+        # toegestaan, anders geeft GitHub 405.
+        run: |
+          set -euo pipefail
+          . "${RUNNER_TEMP}/poort.sh"
+          stap "8 de pull request mergen"
+
+          gh api -X PUT "repos/${GH_REPO}/pulls/${PR_NUMMER}/merge" \
+            -f merge_method=squash \
+            -f sha="${COMMIT}" \
+            > "${RUNNER_TEMP}/merge.json"
+
+          mergecommit="$(jq -r '.sha // ""' "${RUNNER_TEMP}/merge.json")"
+          if ! printf '%s' "${mergecommit}" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error::GitHub gaf geen mergecommit terug: $(head -c 500 "${RUNNER_TEMP}/merge.json")"
+            foutvast "de merge gaf geen bruikbare mergecommit terug"
+            exit 1
+          fi
+          echo "gemerged als ${mergecommit}"
+          echo "mergecommit=${mergecommit}" >> "${GITHUB_OUTPUT}"
+          echo "- gemerged als \`${mergecommit}\`" >> "${GITHUB_STEP_SUMMARY}"
+
+          stap "8 fase PR_GEMERGED melden"
+          # De checknamen komen uit hetzelfde bestand dat stap 7 groen
+          # heeft gemeten, niet uit een nieuwe aanname.
+          jq -n \
+            --arg mc "${mergecommit}" \
+            --argjson checks "$(jq -R -s 'split("\n") | map(select(length > 0))' "${RUNNER_TEMP}/vereist.txt")" \
+            --arg beleid "$(veld '.beleidVersie')" \
+            '{fase:"PR_GEMERGED", bewijs:{mergeCommit:$mc, checksGroen:$checks, beleidVersie:$beleid}}' \
+            > "${RUNNER_TEMP}/melding.json"
+          meld "${VERSIE}" "${RUNNER_TEMP}/melding.json"
+
+          # OPRUIMEN, EN NIET-FATAAL. Een achtergebleven publicatiebranch
+          # in een publieke repository is ruis, maar het verwijderen ervan
+          # mag nooit de reden zijn dat een geslaagde publicatie als
+          # mislukt in het logboek komt.
+          gh api -X DELETE "repos/${GH_REPO}/git/refs/heads/$(veld '.branch')" >/dev/null 2>&1 \
+            && echo "branch verwijderd" \
+            || echo "branch niet verwijderd (niet fataal)"
+
+      # ----------------------------------------------------------------
+      #  9. Wachten tot de deploy er is.
+      # ----------------------------------------------------------------
+      - name: 9 — Wachten tot de server de nieuwe deploy draait
+        if: steps.wachtrij.outputs.doorgaan == 'ja'
+        env:
+          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
+          MERGECOMMIT: ${{ steps.merge.outputs.mergecommit }}
+          SHA_VOOR: ${{ steps.stand.outputs.sha_voor }}
+        # WAAROM HIER GEWACHT WORDT. De server meet in stap 10 zelf de
+        # publieke URL. Doet hij dat voordat de deploy van de merge er is,
+        # dan meet hij de OUDE site, geeft hij 409 en komt er een
+        # GEBLOKKEERD-regel voor iets dat alleen nog niet klaar was.
+        #
+        # HET IJKPUNT IS NIET "DE SHA IS VERANDERD". Dat zou ook waar zijn
+        # als er intussen iets anders naar main was gemerged. Er wordt
+        # getoetst dat de mergecommit een VOOROUDER is van de commit die
+        # de server nu draait; dan zit deze publicatie er met zekerheid
+        # in. Dat is een git-vraag, en die kan hier wel: in de container
+        # bestaat git niet, hier wel.
+        run: |
+          set -euo pipefail
+          . "${RUNNER_TEMP}/poort.sh"
+          stap "9 wachten op de deploy"
+
+          git fetch origin main --quiet
+
+          poging=0
+          while :; do
+            poging=$((poging + 1))
+            if [ "${poging}" -gt "${DEPLOY_POGINGEN}" ]; then
+              minuten=$(( DEPLOY_POGINGEN * DEPLOY_INTERVAL / 60 ))
+              echo "::error::Na ${minuten} minuten draait de server de mergecommit nog niet. De merge IS gebeurd en staat in het logboek als PR_GEMERGED; de live-verificatie is NIET gedraaid."
+              foutvast "de deploy met mergecommit ${MERGECOMMIT} was na ${minuten} minuten niet live"
+              exit 1
+            fi
+
+            haal "/machine/stand" "${RUNNER_TEMP}/stand-na.json" || true
+            nu="$(jq -r '.sha // ""' "${RUNNER_TEMP}/stand-na.json" 2>/dev/null || true)"
+
+            # De SHA van de server wordt een git-argument, dus hij wordt
+            # eerst getoetst. Een onzinwaarde is hier geen fout maar een
+            # reden om nog een ronde te wachten.
+            if printf '%s' "${nu}" | grep -Eq '^[0-9a-f]{7,40}$' && [ "${nu}" != "${SHA_VOOR}" ]; then
+              git fetch origin main --quiet || true
+              if git cat-file -e "${nu}^{commit}" 2>/dev/null \
+                 && git merge-base --is-ancestor "${MERGECOMMIT}" "${nu}"; then
+                echo "de server draait ${nu}, en ${MERGECOMMIT} zit daarin"
+                : > "${RUNNER_TEMP}/fout"
+                break
+              fi
+              echo "poging ${poging}/${DEPLOY_POGINGEN}: server draait ${nu}, maar ${MERGECOMMIT} zit daar (nog) niet in"
+            else
+              echo "poging ${poging}/${DEPLOY_POGINGEN}: server draait nog ${nu:-onbekend} (was ${SHA_VOOR:-onbekend})"
+            fi
+            sleep "${DEPLOY_INTERVAL}"
+          done
+
+      # ----------------------------------------------------------------
+      #  10. De laatste fase. De SERVER meet, wij melden alleen git.
+      # ----------------------------------------------------------------
+      - name: 10 — Fase LIVE_GEVERIFIEERD melden
+        if: steps.wachtrij.outputs.doorgaan == 'ja'
+        env:
+          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
+          MERGECOMMIT: ${{ steps.merge.outputs.mergecommit }}
+          VERSIE: ${{ steps.wachtrij.outputs.versie }}
+        # ÉÉN VELD, EN DAT IS EEN GIT-METING. `gemergedInMain` is het
+        # enige dat de uitvoerder hier mag beweren, want het is het enige
+        # dat de server niet zelf kan nagaan: in de container is geen git
+        # en geen werkboom (gemeten). De vier HTTP-metingen — status 200,
+        # zelfverwijzende canonical, de kop op de pagina, de URL in de
+        # sitemap — doet de server zelf.
+        #
+        # EEN 409 BETEKENT DAT HET ARTIKEL NIET PUBLIEK STAAT, en dan
+        # faalt deze run. Dat is de bedoeling: de merge is gebeurd, de
+        # deploy is er, en tóch is de pagina er niet. Dat hoort niet als
+        # succes in de log te eindigen.
+        run: |
+          set -euo pipefail
+          . "${RUNNER_TEMP}/poort.sh"
+          stap "10 fase LIVE_GEVERIFIEERD melden"
+
+          git fetch origin main --quiet
+          if git merge-base --is-ancestor "${MERGECOMMIT}" origin/main; then
+            inmain=true
+          else
+            inmain=false
+          fi
+          echo "git merge-base --is-ancestor ${MERGECOMMIT} origin/main -> ${inmain}"
+
+          jq -n \
+            --argjson inmain "${inmain}" \
+            --arg beleid "$(veld '.beleidVersie')" \
+            '{fase:"LIVE_GEVERIFIEERD", bewijs:{gemergedInMain:$inmain, beleidVersie:$beleid}}' \
+            > "${RUNNER_TEMP}/melding.json"
+
+          if ! meld "${VERSIE}" "${RUNNER_TEMP}/melding.json"; then
+            echo "::error::De server heeft de live-verificatie GEWEIGERD. Het artikel staat niet publiek zoals verwacht; zie het antwoord hierboven voor welke meting faalde."
+            exit 1
+          fi
+
+          {
+            echo
+            echo "### LIVE"
+            echo
+            echo "Inhoudsversie ${VERSIE} staat publiek en is door de SERVER zelf gemeten"
+            echo "(HTTP-status, zelfverwijzende canonical, de kop op de pagina en de sitemap)."
+            echo "Fase \`LIVE_GEVERIFIEERD\` staat in het logboek."
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      # ----------------------------------------------------------------
+      #  11. Bij ELKE onverwachte fout: GEBLOKKEERD melden.
+      # ----------------------------------------------------------------
+      - name: 11 — Fase GEBLOKKEERD melden (alleen bij een fout)
+        if: failure() && steps.wachtrij.outputs.versie != ''
+        env:
+          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
+          VERSIE: ${{ steps.wachtrij.outputs.versie }}
+        # WAAROM DEZE STAP BESTAAT, EN WAAROM HIJ DE RUN NIET REDT.
+        #
+        # Een mislukking die niemand vastlegt, bestaat voor de server
+        # niet: dan blijft de versie in een halve fase hangen en blijft de
+        # stroomonderbreker op nul. Die onderbreker is juist de
+        # bescherming tegen dóórproberen — drie mislukte uitgiftes op rij
+        # zetten de hele weg stil tot een mens kijkt
+        # (MAX_OPEENVOLGENDE_FOUTEN in uitgifte/opdracht.ts).
+        #
+        # Deze stap ZET NIETS TERUG. Of een halve publicatie te herstellen
+        # is, hangt af van de fase waarin hij strandde, en dat oordeel
+        # hoort niet in een foutmelder. Hij meldt waar het strandde en
+        # waarmee; de terugweg per fase staat in
+        # intelligence/docs/AUTONOME-NIEUWSPUBLICATIE.md paragraaf 7.
+        #
+        # `continue-on-error` staat hier NIET: faalt ook deze melding, dan
+        # is dat zichtbaar. De run is toch al rood.
+        run: |
+          set -euo pipefail
+          . "${RUNNER_TEMP}/poort.sh"
+
+          gestrand="$(cat "${RUNNER_TEMP}/stap" 2>/dev/null || echo "onbekende stap")"
+          fout="$(cat "${RUNNER_TEMP}/fout" 2>/dev/null || true)"
+          if [ -z "${fout}" ]; then
+            fout="de stap faalde zonder eigen foutregel; zie ${RUN_URL}"
+          else
+            fout="${fout} (run: ${RUN_URL})"
+          fi
+          echo "melden als GEBLOKKEERD bij '${gestrand}': ${fout}"
+
+          beleid="$(jq -r '.beleidVersie // "onbekend"' "${RUNNER_TEMP}/opdracht.json" 2>/dev/null || echo onbekend)"
+
+          jq -n \
+            --arg stap   "${gestrand}" \
+            --arg fout   "${fout}" \
+            --arg beleid "${beleid}" \
+            '{fase:"GEBLOKKEERD", bewijs:{stap:$stap, fout:$fout, beleidVersie:$beleid}}' \
+            > "${RUNNER_TEMP}/melding-fout.json"
+
+          meld "${VERSIE}" "${RUNNER_TEMP}/melding-fout.json"
+
+          {
+            echo
+            echo "### GEBLOKKEERD"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| gestrand bij | ${gestrand} |"
+            echo "| inhoudsversie | ${VERSIE} |"
+            echo
+            echo "De mislukking staat in het logboek van de server en telt mee voor de"
+            echo "stroomonderbreker. Na drie mislukte uitgiftes op rij geeft de server"
+            echo "geen opdrachten meer tot een mens heeft gekeken."
+          } >> "${GITHUB_STEP_SUMMARY}"

@@ -287,3 +287,124 @@ export function routeVoorCluster(
   }
   return null;
 }
+
+/* ============================================================
+   DE SITE ZONDER SITEWORTEL — het artefact als derde bron
+   ------------------------------------------------------------
+   WAAROM DIT ERBIJ KOMT, GEMETEN 9 november 2026.
+
+   De twee lezers hierboven lezen bestanden uit de werkboom van de
+   site. In de productiecontainer van vibe-intel-api bestaan die niet:
+   `rootDirectory: intelligence` maakt /app gelijk aan de
+   intelligence-map, INTEL_SITE_WORTEL is leeg, en siteWortel valt dus
+   terug op "/". Gemeten in die container: /data bestaat niet,
+   /app/.git bestaat niet, /app/data bevat alleen sitekennis.json.
+
+   Gevolg voor de publicatieketen: `leesRouteregister()` is daar niet
+   aanwezig en `routeVoorCluster()` vindt geen onderwerp-eigenaar, dus
+   publiceerViaRegister() weigert — terecht. Maar voor de AUTONOME
+   uitgifte moet de server wél een registerrecord kunnen samenstellen,
+   want hij is de enige die de database heeft. De uitvoerder (een
+   GitHub-werkstroom met de hele repo) mag de inhoud niet zelf
+   bedenken; die schrijft alleen de bytes die de server hem geeft.
+
+   HET ARTEFACT IS DAARVOOR DE JUISTE BRON, en niet een noodgreep:
+   data/sitekennis.json is door de generator van Release 1 gemaakt,
+   staat gecommit in de repo, gaat met elke deploy mee en draagt per
+   pagina de route, de canonieke URL, de soort en de titel. Gemeten op
+   deze checkout: 431 pagina's, en alle dertien clusters uit
+   CLUSTER_NAAR_ROUTE hebben er hun eigenaarsroute in staan.
+
+   WAT HET NIET IS. Het artefact kent alleen GEPUBLICEERDE pagina's
+   (staat 'gepubliceerd', 431 van 431 gemeten). Een route die op
+   PENDING of NOINDEX staat komt er niet in voor. Voor de twee vragen
+   die de publicatieketen stelt — "welke pagina bezit dit cluster" en
+   "staat deze interne link op INDEX" — is dat precies goed: wat er
+   niet in staat, is ook geen link die je mag zetten. Het artefact is
+   dus geen vervanging van routes.json in het algemeen; het antwoordt
+   alleen op de vraag "wat staat er publiek".
+   ============================================================ */
+
+/** Het routeregister en de routestaten, afgeleid uit het sitekennis-artefact. */
+export type ArtefactSiteKennis = {
+  readonly register: RegisterUitkomst;
+  readonly staten: RouteStatenUitkomst;
+  /** De versie van de website waaruit het artefact is gebouwd. */
+  readonly websiteVersie: string | null;
+};
+
+/**
+ * Leest het sitekennis-artefact en vormt het om naar de twee shapes die
+ * de publicatieketen leest.
+ *
+ * `intelligenceWortel` is de map waarin data/sitekennis.json staat; in
+ * productie is dat APP_WORTEL (= /app), in een toets een tijdelijke map.
+ */
+export async function siteKennisUitArtefact(
+  intelligenceWortel: string,
+): Promise<ArtefactSiteKennis> {
+  const { leesSitekennis } = await import("./sitekennis.ts");
+  const uit = await leesSitekennis(intelligenceWortel);
+  if (!uit.ok) {
+    const reden = `het sitekennis-artefact is niet bruikbaar: ${uit.fout.bericht}`;
+    log.waarschuwing("artefact onbruikbaar als routebron", { soort: uit.fout.soort });
+    return {
+      register: { aanwezig: false, reden, routes: [] },
+      staten: { aanwezig: false, reden, routes: [] },
+      websiteVersie: null,
+    };
+  }
+
+  const routes: RouteRecord[] = [];
+  const staten: RouteStaat[] = [];
+  for (const p of uit.kennis.paginas) {
+    /* DE LEIDENDE SLASH IS HET VERSCHIL. Het artefact schrijft
+       '/contact' (gemeten: 431 van 431 met slash), terwijl RouteRecord
+       en RouteStaat de route ZONDER slash dragen en `pad` ermee. Wie
+       dat door elkaar haalt krijgt een register waarin
+       routeVoorCluster() niets vindt, en dat zou leeg aflopen in
+       "geen onderwerp-eigenaar" in plaats van in een fout. */
+    const zonderSlash = p.route === "/" ? "" : p.route.replace(/^\//, "");
+    routes.push({
+      pad: p.route === "/" ? "/" : `/${zonderSlash}`,
+      route: zonderSlash,
+      type: p.soort,
+      titel: p.titel,
+      beschrijving: null,
+      h1: p.h1,
+      dataPagina: p.soort,
+      gepubliceerd: null,
+      gewijzigd: null,
+      heeftDirectAntwoord: false,
+      /* GEEN BESTANDSPAD, EN DAT IS EERLIJK. Het artefact zegt wat er
+         publiek staat, niet welk JSON-bestand in de repo het heeft
+         opgeleverd. Een pad verzinnen zou een lezer laten denken dat
+         hij het kan openen. */
+      bestandspad: "",
+    });
+    staten.push({
+      route: zonderSlash,
+      /* ALLES IN HET ARTEFACT STAAT PUBLIEK. Zie de sectiekop: het
+         artefact bevat per definitie alleen gepubliceerde pagina's. */
+      staat: "INDEX",
+      soort: p.soort === "regio" ? "regio" : "nationaal",
+      subsoort: p.soort,
+      reden: "sitekennis-artefact",
+      gemeentecode: null,
+      provinciecode: null,
+    });
+  }
+
+  const reden =
+    `afgeleid uit ${SITEKENNIS_PAD_TEKST} (${routes.length} gepubliceerde route(s), ` +
+    `websiteversie ${uit.kennis.websiteVersie.slice(0, 12)})`;
+  return {
+    register: { aanwezig: routes.length > 0, reden, routes },
+    staten: { aanwezig: routes.length > 0, reden, routes: staten },
+    websiteVersie: uit.kennis.websiteVersie,
+  };
+}
+
+/* Alleen voor de redenregel hierboven; het echte pad staat in
+   site/sitekennis.ts en wordt daar ook gelezen. */
+const SITEKENNIS_PAD_TEKST = "data/sitekennis.json";

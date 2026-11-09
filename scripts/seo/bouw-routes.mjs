@@ -389,10 +389,35 @@ zet({ route: '404', soort: 'nationaal', subsoort: 'fout', staat: 'NOINDEX', rede
    DE KERN: EEN ARTIKEL PROMOVEERT NOOIT ZICHZELF.
    De redactionele staat staat in het inhoudsbestand en komt daar van een
    mens. Het intelligenceplatform schrijft artikelen weg als CONCEPT of
-   TER_REDACTIE; alleen GOEDGEKEURD — mét naam en datum van wie het vrijgaf —
-   kan hier naar INDEX. Er is geen drempelgetal, geen teller en geen
-   tijdslot dat dat kan overrulen. Zie intelligence/src/site/nieuwsregister.ts
-   voor de schrijvende kant.
+   TER_REDACTIE; alleen GOEDGEKEURD — mét datum en mét een VERANTWOORDE
+   goedkeuring — kan hier naar INDEX. Er is geen drempelgetal, geen teller en
+   geen tijdslot dat dat kan overrulen. Zie
+   intelligence/src/site/nieuwsregister.ts voor de schrijvende kant.
+
+   WAT 'VERANTWOORD' BETEKENT — EN WAAROM DAT NIET MEER 'EEN NAAM' IS.
+   Tot de autonome nieuwsredactie stond hier letterlijk "mét naam", en de enige
+   toets was een niet-lege `goedgekeurd_door`. Dat was juist zolang er één
+   goedkeuringsvorm bestond. Er zijn er nu twee, en de tweede kan geen naam
+   dragen:
+
+     A een MENS     goedkeuring_soort 'mens' (of afwezig, voor de bestanden
+                    van vóór deze regel) MET een niet-lege `goedgekeurd_door`
+     B het BELEID   goedkeuring_soort 'beleid' MET een niet-lege
+                    `goedkeurend_beleid` (de beleidsversie), ZONDER naam, en
+                    met een risico_klasse die niet 'hoog' is
+
+   Bij B is het lege naamveld het ANTWOORD en niet een gebrek: migratie 0052
+   van het intelligenceplatform legt uit dat een nepgebruiker die 'systeem'
+   heet elke latere lezing van "was hier een mens bij" onbetrouwbaar maakt —
+   voor álle rijen, ook de echte. De oude toets zou B dus weigeren op precies
+   de eigenschap die hem eerlijk maakt.
+
+   WAT HIER NIET WIJKT. Een leeg of ontbrekend goedkeuringsveld blijft een
+   weigering; een onbekende `goedkeuring_soort` ook; en beleid plus hoog risico
+   is een harde weigering ongeacht wat er verder in het bestand staat. Dat
+   laatste staat in de database op twee niveaus dicht, maar een JSON-bestand in
+   deze repository kan met de hand zijn geschreven en komt dus nooit langs die
+   constraints — daarom staat de regel hier ook.
 
    INGETROKKEN GEEFT GEEN NOINDEX-PAGINA MAAR GEEN PAGINA.
    De generator maakt alleen bestanden voor INDEX-routes en ruimt met het
@@ -418,6 +443,74 @@ const staatVan = new Map(routes.map((r) => [r.route, r.staat]));
 
 const ISO_DATUM = /^\d{4}-\d{2}-\d{2}$/;
 
+/* De twee risicoklassen die een beleidsgoedkeuring mag dragen. 'hoog' staat er
+   niet bij en dat is de hele regel; de klassen komen uit de check op
+   intel.inhoud_versies.risico_klasse ('laag', 'midden', 'hoog'). */
+const RISICO_ZONDER_MENS = new Set(['laag', 'midden']);
+
+/**
+ * De goedkeuringscategorie van één nieuwsbestand.
+ *
+ * Geeft de reden terug waarom de goedkeuring NIET verantwoord is; null
+ * betekent verantwoord. Zie de toelichting boven het nieuwsblok voor de twee
+ * vormen A (mens) en B (beleid) en waarom B geen naam kan dragen.
+ *
+ * DEZELFDE REGEL STAAT EEN TWEEDE KEER IN
+ * intelligence/ops/publicatiecontract.mjs, EN DAT IS OPZET.
+ * Die poort is het onafhankelijke tweede oordeel over wat er in de repository
+ * komt te staan; zou hij deze functie importeren, dan kon hij per definitie
+ * geen fout in deze functie meer zien en zou een reviewer één oordeel voor
+ * twee aanzien. Wat de twee kopieën in de pas houdt is
+ * intelligence/test/integratie/publicatiecontract-goedkeuring.test.ts: die
+ * draait BEIDE scripts echt als kindproces, op dezelfde zeven gevallen.
+ */
+function onverantwoordeGoedkeuring(j) {
+  const soort = String(j.goedkeuring_soort ?? 'mens').trim().toLowerCase() || 'mens';
+  const naam = String(j.goedgekeurd_door ?? '').trim();
+
+  if (soort !== 'mens' && soort !== 'beleid') {
+    return `\`goedkeuring_soort\` '${soort}' is geen van 'mens' of 'beleid'. Een onbekende categorie is geen goedkeuring.`;
+  }
+  if (!ISO_DATUM.test(String(j.goedgekeurd_op || ''))) {
+    return 'GOEDGEKEURD zonder geldige `goedgekeurd_op` (ISO-datum).';
+  }
+
+  if (soort === 'mens') {
+    if (!naam) {
+      return 'GOEDGEKEURD door een mens zonder `goedgekeurd_door`. Een menselijke goedkeuring zonder naam is geen goedkeuring.';
+    }
+    return null;
+  }
+
+  /* Vanaf hier: goedkeuring_soort 'beleid'. */
+  if (!String(j.goedkeurend_beleid ?? '').trim()) {
+    return 'GOEDGEKEURD door beleid zonder `goedkeurend_beleid`. Dan zegt het bestand dat er geen mens was en noemt het niet wat er in plaats daarvan stond.';
+  }
+  /* De database eist dat `goedgekeurd_door` bij 'beleid' NULL is
+     (inhoud_versies_goedkeuring_herkomst). Een bestand dat beide draagt
+     claimt twee herkomsten en één ervan is onwaar. */
+  if (naam) {
+    return `GOEDGEKEURD door beleid, maar met '${naam}' in \`goedgekeurd_door\`. Beide herkomsten tegelijk kan niet; de database verbiedt die combinatie ook.`;
+  }
+  const risico = String(j.risico_klasse ?? '').trim().toLowerCase();
+  if (risico === 'hoog') {
+    return 'GOEDGEKEURD door beleid met `risico_klasse` \'hoog\'. Hoog risico vereist altijd een mens; de database verbiedt deze combinatie op twee niveaus.';
+  }
+  if (!RISICO_ZONDER_MENS.has(risico)) {
+    return `GOEDGEKEURD door beleid met \`risico_klasse\` '${risico || 'ontbreekt'}'. Zonder gemeten risicoklasse is niet vast te stellen dat dit artikel zonder mens mocht; alleen ${[...RISICO_ZONDER_MENS].join(' of ')} laat beleid door.`;
+  }
+  return null;
+}
+
+/** De zichtbare verantwoording van een goedkeuring, voor het veld `reden`. */
+function goedkeuringsregel(j) {
+  const soort = String(j.goedkeuring_soort ?? 'mens').trim().toLowerCase() || 'mens';
+  if (soort === 'beleid') {
+    return `Goedgekeurd door beleid '${j.goedkeurend_beleid}' op ${j.goedgekeurd_op}, risico ${String(j.risico_klasse).toLowerCase()} (geen mens; zie intelligence/db/migraties/0052)`;
+  }
+  return `Goedgekeurd door ${j.goedgekeurd_door} op ${j.goedgekeurd_op}`;
+}
+
 /**
  * Toetst één nieuwsartikel tegen de zes publicatiepoorten uit het contract.
  * Geeft de eerste reden terug waarom het NIET door mag; null betekent door.
@@ -429,12 +522,8 @@ function weigerNieuws(j) {
   if (staat !== 'GOEDGEKEURD') {
     return `Redactionele staat is ${staat || 'niet gezet'}; alleen GOEDGEKEURD mag naar INDEX.`;
   }
-  if (!j.goedgekeurd_door || !String(j.goedgekeurd_door).trim()) {
-    return 'GOEDGEKEURD zonder `goedgekeurd_door`. Een goedkeuring zonder naam is geen goedkeuring.';
-  }
-  if (!ISO_DATUM.test(String(j.goedgekeurd_op || ''))) {
-    return 'GOEDGEKEURD zonder geldige `goedgekeurd_op` (ISO-datum).';
-  }
+  const ongeldigeGoedkeuring = onverantwoordeGoedkeuring(j);
+  if (ongeldigeGoedkeuring !== null) return ongeldigeGoedkeuring;
   if (!ISO_DATUM.test(String(j.gepubliceerd || ''))) {
     return '`gepubliceerd` ontbreekt of is geen ISO-datum; een nieuwsartikel zonder datum veroudert onzichtbaar.';
   }
@@ -494,7 +583,7 @@ for (const route of nieuwsRoutes.sort()) {
     staat: weigering ? 'PENDING' : 'INDEX',
     reden: weigering
       ? `Niet gepubliceerd: ${weigering}`
-      : `Goedgekeurd door ${j.goedgekeurd_door} op ${j.goedgekeurd_op}; ${(j.bronnen || []).length} bron(nen), waarvan minstens één dragend.`,
+      : `${goedkeuringsregel(j)}; ${(j.bronnen || []).length} bron(nen), waarvan minstens één dragend.`,
     bezit: j.onderwerp_eigenaar ? `leent van ${j.onderwerp_eigenaar}` : null,
     redactionele_staat: String(j.redactionele_staat || '').toUpperCase() || null,
     bestaand: false,
