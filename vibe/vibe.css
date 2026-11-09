@@ -98,6 +98,19 @@ button{font:inherit;color:inherit}
    pagina horizontaal. break-word breekt uitsluitend wanneer het moet. */
 .ve-display,.ve-h2,.ve-h3,.ve-h4,.ve-overlay__t,.ve-proj__t,.ve-citaat,
 .ve-metriek__w,.ve-feit__w{overflow-wrap:break-word;min-width:0}
+/* DEZE GUARD DEKTE ALLEEN DE EIGEN KOPTEKSTKLASSEN, EN DAT WAS NIET GENOEG.
+   Gewone h1..h6, alinea's en lijstitems — zoals ze binnen .ve-prose en
+   .ve-slot staan — vielen er buiten. Gemeten op 9 november 2026 bij een
+   viewport van 320px:
+     /privacy                                      h3 scrollWidth 307 in 272
+     /kennis/batterijveiligheid                    h3 scrollWidth 307 in 272
+     /toepassingen/bestaande-aansluiting-optimaliseren
+                                                   .ve-slot scrollWidth 366 in 270
+   Steeds een Nederlandse samenstelling die niet kan afbreken
+   ("batterijmanagementsysteem"). Omdat body overflow-x:hidden draagt, geeft
+   dat GEEN horizontale scroll maar afgekapte tekst: het deel buiten de kolom
+   is onzichtbaar en niet te bereiken. */
+h1,h2,h3,h4,h5,h6,p,li,dt,dd,figcaption,blockquote,summary,td,th{overflow-wrap:break-word}
 
 .ve-display{
   margin:0;
@@ -239,7 +252,14 @@ button{font:inherit;color:inherit}
    maakt dan haar gelijke deel. Tussen 768 en ~900px liep het raster daardoor
    buiten de container en werd de rechterkaart afgesneden. minmax(0,1fr) laat de
    track wél krimpen; waar de inhoud past is het gedrag identiek aan 1fr. */
-.ve-cols{display:grid;gap:var(--ve-s-lg)}
+/* De redenering hierboven gold alleen voor de mediaquery-varianten hieronder.
+   De BASISREGEL had geen expliciete kolom, dus onder 640px gebruikt het raster
+   een IMPLICIETE track — en ook die heeft min-content als ondergrens. Gemeten
+   op 9 november 2026 op / bij 320px: .ve-cols--2 kreeg
+   grid-template-columns 336,359px binnen een container van 272px, waardoor een
+   doelgroepkaart 40,4px buiten beeld viel. Dat was de laatst overgebleven
+   overloop van de hele site. */
+.ve-cols{display:grid;gap:var(--ve-s-lg);grid-template-columns:minmax(0,1fr)}
 @media (min-width:640px){.ve-cols--2,.ve-cols--4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (min-width:768px){.ve-cols--3{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (min-width:1024px){
@@ -249,9 +269,16 @@ button{font:inherit;color:inherit}
 .ve-cols--gap-xl{gap:var(--ve-s-xl)}
 
 /* asymmetrisch 12-koloms raster voor de redactionele composities */
-.ve-grid12{display:grid;gap:var(--ve-s-lg)}
+/* minmax(0,1fr) en niet 1fr, net als bij .ve-cols--4 en --5 hierboven. Een
+   1fr-track krimpt niet onder de min-content van zijn inhoud; met een kaart
+   of een lange samenstelling erin wordt de track dan breder dan de kolom.
+   Gemeten op 320px: op / stak article.ve-sp-8 tot 336px in een viewport van
+   320, op /industrie-recreatie tot 326,2px. De expliciete enkele kolom in de
+   basisregel is nodig omdat het raster onder 768px een IMPLICIETE track
+   gebruikt, en ook die heeft min-content als ondergrens. */
+.ve-grid12{display:grid;gap:var(--ve-s-lg);grid-template-columns:minmax(0,1fr)}
 @media (min-width:768px){
-  .ve-grid12{grid-template-columns:repeat(12,1fr)}
+  .ve-grid12{grid-template-columns:repeat(12,minmax(0,1fr))}
   .ve-sp-4{grid-column:span 4}.ve-sp-5{grid-column:span 5}
   .ve-sp-6{grid-column:span 6}.ve-sp-7{grid-column:span 7}
   .ve-sp-8{grid-column:span 8}.ve-sp-12{grid-column:span 12}
@@ -845,15 +872,17 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
   box-shadow:var(--ve-elev-1);
 }
 @media (min-width:768px){.ve-stroom{padding:var(--ve-s-2xl)}}
-.ve-stroom__rij{display:grid;gap:var(--ve-s-lg);align-items:stretch}
+/* Zelfde reden als bij .ve-grid12: gemeten op /energy-hubs bij 320px stak
+   div.ve-knoop tot 323,5px in een viewport van 320. */
+.ve-stroom__rij{display:grid;gap:var(--ve-s-lg);align-items:stretch;grid-template-columns:minmax(0,1fr)}
 /* Op tablet twee naast elkaar. Vier knopen op 900px laat per knoop ongeveer
    100px tekstbreedte over; dan duwt de inhoud het diagram uit de pagina. */
 @media (min-width:768px){
-  .ve-stroom__rij{grid-template-columns:repeat(2,1fr);gap:var(--ve-s-lg)}
-  .ve-stroom__rij--3{grid-template-columns:repeat(3,1fr)}
+  .ve-stroom__rij{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ve-s-lg)}
+  .ve-stroom__rij--3{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media (min-width:1024px){
-  .ve-stroom__rij{grid-template-columns:repeat(var(--ve-stroom-n,3),1fr);gap:var(--ve-s-xl)}
+  .ve-stroom__rij{grid-template-columns:repeat(var(--ve-stroom-n,3),minmax(0,1fr));gap:var(--ve-s-xl)}
 }
 .ve-knoop{
   position:relative;
