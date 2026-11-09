@@ -14,8 +14,8 @@ import { fileURLToPath } from 'node:url';
 
 import { url, href } from './lib/paden.mjs';
 import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic,
-         mediaBlok, projectband, statement } from './lib/sjabloon.mjs';
-import { beeldTag, beeldVoor, projectFiltersVoor } from './lib/beeld.mjs';
+         mediaBlok, projectband, statement, beeldband, canvasband } from './lib/sjabloon.mjs';
+import { beeldTag, beeldVoor, beeldenVoor, projectFiltersVoor } from './lib/beeld.mjs';
 import { artikel, dienst, faq as faqLd } from './lib/schema.mjs';
 import { naamVan } from './lib/links.mjs';
 
@@ -134,6 +134,81 @@ export function sectieHtml(s, motor) {
   }
 }
 
+/* ---------------------------------------------------------------- ritme
+   WAAROM DEZE FUNCTIE BESTAAT.
+
+   Gemeten op basis 96725da, alleen binnen <main>, per sectie geteld als
+   DOCUMENT (louter tekst) of niet:
+
+     index.html          handgeschreven   10 secties,  2 DOCUMENT, langste
+                                          tekstreeks 1, 777 tekens per beeld
+     netcongestie.html   gegenereerd      12 secties, 10 DOCUMENT, langste
+                                          tekstreeks 7, 4.716 tekens per beeld
+     laadplein.html      gegenereerd      15 secties, 14 DOCUMENT, langste
+                                          tekstreeks 14, 22.140 tekens per beeld
+
+   Dat verschil is wat 'nauwelijks verschil' betekent als je het telt. De
+   generator bouwde elke sectie als tekstsectie of als kaartrij en had geen
+   derde vorm.
+
+   WAT HIER GEBEURT, EN WAT NADRUKKELIJK NIET.
+   Deze pass schrijft GEEN nieuwe tekst. Hij verandert alleen de VORM van
+   secties die er al staan:
+     · elke derde tekstsectie wordt een beeldband — dezelfde kop, dezelfde
+       alinea's, met een foto ernaast en de kant die per keer wisselt;
+     · er komt één canvasband vóór het slot, met de og-titel en de
+       beschrijving die het inhoudsbestand al draagt. Die twee staan nu
+       alleen in de <head>; op de pagina zelf waren ze onzichtbaar.
+   Er wordt dus geen claim toegevoegd die niet al door de claimpoort is
+   gekomen. */
+function metRitme({ secties, motor, beelden, canvas }) {
+  const tekstIdx = secties.map((s, i) => (s.soort === 'tekst' ? i : -1)).filter((i) => i >= 0);
+  /* Hoeveel beeldbanden een pagina verdraagt, hangt af van hoeveel tekst er
+     staat. Twee banden op een pagina met veertien tekstsecties laat nog
+     altijd een reeks van vier over; op een pagina met drie tekstsecties zou
+     drie banden de tekst juist verdringen. */
+  const wil = Math.max(1, Math.min(3, Math.floor(tekstIdx.length / 2)));
+  const stap = Math.max(1, Math.round(tekstIdx.length / (wil + 1)));
+  const bandOp = new Set();
+  for (let k = 1; k <= wil; k++) {
+    const i = tekstIdx[Math.min(k * stap, tekstIdx.length - 1)];
+    if (i !== undefined) bandOp.add(i);
+  }
+  /* De canvasband komt na de middelste sectie, niet achteraan. Een pagina
+     met zijn enige visuele gebeurtenis op 90% van de hoogte is precies wat
+     de compositiepoort als generiek aanmerkt. */
+  const canvasNa = secties.length ? Math.floor(secties.length / 2) : -1;
+
+  const uit = [];
+  let gebruikt = 0;
+  secties.forEach((s, i) => {
+    if (bandOp.has(i)) {
+      const b = beelden[1 + (gebruikt % 2)];
+      const kant = gebruikt % 2 === 0 ? 'rechts' : 'links';
+      gebruikt++;
+      uit.push(
+        beeldband({
+          id: s.id,
+          kop: s.kop,
+          tekst: alineas(s.alineas, s.bronnen, motor),
+          img: beeldTag({
+            basis: b.basis,
+            alt: b.alt,
+            sizes: '(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw',
+          }),
+          kant,
+          variant: s.variant || '',
+        })
+      );
+    } else {
+      uit.push(sectieHtml(s, motor));
+    }
+    if (i === canvasNa && canvas) uit.push(canvas);
+  });
+  if (canvasNa < 0 && canvas) uit.push(canvas);
+  return uit;
+}
+
 export function bouwNationaal({ register, motor, schrijf, reg }) {
   const bestanden = alleInhoud();
   let aantal = 0;
@@ -180,7 +255,8 @@ export function bouwNationaal({ register, motor, schrijf, reg }) {
        aanwijst en nooit een klantproject suggereert.
        fetchpriority high en loading eager: dit is het LCP-element, en lazy
        laden van je eigen LCP is een gemeten vertraging. */
-    const beeld = beeldVoor(j.route, j.type);
+    const beelden = beeldenVoor(j.route, j.type);
+    const beeld = beelden[0];
     const heroBeeld = mediaBlok({
       verhouding: '21x9',
       diepte: 'diep',
@@ -236,7 +312,23 @@ export function bouwNationaal({ register, motor, schrijf, reg }) {
             voorbehoud: j.direct_antwoord.voorbehoud ? normaliseerHrefs(j.direct_antwoord.voorbehoud, motor) : j.direct_antwoord.voorbehoud,
           })
         : '',
-      ...secties.map((sec) => sectieHtml(sec, motor)),
+      /* De canvasband: het enige moment op een gegenereerde pagina dat niet
+         de donkere slotband is. Kop en tekst komen uit og_titel en
+         beschrijving, die tot nu toe alleen in de <head> stonden. */
+      ...metRitme({
+        secties,
+        motor,
+        beelden,
+        canvas: canvasband({
+          img: beeldTag({
+            basis: beelden[2].basis,
+            alt: beelden[2].alt,
+            sizes: '(min-width:1200px) 1216px, 100vw',
+          }),
+          kop: j.og_titel || j.h1,
+          tekst: esc(j.beschrijving || ''),
+        }),
+      }),
       bandProjecten.length
         ? projectband({
             id: 'projectbewijs',

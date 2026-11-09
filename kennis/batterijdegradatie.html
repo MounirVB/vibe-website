@@ -144,16 +144,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <section class="ve-sec ve-sec--lg " id="state-of-health">
     <div class="ve-wrap">
-      <div class="ve-head">
-        <h2 class="ve-h2">State of health: wat het betekent en hoe het wordt vastgesteld</h2>
-      </div>
-      <div class="ve-prose">
-        <p>State of health (SoH) is een verhouding: de capaciteit die het systeem nu bruikbaar levert, gedeeld door de capaciteit die het bij aanvang bruikbaar leverde. Een SoH onder de honderd procent betekent dus niet dat er iets kapot is. Het betekent dat de bruikbare kWh is gekrompen ten opzichte van de nulmeting.</p>
+      <div class="ve-split ve-split--7-5 ve-split--top">
+        <div>
+          <h2 class="ve-h2">State of health: wat het betekent en hoe het wordt vastgesteld</h2>
+          <div class="ve-prose" style="margin-top:var(--ve-s-md)"><p>State of health (SoH) is een verhouding: de capaciteit die het systeem nu bruikbaar levert, gedeeld door de capaciteit die het bij aanvang bruikbaar leverde. Een SoH onder de honderd procent betekent dus niet dat er iets kapot is. Het betekent dat de bruikbare kWh is gekrompen ten opzichte van de nulmeting.</p>
         <p>Naast capaciteitsverlies staat een tweede vorm: vermogensverlies. De inwendige weerstand van een cel loopt op met de leeftijd. Het systeem kan dan nog een behoorlijke hoeveelheid kWh bergen, maar haalt het nominale laad- of ontlaadvermogen niet meer onder alle omstandigheden, of alleen nog kort voordat de temperatuur- of spanningsgrens ingrijpt. Voor een <a class="ve-link" href="/kennis/peak-shaving">piekafvlakkingstaak</a> is dat de ernstiger vorm van veroudering, want daar is kW de bindende grens en niet kWh.</p>
         <h3>Twee manieren om SoH vast te stellen</h3>
         <ul><li><strong>De schatting van het batterijmanagementsysteem.</strong> Die draait continu mee en is gebaseerd op modellen, op spanningsgedrag en op de gemeten doorzet. Hij kost niets en is indicatief, maar het is een schatting — twee leveranciers kunnen voor hetzelfde systeem een ander getal rapporteren omdat hun model anders rekent.</li><li><strong>Een capaciteitstest.</strong> Het systeem wordt onder vastgelegde voorwaarden volledig geladen en ontladen, en er wordt gemeten wat er daadwerkelijk uit komt. Dit is de bindende methode, en hij kost een dag of een nacht waarin het systeem zijn eigenlijke werk niet doet.</li></ul>
         <p>Een capaciteitstest is alleen vergelijkbaar als de voorwaarden gelijk zijn aan de nulmeting: dezelfde celtemperatuur, hetzelfde laad- en ontlaadvermogen, hetzelfde spanningsvenster, en gemeten op hetzelfde punt — op de cellen of achter de omvormer, want daar zit het omzettingsverlies tussen. Wordt de nulmeting bij oplevering niet vastgelegd, dan is elke latere discussie over SoH een woordenwisseling zonder referentie. Leg die nulmeting dus vast, met de voorwaarden erbij, en bewaar hem bij het opleverdossier.</p>
-        <p>Wat SoH niet is: een veiligheidsindicator. Een cel met minder restcapaciteit is niet onveilig, en een hoge restcapaciteit maakt een installatie niet veilig. Veiligheid is een eigen beoordeling, met een eigen ritme en eigen maatregelen.</p>
+        <p>Wat SoH niet is: een veiligheidsindicator. Een cel met minder restcapaciteit is niet onveilig, en een hoge restcapaciteit maakt een installatie niet veilig. Veiligheid is een eigen beoordeling, met een eigen ritme en eigen maatregelen.</p></div>
+        </div>
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/ems-hero.jpg" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2000" height="1333" alt="Een rij kilowattuurmeters in een meterkast" loading="lazy" decoding="async">
+        </div>
       </div>
     </div>
   </section>
@@ -174,32 +177,53 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div>
   </section>
 
+  <section class="ve-sec ve-sec--lg">
+    <div class="ve-wrap ve-wrap--wide">
+      <div class="ve-canvas">
+        <div class="ve-canvas__binnen">
+          <div class="ve-media ve-media--21x9" style="border-radius:0;box-shadow:none">
+          <img src="/assets/bedrijf-hero-2400.webp" srcset="/assets/bedrijf-hero-960.webp 960w, /assets/bedrijf-hero-1600.webp 1600w, /assets/bedrijf-hero-2400.webp 2400w" sizes="(min-width:1200px) 1216px, 100vw" width="2400" height="1801" alt="Batterijkast van Vibe Energy tegen de gevel van een bedrijfspand" loading="lazy" decoding="async">
+          <div class="ve-overlay">
+            <h2 class="ve-overlay__t">Batterijdegradatie: wat een opslagsysteem laat verouderen</h2>
+            <p class="ve-overlay__d">Wat een zakelijke batterij laat verouderen, hoe state of health wordt vastgesteld en waarom u capaciteit overdimensioneert voor het einde van de looptijd.</p>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="ve-sec ve-sec--lg " id="overdimensioneren">
     <div class="ve-wrap">
-      <div class="ve-head">
-        <h2 class="ve-h2">Dimensioneren op de laatste dag van de looptijd, niet op de eerste</h2>
-      </div>
-      <div class="ve-prose">
-        <p>De capaciteit die uw taak vraagt, moet beschikbaar zijn op het slechtste moment van de looptijd. Dat moment is het einde, niet het begin. Een ontwerp dat precies past op dag één, past de rest van de looptijd niet.</p>
+      <div class="ve-split ve-split--5-7 ve-split--top">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/bedrijf-hero-2400.webp" srcset="/assets/bedrijf-hero-960.webp 960w, /assets/bedrijf-hero-1600.webp 1600w, /assets/bedrijf-hero-2400.webp 2400w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2400" height="1801" alt="Batterijkast van Vibe Energy tegen de gevel van een bedrijfspand" loading="lazy" decoding="async">
+        </div>
+        <div>
+          <h2 class="ve-h2">Dimensioneren op de laatste dag van de looptijd, niet op de eerste</h2>
+          <div class="ve-prose" style="margin-top:var(--ve-s-md)"><p>De capaciteit die uw taak vraagt, moet beschikbaar zijn op het slechtste moment van de looptijd. Dat moment is het einde, niet het begin. Een ontwerp dat precies past op dag één, past de rest van de looptijd niet.</p>
         <p>Tussen het getal op de kast en wat u werkelijk kunt inzetten, zitten drie stappen. Van de nominale capaciteit is maar een deel vrijgegeven om te gebruiken, omdat het werkvenster aan de boven- en onderkant een marge laat staan. Van dat venster gaat het omzettingsrendement af: wat u erin stopt, komt er niet volledig uit. En wat dan overblijft, krimpt over de jaren. Wie met de nominale capaciteit rekent, komt dus op drie plekken tekort.</p>
         <p>De praktische route is daarom: reken de taak uit op het kwartiersprofiel — de hoogte van de piek boven de gekozen grens geeft het benodigde vermogen in kW, die hoogte maal de duur geeft de benodigde kWh — en zet die uitkomst naast de bruikbare capaciteit aan het <em>einde</em> van de looptijd. Hoeveel u moet overdimensioneren volgt uit de restcapaciteit die uw leverancier voor úw inzetprofiel onderbouwt. Dat getal verschilt per fabrikant, per celchemie en per contract, en wij publiceren er geen vuistregel voor.</p>
         <p>Er is een alternatief voor alles vooraf kopen: modulair bijplaatsen. Houd ruimte, kabelwerk, omvormervermogen en een regelaar die extra modules aankan, en vul later aan. Dat is niet per definitie goedkoper — een latere uitbreiding mengt nieuwe met oudere modules, en dat vraagt aandacht in de besturing en soms een eigen omvormer — maar het verschuift investering naar het moment dat u de capaciteit echt nodig heeft. Welke van de twee past, is een rekenvraag: zet de extra investering van dag één af tegen de kosten en het risico van een uitbreiding later.</p>
-        <p>In beide gevallen geldt dat u wilt kunnen zien wat er gebeurt. Doorzet, celtemperaturen, het gebruikte werkvenster en de ontwikkeling van de restcapaciteit zijn de grootheden die aantonen of het systeem binnen zijn voorwaarden draait. Zonder die meetreeks is de discussie aan het einde van de looptijd niet te voeren.</p>
+        <p>In beide gevallen geldt dat u wilt kunnen zien wat er gebeurt. Doorzet, celtemperaturen, het gebruikte werkvenster en de ontwikkeling van de restcapaciteit zijn de grootheden die aantonen of het systeem binnen zijn voorwaarden draait. Zonder die meetreeks is de discussie aan het einde van de looptijd niet te voeren.</p></div>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="ve-sec ve-sec--lg ">
     <div class="ve-wrap">
-      <div class="ve-head">
-        <h2 class="ve-h2">Wat dit niet oplost</h2>
-        <p class="ve-lead">De eerlijke grens van alles wat hierboven staat.</p>
-      </div>
-      <div class="ve-prose">
-        <p>Degradatie is niet te vermijden, alleen te vertragen. Elke maatregel uit dit artikel kost iets: een nauwer werkvenster kost bruikbare kWh, een lagere C-rate kost piekvermogen, actieve koeling kost energie en onderhoud, en een lagere laadtoestand bij stilstand kost beschikbaarheid. Een batterij die zachter wordt behandeld dan zijn taak verdraagt, haalt die taak niet.</p>
+      <div class="ve-split ve-split--7-5 ve-split--top">
+        <div>
+          <h2 class="ve-h2">Wat dit niet oplost</h2>
+          <div class="ve-prose" style="margin-top:var(--ve-s-md)"><p>Degradatie is niet te vermijden, alleen te vertragen. Elke maatregel uit dit artikel kost iets: een nauwer werkvenster kost bruikbare kWh, een lagere C-rate kost piekvermogen, actieve koeling kost energie en onderhoud, en een lagere laadtoestand bij stilstand kost beschikbaarheid. Een batterij die zachter wordt behandeld dan zijn taak verdraagt, haalt die taak niet.</p>
         <p>Voorzichtig gebruik repareert ook geen verkeerd ontwerp. Een systeem dat op dag één te klein is voor de piek, wordt niet groter door rustiger te laden. En een systeem dat veel te ruim is gekocht om degradatie voor te blijven, laat jarenlang kapitaal stilstaan zonder dat er een kWh meer door gaat.</p>
         <p>Dit artikel noemt bewust geen percentage per jaar en geen garantietermijn. Die waarden zijn fabrikant- en contractgebonden en gelden alleen bij een vastgelegd inzetprofiel; een getal van een website geldt niet voor uw systeem. Vraag de degradatiecurve en de garantievoorwaarden op bij de leverancier, en vraag erbij onder welke doorzet, temperatuur en C-rate die curve is bepaald. Is dat niet te leveren, dan is de curve geen toezegging.</p>
-        <p>En degradatie zegt niets over brandveiligheid, over de staat van de behuizing en bekabeling of over de regels voor opstelling en afstand. Dat is een aparte beoordeling, die ook een systeem met een hoge restcapaciteit nodig heeft.</p>
+        <p>En degradatie zegt niets over brandveiligheid, over de staat van de behuizing en bekabeling of over de regels voor opstelling en afstand. Dat is een aparte beoordeling, die ook een systeem met een hoge restcapaciteit nodig heeft.</p></div>
+        </div>
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/ems-hero.jpg" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2000" height="1333" alt="Een rij kilowattuurmeters in een meterkast" loading="lazy" decoding="async">
+        </div>
       </div>
     </div>
   </section>
@@ -289,10 +313,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div class="ve-verwant__groep">
           <p class="ve-verwant__kop">De systemen</p>
           <ul class="ve-verwant__lijst">
-            <li><a href="/systeem-energieopslag">Energieopslag</a></li>
-            <li><a href="/vibe-control">VIBE.CONTROL</a></li>
             <li><a href="/kennis/ems-energiemanagementsysteem">Energiemanagementsysteem</a></li>
-            <li><a href="/netcongestie">Netcongestie</a></li>
           </ul>
         </div>
         <div class="ve-verwant__groep">
@@ -300,7 +321,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <ul class="ve-verwant__lijst">
             <li><a href="/project-hedin-alkmaar">Hedin Alkmaar</a></li>
             <li><a href="/project-hazenweg-61">Hazenweg 61, Hengelo</a></li>
-            <li><a href="/projecten">Alle projecten</a></li>
           </ul>
         </div>
       </div>

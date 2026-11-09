@@ -148,12 +148,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <section class="ve-sec ve-sec--lg ">
     <div class="ve-wrap">
-      <div class="ve-head">
-        <h2 class="ve-h2">Nominaal is niet bruikbaar</h2>
-        <p class="ve-lead">Tussen het getal op het typeplaatje en de kWh die u kunt inzetten zitten drie aftrekposten.</p>
-      </div>
-      <div class="ve-prose">
-        <h3>Ontlaaddiepte</h3>
+      <div class="ve-split ve-split--7-5 ve-split--top">
+        <div>
+          <h2 class="ve-h2">Nominaal is niet bruikbaar</h2>
+          <div class="ve-prose" style="margin-top:var(--ve-s-md)"><h3>Ontlaaddiepte</h3>
         <p>Een batterij die volledig leeg wordt getrokken en volledig vol wordt geladen, veroudert sneller. Daarom begrenst de besturing de boven- en de ondergrens van de laadtoestand. Het venster tussen die twee grenzen is de ontlaaddiepte; dat is een percentage, en de kWh binnen dat venster is de bruikbare capaciteit waarmee u rekent. Vraag de leverancier welk deel van de nominale capaciteit het systeem vrijgeeft, en of die grens vast is of instelbaar — want een ruimere grens koopt u met een kortere levensduur.</p>
         <h3>Eigen verbruik van het systeem</h3>
         <p>Koeling of verwarming van de kast, de besturing en de omvormers in stand-by gebruiken zelf energie, en in een koude of een warme week meer dan in een milde. Dat verbruik gaat ten koste van wat er netto beschikbaar is en hoort dus in de berekening, niet in de voetnoot.</p>
@@ -161,7 +159,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <p>Het rondgangsrendement zegt hoeveel van de ingeladen kWh er weer uit komt. Het verlies zit in de cellen en in de dubbele omzetting door de omvormer: van wisselspanning naar gelijkspanning bij laden en terug bij ontladen. Vraag of het opgegeven rendement het eigen verbruik van de kast al bevat; zit dat er niet in, dan komt het er bovenop en moet u het niet twee keer aftrekken. Voor de maatvoering betekent dit dat u iets meer moet inladen dan u wilt afgeven. Voor de businesscase betekent het meer.</p>
         <p>Bij piekafvlakking is dat verlies een bijzaak: de waarde zit in het vermogen dat u niet hoeft te contracteren, en de verloren kWh zijn een kleine kostenpost. Bij prijsgestuurd laden en ontladen is het verlies hoofdzaak: het prijsverschil tussen laden en ontladen moet eerst het rendementsverlies en de verouderingskosten van die cyclus dekken voordat er iets overblijft. Hetzelfde systeem kan op de ene taak uit komen en op de andere niet.</p>
         <h3>De C-rate als bovengrens op de verhouding</h3>
-        <p>Ten slotte begrenst de C-rate welke verhouding tussen kW en kWh te bouwen is. Een hoge, korte piek vraagt veel kW op weinig kWh, en dus een hoge C-rate. Ligt die boven wat het systeem continu toelaat, dan is er maar één uitweg: meer capaciteit plaatsen dan u voor de energie nodig heeft, alleen om het vermogen te kunnen leveren. Dat is geen fout in het ontwerp, maar de reden dat een piekbatterij soms groter uitvalt dan de rekensom op de energie suggereert.</p>
+        <p>Ten slotte begrenst de C-rate welke verhouding tussen kW en kWh te bouwen is. Een hoge, korte piek vraagt veel kW op weinig kWh, en dus een hoge C-rate. Ligt die boven wat het systeem continu toelaat, dan is er maar één uitweg: meer capaciteit plaatsen dan u voor de energie nodig heeft, alleen om het vermogen te kunnen leveren. Dat is geen fout in het ontwerp, maar de reden dat een piekbatterij soms groter uitvalt dan de rekensom op de energie suggereert.</p></div>
+        </div>
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/capaciteit-hero-1600.webp" srcset="/assets/capaciteit-hero-960.webp 960w, /assets/capaciteit-hero-1600.webp 1600w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="1600" height="1201" alt="Twee batterijkasten in een houten omkasting naast een bedrijfspand" loading="lazy" decoding="async">
+        </div>
       </div>
     </div>
   </section>
@@ -192,18 +194,36 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div>
   </section>
 
+  <section class="ve-sec ve-sec--lg">
+    <div class="ve-wrap ve-wrap--wide">
+      <div class="ve-canvas">
+        <div class="ve-canvas__binnen">
+          <div class="ve-media ve-media--21x9" style="border-radius:0;box-shadow:none">
+          <img src="/assets/ems-hero.jpg" sizes="(min-width:1200px) 1216px, 100vw" width="2000" height="1333" alt="Een rij kilowattuurmeters in een meterkast" loading="lazy" decoding="async">
+          <div class="ve-overlay">
+            <h2 class="ve-overlay__t">Batterij dimensioneren: van profiel naar kW en kWh</h2>
+            <p class="ve-overlay__d">Vermogen en capaciteit van een zakelijke batterij volgen uit het kwartiersprofiel: kW uit de piekhoogte, kWh uit de duur, plus correctie voor degradatie.</p>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="ve-sec ve-sec--lg ">
     <div class="ve-wrap">
-      <div class="ve-head">
-        <h2 class="ve-h2">Eén batterij, meerdere taken die om dezelfde kWh concurreren</h2>
-        <p class="ve-lead">Een batterij kan veel, maar niet alles op hetzelfde moment.</p>
-      </div>
-      <div class="ve-prose">
-        <p>Elke taak legt beslag op twee schaarse dingen: op vermogen in kW op dat moment, en op laadtoestand in kWh op dat moment. Wie vier taken op één systeem legt zonder voorrangsorde, krijgt een installatie die op het beslissende kwartier leeg of vol blijkt te staan.</p>
+      <div class="ve-split ve-split--5-7 ve-split--top">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/ems-hero.jpg" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2000" height="1333" alt="Een rij kilowattuurmeters in een meterkast" loading="lazy" decoding="async">
+        </div>
+        <div>
+          <h2 class="ve-h2">Eén batterij, meerdere taken die om dezelfde kWh concurreren</h2>
+          <div class="ve-prose" style="margin-top:var(--ve-s-md)"><p>Elke taak legt beslag op twee schaarse dingen: op vermogen in kW op dat moment, en op laadtoestand in kWh op dat moment. Wie vier taken op één systeem legt zonder voorrangsorde, krijgt een installatie die op het beslissende kwartier leeg of vol blijkt te staan.</p>
         <h3>De taken en wat ze opeisen</h3>
         <ul><li><strong>Piek afvlakken</strong> — vraagt dat er op het moment van de piek genoeg lading én genoeg vermogen over is. Dat betekent een ondergrens in de laadtoestand die in de uren vóór de verwachte piek niet mag worden aangeraakt.</li><li><strong>Eigen opwek bewaren</strong> — vraagt vrije ruimte midden op de dag, precies wanneer de piekreserve de batterij liefst gevuld houdt.</li><li><strong>Prijsgestuurd laden en ontladen</strong> — vraagt de vrijheid om vol en leeg te gaan wanneer de prijs dat zegt, en dat is precies de vrijheid die een piekreserve wegneemt.</li><li><strong>Laadondersteuning</strong> — vraagt vermogen op onvoorspelbare momenten, afhankelijk van wie er aankomt en met welke laadbehoefte.</li><li><strong>Overbrugging bij uitval</strong> — vraagt een vaste hoeveelheid lading die permanent gereserveerd blijft en dus nooit voor iets anders beschikbaar is.</li></ul>
         <p>De consequentie voor het dimensioneren is eenvoudig en wordt zelden expliciet gemaakt: bepaal welke taak de eerste is, dimensioneer op die taak, en kijk daarna wat de overige taken nog mogen gebruiken van wat er overblijft. Een systeem dat op de som van alle taken wordt gedimensioneerd is te duur. Een systeem dat op de goedkoopste taak wordt gedimensioneerd haalt de belangrijkste niet.</p>
-        <p>Die voorrangsorde is geen papieren afspraak. Hij zit in de regelaar, die per kwartier afweegt welke rol voorgaat, en hij hoort vóór de aanschaf vast te staan omdat hij de maat van het systeem bepaalt. Op de Hazenweg 61 in Hengelo staan opslag, een zonnedak, laadpunten en noodstroom onder één energiemanagementsysteem; dat is het type situatie waarin die orde expliciet gemaakt moet worden. <a class="ve-link" href="/project-hazenweg-61">Bekijk dat project</a>.</p>
+        <p>Die voorrangsorde is geen papieren afspraak. Hij zit in de regelaar, die per kwartier afweegt welke rol voorgaat, en hij hoort vóór de aanschaf vast te staan omdat hij de maat van het systeem bepaalt. Op de Hazenweg 61 in Hengelo staan opslag, een zonnedak, laadpunten en noodstroom onder één energiemanagementsysteem; dat is het type situatie waarin die orde expliciet gemaakt moet worden. <a class="ve-link" href="/project-hazenweg-61">Bekijk dat project</a>.</p></div>
+        </div>
       </div>
     </div>
   </section>
@@ -226,15 +246,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <section class="ve-sec ve-sec--lg ">
     <div class="ve-wrap">
-      <div class="ve-head">
-        <h2 class="ve-h2">Wat dimensioneren niet oplost</h2>
-        <p class="ve-lead">De eerlijke grens van deze rekenwijze.</p>
-      </div>
-      <div class="ve-prose">
-        <p>Een goed gedimensioneerde batterij lost een piekprobleem op. Hij lost geen tekort op. Komt uw <strong>gemiddelde</strong> afname over de dag boven de grens van de aansluiting uit, dan helpt geen enkele capaciteit: wat er 's nachts niet in kan, kan er 's middags niet uit. Dan is verzwaren de route, of het verbruik minder gelijktijdig maken.</p>
+      <div class="ve-split ve-split--7-5 ve-split--top">
+        <div>
+          <h2 class="ve-h2">Wat dimensioneren niet oplost</h2>
+          <div class="ve-prose" style="margin-top:var(--ve-s-md)"><p>Een goed gedimensioneerde batterij lost een piekprobleem op. Hij lost geen tekort op. Komt uw <strong>gemiddelde</strong> afname over de dag boven de grens van de aansluiting uit, dan helpt geen enkele capaciteit: wat er 's nachts niet in kan, kan er 's middags niet uit. Dan is verzwaren de route, of het verbruik minder gelijktijdig maken.</p>
         <p>De maatvoering verandert ook niets aan uw aansluitwaarde of aan uw gecontracteerd transportvermogen. Die blijven wat ze zijn tot u ze zelf laat wijzigen. Een batterij maakt ruimte binnen die grens; hij verlegt de grens niet.</p>
         <p>Eén extreme uitschieter per jaar is bijna nooit een reden om op te dimensioneren. Een systeem dat urenlang het dubbele moet dragen, enkel om een storing of een eenmalige testrun op te vangen, staat de rest van het jaar stil. Zulke uitschieters horen eerst uit het profiel gehaald en apart beoordeeld te worden: is dit herhaalbaar gedrag, of was dit een incident?</p>
-        <p>En een ontwerp zonder meetdata is een gok. Een dimensionering op basis van een jaarverbruik, een aansluitwaarde en een aangenomen piekvorm levert een getal dat plausibel oogt en niets betekent. De uitkomst hangt volledig aan het profiel van de aansluiting zelf, en dat is dus waar wij beginnen.</p>
+        <p>En een ontwerp zonder meetdata is een gok. Een dimensionering op basis van een jaarverbruik, een aansluitwaarde en een aangenomen piekvorm levert een getal dat plausibel oogt en niets betekent. De uitkomst hangt volledig aan het profiel van de aansluiting zelf, en dat is dus waar wij beginnen.</p></div>
+        </div>
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/capaciteit-hero-1600.webp" srcset="/assets/capaciteit-hero-960.webp 960w, /assets/capaciteit-hero-1600.webp 1600w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="1600" height="1201" alt="Twee batterijkasten in een houten omkasting naast een bedrijfspand" loading="lazy" decoding="async">
+        </div>
       </div>
     </div>
   </section>
@@ -322,21 +344,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           </ul>
         </div>
         <div class="ve-verwant__groep">
-          <p class="ve-verwant__kop">De systemen</p>
-          <ul class="ve-verwant__lijst">
-            <li><a href="/systeem-energieopslag">Energieopslag</a></li>
-            <li><a href="/vibe-control">VIBE.CONTROL</a></li>
-            <li><a href="/systeem-zonnepanelen">Zonne-energie</a></li>
-            <li><a href="/netcongestie">Netcongestie</a></li>
-          </ul>
-        </div>
-        <div class="ve-verwant__groep">
           <p class="ve-verwant__kop">Waar dit speelt</p>
           <ul class="ve-verwant__lijst">
             <li><a href="/toepassingen/pieken-in-verbruik">Pieken in verbruik</a></li>
             <li><a href="/toepassingen/batterij-slim-inzetten">Batterij slim inzetten</a></li>
             <li><a href="/toepassingen/geen-extra-transportvermogen">Geen extra transportvermogen</a></li>
-            <li><a href="/projecten">Projecten</a></li>
           </ul>
         </div>
       </div>

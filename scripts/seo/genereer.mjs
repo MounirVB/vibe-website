@@ -13,8 +13,8 @@ import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { HOST, href, url, bestand, routeGemeente, routeGemeenteFamilie, routeProvincie, routeProvincieFamilie, REGIO_WORTEL } from './lib/paden.mjs';
-import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic, zetNavToets, mediaBlok } from './lib/sjabloon.mjs';
-import { beeldTag, beeldVoor } from './lib/beeld.mjs';
+import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic, zetNavToets, mediaBlok, canvasband} from './lib/sjabloon.mjs';
+import { beeldTag, beeldVoor, beeldenVoor } from './lib/beeld.mjs';
 
 /* ------------------------------------------------------------- regiohero
    Elke regiopagina had een tekstopening zonder beeld. Een gemeente MET een
@@ -30,6 +30,35 @@ import { beeldTag, beeldVoor } from './lib/beeld.mjs';
    Een slug zonder bestand valt terug op het onderwerpsbeeld in plaats van de
    bouw te breken: het projectregister en de assetmap kunnen uiteenlopen, en
    349 pagina's mogen daar niet op stuklopen. */
+/* Een beeldbreuk halverwege de pagina.
+
+   De regiopagina's hadden EEN visuele gebeurtenis, het openingsbeeld, en
+   daarna acht tekstsecties achter elkaar. Gemeten op regios/gelderland/arnhem:
+   9 secties, 8 DOCUMENT, langste tekstreeks 8.
+
+   De breuk draagt BEWUST geen kop en geen zin. Een regiopagina heeft geen
+   regel die hier thuishoort, en een zin die voor deze plek wordt verzonnen is
+   een claim zonder bron. Het onderschrift is de alt-tekst van het beeld zelf:
+   die beschrijft wat er te zien is en beweert verder niets. */
+function beeldbreuk(route, type) {
+  const b = beeldenVoor(route, type);
+  const t = b[2] || b[1] || b[0];
+  return canvasband({
+    img: beeldTag({ basis: t.basis, alt: t.alt, sizes: '(min-width:1200px) 1216px, 100vw' }),
+    voet: t.alt,
+  });
+}
+
+/* Zet de beeldbreuk midden in de pagina in plaats van onderaan. Een pagina
+   waarvan het enige beeld op 90% van de hoogte staat, leest als tekst met een
+   plaatje eronder. */
+function ritme(delen, breuk) {
+  const d = delen.filter(Boolean);
+  if (!breuk || d.length < 4) return d.join('\n\n');
+  const i = Math.floor(d.length / 2);
+  return [...d.slice(0, i), breuk, ...d.slice(i)].join('\n\n');
+}
+
 function regioHero(eigenProjecten) {
   const p = (eigenProjecten || [])[0];
   if (p && p.slug) {
@@ -311,7 +340,7 @@ function bouwRegioWortel() {
 
   const totaalGem = lijst.reduce((a, x) => a + gemeentenMetPagina(x.p).length, 0);
 
-  const inhoud = [
+  const inhoud = ritme([
     opening({
       kruimels: [],
       kruimelLabel: "Regio's",
@@ -382,7 +411,7 @@ function bouwRegioWortel() {
         'bestaande aansluiting op te lossen is.',
       primair: { route: 'contact', label: 'Plan een adviesgesprek' },
     }),
-  ].join('\n\n');
+  ], beeldbreuk(route, 'regio'));
 
   schrijf(
     route,
@@ -452,7 +481,7 @@ function bouwProvincie(p) {
     })
     .join('\n');
 
-  const inhoud = [
+  const inhoud = ritme([
     opening({
       kruimels: [{ naam: "Regio's", route: REGIO_WORTEL }],
       kruimelLabel: p.naam,
@@ -576,9 +605,7 @@ ${gemLijst}
       primair: { route: 'contact', label: 'Vraag een energiescan aan' },
       secundair: { route: 'projecten', label: 'Bekijk alle projecten' },
     }),
-  ]
-    .filter(Boolean)
-    .join('\n\n');
+  ], beeldbreuk(route, 'regio'));
 
   const paginaUrl = url(route);
   schrijf(
@@ -626,7 +653,7 @@ function bouwProvincieFamilie(p, f) {
   const eigenaar = f.nationale_eigenaar;
   const terreinTotaal = gem.reduce((a, g) => a + (terrBron.per_gemeente[g.gemeentecode] || []).length, 0);
 
-  const inhoud = [
+  const inhoud = ritme([
     opening({
       kruimels: [
         { naam: "Regio's", route: REGIO_WORTEL },
@@ -694,9 +721,7 @@ function bouwProvincieFamilie(p, f) {
         'weet u of dit bij u iets oplost.',
       primair: { route: 'contact', label: 'Vraag een analyse aan' },
     }),
-  ]
-    .filter(Boolean)
-    .join('\n\n');
+  ], beeldbreuk(route, 'regio'));
 
   const paginaUrl = url(route);
   schrijf(
@@ -799,7 +824,7 @@ function bouwGemeente(g) {
     .filter(Boolean)
     .filter((r, i, a) => a.indexOf(r) === i);
 
-  const inhoud = [
+  const inhoud = ritme([
     opening({
       kruimels: [
         { naam: "Regio's", route: REGIO_WORTEL },
@@ -994,9 +1019,7 @@ function bouwGemeente(g) {
       primair: { route: 'contact', label: 'Vraag een energiescan aan' },
       secundair: { route: 'projecten', label: 'Bekijk alle projecten' },
     }),
-  ]
-    .filter(Boolean)
-    .join('\n\n');
+  ], beeldbreuk(route, 'regio'));
 
   const paginaUrl = url(route);
   schrijf(
@@ -1063,7 +1086,7 @@ function bouwGemeenteFamilie(g, f) {
   const eigenaar = f.nationale_eigenaar;
   const provFamRoute = routeProvincieFamilie(p.slug, f.slug);
 
-  const inhoud = [
+  const inhoud = ritme([
     opening({
       kruimels: [
         { naam: "Regio's", route: REGIO_WORTEL },
@@ -1123,9 +1146,7 @@ function bouwGemeenteFamilie(g, f) {
         'aansluiting past.',
       primair: { route: 'contact', label: 'Vraag een analyse aan' },
     }),
-  ]
-    .filter(Boolean)
-    .join('\n\n');
+  ], beeldbreuk(route, 'regio'));
 
   const paginaUrl = url(route);
   schrijf(

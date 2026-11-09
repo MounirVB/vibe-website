@@ -71,7 +71,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <h1 class="ve-display" style="max-width:52rem;margin-top:var(--ve-s-lg)">Load balancing: een vast budget, of de ruimte die er werkelijk is</h1>
       <p class="ve-lead ve-measure-wide" style="margin-top:var(--ve-s-lg)">Load balancing verdeelt het vermogen van één aansluiting over meerdere laadpunten. Het verschil tussen statisch en dynamisch zit in één ding: verdeelt het systeem een budget dat iemand heeft ingesteld, of de ruimte die op dit moment werkelijk over is. Dat verschil bepaalt niet hoeveel laadpunten er passen, maar hoeveel vermogen ze per uur krijgen.</p>
       <div class="ve-media ve-media--21x9 ve-media--diep" style="margin-top:var(--ve-s-2xl)">
-          <img src="/img/batterij-binnenwerk-1800.webp" srcset="/img/batterij-binnenwerk-880.webp 880w, /img/batterij-binnenwerk-1400.webp 1400w, /img/batterij-binnenwerk-1800.webp 1800w" sizes="(min-width:1200px) 1216px, 100vw" width="1800" height="1351" alt="Het binnenwerk van een batterijsysteem" decoding="async" fetchpriority="high">
+          <img src="/assets/exploitatie-hero-2400.webp" srcset="/assets/exploitatie-hero-960.webp 960w, /assets/exploitatie-hero-1600.webp 1600w, /assets/exploitatie-hero-2400.webp 2400w" sizes="(min-width:1200px) 1216px, 100vw" width="2400" height="1801" alt="Wandlaadpunt met kabel naast geparkeerde auto's" decoding="async" fetchpriority="high">
         </div>
       <div class="ve-row" style="margin-top:var(--ve-s-xl)">
         <a class="ve-btn ve-btn--primair ve-btn--lg" href="/contact">Laat uw laadplein doorrekenen<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></a>
@@ -146,19 +146,21 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <section class="ve-sec ve-sec--lg ">
     <div class="ve-wrap">
-      <div class="ve-head">
-        <h2 class="ve-h2">Verdeelstrategieën: wie krijgt het vermogen dat er is</h2>
-        <p class="ve-lead">Het budget bepaalt hoeveel er te verdelen is. De strategie bepaalt wie het krijgt.</p>
-      </div>
-      <div class="ve-prose">
-        <h3>Gelijk verdelen</h3>
+      <div class="ve-split ve-split--7-5 ve-split--top">
+        <div>
+          <h2 class="ve-h2">Verdeelstrategieën: wie krijgt het vermogen dat er is</h2>
+          <div class="ve-prose" style="margin-top:var(--ve-s-md)"><h3>Gelijk verdelen</h3>
         <p>Het budget wordt gedeeld door het aantal actieve sessies, begrensd door de ondergrens per laadpunt en door wat het voertuig zelf maximaal aanneemt. Voorspelbaar en uitlegbaar: niemand wordt voorgetrokken. Het nadeel verschijnt bij drukte. Komen er veel auto's bij, dan laadt iedereen langzamer en kan het gebeuren dat niemand op tijd klaar is. Voor een bezoekersparkeerplaats is dat vaak acceptabel, voor een bestelwagenpark dat om zes uur weg moet niet.</p>
         <h3>First come, first served</h3>
         <p>De eerste sessie krijgt wat hij vraagt, de volgende krijgt wat er overblijft, en de laatste krijgt soms niets. Voor wie vroeg is, is dit de snelste strategie en de enige met een voorspelbare laadtijd. Voor wie laat is, is het de onzekerste. Dit werkt goed waar de aankomsttijd samenhangt met de urgentie, bijvoorbeeld een depot waar voertuigen in ploegen binnenkomen en de eerste ook het eerst weer uitrijdt.</p>
         <h3>Prioriteit per voertuig of sessie</h3>
         <p>Sessies krijgen een klasse en de klassen krijgen in volgorde vermogen: servicebussen voor bezoekers, een wagen die om zes uur vertrekt voor een leaseauto die er de hele dag staat. Hiervoor moet het systeem weten wie er laadt, via een laadkaart, een token of de achterliggende administratie. Zonder die identificatie is er geen prioriteit, alleen een volgorde.</p>
         <p>Wat elke strategie voor de gebruiker betekent, is het eigenlijke keuzecriterium. Gelijk verdelen geeft iedereen een onvoorspelbare maar nooit nul snelheid. First come, first served geeft de eerste gebruikers een voorspelbare laadtijd en de laatste geen enkele zekerheid. Prioriteit geeft één groep een harde toezegging en maakt de rest expliciet ondergeschikt. Kies op basis van wat de locatie moet garanderen, leg het vast in het laadbeleid en vertel het de gebruikers — want dit is precies wat zij aan de laadpaal merken.</p>
-        <p>Een strategie is overigens geen vermogen. Ligt de som van de vraag structureel boven het budget, dan bepaalt elke strategie alleen nog wie wacht.</p>
+        <p>Een strategie is overigens geen vermogen. Ligt de som van de vraag structureel boven het budget, dan bepaalt elke strategie alleen nog wie wacht.</p></div>
+        </div>
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/laadpalen-hero-2400.webp" srcset="/assets/laadpalen-hero-960.webp 960w, /assets/laadpalen-hero-1600.webp 1600w, /assets/laadpalen-hero-2400.webp 2400w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2400" height="1801" alt="Een auto aan een laadpunt, met de laadkabel aangesloten" loading="lazy" decoding="async">
+        </div>
       </div>
     </div>
   </section>
@@ -178,33 +180,53 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div>
   </section>
 
-  <section class="ve-sec ve-sec--lg ">
-    <div class="ve-wrap">
-      <div class="ve-head">
-        <h2 class="ve-h2">Fasebalans: de grens ligt op de zwaarst belaste fase</h2>
-        <p class="ve-lead">Een driefasige aansluiting wordt per fase beveiligd. Een gemiddelde zegt dus niets.</p>
-      </div>
-      <div class="ve-prose">
-        <p>De beveiliging kijkt naar elke fase afzonderlijk. De grens van de aansluiting is daarmee de zwaarst belaste fase, niet het totaal gedeeld door drie. Dat maakt de verdeling over L1, L2 en L3 een ontwerpkeuze bij de installatie en geen detail voor later.</p>
-        <p>Rekenvoorbeeld: drie eenfasige laadpunten die alle drie op L1 zijn aangesloten, belasten één fase met de som van hun stroom terwijl L2 en L3 niets doen. De beveiliging op L1 valt dan uit terwijl twee derde van de aansluiting ongebruikt is. Dezelfde drie laadpunten, verdeeld over de drie fasen, halen hetzelfde totaal zonder die uitval.</p>
-        <p>Daar komt bij dat de gebouwlast zelf vaak al scheef is. Een eenfasige lichtgroep, een lift, een keuken of een compressor hangt aan één fase. De meting voor dynamisch balanceren moet dat zien, dus per fase meten en niet één totaal doorgeven. Een controller die een totaal krijgt, verdeelt ruimte die op geen enkele fase bestaat.</p>
-        <p>Het ontwerp kan ook in bedrijf scheef raken. Een deel van de voertuigen laadt eenfasig, omdat de boordlader of de laadkabel niet meer toelaat; welke fase die sessie dan gebruikt, volgt uit de fasering van het laadpunt. Een installatie die op papier symmetrisch is verdeeld, kan daardoor een avond lang op één fase hangen. Een verdeling die per fase rekent, kan daarop reageren door op de belaste fase terug te regelen en op de andere ruimte te geven. Een verdeling die op een totaal rekent, merkt het niet.</p>
-        <p>Welke fase waar hoort, hoeveel punten er komen en of eenfasig of driefasig het uitgangspunt is, zijn keuzes die bij het ontwerp van de laadinfrastructuur horen en niet bij de instelling van de verdeling. Een balancer kan een scheve verdeling verzachten; hij kan hem niet ongedaan maken. De kennisbankpagina over het dimensioneren van laadinfrastructuur behandelt die ontwerpkant.</p>
+  <section class="ve-sec ve-sec--lg">
+    <div class="ve-wrap ve-wrap--wide">
+      <div class="ve-canvas">
+        <div class="ve-canvas__binnen">
+          <div class="ve-media ve-media--21x9" style="border-radius:0;box-shadow:none">
+          <img src="/img/ems-tech-1200.webp" srcset="/img/ems-tech-640.webp 640w, /img/ems-tech-1200.webp 1200w" sizes="(min-width:1200px) 1216px, 100vw" width="1200" height="901" alt="Technische installatie van het energiemanagementsysteem" loading="lazy" decoding="async">
+          <div class="ve-overlay">
+            <h2 class="ve-overlay__t">Load balancing: statisch of dynamisch</h2>
+            <p class="ve-overlay__d">Statisch load balancing verdeelt een vast budget, dynamisch meet de aansluiting en verdeelt wat over is. Plus verdeelstrategie, ondergrens en fasebalans.</p>
+          </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="ve-sec ve-sec--lg ">
     <div class="ve-wrap">
-      <div class="ve-head">
-        <h2 class="ve-h2">Wat load balancing niet oplost</h2>
-        <p class="ve-lead">De eerlijke grens: balanceren verdeelt schaarste, het maakt geen capaciteit.</p>
+      <div class="ve-split ve-split--5-7 ve-split--top">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/img/ems-tech-1200.webp" srcset="/img/ems-tech-640.webp 640w, /img/ems-tech-1200.webp 1200w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="1200" height="901" alt="Technische installatie van het energiemanagementsysteem" loading="lazy" decoding="async">
+        </div>
+        <div>
+          <h2 class="ve-h2">Fasebalans: de grens ligt op de zwaarst belaste fase</h2>
+          <div class="ve-prose" style="margin-top:var(--ve-s-md)"><p>De beveiliging kijkt naar elke fase afzonderlijk. De grens van de aansluiting is daarmee de zwaarst belaste fase, niet het totaal gedeeld door drie. Dat maakt de verdeling over L1, L2 en L3 een ontwerpkeuze bij de installatie en geen detail voor later.</p>
+        <p>Rekenvoorbeeld: drie eenfasige laadpunten die alle drie op L1 zijn aangesloten, belasten één fase met de som van hun stroom terwijl L2 en L3 niets doen. De beveiliging op L1 valt dan uit terwijl twee derde van de aansluiting ongebruikt is. Dezelfde drie laadpunten, verdeeld over de drie fasen, halen hetzelfde totaal zonder die uitval.</p>
+        <p>Daar komt bij dat de gebouwlast zelf vaak al scheef is. Een eenfasige lichtgroep, een lift, een keuken of een compressor hangt aan één fase. De meting voor dynamisch balanceren moet dat zien, dus per fase meten en niet één totaal doorgeven. Een controller die een totaal krijgt, verdeelt ruimte die op geen enkele fase bestaat.</p>
+        <p>Het ontwerp kan ook in bedrijf scheef raken. Een deel van de voertuigen laadt eenfasig, omdat de boordlader of de laadkabel niet meer toelaat; welke fase die sessie dan gebruikt, volgt uit de fasering van het laadpunt. Een installatie die op papier symmetrisch is verdeeld, kan daardoor een avond lang op één fase hangen. Een verdeling die per fase rekent, kan daarop reageren door op de belaste fase terug te regelen en op de andere ruimte te geven. Een verdeling die op een totaal rekent, merkt het niet.</p>
+        <p>Welke fase waar hoort, hoeveel punten er komen en of eenfasig of driefasig het uitgangspunt is, zijn keuzes die bij het ontwerp van de laadinfrastructuur horen en niet bij de instelling van de verdeling. Een balancer kan een scheve verdeling verzachten; hij kan hem niet ongedaan maken. De kennisbankpagina over het dimensioneren van laadinfrastructuur behandelt die ontwerpkant.</p></div>
+        </div>
       </div>
-      <div class="ve-prose">
-        <p>De hoeveelheid energie die per nacht door een aansluiting past, is de grens maal de beschikbare uren. Een verdeling verandert daar niets aan. Hij bepaalt alleen wie de energie krijgt en in welke volgorde. Heeft uw wagenpark per nacht meer kWh nodig dan er in de beschikbare uren onder de grens door kan, dan helpt geen enkele strategie. Dan zijn er vier richtingen: meer uren (eerder aansluiten, later vertrekken), minder kWh (ritindeling, kleinere laadvensters per voertuig), meer ruimte onder de grens (gebouwpiek verlagen, opslag, eigen opwek) of een zwaardere aansluiting.</p>
+    </div>
+  </section>
+
+  <section class="ve-sec ve-sec--lg ">
+    <div class="ve-wrap">
+      <div class="ve-split ve-split--7-5 ve-split--top">
+        <div>
+          <h2 class="ve-h2">Wat load balancing niet oplost</h2>
+          <div class="ve-prose" style="margin-top:var(--ve-s-md)"><p>De hoeveelheid energie die per nacht door een aansluiting past, is de grens maal de beschikbare uren. Een verdeling verandert daar niets aan. Hij bepaalt alleen wie de energie krijgt en in welke volgorde. Heeft uw wagenpark per nacht meer kWh nodig dan er in de beschikbare uren onder de grens door kan, dan helpt geen enkele strategie. Dan zijn er vier richtingen: meer uren (eerder aansluiten, later vertrekken), minder kWh (ritindeling, kleinere laadvensters per voertuig), meer ruimte onder de grens (gebouwpiek verlagen, opslag, eigen opwek) of een zwaardere aansluiting.</p>
         <p>Ook verandert balanceren niets aan uw <strong>aansluitwaarde</strong> of aan uw <strong>gecontracteerd transportvermogen</strong>. Het zorgt ervoor dat u eronder blijft. Dat is waardevol, want de afname wordt per kwartier vastgelegd: één gelijktijdige piek van een kwartier bepaalt de gemeten piekwaarde van die periode. Wat een overschrijding van uw contractwaarde kost en hoe uw netbeheerder die verwerkt, staat in uw transportovereenkomst en op zijn tarievenblad, niet in een vuistregel. Een uitbreiding van de grens is het in geen geval.</p>
         <p>En een verdeling beschermt alleen wat hij meet en stuurt. Een belasting achter een onderverdeler die niet in de meting zit, of een laadpunt van een andere leverancier dat niet in de regelkring hangt, valt buiten het systeem. Dan is de bescherming een aanname. Bij een gemengd laadplein is de vraag dus niet alleen welke strategie u kiest, maar of alle punten werkelijk onder één regelaar hangen.</p>
-        <p>Tot slot: dynamisch balanceren vraagt onderhoud. Een meting die verloopt, een netwerkverbinding die wegvalt of een firmware-update die de terugvalwaarde reset, maakt het verschil tussen een beschermde aansluiting en een beveiliging die op een avond uitvalt. Dat hoort in het beheer te zitten, niet in de verrassing achteraf.</p>
+        <p>Tot slot: dynamisch balanceren vraagt onderhoud. Een meting die verloopt, een netwerkverbinding die wegvalt of een firmware-update die de terugvalwaarde reset, maakt het verschil tussen een beschermde aansluiting en een beveiliging die op een avond uitvalt. Dat hoort in het beheer te zitten, niet in de verrassing achteraf.</p></div>
+        </div>
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/laadpalen-hero-2400.webp" srcset="/assets/laadpalen-hero-960.webp 960w, /assets/laadpalen-hero-1600.webp 1600w, /assets/laadpalen-hero-2400.webp 2400w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2400" height="1801" alt="Een auto aan een laadpunt, met de laadkabel aangesloten" loading="lazy" decoding="async">
+        </div>
       </div>
     </div>
   </section>
@@ -293,9 +315,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div class="ve-verwant__groep">
           <p class="ve-verwant__kop">De systemen en toepassingen</p>
           <ul class="ve-verwant__lijst">
-            <li><a href="/systeem-laadpalen">Laadinfrastructuur</a></li>
-            <li><a href="/laadplein">Laadplein</a></li>
-            <li><a href="/vibe-control">VIBE.CONTROL</a></li>
             <li><a href="/toepassingen/laden-met-beperkte-aansluiting">Laden met een beperkte aansluiting</a></li>
             <li><a href="/toepassingen/elektrificatie-bedrijfswagens">Elektrificatie van bedrijfswagens</a></li>
           </ul>
@@ -305,7 +324,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <ul class="ve-verwant__lijst">
             <li><a href="/project-ratio-16">Ratio 16, Duiven</a></li>
             <li><a href="/project-hazenweg-61">Hazenweg 61, Hengelo</a></li>
-            <li><a href="/projecten">Alle projecten</a></li>
           </ul>
         </div>
       </div>

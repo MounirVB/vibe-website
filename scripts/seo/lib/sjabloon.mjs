@@ -305,22 +305,114 @@ export function mediaBlok({ img, verhouding = '16x9', diepte = 'diep', overlay =
         </div>`;
 }
 
+/** Pijlerlijst: icoon, kop, alinea — de brandingsvorm voor 'wat er verandert'.
+    index.html draagt er zes; de generator droeg er nul en zette dezelfde
+    inhoud in een rij gelijke kaarten, wat KP-07 juist afkeurt.
+    items: [{icoon, kop, tekst}] — icoon is een naam uit ICONEN in chrome.js. */
+export function pijlers(items) {
+  if (!items || !items.length) return '';
+  return `<div class="ve-pijlers">
+${items
+    .map(
+      (p) => `            <div class="ve-pijler">
+              <span class="ve-pijler__ic">${ic(p.icoon)}</span>
+              <div>
+                <h3 class="ve-h4">${esc(p.kop)}</h3>
+                <p class="ve-body">${p.tekst}</p>
+              </div>
+            </div>`
+    )
+    .join('\n')}
+          </div>`;
+}
+
 /** HYBRID: beeld naast tekst, met de kant als enige variabele.
     De twee kolommen wisselen per aanroep van kant, zodat twee opeenvolgende
     beeldbanden nooit dezelfde compositie krijgen — KP-05 verbiedt een
-    herhaalde drieling van identieke sectiecombinaties. */
-export function beeldband({ id, kop, tekst, img, kant = 'links', variant = '' }) {
-  const media = `      <div class="ve-media ve-media--4x3 ve-media--lijn">
+    herhaalde drieling van identieke sectiecombinaties.
+
+    Dit gebruikt .ve-split, de klasse die index.html zelf zeven keer draagt.
+    Een eigen .ve-beeldband stond hier eerst; die dubbelde .ve-split zonder
+    iets toe te voegen en stond op nul pagina's. De asymmetrie 5-7 is wat de
+    handgeschreven pagina's doen: het beeld krijgt de kleinste helft, de tekst
+    de grootste, zodat de leesregel binnen de 45-75 tekens blijft. */
+export function beeldband({ id, kop, tekst, img, kant = 'links', variant = '', onder = '' }) {
+  const media = `        <div class="ve-media ve-media--4x3 ve-media--lijn">
           ${img}
         </div>`;
-  const woord = `      <div>
-        <h2 class="ve-h2">${esc(kop)}</h2>
-        <div class="ve-prose" style="margin-top:var(--ve-s-md)">${tekst}</div>
-      </div>`;
+  const woord = `        <div>
+          <h2 class="ve-h2">${esc(kop)}</h2>
+          <div class="ve-prose" style="margin-top:var(--ve-s-md)">${tekst}</div>${
+    onder ? `\n          <div style="margin-top:var(--ve-s-xl)">${onder}</div>` : ''
+  }
+        </div>`;
+  /* beeld links => 5fr beeld, 7fr tekst. beeld rechts => 7fr tekst, 5fr beeld. */
+  const kol = kant === 'rechts' ? 've-split--7-5' : 've-split--5-7';
   return `  <section class="ve-sec ve-sec--lg ${variant}"${id ? ` id="${id}"` : ''}>
     <div class="ve-wrap">
-      <div class="ve-beeldband${kant === 'rechts' ? ' ve-beeldband--om' : ''}">
+      <div class="ve-split ${kol} ve-split--top">
 ${kant === 'rechts' ? woord + '\n' + media : media + '\n' + woord}
+      </div>
+    </div>
+  </section>`;
+}
+
+/** Genummerde fasen: de vorm die index.html gebruikt voor 'van meetprofiel
+    tot beheer'. Alleen inzetten wanneer de volgorde iets betekent — een
+    nummer op een lijst die geen volgorde heeft, liegt over de inhoud.
+    fasen: [{kop, tekst}] — genummerd in de volgorde van de array. */
+export function fasenband({ id, kop, lead, fasen, variant = '' }) {
+  if (!fasen || !fasen.length) return '';
+  return `  <section class="ve-sec ve-sec--lg ${variant}"${id ? ` id="${id}"` : ''}>
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">${esc(kop)}</h2>${lead ? `\n        <p class="ve-lead">${lead}</p>` : ''}
+      </div>
+      <div class="ve-fasen" style="margin-top:var(--ve-s-xl);grid-template-columns:repeat(${Math.min(fasen.length, 4)},1fr)">
+${fasen
+    .map(
+      (f, i) => `        <div class="ve-fase${i === 0 ? ' ve-fase--nu' : ''}">
+          <span class="ve-fase__n">${String(i + 1).padStart(2, '0')}</span>
+          <h3 class="ve-h4">${esc(f.kop)}</h3>
+          <p class="ve-body" style="margin-top:.4rem">${f.tekst}</p>
+        </div>`
+    )
+    .join('\n')}
+      </div>
+    </div>
+  </section>`;
+}
+
+/** Een breed beeld met de tekst eroverheen, in de donkere canvaslijst.
+    Dit is het enige sectietype dat een pagina een visuele gebeurtenis geeft
+    die niet de slotband is — KP-04 vraagt om minstens twee moduswissels en
+    een gegenereerde pagina had er nul. */
+export function canvasband({ id, img, kop, tekst, voet = '', verhouding = '21x9', variant = 've-sec--lg' }) {
+  if (!img) return '';
+  /* Zonder kop en tekst is dit een kale beeldbreuk: alleen het beeld in de
+     canvaslijst, met het onderschrift eronder. Dat is de vorm voor pagina's
+     waar geen regel tekst beschikbaar is die hier THUISHOORT — en dan is een
+     leeg beeld eerlijker dan een zin die voor de gelegenheid is verzonnen. */
+  const overlay = kop
+    ? `
+          <div class="ve-overlay">
+            <h2 class="ve-overlay__t">${esc(kop)}</h2>
+            <p class="ve-overlay__d">${tekst}</p>
+          </div>`
+    : '';
+  /* Het beeld MOET in een .ve-media staan. Daar zit de regel die een <img>
+     de volle breedte en object-fit cover geeft, en daar zit position:relative
+     waar .ve-overlay zich aan ophangt. Zonder die wikkel rendert het beeld op
+     zijn eigen verhouding — gemeten 1260x945 in een band die 21:9 hoort te
+     zijn — en viel de overlay terug op de sectie. */
+  return `  <section class="ve-sec ${variant}"${id ? ` id="${id}"` : ''}>
+    <div class="ve-wrap ve-wrap--wide">
+      <div class="ve-canvas">
+        <div class="ve-canvas__binnen">
+          <div class="ve-media ve-media--${verhouding}" style="border-radius:0;box-shadow:none">
+          ${img}${overlay}
+          </div>
+        </div>${voet ? `\n        <p class="ve-canvas__voet">${esc(voet)}</p>` : ''}
       </div>
     </div>
   </section>`;
@@ -512,10 +604,37 @@ ${vragen
 /** Verwante links. groepen: [{kop, items:[{route, naam, tekst?}]}]
     Dit is de crawlbare interne-linkmotor: echte <a> in <main>. */
 export function verwant(groepen) {
-  const kolommen = groepen
-    .filter((g) => g.items && g.items.length)
-    .map(
-      (g) => `        <div class="ve-verwant__groep">
+  /* ONTDUBBELEN TEGEN DE VASTE NAVIGATIE.
+     Gemeten op vier pagina's bij 1440px: 'Verder lezen' droeg 18 tot 64 links
+     en daarvan stonden er op elke pagina precies 11 OOK in de footer eronder.
+     Dezelfde elf, pagina na pagina: /netcongestie, /systeem-energieopslag,
+     /systeem-zonnepanelen, /systeem-laadpalen, /vibe-control en de rest van
+     het hoofdmenu.
+
+     Weghalen kost geen crawlbare link. Die routes staan al als echte <a> in
+     NOSCRIPT_NAV hierboven, op elke gegenereerde pagina, dus de linkgraaf die
+     poort 7 en poort 8 meten verandert er niet door. Wat verdwijnt is de
+     herhaling vlak boven een footer die hetzelfde zegt. */
+  const vast = new Set(NOSCRIPT_NAV.map(([r]) => String(r).replace(/^\/+/, '').replace(/\.html$/, '')));
+  const schoon = groepen
+    .map((g) => ({ ...g, items: (g.items || []).filter((i) => !vast.has(String(i.route).replace(/^\/+/, '').replace(/\.html$/, ''))) }))
+    .filter((g) => g.items.length);
+
+  /* DICHTHEID. Een groep met veel korte namen — de 50+ gemeenten op een
+     provinciepagina — hoort in het dichte raster dat de provinciepagina's zelf
+     al gebruiken (.ve-regios, auto-fill op 11rem). Gemeten vóór deze wijziging
+     op regios/gelderland/arnhem: 64 links in een blok van 2.129px hoog, op een
+     pagina van 10.620px. Dat is een vijfde van de pagina voor een linklijst. */
+  const kolommen = schoon
+    .map((g) =>
+      g.items.length >= 8
+        ? `        <div class="ve-verwant__groep ve-verwant__groep--breed">
+          <p class="ve-verwant__kop">${g.kop}</p>
+          <ul class="ve-regios">
+${g.items.map((i) => `            <li><a href="${href(i.route)}">${esc(i.naam)}</a></li>`).join('\n')}
+          </ul>
+        </div>`
+        : `        <div class="ve-verwant__groep">
           <p class="ve-verwant__kop">${g.kop}</p>
           <ul class="ve-verwant__lijst">
 ${g.items.map((i) => `            <li><a href="${href(i.route)}">${esc(i.naam)}</a></li>`).join('\n')}

@@ -599,20 +599,11 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
 .ve-cijfers td{font-variant-numeric:tabular-nums;color:var(--ve-text-soft)}
 .ve-cijfers tbody tr:last-child th,.ve-cijfers tbody tr:last-child td{border-bottom:0}
 
-/* ---- beeldband ----
-   Beeld naast tekst, de compositie die de handgeschreven pagina's wél hebben
-   en de gegenereerde niet. Eén kolom tot 900px, daarboven twee — het beeld
-   krijgt de kleinste helft, want de tekst draagt de inhoud.
-   --om keert de volgorde VISUEEL om zonder de DOM-volgorde te wijzigen, zodat
-   de leesvolgorde en de taborde blijven kloppen. */
-.ve-beeldband{display:grid;gap:var(--ve-s-xl);grid-template-columns:minmax(0,1fr);align-items:center}
-.ve-beeldband > *{min-width:0}
-@media (min-width:900px){
-  .ve-beeldband{grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:var(--ve-s-2xl)}
-  .ve-beeldband--om{grid-template-columns:minmax(0,6fr) minmax(0,5fr)}
-  .ve-beeldband--om > :first-child{order:2}
-  .ve-beeldband--om > :last-child{order:1}
-}
+/* De beeldband had hier een eigen .ve-beeldband. Die is eruit: .ve-split deed
+   hetzelfde al, draagt --5-7, --7-5 en --swap, en wordt door index.html zeven
+   keer gebruikt. Twee klassen voor één compositie is precies het soort
+   dubbeling dat de generator en de handgeschreven pagina's uit elkaar laat
+   groeien. beeldband() in sjabloon.mjs stuurt nu .ve-split uit. */
 
 /* ---- projectrij ----
    Echte projecten met hun eigen foto. Twee kolommen vanaf 760px en drie vanaf
@@ -632,6 +623,11 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
   .ve-kaarten .ve-kaart--ruim{padding:var(--ve-s-xl)}
 }
 .ve-verwant__groep{min-width:0}
+/* Een groep met acht of meer korte namen — de gemeentelijsten — pakt de volle
+   breedte en vult die met het dichte raster uit .ve-regios. In een kolom van
+   14rem stapelen 50 gemeenten tot een blok van ruim tweeduizend pixels; over
+   de volle breedte passen er vier tot zes per regel. */
+.ve-verwant__groep--breed{grid-column:1/-1}
 .ve-verwant__kop{
   margin:0 0 var(--ve-s-sm);
   padding-bottom:var(--ve-s-sm);

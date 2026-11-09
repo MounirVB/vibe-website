@@ -169,6 +169,46 @@ const THEMA = {
   dak: { basis: 'img/comm-rooftop', alt: 'Zonnepanelen op het dak van een commercieel pand' },
   laadpunt: { basis: 'img/ev-charging', alt: 'Een elektrische auto aan een laadpunt' },
   werktekening: { basis: 'img/monteurs-werktekening', alt: 'Monteurs bij een werktekening op locatie' },
+
+  /* ------------------------------------------------------------------
+     DE EIGEN FOTOGRAFIE DIE AL OP SCHIJF STOND.
+
+     assets/ draagt 23 *-hero-families. De generator gebruikte er nul; hij
+     koos altijd uit de twaalf algemene onderwerpen hierboven, waardoor 349
+     regiopagina's dezelfde img/control-meting kregen. Deze beelden zijn van
+     Vibe zelf — de kasten dragen het logo, de mensen dragen de bedrijfsjas.
+
+     De alt-teksten hieronder zijn geschreven NA het bekijken van de beelden,
+     niet afgeleid uit de bestandsnaam. Dat is geen formaliteit: drie namen
+     dekten de lading niet.
+
+     NIET OPGENOMEN, met reden:
+       subsidies-hero     een plein met een kerktoren. Geen enkele relatie met
+                          subsidies of met energie. Dit is precies de losse
+                          stockfoto die hier niet hoort.
+       energiehandel-hero bit-voor-bit hetzelfde beeld als ems-hero.
+       microgrids-hero    vrijwel gelijk aan netcongestie-hero (zelfde kasten,
+                          zelfde hek, andere uitsnede).
+       energieopslag-hero vrijwel gelijk aan capaciteit-hero.
+     Twee bijna-gelijke foto's op een pagina lezen als een fout, niet als
+     ritme, dus een pagina krijgt er nooit twee uit hetzelfde paar. */
+  kast: { basis: 'assets/bedrijf-hero', alt: 'Batterijkast van Vibe Energy tegen de gevel van een bedrijfspand' },
+  omkasting: { basis: 'assets/capaciteit-hero', alt: 'Twee batterijkasten in een houten omkasting naast een bedrijfspand' },
+  hekwerk: { basis: 'assets/netcongestie-hero', alt: 'Twee batterijkasten van Vibe Energy achter een hekwerk op het terrein' },
+  platdak: { basis: 'assets/dakvlak-hero', alt: 'Zonnepanelen op een plat bedrijfsdak, met de kabelgoot langs de rij' },
+  panelen: { basis: 'assets/zonnepanelen-hero', alt: 'Zonnepanelen op een dak tegen een bewolkte lucht' },
+  luchtkantoor: { basis: 'assets/kantoor-hero', alt: 'Luchtfoto van een kantoorpand met zonnepanelen op het dak en een parkeerterrein ernaast' },
+  luchtvastgoed: { basis: 'assets/vastgoed-hero', alt: 'Luchtfoto van een bedrijfspand met parkeerterrein' },
+  luchtwonen: { basis: 'assets/residentieel-hero', alt: 'Luchtfoto van een woonblok met een volledig belegd zonnedak' },
+  luchtvve: { basis: 'assets/vve-hero', alt: 'Luchtfoto van een rij woningen met zonnepanelen en achtertuinen' },
+  luchtcomplex: { basis: 'assets/energielabel-hero', alt: 'Luchtfoto van een gebouwencomplex met zonnepanelen op de daken' },
+  carport: { basis: 'assets/laadplein-hero', alt: 'Luchtfoto van een parkeerterrein met een overkapping van zonnepanelen' },
+  laadpaal: { basis: 'assets/laadpalen-hero', alt: 'Een auto aan een laadpunt, met de laadkabel aangesloten' },
+  wandlader: { basis: 'assets/exploitatie-hero', alt: "Wandlaadpunt met kabel naast geparkeerde auto's" },
+  logistiek: { basis: 'assets/logistiek-hero', alt: 'Luchtfoto van een bedrijventerrein met zonnecarports en een windturbine' },
+  meters: { basis: 'assets/ems-hero', alt: 'Een rij kilowattuurmeters in een meterkast' },
+  werkplaats: { basis: 'assets/over-ons-hero', alt: 'Twee medewerkers van Vibe Energy bij een tekening op de werkplek' },
+  montage: { basis: 'assets/waarom-vibe-hero', alt: 'Monteur op een ladder bij een staalconstructie' },
 };
 
 /** Het thematische beeld voor een sleutel; werpt als de sleutel niet bestaat. */
@@ -235,10 +275,125 @@ const PER_ROUTE = {
 
 const PER_TYPE = { hub: 'systeem', sector: 'dak', toepassing: 'accu', kennis: 'binnenwerk', oplossing: 'systeem', subsidie: 'werktekening', regio: 'meting' };
 
-/** Het onderwerpsbeeld voor een route. Werpt nooit: valt terug op het type. */
+/** Het openingsbeeld voor een route: het eerste uit de set hieronder.
+    Een route die zowel in PER_ROUTE als in BEELDSET staat, wordt door
+    BEELDSET bepaald — anders zou de opening een ander onderwerp tonen dan
+    de rest van de pagina. PER_ROUTE en PER_TYPE blijven het vangnet voor
+    routes die nog geen set hebben. */
 export function beeldVoor(route, type) {
-  const sleutel = PER_ROUTE[String(route).replace(/^\/+/, '')] || PER_TYPE[type] || 'systeem';
+  const r = String(route).replace(/^\/+/, '');
+  if (BEELDSET[r] || type === 'regio' || SET_PER_TYPE[type]) return beeldenVoor(r, type)[0];
+  const sleutel = PER_ROUTE[r] || PER_TYPE[type] || 'systeem';
   return thema(sleutel);
+}
+
+/* ===================================================================
+   DRIE BEELDEN PER PAGINA IN PLAATS VAN EEN.
+
+   Een pagina heeft meer dan een openingsbeeld nodig zodra er secties
+   tussen staan die anders louter tekst zijn. Gemeten op de gegenereerde
+   pagina's: netcongestie 10 van 12 secties pure tekst, laadplein 14 van
+   15, sectoren/retail 10 van 11. De handgeschreven index.html heeft er
+   2 van 10.
+
+   De set is per route vastgelegd en niet afgeleid. Twee regels:
+     1. Alle drie komen uit een ANDERE visuele groep waar dat kan — kast,
+        dak, laden, techniek, mensen — zodat de pagina niet drie keer
+        dezelfde foto in een andere uitsnede toont.
+     2. Een beeld suggereert nooit een klantproject op die locatie. De
+        projectfoto's lopen via SECTOR_PROJECTEN hieronder, en alleen
+        daar. =================================================== */
+const BEELDSET = {
+  /* oplossingen */
+  netcongestie: ['hekwerk', 'meters', 'omkasting'],
+  laadplein: ['carport', 'laadpaal', 'wandlader'],
+  energieadvies: ['werkplaats', 'meting', 'werktekening'],
+  'verduurzaming-bedrijfspanden': ['platdak', 'panelen', 'luchtkantoor'],
+  /* hubs */
+  sectoren: ['luchtvastgoed', 'platdak', 'kast'],
+  toepassingen: ['omkasting', 'meters', 'emstech'],
+  kennis: ['binnenwerk', 'meters', 'montage'],
+  subsidies: ['montage', 'werktekening', 'luchtcomplex'],
+  /* toepassingen */
+  'toepassingen/batterij-slim-inzetten': ['omkasting', 'binnenwerk', 'meters'],
+  'toepassingen/bestaande-aansluiting-optimaliseren': ['meters', 'meting', 'kast'],
+  'toepassingen/elektrificatie-bedrijfswagens': ['laadpaal', 'wandlader', 'carport'],
+  'toepassingen/geen-extra-transportvermogen': ['hekwerk', 'meters', 'meting'],
+  'toepassingen/laden-met-beperkte-aansluiting': ['wandlader', 'carport', 'laadpaal'],
+  'toepassingen/meerdere-locaties': ['emstech', 'meters', 'luchtcomplex'],
+  'toepassingen/netcongestie-bij-uitbreiding': ['kast', 'hekwerk', 'meting'],
+  'toepassingen/pieken-in-verbruik': ['meters', 'omkasting', 'meting'],
+  'toepassingen/processen-sturen-met-ems': ['emstech', 'meters', 'ems'],
+  'toepassingen/terugleverbeperking': ['panelen', 'platdak', 'meters'],
+  /* sectoren */
+  'sectoren/automotive': ['laadpaal', 'wandlader', 'logistiek'],
+  'sectoren/bedrijventerreinen': ['luchtvastgoed', 'platdak', 'kast'],
+  'sectoren/bouw': ['montage', 'werktekening', 'luchtcomplex'],
+  'sectoren/gebiedsontwikkeling': ['luchtcomplex', 'luchtwonen', 'platdak'],
+  'sectoren/horeca': ['luchtkantoor', 'omkasting', 'panelen'],
+  'sectoren/opslag-en-distributie': ['logistiek', 'luchtvastgoed', 'platdak'],
+  'sectoren/parkeren': ['carport', 'laadpaal', 'wandlader'],
+  'sectoren/productie-en-industrie': ['kast', 'omkasting', 'meters'],
+  'sectoren/retail': ['luchtkantoor', 'platdak', 'kast'],
+  'sectoren/transport-en-wagenparken': ['logistiek', 'laadpaal', 'wandlader'],
+  'sectoren/zorgvastgoed': ['luchtwonen', 'luchtcomplex', 'panelen'],
+  /* kennis */
+  'kennis/batterij-dimensioneren': ['binnenwerk', 'omkasting', 'meters'],
+  'kennis/batterijdegradatie': ['binnenwerk', 'meters', 'kast'],
+  'kennis/batterijveiligheid': ['hekwerk', 'binnenwerk', 'montage'],
+  'kennis/businesscase-batterij': ['meters', 'omkasting', 'werkplaats'],
+  'kennis/ems-energiemanagementsysteem': ['emstech', 'meters', 'ems'],
+  'kennis/energiehandel-en-flexibiliteit': ['meters', 'emstech', 'kast'],
+  'kennis/energieprestatie-meten': ['meting', 'meters', 'emstech'],
+  'kennis/kw-versus-kwh': ['meters', 'meting', 'binnenwerk'],
+  'kennis/laadinfrastructuur-dimensioneren': ['laadpaal', 'carport', 'wandlader'],
+  'kennis/load-balancing': ['wandlader', 'laadpaal', 'emstech'],
+  'kennis/netaansluiting-aanvragen': ['meters', 'werktekening', 'montage'],
+  'kennis/netcongestie-uitgelegd': ['hekwerk', 'meters', 'omkasting'],
+  'kennis/normen-en-keuringen': ['montage', 'werktekening', 'binnenwerk'],
+  'kennis/peak-shaving': ['omkasting', 'meters', 'meting'],
+  'kennis/subsidiemechanismen': ['werktekening', 'werkplaats', 'luchtcomplex'],
+  'kennis/terugleverbeperking': ['panelen', 'platdak', 'meters'],
+  'kennis/transportvermogen-versus-aansluitwaarde': ['meters', 'meting', 'kast'],
+};
+
+const SET_PER_TYPE = {
+  hub: ['luchtvastgoed', 'platdak', 'kast'],
+  sector: ['luchtvastgoed', 'platdak', 'kast'],
+  toepassing: ['omkasting', 'meters', 'meting'],
+  kennis: ['binnenwerk', 'meters', 'montage'],
+  oplossing: ['kast', 'meters', 'platdak'],
+  subsidie: ['montage', 'werktekening', 'luchtcomplex'],
+};
+
+/* De 349 regiopagina's deelden tot nu toe EEN beeld: img/control-meting op
+   alle 349. Dat leest als een sjabloon, want dat is het ook. Ze krijgen nu
+   een beeld uit een vaste rotatie, gekozen op een stabiele hash van de
+   route — dezelfde route levert altijd hetzelfde beeld, dus de bouw blijft
+   reproduceerbaar, en twee buurgemeenten tonen niet hetzelfde.
+   Alle vier zijn onderwerpsbeelden: geen van vieren suggereert een project
+   op die plek. */
+const REGIO_ROTATIE = [
+  ['hekwerk', 'meters', 'platdak'],
+  ['platdak', 'meters', 'kast'],
+  ['kast', 'meting', 'panelen'],
+  ['luchtvastgoed', 'meters', 'omkasting'],
+];
+
+function hash(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+/** Drie onderscheidende beelden voor een pagina: [opening, band, canvas].
+    Werpt nooit; valt terug op het type en daarna op de oplossingenset. */
+export function beeldenVoor(route, type) {
+  const r = String(route).replace(/^\/+/, '');
+  let set = BEELDSET[r];
+  if (!set && type === 'regio') set = REGIO_ROTATIE[hash(r) % REGIO_ROTATIE.length];
+  if (!set) set = SET_PER_TYPE[type] || SET_PER_TYPE.oplossing;
+  return set.map((s) => thema(s));
 }
 
 /* -------------------------------------------- projecten bij een sector
