@@ -391,7 +391,7 @@ export function bedrijfstakProfielBlok(gebiedsnaam, profiel, bron) {
          tabular-nums zodat ze onder elkaar uitlijnen. De index blijft leeg waar
          hij niet publiceerbaar is; een streepje zou een waarde suggereren. */
       `<p>Het volledige beeld, alle bedrijfstakken op een rij:</p>` +
-      `<div class="ve-scroll-x">\n        <table class="ve-cijfers">\n` +
+      `<div class="ve-scroll-x" tabindex="0" role="group" aria-label="Bedrijfstakken, tabel die horizontaal schuift">\n        <table class="ve-cijfers">\n` +
       `          <thead><tr><th scope="col">Bedrijfstak</th>` +
       `<th scope="col">Vestigingen</th>` +
       `<th scope="col">Aandeel</th>` +

@@ -91,9 +91,17 @@ export function normaliseerHrefs(html, motor) {
    meer op kan vallen. */
 function wikkelTabellen(html) {
   return String(html).replace(/(<table\b[\s\S]*?<\/table>)/gi, (hele) =>
-    /ve-scroll-x/.test(hele) ? hele : `<div class="ve-scroll-x">${hele}</div>`
+    /ve-scroll-x/.test(hele) ? hele : `<div class="ve-scroll-x"${SCHUIFBAAR}>${hele}</div>`
   );
 }
+
+/* Een container die horizontaal schuift moet met het toetsenbord bereikbaar
+   zijn, anders komt een gebruiker zonder muis nooit bij de rechterkolommen.
+   axe meldde dit als scrollable-region-focusable (serious) op de regiopagina's
+   bij 390px: de tabel is daar 522px breed in een venster van 272px.
+   role=group in plaats van region: dit is geen landmark en hoeft niet in de
+   landmarkstructuur van de pagina op te duiken, maar accepteert wel een naam. */
+export const SCHUIFBAAR = ' tabindex="0" role="group" aria-label="Tabel, horizontaal schuifbaar"';
 
 /** Zet alinea's om naar HTML; een alinea mag al HTML bevatten. */
 function alineas(lijst, bronnen, motor) {

@@ -1047,8 +1047,14 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
 }
 .ve-canvas__voet{
   margin-top:var(--ve-s-md);text-align:center;
-  font-size:var(--ve-body-sm-size);color:var(--ve-text-muted);
+  font-size:var(--ve-body-sm-size);
+  /* .ve-canvas is DONKER (--ve-ink-800). --ve-text-muted is #565e74 en komt
+     daarop uit op 2,87:1 — gemeten door axe als serious color-contrast zodra
+     de regiopagina's een onderschrift onder hun beeldbreuk kregen. De muted
+     variant VOOR donkere vlakken haalt wel de AA-grens. */
+  color:var(--ve-text-on-dark-soft);
 }
+.ve-canvas--licht .ve-canvas__voet{color:var(--ve-text-muted)}
 
 /* schematische console — geen cijfers, alleen vorm en verhouding */
 .ve-console{padding:var(--ve-s-lg);color:#fff}
