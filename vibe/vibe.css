@@ -1243,7 +1243,16 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
   padding:.75rem .9rem;
   transition:border-color var(--ve-dur) var(--ve-ease);
 }
-.ve-veld input:focus,.ve-veld select:focus,.ve-veld textarea:focus{border-color:var(--ve-action);outline:none}
+/* De randkleur verspringt bij elke focus; de OUTLINE verdwijnt alleen bij een
+   muis- of aanraakfocus. Dit stond als een kale `outline:none` op :focus, en
+   daarmee was het enige leadformulier van de site de enige plek waar de
+   globale :focus-visible-ring op regel 74 werd uitgezet — precies waar een
+   toetsenbordgebruiker moet kunnen zien in welk veld hij staat.
+   :focus-visible blijft dus staan; alleen de klikfocus is kaal. */
+.ve-veld input:focus,.ve-veld select:focus,.ve-veld textarea:focus{border-color:var(--ve-action)}
+.ve-veld input:focus:not(:focus-visible),
+.ve-veld select:focus:not(:focus-visible),
+.ve-veld textarea:focus:not(:focus-visible){outline:none}
 .ve-veld textarea{min-height:8rem;resize:vertical}
 .ve-veld__hint{font-size:var(--ve-body-sm-size);color:var(--ve-text-muted)}
 
