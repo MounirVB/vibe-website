@@ -288,7 +288,23 @@ jobs:
           }
 
           # Eén veld uit de opdracht, veilig: via jq uit het bestand en
-          # nooit via een ${{ }}-uitdrukking in het script.
+          # nooit via een Actions-expressie in het script.
+          #
+          # EN DEZE REGEL IS ZELF DE LES. Hier stond het expressiehaakje
+          # letterlijk in dit commentaar, en daarop brak de hele
+          # werkstroom: Actions vouwt expressies IN een `run:`-blok uit
+          # voordat de shell het script ooit ziet, dus een shell-#
+          # beschermt niets. Een leeg haakjespaar is geen expressie en
+          # GitHub weigerde het hele bestand:
+          #
+          #   failed to parse workflow: (Line: 232, Col: 14):
+          #   An expression was expected
+          #
+          # Gemeten op 9 november 2026 via
+          # `POST /actions/workflows/uitgifte.yml/dispatches` — de enige
+          # weg die de echte melding geeft, want bij een startfout levert
+          # de API nul jobs en nul check-runs. De waarschuwing tegen
+          # expressies in een script was dus zelf de fout.
           veld() { jq -r "$1" "${RUNNER_TEMP}/opdracht.json"; }
           SH
           echo "hulpfuncties in ${RUNNER_TEMP}/poort.sh"
