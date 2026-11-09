@@ -59,7 +59,7 @@ function ritme(delen, breuk) {
   return [...d.slice(0, i), breuk, ...d.slice(i)].join('\n\n');
 }
 
-function regioHero(eigenProjecten) {
+function regioHero(eigenProjecten, route) {
   const p = (eigenProjecten || [])[0];
   if (p && p.slug) {
     const basis = 'assets/projects/' + String(p.slug).replace(/^project-/, '');
@@ -80,7 +80,11 @@ function regioHero(eigenProjecten) {
       /* geen bestand voor deze slug — dan het onderwerpsbeeld, niet een gok */
     }
   }
-  const t = beeldVoor('', 'regio');
+  /* De route MOET mee. Stond hier eerst beeldVoor('', 'regio'), en dan valt
+     de rotatie in beeld.mjs altijd op dezelfde hash van de lege string:
+     gemeten kregen 348 pagina's hetzelfde assets/netcongestie-hero. Precies
+     het sjabloongevoel dat deze ronde moest wegnemen. */
+  const t = beeldenVoor(route || '', 'regio')[0];
   return mediaBlok({
     verhouding: '21x9',
     diepte: 'diep',
@@ -344,7 +348,7 @@ function bouwRegioWortel() {
     opening({
       kruimels: [],
       kruimelLabel: "Regio's",
-      naLead: regioHero(null),
+      naLead: regioHero(null, route),
       h1: 'Waar Vibe Energy heeft gebouwd',
       lead:
         'Vibe Energy werkt door heel Nederland. Deze regiopagina&rsquo;s gaan alleen over gebieden waar er ' +
@@ -502,7 +506,7 @@ function bouwProvincie(p) {
          de H1 erboven, niet bij de cijfers in de lead. Zonder variant en
          zonder bronregel blijft naLead null en is de uitvoer byte-identiek
          aan die van vóór deze wijziging. */
-      naLead: [naamRegel, heeftWerk ? '' : bronregel([BRON.vestigingen, BRON.terreinen]), regioHero(null)]
+      naLead: [naamRegel, heeftWerk ? '' : bronregel([BRON.vestigingen, BRON.terreinen]), regioHero(null, route)]
         .filter(Boolean)
         .join('\n      ') || null,
     }),
@@ -660,7 +664,7 @@ function bouwProvincieFamilie(p, f) {
         { naam: p.naam, route: routeProvincie(p.slug) },
       ],
       kruimelLabel: f.naam,
-      naLead: regioHero(null),
+      naLead: regioHero(null, route),
       h1: `${esc(f.naam)} in ${esc(p.naam)}`,
       lead: FAMILIE_BELOFTE[f.slug] || f.naam,
       acties: [
@@ -851,7 +855,7 @@ function bouwGemeente(g) {
          eist dat per SECTIE en de hero is een sectie. Dat die cijfers een
          alinea lager mét bron terugkomen is geen excuus: wie alleen de hero
          leest, moet daar al kunnen zien waar ze vandaan komen. */
-      naLead: [naamRegel, heeftWerk ? '' : bronregel([BRON.vestigingen, BRON.terreinen]), regioHero(bw.projecten)]
+      naLead: [naamRegel, heeftWerk ? '' : bronregel([BRON.vestigingen, BRON.terreinen]), regioHero(bw.projecten, route)]
         .filter(Boolean)
         .join('\n      ') || null,
     }),
@@ -1094,7 +1098,7 @@ function bouwGemeenteFamilie(g, f) {
         { naam: g.naam, route: routeGemeente(g.provincie_slug, g.slug) },
       ],
       kruimelLabel: f.naam,
-      naLead: regioHero(null),
+      naLead: regioHero(null, route),
       h1: `${esc(f.naam)} in ${esc(g.naam)}`,
       lead: FAMILIE_BELOFTE[f.slug] || f.naam,
       acties: [

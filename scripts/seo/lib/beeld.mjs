@@ -332,9 +332,9 @@ const BEELDSET = {
   'sectoren/gebiedsontwikkeling': ['luchtcomplex', 'luchtwonen', 'platdak'],
   'sectoren/horeca': ['luchtkantoor', 'omkasting', 'panelen'],
   'sectoren/opslag-en-distributie': ['logistiek', 'luchtvastgoed', 'platdak'],
-  'sectoren/parkeren': ['carport', 'laadpaal', 'wandlader'],
+  'sectoren/parkeren': ['carport', 'laadpaal', 'laadpunt'],
   'sectoren/productie-en-industrie': ['kast', 'omkasting', 'meters'],
-  'sectoren/retail': ['luchtkantoor', 'platdak', 'kast'],
+  'sectoren/retail': ['luchtkantoor', 'platdak', 'dak'],
   'sectoren/transport-en-wagenparken': ['logistiek', 'laadpaal', 'wandlader'],
   'sectoren/zorgvastgoed': ['luchtwonen', 'luchtcomplex', 'panelen'],
   /* kennis */
