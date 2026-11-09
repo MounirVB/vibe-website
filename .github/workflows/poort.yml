@@ -316,6 +316,32 @@ jobs:
         # routeregister kloppen.
         run: node intelligence/ops/publicatiecontract.mjs
 
+      - name: Werkstroompoort — een werkstroom die GitHub niet kan parsen
+        # WAAROM DEZE STAP ER STAAT, EN WAT HIJ HEEFT GEKOST.
+        #
+        # .github/workflows/uitgifte.yml stond op 9 november 2026 drie
+        # runs lang op `failure` in 0 seconden. GitHub meldde alleen
+        # "This run likely failed because of a workflow file issue", de
+        # API gaf nul jobs en nul check-runs, en de echte melding kwam
+        # pas uit een dispatch-poging:
+        #
+        #   failed to parse workflow: (Line: 232, Col: 14):
+        #   An expression was expected
+        #
+        # De oorzaak was een shell-COMMENTAAR met een leeg
+        # expressiehaakje erin, binnen een `run:`-blok. Actions vouwt
+        # expressies in zo'n blok uit voordat de shell het script ziet,
+        # dus een # beschermt niets. Dat defect is in geen enkele lokale
+        # controle te zien — de YAML is geldig — en stond daarom op main
+        # voordat iemand het merkte.
+        #
+        # Deze poort vangt precies die klasse, plus de eisen die dit
+        # platform aan zijn werkstromen stelt: expliciete permissions,
+        # geen secret in een echo, een vangnet in elke shellstap van de
+        # uitgifte, het OIDC-kanaal, en geen vlag die de
+        # branchbescherming zou omzeilen.
+        run: node intelligence/ops/werkstroompoort.mjs
+
       - name: Migratiepoort — destructieve DDL moet benoemd zijn
         # EEN MERGE NAAR MAIN PAST MIGRATIES TOE OP PRODUCTIE.
         # vibe-intel-api draagt preDeployCommand

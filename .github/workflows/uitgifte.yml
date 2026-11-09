@@ -120,6 +120,15 @@ on:
 # geen uitgifte.
 permissions:
   contents: read
+  # DE ENIGE UITBREIDING DIE V1.1 VRAAGT, EN HIJ GEEFT GEEN SCHRIJFRECHT.
+  # `id-token: write` laat deze job bij GitHub een ONDERTEKEND
+  # OIDC-token opvragen met de repository, het werkstroompad, de run-id,
+  # de poging, de commit, de ref en het event erin. Dat token is het
+  # bewijs van identiteit richting de machinepoort; het geeft geen
+  # enkele bevoegdheid op deze repository. Het vervangt het statische
+  # geheim INTEL_MACHINE_SLEUTEL, dat alleen bewees dat de aanroeper een
+  # string kende en nooit WELKE run hij was.
+  id-token: write
 
 # NOOIT TWEE RONDEN TEGELIJK, EN NOOIT EEN LOPENDE RONDE AFBREKEN.
 # `cancel-in-progress: false` is hier het belangrijkste woord van het
@@ -178,7 +187,7 @@ jobs:
       - name: 1 — Secrets aanwezig (fail-closed)
         env:
           UITGIFTE_TOKEN: ${{ secrets.UITGIFTE_TOKEN }}
-          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          OIDC_AUDIENCE: ${{ vars.INTEL_OIDC_AUDIENCE || 'vibe-intel-uitgifte' }}
           API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
         # EERST DE DEUR, DAN DE KAMER. Een ronde die halverwege op een
         # ontbrekend secret struikelt, kan al een branch hebben gepusht
@@ -194,7 +203,7 @@ jobs:
           set -euo pipefail
           ontbreekt=""
           [ -n "${UITGIFTE_TOKEN:-}" ]  || ontbreekt="${ontbreekt} UITGIFTE_TOKEN"
-          [ -n "${MACHINE_SLEUTEL:-}" ] || ontbreekt="${ontbreekt} INTEL_MACHINE_SLEUTEL"
+          [ -n "${OIDC_AUDIENCE:-}" ]   || ontbreekt="${ontbreekt} INTEL_OIDC_AUDIENCE"
           [ -n "${API_BASIS:-}" ]       || ontbreekt="${ontbreekt} INTEL_API_BASIS"
           if [ -n "${ontbreekt}" ]; then
             echo "::error::Ontbrekende configuratie:${ontbreekt}. Deze werkstroom doet niets zonder; zie intelligence/docs/AUTONOME-NIEUWSPUBLICATIE.md paragraaf 5."
@@ -207,11 +216,15 @@ jobs:
             } >> "${GITHUB_STEP_SUMMARY}"
             exit 1
           fi
-          if [ "${#MACHINE_SLEUTEL}" -lt 32 ]; then
-            echo "::error::INTEL_MACHINE_SLEUTEL is korter dan 32 tekens. De machinepoort antwoordt dan zelf 503 (MIN_SLEUTELLENGTE in dashboard/machine.ts)."
+          # EN HET OIDC-KANAAL ZELF MOET ER ZIJN. Zonder
+          # `permissions: id-token: write` injecteert GitHub deze twee
+          # variabelen niet, en dan is er geen identiteit te bewijzen.
+          # Dat hoort hier te stranden en niet pas bij de eerste aanroep.
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]; then
+            echo "::error::GitHub injecteert geen OIDC-variabelen. Deze job mist 'permissions: id-token: write'."
             exit 1
           fi
-          echo "drie waarden aanwezig; de machinesleutel haalt de ondergrens van 32 tekens"
+          echo "configuratie aanwezig; het OIDC-kanaal van GitHub staat open"
           echo "stand van deze ronde: droog=${DROOG}"
 
       # ----------------------------------------------------------------
@@ -226,7 +239,7 @@ jobs:
         #
         # ER STAAT GEEN SECRET IN DIT BESTAND. De heredoc is GEQUOOT
         # ('SH'), dus er wordt niets uitgevouwen; de functies lezen
-        # ${MACHINE_SLEUTEL} en ${API_BASIS} pas bij aanroep, uit de
+        # ${OIDC_AUDIENCE} en ${API_BASIS} pas bij aanroep, uit de
         # omgeving van de stap die ze sourcet. Een stap die ze niet nodig
         # heeft — de generatorstap — krijgt ze dus ook niet.
         run: |
@@ -249,10 +262,31 @@ jobs:
           # logregel: geen `set -x`, en GitHub maskeert secrets bovendien
           # in de uitvoer. Een bestand met de sleutel erin zou de hele
           # job overleven; een argv-regel leeft alleen in deze curl.
+          # EEN VERS TOKEN PER AANROEP, en dat is geen voorzichtigheid
+          # maar een eis van de server: intel.machine_tokens heeft de
+          # `jti` als primaire sleutel, dus een token werkt precies één
+          # keer (migratie 0059). Hergebruik levert HTTP 401 op met
+          # "dit autorisatiebewijs is al gebruikt".
+          #
+          # Het token wordt NOOIT geëchood. Het gaat van de variabele
+          # rechtstreeks in de Authorization-kop.
+          oidc() {
+            curl -sS -m 30 \
+              -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+              "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${OIDC_AUDIENCE}" \
+              | jq -r '.value // empty'
+          }
+
           haal() {
             pad="$1"; uit="$2"
+            token="$(oidc)"
+            if [ -z "${token}" ]; then
+              echo "::error::GitHub gaf geen OIDC-token. Staat 'permissions: id-token: write' op deze job?"
+              foutvast "geen OIDC-token van GitHub"
+              return 1
+            fi
             code="$(curl -sS -m 30 -o "${uit}" -w '%{http_code}' \
-              -H "Authorization: Bearer ${MACHINE_SLEUTEL}" \
+              -H "Authorization: Bearer ${token}" \
               "${API_BASIS}${pad}" || true)"
             if [ "${code}" != "200" ]; then
               echo "::error::GET ${pad} gaf HTTP ${code:-geen antwoord}"
@@ -269,9 +303,15 @@ jobs:
           # Dat is geen serverfout en wordt dus niet opnieuw geprobeerd.
           meld() {
             versie="$1"; bestand="$2"
+            token="$(oidc)"
+            if [ -z "${token}" ]; then
+              echo "::error::GitHub gaf geen OIDC-token voor de fasemelding."
+              foutvast "geen OIDC-token van GitHub"
+              return 1
+            fi
             code="$(curl -sS -m 90 -o "${RUNNER_TEMP}/antwoord.json" -w '%{http_code}' \
               -X POST \
-              -H "Authorization: Bearer ${MACHINE_SLEUTEL}" \
+              -H "Authorization: Bearer ${token}" \
               -H "Content-Type: application/json" \
               --data-binary @"${bestand}" \
               "${API_BASIS}/machine/uitgifte/${versie}" || true)"
@@ -315,7 +355,7 @@ jobs:
       - name: 2 — De stand van de server (/machine/stand)
         id: stand
         env:
-          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          OIDC_AUDIENCE: ${{ vars.INTEL_OIDC_AUDIENCE || 'vibe-intel-uitgifte' }}
           API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
         # TWEE DINGEN WORDEN HIER GEMETEN EN BEIDE ZIJN HARD.
         #
@@ -362,7 +402,7 @@ jobs:
       - name: 3 — De uitgiftewachtrij (/machine/uitgifte)
         id: wachtrij
         env:
-          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          OIDC_AUDIENCE: ${{ vars.INTEL_OIDC_AUDIENCE || 'vibe-intel-uitgifte' }}
           API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
         # EEN LEGE WACHTRIJ IS DE NORMALE UITKOMST, GEEN FOUT. Zolang
         # auto_publiceren_aan of auto_uitgifte_aan uit staat, geeft de
@@ -690,7 +730,7 @@ jobs:
       - name: 5 — Fase RECORD_GESCHREVEN melden
         if: steps.wachtrij.outputs.doorgaan == 'ja'
         env:
-          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          OIDC_AUDIENCE: ${{ vars.INTEL_OIDC_AUDIENCE || 'vibe-intel-uitgifte' }}
           API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
           COMMIT: ${{ steps.push.outputs.commit }}
           VERSIE: ${{ steps.wachtrij.outputs.versie }}
@@ -726,7 +766,7 @@ jobs:
         id: pr
         env:
           GH_TOKEN: ${{ secrets.UITGIFTE_TOKEN }}
-          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          OIDC_AUDIENCE: ${{ vars.INTEL_OIDC_AUDIENCE || 'vibe-intel-uitgifte' }}
           API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
           COMMIT: ${{ steps.push.outputs.commit }}
           VERSIE: ${{ steps.wachtrij.outputs.versie }}
@@ -930,7 +970,7 @@ jobs:
         id: merge
         env:
           GH_TOKEN: ${{ secrets.UITGIFTE_TOKEN }}
-          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          OIDC_AUDIENCE: ${{ vars.INTEL_OIDC_AUDIENCE || 'vibe-intel-uitgifte' }}
           API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
           COMMIT: ${{ steps.push.outputs.commit }}
           PR_NUMMER: ${{ steps.pr.outputs.nummer }}
@@ -995,7 +1035,7 @@ jobs:
       - name: 9 — Wachten tot de server de nieuwe deploy draait
         if: steps.wachtrij.outputs.doorgaan == 'ja'
         env:
-          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          OIDC_AUDIENCE: ${{ vars.INTEL_OIDC_AUDIENCE || 'vibe-intel-uitgifte' }}
           API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
           MERGECOMMIT: ${{ steps.merge.outputs.mergecommit }}
           SHA_VOOR: ${{ steps.stand.outputs.sha_voor }}
@@ -1054,7 +1094,7 @@ jobs:
       - name: 10 — Fase LIVE_GEVERIFIEERD melden
         if: steps.wachtrij.outputs.doorgaan == 'ja'
         env:
-          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          OIDC_AUDIENCE: ${{ vars.INTEL_OIDC_AUDIENCE || 'vibe-intel-uitgifte' }}
           API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
           MERGECOMMIT: ${{ steps.merge.outputs.mergecommit }}
           VERSIE: ${{ steps.wachtrij.outputs.versie }}
@@ -1108,7 +1148,7 @@ jobs:
       - name: 11 — Fase GEBLOKKEERD melden (alleen bij een fout)
         if: failure() && steps.wachtrij.outputs.versie != ''
         env:
-          MACHINE_SLEUTEL: ${{ secrets.INTEL_MACHINE_SLEUTEL }}
+          OIDC_AUDIENCE: ${{ vars.INTEL_OIDC_AUDIENCE || 'vibe-intel-uitgifte' }}
           API_BASIS: ${{ secrets.INTEL_API_BASIS || vars.INTEL_API_BASIS }}
           VERSIE: ${{ steps.wachtrij.outputs.versie }}
         # WAAROM DEZE STAP BESTAAT, EN WAAROM HIJ DE RUN NIET REDT.
