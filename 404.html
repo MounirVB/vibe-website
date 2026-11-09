@@ -1,24 +1,41 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<script src="_consent.js"></script>
+<!-- ELK PAD IN DIT BESTAND IS ABSOLUUT, EN DAT IS GEEN STIJLKEUZE.
+     De host serveert 404.html bij ELK onbekend pad ZONDER de URL te wijzigen
+     (railpack staticfile -> Caddy, handle_errors). Een relatief pad lost dus op
+     tegen het pad waar de bezoeker landde, niet tegen de webwortel.
+     Gemeten op 9 november 2026 op productie:
+       /regios/gelderland/vibe/vibe.css  -> 404   (terwijl /vibe/vibe.css 200 geeft)
+       /regios/gelderland/projecten      -> 404
+       /contact/                         -> 404  (de trailing-slash-vorm van elke route)
+     Met relatieve paden gaven alle zes assets 404 op elk diep pad. Daardoor was
+     er geen stylesheet, geen webfont en vooral geen chrome.js — en chrome.js
+     bouwt de header en de footer. De bezoeker kreeg een kale Times-pagina
+     zonder logo, zonder navigatie, zonder telefoonnummer en zonder footer, met
+     vijf links waarvan er drie naar een volgende 404 leidden.
+     Dit raakt twee grote gevallen: elke vertypte of verouderde slug onder
+     /regios (350 routes), /kennis, /sectoren of /toepassingen, én de
+     trailing-slash-vorm van ALLE 431 gepubliceerde routes.
+     Wie hier een pad toevoegt: met een leidende schuine streep. Altijd. -->
+<script src="/_consent.js"></script>
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-KM2V7VQ3');</script>
-<script src="_clarity.js"></script>
+<script src="/_clarity.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Pagina niet gevonden | Vibe Energy</title>
 <meta name="description" content="Deze pagina bestaat niet (meer). Ga terug naar de homepage of bekijk onze oplossingen en projecten.">
 <meta name="robots" content="noindex, follow">
-<link rel="icon" type="image/svg+xml" href="assets/vibe-mark.svg">
+<link rel="icon" type="image/svg+xml" href="/assets/vibe-mark.svg">
 <meta name="theme-color" content="#0052FF">
-<link rel="preload" href="assets/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="vibe/tokens.css">
-<link rel="stylesheet" href="vibe/vibe.css">
-<script src="vibe/chrome.js" defer></script>
+<link rel="preload" href="/assets/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/vibe/tokens.css">
+<link rel="stylesheet" href="/vibe/vibe.css">
+<script src="/vibe/chrome.js" defer></script>
 </head>
 
 <body data-pagina="404">
@@ -66,7 +83,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       </div>
 
       <div class="ve-cols ve-cols--3 ve-cols--gap-xl" style="margin-top:var(--ve-s-3xl)">
-        <a class="ve-kaart ve-kaart--hover" href="systeem-energieopslag" style="text-decoration:none">
+        <a class="ve-kaart ve-kaart--hover" href="/systeem-energieopslag" style="text-decoration:none">
           <div class="ve-kaart__kop">
             <h2 class="ve-h4">Oplossingen</h2>
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><use href="#ve-i-pijl"/></svg>
@@ -74,7 +91,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <p class="ve-body" style="margin-top:.5rem">Energieopslag, zonne-energie,
             laadinfrastructuur, VIBE.CONTROL, microgrids en Energy Hubs.</p>
         </a>
-        <a class="ve-kaart ve-kaart--hover" href="projecten" style="text-decoration:none">
+        <a class="ve-kaart ve-kaart--hover" href="/projecten" style="text-decoration:none">
           <div class="ve-kaart__kop">
             <h2 class="ve-h4">Projecten</h2>
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><use href="#ve-i-pijl"/></svg>
@@ -82,7 +99,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <p class="ve-body" style="margin-top:.5rem">Gerealiseerde installaties op
             bedrijfslocaties, wooncomplexen en recreatieparken.</p>
         </a>
-        <a class="ve-kaart ve-kaart--hover" href="over-ons" style="text-decoration:none">
+        <a class="ve-kaart ve-kaart--hover" href="/over-ons" style="text-decoration:none">
           <div class="ve-kaart__kop">
             <h2 class="ve-h4">Over Vibe</h2>
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><use href="#ve-i-pijl"/></svg>
