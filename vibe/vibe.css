@@ -973,6 +973,28 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
   color:var(--ve-text);
 }
 .ve-faq summary::-webkit-details-marker{display:none}
+/* DE VRAAG MOET KUNNEN AFBREKEN, ANDERS SCHUIFT DE HELE PAGINA OPZIJ.
+   De vraagtekst staat als anonieme flexitem rechtstreeks in de summary.
+   Zo'n item krijgt min-width:auto, en dat laat de summary niet onder zijn
+   min-content krimpen. Gemeten op 9 november 2026 op /kennis/load-balancing
+   bij een viewport van 320px: de details-kaart werd 402,7px breed binnen een
+   .ve-wrap van 320px — de pagina kreeg daardoor 107px horizontale scroll.
+   Over alle 448 routes gebeurde dat op 16 routes bij 320px, 5 bij 360px en
+   3 bij 390px.
+
+   overflow-wrap:ANYWHERE en niet break-word: alleen 'anywhere' telt mee in de
+   berekening van de min-content, en juist die berekening is hier het
+   knelpunt. Gemeten verschil over vijf FAQ-routes: met break-word bleef het
+   320px-overschot 82px, met anywhere werd het 0.
+   Het breekt alleen af waar het moet; past de vraag, dan verandert er niets.
+
+   minmax(0,1fr) en min-width:0 lossen het probleem van vandaag niet op, maar
+   voorkomen dat deze klasse terugkomt zodra er een langere vraag of een
+   ander samengesteld woord in de FAQ belandt. Beide zijn zonder effect
+   zolang de inhoud past. */
+.ve-faq{grid-template-columns:minmax(0,1fr)}
+.ve-faq details{min-width:0}
+.ve-faq summary{min-width:0;overflow-wrap:anywhere}
 .ve-faq summary svg{width:20px;height:20px;flex:0 0 auto;color:var(--ve-text-muted);transition:transform var(--ve-dur) var(--ve-ease)}
 .ve-faq details[open] summary svg{transform:rotate(180deg)}
 .ve-faq details > p{margin:var(--ve-s-md) 0 0;color:var(--ve-text-soft);max-width:56rem}
