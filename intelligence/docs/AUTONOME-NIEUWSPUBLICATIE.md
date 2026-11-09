@@ -602,31 +602,57 @@ dekten: alles was lokaal groen en GitHub kon het bestand niet lezen.
 
 ---
 
-## 9. Operationele meldingen: het pad bestaat, de bestemming nog niet
+## 9. Operationele meldingen: het pad bestaat, en het mailkanaal levert af
 
-### Wat er is gemeten, 9 november 2026, in de productiecontainer
+### Wat er is gemeten, 9 november 2026, PER SERVICE
 
-| variabele | stand |
-|---|---|
-| `INTEL_MELD_WEBHOOK` | **niet gezet** |
-| `INTEL_MELD_TOKEN` | niet gezet |
-| `INTEL_MAIL_ACTIEF` | **niet gezet** |
-| `INTEL_MONITOR_URL` | niet gezet |
+**De eerste meting van deze paragraaf was in de verkeerde container
+gedaan, en de conclusie eruit was fout.** Hij stond in
+`vibe-intel-api`, en daar is geen enkele meldvariabele gezet — maar
+`meldmailRonde()` draait niet daar. Hij draait op `vibe-intel-worker`,
+en die heeft het mailkanaal volledig ingericht. Hieronder staat wat er
+werkelijk is gemeten, per service, want dat onderscheid IS het antwoord:
 
-De gezondheidstaak meldt dat ook zelf, letterlijk: *"bestemming UIT —
-INTEL_MELD_WEBHOOK is niet gezet. Er is geen door een mens goedgekeurde
-bestemming voor operationele meldingen"*, met daarachter
-`mail[resend -> marketing@vibeenergy.nl] gepland 8, nieuw 0, aangeboden 0,
-geaccepteerd 0`.
+| variabele | `vibe-intel-api` | `vibe-intel-worker` |
+|---|---|---|
+| `INTEL_MAIL_ACTIEF` | niet gezet | **`1`** |
+| `INTEL_MAIL_ONTVANGER` | niet gezet | **`marketing@vibeenergy.nl`** |
+| `INTEL_MAIL_AFZENDER` | niet gezet | **gezet** |
+| `RESEND_API_KEY` | niet gezet | **gezet** |
+| `INTEL_MELD_WEBHOOK` | niet gezet | niet gezet |
+| `INTEL_MELD_TOKEN` | niet gezet | niet gezet |
+| `INTEL_MONITOR_URL` | niet gezet | niet gezet |
+| `INTEL_GCS_BUCKET` | niet gezet | **gezet** |
 
-Er staat dus wel een mailbestemming klaar, maar `INTEL_MAIL_ACTIEF` staat
-niet aan, en `meldmail.ts` noemt die stand dan ook "GECONFIGUREERD MAAR
-NIET ACTIEF". De acht geplande berichten zijn nooit aangeboden.
+**En het kanaal levert werkelijk af.** `intel.meld_berichten`: 54
+berichten, 54 door Resend geaccepteerd, 0 opgegeven. Twee voorbeelden uit
+de afgelopen twee dagen:
 
-**De conclusie die daaruit volgt, en hij is ongemakkelijk:** een
-operationele melding uit de database bereikt vandaag niemand. Niet via
-een webhook (die bestaat niet), niet via mail (die staat uit). Wie nu
-niet in het dashboard kijkt, ziet een storing niet.
+```
+2026-11-08T20:03  CRITICAL  kritieke storing: backup/restorebewijs…   geaccepteerd
+2026-11-09T09:05  HERSTEL   opgelost: backup/externe kopie            geaccepteerd
+```
+
+Eén grens eerlijk benoemd: `afgeleverd_op` is bij alle 54 berichten
+leeg. Resend heeft ze GEACCEPTEERD; dat ze in de postbus zijn aangekomen
+is niet gemeten, want er komt geen bezorgsignaal terug.
+
+**Wat dat betekent voor de uitgifte.** `meldUitgifteStoring()` vult
+`ernst`, en dat is precies de voorwaarde waarop `meldmailRonde()` open
+meldingen selecteert. Een gestrande publicatie krijgt dus **wel** een
+bestemming: asynchroon, via de bestaande mailronde op de worker, naar
+`marketing@vibeenergy.nl`. Wat ontbreekt is het SYNCHRONE kanaal: zonder
+`INTEL_MELD_WEBHOOK` op de service die de uitgifte draait, levert de
+aanroep zelf niets af en meldt hij eerlijk `afgeleverd: false`.
+
+**Twee dingen om te weten.** Controleer of `marketing@vibeenergy.nl`
+werkelijk de bedoelde ontvanger is voor een operationele storing — een
+eigen adres (`storing@…`) is beter. En een melding die nooit meer als
+signaal wordt uitgegeven, sluit nooit meer: op 9 november stond
+`backup/restorebewijs leesbaar` nog op CRITICAL terwijl de oorzaak (de
+GCS-billingstoring) bewezen weg was en de gezondheidsronde `FOUT 0`
+meldde. Dat signaal wordt alleen bij een probleem uitgegeven, dus er komt
+geen OK om hem op te sluiten; dat is een handmatige afsluiting.
 
 ### Waarom de webhook ontbreekt, en waarom dat een keuze was
 
@@ -711,10 +737,13 @@ van de repository), de stroomonderbreker staat op `/uitgifte` onder
 "Waarom er NU niets gebeurt", en elke mislukking staat als besluit met
 fase `GEBLOKKEERD` in `intel.publicatiebesluiten`.
 
-### De enige openstaande beslissing: een bestemming
+### Wat er nog te beslissen valt
 
-Zonder een van deze twee kanalen staat de melding wél open in de
-database en op `/uitgifte`, maar bereikt ze niemand. Het logboek zegt dat
+Het mailkanaal is ingericht en levert af (zie de meting hierboven), dus
+de vraag is niet meer OF een storing iemand bereikt, maar of dat snel
+genoeg is en bij de juiste persoon. Staat er op de service die de
+uitgifte draait géén `INTEL_MELD_WEBHOOK`, dan levert de aanroep zelf
+niets af en wacht de melding op de volgende mailronde. Het logboek zegt dat
 dan ook letterlijk; dit is een echte regel uit een testrun:
 
 > `"meldkanaal":"geen","meldingAfgeleverd":false,"meldreden":"er is geen
@@ -723,15 +752,13 @@ dan ook letterlijk; dit is een echte regel uit een testrun:
 > INTEL_MELD_WEBHOOK, RESEND_API_KEY, INTEL_MAIL_ONTVANGER,
 > INTEL_MAIL_AFZENDER, INTEL_MAIL_ACTIEF."`
 
-**(a) Het bestaande MAILKANAAL — aanbevolen.** `INTEL_MAIL_ACTIEF=1`
-plus `RESEND_API_KEY`, `INTEL_MAIL_ONTVANGER` en `INTEL_MAIL_AFZENDER` op
-de service die `meldmailRonde()` draait; `INTEL_MONITOR_URL` optioneel
-voor de link in het bericht. Volgens de kop van `src/ops/mail.ts` bestaat
-`RESEND_API_KEY` al in het Railway-project op `vibe-website-api` en moet
-hij als referentie beschikbaar worden gemaakt op de meldende service —
-dat is een in de repo vastgelegde meting van 14 oktober 2026, niet een
-meting van nu. Controleer vóór het aanzetten of de ontvanger werkelijk de
-bedoelde is: een operationele storing hoort niet in een marketingpostbus.
+**(a) Het bestaande MAILKANAAL — AL AAN.** Op `vibe-intel-worker` staan
+`INTEL_MAIL_ACTIEF=1`, `RESEND_API_KEY`, `INTEL_MAIL_ONTVANGER` en
+`INTEL_MAIL_AFZENDER`; 54 van 54 berichten zijn door Resend geaccepteerd.
+Er is hier dus niets te zetten. Twee dingen blijven open:
+`INTEL_MONITOR_URL` is niet gezet (dat is alleen de link in het bericht),
+en de ontvanger is een marketingpostbus — controleer of dat de bedoelde
+plek is voor een operationele storing.
 
 **(b) Een webhook, en dan op TWEE plekken.** `INTEL_MELD_WEBHOOK` moet
 https zijn (`melden.ts` weigert http) en mag een `INTEL_MELD_TOKEN`
@@ -760,9 +787,9 @@ publicatie is opgelost — maar het betekent dat die lijst groeit tot
 iemand kijkt.
 
 **Wat hier níét is gedaan:** geen variabele gezet, geen webhook
-aangemaakt, geen ontvanger gewijzigd, geen mail aangezet, geen
-mailcredential aangeraakt. Het PAD is gebouwd en getoetst; de BESTEMMING
-is een menselijk besluit.
+aangemaakt, geen ontvanger gewijzigd, geen mailcredential aangeraakt. Het
+PAD is gebouwd en getoetst; het mailkanaal was al ingericht en is niet
+door mij aangezet.
 
 ---
 

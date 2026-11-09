@@ -906,9 +906,10 @@ export function maakApp(pool: Pool): express.Express {
   /* ---------------- de machinepoort van de uitgifte ----------------
      STAAT VÓÓR vereistInlog EN HEEFT ZIJN EIGEN WACHT. De rest van dit
      dashboard hangt aan een sessiekoekje van een mens; deze router
-     hangt aan INTEL_MACHINE_SLEUTEL en legt alles vast als
-     actor_soort 'systeem'. Zie dashboard/machine.ts voor waarom die
-     twee gescheiden blijven. Zonder sleutel antwoordt hij 503. */
+     hangt aan een GitHub-OIDC-token dat GitHub zelf ondertekent, en
+     legt alles vast als actor_soort 'systeem'. Zie dashboard/machine.ts
+     voor waarom die twee gescheiden blijven. Zonder allowlist in de
+     serverconfiguratie antwoordt hij 503. Er is geen servergeheim. */
   app.use("/machine", maakMachineRouter(pool));
 
   /* ---------------- gezondheid en gereedheid ----------------
