@@ -1,7 +1,7 @@
 {
   "_toelichting": "Administratie van de vorige generatorrun. Nodig om een bestand op te ruimen zodra zijn route van INDEX naar PENDING gaat.",
-  "_gegenereerd": "2026-10-28",
-  "aantal": 397,
+  "_gegenereerd": "2026-11-09",
+  "aantal": 398,
   "bestanden": [
     "energieadvies.html",
     "kennis.html",
@@ -25,6 +25,7 @@
     "laadplein.html",
     "netcongestie.html",
     "nieuws.html",
+    "nieuws/qa-fixture-testbericht.html",
     "regios.html",
     "regios/drenthe.html",
     "regios/drenthe/aa-en-hunze.html",

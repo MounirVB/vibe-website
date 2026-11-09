@@ -13,12 +13,21 @@ import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { url, href } from './lib/paden.mjs';
-import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic } from './lib/sjabloon.mjs';
+import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic,
+         mediaBlok, projectband, statement } from './lib/sjabloon.mjs';
+import { beeldTag, beeldVoor, projectFiltersVoor } from './lib/beeld.mjs';
 import { artikel, dienst, faq as faqLd } from './lib/schema.mjs';
 import { naamVan } from './lib/links.mjs';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 const wortel = resolve(hier, '..', '..');
+
+/* Het projectregister. Zestien echte projecten met slug, plaats, sector,
+   sectorFilter, beeld en beeldAlt — dezelfde bron die de projectpagina's en
+   de projectenoverzichtspagina voeden. Hier alleen gelezen, nooit aangevuld. */
+const ALLE_PROJECTEN = JSON.parse(
+  readFileSync(join(wortel, 'scripts', 'projecten.json'), 'utf8')
+).projecten;
 
 function alleInhoud() {
   const basis = resolve(wortel, 'data', 'inhoud');
@@ -164,12 +173,54 @@ export function bouwNationaal({ register, motor, schrijf, reg }) {
 
     const kruimels = (j.kruimels || []).map((k) => ({ naam: k.naam, route: String(k.route).replace(/^\/+/, '') }));
 
+    /* HET OPENINGSBEELD.
+       Elke gegenereerde pagina kreeg tot nu toe een tekstopening zonder beeld;
+       gemeten droegen 417 van de 448 pagina's geen enkele <img> in <main>. Het
+       onderwerpsbeeld komt uit beeldVoor(), die per route een BESTAAND bestand
+       aanwijst en nooit een klantproject suggereert.
+       fetchpriority high en loading eager: dit is het LCP-element, en lazy
+       laden van je eigen LCP is een gemeten vertraging. */
+    const beeld = beeldVoor(j.route, j.type);
+    const heroBeeld = mediaBlok({
+      verhouding: '21x9',
+      diepte: 'diep',
+      img: beeldTag({
+        basis: beeld.basis,
+        alt: beeld.alt,
+        sizes: '(min-width:1200px) 1216px, 100vw',
+        lazy: false,
+        fetchpriority: 'high',
+      }),
+      stijl: 'margin-top:var(--ve-s-2xl)',
+    });
+
+    /* PROJECTBEWIJS, ALLEEN BIJ EEN ECHTE SECTOROVEREENKOMST.
+       projectFiltersVoor() geeft null voor elke route zonder overeenkomst, en
+       dan verschijnt er geen band. Liever geen band dan een project uit een
+       andere sector. */
+    const projectFilters = projectFiltersVoor(j.route);
+    const bandProjecten = projectFilters
+      ? ALLE_PROJECTEN.filter((p) => projectFilters.includes(p.sectorFilter)).map((p) => ({
+          route: p.slug,
+          titel: p.titel || p.kop,
+          plaats: p.plaats,
+          sector: p.sector,
+          samenvatting: p.statement || '',
+          img: beeldTag({
+            basis: p.beeld,
+            alt: p.beeldAlt || `${p.titel || p.kop} in ${p.plaats}`,
+            sizes: '(min-width:1200px) 380px, (min-width:760px) 50vw, 100vw',
+          }),
+        }))
+      : [];
+
     const delen = [
       opening({
         kruimels,
         kruimelLabel: j.kruimel_label || j.og_titel || j.h1,
         h1: j.h1,
         lead: normaliseerHrefs(j.lead, motor),
+        naLead: heroBeeld,
         acties: (j.acties || []).map((a) =>
           a.soort === 'primair'
             ? `<a class="ve-btn ve-btn--primair ve-btn--lg" href="${href(a.route)}">${esc(a.label)}${ic('pijl')}</a>`
@@ -186,6 +237,15 @@ export function bouwNationaal({ register, motor, schrijf, reg }) {
           })
         : '',
       ...secties.map((sec) => sectieHtml(sec, motor)),
+      bandProjecten.length
+        ? projectband({
+            id: 'projectbewijs',
+            kop: 'Opgeleverd werk in deze sector',
+            lead: '',
+            projecten: bandProjecten,
+            variant: 've-sec--paper ve-sec--line-y',
+          })
+        : '',
       j.faq && j.faq.length
         ? faqSectie({
             kop: j.faq_kop || 'Veelgestelde vragen',

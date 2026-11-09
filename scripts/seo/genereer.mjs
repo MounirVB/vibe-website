@@ -13,7 +13,52 @@ import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { HOST, href, url, bestand, routeGemeente, routeGemeenteFamilie, routeProvincie, routeProvincieFamilie, REGIO_WORTEL } from './lib/paden.mjs';
-import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic, zetNavToets } from './lib/sjabloon.mjs';
+import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic, zetNavToets, mediaBlok } from './lib/sjabloon.mjs';
+import { beeldTag, beeldVoor } from './lib/beeld.mjs';
+
+/* ------------------------------------------------------------- regiohero
+   Elke regiopagina had een tekstopening zonder beeld. Een gemeente MET een
+   eigen project krijgt de foto van dat project; alle andere krijgen het
+   onderwerpsbeeld voor regio.
+
+   Een projectfoto uit een ANDERE gemeente is hier uitdrukkelijk verboden. Van
+   de 337 gemeentepagina's hebben er elf een eigen project; de overige 326
+   zeggen in hun eigen tekst dat Vibe daar nog niets heeft opgeleverd — "niet
+   om werk te suggereren dat er niet is". Een foto van elders zou precies dat
+   doen, en docs/vibe-claims-register-v2.md verbiedt die suggestie.
+
+   Een slug zonder bestand valt terug op het onderwerpsbeeld in plaats van de
+   bouw te breken: het projectregister en de assetmap kunnen uiteenlopen, en
+   349 pagina's mogen daar niet op stuklopen. */
+function regioHero(eigenProjecten) {
+  const p = (eigenProjecten || [])[0];
+  if (p && p.slug) {
+    const basis = 'assets/projects/' + String(p.slug).replace(/^project-/, '');
+    try {
+      return mediaBlok({
+        verhouding: '21x9',
+        diepte: 'diep',
+        img: beeldTag({
+          basis,
+          alt: `${p.titel || p.naam || 'Project van Vibe Energy'}${p.plaats ? ' in ' + p.plaats : ''}`,
+          sizes: '(min-width:1200px) 1216px, 100vw',
+          lazy: false,
+          fetchpriority: 'high',
+        }),
+        stijl: 'margin-top:var(--ve-s-2xl)',
+      });
+    } catch (e) {
+      /* geen bestand voor deze slug — dan het onderwerpsbeeld, niet een gok */
+    }
+  }
+  const t = beeldVoor('', 'regio');
+  return mediaBlok({
+    verhouding: '21x9',
+    diepte: 'diep',
+    img: beeldTag({ basis: t.basis, alt: t.alt, sizes: '(min-width:1200px) 1216px, 100vw', lazy: false, fetchpriority: 'high' }),
+    stijl: 'margin-top:var(--ve-s-2xl)',
+  });
+}
 import { artikel, dienst, faq as faqLd, gebied } from './lib/schema.mjs';
 import { Linkmotor, naamVan } from './lib/links.mjs';
 import { Vingerafdrukken, PLAATSHOUDER as VINGER_PLAATSHOUDER } from './lib/vingerafdruk.mjs';
@@ -270,6 +315,7 @@ function bouwRegioWortel() {
     opening({
       kruimels: [],
       kruimelLabel: "Regio's",
+      naLead: regioHero(null),
       h1: 'Waar Vibe Energy heeft gebouwd',
       lead:
         'Vibe Energy werkt door heel Nederland. Deze regiopagina&rsquo;s gaan alleen over gebieden waar er ' +
@@ -427,7 +473,7 @@ function bouwProvincie(p) {
          de H1 erboven, niet bij de cijfers in de lead. Zonder variant en
          zonder bronregel blijft naLead null en is de uitvoer byte-identiek
          aan die van vóór deze wijziging. */
-      naLead: [naamRegel, heeftWerk ? '' : bronregel([BRON.vestigingen, BRON.terreinen])]
+      naLead: [naamRegel, heeftWerk ? '' : bronregel([BRON.vestigingen, BRON.terreinen]), regioHero(null)]
         .filter(Boolean)
         .join('\n      ') || null,
     }),
@@ -587,6 +633,7 @@ function bouwProvincieFamilie(p, f) {
         { naam: p.naam, route: routeProvincie(p.slug) },
       ],
       kruimelLabel: f.naam,
+      naLead: regioHero(null),
       h1: `${esc(f.naam)} in ${esc(p.naam)}`,
       lead: FAMILIE_BELOFTE[f.slug] || f.naam,
       acties: [
@@ -779,7 +826,7 @@ function bouwGemeente(g) {
          eist dat per SECTIE en de hero is een sectie. Dat die cijfers een
          alinea lager mét bron terugkomen is geen excuus: wie alleen de hero
          leest, moet daar al kunnen zien waar ze vandaan komen. */
-      naLead: [naamRegel, heeftWerk ? '' : bronregel([BRON.vestigingen, BRON.terreinen])]
+      naLead: [naamRegel, heeftWerk ? '' : bronregel([BRON.vestigingen, BRON.terreinen]), regioHero(bw.projecten)]
         .filter(Boolean)
         .join('\n      ') || null,
     }),
@@ -1024,6 +1071,7 @@ function bouwGemeenteFamilie(g, f) {
         { naam: g.naam, route: routeGemeente(g.provincie_slug, g.slug) },
       ],
       kruimelLabel: f.naam,
+      naLead: regioHero(null),
       h1: `${esc(f.naam)} in ${esc(g.naam)}`,
       lead: FAMILIE_BELOFTE[f.slug] || f.naam,
       acties: [

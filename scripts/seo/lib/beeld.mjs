@@ -188,3 +188,82 @@ export function controleerThema() {
   const ontbreekt = Object.entries(THEMA).filter(([, t]) => !bestaat(t.basis)).map(([k, t]) => `${k} -> ${t.basis}`);
   return { totaal: Object.keys(THEMA).length, ontbreekt };
 }
+
+/* ------------------------------------------------------- beeldVoor(route)
+   WELK ONDERWERP HOORT BIJ WELKE ROUTE.
+
+   Per route expliciet, en met een vangnet per type. Geen slimme afleiding uit
+   de titel: een regel die 'accu' in een routenaam herkent, kiest vroeg of laat
+   het verkeerde beeld bij een route die niemand heeft voorzien. Wie een route
+   toevoegt zonder hem hier te noemen, krijgt het typevangnet — en dat is een
+   onderwerpsbeeld, nooit een klantproject. */
+const PER_ROUTE = {
+  /* oplossingen */
+  netcongestie: 'meting',
+  laadplein: 'laadpunt',
+  energieadvies: 'werktekening',
+  'verduurzaming-bedrijfspanden': 'dak',
+  /* hubs */
+  sectoren: 'dak',
+  toepassingen: 'systeem',
+  kennis: 'binnenwerk',
+  subsidies: 'werktekening',
+  /* toepassingen */
+  'toepassingen/batterij-slim-inzetten': 'accu',
+  'toepassingen/bestaande-aansluiting-optimaliseren': 'meting',
+  'toepassingen/elektrificatie-bedrijfswagens': 'laadpunt',
+  'toepassingen/geen-extra-transportvermogen': 'meting',
+  'toepassingen/laden-met-beperkte-aansluiting': 'laden',
+  'toepassingen/meerdere-locaties': 'ems',
+  'toepassingen/netcongestie-bij-uitbreiding': 'opslag',
+  'toepassingen/pieken-in-verbruik': 'accu',
+  'toepassingen/processen-sturen-met-ems': 'emstech',
+  'toepassingen/terugleverbeperking': 'zon',
+  /* sectoren */
+  'sectoren/automotive': 'laadpunt',
+  'sectoren/bedrijventerreinen': 'dak',
+  'sectoren/bouw': 'werktekening',
+  'sectoren/gebiedsontwikkeling': 'systeem',
+  'sectoren/horeca': 'opslag',
+  'sectoren/opslag-en-distributie': 'dak',
+  'sectoren/parkeren': 'laden',
+  'sectoren/productie-en-industrie': 'binnenwerk',
+  'sectoren/retail': 'dak',
+  'sectoren/transport-en-wagenparken': 'laadpunt',
+  'sectoren/zorgvastgoed': 'zon',
+};
+
+const PER_TYPE = { hub: 'systeem', sector: 'dak', toepassing: 'accu', kennis: 'binnenwerk', oplossing: 'systeem', subsidie: 'werktekening', regio: 'meting' };
+
+/** Het onderwerpsbeeld voor een route. Werpt nooit: valt terug op het type. */
+export function beeldVoor(route, type) {
+  const sleutel = PER_ROUTE[String(route).replace(/^\/+/, '')] || PER_TYPE[type] || 'systeem';
+  return thema(sleutel);
+}
+
+/* -------------------------------------------- projecten bij een sector
+   ALLEEN BIJ EEN ECHTE OVEREENKOMST.
+
+   scripts/projecten.json draagt per project een sectorFilter. De waarden zijn
+   gemeten: automotive, bedrijfspanden, netcongestie, recreatie,
+   woningportefeuilles. Een sectorpagina krijgt alleen projecten waarvan de
+   sectorFilter daadwerkelijk bij die pagina hoort — niet 'ongeveer'. Een
+   project uit de bedrijfspanden tonen op /sectoren/retail zou suggereren dat
+   Vibe daar een retailproject heeft, en docs/vibe-claims-register-v2.md
+   verbiedt precies die soort suggestie.
+
+   TWEE routes hebben een echte overeenkomst; de rest krijgt geen projectband.
+   Dat is geen omissie maar het eerlijke antwoord.
+
+   /sectoren/transport-en-wagenparken stond hier eerst ook, gekoppeld aan de
+   automotive-projecten. Dat is teruggedraaid: de Hedin-vestigingen zijn
+   autobedrijven, geen wagenparkprojecten. 'Ongeveer dezelfde sector' is precies
+   de afleiding die deze regel moet voorkomen. */
+const SECTOR_PROJECTEN = {
+  netcongestie: ['netcongestie'],
+  'sectoren/automotive': ['automotive'],
+};
+
+export function projectFiltersVoor(route) {
+  return SECTOR_PROJECTEN[String(route).replace(/^\/+/, '')] || null;
+}

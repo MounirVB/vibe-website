@@ -599,6 +599,30 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
 .ve-cijfers td{font-variant-numeric:tabular-nums;color:var(--ve-text-soft)}
 .ve-cijfers tbody tr:last-child th,.ve-cijfers tbody tr:last-child td{border-bottom:0}
 
+/* ---- beeldband ----
+   Beeld naast tekst, de compositie die de handgeschreven pagina's wél hebben
+   en de gegenereerde niet. Eén kolom tot 900px, daarboven twee — het beeld
+   krijgt de kleinste helft, want de tekst draagt de inhoud.
+   --om keert de volgorde VISUEEL om zonder de DOM-volgorde te wijzigen, zodat
+   de leesvolgorde en de taborde blijven kloppen. */
+.ve-beeldband{display:grid;gap:var(--ve-s-xl);grid-template-columns:minmax(0,1fr);align-items:center}
+.ve-beeldband > *{min-width:0}
+@media (min-width:900px){
+  .ve-beeldband{grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:var(--ve-s-2xl)}
+  .ve-beeldband--om{grid-template-columns:minmax(0,6fr) minmax(0,5fr)}
+  .ve-beeldband--om > :first-child{order:2}
+  .ve-beeldband--om > :last-child{order:1}
+}
+
+/* ---- projectrij ----
+   Echte projecten met hun eigen foto. Twee kolommen vanaf 760px en drie vanaf
+   1200px: een projectkaart draagt een foto plus drie korte regels, dus hij
+   verdraagt een smallere kolom dan een tekstkaart. */
+.ve-projrij{display:grid;gap:var(--ve-s-lg);grid-template-columns:minmax(0,1fr)}
+.ve-projrij > *{min-width:0}
+@media (min-width:760px){.ve-projrij{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1200px){.ve-projrij{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
 .ve-kaarten{display:grid;gap:var(--ve-s-lg);grid-template-columns:minmax(0,1fr)}
 .ve-kaarten > *{min-width:0}
 @media (min-width:1024px){

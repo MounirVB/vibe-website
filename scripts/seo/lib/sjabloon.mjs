@@ -251,6 +251,152 @@ ${acties.map((a) => `        ${a}`).join('\n')}
   </section>`;
 }
 
+/* ============================================================================
+   DE VISUELE BOUWSTENEN DIE DE GENERATOR NOOIT HAD
+   ----------------------------------------------------------------------------
+   docs/qa/composition-gate.mjs is de uitvoerbare definitie van wat dit project
+   'premium' noemt, en hij is narekenbaar: control-a-premium haalt 0 FAIL,
+   control-b-generiek zakt op zes regels. De regels die een gegenereerde pagina
+   nu stuk voor stuk mist:
+
+     KP-03  impactritme — B2 wil precies 3 HIGH-secties, nooit aangrenzend.
+            Een gegenereerde pagina heeft hoogstens twee kandidaten.
+     KP-04  modusband — B2 wil CANVAS 2-5, DOCUMENT 1-4, HYBRID 2-5 en minstens
+            twee overgangen. Een gegenereerde pagina is 100% DOCUMENT met nul
+            overgangen.
+     C-02   geen modus boven 70%. Honderd procent is dus altijd FAIL.
+     KP-07  gelijke kaartrijen zonder rechtvaardiging. Gemeten: 36 van de 37
+            kaartrijen op de gegenereerde pagina's zijn zulke rijen.
+     KP-10  fotobudget — B2 wil 1 tot 2 unieke fotobestanden. De generator had er nul.
+
+   GEMETEN VERSCHIL dat dit alles samenvat: een gegenereerde pagina heeft EEN
+   visuele gebeurtenis, de donkere slotband, en die komt pas op 79,8 tot 89,4%
+   van de paginahoogte. Een handgeschreven pagina heeft er 7 tot 13, vanaf 5,0%.
+
+   WAAROM DIT GEEN NIEUWE CSS VRAAGT. Elke klasse hieronder bestaat al in
+   vibe/vibe.css en wordt al door de handgeschreven pagina's gebruikt:
+   .ve-media 100x, .ve-metriek 212x, .ve-proj 525x, .ve-slot--dark 401x,
+   .ve-citaat, .ve-overlay. De generator riep ze alleen nooit aan. Daarmee is
+   het regressierisico van deze uitbreiding klein: er verandert niets aan de
+   stijllaag, alleen aan wie hem gebruikt.
+
+   DE BINDENDE BEPERKING IS TEKST, NIET VORM. audit.mjs tekstVan() strookt elk
+   tag weg voordat poort 10 en 11 meten. Een beeld met alt-tekst is daarmee
+   poortneutraal, terwijl EEN regel nieuwe identieke zichtbare tekst over 349
+   regiopagina's de duplicaatmarge van 0,0302 zou opeten. Daarom voegen deze
+   bouwstenen beeld en geometrie toe en GEEN standaardzinnen.
+   ============================================================================ */
+
+/** Beeldblok met optioneel onderschrift over het beeld.
+    verhouding: '21x9' | '16x9' | '16x10' | '4x3'. */
+export function mediaBlok({ img, verhouding = '16x9', diepte = 'diep', overlay = null, stijl = '' }) {
+  const klassen = ['ve-media', `ve-media--${verhouding}`, `ve-media--${diepte}`];
+  if (overlay) klassen.push('ve-media--overlay-onder');
+  return `<div class="${klassen.join(' ')}"${stijl ? ` style="${stijl}"` : ''}>
+          ${img}${
+    overlay
+      ? `
+          <div class="ve-overlay">
+            <h2 class="ve-overlay__t">${esc(overlay.kop)}</h2>
+            <p class="ve-overlay__d">${overlay.tekst}</p>
+          </div>`
+      : ''
+  }
+        </div>`;
+}
+
+/** HYBRID: beeld naast tekst, met de kant als enige variabele.
+    De twee kolommen wisselen per aanroep van kant, zodat twee opeenvolgende
+    beeldbanden nooit dezelfde compositie krijgen — KP-05 verbiedt een
+    herhaalde drieling van identieke sectiecombinaties. */
+export function beeldband({ id, kop, tekst, img, kant = 'links', variant = '' }) {
+  const media = `      <div class="ve-media ve-media--4x3 ve-media--lijn">
+          ${img}
+        </div>`;
+  const woord = `      <div>
+        <h2 class="ve-h2">${esc(kop)}</h2>
+        <div class="ve-prose" style="margin-top:var(--ve-s-md)">${tekst}</div>
+      </div>`;
+  return `  <section class="ve-sec ve-sec--lg ${variant}"${id ? ` id="${id}"` : ''}>
+    <div class="ve-wrap">
+      <div class="ve-beeldband${kant === 'rechts' ? ' ve-beeldband--om' : ''}">
+${kant === 'rechts' ? woord + '\n' + media : media + '\n' + woord}
+      </div>
+    </div>
+  </section>`;
+}
+
+/** Metriekstrook zonder kaartvlak.
+    De compositiepoort rekent een rij gelijke cellen NIET als gelijke kaartrij
+    zolang er geen kaartvlak onder ligt — alleen een haarlijn. Dat staat met
+    zoveel woorden in homepage.json bij equal_row. Dit is daarmee het middel
+    voor pagina's zonder eigen fotografie: project-arnhem-60 is zelf 81,8%
+    fotoloos en leest toch als ontworpen, juist door deze strook.
+    rijen: [{waarde, label, accent?}] */
+export function metriekrij({ rijen, variant = 've-sec--paper ve-sec--line-y' }) {
+  if (!rijen || !rijen.length) return '';
+  const n = Math.min(Math.max(rijen.length, 2), 5);
+  return `  <section class="ve-sec ve-sec--lg ${variant}">
+    <div class="ve-wrap">
+      <div class="ve-metriek ve-metriek--${n} ve-metriek--groot ve-metriek--lijn-t">
+${rijen
+    .map(
+      (r) => `        <div class="ve-metriek__i--rail">
+          <span class="ve-metriek__w${r.accent ? ' ve-metriek__w--accent' : ''}">${esc(r.waarde)}</span>
+          <span class="ve-metriek__l">${esc(r.label)}</span>
+        </div>`
+    )
+    .join('\n')}
+      </div>
+    </div>
+  </section>`;
+}
+
+/** CANVAS: een donkere band met één uitspraak. Geen nieuwe claim — de tekst
+    komt uit de inhoud die de pagina al draagt. */
+export function statement({ tekst, bron }) {
+  return `  <section class="ve-sec ve-sec--3xl ve-sec--dark">
+    <div class="ve-wrap ve-wrap--wide">
+      <p class="ve-citaat" style="max-width:52rem">${esc(tekst)}</p>${
+    bron ? `\n      <span class="ve-citaat__bron">${esc(bron)}</span>` : ''
+  }
+    </div>
+  </section>`;
+}
+
+/** Projectbewijs met echte projecten. Elk item komt uit scripts/projecten.json
+    en draagt zijn eigen foto, plaats en sector. Er wordt GEEN project aan een
+    pagina gekoppeld waar het niet thuishoort: de aanroeper levert de selectie,
+    en die selectie loopt via sectorFilter of via de gemeentekoppeling in
+    data/bewijs/projecten-geo.json.
+    projecten: [{route, titel, plaats, sector, samenvatting, img}] */
+export function projectband({ id, kop, lead, projecten, variant = '' }) {
+  if (!projecten || !projecten.length) return '';
+  return `  <section class="ve-sec ve-sec--lg ${variant}"${id ? ` id="${id}"` : ''}>
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">${esc(kop)}</h2>${lead ? `\n        <p class="ve-lead">${lead}</p>` : ''}
+      </div>
+      <div class="ve-projrij">
+${projecten
+    .map(
+      (p) => `        <a class="ve-proj" href="${href(p.route)}">
+          <div class="ve-proj__vlak">${p.img}</div>
+          <div class="ve-proj__tekst">
+            <span class="ve-proj__sector">${esc(p.sector)} &middot; ${esc(p.plaats)}</span>
+            <h3 class="ve-proj__t">${esc(p.titel)}</h3>${
+        p.samenvatting ? `\n            <p class="ve-proj__d">${esc(p.samenvatting)}</p>` : ''
+      }
+            <span class="ve-proj__voet">Bekijk het project</span>
+          </div>
+        </a>`
+    )
+    .join('\n')}
+      </div>
+    </div>
+  </section>`;
+}
+
 /** Het directe antwoord: één alinea die los van de pagina te citeren is.
     Dit is de GEO-bouwsteen — een AI-antwoordmachine moet hieruit kunnen
     citeren zonder de rest van de pagina te hebben gelezen. */
