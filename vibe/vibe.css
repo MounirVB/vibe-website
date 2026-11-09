@@ -1243,5 +1243,13 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
    gemeenten een eigen pagina hebben en welke niet. */
 .ve-regios{display:grid;gap:.35rem .75rem;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));margin:0;padding:0;list-style:none}
 .ve-regios li{font-size:var(--ve-body-sm-size);line-height:1.5}
-.ve-regios a{color:var(--ve-action-ink);font-weight:var(--ve-w-sub)}
+/* Raakdoel van 24px, de ondergrens van WCAG 2.2 AA (2.5.8 Target Size Minimum).
+   Gemeten met axe 4.14 op /regios/groningen: de gemeentelinks waren 117,3 x 17
+   en 84,7 x 17 pixels. Dit was de ENIGE toegankelijkheidsschending over 16
+   pagina's, twee formaten en twee engines — en hij stond er al.
+   inline-block omdat een inline <a> geen verticale padding in zijn raakdoel
+   meeneemt. De lijst wordt daardoor iets hoger; de kolomindeling en de
+   regelafstand blijven ongemoeid. */
+.ve-regios a{color:var(--ve-action-ink);font-weight:var(--ve-w-sub);
+  display:inline-block;min-height:24px;padding-block:3.5px}
 .ve-regios span{color:var(--ve-text-muted)}
