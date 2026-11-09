@@ -36,9 +36,48 @@
     window.dataLayer.push({event:'vibe_consent_update',vibe_analytics:!!state.analytics,vibe_marketing:!!state.marketing});
     fire();
   }
+  /* ---------- opruimen wat een eerdere toestemming heeft achtergelaten ----------
+     Een weigering moet ook TERUGWERKEN. Wie eerst accepteert en later
+     terugzet naar 'Alleen noodzakelijk', houdt anders de marketingcookies
+     die in de tussentijd zijn geplaatst — de keuze zou dan alleen voor de
+     toekomst gelden en de eerder geplaatste cookie 90 dagen laten staan.
+     Gemeten op 9 november 2026: de Meta Pixel zette `_fbp` met een looptijd
+     van 90 dagen, plus lastExternalReferrer en lastExternalReferrerTime in
+     localStorage, en "Alleen noodzakelijk" ruimde daar niets van op.
+
+     We wissen alleen wat we zelf benoemen. Een onbekende cookie van een
+     onbekende partij blind verwijderen zou ook de werking van de site kunnen
+     raken; `functionality_storage` en `security_storage` staan immers op
+     'granted'. Het domein moet twee keer worden geprobeerd: de pixel zet
+     `_fbp` op het registreerbare domein (.vibeenergy.nl), maar op een
+     ontwikkel- of previewhost staat hij op de host zelf. */
+  var MARKETING_COOKIES=['_fbp','_fbc'];
+  var MARKETING_LOCALSTORAGE=['lastExternalReferrer','lastExternalReferrerTime'];
+  function wisMarketingSporen(){
+    var host=location.hostname;
+    /* van 'www.vibeenergy.nl' ook '.vibeenergy.nl' proberen: de pixel zet de
+       cookie een niveau hoger dan de host waarop hij draait */
+    var delen=host.split('.');
+    var domeinen=[null,host];
+    if(delen.length>2) domeinen.push('.'+delen.slice(-2).join('.'));
+    else if(delen.length===2) domeinen.push('.'+host);
+    MARKETING_COOKIES.forEach(function(naam){
+      domeinen.forEach(function(d){
+        try{
+          document.cookie=naam+'=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'+(d?'; domain='+d:'');
+        }catch(e){}
+      });
+    });
+    MARKETING_LOCALSTORAGE.forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+  }
+
   function save(analytics,marketing){
     state={v:VERSION,analytics:!!analytics,marketing:!!marketing,ts:Date.now()};
     try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){}
+    /* Opruimen zodra marketing NIET is toegestaan. Ook bij een eerste keuze
+       'Alleen noodzakelijk': er kan al een cookie staan van vóór deze
+       wijziging, of uit een eerdere sessie op dit apparaat. */
+    if(!state.marketing) wisMarketingSporen();
     push();
   }
   window.vibeConsent={
@@ -82,10 +121,63 @@
   .vck-sw[aria-checked='true']:after{transform:translateX(18px)}\
   .vck-sw[disabled]{background:rgba(0,173,239,.4);cursor:not-allowed}\
   .vck-sw:focus-visible{outline:2px solid #00ADEF;outline-offset:2px}\
-  @media(max-width:560px){.vck-in{padding:20px 18px 18px}.vck-b1{min-width:100%}.vck-b2,.vck-b3{flex:1 1 auto}}\
+  @media(max-width:560px){\
+    .vck-in{padding:16px 16px 14px}\
+    /* WAAROM DEZE REGEL IS OMGEDRAAID\
+       Hij zette .vck-b1 op min-width:100%. Daardoor stapelden de drie knoppen\
+       alle drie op volle breedte en groeide de kaart in de HOOGTE in plaats van\
+       in de breedte. Gemeten op 9 november 2026, bij scrollY=0 en de melding nog\
+       open: op 360x640 was de kaart 485px = 75,7% van de viewport en bleef er\
+       tussen de sticky header (65px) en de bovenkant van de kaart 66px over —\
+       10,4% van het scherm. Op 390x844 onderschepte de kaart 4 van de 5\
+       interactieve elementen in beeld, waaronder de twee hero-CTA's\
+       'Vraag een energiescan aan' en 'Kies uw gemeente': elementFromPoint op\
+       het midden van die knoppen gaf DIV.vck-act in plaats van de knop.\
+       Nu staan de twee keuzeknoppen naast elkaar op één regel en zakt\
+       'Instellingen' naar een eigen, lagere regel: twee regels in plaats van\
+       drie. De drempel van 44px raakhoogte blijft gehaald via min-height. */\
+    /* De eyebrow 'Cookies' zegt op mobiel niets wat de kop eronder niet al\
+       zegt ('Deze site gebruikt cookies') en kost 21px van een scherm waar de\
+       hoogte het knelpunt is. Alleen verborgen onder 560px; op desktop blijft\
+       de melding ongewijzigd. */\
+    .vck-eb{display:none}\
+    .vck-t{font-size:16.5px;margin-bottom:6px}\
+    .vck-p{font-size:12.5px;line-height:1.5}\
+    /* De knoppenrij blijft ALTIJD in beeld, ook als de tekst erboven binnen de\
+       kaart wegscrolt. Zonder dit konden 'Alles accepteren' en 'Alleen\
+       noodzakelijk' onder de onderrand van de kaart verdwijnen zodra de\
+       max-height hieronder bindt — gemeten op 320, 360 en 375px. Een\
+       toestemmingsvraag waarvan de antwoorden weggescrold zijn is erger dan een\
+       te hoge kaart. */\
+    /* De schaduw aan de bovenkant maakt zichtbaar DAT er tekst onder de rij\
+       doorloopt. Zonder die rand leest een halve tekstregel die achter een\
+       witte balk verdwijnt als afgekapte tekst in plaats van als scrollbare\
+       inhoud. */\
+    .vck-act{margin-top:12px;gap:8px;position:sticky;bottom:0;background:#fff;padding:8px 0 2px;box-shadow:0 -10px 12px -8px rgba(4,12,20,.18)}\
+    /* De twee keuzeknoppen naast elkaar: twee regels in plaats van drie.\
+       Hun tekst mag WEL afbreken. Met white-space:nowrap werd 'Alleen\
+       noodzakelijk' binnen de halve kaartbreedte afgekapt — een onleesbaar\
+       label op een toestemmingsknop is een defect, en een knop van twee regels\
+       is dat niet. */\
+    .vck-b{min-height:44px;padding:11px 10px;font-size:12.5px;white-space:normal}\
+    .vck-b1,.vck-b2{flex:1 1 calc(50% - 4px);min-width:0}\
+    .vck-b3{flex:1 1 100%}\
+  }\
+  /* Onder 376px past 'Alles accepteren' niet op een halve kaartbreedte.\
+     Gemeten op 320px: het label werd afgekapt tot 'Alles accepter'. Een\
+     toestemmingsknop waarvan het label half wegvalt is een defect, dus daar\
+     krijgen de twee keuzeknoppen hun volle breedte terug. De kaart wordt\
+     daarvan hoger, maar blijft ruim onder de oorspronkelijke 533px/93,8%. */\
+  @media(max-width:375px){\
+    .vck-b1,.vck-b2{flex:1 1 100%}\
+    /* Harde bovengrens, zodat geen enkele tekstlengte of door de bezoeker\
+       vergrote lettergrootte de kaart ooit verder kan laten groeien. De\
+       knoppenrij hierboven is sticky, dus de grens kost nooit een antwoord. */\
+    .vck{max-height:58vh;overflow-y:auto}\
+  }\
   ";
 
-  var ov,card,prefsOpen=false,tmpA=false,tmpM=false;
+  var ov,card,prefsOpen=false,tmpA=false,tmpM=false,laatsteFocus=null;
 
   function el(tag,cls,html){ var n=document.createElement(tag); if(cls)n.className=cls; if(html!=null)n.innerHTML=html; return n; }
 
@@ -103,6 +195,11 @@
     if(!ov) return;
     card.classList.remove('on'); ov.classList.remove('on');
     setTimeout(function(){ if(ov&&ov.parentNode) ov.parentNode.removeChild(ov); ov=null; },320);
+    /* De focus terugzetten waar hij vandaan kwam. Zonder dit valt de focus na
+       het sluiten terug naar het begin van het document en moet de bezoeker
+       opnieuw naar beneden tabben. */
+    if(laatsteFocus&&laatsteFocus.focus){ try{ laatsteFocus.focus({preventScroll:true}); }catch(e){} }
+    laatsteFocus=null;
   }
 
   function render(){
@@ -111,7 +208,7 @@
     inn.appendChild(el('div','vck-eb','Cookies'));
     if(!prefsOpen){
       inn.appendChild(el('h2','vck-t','Deze site gebruikt cookies'));
-      inn.appendChild(el('p','vck-p','Wij gebruiken noodzakelijke cookies om de website te laten werken, en analytische cookies om te zien hoe de site wordt gebruikt en waar die beter kan. Meer hierover leest u in ons <a href="privacy">privacybeleid</a>.'));
+      inn.appendChild(el('p','vck-p','Wij gebruiken noodzakelijke cookies om de website te laten werken, en analytische cookies om te zien hoe de site wordt gebruikt en waar die beter kan. Meer hierover leest u in ons <a href="/privacy">privacybeleid</a>.'));
       var a=el('div','vck-act');
       var b1=el('button','vck-b vck-b1','Alles accepteren'); b1.type='button';
       var b2=el('button','vck-b vck-b2','Alleen noodzakelijk'); b2.type='button';
@@ -141,14 +238,65 @@
   function show(openPrefs){
     if(ov) return;
     if(!document.getElementById('vck-css')){ var st=el('style'); st.id='vck-css'; st.textContent=CSS; document.head.appendChild(st); }
+    laatsteFocus=document.activeElement&&document.activeElement!==document.body?document.activeElement:null;
     tmpA=!!(state&&state.analytics); tmpM=!!(state&&state.marketing); prefsOpen=!!openPrefs;
-    ov=el('div','vck-ov'); ov.setAttribute('role','dialog'); ov.setAttribute('aria-live','polite'); ov.setAttribute('aria-label','Cookiemelding');
+    ov=el('div','vck-ov'); ov.setAttribute('role','dialog'); ov.setAttribute('aria-label','Cookiemelding');
+    /* aria-modal alleen waar de melding WERKELIJK modaal is. Het
+       voorkeurenpaneel (.pref) heeft een achtergrond en pointer-events:auto en
+       sluit de pagina af; de eerste melding niet — die laat de pagina
+       bruikbaar en mag zich dus niet als modaal aankondigen.
+       De eerdere combinatie role="dialog" + aria-live="polite" op hetzelfde
+       element was tegenstrijdig: een dialoog kondigt zich via zijn rol aan, en
+       een live region op een container met knoppen erin levert een dubbele
+       aankondiging. aria-live is daarom weg. */
+    ov.setAttribute('aria-modal',openPrefs?'true':'false');
     card=el('div','vck');
     if(openPrefs) ov.classList.add('pref');
-    ov.appendChild(card); document.body.appendChild(ov);
+    ov.appendChild(card);
+    /* VOORAAN in de body, niet achteraan.
+       Gemeten op 9 november 2026: als laatste kind van <body> was de melding de
+       58e tabstop, dus een toetsenbord- of schermlezergebruiker kwam eerst door
+       de hele pagina heen voordat hij de toestemmingsvraag bereikte — terwijl
+       die vraag over diezelfde pagina heen staat. De melding is position:fixed,
+       dus de DOM-positie verandert niets aan de weergave; alleen de leesorde en
+       de taborde kloppen nu met wat de bezoeker ziet. */
+    if(document.body.firstChild) document.body.insertBefore(ov,document.body.firstChild);
+    else document.body.appendChild(ov);
     render();
-    requestAnimationFrame(function(){ card.classList.add('on'); if(openPrefs) ov.classList.add('on'); });
+    requestAnimationFrame(function(){
+      card.classList.add('on');
+      if(openPrefs){
+        ov.classList.add('on');
+        /* In het modale paneel hoort de focus naar binnen. Bij de eerste
+           melding NIET: die onderbreekt de bezoeker niet, en focus stelen is
+           daar agressiever dan nodig — hij staat nu toch vooraan in de taborde. */
+        var eerste=card.querySelector('button,[href],input,select,textarea');
+        if(eerste){ try{ eerste.focus({preventScroll:true}); }catch(e){} }
+      }
+    });
   }
+
+  /* Escape op het VOORKEURENPANEEL. Het paneel is een echte modale dialoog —
+     achtergrond, pointer-events:auto, sluit de pagina af — en moet dus met
+     Escape dicht kunnen.
+
+     Maar niet altijd naar nul. Is er nog GEEN keuze vastgelegd, dan is het
+     paneel bereikt via 'Instellingen' in de eerste melding, en zou sluiten de
+     toestemmingsvraag laten verdwijnen zonder antwoord. Escape gaat dan één
+     stap terug naar de keuzevraag in plaats van weg. Is er wél een keuze, dan
+     sluit hij echt — precies zoals een heropend voorkeurenpaneel hoort te doen.
+
+     De eerste melding zelf reageert niet op Escape: daar bestaat geen
+     "sluiten" dat geen stilzwijgende weigering is. */
+  document.addEventListener('keydown',function(e){
+    if(e.key!=='Escape'||!ov||!prefsOpen) return;
+    e.preventDefault();
+    if(state){ close(); return; }
+    prefsOpen=false;
+    ov.classList.remove('on'); ov.classList.remove('pref');
+    ov.setAttribute('aria-modal','false');
+    render();
+  });
 
   function boot(){
     /* footerlinks met href="#cookies" of data-cookie-prefs heropenen de instellingen */
