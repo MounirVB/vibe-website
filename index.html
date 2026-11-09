@@ -466,8 +466,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       </div>
 
       <div class="ve-cols ve-cols--2 ve-cols--gap-xl">
-        <a class="ve-kaart ve-kaart--canvas ve-kaart--kolom ve-kaart--hover" href="industrie-logistiek" style="text-decoration:none">
-          <div>
+        <!-- Vier gelijke tekstkaarten stonden hier eerst. Ze dragen nu het
+             openingsbeeld van de pagina waar ze heen wijzen: dezelfde foto die
+             de bezoeker na de klik ziet. Geen nieuw beeldmateriaal, geen nieuwe
+             tekst — de koppen, alinea's en voetregels zijn ongewijzigd. -->
+        <a class="ve-kaart ve-kaart--beeld ve-kaart--hover" href="industrie-logistiek" style="height:100%;text-decoration:none">
+          <div class="ve-kaart__tekst">
             <div class="ve-kaart__kop">
               <h3 class="ve-h3">Logistiek</h3>
               <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><use href="#ve-i-truck"/></svg>
@@ -476,13 +480,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               Distributie, transport en koeling. Elektrificatie van het wagenpark botst op de
               aansluiting, terwijl koeling en sortering nooit mogen wijken.
             </p>
+            <span class="ve-kaart__voet" style="margin-top:var(--ve-s-md)"><span>Laden, koeling en pieklast</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" style="color:var(--ve-action-ink)" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
           </div>
-          <span class="ve-kaart__voet"><span>Laden, koeling en pieklast</span>
-            <svg viewBox="0 0 24 24" width="18" height="18" style="color:var(--ve-action-ink)" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
+          <div class="ve-kaart__vlak">
+            <img src="/assets/laadplein-hero-1600.webp"
+                 srcset="/assets/laadplein-hero-960.webp 960w, /assets/laadplein-hero-1600.webp 1600w, /assets/laadplein-hero-2400.webp 2400w"
+                 sizes="(min-width:768px) 50vw, 100vw" width="2400" height="1802"
+                 alt="Bedrijfsterrein van bovenaf: een vol terrein met bestelbussen en auto's, een lange carport met zonnepanelen langs de werkplaatsdeuren en de skyline van de stad aan de horizon"
+                 loading="lazy" decoding="async">
+          </div>
         </a>
 
-        <a class="ve-kaart ve-kaart--canvas ve-kaart--kolom ve-kaart--hover" href="industrie-vastgoed" style="text-decoration:none">
-          <div>
+        <a class="ve-kaart ve-kaart--beeld ve-kaart--hover" href="industrie-vastgoed" style="height:100%;text-decoration:none">
+          <div class="ve-kaart__tekst">
             <div class="ve-kaart__kop">
               <h3 class="ve-h3">Kantoren &amp; vastgoed</h3>
               <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><use href="#ve-i-kantoor"/></svg>
@@ -491,13 +502,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               Label- en normeisen, huurders die willen laden, en een gebouw dat van kostenpost
               naar exploitatie kan verschuiven.
             </p>
+            <span class="ve-kaart__voet" style="margin-top:var(--ve-s-md)"><span>Label, laden en exploitatie</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" style="color:var(--ve-action-ink)" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
           </div>
-          <span class="ve-kaart__voet"><span>Label, laden en exploitatie</span>
-            <svg viewBox="0 0 24 24" width="18" height="18" style="color:var(--ve-action-ink)" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
+          <div class="ve-kaart__vlak">
+            <img src="/assets/dakvlak-hero-1600.webp"
+                 srcset="/assets/dakvlak-hero-960.webp 960w, /assets/dakvlak-hero-1600.webp 1600w, /assets/dakvlak-hero-2400.webp 2400w"
+                 sizes="(min-width:768px) 50vw, 100vw" width="2400" height="1801"
+                 alt="Zonnepanelen in rijen op een plat bedrijfsdak, met montagerails, kabelgoten en een dakdoorvoer ertussen"
+                 loading="lazy" decoding="async">
+          </div>
         </a>
 
-        <a class="ve-kaart ve-kaart--canvas ve-kaart--kolom ve-kaart--hover" href="industrie-vve" style="text-decoration:none">
-          <div>
+        <a class="ve-kaart ve-kaart--beeld ve-kaart--hover" href="industrie-vve" style="height:100%;text-decoration:none">
+          <div class="ve-kaart__tekst">
             <div class="ve-kaart__kop">
               <h3 class="ve-h3">VvE's &amp; wooncomplexen</h3>
               <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><use href="#ve-i-woning"/></svg>
@@ -506,13 +524,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               Eén collectieve installatie voor het hele complex: lagere kosten voor bewoners en
               laadplekken in de eigen parkeergarage.
             </p>
+            <span class="ve-kaart__voet" style="margin-top:var(--ve-s-md)"><span>Collectief opwekken en laden</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" style="color:var(--ve-action-ink)" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
           </div>
-          <span class="ve-kaart__voet"><span>Collectief opwekken en laden</span>
-            <svg viewBox="0 0 24 24" width="18" height="18" style="color:var(--ve-action-ink)" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
+          <div class="ve-kaart__vlak">
+            <img src="/assets/projects/ketsheuvel-1200.webp"
+                 srcset="/assets/projects/ketsheuvel-640.webp 640w, /assets/projects/ketsheuvel-800.webp 800w, /assets/projects/ketsheuvel-1200.webp 1200w, /assets/projects/ketsheuvel-1800.webp 1800w"
+                 sizes="(min-width:768px) 50vw, 100vw" width="1800" height="1013"
+                 alt="Luchtfoto van het wooncomplex aan de Ketsheuvel in Renkum: één langgerekt gebouw met galerijen, waarvan het dak over de volle lengte met zonnepanelen is belegd"
+                 loading="lazy" decoding="async">
+          </div>
         </a>
 
-        <a class="ve-kaart ve-kaart--canvas ve-kaart--kolom ve-kaart--hover" href="industrie-residentieel" style="text-decoration:none">
-          <div>
+        <a class="ve-kaart ve-kaart--beeld ve-kaart--hover" href="industrie-residentieel" style="height:100%;text-decoration:none">
+          <div class="ve-kaart__tekst">
             <div class="ve-kaart__kop">
               <h3 class="ve-h3">Woningportefeuilles</h3>
               <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><use href="#ve-i-portefeuille"/></svg>
@@ -521,9 +546,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               Verhuurders, beleggers en corporaties die een hele portefeuille in één traject
               verduurzamen, zonder ingrijpende aanpassing van de woningen.
             </p>
+            <span class="ve-kaart__voet" style="margin-top:var(--ve-s-md)"><span>Portefeuille in één traject</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" style="color:var(--ve-action-ink)" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
           </div>
-          <span class="ve-kaart__voet"><span>Portefeuille in één traject</span>
-            <svg viewBox="0 0 24 24" width="18" height="18" style="color:var(--ve-action-ink)" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
+          <div class="ve-kaart__vlak">
+            <img src="/assets/residentieel-hero-1600.webp"
+                 srcset="/assets/residentieel-hero-960.webp 960w, /assets/residentieel-hero-1600.webp 1600w, /assets/residentieel-hero-2400.webp 2400w"
+                 sizes="(min-width:768px) 50vw, 100vw" width="2400" height="1350"
+                 alt="Luchtfoto van een wooncomplex waarvan de platte daken volledig met zonnepanelen zijn belegd, met balkons en een bestrate binnenplaats"
+                 loading="lazy" decoding="async">
+          </div>
         </a>
       </div>
 
@@ -614,9 +646,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <!-- ====================================================================
        10 · TYPE I — AFSLUITING
        ==================================================================== -->
-  <section class="ve-sec ve-sec--lg">
+  <!-- De slotband was als enige op de site licht (.ve-slot zonder --dark).
+       Elke gegenereerde pagina sluit af met de donkere band uit conversie() in
+       sjabloon.mjs, en de homepage eindigde daardoor in een bleke doos vlak
+       boven een donkere footer. Nu dezelfde band, dezelfde maatvoering
+       (ve-sec--xl), dezelfde knopcombinatie. Tekst en links ongewijzigd. -->
+  <section class="ve-sec ve-sec--xl">
     <div class="ve-wrap">
-      <div class="ve-slot">
+      <div class="ve-slot ve-slot--dark">
         <div class="ve-slot__inhoud">
           <h2 class="ve-h2">Wat kan er op uw aansluiting?</h2>
           <p class="ve-lead" style="margin-top:var(--ve-s-md)">
@@ -628,9 +665,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               Plan een gesprek
               <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg>
             </a>
-            <a class="ve-btn ve-btn--ghost ve-btn--lg" href="projecten">Bekijk alle projecten</a>
+            <a class="ve-btn ve-btn--ghost-dark ve-btn--lg" href="projecten">Bekijk alle projecten</a>
           </div>
-          <p class="ve-small" style="margin-top:var(--ve-s-lg)">
+          <p class="ve-small" style="margin-top:var(--ve-s-lg);color:var(--ve-text-on-dark-soft)">
             Reactie binnen één werkdag. Vrijblijvend.
           </p>
         </div>
