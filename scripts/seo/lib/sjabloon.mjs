@@ -355,21 +355,37 @@ export function verwant(groepen) {
   const kolommen = groepen
     .filter((g) => g.items && g.items.length)
     .map(
-      (g) => `        <div>
-          <p class="ve-footer__kop">${g.kop}</p>
-          <ul class="ve-footer__lijst">
+      (g) => `        <div class="ve-verwant__groep">
+          <p class="ve-verwant__kop">${g.kop}</p>
+          <ul class="ve-verwant__lijst">
 ${g.items.map((i) => `            <li><a href="${href(i.route)}">${esc(i.naam)}</a></li>`).join('\n')}
           </ul>
         </div>`
     )
     .join('\n');
   if (!kolommen) return '';
+  /* TWEE DEFECTEN DIE HIER ZATEN, BEIDE OP 396 PAGINA'S.
+     1. De wikkel was `ve-cols ve-cols--gap-xl`, ZONDER kolomtelling-modifier. De
+        mediaqueries in vibe.css gelden alleen voor .ve-cols--2 t/m --5, dus deze
+        sectie bleef EEN KOLOM op elke breedte van 390 tot 1920px. Gemeten op
+        /sectoren bij 1440px: 4 groepen, 23 links, sectiehoogte 1315px in een grid
+        van 1184px breed, terwijl de breedste linktekst 279px is en de gemiddelde
+        124px — 905px (76%) van de breedte bleef leeg.
+        `.ve-verwant` draagt nu zijn eigen auto-fit raster. Dat is hier beter dan
+        een vaste --N, want het aantal groepen varieert: 2 op 13 pagina's, 3 op 13,
+        4 op 366, 5 op 3 en 6 op 1.
+     2. De koppen droegen `ve-footer__kop`, en die zet color:#fff voor de DONKERE
+        footer. Op deze lichte sectie was het contrast 1,00:1 — wit op wit, dus
+        volledig onzichtbaar. 1.550 koppen over 396 pagina's. axe meldt dit als
+        'incomplete' en niet als 'violation', dus geen enkele poort ving het.
+     De links en hun bestemmingen zijn ongewijzigd; alleen de klassen en het
+     raster veranderen. */
   return `  <section class="ve-sec ve-sec--lg ve-sec--paper ve-sec--line-t" id="verwant">
     <div class="ve-wrap">
       <div class="ve-head">
         <h2 class="ve-h2">Verder lezen</h2>
       </div>
-      <div class="ve-cols ve-cols--gap-xl">
+      <div class="ve-verwant">
 ${kolommen}
       </div>
     </div>

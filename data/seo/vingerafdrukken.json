@@ -24,8 +24,8 @@
       "gewijzigd": "2026-10-28"
     },
     "energieadvies": {
-      "hash": "0897caa772c612e0",
-      "gewijzigd": "2026-10-28"
+      "hash": "cdcfba3bc2565de3",
+      "gewijzigd": "2026-11-09"
     },
     "energy-hubs": {
       "hash": "0d361d781ae1e9d1",
@@ -52,88 +52,88 @@
       "gewijzigd": "2026-10-28"
     },
     "kennis": {
-      "hash": "210f671313b4df58",
-      "gewijzigd": "2026-10-28"
+      "hash": "e97cdc5bcb044307",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/batterij-dimensioneren": {
-      "hash": "5d268b374bf550f6",
-      "gewijzigd": "2026-10-28"
+      "hash": "eeabdafe08b47ad3",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/batterijdegradatie": {
-      "hash": "85a11793619986a6",
-      "gewijzigd": "2026-10-28"
+      "hash": "d61e960df13649c0",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/batterijveiligheid": {
-      "hash": "fc6e97e8f75fcca3",
-      "gewijzigd": "2026-10-28"
+      "hash": "d17718e417ee36b1",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/businesscase-batterij": {
-      "hash": "7aad0ae2990c39fd",
-      "gewijzigd": "2026-10-28"
+      "hash": "1dddf7d6dbb7f7fb",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/ems-energiemanagementsysteem": {
-      "hash": "798ccb5d3c3e7156",
-      "gewijzigd": "2026-10-28"
+      "hash": "f7cc9d3433c2475f",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/energiehandel-en-flexibiliteit": {
-      "hash": "2c6f6a5b933e010a",
-      "gewijzigd": "2026-10-28"
+      "hash": "3aab506a18cb1dde",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/energieprestatie-meten": {
-      "hash": "896a7fad5455a424",
-      "gewijzigd": "2026-10-28"
+      "hash": "872d550f2d68e95a",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/kw-versus-kwh": {
-      "hash": "3515e3c73ef90634",
-      "gewijzigd": "2026-10-28"
+      "hash": "84f48e53296ec8c4",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/laadinfrastructuur-dimensioneren": {
-      "hash": "2cb41471d69d69f6",
-      "gewijzigd": "2026-10-28"
+      "hash": "e361f68670299d43",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/load-balancing": {
-      "hash": "bd39f511379a554e",
-      "gewijzigd": "2026-10-28"
+      "hash": "e12ad756a1d507c3",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/netaansluiting-aanvragen": {
-      "hash": "f7d8680215fd3e2f",
-      "gewijzigd": "2026-10-28"
+      "hash": "fd6408a4d9d2bdb7",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/netcongestie-uitgelegd": {
-      "hash": "12fe77a3d61b0253",
-      "gewijzigd": "2026-10-28"
+      "hash": "af24e029ff4156e8",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/normen-en-keuringen": {
-      "hash": "449f30b4c763184c",
-      "gewijzigd": "2026-10-28"
+      "hash": "ccf4db501d807afa",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/peak-shaving": {
-      "hash": "e31909a6c38700bd",
-      "gewijzigd": "2026-10-28"
+      "hash": "4d182f29f2becf2c",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/subsidiemechanismen": {
-      "hash": "dffc9ce2eabe0d99",
-      "gewijzigd": "2026-10-28"
+      "hash": "75f59d189ce7ab58",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/terugleverbeperking": {
-      "hash": "3e0f91ec885b807c",
-      "gewijzigd": "2026-10-28"
+      "hash": "ac02d12d6f1afc1a",
+      "gewijzigd": "2026-11-09"
     },
     "kennis/transportvermogen-versus-aansluitwaarde": {
-      "hash": "c3d5a89442c4fca6",
-      "gewijzigd": "2026-10-28"
+      "hash": "4a9f9179f42cdb9f",
+      "gewijzigd": "2026-11-09"
     },
     "laadplein": {
-      "hash": "bd897412e1821f4f",
-      "gewijzigd": "2026-10-28"
+      "hash": "6a6f6620ef793c6d",
+      "gewijzigd": "2026-11-09"
     },
     "microgrids": {
       "hash": "eac83bc6513a6f33",
       "gewijzigd": "2026-10-28"
     },
     "netcongestie": {
-      "hash": "975b74a927441143",
-      "gewijzigd": "2026-10-28"
+      "hash": "f4dbb88b257a3daa",
+      "gewijzigd": "2026-11-09"
     },
     "nieuws": {
       "hash": "3ff0825a833e26f2",
@@ -216,1456 +216,1456 @@
       "gewijzigd": "2026-10-28"
     },
     "regios": {
-      "hash": "aaa376962d6e0e4b",
-      "gewijzigd": "2026-10-28"
+      "hash": "21e05217722fdc85",
+      "gewijzigd": "2026-11-09"
     },
     "regios/drenthe": {
-      "hash": "0ca042011544624b",
-      "gewijzigd": "2026-10-28"
+      "hash": "0dab86aaeaccc76d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/drenthe/aa-en-hunze": {
-      "hash": "5d5d85700de378f2",
-      "gewijzigd": "2026-10-28"
+      "hash": "240a3ea708bb8bda",
+      "gewijzigd": "2026-11-09"
     },
     "regios/drenthe/assen": {
-      "hash": "3d5d4a26292913eb",
-      "gewijzigd": "2026-10-28"
+      "hash": "794efa840a206226",
+      "gewijzigd": "2026-11-09"
     },
     "regios/drenthe/borger-odoorn": {
-      "hash": "6c4634618f23ff5a",
-      "gewijzigd": "2026-10-28"
+      "hash": "6e7df2c396f545fd",
+      "gewijzigd": "2026-11-09"
     },
     "regios/drenthe/coevorden": {
-      "hash": "91be0820852903a8",
-      "gewijzigd": "2026-10-28"
+      "hash": "cb31911405f7fb8b",
+      "gewijzigd": "2026-11-09"
     },
     "regios/drenthe/de-wolden": {
-      "hash": "8f8cba31af8f91e7",
-      "gewijzigd": "2026-10-28"
+      "hash": "83b7895364f785f4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/drenthe/emmen": {
-      "hash": "ae68e407f6015fb4",
-      "gewijzigd": "2026-10-28"
+      "hash": "7997d7921b488937",
+      "gewijzigd": "2026-11-09"
     },
     "regios/drenthe/hoogeveen": {
-      "hash": "5afc51685b48e13e",
-      "gewijzigd": "2026-10-28"
+      "hash": "e628c095de25b6d5",
+      "gewijzigd": "2026-11-09"
     },
     "regios/drenthe/meppel": {
-      "hash": "3c4574697e51d9f8",
-      "gewijzigd": "2026-10-28"
+      "hash": "346835a5bff850a5",
+      "gewijzigd": "2026-11-09"
     },
     "regios/drenthe/midden-drenthe": {
-      "hash": "2b928cf242037b38",
-      "gewijzigd": "2026-10-28"
+      "hash": "03b41b896a6b8ca7",
+      "gewijzigd": "2026-11-09"
     },
     "regios/drenthe/noordenveld": {
-      "hash": "3799a0cda11bc5e1",
-      "gewijzigd": "2026-10-28"
+      "hash": "4dfabaa664e708d2",
+      "gewijzigd": "2026-11-09"
     },
     "regios/drenthe/tynaarlo": {
-      "hash": "2403cb9ddef319b2",
-      "gewijzigd": "2026-10-28"
+      "hash": "8c927fd31685fbd4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/drenthe/westerveld": {
-      "hash": "7ac169beaff6d84c",
-      "gewijzigd": "2026-10-28"
+      "hash": "dd3bd132049d266f",
+      "gewijzigd": "2026-11-09"
     },
     "regios/flevoland": {
-      "hash": "b92fe8ad641458bc",
-      "gewijzigd": "2026-10-28"
+      "hash": "592a0e184c26cf2f",
+      "gewijzigd": "2026-11-09"
     },
     "regios/flevoland/almere": {
-      "hash": "c84349e90d15b5f7",
-      "gewijzigd": "2026-10-28"
+      "hash": "9a43b243cb7c4e5c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/flevoland/dronten": {
-      "hash": "c1bbd8e4513d1bc4",
-      "gewijzigd": "2026-10-28"
+      "hash": "d5f3850ddf86881f",
+      "gewijzigd": "2026-11-09"
     },
     "regios/flevoland/lelystad": {
-      "hash": "76fd7f702ab793cc",
-      "gewijzigd": "2026-10-28"
+      "hash": "331e23ec04295fe1",
+      "gewijzigd": "2026-11-09"
     },
     "regios/flevoland/noordoostpolder": {
-      "hash": "5d4e6370ae3f681d",
-      "gewijzigd": "2026-10-28"
+      "hash": "ab81b4517243bcd6",
+      "gewijzigd": "2026-11-09"
     },
     "regios/flevoland/urk": {
-      "hash": "63ce78874c1a57a9",
-      "gewijzigd": "2026-10-28"
+      "hash": "bdef16e9fcb68ff3",
+      "gewijzigd": "2026-11-09"
     },
     "regios/flevoland/zeewolde": {
-      "hash": "18b1e58c96cf3498",
-      "gewijzigd": "2026-10-28"
+      "hash": "8e0fe1e7bf885323",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan": {
-      "hash": "cbbf939fa7649d6e",
-      "gewijzigd": "2026-10-28"
+      "hash": "4b6158ea0c52e826",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/achtkarspelen": {
-      "hash": "9077ae7bf51d82df",
-      "gewijzigd": "2026-10-28"
+      "hash": "b028d53c1cc31939",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/ameland": {
-      "hash": "48bed8e6e73f0577",
-      "gewijzigd": "2026-10-28"
+      "hash": "5efa1253e3327843",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/dantumadiel": {
-      "hash": "0008c6207a716139",
-      "gewijzigd": "2026-10-28"
+      "hash": "fda8e9a7f4ae8494",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/de-fryske-marren": {
-      "hash": "3662822c5ba3cf9e",
-      "gewijzigd": "2026-10-28"
+      "hash": "1436622555d8572d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/harlingen": {
-      "hash": "fb5487240ba669ee",
-      "gewijzigd": "2026-10-28"
+      "hash": "93ed5cfc627e5b5c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/heerenveen": {
-      "hash": "7a6da62039d414f0",
-      "gewijzigd": "2026-10-28"
+      "hash": "a2063be702c7e115",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/leeuwarden": {
-      "hash": "adb21c707ece1d75",
-      "gewijzigd": "2026-10-28"
+      "hash": "afa0089536371c2f",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/noardeast-fryslan": {
-      "hash": "13059554cd0e813c",
-      "gewijzigd": "2026-10-28"
+      "hash": "df72049b6b5bd3f4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/ooststellingwerf": {
-      "hash": "b755bdfb514dbb6a",
-      "gewijzigd": "2026-10-28"
+      "hash": "936003ae836c1a72",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/opsterland": {
-      "hash": "9d2a5e279550b487",
-      "gewijzigd": "2026-10-28"
+      "hash": "505276f8a47b9f0d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/smallingerland": {
-      "hash": "0b47a6ed06df2bbe",
-      "gewijzigd": "2026-10-28"
+      "hash": "0325be154707e17a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/sudwest-fryslan": {
-      "hash": "db2bfb108a49f155",
-      "gewijzigd": "2026-10-28"
+      "hash": "1a0bf40359fbecfa",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/terschelling": {
-      "hash": "aca475d77eb58fc2",
-      "gewijzigd": "2026-10-28"
+      "hash": "534b650086ce5742",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/tytsjerksteradiel": {
-      "hash": "0e1176f37b6aa91a",
-      "gewijzigd": "2026-10-28"
+      "hash": "373f3953e783ee43",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/vlieland": {
-      "hash": "95c332ce4d8229f7",
-      "gewijzigd": "2026-10-28"
+      "hash": "40eb960992462def",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/waadhoeke": {
-      "hash": "3e2457a72ea84436",
-      "gewijzigd": "2026-10-28"
+      "hash": "980ce6e5f38ccb1d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/fryslan/weststellingwerf": {
-      "hash": "79828bad3d6cf0d5",
-      "gewijzigd": "2026-10-28"
+      "hash": "1ea2611416b162e8",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland": {
-      "hash": "f6de58d1f3ff9fcd",
-      "gewijzigd": "2026-10-28"
+      "hash": "76e7d6e1a950547d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/aalten": {
-      "hash": "fe2bd71ad407489e",
-      "gewijzigd": "2026-10-28"
+      "hash": "33d4ecf63499857f",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/apeldoorn": {
-      "hash": "3f6b1bf81905c401",
-      "gewijzigd": "2026-10-28"
+      "hash": "3ac710fdbe54be1e",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/arnhem": {
-      "hash": "b5378ce1d4d84a71",
-      "gewijzigd": "2026-10-28"
+      "hash": "aaae693bdc870d6f",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/barneveld": {
-      "hash": "724290eebd9af3db",
-      "gewijzigd": "2026-10-28"
+      "hash": "2b3c799b0cd007e1",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/berg-en-dal": {
-      "hash": "406c2c6924b02748",
-      "gewijzigd": "2026-10-28"
+      "hash": "d7c4afe50f4401cc",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/berkelland": {
-      "hash": "bb4862c56b61355c",
-      "gewijzigd": "2026-10-28"
+      "hash": "b5f7e8301a41565a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/beuningen": {
-      "hash": "95177191bd66eba8",
-      "gewijzigd": "2026-10-28"
+      "hash": "48489600e8ede7f6",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/bronckhorst": {
-      "hash": "43e06f431f25d2e2",
-      "gewijzigd": "2026-10-28"
+      "hash": "616c7e47fd76db6a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/brummen": {
-      "hash": "c936c8ac84678c70",
-      "gewijzigd": "2026-10-28"
+      "hash": "8c7e7597a6a8a0d8",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/buren": {
-      "hash": "e0849fc9a5d46f90",
-      "gewijzigd": "2026-10-28"
+      "hash": "b4d03d753882d155",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/culemborg": {
-      "hash": "d17bdb67f686bed5",
-      "gewijzigd": "2026-10-28"
+      "hash": "1caa3779bea7b1d5",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/doesburg": {
-      "hash": "1f6b860d23447a13",
-      "gewijzigd": "2026-10-28"
+      "hash": "87c668bb7643577c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/doetinchem": {
-      "hash": "cc5d529763689817",
-      "gewijzigd": "2026-10-28"
+      "hash": "8b7c4e7e419e06a5",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/druten": {
-      "hash": "f05b173ece2facf7",
-      "gewijzigd": "2026-10-28"
+      "hash": "f33da2b2705ef1d0",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/duiven": {
-      "hash": "af81f5460c638a89",
-      "gewijzigd": "2026-10-28"
+      "hash": "0ca0bf03a750da5a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/ede": {
-      "hash": "fe804208d462063f",
-      "gewijzigd": "2026-10-28"
+      "hash": "187619006ad3a454",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/elburg": {
-      "hash": "e78626c23f24ca6b",
-      "gewijzigd": "2026-10-28"
+      "hash": "dd484b6f94edb343",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/epe": {
-      "hash": "cb1f1719e2638ca5",
-      "gewijzigd": "2026-10-28"
+      "hash": "041325f86ee29020",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/ermelo": {
-      "hash": "eb37c2d1f82879fb",
-      "gewijzigd": "2026-10-28"
+      "hash": "5c89b2e0c173d91c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/harderwijk": {
-      "hash": "14eba619feb46585",
-      "gewijzigd": "2026-10-28"
+      "hash": "e6c204cc92ac5331",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/hattem": {
-      "hash": "92b5bc743e34a41b",
-      "gewijzigd": "2026-10-28"
+      "hash": "23c309c784e6fe51",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/heerde": {
-      "hash": "0af0af8dcba801af",
-      "gewijzigd": "2026-10-28"
+      "hash": "7a4dc29e73c8b53d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/heumen": {
-      "hash": "c9540f0eb6c3e382",
-      "gewijzigd": "2026-10-28"
+      "hash": "2c751bf59c6d9ed1",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/lingewaard": {
-      "hash": "fa31e59f29ddb011",
-      "gewijzigd": "2026-10-28"
+      "hash": "25059785e50004a3",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/lochem": {
-      "hash": "40cdd549af70c21d",
-      "gewijzigd": "2026-10-28"
+      "hash": "3c1305bbfcfcb333",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/maasdriel": {
-      "hash": "42cba7caf0ad20a9",
-      "gewijzigd": "2026-10-28"
+      "hash": "31fb86bc622e842a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/montferland": {
-      "hash": "2dfd15ff5a7f9463",
-      "gewijzigd": "2026-10-28"
+      "hash": "fe96c57a51294668",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/neder-betuwe": {
-      "hash": "1c55d17f042ac0c9",
-      "gewijzigd": "2026-10-28"
+      "hash": "4880ce1d89997bd4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/nijkerk": {
-      "hash": "5e62d6bb7d5e2d80",
-      "gewijzigd": "2026-10-28"
+      "hash": "5afeabacd63a9a77",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/nijmegen": {
-      "hash": "ddb2c9c7bb19ce26",
-      "gewijzigd": "2026-10-28"
+      "hash": "6d501be170b3706a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/nunspeet": {
-      "hash": "0a8b001525996d31",
-      "gewijzigd": "2026-10-28"
+      "hash": "1751f9c82d8f586d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/oldebroek": {
-      "hash": "43d816fae12503dd",
-      "gewijzigd": "2026-10-28"
+      "hash": "08a844de7049ba0a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/oost-gelre": {
-      "hash": "a5af3f2d51b17f5e",
-      "gewijzigd": "2026-10-28"
+      "hash": "8b45d2a1cb58e345",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/oude-ijsselstreek": {
-      "hash": "209c6aefa53b915a",
-      "gewijzigd": "2026-10-28"
+      "hash": "9ba46e197d8eb57d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/overbetuwe": {
-      "hash": "2b63073e943a071b",
-      "gewijzigd": "2026-10-28"
+      "hash": "3179f5666d1961d6",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/putten": {
-      "hash": "9a8cd2be71fa86f3",
-      "gewijzigd": "2026-10-28"
+      "hash": "05d88da859aeb4d5",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/renkum": {
-      "hash": "af07a6ea74291d33",
-      "gewijzigd": "2026-10-28"
+      "hash": "0ff92e895d236568",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/rheden": {
-      "hash": "3a1c0fec3ad1c13f",
-      "gewijzigd": "2026-10-28"
+      "hash": "8f5ef689857bace4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/scherpenzeel": {
-      "hash": "2d3fe7ee54a7864c",
-      "gewijzigd": "2026-10-28"
+      "hash": "b79afc24c6be1b92",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/tiel": {
-      "hash": "2ecf2ff52ee861be",
-      "gewijzigd": "2026-10-28"
+      "hash": "0ba88d6a16b3a616",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/voorst": {
-      "hash": "1ca5f35e3ed337e0",
-      "gewijzigd": "2026-10-28"
+      "hash": "129b69ba9f183432",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/wageningen": {
-      "hash": "585ba1e211a591dc",
-      "gewijzigd": "2026-10-28"
+      "hash": "66e16ef37ff22f09",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/west-betuwe": {
-      "hash": "3f9ada1e914077ab",
-      "gewijzigd": "2026-10-28"
+      "hash": "7682ccf9d77b477b",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/west-maas-en-waal": {
-      "hash": "eb6654199a86be46",
-      "gewijzigd": "2026-10-28"
+      "hash": "7d5b191c336bfedd",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/westervoort": {
-      "hash": "6d80e48c56cf78eb",
-      "gewijzigd": "2026-10-28"
+      "hash": "98d439494249756e",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/wijchen": {
-      "hash": "364134d356026fe9",
-      "gewijzigd": "2026-10-28"
+      "hash": "70352d010c5e3b52",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/winterswijk": {
-      "hash": "3cdf5af0ccc821af",
-      "gewijzigd": "2026-10-28"
+      "hash": "504969bd4bce80f0",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/zaltbommel": {
-      "hash": "c0b49a7552a0a96f",
-      "gewijzigd": "2026-10-28"
+      "hash": "36004b1026f96e02",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/zevenaar": {
-      "hash": "68e3ec36af682765",
-      "gewijzigd": "2026-10-28"
+      "hash": "c52db7a57ef4b8de",
+      "gewijzigd": "2026-11-09"
     },
     "regios/gelderland/zutphen": {
-      "hash": "29bdb759d501e552",
-      "gewijzigd": "2026-10-28"
+      "hash": "3f2833099aa79a38",
+      "gewijzigd": "2026-11-09"
     },
     "regios/groningen": {
-      "hash": "bb65c97fd0c2f5cc",
-      "gewijzigd": "2026-10-28"
+      "hash": "5648cf1f215d1a02",
+      "gewijzigd": "2026-11-09"
     },
     "regios/groningen/eemsdelta": {
-      "hash": "63482e6044e142ec",
-      "gewijzigd": "2026-10-28"
+      "hash": "b843daee0a29e2cb",
+      "gewijzigd": "2026-11-09"
     },
     "regios/groningen/groningen": {
-      "hash": "15fe7743a6e7668d",
-      "gewijzigd": "2026-10-28"
+      "hash": "0004bd88ef9211e5",
+      "gewijzigd": "2026-11-09"
     },
     "regios/groningen/het-hogeland": {
-      "hash": "054e5c34e7fafa55",
-      "gewijzigd": "2026-10-28"
+      "hash": "5b74570a537ba522",
+      "gewijzigd": "2026-11-09"
     },
     "regios/groningen/midden-groningen": {
-      "hash": "9c3e76672619276e",
-      "gewijzigd": "2026-10-28"
+      "hash": "53b78f9da26cc6ef",
+      "gewijzigd": "2026-11-09"
     },
     "regios/groningen/oldambt": {
-      "hash": "7b57823e27e68782",
-      "gewijzigd": "2026-10-28"
+      "hash": "96b3e18c23a91982",
+      "gewijzigd": "2026-11-09"
     },
     "regios/groningen/pekela": {
-      "hash": "44376a7d0e9462ab",
-      "gewijzigd": "2026-10-28"
+      "hash": "2d1c637ba38f8e04",
+      "gewijzigd": "2026-11-09"
     },
     "regios/groningen/stadskanaal": {
-      "hash": "e10d7acf9af01407",
-      "gewijzigd": "2026-10-28"
+      "hash": "d018d261d93293eb",
+      "gewijzigd": "2026-11-09"
     },
     "regios/groningen/veendam": {
-      "hash": "4ca4e6af14d76eba",
-      "gewijzigd": "2026-10-28"
+      "hash": "aab15bd03436c97f",
+      "gewijzigd": "2026-11-09"
     },
     "regios/groningen/westerkwartier": {
-      "hash": "94d7747f09366842",
-      "gewijzigd": "2026-10-28"
+      "hash": "7a6d837c25d98f73",
+      "gewijzigd": "2026-11-09"
     },
     "regios/groningen/westerwolde": {
-      "hash": "ce407dadd443eb53",
-      "gewijzigd": "2026-10-28"
+      "hash": "6a270279b154c486",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg": {
-      "hash": "492a84fd672e7c0c",
-      "gewijzigd": "2026-10-28"
+      "hash": "7feaa81befd7caf7",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/beek": {
-      "hash": "8543556ada4dc80d",
-      "gewijzigd": "2026-10-28"
+      "hash": "fdbb33b281abf7a1",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/beekdaelen": {
-      "hash": "84f1c414f9025c9d",
-      "gewijzigd": "2026-10-28"
+      "hash": "9b23fe7ce222e052",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/beesel": {
-      "hash": "2ba2305710e366ea",
-      "gewijzigd": "2026-10-28"
+      "hash": "ff74085071b8eb4d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/bergen-l": {
-      "hash": "2134f7fd02b000bd",
-      "gewijzigd": "2026-10-28"
+      "hash": "dbd625f11d086485",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/brunssum": {
-      "hash": "17262c08a63b698d",
-      "gewijzigd": "2026-10-28"
+      "hash": "64b807afb42ca73c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/echt-susteren": {
-      "hash": "86af6abce96cee6b",
-      "gewijzigd": "2026-10-28"
+      "hash": "53f508a38c0c0d7f",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/eijsden-margraten": {
-      "hash": "b484e08bd55ea1e8",
-      "gewijzigd": "2026-10-28"
+      "hash": "62cc08d58c7215e7",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/gennep": {
-      "hash": "9a7955fcc4d067a9",
-      "gewijzigd": "2026-10-28"
+      "hash": "968188dc9476998f",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/gulpen-wittem": {
-      "hash": "6a85e3ff43872cb9",
-      "gewijzigd": "2026-10-28"
+      "hash": "4adf48898ad5695d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/heerlen": {
-      "hash": "a60a4bd5a4f5962b",
-      "gewijzigd": "2026-10-28"
+      "hash": "10693e24c348e3e1",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/horst-aan-de-maas": {
-      "hash": "b70f09cbdea8dc64",
-      "gewijzigd": "2026-10-28"
+      "hash": "c024ce1e3b02108e",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/kerkrade": {
-      "hash": "4860cd417e6b4bc3",
-      "gewijzigd": "2026-10-28"
+      "hash": "daf9df091129566d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/landgraaf": {
-      "hash": "fa6782fbe7c6af24",
-      "gewijzigd": "2026-10-28"
+      "hash": "e50d8eb5b5122b66",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/leudal": {
-      "hash": "3cf2d53f9abcddcb",
-      "gewijzigd": "2026-10-28"
+      "hash": "57eee55e0b507588",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/maasgouw": {
-      "hash": "844c0f54c260ed94",
-      "gewijzigd": "2026-10-28"
+      "hash": "9c60b386795b7839",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/maastricht": {
-      "hash": "bf3d3fe9042d61ff",
-      "gewijzigd": "2026-10-28"
+      "hash": "40a26d3419928fd6",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/meerssen": {
-      "hash": "28cba22f391e5964",
-      "gewijzigd": "2026-10-28"
+      "hash": "bf3bf82a0ef5ba81",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/mook-en-middelaar": {
-      "hash": "d038f916ba04527a",
-      "gewijzigd": "2026-10-28"
+      "hash": "147b42d152310368",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/nederweert": {
-      "hash": "26dfd47d665dba58",
-      "gewijzigd": "2026-10-28"
+      "hash": "c192513e24681d20",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/peel-en-maas": {
-      "hash": "3fff6e84a140464a",
-      "gewijzigd": "2026-10-28"
+      "hash": "bc4efd54814bd8be",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/roerdalen": {
-      "hash": "d744126762f12630",
-      "gewijzigd": "2026-10-28"
+      "hash": "f10b87a577e4bb5c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/roermond": {
-      "hash": "78047d980ab2b5df",
-      "gewijzigd": "2026-10-28"
+      "hash": "1d20429b0961612e",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/simpelveld": {
-      "hash": "0847bc864eec731a",
-      "gewijzigd": "2026-10-28"
+      "hash": "f096122692831fb4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/sittard-geleen": {
-      "hash": "ba6f4d475b79a05d",
-      "gewijzigd": "2026-10-28"
+      "hash": "05c8d7eac08d7e65",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/stein": {
-      "hash": "f7ad8e74e1e8f510",
-      "gewijzigd": "2026-10-28"
+      "hash": "1017f8da9d606ed1",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/vaals": {
-      "hash": "e24670a47cb3d1c3",
-      "gewijzigd": "2026-10-28"
+      "hash": "fc5c86d199abd4f0",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/valkenburg-aan-de-geul": {
-      "hash": "35b487acda35a0c8",
-      "gewijzigd": "2026-10-28"
+      "hash": "1fec18174c3eac19",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/venlo": {
-      "hash": "dff6287c0e9bedb7",
-      "gewijzigd": "2026-10-28"
+      "hash": "de1d9d342e06e0ee",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/venray": {
-      "hash": "15caf5e307767879",
-      "gewijzigd": "2026-10-28"
+      "hash": "0fd024c533d1b3c7",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/voerendaal": {
-      "hash": "bc07a75f72e8357e",
-      "gewijzigd": "2026-10-28"
+      "hash": "89bf75f193cc0fe3",
+      "gewijzigd": "2026-11-09"
     },
     "regios/limburg/weert": {
-      "hash": "bd9fe14766f79168",
-      "gewijzigd": "2026-10-28"
+      "hash": "e4ddef4972c50bd4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant": {
-      "hash": "868ce6d244fc77ec",
-      "gewijzigd": "2026-10-28"
+      "hash": "f6ad6ce3062366dd",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/alphen-chaam": {
-      "hash": "3bf03dc60974327a",
-      "gewijzigd": "2026-10-28"
+      "hash": "aa6060567db180c0",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/altena": {
-      "hash": "86f94a8f70b8f894",
-      "gewijzigd": "2026-10-28"
+      "hash": "1babdf352ef82cf6",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/asten": {
-      "hash": "db136200f9dfc423",
-      "gewijzigd": "2026-10-28"
+      "hash": "4b94e1e68acc35c2",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/baarle-nassau": {
-      "hash": "0b3ad5949d94a778",
-      "gewijzigd": "2026-10-28"
+      "hash": "7e6accb6926c65a9",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/bergeijk": {
-      "hash": "b909953db39b80e2",
-      "gewijzigd": "2026-10-28"
+      "hash": "9a3c2d926589e2ed",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/bergen-op-zoom": {
-      "hash": "b7ea33d42140eff3",
-      "gewijzigd": "2026-10-28"
+      "hash": "90b7df3d9f10c425",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/bernheze": {
-      "hash": "34eb138b68f3bbed",
-      "gewijzigd": "2026-10-28"
+      "hash": "8a7a8c5afede61a6",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/best": {
-      "hash": "e33c24b5b55e0776",
-      "gewijzigd": "2026-10-28"
+      "hash": "2c33bd0e5b69d563",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/bladel": {
-      "hash": "c29eedf779dcd40d",
-      "gewijzigd": "2026-10-28"
+      "hash": "141a541388dea464",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/boekel": {
-      "hash": "249d701d7d058062",
-      "gewijzigd": "2026-10-28"
+      "hash": "f635866bfa1a5f8c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/boxtel": {
-      "hash": "7bd9c512abe93781",
-      "gewijzigd": "2026-10-28"
+      "hash": "4dde9d7e5df94089",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/breda": {
-      "hash": "a446928207527b56",
-      "gewijzigd": "2026-10-28"
+      "hash": "2b932621dd9c7380",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/cranendonck": {
-      "hash": "38302b9b7f973d6a",
-      "gewijzigd": "2026-10-28"
+      "hash": "194543c67146cd7c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/deurne": {
-      "hash": "848defda13f3133c",
-      "gewijzigd": "2026-10-28"
+      "hash": "f96284a0bfd4c07c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/dongen": {
-      "hash": "0149f60a94adbd67",
-      "gewijzigd": "2026-10-28"
+      "hash": "6d25bfa9801898e8",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/drimmelen": {
-      "hash": "14543b2ea534ffb4",
-      "gewijzigd": "2026-10-28"
+      "hash": "a8145013356b4a61",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/eersel": {
-      "hash": "da17466245a04827",
-      "gewijzigd": "2026-10-28"
+      "hash": "038f5870a0623896",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/eindhoven": {
-      "hash": "fb8da1a8e3d4b022",
-      "gewijzigd": "2026-10-28"
+      "hash": "2ac3d5488f6494bf",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/etten-leur": {
-      "hash": "b08f06d090028d45",
-      "gewijzigd": "2026-10-28"
+      "hash": "cef7ffcf3fcf9a1c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/geertruidenberg": {
-      "hash": "b2f3e96b0f04d21b",
-      "gewijzigd": "2026-10-28"
+      "hash": "be3620e1ab834082",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/geldrop-mierlo": {
-      "hash": "e38ca40804992e23",
-      "gewijzigd": "2026-10-28"
+      "hash": "8bb027d1e90aa142",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/gemert-bakel": {
-      "hash": "47b91ac51bd23dde",
-      "gewijzigd": "2026-10-28"
+      "hash": "85ad829b66b85910",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/gilze-en-rijen": {
-      "hash": "f85565e8c96a9152",
-      "gewijzigd": "2026-10-28"
+      "hash": "9b3c142ee3ee3c70",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/goirle": {
-      "hash": "84a7b9866d76a476",
-      "gewijzigd": "2026-10-28"
+      "hash": "1743bf04816bfc3a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/halderberge": {
-      "hash": "80166caf671f8c97",
-      "gewijzigd": "2026-10-28"
+      "hash": "3198d36ce042cfec",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/heeze-leende": {
-      "hash": "325d81b06c9f910b",
-      "gewijzigd": "2026-10-28"
+      "hash": "a6484f70add04bb2",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/helmond": {
-      "hash": "d3c5c34af0b6f0ea",
-      "gewijzigd": "2026-10-28"
+      "hash": "9c890c3a3b81b82b",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/heusden": {
-      "hash": "8c1e75f6f2cac057",
-      "gewijzigd": "2026-10-28"
+      "hash": "1838db1269d72ea1",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/hilvarenbeek": {
-      "hash": "3385e56a6383387e",
-      "gewijzigd": "2026-10-28"
+      "hash": "83ad92655e2acd61",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/laarbeek": {
-      "hash": "160684a748aa01a5",
-      "gewijzigd": "2026-10-28"
+      "hash": "c3e0eb7f55094e88",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/land-van-cuijk": {
-      "hash": "5ea5849ab7e7a4fd",
-      "gewijzigd": "2026-10-28"
+      "hash": "9181b7e703c75d3d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/loon-op-zand": {
-      "hash": "e44a1cb9457c8ccd",
-      "gewijzigd": "2026-10-28"
+      "hash": "b26759d58c3f3618",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/maashorst": {
-      "hash": "c8100c983a73a011",
-      "gewijzigd": "2026-10-28"
+      "hash": "0cb7e926676fd366",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/meierijstad": {
-      "hash": "a0d9dbfd84d2935d",
-      "gewijzigd": "2026-10-28"
+      "hash": "1f0a6c5150fe3722",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/moerdijk": {
-      "hash": "6899b49e098a2069",
-      "gewijzigd": "2026-10-28"
+      "hash": "adddc1c814caf5d7",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/nuenen-gerwen-en-nederwetten": {
-      "hash": "358a34a4b25fab66",
-      "gewijzigd": "2026-10-28"
+      "hash": "5c4532b4343b483a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/oirschot": {
-      "hash": "53d191435d292dce",
-      "gewijzigd": "2026-10-28"
+      "hash": "6c1a2feed67c62d8",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/oisterwijk": {
-      "hash": "22859900628d8dce",
-      "gewijzigd": "2026-10-28"
+      "hash": "060335100822ac57",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/oosterhout": {
-      "hash": "8a001160f94d498c",
-      "gewijzigd": "2026-10-28"
+      "hash": "ec35aa214e421f85",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/oss": {
-      "hash": "4221d54cd339e5c2",
-      "gewijzigd": "2026-10-28"
+      "hash": "461a529f0f18db19",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/reusel-de-mierden": {
-      "hash": "25a5b4f64bfc0ef7",
-      "gewijzigd": "2026-10-28"
+      "hash": "ba851a435867c1b9",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/roosendaal": {
-      "hash": "98f2b055a70f51b2",
-      "gewijzigd": "2026-10-28"
+      "hash": "e908b3118f9886a7",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/rucphen": {
-      "hash": "19fc5b2fbd421896",
-      "gewijzigd": "2026-10-28"
+      "hash": "019976887215ead4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/s-hertogenbosch": {
-      "hash": "00d18b3e2bdbd9d2",
-      "gewijzigd": "2026-10-28"
+      "hash": "c39c1cb705779003",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/sint-michielsgestel": {
-      "hash": "dbd7d7619b18b338",
-      "gewijzigd": "2026-10-28"
+      "hash": "21b7f86582f0bce6",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/someren": {
-      "hash": "12fddfb1da6ad1a2",
-      "gewijzigd": "2026-10-28"
+      "hash": "3df60b90bd78d817",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/son-en-breugel": {
-      "hash": "88773f12f24eecb0",
-      "gewijzigd": "2026-10-28"
+      "hash": "688a635e15a2e092",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/steenbergen": {
-      "hash": "e0038f1e0bb4132f",
-      "gewijzigd": "2026-10-28"
+      "hash": "ca26c7d9d2e52a09",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/tilburg": {
-      "hash": "12733b8e59b82cd9",
-      "gewijzigd": "2026-10-28"
+      "hash": "053e0ad7548a5111",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/valkenswaard": {
-      "hash": "43873a799401d1f3",
-      "gewijzigd": "2026-10-28"
+      "hash": "4f997dec61bc87cc",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/veldhoven": {
-      "hash": "1c97bbc9f018ea67",
-      "gewijzigd": "2026-10-28"
+      "hash": "4486e1433571cc02",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/vught": {
-      "hash": "95d632ea9ed12bcf",
-      "gewijzigd": "2026-10-28"
+      "hash": "8b59d258d1485ffd",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/waalre": {
-      "hash": "804816e560878ef6",
-      "gewijzigd": "2026-10-28"
+      "hash": "a55be923b9c70f9a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/waalwijk": {
-      "hash": "e2615d78c3baf8e3",
-      "gewijzigd": "2026-10-28"
+      "hash": "6179a1cdca1e375c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/woensdrecht": {
-      "hash": "667cf73c6ce0eb6a",
-      "gewijzigd": "2026-10-28"
+      "hash": "bd2fb4549a3bab35",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-brabant/zundert": {
-      "hash": "7b9cc7e13741ebea",
-      "gewijzigd": "2026-10-28"
+      "hash": "73b18704529e2436",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland": {
-      "hash": "f20f4790a3f229b8",
-      "gewijzigd": "2026-10-28"
+      "hash": "6ff42d2f1013fa8d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/aalsmeer": {
-      "hash": "80094c0f053cdbec",
-      "gewijzigd": "2026-10-28"
+      "hash": "7667318c891c9375",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/alkmaar": {
-      "hash": "bdf158c88dc92b06",
-      "gewijzigd": "2026-10-28"
+      "hash": "68c61974cc94c340",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/amstelveen": {
-      "hash": "affccbcda18bcc4e",
-      "gewijzigd": "2026-10-28"
+      "hash": "3f95d13d169a0c64",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/amsterdam": {
-      "hash": "e70e4f50b4327264",
-      "gewijzigd": "2026-10-28"
+      "hash": "8f38a96840b40d7d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/bergen-nh": {
-      "hash": "6c2d59158a2779f9",
-      "gewijzigd": "2026-10-28"
+      "hash": "95b3437b0767521d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/beverwijk": {
-      "hash": "426f9fbf1c80049b",
-      "gewijzigd": "2026-10-28"
+      "hash": "3c2da8acf2997750",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/blaricum": {
-      "hash": "a5eecbe7c86eea55",
-      "gewijzigd": "2026-10-28"
+      "hash": "737d3bf71f0eb0f4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/castricum": {
-      "hash": "543c9f44de2ba188",
-      "gewijzigd": "2026-10-28"
+      "hash": "1c99e1a8794f8bbd",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/den-helder": {
-      "hash": "d248bf2261dcbc98",
-      "gewijzigd": "2026-10-28"
+      "hash": "8a1591170a8be665",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/diemen": {
-      "hash": "aa81cdb12adebbdd",
-      "gewijzigd": "2026-10-28"
+      "hash": "6771c493a2e974ac",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/dijk-en-waard": {
-      "hash": "84555268ee161dec",
-      "gewijzigd": "2026-10-28"
+      "hash": "1d3d1581b5b057a9",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/drechterland": {
-      "hash": "0fd8d8de8d69698c",
-      "gewijzigd": "2026-10-28"
+      "hash": "246d990ed427d46d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/edam-volendam": {
-      "hash": "d4776ec68bd96a6c",
-      "gewijzigd": "2026-10-28"
+      "hash": "c25606a701953f52",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/enkhuizen": {
-      "hash": "4a727bb997defcf2",
-      "gewijzigd": "2026-10-28"
+      "hash": "4f472b4d88c6b800",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/gooise-meren": {
-      "hash": "fe4a6cf403abe511",
-      "gewijzigd": "2026-10-28"
+      "hash": "944afcbe8eb6268e",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/haarlem": {
-      "hash": "685b405135f1ca95",
-      "gewijzigd": "2026-10-28"
+      "hash": "326c187601e29aa0",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/haarlemmermeer": {
-      "hash": "d1c6eba61ddb4a53",
-      "gewijzigd": "2026-10-28"
+      "hash": "e547d2d8454f8de4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/heemskerk": {
-      "hash": "a9a244f77a935e30",
-      "gewijzigd": "2026-10-28"
+      "hash": "b86274b7074377b7",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/heemstede": {
-      "hash": "8db37d8cffe1eee0",
-      "gewijzigd": "2026-10-28"
+      "hash": "601285bc2a6c7859",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/heiloo": {
-      "hash": "35897af5b778c3b0",
-      "gewijzigd": "2026-10-28"
+      "hash": "03294361d99c7b4b",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/hilversum": {
-      "hash": "70c2bc208ca00c26",
-      "gewijzigd": "2026-10-28"
+      "hash": "b716776217103b94",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/hollands-kroon": {
-      "hash": "44382b7d5ace6dfe",
-      "gewijzigd": "2026-10-28"
+      "hash": "6382072b016dcdd8",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/hoorn": {
-      "hash": "b4cc54c34ddba4ab",
-      "gewijzigd": "2026-10-28"
+      "hash": "1f506b47e10363e4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/huizen": {
-      "hash": "b65b62b53d4873a6",
-      "gewijzigd": "2026-10-28"
+      "hash": "412255351188f640",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/koggenland": {
-      "hash": "68f8969399169ef6",
-      "gewijzigd": "2026-10-28"
+      "hash": "f032184817e17d6a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/landsmeer": {
-      "hash": "f0cb8d50f60e31a3",
-      "gewijzigd": "2026-10-28"
+      "hash": "754f021cc9bded33",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/medemblik": {
-      "hash": "0aad03f93713b1bc",
-      "gewijzigd": "2026-10-28"
+      "hash": "05071fddedcfe46b",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/oostzaan": {
-      "hash": "c90e8517aacbbec1",
-      "gewijzigd": "2026-10-28"
+      "hash": "e3d3d99e6c8c5200",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/opmeer": {
-      "hash": "53fceb1ad42f3ec8",
-      "gewijzigd": "2026-10-28"
+      "hash": "a362f95126d6400a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/ouder-amstel": {
-      "hash": "f429e9a6c11433af",
-      "gewijzigd": "2026-10-28"
+      "hash": "1500c5c006ccba35",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/purmerend": {
-      "hash": "2a1d57a2a681ac71",
-      "gewijzigd": "2026-10-28"
+      "hash": "a426e51d2f19324e",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/schagen": {
-      "hash": "f040cccf38c082f6",
-      "gewijzigd": "2026-10-28"
+      "hash": "c2230c1aeec9e041",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/stede-broec": {
-      "hash": "0afce1662f34a2a7",
-      "gewijzigd": "2026-10-28"
+      "hash": "2fc9621f3d465c2a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/texel": {
-      "hash": "1be4d5089847699e",
-      "gewijzigd": "2026-10-28"
+      "hash": "637113fdedf9e7f6",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/uitgeest": {
-      "hash": "fe348a1c9e74375b",
-      "gewijzigd": "2026-10-28"
+      "hash": "fcbcc3a0c3825ddd",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/uithoorn": {
-      "hash": "f11820fb321506d9",
-      "gewijzigd": "2026-10-28"
+      "hash": "6781de49ef52ae8f",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/velsen": {
-      "hash": "1763c4e9e8f6d028",
-      "gewijzigd": "2026-10-28"
+      "hash": "e64aa1760eddf3e3",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/waterland": {
-      "hash": "2bc6e0189c317913",
-      "gewijzigd": "2026-10-28"
+      "hash": "ee4ff404e03422b2",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/wijdemeren": {
-      "hash": "40a8202c8d12d658",
-      "gewijzigd": "2026-10-28"
+      "hash": "d395e07fe77250cc",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/wormerland": {
-      "hash": "58bb133ead000a00",
-      "gewijzigd": "2026-10-28"
+      "hash": "272541bdf03fdde0",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/zaanstad": {
-      "hash": "1d0224e3c2d9c8b2",
-      "gewijzigd": "2026-10-28"
+      "hash": "63d08de85532876a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/noord-holland/zandvoort": {
-      "hash": "985391b6c1b1186f",
-      "gewijzigd": "2026-10-28"
+      "hash": "2ec2acae6e2c3659",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel": {
-      "hash": "1d60bf1d92b43f7b",
-      "gewijzigd": "2026-10-28"
+      "hash": "9ba2f86562307afa",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/almelo": {
-      "hash": "03211b7f694053f0",
-      "gewijzigd": "2026-10-28"
+      "hash": "e2550f912626d5f4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/borne": {
-      "hash": "5cb4f3ff0ced0844",
-      "gewijzigd": "2026-10-28"
+      "hash": "01ff0f36f1e07a5f",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/dalfsen": {
-      "hash": "2ace6df60663219d",
-      "gewijzigd": "2026-10-28"
+      "hash": "c1ad3439c46d0a66",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/deventer": {
-      "hash": "1d438c58b200b8b6",
-      "gewijzigd": "2026-10-28"
+      "hash": "c014facdb01d63ce",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/dinkelland": {
-      "hash": "42fb4738485649dc",
-      "gewijzigd": "2026-10-28"
+      "hash": "8e49dc79e67e4655",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/enschede": {
-      "hash": "c2d4657cb94afa12",
-      "gewijzigd": "2026-10-28"
+      "hash": "f6925eafc74ed2c4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/haaksbergen": {
-      "hash": "a47d53320efc7967",
-      "gewijzigd": "2026-10-28"
+      "hash": "8e0287fcf1c7b3ed",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/hardenberg": {
-      "hash": "70d0c851b7dc0e97",
-      "gewijzigd": "2026-10-28"
+      "hash": "31cc22604c44dfb2",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/hellendoorn": {
-      "hash": "389dcd6d5015b1d9",
-      "gewijzigd": "2026-10-28"
+      "hash": "da0c330387b6282e",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/hengelo": {
-      "hash": "e0bf6fb49238bbd3",
-      "gewijzigd": "2026-10-28"
+      "hash": "00627e8b8d472c67",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/hof-van-twente": {
-      "hash": "6091df8af1afc9a2",
-      "gewijzigd": "2026-10-28"
+      "hash": "a4240255eddf6a63",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/kampen": {
-      "hash": "e06fe82814e9f585",
-      "gewijzigd": "2026-10-28"
+      "hash": "76463c01ea919ecc",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/losser": {
-      "hash": "b1e24db80ea8902f",
-      "gewijzigd": "2026-10-28"
+      "hash": "22c96d6c0201a1bb",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/oldenzaal": {
-      "hash": "44bc8c2719c6e488",
-      "gewijzigd": "2026-10-28"
+      "hash": "c702b285fbc6b2b8",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/olst-wijhe": {
-      "hash": "9559c65a63f28f98",
-      "gewijzigd": "2026-10-28"
+      "hash": "722207870e4cdfd1",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/ommen": {
-      "hash": "932778e239c9058d",
-      "gewijzigd": "2026-10-28"
+      "hash": "b247e3265a672b72",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/raalte": {
-      "hash": "2cc0c535186697f2",
-      "gewijzigd": "2026-10-28"
+      "hash": "8ab8f4b5d06723f3",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/rijssen-holten": {
-      "hash": "5686690353617523",
-      "gewijzigd": "2026-10-28"
+      "hash": "2140dbf5fa927d8d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/staphorst": {
-      "hash": "895796bb205d0d7b",
-      "gewijzigd": "2026-10-28"
+      "hash": "c8cc80ff4f5e95ac",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/steenwijkerland": {
-      "hash": "b725c92f2a7bff1a",
-      "gewijzigd": "2026-10-28"
+      "hash": "f5561fe6d2af3a5a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/tubbergen": {
-      "hash": "a0cdbd891d0d4968",
-      "gewijzigd": "2026-10-28"
+      "hash": "fbb99be919d8355d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/twenterand": {
-      "hash": "4759595c19fd945b",
-      "gewijzigd": "2026-10-28"
+      "hash": "aed964746908e8e8",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/wierden": {
-      "hash": "145015d6eab3fe40",
-      "gewijzigd": "2026-10-28"
+      "hash": "8bec5ecb0ac06d49",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/zwartewaterland": {
-      "hash": "5b2ce358fab6fd2f",
-      "gewijzigd": "2026-10-28"
+      "hash": "7fdf7fdbc8e72705",
+      "gewijzigd": "2026-11-09"
     },
     "regios/overijssel/zwolle": {
-      "hash": "6645383bfc5885b0",
-      "gewijzigd": "2026-10-28"
+      "hash": "904a35e7359e2171",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht": {
-      "hash": "f45e60d0f5658183",
-      "gewijzigd": "2026-10-28"
+      "hash": "95b08f09322ecdea",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/amersfoort": {
-      "hash": "312fe934cadd92dc",
-      "gewijzigd": "2026-10-28"
+      "hash": "d27c22638cdacf53",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/baarn": {
-      "hash": "b49fce7608818f1f",
-      "gewijzigd": "2026-10-28"
+      "hash": "24c1632638143123",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/bunnik": {
-      "hash": "ee783a134479b0fc",
-      "gewijzigd": "2026-10-28"
+      "hash": "18aa23604f2dbf53",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/bunschoten": {
-      "hash": "b90321021aa52f87",
-      "gewijzigd": "2026-10-28"
+      "hash": "28af722433396146",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/de-bilt": {
-      "hash": "ebc48fb0fecafe65",
-      "gewijzigd": "2026-10-28"
+      "hash": "c7d709d73209ab48",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/de-ronde-venen": {
-      "hash": "62ca4f6fe5e92e1c",
-      "gewijzigd": "2026-10-28"
+      "hash": "6f5e04669d26b7d2",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/eemnes": {
-      "hash": "c5c247037d9f63c4",
-      "gewijzigd": "2026-10-28"
+      "hash": "b4ecfe26aba66498",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/houten": {
-      "hash": "b90d2d5d0f159319",
-      "gewijzigd": "2026-10-28"
+      "hash": "01d50c8f3a1c3ac0",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/ijsselstein": {
-      "hash": "a82ef53b52795340",
-      "gewijzigd": "2026-10-28"
+      "hash": "f1452722c8e182cc",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/leusden": {
-      "hash": "fbaf169fc8611346",
-      "gewijzigd": "2026-10-28"
+      "hash": "05260bbd2f67cbd7",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/lopik": {
-      "hash": "54188700c7f45282",
-      "gewijzigd": "2026-10-28"
+      "hash": "75e53feb59dbe276",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/montfoort": {
-      "hash": "a52614f58dc79333",
-      "gewijzigd": "2026-10-28"
+      "hash": "75678892f267cba1",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/nieuwegein": {
-      "hash": "92a40ed541ef4a95",
-      "gewijzigd": "2026-10-28"
+      "hash": "6cfd425b24a5578c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/oudewater": {
-      "hash": "9b801df401ab4d7b",
-      "gewijzigd": "2026-10-28"
+      "hash": "24b623923cd19926",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/renswoude": {
-      "hash": "deda0fb71d31006e",
-      "gewijzigd": "2026-10-28"
+      "hash": "ad3d74def71e405e",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/rhenen": {
-      "hash": "f87efc96f3eb3d02",
-      "gewijzigd": "2026-10-28"
+      "hash": "8af7cfd307806b4e",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/soest": {
-      "hash": "028d659de9d5b0cb",
-      "gewijzigd": "2026-10-28"
+      "hash": "35566883f40b8576",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/stichtse-vecht": {
-      "hash": "ce61c5b25ad739a9",
-      "gewijzigd": "2026-10-28"
+      "hash": "e5671e3123e45900",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/utrecht": {
-      "hash": "0259095cbf474fbe",
-      "gewijzigd": "2026-10-28"
+      "hash": "7b82e69096776888",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/utrechtse-heuvelrug": {
-      "hash": "ea21e7e628d491cf",
-      "gewijzigd": "2026-10-28"
+      "hash": "98a8de12f36ac3ba",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/veenendaal": {
-      "hash": "113f4aa12054b6e1",
-      "gewijzigd": "2026-10-28"
+      "hash": "04f71d6bb687685f",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/vijfheerenlanden": {
-      "hash": "369fc6ba25012cc9",
-      "gewijzigd": "2026-10-28"
+      "hash": "de6164543f97915f",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/wijk-bij-duurstede": {
-      "hash": "b863fba769137089",
-      "gewijzigd": "2026-10-28"
+      "hash": "3a174e7e7b93e92c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/woerden": {
-      "hash": "597fc23f84cd039d",
-      "gewijzigd": "2026-10-28"
+      "hash": "93a639fd83a5685c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/woudenberg": {
-      "hash": "a1cb95d4a291216c",
-      "gewijzigd": "2026-10-28"
+      "hash": "114617949a7eb88c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/utrecht/zeist": {
-      "hash": "5ef32b815041a9a7",
-      "gewijzigd": "2026-10-28"
+      "hash": "2bb70052bf2c080c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zeeland": {
-      "hash": "349cf85c570f1cf9",
-      "gewijzigd": "2026-10-28"
+      "hash": "f4a9292bf5364fc4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zeeland/borsele": {
-      "hash": "5606675af48c8f31",
-      "gewijzigd": "2026-10-28"
+      "hash": "0d4cdf92c1ec9c52",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zeeland/goes": {
-      "hash": "dfb8a196f6d03cea",
-      "gewijzigd": "2026-10-28"
+      "hash": "f42494674b76269b",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zeeland/hulst": {
-      "hash": "1bc53cd7d1f09816",
-      "gewijzigd": "2026-10-28"
+      "hash": "39c3d7bfb5da2707",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zeeland/kapelle": {
-      "hash": "717b2d385bc0d386",
-      "gewijzigd": "2026-10-28"
+      "hash": "4e882f8c2418308f",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zeeland/middelburg": {
-      "hash": "6fceee034602c5a7",
-      "gewijzigd": "2026-10-28"
+      "hash": "ef7775f2a157738d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zeeland/noord-beveland": {
-      "hash": "338482926212d9ab",
-      "gewijzigd": "2026-10-28"
+      "hash": "19ac7b48c03f41cd",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zeeland/reimerswaal": {
-      "hash": "decd7375f10321e6",
-      "gewijzigd": "2026-10-28"
+      "hash": "e3e869923718ec6c",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zeeland/schouwen-duiveland": {
-      "hash": "f4816e6e0b3e385c",
-      "gewijzigd": "2026-10-28"
+      "hash": "f51d50119b576804",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zeeland/sluis": {
-      "hash": "f1f0a8d98b2c1ff7",
-      "gewijzigd": "2026-10-28"
+      "hash": "6bca8464c32c2340",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zeeland/terneuzen": {
-      "hash": "498b4c79699de8cf",
-      "gewijzigd": "2026-10-28"
+      "hash": "07af0009eab06892",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zeeland/tholen": {
-      "hash": "30f035ce540552bf",
-      "gewijzigd": "2026-10-28"
+      "hash": "3ccd4e7d170fc3aa",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zeeland/veere": {
-      "hash": "ae597293f6f1061c",
-      "gewijzigd": "2026-10-28"
+      "hash": "e6c43f9387e4d79b",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zeeland/vlissingen": {
-      "hash": "e87436b0296b6ed5",
-      "gewijzigd": "2026-10-28"
+      "hash": "4dd4e48985505490",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland": {
-      "hash": "8d69ff21d998d8fc",
-      "gewijzigd": "2026-10-28"
+      "hash": "a49f74540ff73c4d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/alblasserdam": {
-      "hash": "19bfff3ca2dbdc98",
-      "gewijzigd": "2026-10-28"
+      "hash": "161ab759e0f65586",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/albrandswaard": {
-      "hash": "451243ef99bea330",
-      "gewijzigd": "2026-10-28"
+      "hash": "1f2b4fda2c61efa9",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/alphen-aan-den-rijn": {
-      "hash": "6d638d0a0531f841",
-      "gewijzigd": "2026-10-28"
+      "hash": "c5926a5b7b7186bd",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/barendrecht": {
-      "hash": "20a5d8f26175686d",
-      "gewijzigd": "2026-10-28"
+      "hash": "73d2ced1cb256321",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/bodegraven-reeuwijk": {
-      "hash": "8b31bbff84a95ca3",
-      "gewijzigd": "2026-10-28"
+      "hash": "aac2dc546d39b44e",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/capelle-aan-den-ijssel": {
-      "hash": "dff51eb8d320fda8",
-      "gewijzigd": "2026-10-28"
+      "hash": "ad620b7fc8e1ade1",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/delft": {
-      "hash": "9a288e26d1fcb997",
-      "gewijzigd": "2026-10-28"
+      "hash": "3d7c6fb16fa8bf52",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/den-haag": {
-      "hash": "7e02380409565ed5",
-      "gewijzigd": "2026-10-28"
+      "hash": "ee899b0b8b8ee729",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/dordrecht": {
-      "hash": "bc3c810e87be1d0d",
-      "gewijzigd": "2026-10-28"
+      "hash": "695bf9ec745f2065",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/goeree-overflakkee": {
-      "hash": "499cf3161cb2166a",
-      "gewijzigd": "2026-10-28"
+      "hash": "c51302103de7e159",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/gorinchem": {
-      "hash": "f7edece18cef1352",
-      "gewijzigd": "2026-10-28"
+      "hash": "bad5c32dd5c4835d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/gouda": {
-      "hash": "a5862ac4fe4ea5e6",
-      "gewijzigd": "2026-10-28"
+      "hash": "57e0c6d9ecaa8bbf",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/hardinxveld-giessendam": {
-      "hash": "e2513922b42c7488",
-      "gewijzigd": "2026-10-28"
+      "hash": "01db48ca61683f2a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/hendrik-ido-ambacht": {
-      "hash": "a26491553c415cf4",
-      "gewijzigd": "2026-10-28"
+      "hash": "4c73953c8190ee63",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/hillegom": {
-      "hash": "f5e901f904f9e6f7",
-      "gewijzigd": "2026-10-28"
+      "hash": "ca9bcfd143051993",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/hoeksche-waard": {
-      "hash": "c26c367f6f9e35b1",
-      "gewijzigd": "2026-10-28"
+      "hash": "0772e6b664eb7363",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/kaag-en-braassem": {
-      "hash": "6068fa4d406c7d27",
-      "gewijzigd": "2026-10-28"
+      "hash": "75bbd393025841b5",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/katwijk": {
-      "hash": "4ef79d8e24afc96d",
-      "gewijzigd": "2026-10-28"
+      "hash": "9aaea96112fd7d43",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/krimpen-aan-den-ijssel": {
-      "hash": "375e3e7ba3785944",
-      "gewijzigd": "2026-10-28"
+      "hash": "61e0d5ad6db58b03",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/krimpenerwaard": {
-      "hash": "1b0e266735f88ba6",
-      "gewijzigd": "2026-10-28"
+      "hash": "94203d5ce5c559fd",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/lansingerland": {
-      "hash": "8c1c9ea8f17cd416",
-      "gewijzigd": "2026-10-28"
+      "hash": "22035baaaf26a780",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/leiden": {
-      "hash": "aebd80d24fc75956",
-      "gewijzigd": "2026-10-28"
+      "hash": "b20ed926306a53c5",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/leiderdorp": {
-      "hash": "dbc740c0abb0bcda",
-      "gewijzigd": "2026-10-28"
+      "hash": "996ad1cb3d0f9bf0",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/leidschendam-voorburg": {
-      "hash": "5bfdac68a2a86534",
-      "gewijzigd": "2026-10-28"
+      "hash": "0639d844aa3c0907",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/lisse": {
-      "hash": "0c83462b0d75ef29",
-      "gewijzigd": "2026-10-28"
+      "hash": "4f9b1c35fc664a5a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/maassluis": {
-      "hash": "0279c62160c268c5",
-      "gewijzigd": "2026-10-28"
+      "hash": "2a018de75ec0b632",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/midden-delfland": {
-      "hash": "b86dec4f8a396a43",
-      "gewijzigd": "2026-10-28"
+      "hash": "2ca6ccbc8f42140b",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/molenlanden": {
-      "hash": "c63db0afe800e2e5",
-      "gewijzigd": "2026-10-28"
+      "hash": "47678ce0b42d24e7",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/nieuwkoop": {
-      "hash": "f65b37a2260d3d66",
-      "gewijzigd": "2026-10-28"
+      "hash": "f89191074d377f49",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/nissewaard": {
-      "hash": "6adbac3d44bc0570",
-      "gewijzigd": "2026-10-28"
+      "hash": "017067808dde157a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/noordwijk": {
-      "hash": "59fe6b4f96255942",
-      "gewijzigd": "2026-10-28"
+      "hash": "ac9454eba0a7096a",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/oegstgeest": {
-      "hash": "0fb5c12307c6e87b",
-      "gewijzigd": "2026-10-28"
+      "hash": "603d1621d6c293f4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/papendrecht": {
-      "hash": "223ecc76355c529f",
-      "gewijzigd": "2026-10-28"
+      "hash": "890c8c30ba28be02",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/pijnacker-nootdorp": {
-      "hash": "a669ba8068936e2a",
-      "gewijzigd": "2026-10-28"
+      "hash": "ff32a87d63d025e7",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/ridderkerk": {
-      "hash": "451ccb73fa5e1443",
-      "gewijzigd": "2026-10-28"
+      "hash": "c55a3d9b9f96659d",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/rijswijk": {
-      "hash": "afcbcac8629229ea",
-      "gewijzigd": "2026-10-28"
+      "hash": "d6163dedb53f1912",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/rotterdam": {
-      "hash": "a353314c823d7c5b",
-      "gewijzigd": "2026-10-28"
+      "hash": "7fbfde3f6bd91926",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/schiedam": {
-      "hash": "d23b6a445657aaf6",
-      "gewijzigd": "2026-10-28"
+      "hash": "962d0adeedac4cf3",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/sliedrecht": {
-      "hash": "052c1cbaf82efe6a",
-      "gewijzigd": "2026-10-28"
+      "hash": "fb64a62f047c89a8",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/teylingen": {
-      "hash": "0b7901542056e330",
-      "gewijzigd": "2026-10-28"
+      "hash": "4d2dc436638adff1",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/vlaardingen": {
-      "hash": "3ea329e2e6f76d43",
-      "gewijzigd": "2026-10-28"
+      "hash": "6facd9e62c664154",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/voorschoten": {
-      "hash": "53e487765a570541",
-      "gewijzigd": "2026-10-28"
+      "hash": "720baa4f218b2b61",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/waddinxveen": {
-      "hash": "2d7be7d53452f209",
-      "gewijzigd": "2026-10-28"
+      "hash": "72eadb38d1e750b0",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/wassenaar": {
-      "hash": "e6dd8520314abaf1",
-      "gewijzigd": "2026-10-28"
+      "hash": "8241def810c8ede4",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/westland": {
-      "hash": "2311372261e890de",
-      "gewijzigd": "2026-10-28"
+      "hash": "dcd3f75537547dfb",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/zoetermeer": {
-      "hash": "7aa00cdf175c2b7a",
-      "gewijzigd": "2026-10-28"
+      "hash": "fdb39e1e398929c0",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/zoeterwoude": {
-      "hash": "311a8fa634f390f0",
-      "gewijzigd": "2026-10-28"
+      "hash": "01ff2e06c4c22e0b",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/zuidplas": {
-      "hash": "ecf5e594076c2fb6",
-      "gewijzigd": "2026-10-28"
+      "hash": "6dcc24d16fb9773e",
+      "gewijzigd": "2026-11-09"
     },
     "regios/zuid-holland/zwijndrecht": {
-      "hash": "467f9db2ea990e99",
-      "gewijzigd": "2026-10-28"
+      "hash": "fd807e4978b9d802",
+      "gewijzigd": "2026-11-09"
     },
     "sectoren": {
-      "hash": "469bce507fa26af4",
-      "gewijzigd": "2026-10-28"
+      "hash": "85be602db4f26e1a",
+      "gewijzigd": "2026-11-09"
     },
     "sectoren/automotive": {
-      "hash": "09b312f9c2bdb8cf",
-      "gewijzigd": "2026-10-28"
+      "hash": "d95f442cceab376b",
+      "gewijzigd": "2026-11-09"
     },
     "sectoren/bedrijventerreinen": {
-      "hash": "81cda155d433cbee",
-      "gewijzigd": "2026-10-28"
+      "hash": "2b57f9dca62678cc",
+      "gewijzigd": "2026-11-09"
     },
     "sectoren/bouw": {
-      "hash": "9d51f6c5eecf6fc8",
-      "gewijzigd": "2026-10-28"
+      "hash": "eebfc63c1018a71d",
+      "gewijzigd": "2026-11-09"
     },
     "sectoren/gebiedsontwikkeling": {
-      "hash": "ea768ac968306837",
-      "gewijzigd": "2026-10-28"
+      "hash": "09979ad8953318cd",
+      "gewijzigd": "2026-11-09"
     },
     "sectoren/horeca": {
-      "hash": "efd6380d41a36696",
-      "gewijzigd": "2026-10-28"
+      "hash": "ec43a015f02aa72b",
+      "gewijzigd": "2026-11-09"
     },
     "sectoren/opslag-en-distributie": {
-      "hash": "4145f02477d2e9e7",
-      "gewijzigd": "2026-10-28"
+      "hash": "dcfa280637fb5172",
+      "gewijzigd": "2026-11-09"
     },
     "sectoren/parkeren": {
-      "hash": "764af7ec9633c7c5",
-      "gewijzigd": "2026-10-28"
+      "hash": "106bfd1ac7a6bd47",
+      "gewijzigd": "2026-11-09"
     },
     "sectoren/productie-en-industrie": {
-      "hash": "aaae2fb3f3410a60",
-      "gewijzigd": "2026-10-28"
+      "hash": "3b636eb2cff451cf",
+      "gewijzigd": "2026-11-09"
     },
     "sectoren/retail": {
-      "hash": "1a694725ad0c8834",
-      "gewijzigd": "2026-10-28"
+      "hash": "46ddb0489aa377ef",
+      "gewijzigd": "2026-11-09"
     },
     "sectoren/transport-en-wagenparken": {
-      "hash": "df25a5bd4b84b66d",
-      "gewijzigd": "2026-10-28"
+      "hash": "3a34f32d2b2b0483",
+      "gewijzigd": "2026-11-09"
     },
     "sectoren/zorgvastgoed": {
-      "hash": "1b7b929dbd0fd133",
-      "gewijzigd": "2026-10-28"
+      "hash": "2b6ff9de270b8519",
+      "gewijzigd": "2026-11-09"
     },
     "subsidies": {
-      "hash": "a765b045f56f8701",
-      "gewijzigd": "2026-10-28"
+      "hash": "bb749964d551e4e7",
+      "gewijzigd": "2026-11-09"
     },
     "systeem-energieopslag": {
       "hash": "c7c0afafcd16b646",
@@ -1680,52 +1680,52 @@
       "gewijzigd": "2026-10-28"
     },
     "toepassingen": {
-      "hash": "adcc04a9b14f24ce",
-      "gewijzigd": "2026-10-28"
+      "hash": "f86f5e846569aed6",
+      "gewijzigd": "2026-11-09"
     },
     "toepassingen/batterij-slim-inzetten": {
-      "hash": "7113eb9a1a9bfa14",
-      "gewijzigd": "2026-10-28"
+      "hash": "82bca81224bacfba",
+      "gewijzigd": "2026-11-09"
     },
     "toepassingen/bestaande-aansluiting-optimaliseren": {
-      "hash": "b0be5da8bd2ae9fd",
-      "gewijzigd": "2026-10-28"
+      "hash": "b18666b1f7a33626",
+      "gewijzigd": "2026-11-09"
     },
     "toepassingen/elektrificatie-bedrijfswagens": {
-      "hash": "e58878c6a00b122c",
-      "gewijzigd": "2026-10-28"
+      "hash": "fd48051756f9e2b9",
+      "gewijzigd": "2026-11-09"
     },
     "toepassingen/geen-extra-transportvermogen": {
-      "hash": "361b4aedcba5420b",
-      "gewijzigd": "2026-10-28"
+      "hash": "e16fb09964c9ece1",
+      "gewijzigd": "2026-11-09"
     },
     "toepassingen/laden-met-beperkte-aansluiting": {
-      "hash": "d06ab175e68e22db",
-      "gewijzigd": "2026-10-28"
+      "hash": "9d3f1859833101fe",
+      "gewijzigd": "2026-11-09"
     },
     "toepassingen/meerdere-locaties": {
-      "hash": "56df715e83ee9edc",
-      "gewijzigd": "2026-10-28"
+      "hash": "caa41ed7c3fb497f",
+      "gewijzigd": "2026-11-09"
     },
     "toepassingen/netcongestie-bij-uitbreiding": {
-      "hash": "9874a16df884ddf7",
-      "gewijzigd": "2026-10-28"
+      "hash": "cb7cab6cd24cefa7",
+      "gewijzigd": "2026-11-09"
     },
     "toepassingen/pieken-in-verbruik": {
-      "hash": "335381f844253430",
-      "gewijzigd": "2026-10-28"
+      "hash": "60e98f9068b809fc",
+      "gewijzigd": "2026-11-09"
     },
     "toepassingen/processen-sturen-met-ems": {
-      "hash": "bf17919aa7988a39",
-      "gewijzigd": "2026-10-28"
+      "hash": "0f8cdcae6f81872e",
+      "gewijzigd": "2026-11-09"
     },
     "toepassingen/terugleverbeperking": {
-      "hash": "bebb0553d7be67e0",
-      "gewijzigd": "2026-10-28"
+      "hash": "7eec39944255f32b",
+      "gewijzigd": "2026-11-09"
     },
     "verduurzaming-bedrijfspanden": {
-      "hash": "a6bd715ff9484676",
-      "gewijzigd": "2026-10-28"
+      "hash": "381092ba0af8c969",
+      "gewijzigd": "2026-11-09"
     },
     "vibe-control": {
       "hash": "94c2e693932b2160",

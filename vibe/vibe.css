@@ -533,6 +533,43 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
 }
 .ve-footer__lijst{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
 .ve-footer__lijst a{font-size:var(--ve-body-size)}
+
+/* ---- Verder lezen ----
+   Deze sectie leende eerst de footerklassen. Dat ging op twee punten mis, beide
+   op 396 pagina's:
+   1. `ve-cols` zonder --N-modifier levert EEN kolom op elke breedte, want de
+      kolomregels hangen aan .ve-cols--2 t/m --5. Gemeten op /sectoren bij 1440px:
+      sectiehoogte 1315px, grid 1184px breed, breedste linktekst 279px — 905px
+      (76%) van de breedte bleef leeg.
+   2. `ve-footer__kop` zet color:#fff voor de donkere footer. Op deze lichte
+      sectie gaf dat contrast 1,00:1: wit op wit, 1.550 onzichtbare koppen.
+
+   auto-fit en niet een vaste --N, want het aantal groepen varieert van 2 tot 6.
+   min(100%,14rem) als ondergrens zodat de track nooit breder wordt dan zijn
+   container op een smal scherm. */
+.ve-verwant{
+  display:grid;
+  gap:var(--ve-s-xl) var(--ve-s-lg);
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));
+}
+.ve-verwant__groep{min-width:0}
+.ve-verwant__kop{
+  margin:0 0 var(--ve-s-sm);
+  padding-bottom:var(--ve-s-sm);
+  border-bottom:1px solid var(--ve-line);
+  font-size:var(--ve-body-sm-size);
+  font-weight:var(--ve-w-sub);
+  color:var(--ve-text);
+}
+.ve-verwant__lijst{list-style:none;margin:0;padding:0;display:grid;gap:.45rem}
+.ve-verwant__lijst a{
+  font-size:var(--ve-body-size);
+  color:var(--ve-text-soft);
+  /* 24px raakdoel, de ondergrens van WCAG 2.2 AA 2.5.8 — dezelfde reden als bij
+     de gemeentelinks in .ve-regios. */
+  display:inline-block;min-height:24px;padding-block:2px;
+}
+.ve-verwant__lijst a:hover{color:var(--ve-action-ink)}
 .ve-footer__onder{
   display:flex;flex-wrap:wrap;gap:var(--ve-s-md) var(--ve-s-lg);
   align-items:center;justify-content:space-between;
