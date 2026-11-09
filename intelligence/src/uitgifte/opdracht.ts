@@ -85,6 +85,7 @@ import {
   type Fase,
 } from "../inhoud/actor.ts";
 import { publiceer } from "../inhoud/publiceer.ts";
+import { meldUitgifteStoring } from "./melden.ts";
 import { branchVoor } from "../publicatie/pr.ts";
 import { siteKennisUitArtefact } from "../site/routeregister.ts";
 import { slugVanPad } from "../site/nieuwsregister.ts";
@@ -1077,6 +1078,16 @@ export async function verifieerUitgifteLive(
  * halve publicatie te herstellen is, hangt af van de fase waarin hij
  * strandde, en dat oordeel hoort niet in een foutmelding thuis. Het
  * dashboard toont de fase, zodat een mens ziet waar hij staat.
+ *
+ * EN SINDS V1.1 GAAT ER OOK IETS DE DEUR UIT. Deze functie heette al
+ * 'melden' terwijl ze uitsluitend REGISTREERDE; een mislukte uitgifte
+ * bereikte niemand. meldUitgifteStoring() uit uitgifte/melden.ts doet
+ * dat deel, en de aanroep staat hier bewust NA de commit van de twee
+ * regels hierboven: het meldpad vraagt een eigen verbinding, en bij een
+ * volle pool zou het binnen de transactie op zijn connectiontimeout
+ * wachten. Hij werpt nooit en de uitkomst is alleen een logregel — een
+ * kapotte ontvanger mag het auditspoor niet beschadigen, want dat spoor
+ * is het enige dat straks nog bewijst wat er is gebeurd.
  */
 export async function meldUitgifteFout(
   pool: Pool,
@@ -1113,11 +1124,22 @@ export async function meldUitgifteFout(
       herkomst: "uitvoerder",
     });
   });
+  const aflevering = await meldUitgifteStoring(pool, organisatieId, {
+    inhoudVersieId,
+    stap: bewijs.stap,
+    fout: bewijs.fout,
+    beleidVersie: bewijs.beleidVersie,
+  });
   log.waarschuwing("uitgifte mislukt", {
     versie: inhoudVersieId,
     stap: bewijs.stap,
     fase,
     fout: bewijs.fout.slice(0, 200),
+    /* AFGELEVERD IS EEN EIGEN MEETWAARDE, geen bijzaak: 'de melding
+       staat open' en 'iemand heeft hem gezien' zijn twee dingen. */
+    meldkanaal: aflevering.kanaal,
+    meldingAfgeleverd: aflevering.afgeleverd,
+    meldreden: aflevering.reden,
   });
 }
 
