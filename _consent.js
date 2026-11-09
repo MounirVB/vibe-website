@@ -195,6 +195,35 @@
 
   function el(tag,cls,html){ var n=document.createElement(tag); if(cls)n.className=cls; if(html!=null)n.innerHTML=html; return n; }
 
+  /* ---------- waar de melding in de DOM komt ----------
+     VOORAAN, maar NA de skip-link.
+
+     Achteraan was fout: als laatste kind van <body> was de melding de 58e
+     tabstop, dus een toetsenbord- of schermlezergebruiker kwam eerst door de
+     hele pagina heen voordat hij de toestemmingsvraag bereikte — terwijl die
+     vraag over diezelfde pagina heen staat.
+
+     Maar HELEMAAL vooraan was ook fout, en dat is met axe-core gemeten: zet je
+     de melding voor <a class="ve-skip">, dan is de skip-link niet langer het
+     eerste element van de body en valt hij buiten de uitzondering die
+     axe daarvoor kent. Resultaat op 9 november 2026: 30 schendingen van de
+     regel 'region' over 15 pagina's, in zowel Chromium als WebKit, en alleen
+     wanneer de melding open stond. De skip-link hoort de eerste tabstop te
+     zijn — dat is zijn hele bestaansreden — en de melding de tweede.
+
+     De melding is position:fixed, dus de DOM-positie verandert niets aan de
+     weergave; alleen de leesorde en de taborde kloppen nu met wat er staat. */
+  function plaatsMelding(n){
+    var skip=document.querySelector('.ve-skip');
+    if(skip&&skip.parentNode===document.body){
+      if(skip.nextSibling) document.body.insertBefore(n,skip.nextSibling);
+      else document.body.appendChild(n);
+      return;
+    }
+    if(document.body.firstChild) document.body.insertBefore(n,document.body.firstChild);
+    else document.body.appendChild(n);
+  }
+
   function row(name,desc,checked,locked,onchange){
     var r=el('div','vck-r');
     var t=el('div','vck-rt'); t.appendChild(el('div','vck-rn',name)); t.appendChild(el('div','vck-rd',desc));
@@ -303,15 +332,7 @@
     card=el('div','vck');
     if(openPrefs) ov.classList.add('pref');
     ov.appendChild(card);
-    /* VOORAAN in de body, niet achteraan.
-       Gemeten op 9 november 2026: als laatste kind van <body> was de melding de
-       58e tabstop, dus een toetsenbord- of schermlezergebruiker kwam eerst door
-       de hele pagina heen voordat hij de toestemmingsvraag bereikte — terwijl
-       die vraag over diezelfde pagina heen staat. De melding is position:fixed,
-       dus de DOM-positie verandert niets aan de weergave; alleen de leesorde en
-       de taborde kloppen nu met wat de bezoeker ziet. */
-    if(document.body.firstChild) document.body.insertBefore(ov,document.body.firstChild);
-    else document.body.appendChild(ov);
+    plaatsMelding(ov);
     render();
     requestAnimationFrame(function(){
       card.classList.add('on');
@@ -364,7 +385,17 @@
       var t=e.target.closest&&e.target.closest('[data-cookie-prefs],a[href="#cookies"],a[href$="#cookies"]');
       if(t){ e.preventDefault(); show(true); }
     });
-    if(!state) show(false);
+    /* EEN FRAME WACHTEN, EN DAAR IS EEN REDEN VOOR.
+       vibe/chrome.js plaatst de header en de skip-link ook op DOMContentLoaded,
+       maar registreert zijn luisteraar LATER dan dit bestand: _consent.js is
+       een synchroon script in de <head>, chrome.js draagt defer. Zonder dit
+       uitstel bestaat .ve-skip nog niet wanneer de melding wordt geplaatst, en
+       belandt de melding er alsnog voor — precies de situatie die axe met 30
+       region-schendingen afstrafte. Een frame later staat de chrome er. */
+    if(!state){
+      if(window.requestAnimationFrame) requestAnimationFrame(function(){ show(false); });
+      else show(false);
+    }
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
 })();
