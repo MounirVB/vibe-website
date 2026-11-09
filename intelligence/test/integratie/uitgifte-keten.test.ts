@@ -386,7 +386,25 @@ describe("de autonome uitgifte", () => {
   async function uitvoerderMergt(branch: string, eigenSite?: string): Promise<string> {
     const git = maakGit(eigenSite ?? site);
     await git(["checkout", "main"]);
-    await git(["merge", "--no-ff", "-m", `merge ${branch}`, branch]);
+    /* DE IDENTITEIT MOET MEE, OOK BIJ EEN MERGE.
+       `git merge --no-ff` maakt een COMMIT, en een commit zonder
+       committer weigert git. Op een ontwikkelmachine staat er een
+       globale identiteit en valt dat niet op; op een GitHub-runner niet,
+       en daar gaf deze regel "fatal: empty ident name" en viel de hele
+       suite om terwijl hij lokaal groen was. Gemeten op PR #80. De
+       commitstap hieronder in uitvoerderDoetZijnWerk() gaf de identiteit
+       al wel mee; deze was vergeten. */
+    await git([
+      "-c",
+      "user.name=toets",
+      "-c",
+      "user.email=t@t.nl",
+      "merge",
+      "--no-ff",
+      "-m",
+      `merge ${branch}`,
+      branch,
+    ]);
     const merge = (await git(["rev-parse", "HEAD"])).trim();
     await git(["push", "origin", "main"]);
     return merge;
