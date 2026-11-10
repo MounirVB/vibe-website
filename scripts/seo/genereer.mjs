@@ -13,7 +13,102 @@ import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { HOST, href, url, bestand, routeGemeente, routeGemeenteFamilie, routeProvincie, routeProvincieFamilie, REGIO_WORTEL } from './lib/paden.mjs';
-import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic, zetNavToets } from './lib/sjabloon.mjs';
+import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic, zetNavToets, mediaBlok, canvasband, beeldband} from './lib/sjabloon.mjs';
+import { beeldTag, beeldVoor, beeldenVoor } from './lib/beeld.mjs';
+
+/* ------------------------------------------------------------- regiohero
+   Elke regiopagina had een tekstopening zonder beeld. Een gemeente MET een
+   eigen project krijgt de foto van dat project; alle andere krijgen het
+   onderwerpsbeeld voor regio.
+
+   Een projectfoto uit een ANDERE gemeente is hier uitdrukkelijk verboden. Van
+   de 337 gemeentepagina's hebben er elf een eigen project; de overige 326
+   zeggen in hun eigen tekst dat Vibe daar nog niets heeft opgeleverd — "niet
+   om werk te suggereren dat er niet is". Een foto van elders zou precies dat
+   doen, en docs/vibe-claims-register-v2.md verbiedt die suggestie.
+
+   Een slug zonder bestand valt terug op het onderwerpsbeeld in plaats van de
+   bouw te breken: het projectregister en de assetmap kunnen uiteenlopen, en
+   349 pagina's mogen daar niet op stuklopen. */
+/* Een beeldbreuk halverwege de pagina.
+
+   De regiopagina's hadden EEN visuele gebeurtenis, het openingsbeeld, en
+   daarna acht tekstsecties achter elkaar. Gemeten op regios/gelderland/arnhem:
+   9 secties, 8 DOCUMENT, langste tekstreeks 8.
+
+   De breuk draagt BEWUST geen kop en geen zin. Een regiopagina heeft geen
+   regel die hier thuishoort, en een zin die voor deze plek wordt verzonnen is
+   een claim zonder bron. Het onderschrift is de alt-tekst van het beeld zelf:
+   die beschrijft wat er te zien is en beweert verder niets. */
+/* Het beeld voor de beeldband halverwege een regiopagina. Slot 1 van de set;
+   het openingsbeeld is slot 0 en de beeldbreuk slot 2, dus alle drie tonen een
+   ander onderwerp. */
+function bandBeeld(route) {
+  const b = beeldenVoor(route, 'regio', 3);
+  const t = b[1] || b[0];
+  try {
+    return beeldTag({
+      basis: t.basis,
+      alt: t.alt,
+      sizes: '(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw',
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
+function beeldbreuk(route, type) {
+  const b = beeldenVoor(route, type);
+  const t = b[2] || b[1] || b[0];
+  return canvasband({
+    img: beeldTag({ basis: t.basis, alt: t.alt, sizes: '(min-width:1200px) 1216px, 100vw' }),
+    voet: t.alt,
+  });
+}
+
+/* Zet de beeldbreuk midden in de pagina in plaats van onderaan. Een pagina
+   waarvan het enige beeld op 90% van de hoogte staat, leest als tekst met een
+   plaatje eronder. */
+function ritme(delen, breuk) {
+  const d = delen.filter(Boolean);
+  if (!breuk || d.length < 4) return d.join('\n\n');
+  const i = Math.floor(d.length / 2);
+  return [...d.slice(0, i), breuk, ...d.slice(i)].join('\n\n');
+}
+
+function regioHero(eigenProjecten, route) {
+  const p = (eigenProjecten || [])[0];
+  if (p && p.slug) {
+    const basis = 'assets/projects/' + String(p.slug).replace(/^project-/, '');
+    try {
+      return mediaBlok({
+        verhouding: '21x9',
+        diepte: 'diep',
+        img: beeldTag({
+          basis,
+          alt: `${p.titel || p.naam || 'Project van Vibe Energy'}${p.plaats ? ' in ' + p.plaats : ''}`,
+          sizes: '(min-width:1200px) 1216px, 100vw',
+          lazy: false,
+          fetchpriority: 'high',
+        }),
+        stijl: 'margin-top:var(--ve-s-2xl)',
+      });
+    } catch (e) {
+      /* geen bestand voor deze slug — dan het onderwerpsbeeld, niet een gok */
+    }
+  }
+  /* De route MOET mee. Stond hier eerst beeldVoor('', 'regio'), en dan valt
+     de rotatie in beeld.mjs altijd op dezelfde hash van de lege string:
+     gemeten kregen 348 pagina's hetzelfde assets/netcongestie-hero. Precies
+     het sjabloongevoel dat deze ronde moest wegnemen. */
+  const t = beeldenVoor(route || '', 'regio')[0];
+  return mediaBlok({
+    verhouding: '21x9',
+    diepte: 'diep',
+    img: beeldTag({ basis: t.basis, alt: t.alt, sizes: '(min-width:1200px) 1216px, 100vw', lazy: false, fetchpriority: 'high' }),
+    stijl: 'margin-top:var(--ve-s-2xl)',
+  });
+}
 import { artikel, dienst, faq as faqLd, gebied } from './lib/schema.mjs';
 import { Linkmotor, naamVan } from './lib/links.mjs';
 import { Vingerafdrukken, PLAATSHOUDER as VINGER_PLAATSHOUDER } from './lib/vingerafdruk.mjs';
@@ -266,10 +361,11 @@ function bouwRegioWortel() {
 
   const totaalGem = lijst.reduce((a, x) => a + gemeentenMetPagina(x.p).length, 0);
 
-  const inhoud = [
+  const inhoud = ritme([
     opening({
       kruimels: [],
       kruimelLabel: "Regio's",
+      naLead: regioHero(null, route),
       h1: 'Waar Vibe Energy heeft gebouwd',
       lead:
         'Vibe Energy werkt door heel Nederland. Deze regiopagina&rsquo;s gaan alleen over gebieden waar er ' +
@@ -336,7 +432,7 @@ function bouwRegioWortel() {
         'bestaande aansluiting op te lossen is.',
       primair: { route: 'contact', label: 'Plan een adviesgesprek' },
     }),
-  ].join('\n\n');
+  ], beeldbreuk(route, 'regio'));
 
   schrijf(
     route,
@@ -406,7 +502,7 @@ function bouwProvincie(p) {
     })
     .join('\n');
 
-  const inhoud = [
+  const inhoud = ritme([
     opening({
       kruimels: [{ naam: "Regio's", route: REGIO_WORTEL }],
       kruimelLabel: p.naam,
@@ -427,7 +523,7 @@ function bouwProvincie(p) {
          de H1 erboven, niet bij de cijfers in de lead. Zonder variant en
          zonder bronregel blijft naLead null en is de uitvoer byte-identiek
          aan die van vóór deze wijziging. */
-      naLead: [naamRegel, heeftWerk ? '' : bronregel([BRON.vestigingen, BRON.terreinen])]
+      naLead: [naamRegel, heeftWerk ? '' : bronregel([BRON.vestigingen, BRON.terreinen]), regioHero(null, route)]
         .filter(Boolean)
         .join('\n      ') || null,
     }),
@@ -476,10 +572,14 @@ function bouwProvincie(p) {
           variant: 've-sec--sunken ve-sec--line-y',
         })
       : '',
-    tekstsectie({
+    /* Zelfde ingreep als op de gemeentepagina's: de langste tekstsectie van de
+       provinciepagina krijgt een beeld ernaast in plaats van een lege
+       rechterhelft. Dezelfde kop, dezelfde alinea's, dezelfde bronregels. */
+    beeldband({
       kop: `De zakelijke energiecontext van ${esc(p.naam)}`,
-      lead: 'Officiële cijfers, met bron en datum. Geen schattingen.',
-      prose:
+      img: bandBeeld(route),
+      kant: 'links',
+      tekst:
         `<p>${esc(p.naam)} telt ${getal(alleGem.length)} gemeenten, samen ongeveer ${getal(vestTotaal)} ingeschreven ` +
         `vestigingen van bedrijven en ${getal(terreinTotaal)} bedrijventerreinen in het IBIS-register.</p>` +
         bronregel([BRON.vestigingen, BRON.terreinen]) +
@@ -530,9 +630,7 @@ ${gemLijst}
       primair: { route: 'contact', label: 'Vraag een energiescan aan' },
       secundair: { route: 'projecten', label: 'Bekijk alle projecten' },
     }),
-  ]
-    .filter(Boolean)
-    .join('\n\n');
+  ], beeldbreuk(route, 'regio'));
 
   const paginaUrl = url(route);
   schrijf(
@@ -580,13 +678,14 @@ function bouwProvincieFamilie(p, f) {
   const eigenaar = f.nationale_eigenaar;
   const terreinTotaal = gem.reduce((a, g) => a + (terrBron.per_gemeente[g.gemeentecode] || []).length, 0);
 
-  const inhoud = [
+  const inhoud = ritme([
     opening({
       kruimels: [
         { naam: "Regio's", route: REGIO_WORTEL },
         { naam: p.naam, route: routeProvincie(p.slug) },
       ],
       kruimelLabel: f.naam,
+      naLead: regioHero(null, route),
       h1: `${esc(f.naam)} in ${esc(p.naam)}`,
       lead: FAMILIE_BELOFTE[f.slug] || f.naam,
       acties: [
@@ -647,9 +746,7 @@ function bouwProvincieFamilie(p, f) {
         'weet u of dit bij u iets oplost.',
       primair: { route: 'contact', label: 'Vraag een analyse aan' },
     }),
-  ]
-    .filter(Boolean)
-    .join('\n\n');
+  ], beeldbreuk(route, 'regio'));
 
   const paginaUrl = url(route);
   schrijf(
@@ -752,7 +849,7 @@ function bouwGemeente(g) {
     .filter(Boolean)
     .filter((r, i, a) => a.indexOf(r) === i);
 
-  const inhoud = [
+  const inhoud = ritme([
     opening({
       kruimels: [
         { naam: "Regio's", route: REGIO_WORTEL },
@@ -779,7 +876,7 @@ function bouwGemeente(g) {
          eist dat per SECTIE en de hero is een sectie. Dat die cijfers een
          alinea lager mét bron terugkomen is geen excuus: wie alleen de hero
          leest, moet daar al kunnen zien waar ze vandaan komen. */
-      naLead: [naamRegel, heeftWerk ? '' : bronregel([BRON.vestigingen, BRON.terreinen])]
+      naLead: [naamRegel, heeftWerk ? '' : bronregel([BRON.vestigingen, BRON.terreinen]), regioHero(bw.projecten, route)]
         .filter(Boolean)
         .join('\n      ') || null,
     }),
@@ -890,10 +987,15 @@ function bouwGemeente(g) {
           prose: profielAdvies(g.naam, bw.bedrijfstakken, BRON.bedrijfstakken, href, (r) => naamVan(r)),
         })
       : '',
-    tekstsectie({
+    /* Deze sectie was de langste lap tekst van de pagina: vestigingen,
+       bedrijventerreinen en netbeheerder achter elkaar, over de halve breedte,
+       met de andere helft leeg. Hij staat nu als beeldband — dezelfde kop,
+       dezelfde alinea's, dezelfde bronnen, met een foto ernaast. */
+    beeldband({
       kop: `De zakelijke energiecontext van ${esc(g.naam)}`,
-      lead: 'Officiële cijfers met bron en datum. Wat we niet weten, staat er niet.',
-      prose:
+      img: bandBeeld(route),
+      kant: 'rechts',
+      tekst:
         vestigingenAlinea(g.naam, bw.vestigingen, BRON.vestigingen) +
         terreinenAlinea(g.naam, bw.terreinen, BRON.terreinen) +
         netbeheerderAlinea(g.naam, bw.netbeheerder, BRON.netbeheer),
@@ -947,9 +1049,7 @@ function bouwGemeente(g) {
       primair: { route: 'contact', label: 'Vraag een energiescan aan' },
       secundair: { route: 'projecten', label: 'Bekijk alle projecten' },
     }),
-  ]
-    .filter(Boolean)
-    .join('\n\n');
+  ], beeldbreuk(route, 'regio'));
 
   const paginaUrl = url(route);
   schrijf(
@@ -1016,7 +1116,7 @@ function bouwGemeenteFamilie(g, f) {
   const eigenaar = f.nationale_eigenaar;
   const provFamRoute = routeProvincieFamilie(p.slug, f.slug);
 
-  const inhoud = [
+  const inhoud = ritme([
     opening({
       kruimels: [
         { naam: "Regio's", route: REGIO_WORTEL },
@@ -1024,6 +1124,7 @@ function bouwGemeenteFamilie(g, f) {
         { naam: g.naam, route: routeGemeente(g.provincie_slug, g.slug) },
       ],
       kruimelLabel: f.naam,
+      naLead: regioHero(null, route),
       h1: `${esc(f.naam)} in ${esc(g.naam)}`,
       lead: FAMILIE_BELOFTE[f.slug] || f.naam,
       acties: [
@@ -1075,9 +1176,7 @@ function bouwGemeenteFamilie(g, f) {
         'aansluiting past.',
       primair: { route: 'contact', label: 'Vraag een analyse aan' },
     }),
-  ]
-    .filter(Boolean)
-    .join('\n\n');
+  ], beeldbreuk(route, 'regio'));
 
   const paginaUrl = url(route);
   schrijf(

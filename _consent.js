@@ -128,11 +128,19 @@
     .vck-p{font-size:12.5px;line-height:1.5}\
     .vck-act{margin-top:12px;gap:8px;position:sticky;bottom:0;background:#fff;padding:8px 0 2px;box-shadow:0 -10px 12px -8px rgba(4,12,20,.18)}\
     .vck-b{min-height:44px;padding:11px 10px;font-size:12.5px;white-space:normal}\
-    .vck-b1,.vck-b2{flex:1 1 calc(50% - 4px);min-width:0}\
+    /* VOLLE BREEDTE, EN NIET TWEE NAAST ELKAAR.\
+       Deze regel stond eerst op flex:1 1 calc(50% - 4px) met een uitzondering\
+       onder 376px. Gemeten gaf dat op 390x844 twee knoppen van 126x59 waarin\
+       'Alles accepteren' en 'Alleen noodzakelijk' allebei over TWEE regels\
+       braken, terwijl 320px (190x44) en 768px (217x44) het wel goed deden.\
+       De kapotte band liep van 376 tot 559px en bestrijkt daarmee iPhone 12\
+       t/m 16 (390), Pixel (412) en de Pro Max-maten (430) — en dit is het\
+       eerste scherm dat een nieuwe bezoeker op elke pagina ziet.\
+       De kaart wordt hiervan hoger; een leesbaar label weegt zwaarder. */\
+    .vck-b1,.vck-b2{flex:1 1 100%;min-width:0}\
     .vck-b3{flex:1 1 100%}\
-  }\
-  @media(max-width:375px){\
-    .vck-b1,.vck-b2{flex:1 1 100%}\
+    /* Het plafond geldt voor heel mobiel, niet alleen onder 376px. De\
+       knoppenrij hierboven is sticky, dus het kost nooit een antwoord. */\
     .vck{max-height:58vh;overflow-y:auto}\
   }\
   ";

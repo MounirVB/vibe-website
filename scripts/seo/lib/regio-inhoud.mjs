@@ -370,19 +370,43 @@ export function bedrijfstakProfielBlok(gebiedsnaam, profiel, bron) {
   const metWaarde = profiel.takken.filter((t) => t.vestigingen > 0);
   if (metWaarde.length) {
     h +=
+      /* EEN TABEL, EN GEEN ZIN MET MIDDELPUNTEN.
+         Dit stond als <ul class="ve-footer__lijst"> met per regel
+         "13.155 vestigingen &middot; 18,3% van het totaal &middot; 0,88x het
+         landelijke aandeel". Drie getallen achter elkaar op een regel van 13px,
+         gescheiden door middelpunten, over 6.200 regels op 349 pagina's.
+         Twee bezwaren, en het tweede weegt het zwaarst:
+         1. Hallmark-poort 63 is Floor en verbiedt letterlijk meta-reeksen die
+            met middelpunten aan elkaar zijn geregen.
+         2. Niets lijnde uit. De tweede en derde waarde van elke rij begonnen op
+            een andere x, want ze schoven mee met de lengte van de tekst ervoor.
+            Daarmee was de enige harde data die een regiopagina heeft niet te
+            vergelijken — en vergelijken is precies waarvoor die cijfers er staan.
+         De klasse was bovendien een footerklasse buiten de footer, net als bij
+         'Verder lezen'. De tabel zit in .ve-scroll-x, de bestaande conventie van
+         deze repo: poort 14 eist dat voor elke <table>, zodat een smal scherm
+         hem kan schuiven zonder de pagina mee te trekken.
+         Geen enkel cijfer verandert en geen rij verdwijnt: dezelfde takken,
+         dezelfde waarden, dezelfde volgorde. De cijferkolommen krijgen
+         tabular-nums zodat ze onder elkaar uitlijnen. De index blijft leeg waar
+         hij niet publiceerbaar is; een streepje zou een waarde suggereren. */
       `<p>Het volledige beeld, alle bedrijfstakken op een rij:</p>` +
-      `<ul class="ve-footer__lijst" style="margin-top:var(--ve-s-md)">\n` +
+      `<div class="ve-scroll-x" tabindex="0" role="group" aria-label="Bedrijfstakken, tabel die horizontaal schuift">\n        <table class="ve-cijfers">\n` +
+      `          <thead><tr><th scope="col">Bedrijfstak</th>` +
+      `<th scope="col">Vestigingen</th>` +
+      `<th scope="col">Aandeel</th>` +
+      `<th scope="col">Index t.o.v. landelijk</th></tr></thead>\n` +
+      `          <tbody>\n` +
       metWaarde
         .map(
           (t) =>
-            `          <li><strong>${esc(t.naam)}</strong>` +
-            `<span class="ve-small" style="display:block">${getal(t.vestigingen)} vestigingen &middot; ` +
-            `${komma(t.aandeel_pct)}% van het totaal` +
-            (t.lq_publiceerbaar ? ` &middot; ${lqTekst(t.lq)}x het landelijke aandeel` : '') +
-            `</span></li>`
+            `            <tr><th scope="row">${esc(t.naam)}</th>` +
+            `<td>${getal(t.vestigingen)}</td>` +
+            `<td>${komma(t.aandeel_pct)}%</td>` +
+            `<td>${t.lq_publiceerbaar ? `${lqTekst(t.lq)}&times;` : ''}</td></tr>`
         )
         .join('\n') +
-      `\n        </ul>`;
+      `\n          </tbody>\n        </table>\n      </div>`;
   }
 
   /* LET OP: bronregel() doet esc() over de naam. HTML-entiteiten die je hier

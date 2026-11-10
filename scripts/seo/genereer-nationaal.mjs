@@ -13,12 +13,22 @@ import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { url, href } from './lib/paden.mjs';
-import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic } from './lib/sjabloon.mjs';
+import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic,
+         mediaBlok, projectband, statement, beeldband, canvasband,
+         railsectie, kaartrij12, specblok, feitenstrook, artikelrij, uitspraakband, noot, artikelkop } from './lib/sjabloon.mjs';
+import { beeldTag, beeldVoor, beeldenVoor, projectFiltersVoor } from './lib/beeld.mjs';
 import { artikel, dienst, faq as faqLd } from './lib/schema.mjs';
 import { naamVan } from './lib/links.mjs';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 const wortel = resolve(hier, '..', '..');
+
+/* Het projectregister. Zestien echte projecten met slug, plaats, sector,
+   sectorFilter, beeld en beeldAlt — dezelfde bron die de projectpagina's en
+   de projectenoverzichtspagina voeden. Hier alleen gelezen, nooit aangevuld. */
+const ALLE_PROJECTEN = JSON.parse(
+  readFileSync(join(wortel, 'scripts', 'projecten.json'), 'utf8')
+).projecten;
 
 function alleInhoud() {
   const basis = resolve(wortel, 'data', 'inhoud');
@@ -82,9 +92,17 @@ export function normaliseerHrefs(html, motor) {
    meer op kan vallen. */
 function wikkelTabellen(html) {
   return String(html).replace(/(<table\b[\s\S]*?<\/table>)/gi, (hele) =>
-    /ve-scroll-x/.test(hele) ? hele : `<div class="ve-scroll-x">${hele}</div>`
+    /ve-scroll-x/.test(hele) ? hele : `<div class="ve-scroll-x"${SCHUIFBAAR}>${hele}</div>`
   );
 }
+
+/* Een container die horizontaal schuift moet met het toetsenbord bereikbaar
+   zijn, anders komt een gebruiker zonder muis nooit bij de rechterkolommen.
+   axe meldde dit als scrollable-region-focusable (serious) op de regiopagina's
+   bij 390px: de tabel is daar 522px breed in een venster van 272px.
+   role=group in plaats van region: dit is geen landmark en hoeft niet in de
+   landmarkstructuur van de pagina op te duiken, maar accepteert wel een naam. */
+export const SCHUIFBAAR = ' tabindex="0" role="group" aria-label="Tabel, horizontaal schuifbaar"';
 
 /** Zet alinea's om naar HTML; een alinea mag al HTML bevatten. */
 function alineas(lijst, bronnen, motor) {
@@ -96,9 +114,71 @@ function alineas(lijst, bronnen, motor) {
   return bronnen && bronnen.length ? `${h}\n        ${bronregel(bronnen)}` : h;
 }
 
-export function sectieHtml(s, motor) {
+/* ---------------------------------------------------- vorm uit inhoud
+   DRIE VORMEN DIE ER AL IN ZATEN MAAR NOOIT UIT KWAMEN.
+
+   De inhoudsbestanden kennen drie sectiesoorten: tekst, kaarten en specs. De
+   generator gaf elke soort precies een vorm, en dat is wat de gegenereerde
+   pagina's op een sjabloon deed lijken. Gemeten over de 46 inhoudsbestanden:
+
+     258 tekstsecties, waarvan 173 boven de 1.500 tekens
+      56 tekstsecties met twee of meer <h3>-tussenkoppen
+      55 kaartsecties, waarvan 50 met drie of meer kaarten
+      48 specsecties
+
+   Die tussenkoppen stonden al in de alinea's; ze werden alleen als lopende
+   tekst uitgeserveerd. Ze worden nu de ruggengraat van een .ve-rails-lijst —
+   dezelfde vorm die contact.html er al voor gebruikt.
+
+   Een rij van drie of meer gelijke kaarten is wat KP-07 in
+   docs/qa/composition-gate.mjs juist afkeurt. Die wordt nu een asymmetrisch
+   raster: de eerste kaart dragend over zeven kolommen, de rest gestapeld over
+   vijf. Dat is de verdeling die index.html er zelf voor gebruikt.
+
+   ER WORDT GEEN TEKST TOEGEVOEGD, VERPLAATST OF HERSCHREVEN. Dezelfde koppen,
+   dezelfde alinea's, dezelfde volgorde, dezelfde links. Alleen de vorm
+   verandert. Dat is ook waarom poort 11 niet beweegt: die meet tekst. */
+
+/** Splitst alinea's op hun <h3>-tussenkoppen in [{kop, tekst}]. Wat vóór de
+    eerste tussenkop staat, komt terug als aanloop. */
+function railsUitAlineas(lijst, motor) {
+  const aanloop = [];
+  const items = [];
+  let huidig = null;
+  for (const rauw of lijst || []) {
+    const a = String(rauw);
+    const m = /^\s*<h3[^>]*>([\s\S]*?)<\/h3>\s*([\s\S]*)$/i.exec(a);
+    if (m) {
+      if (huidig) items.push(huidig);
+      huidig = { kop: m[1].replace(/<[^>]+>/g, '').trim(), stukken: [] };
+      if (m[2].trim()) huidig.stukken.push(m[2]);
+      continue;
+    }
+    if (huidig) huidig.stukken.push(a);
+    else aanloop.push(a);
+  }
+  if (huidig) items.push(huidig);
+  return {
+    aanloop,
+    items: items.map((i) => ({ kop: i.kop, tekst: alineas(i.stukken, null, motor) })),
+  };
+}
+
+export function sectieHtml(s, motor, ctx = {}) {
   switch (s.soort) {
-    case 'tekst':
+    case 'tekst': {
+      const h3 = (s.alineas || []).filter((a) => /^\s*<h3/i.test(String(a))).length;
+      if (h3 >= 2) {
+        const { aanloop, items } = railsUitAlineas(s.alineas, motor);
+        return railsectie({
+          id: s.id,
+          kop: s.kop,
+          lead: s.lead,
+          prose: aanloop.length ? alineas(aanloop, null, motor) : '',
+          items,
+          variant: s.variant || '',
+        });
+      }
       return tekstsectie({
         id: s.id,
         kop: s.kop,
@@ -106,23 +186,188 @@ export function sectieHtml(s, motor) {
         prose: `        ${alineas(s.alineas, s.bronnen, motor)}`,
         variant: s.variant || '',
       });
-    case 'kaarten':
-      return kaarten({
+    }
+    case 'kaarten': {
+      const lijst = (s.kaarten || []).map((k) => ({
+        kop: normaliseerHrefs(k.kop, motor),
+        tekst: normaliseerHrefs(k.tekst, motor),
+        route: k.route,
+        label: k.label,
+      }));
+      if (lijst.length >= 3) {
+        /* De dragende kaart krijgt het OPENINGSBEELD VAN DE PAGINA WAAR HIJ
+           HEEN WIJST — dezelfde foto die de bezoeker na de klik ziet. Niet een
+           sfeerbeeld dat bij de kop lijkt te passen.
+           ctx.beeldVoorKaart ontdubbelt over de hele pagina: is de visuele
+           groep al gebruikt, dan komt er geen beeld en blijft het de
+           tekstkaart die er stond. Dat is de fallbacklayout, en die is beter
+           dan een foto die al twee secties hoger staat. */
+        return kaartrij12({
+          id: s.id,
+          kop: s.kop,
+          lead: s.lead,
+          dominant: lijst[0],
+          rest: lijst.slice(1),
+          img: ctx.uitgifte ? ctx.uitgifte.kaart(lijst[0].route) : null,
+          variant: s.variant || '',
+        });
+      }
+      return kaarten({ id: s.id, kop: s.kop, lead: s.lead, kaarten: lijst, variant: s.variant || '' });
+    }
+    case 'specs': {
+      const rijen = (s.rijen || []).map((r) => r.map((c) => normaliseerHrefs(c, motor)));
+      return specblok({
         id: s.id,
         kop: s.kop,
-        lead: s.lead,
-        kaarten: (s.kaarten || []).map((k) => ({ kop: normaliseerHrefs(k.kop, motor), tekst: normaliseerHrefs(k.tekst, motor), route: k.route, label: k.label })),
-        variant: s.variant || '',
+        icoon: ctx.icoon || null,
+        rijen,
+        img: ctx.uitgifte ? ctx.uitgifte.spec() : null,
+        kant: ctx.specKant || 'rechts',
+        noot: s.noot ? normaliseerHrefs(s.noot, motor) : null,
+        variant: s.variant || 've-sec--sunken ve-sec--line-y',
       });
-    case 'specs':
-      return specs({
-        kop: s.kop,
-        rijen: (s.rijen || []).map((r) => r.map((c) => normaliseerHrefs(c, motor))),
-        noot: s.noot ? normaliseerHrefs(s.noot, motor) : s.noot,
-      });
+    }
     default:
       throw new Error(`onbekende sectiesoort: ${s.soort}`);
   }
+}
+
+/* ---------------------------------------------------------------- ritme
+   WAAROM DEZE FUNCTIE BESTAAT.
+
+   Gemeten op basis 96725da, alleen binnen <main>, per sectie geteld als
+   DOCUMENT (louter tekst) of niet:
+
+     index.html          handgeschreven   10 secties,  2 DOCUMENT, langste
+                                          tekstreeks 1, 777 tekens per beeld
+     netcongestie.html   gegenereerd      12 secties, 10 DOCUMENT, langste
+                                          tekstreeks 7, 4.716 tekens per beeld
+     laadplein.html      gegenereerd      15 secties, 14 DOCUMENT, langste
+                                          tekstreeks 14, 22.140 tekens per beeld
+
+   Dat verschil is wat 'nauwelijks verschil' betekent als je het telt. De
+   generator bouwde elke sectie als tekstsectie of als kaartrij en had geen
+   derde vorm.
+
+   WAT HIER GEBEURT, EN WAT NADRUKKELIJK NIET.
+   Deze pass schrijft GEEN nieuwe tekst. Hij verandert alleen de VORM van
+   secties die er al staan:
+     · elke derde tekstsectie wordt een beeldband — dezelfde kop, dezelfde
+       alinea's, met een foto ernaast en de kant die per keer wisselt;
+     · er komt één canvasband vóór het slot, met de og-titel en de
+       beschrijving die het inhoudsbestand al draagt. Die twee staan nu
+       alleen in de <head>; op de pagina zelf waren ze onzichtbaar.
+   Er wordt dus geen claim toegevoegd die niet al door de claimpoort is
+   gekomen. */
+export function metRitme({ secties, motor, banden, canvas, ctx = {} }) {
+  const tekstIdx = secties.map((s, i) => (s.soort === 'tekst' ? i : -1)).filter((i) => i >= 0);
+  /* Hoeveel beeldbanden een pagina verdraagt, hangt af van hoeveel tekst er
+     staat. Twee banden op een pagina met veertien tekstsecties laat nog
+     altijd een reeks van vier over; op een pagina met drie tekstsecties zou
+     drie banden de tekst juist verdringen. */
+  const wil = Math.max(1, Math.min(3, Math.floor(tekstIdx.length / 2)));
+  const stap = Math.max(1, Math.round(tekstIdx.length / (wil + 1)));
+  const bandOp = new Set();
+  for (let k = 1; k <= wil; k++) {
+    const i = tekstIdx[Math.min(k * stap, tekstIdx.length - 1)];
+    if (i !== undefined) bandOp.add(i);
+  }
+  /* De canvasband komt na de middelste sectie, niet achteraan. Een pagina
+     met zijn enige visuele gebeurtenis op 90% van de hoogte is precies wat
+     de compositiepoort als generiek aanmerkt. */
+  const canvasNa = secties.length ? Math.floor(secties.length / 2) : -1;
+
+  const uit = [];
+  let gebruikt = 0;
+  secties.forEach((s, i) => {
+    if (bandOp.has(i)) {
+      /* Elk bandslot krijgt zijn EIGEN beeld. Ze wisselden eerst over slot 1
+         en 2, maar slot 2 is ook de canvasband: gemeten stond daardoor op 42
+         pagina's hetzelfde bestand twee keer. */
+      const b = banden[gebruikt % banden.length];
+      if (!b) { uit.push(sectieHtml(s, motor, ctx)); return; }
+      const kant = gebruikt % 2 === 0 ? 'rechts' : 'links';
+      gebruikt++;
+      uit.push(
+        beeldband({
+          id: s.id,
+          kop: s.kop,
+          tekst: alineas(s.alineas, s.bronnen, motor),
+          img: beeldTag({
+            basis: b.basis,
+            alt: b.alt,
+            sizes: '(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw',
+          }),
+          kant,
+          variant: s.variant || '',
+        })
+      );
+    } else {
+      uit.push(sectieHtml(s, motor, ctx));
+    }
+    if (i === canvasNa && canvas) uit.push(canvas);
+  });
+  if (canvasNa < 0 && canvas) uit.push(canvas);
+  return uit;
+}
+
+/* Geeft een beeldtag voor de bestemming van een kaart, of null.
+   Houdt per pagina bij welke visuele groepen al gebruikt zijn — inclusief de
+   groepen van het openingsbeeld, de beeldbanden en de canvasband — zodat een
+   hub met zes kaartsecties nooit twee keer dezelfde scene toont. Is er geen
+   ongebruikte groep meer, dan komt er geen beeld: de kaart blijft de
+   tekstkaart die hij was. */
+/* Een ISO-datum als Nederlandse datum. Zelfde vorm als het nieuwskanaal die
+   al gebruikt; hier opnieuw omdat genereer-nieuws.mjs hem niet exporteert. */
+const MAANDEN = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+function datumNl(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+  if (!m) return String(iso || '');
+  return `${Number(m[3])} ${MAANDEN[Number(m[2]) - 1]} ${m[1]}`;
+}
+
+function beeldUitgifte(route, gebruiktDoorPagina) {
+  const gebruikt = new Set((gebruiktDoorPagina || []).map((t) => t.groep));
+  const basisRoute = String(route || '').replace(/^\/+/, '');
+
+  const pak = (voorkeurRoute) => {
+    const r = String(voorkeurRoute || basisRoute).replace(/^\/+/, '');
+    /* eerst de set van de bestemming zelf, dan die van de pagina, dan de rest */
+    const kandidaten = [...beeldenVoor(r, typeVanRoute(r), 6), ...beeldenVoor(basisRoute, typeVanRoute(basisRoute), 8)];
+    for (const t of kandidaten) {
+      if (gebruikt.has(t.groep)) continue;
+      gebruikt.add(t.groep);
+      return t;
+    }
+    return null;
+  };
+
+  const tag = (t, sizes) => {
+    if (!t) return null;
+    try {
+      return beeldTag({ basis: t.basis, alt: t.alt, sizes });
+    } catch (e) {
+      return null;
+    }
+  };
+
+  return {
+    /* De dragende kaart krijgt het beeld van de pagina waar hij heen wijst. */
+    kaart: (voorkeurRoute) => tag(pak(voorkeurRoute), '(min-width:1100px) 680px, (min-width:900px) 58vw, 100vw'),
+    /* Elk specificatieblok krijgt een eigen beeld. laadplein.html heeft er
+       twee; die kregen eerst allebei hetzelfde bestand. */
+    spec: () => tag(pak(null), '(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw'),
+  };
+}
+
+/* Het type van een route, voor de beeldset. Afgeleid uit het eerste segment;
+   dat is hoe de routes in deze repo zijn ingedeeld. */
+function typeVanRoute(r) {
+  if (r.startsWith('kennis/')) return 'kennis';
+  if (r.startsWith('sectoren/')) return 'sector';
+  if (r.startsWith('toepassingen/')) return 'toepassing';
+  if (r.startsWith('regios/')) return 'regio';
+  return 'oplossing';
 }
 
 export function bouwNationaal({ register, motor, schrijf, reg }) {
@@ -164,12 +409,91 @@ export function bouwNationaal({ register, motor, schrijf, reg }) {
 
     const kruimels = (j.kruimels || []).map((k) => ({ naam: k.naam, route: String(k.route).replace(/^\/+/, '') }));
 
+    /* HET OPENINGSBEELD.
+       Elke gegenereerde pagina kreeg tot nu toe een tekstopening zonder beeld;
+       gemeten droegen 417 van de 448 pagina's geen enkele <img> in <main>. Het
+       onderwerpsbeeld komt uit beeldVoor(), die per route een BESTAAND bestand
+       aanwijst en nooit een klantproject suggereert.
+       fetchpriority high en loading eager: dit is het LCP-element, en lazy
+       laden van je eigen LCP is een gemeten vertraging. */
+    /* Zes slots, zes verschillende onderwerpen:
+         0 opening (breed)   1 band A   2 canvasband (breed)
+         3 band B            4 band C
+       De specificatieblokken en de dragende kaarten halen hun beeld bij de
+       paginabrede uitgifte, die bijhoudt welke visuele groepen al op deze
+       pagina staan en null teruggeeft zodra ze op zijn. Geen beeld is dan de
+       fallbacklayout: de kaart blijft de tekstkaart die hij was. */
+    const beelden = beeldenVoor(j.route, j.type, 5);
+    const beeld = beelden[0];
+    const heroBeeld = mediaBlok({
+      verhouding: '21x9',
+      diepte: 'diep',
+      img: beeldTag({
+        basis: beeld.basis,
+        alt: beeld.alt,
+        sizes: '(min-width:1200px) 1216px, 100vw',
+        lazy: false,
+        fetchpriority: 'high',
+      }),
+      stijl: 'margin-top:var(--ve-s-2xl)',
+    });
+
+    /* PROJECTBEWIJS, ALLEEN BIJ EEN ECHTE SECTOROVEREENKOMST.
+       projectFiltersVoor() geeft null voor elke route zonder overeenkomst, en
+       dan verschijnt er geen band. Liever geen band dan een project uit een
+       andere sector. */
+    const projectFilters = projectFiltersVoor(j.route);
+    const bandProjecten = projectFilters
+      ? ALLE_PROJECTEN.filter((p) => projectFilters.includes(p.sectorFilter)).map((p) => ({
+          route: p.slug,
+          titel: p.titel || p.kop,
+          plaats: p.plaats,
+          sector: p.sector,
+          samenvatting: p.statement || '',
+          img: beeldTag({
+            basis: p.beeld,
+            alt: p.beeldAlt || `${p.titel || p.kop} in ${p.plaats}`,
+            sizes: '(min-width:1200px) 380px, (min-width:760px) 50vw, 100vw',
+          }),
+        }))
+      : [];
+
+    /* KENNISARTIKELEN KRIJGEN EEN ARTIKELKOP.
+       Alle zeventien dragen een gepubliceerd- en gewijzigd-datum in hun
+       inhoudsbestand, maar die stonden nergens op de pagina — ze gingen
+       alleen de structured data in. Een artikel zonder zichtbare datum laat
+       de lezer niet zien of hij iets van vorige week of van vorig jaar leest.
+       De datums worden niet berekend of geschat; ze komen uit het bestand. */
     const delen = [
-      opening({
+      j.type === 'kennis'
+        ? artikelkop({
+            kruimels,
+            kruimelLabel: j.kruimel_label || j.og_titel || j.h1,
+            h1: j.h1,
+            lead: normaliseerHrefs(j.lead, motor),
+            feiten: [
+              j.gepubliceerd ? { label: 'Gepubliceerd', waarde: datumNl(j.gepubliceerd) } : null,
+              j.gewijzigd && j.gewijzigd !== j.gepubliceerd ? { label: 'Bijgewerkt', waarde: datumNl(j.gewijzigd) } : null,
+              /* De bovenliggende rubriek, niet de paginatitel zelf: kruimel_label
+                 is hier "Peak shaving" en dat stond dan twee keer onder elkaar. */
+              kruimels.length ? { label: 'Rubriek', waarde: esc(kruimels[kruimels.length - 1].naam), accent: true } : null,
+            ].filter(Boolean),
+            img: beeldTag({
+              basis: beeld.basis,
+              alt: beeld.alt,
+              sizes: '(min-width:1200px) 1216px, 100vw',
+              lazy: false,
+              fetchpriority: 'high',
+            }),
+            bijschrift: beeld.alt,
+            breedte: '56rem',
+          })
+        : opening({
         kruimels,
         kruimelLabel: j.kruimel_label || j.og_titel || j.h1,
         h1: j.h1,
         lead: normaliseerHrefs(j.lead, motor),
+        naLead: heroBeeld,
         acties: (j.acties || []).map((a) =>
           a.soort === 'primair'
             ? `<a class="ve-btn ve-btn--primair ve-btn--lg" href="${href(a.route)}">${esc(a.label)}${ic('pijl')}</a>`
@@ -185,7 +509,37 @@ export function bouwNationaal({ register, motor, schrijf, reg }) {
             voorbehoud: j.direct_antwoord.voorbehoud ? normaliseerHrefs(j.direct_antwoord.voorbehoud, motor) : j.direct_antwoord.voorbehoud,
           })
         : '',
-      ...secties.map((sec) => sectieHtml(sec, motor)),
+      /* De canvasband: het enige moment op een gegenereerde pagina dat niet
+         de donkere slotband is. Kop en tekst komen uit og_titel en
+         beschrijving, die tot nu toe alleen in de <head> stonden. */
+      ...metRitme({
+        secties,
+        motor,
+        banden: [beelden[1], beelden[3], beelden[4]].filter(Boolean),
+        /* Het vierde beeld gaat naar het specificatieblok. Niet naar de
+           kaartrij: die heeft zijn dragende kaart al, en twee beelden uit
+           dezelfde set op een pagina zou precies de herhaling zijn die het
+           register nu juist voorkomt. */
+        ctx: { uitgifte: beeldUitgifte(j.route, beelden.slice(0, 5)) },
+        canvas: canvasband({
+          img: beeldTag({
+            basis: beelden[2].basis,
+            alt: beelden[2].alt,
+            sizes: '(min-width:1200px) 1216px, 100vw',
+          }),
+          kop: j.og_titel || j.h1,
+          tekst: esc(j.beschrijving || ''),
+        }),
+      }),
+      bandProjecten.length
+        ? projectband({
+            id: 'projectbewijs',
+            kop: 'Opgeleverd werk in deze sector',
+            lead: '',
+            projecten: bandProjecten,
+            variant: 've-sec--paper ve-sec--line-y',
+          })
+        : '',
       j.faq && j.faq.length
         ? faqSectie({
             kop: j.faq_kop || 'Veelgestelde vragen',

@@ -478,7 +478,7 @@ body:has(#hoofdinhoud > .ve-sec > .ve-wrap--wide):not(:has(#hoofdinhoud > .ve-se
 .ve-menubtn{
   display:inline-grid;place-items:center;
   width:42px;height:42px;
-  background:none;border:1px solid var(--ve-line-strong);
+  background:none;border:1px solid var(--ve-edge-control);
   border-radius:var(--ve-r-btn);cursor:pointer;color:var(--ve-text);
 }
 @media (min-width:1200px){.ve-menubtn{display:none}}
@@ -533,6 +533,118 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
 }
 .ve-footer__lijst{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
 .ve-footer__lijst a{font-size:var(--ve-body-size)}
+
+/* ---- Verder lezen ----
+   Deze sectie leende eerst de footerklassen. Dat ging op twee punten mis, beide
+   op 396 pagina's:
+   1. `ve-cols` zonder --N-modifier levert EEN kolom op elke breedte, want de
+      kolomregels hangen aan .ve-cols--2 t/m --5. Gemeten op /sectoren bij 1440px:
+      sectiehoogte 1315px, grid 1184px breed, breedste linktekst 279px — 905px
+      (76%) van de breedte bleef leeg.
+   2. `ve-footer__kop` zet color:#fff voor de donkere footer. Op deze lichte
+      sectie gaf dat contrast 1,00:1: wit op wit, 1.550 onzichtbare koppen.
+
+   auto-fit en niet een vaste --N, want het aantal groepen varieert van 2 tot 6.
+   min(100%,14rem) als ondergrens zodat de track nooit breder wordt dan zijn
+   container op een smal scherm. */
+.ve-verwant{
+  display:grid;
+  gap:var(--ve-s-xl) var(--ve-s-lg);
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));
+}
+
+/* ---- kaartenrij ----
+   Zelfde oorzaak als bij .ve-verwant: de bouwsteen kaarten() wikkelde zijn
+   kaarten in `ve-cols ve-cols--gap-xl` zonder --N, dus EEN kolom op elke
+   breedte. 56 rasters op 44 pagina's, 2 tot 12 kaarten per raster.
+   Gemeten op /sectoren bij 1440px: vier rasters van 5, 5, 6 en 5 kaarten,
+   sectiehoogtes 1398, 1422, 1714 en 1302px, samen 36% van de paginahoogte.
+   Op /regios: 12 provinciekaarten in een kolom, 3805px hoog.
+   Het zwaarste gevolg was de leesmaat: de kaarttekst liep over 1054px door,
+   gemeten 99 tot 150 tekens per regel, terwijl .ve-measure op 42rem staat.
+
+   TWEE KOLOMMEN, EN NIET MEER — DE LEESMAAT BESLIST, NIET DE BREEDTE.
+   Eerst stond hier een ladder tot drie kolommen. Nagemeten viel die door de
+   ondergrens: op 1440px gaf drie kolommen een kaart van 379px en 36 tekens per
+   regel, terwijl de leesbare band op 45 tot 85 ligt. De oude eenkoloms-opmaak
+   zat met 127 tekens even ver aan de andere kant.
+   De kaartteksten zijn niet kort: gemeten over alle 56 rasters ligt de mediane
+   gemiddelde tekstlengte tussen 102 en 369 tekens (de twaalf regiokaarten
+   halen 369). Twee kolommen geeft 47 tekens op 1024px en 60 op 1440px — binnen
+   de band, bij elke rastergrootte, zonder dat de generator hoeft te tellen.
+   Het breekpunt ligt op 1024 en niet op 640: op 768px geeft EEN kolom 69
+   tekens, en twee kolommen daar zouden terugvallen naar 31. */
+/* ---- cijfertabel ----
+   De sectorverdeling op de 349 regiopagina's. Stond als lijst met
+   middelpunten; nu een tabel die uitlijnt. tabular-nums is hier het hele punt:
+   zonder vaste cijferbreedte golven '13.155' en '255' nog steeds onder elkaar.
+   Het schuiven op smal scherm doet .ve-scroll-x eromheen, de bestaande
+   conventie die poort 14 afdwingt — niet een eigen overflow op de tabel zelf,
+   want dan blijft hij een <table> en geen block. */
+.ve-cijfers{
+  width:100%;border-collapse:collapse;
+  margin-top:var(--ve-s-md);
+  font-size:var(--ve-body-sm-size);
+}
+.ve-cijfers th,.ve-cijfers td{
+  text-align:left;padding:.55rem .75rem;
+  border-bottom:1px solid var(--ve-line);
+  white-space:nowrap;
+}
+.ve-cijfers thead th{
+  font-weight:var(--ve-w-sub);color:var(--ve-text-muted);
+  border-bottom:1px solid var(--ve-line-strong);
+}
+.ve-cijfers tbody th{font-weight:var(--ve-w-med);color:var(--ve-text);white-space:normal}
+.ve-cijfers td{font-variant-numeric:tabular-nums;color:var(--ve-text-soft)}
+.ve-cijfers tbody tr:last-child th,.ve-cijfers tbody tr:last-child td{border-bottom:0}
+
+/* De beeldband had hier een eigen .ve-beeldband. Die is eruit: .ve-split deed
+   hetzelfde al, draagt --5-7, --7-5 en --swap, en wordt door index.html zeven
+   keer gebruikt. Twee klassen voor één compositie is precies het soort
+   dubbeling dat de generator en de handgeschreven pagina's uit elkaar laat
+   groeien. beeldband() in sjabloon.mjs stuurt nu .ve-split uit. */
+
+/* ---- projectrij ----
+   Echte projecten met hun eigen foto. Twee kolommen vanaf 760px en drie vanaf
+   1200px: een projectkaart draagt een foto plus drie korte regels, dus hij
+   verdraagt een smallere kolom dan een tekstkaart. */
+.ve-projrij{display:grid;gap:var(--ve-s-lg);grid-template-columns:minmax(0,1fr)}
+.ve-projrij > *{min-width:0}
+@media (min-width:760px){.ve-projrij{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1200px){.ve-projrij{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+.ve-kaarten{display:grid;gap:var(--ve-s-lg);grid-template-columns:minmax(0,1fr)}
+.ve-kaarten > *{min-width:0}
+@media (min-width:1024px){
+  .ve-kaarten{grid-template-columns:repeat(2,minmax(0,1fr))}
+  /* 64px padding was ontworpen voor een kaart over de volle 1184px — precies
+     wat de ontbrekende modifier opleverde. Naast een buur is dat te veel. */
+  .ve-kaarten .ve-kaart--ruim{padding:var(--ve-s-xl)}
+}
+.ve-verwant__groep{min-width:0}
+/* Een groep met acht of meer korte namen — de gemeentelijsten — pakt de volle
+   breedte en vult die met het dichte raster uit .ve-regios. In een kolom van
+   14rem stapelen 50 gemeenten tot een blok van ruim tweeduizend pixels; over
+   de volle breedte passen er vier tot zes per regel. */
+.ve-verwant__groep--breed{grid-column:1/-1}
+.ve-verwant__kop{
+  margin:0 0 var(--ve-s-sm);
+  padding-bottom:var(--ve-s-sm);
+  border-bottom:1px solid var(--ve-line);
+  font-size:var(--ve-body-sm-size);
+  font-weight:var(--ve-w-sub);
+  color:var(--ve-text);
+}
+.ve-verwant__lijst{list-style:none;margin:0;padding:0;display:grid;gap:.45rem}
+.ve-verwant__lijst a{
+  font-size:var(--ve-body-size);
+  color:var(--ve-text-soft);
+  /* 24px raakdoel, de ondergrens van WCAG 2.2 AA 2.5.8 — dezelfde reden als bij
+     de gemeentelinks in .ve-regios. */
+  display:inline-block;min-height:24px;padding-block:2px;
+}
+.ve-verwant__lijst a:hover{color:var(--ve-action-ink)}
 .ve-footer__onder{
   display:flex;flex-wrap:wrap;gap:var(--ve-s-md) var(--ve-s-lg);
   align-items:center;justify-content:space-between;
@@ -565,7 +677,7 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
 .ve-btn--primair{background:var(--ve-action);color:var(--ve-on-action);box-shadow:var(--ve-elev-1)}
 .ve-btn--primair:hover{background:var(--ve-action-hover)}
 
-.ve-btn--ghost{background:var(--ve-surface);color:var(--ve-text);border-color:var(--ve-line-strong)}
+.ve-btn--ghost{background:var(--ve-surface);color:var(--ve-text);border-color:var(--ve-edge-control)}
 .ve-btn--ghost:hover{border-color:var(--ve-action);color:var(--ve-action-ink)}
 
 .ve-btn--stil{background:transparent;color:var(--ve-text-soft);border-color:transparent;padding-inline:.5rem}
@@ -935,8 +1047,14 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
 }
 .ve-canvas__voet{
   margin-top:var(--ve-s-md);text-align:center;
-  font-size:var(--ve-body-sm-size);color:var(--ve-text-muted);
+  font-size:var(--ve-body-sm-size);
+  /* .ve-canvas is DONKER (--ve-ink-800). --ve-text-muted is #565e74 en komt
+     daarop uit op 2,87:1 — gemeten door axe als serious color-contrast zodra
+     de regiopagina's een onderschrift onder hun beeldbreuk kregen. De muted
+     variant VOOR donkere vlakken haalt wel de AA-grens. */
+  color:var(--ve-text-on-dark-soft);
 }
+.ve-canvas--licht .ve-canvas__voet{color:var(--ve-text-muted)}
 
 /* schematische console — geen cijfers, alleen vorm en verhouding */
 .ve-console{padding:var(--ve-s-lg);color:#fff}
@@ -1146,12 +1264,21 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
   width:100%;
   font:inherit;color:var(--ve-text);
   background:var(--ve-surface);
-  border:1px solid var(--ve-line-strong);
+  border:1px solid var(--ve-edge-control);
   border-radius:var(--ve-r-btn);
   padding:.75rem .9rem;
   transition:border-color var(--ve-dur) var(--ve-ease);
 }
-.ve-veld input:focus,.ve-veld select:focus,.ve-veld textarea:focus{border-color:var(--ve-action);outline:none}
+/* De randkleur verspringt bij elke focus; de OUTLINE verdwijnt alleen bij een
+   muis- of aanraakfocus. Dit stond als een kale `outline:none` op :focus, en
+   daarmee was het enige leadformulier van de site de enige plek waar de
+   globale :focus-visible-ring op regel 74 werd uitgezet — precies waar een
+   toetsenbordgebruiker moet kunnen zien in welk veld hij staat.
+   :focus-visible blijft dus staan; alleen de klikfocus is kaal. */
+.ve-veld input:focus,.ve-veld select:focus,.ve-veld textarea:focus{border-color:var(--ve-action)}
+.ve-veld input:focus:not(:focus-visible),
+.ve-veld select:focus:not(:focus-visible),
+.ve-veld textarea:focus:not(:focus-visible){outline:none}
 .ve-veld textarea{min-height:8rem;resize:vertical}
 .ve-veld__hint{font-size:var(--ve-body-sm-size);color:var(--ve-text-muted)}
 
@@ -1202,7 +1329,7 @@ html.ve-menu-open,html.ve-menu-open body{overflow:hidden}
 }
 .vck-b1{background:var(--ve-action) !important;color:#fff !important}
 .vck-b1:hover{background:var(--ve-action-hover) !important;color:#fff !important}
-.vck-b2{border-color:var(--ve-line-strong) !important;color:var(--ve-text) !important}
+.vck-b2{border-color:var(--ve-edge-control) !important;color:var(--ve-text) !important}
 .vck-b2:hover{border-color:var(--ve-action) !important;color:var(--ve-action-ink) !important}
 .vck-b3{color:var(--ve-text-muted) !important}
 .vck-b3:hover{color:var(--ve-text) !important}

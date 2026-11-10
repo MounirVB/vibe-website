@@ -68,11 +68,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <nav class="ve-kruimels" aria-label="Kruimelpad">
       <ol><li><a href="/kennis">Kennisbank</a></li><li><span aria-current="page">Batterijdegradatie</span></li></ol>
     </nav>
-      <h1 class="ve-display" style="max-width:52rem;margin-top:var(--ve-s-lg)">Batterijdegradatie: waarom het inzetprofiel de levensduur bepaalt</h1>
+      <h1 class="ve-display" style="max-width:56rem;margin-top:var(--ve-s-lg)">Batterijdegradatie: waarom het inzetprofiel de levensduur bepaalt</h1>
       <p class="ve-lead ve-measure-wide" style="margin-top:var(--ve-s-lg)">Een opslagsysteem verliest bruikbare capaciteit en vermogen, en het tempo daarvan hangt aan hoe u het gebruikt. Wie de bruikbare capaciteit aan het einde van de looptijd niet in het ontwerp meeneemt, koopt een systeem dat zijn taak alleen in het eerste jaar haalt.</p>
-      <div class="ve-row" style="margin-top:var(--ve-s-xl)">
-        <a class="ve-btn ve-btn--primair ve-btn--lg" href="/contact">Laat uw inzetprofiel doorrekenen<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></a>
-        <a class="ve-btn ve-btn--ghost ve-btn--lg" href="#twee-klokken">Begin bij de twee verouderingssporen</a>
+      <div class="ve-feiten" style="--ve-feiten-n:2;margin-top:var(--ve-s-xl)">
+        <div><span class="ve-feit__l">Gepubliceerd</span><span class="ve-feit__w">10 oktober 2026</span></div>
+        <div><span class="ve-feit__l">Rubriek</span><span class="ve-feit__w" style="color:var(--ve-action-ink)">Kennisbank</span></div>
+      </div>
+      <div class="ve-media ve-media--21x9 ve-media--diep" style="margin-top:var(--ve-s-2xl)">
+        <img src="/img/batterij-binnenwerk-1800.webp" srcset="/img/batterij-binnenwerk-880.webp 880w, /img/batterij-binnenwerk-1400.webp 1400w, /img/batterij-binnenwerk-1800.webp 1800w" sizes="(min-width:1200px) 1216px, 100vw" width="1800" height="1351" alt="Het open binnenwerk van een batterijsysteem, met de modules en de oranje verbindingskabels" decoding="async" fetchpriority="high">
+        <div class="ve-media__voet"><p class="ve-small">Het open binnenwerk van een batterijsysteem, met de modules en de oranje verbindingskabels</p></div>
       </div>
     </div>
   </section>
@@ -104,21 +108,25 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <section class="ve-sec ve-sec--lg ve-sec--sunken ve-sec--line-y">
     <div class="ve-wrap">
-      <div class="ve-spec ve-measure-wide">
-        <div class="ve-spec__kop"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-meter"/></svg><h2 class="ve-h4">Welke bedrijfsvoering de veroudering versnelt</h2></div>
-        <dl>
-          <dt class="ve-small">Diepe ontlading</dt>
-          <dd class="ve-body">Het laatste stuk van de ontlading en het laatste stuk van de lading belasten de cel het zwaarst. Een regelstrategie die het werkvenster meer in het midden houdt, spaart de cel maar levert minder bruikbare kWh per cyclus. Dat is een ontwerpafweging, geen instelling die u er later gratis bij krijgt.</dd>
-          <dt class="ve-small">Hoog laad- en ontlaadvermogen (C-rate)</dt>
-          <dd class="ve-body">De C-rate is vermogen gedeeld door capaciteit. Een systeem van 200 kWh dat op 100 kW werkt, zit op 0,5 C; op 200 kW is dat 1 C. Hoe hoger de C-rate, hoe meer warmte en spanningsval in de cel en hoe sneller de veroudering. Veel kWh achter weinig kW veroudert bij gelijke doorzet rustiger dan het omgekeerde.</dd>
-          <dt class="ve-small">Hoge celtemperatuur</dt>
-          <dd class="ve-body">Vrijwel elke chemische nevenreactie in een cel versnelt bij hogere temperatuur. Temperatuur werkt daarmee op beide sporen tegelijk: op de kalenderdegradatie en op de cyclische degradatie. Hij versterkt bovendien de andere factoren uit deze lijst, want een hoge C-rate maakt zelf warmte.</dd>
-          <dt class="ve-small">Lang volledig geladen staan</dt>
-          <dd class="ve-body">Een cel die weken aan de bovenkant van zijn spanningsvenster staat, veroudert sneller dan een cel die op een lagere laadtoestand wacht. Voor reserve- en noodstroomfuncties is dat een reëel conflict: de functie vraagt een volle batterij, de levensduur vraagt het tegendeel.</dd>
-          <dt class="ve-small">Stilstand zonder beheer</dt>
-          <dd class="ve-body">Een systeem dat maandenlang uit staat, veroudert op de kalender door en kan door het eigen verbruik van de elektronica te diep weglopen. Opslag die buiten bedrijf is, hoort een beheerde laadtoestand te houden.</dd>
-        </dl>
-        <p class="ve-small" style="margin-top:var(--ve-s-md)">Deze vijf werken op elkaar in. Een hoge C-rate maakt warmte, warmte versnelt de kalenderdegradatie, en een krap gedimensioneerd systeem moet per cyclus dieper en harder werken dan een ruim gedimensioneerd systeem met dezelfde taak.</p>
+      <div class="ve-grid12" style="align-items:start">
+      <div class="ve-sp-7" style="min-width:0">
+        <div class="ve-spec">
+          <div class="ve-spec__kop"><h2 class="ve-h4">Welke bedrijfsvoering de veroudering versnelt</h2></div>
+          <dl>
+            <dt>Diepe ontlading</dt><dd>Het laatste stuk van de ontlading en het laatste stuk van de lading belasten de cel het zwaarst. Een regelstrategie die het werkvenster meer in het midden houdt, spaart de cel maar levert minder bruikbare kWh per cyclus. Dat is een ontwerpafweging, geen instelling die u er later gratis bij krijgt.</dd>
+            <dt>Hoog laad- en ontlaadvermogen (C-rate)</dt><dd>De C-rate is vermogen gedeeld door capaciteit. Een systeem van 200 kWh dat op 100 kW werkt, zit op 0,5 C; op 200 kW is dat 1 C. Hoe hoger de C-rate, hoe meer warmte en spanningsval in de cel en hoe sneller de veroudering. Veel kWh achter weinig kW veroudert bij gelijke doorzet rustiger dan het omgekeerde.</dd>
+            <dt>Hoge celtemperatuur</dt><dd>Vrijwel elke chemische nevenreactie in een cel versnelt bij hogere temperatuur. Temperatuur werkt daarmee op beide sporen tegelijk: op de kalenderdegradatie en op de cyclische degradatie. Hij versterkt bovendien de andere factoren uit deze lijst, want een hoge C-rate maakt zelf warmte.</dd>
+            <dt>Lang volledig geladen staan</dt><dd>Een cel die weken aan de bovenkant van zijn spanningsvenster staat, veroudert sneller dan een cel die op een lagere laadtoestand wacht. Voor reserve- en noodstroomfuncties is dat een reëel conflict: de functie vraagt een volle batterij, de levensduur vraagt het tegendeel.</dd>
+            <dt>Stilstand zonder beheer</dt><dd>Een systeem dat maandenlang uit staat, veroudert op de kalender door en kan door het eigen verbruik van de elektronica te diep weglopen. Opslag die buiten bedrijf is, hoort een beheerde laadtoestand te houden.</dd>
+          </dl>
+          <p class="ve-small" style="margin-top:var(--ve-s-md)">Deze vijf werken op elkaar in. Een hoge C-rate maakt warmte, warmte versnelt de kalenderdegradatie, en een krap gedimensioneerd systeem moet per cyclus dieper en harder werken dan een ruim gedimensioneerd systeem met dezelfde taak.</p>
+        </div>
+      </div>
+      <div class="ve-sp-5" style="min-width:0">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/netcongestie-hero-2400.webp" srcset="/assets/netcongestie-hero-960.webp 960w, /assets/netcongestie-hero-1600.webp 1600w, /assets/netcongestie-hero-2400.webp 2400w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2400" height="1801" alt="Drie witte batterijkasten van Vibe Energy op betonnen voeten naast een bedrijfspand" loading="lazy" decoding="async">
+        </div>
+      </div>
       </div>
     </div>
   </section>
@@ -141,16 +149,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <section class="ve-sec ve-sec--lg " id="state-of-health">
     <div class="ve-wrap">
-      <div class="ve-head">
-        <h2 class="ve-h2">State of health: wat het betekent en hoe het wordt vastgesteld</h2>
-      </div>
-      <div class="ve-prose">
-        <p>State of health (SoH) is een verhouding: de capaciteit die het systeem nu bruikbaar levert, gedeeld door de capaciteit die het bij aanvang bruikbaar leverde. Een SoH onder de honderd procent betekent dus niet dat er iets kapot is. Het betekent dat de bruikbare kWh is gekrompen ten opzichte van de nulmeting.</p>
+      <div class="ve-split ve-split--7-5 ve-split--top">
+        <div>
+          <h2 class="ve-h2">State of health: wat het betekent en hoe het wordt vastgesteld</h2>
+          <div class="ve-prose" style="margin-top:var(--ve-s-md)"><p>State of health (SoH) is een verhouding: de capaciteit die het systeem nu bruikbaar levert, gedeeld door de capaciteit die het bij aanvang bruikbaar leverde. Een SoH onder de honderd procent betekent dus niet dat er iets kapot is. Het betekent dat de bruikbare kWh is gekrompen ten opzichte van de nulmeting.</p>
         <p>Naast capaciteitsverlies staat een tweede vorm: vermogensverlies. De inwendige weerstand van een cel loopt op met de leeftijd. Het systeem kan dan nog een behoorlijke hoeveelheid kWh bergen, maar haalt het nominale laad- of ontlaadvermogen niet meer onder alle omstandigheden, of alleen nog kort voordat de temperatuur- of spanningsgrens ingrijpt. Voor een <a class="ve-link" href="/kennis/peak-shaving">piekafvlakkingstaak</a> is dat de ernstiger vorm van veroudering, want daar is kW de bindende grens en niet kWh.</p>
         <h3>Twee manieren om SoH vast te stellen</h3>
         <ul><li><strong>De schatting van het batterijmanagementsysteem.</strong> Die draait continu mee en is gebaseerd op modellen, op spanningsgedrag en op de gemeten doorzet. Hij kost niets en is indicatief, maar het is een schatting — twee leveranciers kunnen voor hetzelfde systeem een ander getal rapporteren omdat hun model anders rekent.</li><li><strong>Een capaciteitstest.</strong> Het systeem wordt onder vastgelegde voorwaarden volledig geladen en ontladen, en er wordt gemeten wat er daadwerkelijk uit komt. Dit is de bindende methode, en hij kost een dag of een nacht waarin het systeem zijn eigenlijke werk niet doet.</li></ul>
         <p>Een capaciteitstest is alleen vergelijkbaar als de voorwaarden gelijk zijn aan de nulmeting: dezelfde celtemperatuur, hetzelfde laad- en ontlaadvermogen, hetzelfde spanningsvenster, en gemeten op hetzelfde punt — op de cellen of achter de omvormer, want daar zit het omzettingsverlies tussen. Wordt de nulmeting bij oplevering niet vastgelegd, dan is elke latere discussie over SoH een woordenwisseling zonder referentie. Leg die nulmeting dus vast, met de voorwaarden erbij, en bewaar hem bij het opleverdossier.</p>
-        <p>Wat SoH niet is: een veiligheidsindicator. Een cel met minder restcapaciteit is niet onveilig, en een hoge restcapaciteit maakt een installatie niet veilig. Veiligheid is een eigen beoordeling, met een eigen ritme en eigen maatregelen.</p>
+        <p>Wat SoH niet is: een veiligheidsindicator. Een cel met minder restcapaciteit is niet onveilig, en een hoge restcapaciteit maakt een installatie niet veilig. Veiligheid is een eigen beoordeling, met een eigen ritme en eigen maatregelen.</p></div>
+        </div>
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/ems-hero.jpg" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2000" height="1333" alt="Een rij kilowattuurmeters met digitale displays" loading="lazy" decoding="async">
+        </div>
       </div>
     </div>
   </section>
@@ -171,32 +182,53 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div>
   </section>
 
+  <section class="ve-sec ve-sec--lg ve-sec--dark">
+    <div class="ve-wrap ve-wrap--wide">
+      <div class="ve-canvas">
+        <div class="ve-canvas__binnen">
+          <div class="ve-media ve-media--21x9" style="border-radius:0;box-shadow:none">
+          <img src="/assets/bedrijf-hero-2400.webp" srcset="/assets/bedrijf-hero-960.webp 960w, /assets/bedrijf-hero-1600.webp 1600w, /assets/bedrijf-hero-2400.webp 2400w" sizes="(min-width:1200px) 1216px, 100vw" width="2400" height="1801" alt="Batterijcontainer van Vibe Energy met het merklogo op de zijwand" loading="lazy" decoding="async">
+          <div class="ve-overlay">
+            <h2 class="ve-overlay__t">Batterijdegradatie: wat een opslagsysteem laat verouderen</h2>
+            <p class="ve-overlay__d">Wat een zakelijke batterij laat verouderen, hoe state of health wordt vastgesteld en waarom u capaciteit overdimensioneert voor het einde van de looptijd.</p>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="ve-sec ve-sec--lg " id="overdimensioneren">
     <div class="ve-wrap">
-      <div class="ve-head">
-        <h2 class="ve-h2">Dimensioneren op de laatste dag van de looptijd, niet op de eerste</h2>
-      </div>
-      <div class="ve-prose">
-        <p>De capaciteit die uw taak vraagt, moet beschikbaar zijn op het slechtste moment van de looptijd. Dat moment is het einde, niet het begin. Een ontwerp dat precies past op dag één, past de rest van de looptijd niet.</p>
+      <div class="ve-split ve-split--5-7 ve-split--top">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/over-ons-hero-2400.webp" srcset="/assets/over-ons-hero-960.webp 960w, /assets/over-ons-hero-1600.webp 1600w, /assets/over-ons-hero-2400.webp 2400w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2400" height="1801" alt="Twee medewerkers van Vibe Energy bij een tekening op de werkplek" loading="lazy" decoding="async">
+        </div>
+        <div>
+          <h2 class="ve-h2">Dimensioneren op de laatste dag van de looptijd, niet op de eerste</h2>
+          <div class="ve-prose" style="margin-top:var(--ve-s-md)"><p>De capaciteit die uw taak vraagt, moet beschikbaar zijn op het slechtste moment van de looptijd. Dat moment is het einde, niet het begin. Een ontwerp dat precies past op dag één, past de rest van de looptijd niet.</p>
         <p>Tussen het getal op de kast en wat u werkelijk kunt inzetten, zitten drie stappen. Van de nominale capaciteit is maar een deel vrijgegeven om te gebruiken, omdat het werkvenster aan de boven- en onderkant een marge laat staan. Van dat venster gaat het omzettingsrendement af: wat u erin stopt, komt er niet volledig uit. En wat dan overblijft, krimpt over de jaren. Wie met de nominale capaciteit rekent, komt dus op drie plekken tekort.</p>
         <p>De praktische route is daarom: reken de taak uit op het kwartiersprofiel — de hoogte van de piek boven de gekozen grens geeft het benodigde vermogen in kW, die hoogte maal de duur geeft de benodigde kWh — en zet die uitkomst naast de bruikbare capaciteit aan het <em>einde</em> van de looptijd. Hoeveel u moet overdimensioneren volgt uit de restcapaciteit die uw leverancier voor úw inzetprofiel onderbouwt. Dat getal verschilt per fabrikant, per celchemie en per contract, en wij publiceren er geen vuistregel voor.</p>
         <p>Er is een alternatief voor alles vooraf kopen: modulair bijplaatsen. Houd ruimte, kabelwerk, omvormervermogen en een regelaar die extra modules aankan, en vul later aan. Dat is niet per definitie goedkoper — een latere uitbreiding mengt nieuwe met oudere modules, en dat vraagt aandacht in de besturing en soms een eigen omvormer — maar het verschuift investering naar het moment dat u de capaciteit echt nodig heeft. Welke van de twee past, is een rekenvraag: zet de extra investering van dag één af tegen de kosten en het risico van een uitbreiding later.</p>
-        <p>In beide gevallen geldt dat u wilt kunnen zien wat er gebeurt. Doorzet, celtemperaturen, het gebruikte werkvenster en de ontwikkeling van de restcapaciteit zijn de grootheden die aantonen of het systeem binnen zijn voorwaarden draait. Zonder die meetreeks is de discussie aan het einde van de looptijd niet te voeren.</p>
+        <p>In beide gevallen geldt dat u wilt kunnen zien wat er gebeurt. Doorzet, celtemperaturen, het gebruikte werkvenster en de ontwikkeling van de restcapaciteit zijn de grootheden die aantonen of het systeem binnen zijn voorwaarden draait. Zonder die meetreeks is de discussie aan het einde van de looptijd niet te voeren.</p></div>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="ve-sec ve-sec--lg ">
     <div class="ve-wrap">
-      <div class="ve-head">
-        <h2 class="ve-h2">Wat dit niet oplost</h2>
-        <p class="ve-lead">De eerlijke grens van alles wat hierboven staat.</p>
-      </div>
-      <div class="ve-prose">
-        <p>Degradatie is niet te vermijden, alleen te vertragen. Elke maatregel uit dit artikel kost iets: een nauwer werkvenster kost bruikbare kWh, een lagere C-rate kost piekvermogen, actieve koeling kost energie en onderhoud, en een lagere laadtoestand bij stilstand kost beschikbaarheid. Een batterij die zachter wordt behandeld dan zijn taak verdraagt, haalt die taak niet.</p>
+      <div class="ve-split ve-split--7-5 ve-split--top">
+        <div>
+          <h2 class="ve-h2">Wat dit niet oplost</h2>
+          <div class="ve-prose" style="margin-top:var(--ve-s-md)"><p>Degradatie is niet te vermijden, alleen te vertragen. Elke maatregel uit dit artikel kost iets: een nauwer werkvenster kost bruikbare kWh, een lagere C-rate kost piekvermogen, actieve koeling kost energie en onderhoud, en een lagere laadtoestand bij stilstand kost beschikbaarheid. Een batterij die zachter wordt behandeld dan zijn taak verdraagt, haalt die taak niet.</p>
         <p>Voorzichtig gebruik repareert ook geen verkeerd ontwerp. Een systeem dat op dag één te klein is voor de piek, wordt niet groter door rustiger te laden. En een systeem dat veel te ruim is gekocht om degradatie voor te blijven, laat jarenlang kapitaal stilstaan zonder dat er een kWh meer door gaat.</p>
         <p>Dit artikel noemt bewust geen percentage per jaar en geen garantietermijn. Die waarden zijn fabrikant- en contractgebonden en gelden alleen bij een vastgelegd inzetprofiel; een getal van een website geldt niet voor uw systeem. Vraag de degradatiecurve en de garantievoorwaarden op bij de leverancier, en vraag erbij onder welke doorzet, temperatuur en C-rate die curve is bepaald. Is dat niet te leveren, dan is de curve geen toezegging.</p>
-        <p>En degradatie zegt niets over brandveiligheid, over de staat van de behuizing en bekabeling of over de regels voor opstelling en afstand. Dat is een aparte beoordeling, die ook een systeem met een hoge restcapaciteit nodig heeft.</p>
+        <p>En degradatie zegt niets over brandveiligheid, over de staat van de behuizing en bekabeling of over de regels voor opstelling en afstand. Dat is een aparte beoordeling, die ook een systeem met een hoge restcapaciteit nodig heeft.</p></div>
+        </div>
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/waarom-vibe-hero.jpg" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2000" height="1501" alt="Monteur op een ladder bij een staalconstructie" loading="lazy" decoding="async">
+        </div>
       </div>
     </div>
   </section>
@@ -207,27 +239,34 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Waar dit in het ontwerp terugkomt</h2>
         <p class="ve-lead">Degradatie is geen los onderwerp; het verandert drie andere berekeningen.</p>
       </div>
-      <div class="ve-cols ve-cols--gap-xl">
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/batterij-dimensioneren">
-          <h3 class="ve-h4">De maat van het systeem</h3>
-          <p class="ve-body" style="margin-top:.4rem">Vermogen uit de hoogte van de piek, capaciteit uit hoogte maal duur — en daar bovenop de marge die het systeem nodig heeft om die taak aan het einde van de looptijd nog te halen.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Een batterij dimensioneren</span>
+      <div class="ve-grid12" style="margin-top:var(--ve-s-xl);align-items:start">
+        <div class="ve-sp-7" style="min-width:0">
+          <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/batterij-dimensioneren" style="display:block;height:100%;text-decoration:none">
+          <h3 class="ve-h3">De maat van het systeem</h3>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Vermogen uit de hoogte van de piek, capaciteit uit hoogte maal duur — en daar bovenop de marge die het systeem nodig heeft om die taak aan het einde van de looptijd nog te halen.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Een batterij dimensioneren<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/businesscase-batterij">
+          <div class="ve-media ve-media--16x9 ve-media--lijn" style="margin-top:var(--ve-s-lg)">
+            <img src="/assets/capaciteit-hero-1600.webp" srcset="/assets/capaciteit-hero-960.webp 960w, /assets/capaciteit-hero-1600.webp 1600w" sizes="(min-width:1100px) 680px, (min-width:900px) 58vw, 100vw" width="1600" height="1201" alt="Twee batterijkasten in een houten omkasting naast een bedrijfspand" loading="lazy" decoding="async">
+          </div>
+        </div>
+        <div class="ve-sp-5 ve-stack ve-stack--lg" style="min-width:0">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/kennis/businesscase-batterij" style="display:block;height:100%;text-decoration:none">
           <h3 class="ve-h4">De businesscase</h3>
-          <p class="ve-body" style="margin-top:.4rem">Minder bruikbare kWh in de latere jaren, plus het eigen verbruik van de koeling, plus een eventuele vervanging of uitbreiding binnen de looptijd.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Businesscase van een batterij</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Minder bruikbare kWh in de latere jaren, plus het eigen verbruik van de koeling, plus een eventuele vervanging of uitbreiding binnen de looptijd.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Businesscase van een batterij<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/batterijveiligheid">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/kennis/batterijveiligheid" style="display:block;height:100%;text-decoration:none">
           <h3 class="ve-h4">Veiligheid en opstelling</h3>
-          <p class="ve-body" style="margin-top:.4rem">Thermisch beheer, opstelling en bewaking zijn een eigen beoordeling. Restcapaciteit en veiligheid zijn twee verschillende vragen.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Batterijveiligheid</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Thermisch beheer, opstelling en bewaking zijn een eigen beoordeling. Restcapaciteit en veiligheid zijn twee verschillende vragen.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Batterijveiligheid<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/systeem-energieopslag">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/systeem-energieopslag" style="display:block;height:100%;text-decoration:none">
           <h3 class="ve-h4">Het systeem in de praktijk</h3>
-          <p class="ve-body" style="margin-top:.4rem">Hoe batterijmodules, omvormers, netkoppeling, beveiliging en sturing bij ons als één installatie worden ontworpen en geplaatst.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Energieopslag</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Hoe batterijmodules, omvormers, netkoppeling, beveiliging en sturing bij ons als één installatie worden ontworpen en geplaatst.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Energieopslag<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
+        </div>
       </div>
     </div>
   </section>
@@ -271,10 +310,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <div class="ve-head">
         <h2 class="ve-h2">Verder lezen</h2>
       </div>
-      <div class="ve-cols ve-cols--gap-xl">
-        <div>
-          <p class="ve-footer__kop">Verder in de kennisbank</p>
-          <ul class="ve-footer__lijst">
+      <div class="ve-verwant">
+        <div class="ve-verwant__groep">
+          <p class="ve-verwant__kop">Verder in de kennisbank</p>
+          <ul class="ve-verwant__lijst">
             <li><a href="/kennis/batterij-dimensioneren">Een batterij dimensioneren</a></li>
             <li><a href="/kennis/businesscase-batterij">Businesscase van een batterij</a></li>
             <li><a href="/kennis/batterijveiligheid">Batterijveiligheid</a></li>
@@ -283,21 +322,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <li><a href="/kennis/energieprestatie-meten">Energieprestatie meten</a></li>
           </ul>
         </div>
-        <div>
-          <p class="ve-footer__kop">De systemen</p>
-          <ul class="ve-footer__lijst">
-            <li><a href="/systeem-energieopslag">Energieopslag</a></li>
-            <li><a href="/vibe-control">VIBE.CONTROL</a></li>
+        <div class="ve-verwant__groep">
+          <p class="ve-verwant__kop">De systemen</p>
+          <ul class="ve-verwant__lijst">
             <li><a href="/kennis/ems-energiemanagementsysteem">Energiemanagementsysteem</a></li>
-            <li><a href="/netcongestie">Netcongestie</a></li>
           </ul>
         </div>
-        <div>
-          <p class="ve-footer__kop">Gerealiseerd</p>
-          <ul class="ve-footer__lijst">
+        <div class="ve-verwant__groep">
+          <p class="ve-verwant__kop">Gerealiseerd</p>
+          <ul class="ve-verwant__lijst">
             <li><a href="/project-hedin-alkmaar">Hedin Alkmaar</a></li>
             <li><a href="/project-hazenweg-61">Hazenweg 61, Hengelo</a></li>
-            <li><a href="/projecten">Alle projecten</a></li>
           </ul>
         </div>
       </div>
