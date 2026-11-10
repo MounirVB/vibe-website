@@ -13,7 +13,7 @@ import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { HOST, href, url, bestand, routeGemeente, routeGemeenteFamilie, routeProvincie, routeProvincieFamilie, REGIO_WORTEL } from './lib/paden.mjs';
-import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic, zetNavToets, mediaBlok, canvasband} from './lib/sjabloon.mjs';
+import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic, zetNavToets, mediaBlok, canvasband, beeldband} from './lib/sjabloon.mjs';
 import { beeldTag, beeldVoor, beeldenVoor } from './lib/beeld.mjs';
 
 /* ------------------------------------------------------------- regiohero
@@ -40,6 +40,23 @@ import { beeldTag, beeldVoor, beeldenVoor } from './lib/beeld.mjs';
    regel die hier thuishoort, en een zin die voor deze plek wordt verzonnen is
    een claim zonder bron. Het onderschrift is de alt-tekst van het beeld zelf:
    die beschrijft wat er te zien is en beweert verder niets. */
+/* Het beeld voor de beeldband halverwege een regiopagina. Slot 1 van de set;
+   het openingsbeeld is slot 0 en de beeldbreuk slot 2, dus alle drie tonen een
+   ander onderwerp. */
+function bandBeeld(route) {
+  const b = beeldenVoor(route, 'regio', 3);
+  const t = b[1] || b[0];
+  try {
+    return beeldTag({
+      basis: t.basis,
+      alt: t.alt,
+      sizes: '(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw',
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
 function beeldbreuk(route, type) {
   const b = beeldenVoor(route, type);
   const t = b[2] || b[1] || b[0];
@@ -555,10 +572,14 @@ function bouwProvincie(p) {
           variant: 've-sec--sunken ve-sec--line-y',
         })
       : '',
-    tekstsectie({
+    /* Zelfde ingreep als op de gemeentepagina's: de langste tekstsectie van de
+       provinciepagina krijgt een beeld ernaast in plaats van een lege
+       rechterhelft. Dezelfde kop, dezelfde alinea's, dezelfde bronregels. */
+    beeldband({
       kop: `De zakelijke energiecontext van ${esc(p.naam)}`,
-      lead: 'Officiële cijfers, met bron en datum. Geen schattingen.',
-      prose:
+      img: bandBeeld(route),
+      kant: 'links',
+      tekst:
         `<p>${esc(p.naam)} telt ${getal(alleGem.length)} gemeenten, samen ongeveer ${getal(vestTotaal)} ingeschreven ` +
         `vestigingen van bedrijven en ${getal(terreinTotaal)} bedrijventerreinen in het IBIS-register.</p>` +
         bronregel([BRON.vestigingen, BRON.terreinen]) +
@@ -966,10 +987,15 @@ function bouwGemeente(g) {
           prose: profielAdvies(g.naam, bw.bedrijfstakken, BRON.bedrijfstakken, href, (r) => naamVan(r)),
         })
       : '',
-    tekstsectie({
+    /* Deze sectie was de langste lap tekst van de pagina: vestigingen,
+       bedrijventerreinen en netbeheerder achter elkaar, over de halve breedte,
+       met de andere helft leeg. Hij staat nu als beeldband — dezelfde kop,
+       dezelfde alinea's, dezelfde bronnen, met een foto ernaast. */
+    beeldband({
       kop: `De zakelijke energiecontext van ${esc(g.naam)}`,
-      lead: 'Officiële cijfers met bron en datum. Wat we niet weten, staat er niet.',
-      prose:
+      img: bandBeeld(route),
+      kant: 'rechts',
+      tekst:
         vestigingenAlinea(g.naam, bw.vestigingen, BRON.vestigingen) +
         terreinenAlinea(g.naam, bw.terreinen, BRON.terreinen) +
         netbeheerderAlinea(g.naam, bw.netbeheerder, BRON.netbeheer),
