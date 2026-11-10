@@ -92,23 +92,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <section class="ve-sec ve-sec--lg ve-sec--sunken ve-sec--line-y">
     <div class="ve-wrap">
-      <div class="ve-spec ve-measure-wide">
-        <div class="ve-spec__kop"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-meter"/></svg><h2 class="ve-h4">Zes grootheden die samen het ontwerp vastleggen</h2></div>
-        <dl>
-          <dt class="ve-small">Vermogen (kW)</dt>
-          <dd class="ve-body">Hoe hard het systeem kan laden en ontladen. Begrenst de hoogte van de piek die weggenomen kan worden. Dit getal komt van de omvormers, niet van het aantal modules.</dd>
-          <dt class="ve-small">Nominale capaciteit (kWh)</dt>
-          <dd class="ve-body">De energie die de modules op papier bevatten. Dit is het getal op het typeplaatje en in de prijs, en niet het getal waarmee u rekent.</dd>
-          <dt class="ve-small">Bruikbare capaciteit (kWh)</dt>
-          <dd class="ve-body">Het deel van die nominale capaciteit dat werkelijk ingezet mag worden. De begrenzing zit in de ontlaaddiepte die het systeem toestaat, plus de marge die de regelaar aanhoudt.</dd>
-          <dt class="ve-small">C-rate</dt>
-          <dd class="ve-body">Vermogen gedeeld door capaciteit, per uur. 1C is in één uur van vol naar leeg; 0,5C is in twee uur. Elk systeem heeft een maximum, en dat maximum begrenst welke verhouding kW op kWh te bouwen is.</dd>
-          <dt class="ve-small">Rondgangsrendement</dt>
-          <dd class="ve-body">Het deel van de ingeladen energie dat er aan de andere kant weer uit komt. Het verschil blijft achter in de cellen en in de omzetting door de omvormer. Het eigen verbruik van de kast staat hier los van en hoort apart te worden afgetrokken, anders rekent u die post twee keer mee.</dd>
-          <dt class="ve-small">Degradatiereserve</dt>
-          <dd class="ve-body">De extra capaciteit die u nu plaatst om aan het eind van de ontwerpperiode nog te kunnen doen wat u vandaag wilt.</dd>
-        </dl>
-        <p class="ve-small" style="margin-top:var(--ve-s-md)">Een specificatie met alleen kWh zegt niets over de piek die weggenomen kan worden; een specificatie met alleen kW zegt niets over hoe lang dat lukt. Vraag altijd om beide, plus de toegestane C-rate, de ontlaaddiepte en het rondgangsrendement.</p>
+      <div class="ve-grid12" style="align-items:start">
+      <div class="ve-sp-7">
+        <div class="ve-spec">
+          <div class="ve-spec__kop"><h2 class="ve-h4">Zes grootheden die samen het ontwerp vastleggen</h2></div>
+          <dl>
+            <dt>Vermogen (kW)</dt><dd>Hoe hard het systeem kan laden en ontladen. Begrenst de hoogte van de piek die weggenomen kan worden. Dit getal komt van de omvormers, niet van het aantal modules.</dd>
+            <dt>Nominale capaciteit (kWh)</dt><dd>De energie die de modules op papier bevatten. Dit is het getal op het typeplaatje en in de prijs, en niet het getal waarmee u rekent.</dd>
+            <dt>Bruikbare capaciteit (kWh)</dt><dd>Het deel van die nominale capaciteit dat werkelijk ingezet mag worden. De begrenzing zit in de ontlaaddiepte die het systeem toestaat, plus de marge die de regelaar aanhoudt.</dd>
+            <dt>C-rate</dt><dd>Vermogen gedeeld door capaciteit, per uur. 1C is in één uur van vol naar leeg; 0,5C is in twee uur. Elk systeem heeft een maximum, en dat maximum begrenst welke verhouding kW op kWh te bouwen is.</dd>
+            <dt>Rondgangsrendement</dt><dd>Het deel van de ingeladen energie dat er aan de andere kant weer uit komt. Het verschil blijft achter in de cellen en in de omzetting door de omvormer. Het eigen verbruik van de kast staat hier los van en hoort apart te worden afgetrokken, anders rekent u die post twee keer mee.</dd>
+            <dt>Degradatiereserve</dt><dd>De extra capaciteit die u nu plaatst om aan het eind van de ontwerpperiode nog te kunnen doen wat u vandaag wilt.</dd>
+          </dl>
+          <p class="ve-small" style="margin-top:var(--ve-s-md)">Een specificatie met alleen kWh zegt niets over de piek die weggenomen kan worden; een specificatie met alleen kW zegt niets over hoe lang dat lukt. Vraag altijd om beide, plus de toegestane C-rate, de ontlaaddiepte en het rondgangsrendement.</p>
+        </div>
+      </div>
+      <div class="ve-sp-5">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/vve-hero.jpg" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2000" height="1125" alt="Luchtfoto van een rij woningen met zonnepanelen op de daken en achtertuinen ertussen" loading="lazy" decoding="async">
+        </div>
+      </div>
       </div>
     </div>
   </section>
@@ -174,27 +177,39 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Een rekenvoorbeeld, stap voor stap</h2>
         <p class="ve-lead">Zes stappen van een gemeten piek naar de capaciteit die u plaatst.</p>
       </div>
-      <div class="ve-prose">
-        <p><strong>Alle getallen hieronder zijn gekozen om de rekenstap te laten zien. Dit is een voorbeeld, geen meting en geen aanbeveling. Uw eigen profiel levert andere uitkomsten.</strong></p>
-        <p>Neem een locatie waarvan de netafname onder 120 kW moet blijven. Uit het kwartiersprofiel komt een werkdagpiek in de late middag: acht opeenvolgende kwartieren boven die grens, met als hoogste kwartierwaarde 190 kW en een gemiddelde overschrijding van 40 kW over die twee uur.</p>
-        <h3>Stap 1 — vermogen uit de hoogte</h3>
-        <p>190 kW min 120 kW is 70 kW. Dat is wat de batterij op het zwaarste kwartier moet kunnen leveren. Levert hij minder, dan komt de afname alsnog boven de grens uit en is het doel niet gehaald.</p>
-        <h3>Stap 2 — energie uit de oppervlakte</h3>
-        <p>Acht kwartieren zijn twee uur. Een gemiddelde overschrijding van 40 kW gedurende twee uur is 80 kWh. Dat is de energie die de batterij tijdens die piek moet afgeven.</p>
-        <h3>Stap 3 — van bruikbaar naar nominaal</h3>
-        <p>Die 80 kWh is de bruikbare capaciteit, niet de maat op het typeplaatje. Stel dat het systeem in dit voorbeeld 90% van de nominale capaciteit vrijgeeft. Dan hoort bij een afgifte van 80 kWh een nominale capaciteit van 80 gedeeld door 0,90, dus ongeveer 89 kWh. Het eigen verbruik van de kast is hier buiten beschouwing gelaten om de stap leesbaar te houden; in een echte berekening komt die post er nog bij.</p>
-        <h3>Stap 4 — de degradatiereserve</h3>
-        <p>De batterij moet dit niet alleen in het eerste jaar kunnen, maar ook aan het eind van de periode waarvoor u hem aanschaft. Rekent u in dit voorbeeld met 80% resterende bruikbare capaciteit op dat moment, dan wordt het 89 gedeeld door 0,80, dus ongeveer 111 kWh nominaal. Dat is de maat die u vandaag plaatst.</p>
-        <h3>Stap 5 — het herlaadvenster</h3>
-        <p>Die 80 kWh moet voor de volgende werkdag weer in de batterij. Met een rondgangsrendement van 88% in dit voorbeeld kost dat ongeveer 91 kWh aan laadenergie, en bij een laadvermogen van 70 kW duurt dat ruim een uur onafgebroken. Die 70 kW moet bovendien zelf onder de grens van 120 kW passen: de rest van de locatie mag op dat moment niet meer dan 50 kW vragen. Heeft het profiel dat dal niet, dan gaat u terug naar stap 1 met een hogere grens of een andere verdeling tussen vermogen en capaciteit.</p>
-        <h3>Stap 6 — de verhouding controleren</h3>
-        <p>70 kW op 111 kWh is een C-rate van ongeveer 0,6 per uur. Ligt dat binnen wat het systeem continu toestaat, dan is het ontwerp consistent. Zo niet, dan plaatst u meer capaciteit dan de energieberekening vraagt.</p>
-        <p>De uitkomst van dit voorbeeld is dus geen batterij van 80 kWh, maar ruim 110 kWh nominaal met 70 kW omvormervermogen — en dat alleen voor deze ene taak, op deze ene grens. Wie de stappen 3 tot 5 overslaat, bestelt een systeem dat op papier klopt en in het veld tekortkomt.</p>
+      <div class="ve-prose" style="margin-top:var(--ve-s-lg)"><p><strong>Alle getallen hieronder zijn gekozen om de rekenstap te laten zien. Dit is een voorbeeld, geen meting en geen aanbeveling. Uw eigen profiel levert andere uitkomsten.</strong></p>
+        <p>Neem een locatie waarvan de netafname onder 120 kW moet blijven. Uit het kwartiersprofiel komt een werkdagpiek in de late middag: acht opeenvolgende kwartieren boven die grens, met als hoogste kwartierwaarde 190 kW en een gemiddelde overschrijding van 40 kW over die twee uur.</p></div>
+      <div class="ve-rails" style="margin-top:var(--ve-s-xl)">
+        <div class="ve-rail">
+          <h3 class="ve-h4">Stap 1 — vermogen uit de hoogte</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>190 kW min 120 kW is 70 kW. Dat is wat de batterij op het zwaarste kwartier moet kunnen leveren. Levert hij minder, dan komt de afname alsnog boven de grens uit en is het doel niet gehaald.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Stap 2 — energie uit de oppervlakte</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Acht kwartieren zijn twee uur. Een gemiddelde overschrijding van 40 kW gedurende twee uur is 80 kWh. Dat is de energie die de batterij tijdens die piek moet afgeven.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Stap 3 — van bruikbaar naar nominaal</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Die 80 kWh is de bruikbare capaciteit, niet de maat op het typeplaatje. Stel dat het systeem in dit voorbeeld 90% van de nominale capaciteit vrijgeeft. Dan hoort bij een afgifte van 80 kWh een nominale capaciteit van 80 gedeeld door 0,90, dus ongeveer 89 kWh. Het eigen verbruik van de kast is hier buiten beschouwing gelaten om de stap leesbaar te houden; in een echte berekening komt die post er nog bij.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Stap 4 — de degradatiereserve</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>De batterij moet dit niet alleen in het eerste jaar kunnen, maar ook aan het eind van de periode waarvoor u hem aanschaft. Rekent u in dit voorbeeld met 80% resterende bruikbare capaciteit op dat moment, dan wordt het 89 gedeeld door 0,80, dus ongeveer 111 kWh nominaal. Dat is de maat die u vandaag plaatst.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Stap 5 — het herlaadvenster</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Die 80 kWh moet voor de volgende werkdag weer in de batterij. Met een rondgangsrendement van 88% in dit voorbeeld kost dat ongeveer 91 kWh aan laadenergie, en bij een laadvermogen van 70 kW duurt dat ruim een uur onafgebroken. Die 70 kW moet bovendien zelf onder de grens van 120 kW passen: de rest van de locatie mag op dat moment niet meer dan 50 kW vragen. Heeft het profiel dat dal niet, dan gaat u terug naar stap 1 met een hogere grens of een andere verdeling tussen vermogen en capaciteit.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Stap 6 — de verhouding controleren</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>70 kW op 111 kWh is een C-rate van ongeveer 0,6 per uur. Ligt dat binnen wat het systeem continu toestaat, dan is het ontwerp consistent. Zo niet, dan plaatst u meer capaciteit dan de energieberekening vraagt.</p>
+        <p>De uitkomst van dit voorbeeld is dus geen batterij van 80 kWh, maar ruim 110 kWh nominaal met 70 kW omvormervermogen — en dat alleen voor deze ene taak, op deze ene grens. Wie de stappen 3 tot 5 overslaat, bestelt een systeem dat op papier klopt en in het veld tekortkomt.</p></p>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="ve-sec ve-sec--lg">
+  <section class="ve-sec ve-sec--lg ve-sec--dark">
     <div class="ve-wrap ve-wrap--wide">
       <div class="ve-canvas">
         <div class="ve-canvas__binnen">
@@ -267,27 +282,31 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Wat hier net buiten valt</h2>
         <p class="ve-lead">Deze pagina gaat over de maat. Vier onderwerpen die eraan vastzitten, staan apart.</p>
       </div>
-      <div class="ve-kaarten">
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/kw-versus-kwh">
-          <h3 class="ve-h4">kW of kWh</h3>
-          <p class="ve-body" style="margin-top:.4rem">Het onderscheid tussen vermogen en energie, en waar u welk getal tegenkomt in uw contracten en specificaties.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">kW versus kWh</span>
+      <div class="ve-grid12" style="margin-top:var(--ve-s-xl);align-items:start">
+        <div class="ve-sp-7">
+          <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/kw-versus-kwh" style="height:100%;text-decoration:none">
+          <h3 class="ve-h3">kW of kWh</h3>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Het onderscheid tussen vermogen en energie, en waar u welk getal tegenkomt in uw contracten en specificaties.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">kW versus kWh<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/peak-shaving">
+        </div>
+        <div class="ve-sp-5 ve-stack ve-stack--lg">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/kennis/peak-shaving" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Peak shaving</h3>
-          <p class="ve-body" style="margin-top:.4rem">Hoe de grens wordt gekozen en hoe de regelaar hem bewaakt — de strategie waar de maatvoering uit volgt.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Peak shaving</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Hoe de grens wordt gekozen en hoe de regelaar hem bewaakt — de strategie waar de maatvoering uit volgt.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Peak shaving<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/batterijdegradatie">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/kennis/batterijdegradatie" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Batterijdegradatie</h3>
-          <p class="ve-body" style="margin-top:.4rem">Waarom de bruikbare capaciteit afneemt, welke factoren dat versnellen en hoe restcapaciteit wordt vastgesteld.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Batterijdegradatie</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Waarom de bruikbare capaciteit afneemt, welke factoren dat versnellen en hoe restcapaciteit wordt vastgesteld.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Batterijdegradatie<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/businesscase-batterij">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/kennis/businesscase-batterij" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Businesscase batterij</h3>
-          <p class="ve-body" style="margin-top:.4rem">Wat de gekozen maat kost en opbrengt: tarieven, inzeturen, rendementsverlies en verouderingskosten per cyclus.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Businesscase batterij</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Wat de gekozen maat kost en opbrengt: tarieven, inzeturen, rendementsverlies en verouderingskosten per cyclus.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Businesscase batterij<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
+        </div>
       </div>
     </div>
   </section>

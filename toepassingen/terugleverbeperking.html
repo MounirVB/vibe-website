@@ -107,21 +107,25 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <section class="ve-sec ve-sec--lg ve-sec--sunken ve-sec--line-y">
     <div class="ve-wrap">
-      <div class="ve-spec ve-measure-wide">
-        <div class="ve-spec__kop"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-meter"/></svg><h2 class="ve-h4">Vier getallen en één handeling die door elkaar lopen</h2></div>
-        <dl>
-          <dt class="ve-small">Fysieke aansluitcapaciteit</dt>
-          <dd class="ve-body">Wat de kabel en de aansluitkast technisch kunnen dragen, in kVA of in ampère per fase. Geldt in beide richtingen en verandert niet door wat u achter de meter plaatst.</dd>
-          <dt class="ve-small">Gecontracteerd transportvermogen voor invoeding</dt>
-          <dd class="ve-body">De in kW overeengekomen bovengrens voor wat u het net op mag sturen. Dit is het getal waar een terugleverbeperking over gaat, en het staat los van uw waarde voor afname.</dd>
-          <dt class="ve-small">Omvormervermogen</dt>
-          <dd class="ve-body">Het maximale AC-vermogen van de omvormers, in kW of kVA. Dit is wat de installatie fysiek kan afgeven, ongeacht hoeveel panelen er liggen.</dd>
-          <dt class="ve-small">Opgesteld paneelvermogen (kWp)</dt>
-          <dd class="ve-body">Een piekwaarde onder testomstandigheden. Een dak haalt die waarde zelden; de grens wordt dus minder vaak geraakt dan de kWp doet vermoeden.</dd>
-          <dt class="ve-small">Curtailment</dt>
-          <dd class="ve-body">De handeling: productie terugregelen om onder een grens te blijven. De gederfde kWh zijn de kosten ervan.</dd>
-        </dl>
-        <p class="ve-small" style="margin-top:var(--ve-s-md)">De eerste twee staan in uw papieren, de volgende twee in de installatiedocumentatie. Een gesprek over teruglevering dat niet begint met alle vier de getallen naast elkaar, gaat over het verkeerde probleem.</p>
+      <div class="ve-grid12" style="align-items:start">
+      <div class="ve-sp-7">
+        <div class="ve-spec">
+          <div class="ve-spec__kop"><h2 class="ve-h4">Vier getallen en één handeling die door elkaar lopen</h2></div>
+          <dl>
+            <dt>Fysieke aansluitcapaciteit</dt><dd>Wat de kabel en de aansluitkast technisch kunnen dragen, in kVA of in ampère per fase. Geldt in beide richtingen en verandert niet door wat u achter de meter plaatst.</dd>
+            <dt>Gecontracteerd transportvermogen voor invoeding</dt><dd>De in kW overeengekomen bovengrens voor wat u het net op mag sturen. Dit is het getal waar een terugleverbeperking over gaat, en het staat los van uw waarde voor afname.</dd>
+            <dt>Omvormervermogen</dt><dd>Het maximale AC-vermogen van de omvormers, in kW of kVA. Dit is wat de installatie fysiek kan afgeven, ongeacht hoeveel panelen er liggen.</dd>
+            <dt>Opgesteld paneelvermogen (kWp)</dt><dd>Een piekwaarde onder testomstandigheden. Een dak haalt die waarde zelden; de grens wordt dus minder vaak geraakt dan de kWp doet vermoeden.</dd>
+            <dt>Curtailment</dt><dd>De handeling: productie terugregelen om onder een grens te blijven. De gederfde kWh zijn de kosten ervan.</dd>
+          </dl>
+          <p class="ve-small" style="margin-top:var(--ve-s-md)">De eerste twee staan in uw papieren, de volgende twee in de installatiedocumentatie. Een gesprek over teruglevering dat niet begint met alle vier de getallen naast elkaar, gaat over het verkeerde probleem.</p>
+        </div>
+      </div>
+      <div class="ve-sp-5">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/img/monteurs-werktekening-1200.webp" srcset="/img/monteurs-werktekening-640.webp 640w, /img/monteurs-werktekening-1200.webp 1200w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="1200" height="901" alt="Twee medewerkers van Vibe Energy buigen zich over een werktekening" loading="lazy" decoding="async">
+        </div>
+      </div>
       </div>
     </div>
   </section>
@@ -132,16 +136,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Technische begrenzing of contractuele beperking</h2>
         <p class="ve-lead">Twee verschillende dingen, met twee verschillende ingrepen.</p>
       </div>
-      <div class="ve-prose">
-        <h3>Technisch: de instelling in de omvormer of de regelaar</h3>
-        <p>De eenvoudigste vorm is een vaste instelling in de omvormer: het AC-vermogen wordt afgetopt op een ingesteld maximum. Dat is goedkoop en snel, maar het kijkt alleen naar de omvormer zelf. Verbruikt het pand op dat moment al vermogen, dan had er meer het dak af mogen komen. Dat gebeurt niet, want de omvormer weet niet wat het pand doet.</p>
-        <p>De tweede vorm meet op het overdrachtspunt. Een regelaar leest wat er werkelijk de aansluiting op gaat, trekt het eigen verbruik daarvan af en geeft de omvormers de ruimte die daadwerkelijk over is. Alleen op de momenten dat de invoeding tegen de grens aanloopt, wordt er teruggeregeld. Bij een locatie met verbruik midden op de dag levert die overstap productie op zonder dat er één batterijmodule bij komt. Daarom is het de eerste stap en niet de laatste.</p>
-        <h3>Contractueel: de waarde en de voorwaarden</h3>
-        <p>De contractuele kant is de waarde in de overeenkomst zelf, plus de voorwaarden eromheen. Een aansluiting kan een vaste invoedingswaarde hebben, of een overeenkomst met beperkende voorwaarden waarin in afgesproken tijdvakken minder invoeding is toegestaan in ruil voor eerdere beschikbaarheid. Wat bij u geldt, staat in uw eigen overeenkomst. Vraag uw netbeheerder om de actuele voorwaarden voordat u een installatie herontwerpt of uitbreidt.</p>
+      <div class="ve-rails" style="margin-top:var(--ve-s-xl)">
+        <div class="ve-rail">
+          <h3 class="ve-h4">Technisch: de instelling in de omvormer of de regelaar</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>De eenvoudigste vorm is een vaste instelling in de omvormer: het AC-vermogen wordt afgetopt op een ingesteld maximum. Dat is goedkoop en snel, maar het kijkt alleen naar de omvormer zelf. Verbruikt het pand op dat moment al vermogen, dan had er meer het dak af mogen komen. Dat gebeurt niet, want de omvormer weet niet wat het pand doet.</p>
+        <p>De tweede vorm meet op het overdrachtspunt. Een regelaar leest wat er werkelijk de aansluiting op gaat, trekt het eigen verbruik daarvan af en geeft de omvormers de ruimte die daadwerkelijk over is. Alleen op de momenten dat de invoeding tegen de grens aanloopt, wordt er teruggeregeld. Bij een locatie met verbruik midden op de dag levert die overstap productie op zonder dat er één batterijmodule bij komt. Daarom is het de eerste stap en niet de laatste.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Contractueel: de waarde en de voorwaarden</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>De contractuele kant is de waarde in de overeenkomst zelf, plus de voorwaarden eromheen. Een aansluiting kan een vaste invoedingswaarde hebben, of een overeenkomst met beperkende voorwaarden waarin in afgesproken tijdvakken minder invoeding is toegestaan in ruil voor eerdere beschikbaarheid. Wat bij u geldt, staat in uw eigen overeenkomst. Vraag uw netbeheerder om de actuele voorwaarden voordat u een installatie herontwerpt of uitbreidt.</p>
         <p>Begin daarom met twee getallen naast elkaar: de invoedingswaarde in de overeenkomst, en de begrenzing die werkelijk in de omvormer of de regelaar is ingesteld. Die twee zijn vaker verschillend dan gelijk. Staat de installatie strenger ingesteld dan de overeenkomst eist, dan levert het terugzetten van die instelling direct productie op. Staat hij ruimer, dan loopt u een risico dat u niet wilt hebben.</p>
         <p>Of er in uw voedingsgebied ruimte is voor invoeding, staat op de Capaciteitskaart van Netbeheer Nederland. Een voedingsgebied is een verzameling postcodes rond één onderstation en volgt geen gemeentegrens, dus zoek op uw postcode en niet op uw plaats.</p>
-        <p><a class="ve-link" href="https://capaciteitskaart.netbeheernederland.nl/" rel="nofollow noopener" target="_blank">Capaciteitskaart elektriciteitsnet — ruimte voor invoeding per postcode</a></p>
-        <p class="ve-small" data-bron>Bron: <a class="ve-link" href="https://capaciteitskaart.netbeheernederland.nl/" rel="nofollow noopener" target="_blank">Capaciteitskaart elektriciteitsnet, Netbeheer Nederland</a> (2026-10-10)</p>
+        <p><a class="ve-link" href="https://capaciteitskaart.netbeheernederland.nl/" rel="nofollow noopener" target="_blank">Capaciteitskaart elektriciteitsnet — ruimte voor invoeding per postcode</a></p></p>
+        </div>
       </div>
     </div>
   </section>
@@ -164,7 +171,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div>
   </section>
 
-  <section class="ve-sec ve-sec--lg">
+  <section class="ve-sec ve-sec--lg ve-sec--dark">
     <div class="ve-wrap ve-wrap--wide">
       <div class="ve-canvas">
         <div class="ve-canvas__binnen">
@@ -186,17 +193,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Wat opslag en sturing eraan veranderen</h2>
         <p class="ve-lead">Drie ingrepen, in de volgorde waarin ze geld kosten.</p>
       </div>
-      <div class="ve-prose">
-        <h3>1 · Eerst dynamisch begrenzen, dan pas bijbouwen</h3>
-        <p>Een regelaar die op het overdrachtspunt meet, benut de ruimte die uw eigen verbruik op dat moment maakt. Dat verandert niets aan de grens en niets aan uw contracten; het haalt alleen productie binnen die anders onnodig werd weggeregeld. Daar hangen drie voorwaarden aan: een meting op het overdrachtspunt, een verbinding tussen die meting en de omvormers, en een regellus die snel genoeg terugschakelt om de grens ook bij een wolkenrand niet te overschrijden. Een bestaande installatie heeft die meting vaak niet; dan is dit werk in de verdeler en niet op het dak. Controleer bij uw netbeheerder of de nieuwe instelling binnen uw aanmelding past voordat u hem verzet.</p>
-        <h3>2 · Verbruik naar het midden van de dag halen</h3>
-        <p>Niet alle last is verplaatsbaar, maar een deel is het wel. Het laden van bedrijfswagens, koeling die een paar graden mag voorkoelen, warm water, een proces dat in blokken kan draaien. Een energiemanagementsysteem legt die last in het venster waarin het dak boven de grens zou produceren. Dat is geen theoretische oefening: het vraagt per locatie een afspraak over welke last mag wijken en welke niet, en die afspraak is de helft van het werk.</p>
-        <h3>3 · Het overschot opslaan</h3>
-        <p>Een batterij neemt het vermogen op dat boven de grens zou uitkomen, zodat de omvormers niet hoeven terug te regelen. Hij wordt daarvoor niet op uw jaaropbrengst gedimensioneerd, maar op de vlakke top uit de vorige sectie: de hoogte boven de grens geeft het vermogen in kW, die hoogte maal de duur geeft de bruikbare capaciteit in kWh.</p>
+      <div class="ve-rails" style="margin-top:var(--ve-s-xl)">
+        <div class="ve-rail">
+          <h3 class="ve-h4">1 · Eerst dynamisch begrenzen, dan pas bijbouwen</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Een regelaar die op het overdrachtspunt meet, benut de ruimte die uw eigen verbruik op dat moment maakt. Dat verandert niets aan de grens en niets aan uw contracten; het haalt alleen productie binnen die anders onnodig werd weggeregeld. Daar hangen drie voorwaarden aan: een meting op het overdrachtspunt, een verbinding tussen die meting en de omvormers, en een regellus die snel genoeg terugschakelt om de grens ook bij een wolkenrand niet te overschrijden. Een bestaande installatie heeft die meting vaak niet; dan is dit werk in de verdeler en niet op het dak. Controleer bij uw netbeheerder of de nieuwe instelling binnen uw aanmelding past voordat u hem verzet.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">2 · Verbruik naar het midden van de dag halen</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Niet alle last is verplaatsbaar, maar een deel is het wel. Het laden van bedrijfswagens, koeling die een paar graden mag voorkoelen, warm water, een proces dat in blokken kan draaien. Een energiemanagementsysteem legt die last in het venster waarin het dak boven de grens zou produceren. Dat is geen theoretische oefening: het vraagt per locatie een afspraak over welke last mag wijken en welke niet, en die afspraak is de helft van het werk.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">3 · Het overschot opslaan</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Een batterij neemt het vermogen op dat boven de grens zou uitkomen, zodat de omvormers niet hoeven terug te regelen. Hij wordt daarvoor niet op uw jaaropbrengst gedimensioneerd, maar op de vlakke top uit de vorige sectie: de hoogte boven de grens geeft het vermogen in kW, die hoogte maal de duur geeft de bruikbare capaciteit in kWh.</p>
         <p>Een rekenvoorbeeld, geen uitkomst van een bestaande locatie: ligt de grens op 50 kW en zou het dak op een heldere dag rond het middaguur drie uur lang 110 kW willen leveren, dan is er 60 kW aan vermogen nodig en 60 × 3 = 180 kWh aan bruikbare capaciteit om die drie uur te overbruggen. Van de nominale capaciteit van een batterij is niet alles bruikbaar, en dat deel neemt over de levensduur af. Dat hoort in het ontwerp te zitten, niet in de verrassing achteraf.</p>
         <p>De sturing maakt hier het verschil. Een batterij die om twaalf uur al vol staat, doet niets voor uw teruglevering. Hij moet ruimte vrij hebben op het moment dat de top aankomt, en dat botst met andere taken die hetzelfde systeem kan hebben, zoals het afvlakken van uw afnamepiek. Welke rol voorgaat, wordt per moment afgewogen en niet één keer bij de oplevering vastgezet.</p>
         <p>Bij Hedin Alkmaar stuurt Vibe Energy de bestaande zonnepaneelinstallatie aan, zodat het terugleververmogen het afgesproken maximum niet overschrijdt. Bij Hazenweg 61 in Hengelo staan opwek, opslag, laden en noodstroom onder één energiemanagementsysteem, verbonden via een nieuwe hoofdverdeler.</p>
-        <p><a class="ve-link" href="/project-hedin-alkmaar">Hedin Alkmaar</a> · <a class="ve-link" href="/project-hazenweg-61">Hazenweg 61, Hengelo</a></p>
+        <p><a class="ve-link" href="/project-hedin-alkmaar">Hedin Alkmaar</a> · <a class="ve-link" href="/project-hazenweg-61">Hazenweg 61, Hengelo</a></p></p>
+        </div>
       </div>
     </div>
   </section>
@@ -226,27 +239,31 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Is dit uw vraagstuk, of ligt het ernaast?</h2>
         <p class="ve-lead">Teruglevering en afname lopen tegen verschillende grenzen aan.</p>
       </div>
-      <div class="ve-kaarten">
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/batterij-slim-inzetten">
-          <h3 class="ve-h4">De batterij staat er al</h3>
-          <p class="ve-body" style="margin-top:.4rem">Er is opslag aanwezig, maar hij laadt op het verkeerde moment en vangt de middagtop niet op.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Batterij slim inzetten</span>
+      <div class="ve-grid12" style="margin-top:var(--ve-s-xl);align-items:start">
+        <div class="ve-sp-7">
+          <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/batterij-slim-inzetten" style="height:100%;text-decoration:none">
+          <h3 class="ve-h3">De batterij staat er al</h3>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Er is opslag aanwezig, maar hij laadt op het verkeerde moment en vangt de middagtop niet op.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Batterij slim inzetten<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/pieken-in-verbruik">
+        </div>
+        <div class="ve-sp-5 ve-stack ve-stack--lg">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/toepassingen/pieken-in-verbruik" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">De afnamepiek bepaalt de rekening</h3>
-          <p class="ve-body" style="margin-top:.4rem">Niet uw teruglevering maar uw piekafname tegen het gecontracteerde vermogen is het knelpunt.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Pieken in verbruik</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Niet uw teruglevering maar uw piekafname tegen het gecontracteerde vermogen is het knelpunt.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Pieken in verbruik<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/bestaande-aansluiting-optimaliseren">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/toepassingen/bestaande-aansluiting-optimaliseren" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">De aansluiting moet meer doen</h3>
-          <p class="ve-body" style="margin-top:.4rem">Er komt niets bij en er gaat niets weg; de bestaande aansluiting moet beter worden benut.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Bestaande aansluiting optimaliseren</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Er komt niets bij en er gaat niets weg; de bestaande aansluiting moet beter worden benut.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Bestaande aansluiting optimaliseren<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/laden-met-beperkte-aansluiting">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/toepassingen/laden-met-beperkte-aansluiting" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Laden past niet binnen de aansluiting</h3>
-          <p class="ve-body" style="margin-top:.4rem">De laadpunten moeten erbij, maar het gelijktijdige vermogen past niet binnen wat u mag afnemen.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Laden met een beperkte aansluiting</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">De laadpunten moeten erbij, maar het gelijktijdige vermogen past niet binnen wat u mag afnemen.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Laden met een beperkte aansluiting<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
+        </div>
       </div>
     </div>
   </section>

@@ -387,7 +387,7 @@ ${fasen
     Dit is het enige sectietype dat een pagina een visuele gebeurtenis geeft
     die niet de slotband is — KP-04 vraagt om minstens twee moduswissels en
     een gegenereerde pagina had er nul. */
-export function canvasband({ id, img, kop, tekst, voet = '', verhouding = '21x9', variant = 've-sec--lg' }) {
+export function canvasband({ id, img, kop, tekst, voet = '', verhouding = '21x9', variant = 've-sec--lg ve-sec--dark' }) {
   if (!img) return '';
   /* Zonder kop en tekst is dit een kale beeldbreuk: alleen het beeld in de
      canvaslijst, met het onderschrift eronder. Dat is de vorm voor pagina's
@@ -400,7 +400,15 @@ export function canvasband({ id, img, kop, tekst, voet = '', verhouding = '21x9'
             <p class="ve-overlay__d">${tekst}</p>
           </div>`
     : '';
-  /* Het beeld MOET in een .ve-media staan. Daar zit de regel die een <img>
+  /* DONKERE CANVAS IN EEN DONKERE SECTIE.
+     Gemeten op de handgeschreven pagina's: .ve-canvas staat daar OF in een
+     ve-sec--dark (index.html, de VIBE.CONTROL-band) OF draagt zelf
+     ve-canvas--licht (vibe-control.html). De combinatie 'lichte sectie met een
+     donkere canvas zonder --licht' komt er niet voor, en dat was precies wat
+     deze bouwsteen eerst uitstuurde. De donkere sectie is bovendien de
+     visuele gebeurtenis die een gegenereerde pagina miste.
+
+     Het beeld MOET in een .ve-media staan. Daar zit de regel die een <img>
      de volle breedte en object-fit cover geeft, en daar zit position:relative
      waar .ve-overlay zich aan ophangt. Zonder die wikkel rendert het beeld op
      zijn eigen verhouding — gemeten 1260x945 in een band die 21:9 hoort te
@@ -484,6 +492,278 @@ ${projecten
         </a>`
     )
     .join('\n')}
+      </div>
+    </div>
+  </section>`;
+}
+
+/* ============================================================================
+   DE BOUWSTENEN DIE DE GEGENEREERDE FAMILIES MISTEN
+
+   Gemeten op de handgeschreven pagina's (index, over-ons, projecten,
+   vibe-control, energy-hubs, microgrids, industrie-vastgoed, project-ratio-16;
+   samen 68 secties): slechts 10,3% van hun secties is louter tekst, en dat
+   zijn zonder uitzondering statement- of introsecties. Op de gegenereerde
+   families was dat 65% tot 95%.
+
+   Alles hieronder gebruikt klassen die AL in vibe/vibe.css staan en die de
+   handgeschreven pagina's al dragen. Er komt geen CSS bij.
+   ========================================================================== */
+
+/** De artikelkop: kruimelpad, H1, lead, een zichtbare feitenregel en het
+    openingsbeeld met bijschrift.
+
+    Waarom een eigen opening voor artikelen: een nieuwsbericht of kennisartikel
+    heeft een publicatiedatum en een onderwerp, en die hoorden nergens. In het
+    oude sjabloon stond de datum als een grijze regel van 13px onder de lead.
+    .ve-feiten is de vorm die de projectpagina's daar al voor gebruiken.
+    feiten: [{label, waarde, accent?}] */
+export function artikelkop({ kruimels, kruimelLabel, h1, lead, feiten, img, bijschrift, breedte = '52rem' }) {
+  const feitenHtml =
+    feiten && feiten.length
+      ? `
+      <div class="ve-feiten" style="--ve-feiten-n:${Math.min(feiten.length, 5)};margin-top:var(--ve-s-xl)">
+${feiten
+    .map(
+      (f) => `        <div><span class="ve-feit__l">${esc(f.label)}</span><span class="ve-feit__w"${
+        f.accent ? ' style="color:var(--ve-action-ink)"' : ''
+      }>${f.waarde}</span></div>`
+    )
+    .join('\n')}
+      </div>`
+      : '';
+  const beeld = img
+    ? `
+      <div class="ve-media ve-media--21x9 ve-media--diep" style="margin-top:var(--ve-s-2xl)">
+        ${img}${
+        bijschrift
+          ? `
+        <div class="ve-media__voet"><p class="ve-small">${esc(bijschrift)}</p></div>`
+          : ''
+      }
+      </div>`
+    : '';
+  return `  <section class="ve-sec ve-sec--flush-t" style="padding-top:var(--ve-s-xl)">
+    <div class="ve-wrap">
+    ${kruimelsHtml(kruimels || [], kruimelLabel)}
+      <h1 class="ve-display" style="max-width:${breedte};margin-top:var(--ve-s-lg)">${esc(h1)}</h1>
+      <p class="ve-lead ve-measure-wide" style="margin-top:var(--ve-s-lg)">${lead}</p>${feitenHtml}${beeld}
+    </div>
+  </section>`;
+}
+
+/** Een reeks benoemde punten als accentlijst in plaats van als lopend proza of
+    als rij gelijke kaarten.
+
+    Dit vervangt twee patronen tegelijk. Een tekstsectie met drie of meer
+    <h3>-tussenkoppen las als een lap tekst; een rij van vier identieke kaarten
+    is wat KP-07 in docs/qa/composition-gate.mjs juist afkeurt. .ve-rails is de
+    vorm die contact.html er al voor gebruikt: een linkerlijn in de accentkleur,
+    kop en alinea, zonder kaartvlak — dus geen gelijke kaartrij.
+    items: [{kop, tekst}] */
+export function railsectie({ id, kop, lead, prose, items, variant = '', genummerd = false }) {
+  if (!items || !items.length) return '';
+  return `  <section class="ve-sec ve-sec--lg ${variant}"${id ? ` id="${id}"` : ''}>
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">${esc(kop)}</h2>${lead ? `\n        <p class="ve-lead">${lead}</p>` : ''}
+      </div>${prose ? `\n      <div class="ve-prose" style="margin-top:var(--ve-s-lg)">${prose}</div>` : ''}
+      <div class="ve-rails" style="margin-top:var(--ve-s-xl)">
+${items
+    .map(
+      (i, n) => `        <div class="ve-rail">
+          <h3 class="ve-h4">${genummerd ? `${n + 1}. ` : ''}${esc(i.kop)}</h3>
+          <p class="ve-body" style="margin-top:.3rem">${i.tekst}</p>
+        </div>`
+    )
+    .join('\n')}
+      </div>
+    </div>
+  </section>`;
+}
+
+/** Een strook gemeten feiten. Alleen voor waarden die de pagina al draagt;
+    .ve-feiten is geen plek om een cijfer te introduceren.
+    items: [{label, waarde, accent?}] */
+export function feitenstrook({ id, kop, lead, items, bron, variant = 've-sec--paper ve-sec--line-y' }) {
+  if (!items || !items.length) return '';
+  return `  <section class="ve-sec ve-sec--lg ${variant}"${id ? ` id="${id}"` : ''}>
+    <div class="ve-wrap">${
+    kop
+      ? `
+      <div class="ve-head">
+        <h2 class="ve-h2">${esc(kop)}</h2>${lead ? `\n        <p class="ve-lead">${lead}</p>` : ''}
+      </div>`
+      : ''
+  }
+      <div class="ve-feiten" style="--ve-feiten-n:${Math.min(items.length, 5)}${kop ? ';margin-top:var(--ve-s-xl)' : ''}">
+${items
+    .map(
+      (f) => `        <div><span class="ve-feit__l">${esc(f.label)}</span><span class="ve-feit__w"${
+        f.accent ? ' style="color:var(--ve-action-ink)"' : ''
+      }>${f.waarde}</span></div>`
+    )
+    .join('\n')}
+      </div>${bron ? `\n      <div style="margin-top:var(--ve-s-lg)">${bron}</div>` : ''}
+    </div>
+  </section>`;
+}
+
+/** Een specificatieblok naast een beeld: de productpresentatie.
+    De specs stonden in een volbreed blok onder elkaar; naast een beeld lezen
+    ze als een productpagina in plaats van als een bijlage.
+    rijen: [[term, waarde], ...] */
+export function specblok({ id, kop, icoon, lead, rijen, img, kant = 'rechts', noot, variant = 've-sec--sunken ve-sec--line-y' }) {
+  if (!rijen || !rijen.length) return '';
+  const blok = `      <div class="ve-sp-${img ? 7 : 12}">
+        <div class="ve-spec">
+          <div class="ve-spec__kop">${icoon ? ic(icoon) : ''}<h2 class="ve-h4">${esc(kop)}</h2></div>${
+    lead ? `\n          <p class="ve-body">${lead}</p>` : ''
+  }
+          <dl>
+${rijen.map(([t, w]) => `            <dt>${t}</dt><dd>${w}</dd>`).join('\n')}
+          </dl>${noot ? `\n          <p class="ve-small" style="margin-top:var(--ve-s-md)">${noot}</p>` : ''}
+        </div>
+      </div>`;
+  const beeld = img
+    ? `      <div class="ve-sp-5">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          ${img}
+        </div>
+      </div>`
+    : '';
+  return `  <section class="ve-sec ve-sec--lg ${variant}"${id ? ` id="${id}"` : ''}>
+    <div class="ve-wrap">
+      <div class="ve-grid12" style="align-items:start">
+${kant === 'links' && beeld ? beeld + '\n' + blok : blok + (beeld ? '\n' + beeld : '')}
+      </div>
+    </div>
+  </section>`;
+}
+
+/** Een kaartenrij die GEEN gelijke rij is: één dragende kaart over zeven
+    kolommen, de rest gestapeld over vijf. KP-07 keurt een rij gelijke kaarten
+    af; index.html lost dat op met precies deze verdeling.
+    dominant: {kop, tekst, route, label}   rest: [{kop, tekst, route, label}] */
+export function kaartrij12({ id, kop, lead, dominant, rest, img, variant = '' }) {
+  if (!dominant) return '';
+  const link = (k) =>
+    k.route
+      ? `\n          <span class="ve-link" style="margin-top:var(--ve-s-md)">${esc(k.label || 'Lees verder')}${ic('pijl')}</span>`
+      : '';
+  const kaart = (k, groot) =>
+    k.route
+      ? `<a class="ve-kaart ve-kaart--${groot ? 'ruim' : 'sunken'} ve-kaart--hover" href="${href(k.route)}" style="height:100%;text-decoration:none">
+          <h3 class="ve-h${groot ? 3 : 4}">${esc(k.kop)}</h3>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">${k.tekst}</p>${link(k)}
+        </a>`
+      : `<div class="ve-kaart ve-kaart--${groot ? 'ruim' : 'sunken'}">
+          <h3 class="ve-h${groot ? 3 : 4}">${esc(k.kop)}</h3>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">${k.tekst}</p>
+        </div>`;
+  return `  <section class="ve-sec ve-sec--lg ${variant}"${id ? ` id="${id}"` : ''}>
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">${esc(kop)}</h2>${lead ? `\n        <p class="ve-lead">${lead}</p>` : ''}
+      </div>
+      <div class="ve-grid12" style="margin-top:var(--ve-s-xl);align-items:start">
+        <div class="ve-sp-7">
+          ${kaart(dominant, true)}${
+    img
+      ? `
+          <div class="ve-media ve-media--16x9 ve-media--lijn" style="margin-top:var(--ve-s-lg)">
+            ${img}
+          </div>`
+      : ''
+  }
+        </div>
+        <div class="ve-sp-5 ve-stack ve-stack--lg">
+${(rest || []).map((k) => `          ${kaart(k, false)}`).join('\n')}
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+/** Gerelateerde artikelen, compact: maximaal drie als kaart met hun eigen
+    beeld, de rest als dichte naamlijst eronder. LINKBEHOUDEND: er verdwijnt
+    geen enkele link uit <main>, want de linkgraaf van poort 7 en 8 telt
+    precies die links.
+    items: [{route, naam, tekst?, img?}] */
+export function artikelrij({ id, kop, lead, items, restKop = 'Meer uit de kennisbank', variant = 've-sec--paper ve-sec--line-t' }) {
+  const lijst = (items || []).filter((i) => i && i.route);
+  if (!lijst.length) return '';
+  const top = lijst.slice(0, 3);
+  const rest = lijst.slice(3);
+  return `  <section class="ve-sec ve-sec--lg ${variant}"${id ? ` id="${id}"` : ''}>
+    <div class="ve-wrap">
+      <div class="ve-head">
+        <h2 class="ve-h2">${esc(kop)}</h2>${lead ? `\n        <p class="ve-lead">${lead}</p>` : ''}
+      </div>
+      <div class="ve-projrij" style="margin-top:var(--ve-s-xl)">
+${top
+    .map(
+      (i) => `        <a class="ve-proj" href="${href(i.route)}">${
+        i.img ? `\n          <div class="ve-proj__vlak">${i.img}</div>` : ''
+      }
+          <div class="ve-proj__tekst">
+            <h3 class="ve-proj__t">${esc(i.naam)}</h3>${
+        i.tekst ? `\n            <p class="ve-proj__d">${esc(i.tekst)}</p>` : ''
+      }
+            <span class="ve-proj__voet">Lees verder</span>
+          </div>
+        </a>`
+    )
+    .join('\n')}
+      </div>${
+    rest.length
+      ? `
+      <p class="ve-verwant__kop" style="margin-top:var(--ve-s-2xl)">${esc(restKop)}</p>
+      <ul class="ve-regios">
+${rest.map((i) => `        <li><a href="${href(i.route)}">${esc(i.naam)}</a></li>`).join('\n')}
+      </ul>`
+      : ''
+  }
+    </div>
+  </section>`;
+}
+
+/** Een uitspraak op een donkere band, met een kop en eventueel een rij links.
+    statement() kon alleen een citaat; de handgeschreven pagina's zetten daar
+    een H2 boven en soms een uitgang onder. De donkere sectie staat op de
+    handgeschreven pagina's tussen 25% en 73% van de sectievolgorde, nooit als
+    laatste — de aanroeper plaatst hem dus in het midden, niet onderaan. */
+export function uitspraakband({ id, kop, tekst, bron, acties, variant = 've-sec--3xl ve-sec--dark' }) {
+  if (!tekst) return '';
+  return `  <section class="ve-sec ${variant}"${id ? ` id="${id}"` : ''}>
+    <div class="ve-wrap ve-wrap--wide">${
+    kop ? `\n      <h2 class="ve-h2" style="max-width:46rem">${esc(kop)}</h2>` : ''
+  }
+      <p class="ve-citaat" style="max-width:52rem${kop ? ';margin-top:var(--ve-s-lg)' : ''}">${esc(tekst)}</p>${
+    bron ? `\n      <span class="ve-citaat__bron">${esc(bron)}</span>` : ''
+  }${
+    acties && acties.length
+      ? `
+      <div class="ve-row" style="margin-top:var(--ve-s-xl)">
+${acties.map((a) => `        ${a}`).join('\n')}
+      </div>`
+      : ''
+  }
+    </div>
+  </section>`;
+}
+
+/** Een korte, eerlijke mededeling die geen volle sectie verdient.
+    Bijvoorbeeld: deze gemeente heeft nog geen opgeleverd project. Dat hoort
+    er te staan, maar niet als een sectie van zes rem hoog. */
+export function noot({ id, kop, prose, variant = 've-sec--paper ve-sec--line-y' }) {
+  if (!prose) return '';
+  return `  <section class="ve-sec ve-sec--tight ${variant}"${id ? ` id="${id}"` : ''}>
+    <div class="ve-wrap">
+      <div class="ve-kaart ve-kaart--sunken ve-kaart--ruim">${
+    kop ? `\n        <h2 class="ve-h4">${esc(kop)}</h2>` : ''
+  }
+        <div class="ve-prose"${kop ? ' style="margin-top:.5rem"' : ''}>${prose}</div>
       </div>
     </div>
   </section>`;

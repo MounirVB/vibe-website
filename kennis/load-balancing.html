@@ -92,21 +92,25 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <section class="ve-sec ve-sec--lg ve-sec--sunken ve-sec--line-y">
     <div class="ve-wrap">
-      <div class="ve-spec ve-measure-wide">
-        <div class="ve-spec__kop"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-meter"/></svg><h2 class="ve-h4">Statisch en dynamisch naast elkaar</h2></div>
-        <dl>
-          <dt class="ve-small">Statisch load balancing</dt>
-          <dd class="ve-body">Een vast vermogensbudget wordt over de actieve laadsessies verdeeld. Het budget wordt bij inbedrijfstelling ingesteld en beweegt niet mee met het gebouw.</dd>
-          <dt class="ve-small">Dynamisch load balancing</dt>
-          <dd class="ve-body">Een meting op de aansluiting geeft door hoeveel er op dit moment wordt afgenomen. Het laadbudget is het verschil tussen de ingestelde grens en die actuele afname, en verandert dus continu.</dd>
-          <dt class="ve-small">Wat het budget begrenst</dt>
-          <dd class="ve-body">Statisch: de ruimte die het gebouw op zijn drukste moment overlaat. Dynamisch: de ruimte die er nú is, inclusief de ruimte die eigen opwek maakt.</dd>
-          <dt class="ve-small">Wat u ervoor nodig heeft</dt>
-          <dd class="ve-body">Statisch: een instelling in de laadcontroller, verder niets. Dynamisch: een stroommeting per fase op het punt dat u wilt beschermen, een verbinding naar de controller en een regellus die snel genoeg reageert.</dd>
-          <dt class="ve-small">Waar het misgaat</dt>
-          <dd class="ve-body">Statisch budget te laag: laadpunten staan stil terwijl de aansluiting leeg is. Statisch budget te hoog: de grens wordt overschreden op het moment dat het gebouw óók piekt. Dynamisch zonder terugvalwaarde: valt de meting weg, dan weet de controller niet meer waar de ruimte ophoudt.</dd>
-        </dl>
-        <p class="ve-small" style="margin-top:var(--ve-s-md)">De keuze is geen kwestie van beter of slechter, maar van wat u wilt beschermen en hoeveel laadpunten u op dezelfde aansluiting wilt zetten. Statisch is een instelling; dynamisch is een regelkring en vraagt dus onderhoud, uitlezing en een faalgedrag dat vooraf is bepaald.</p>
+      <div class="ve-grid12" style="align-items:start">
+      <div class="ve-sp-7">
+        <div class="ve-spec">
+          <div class="ve-spec__kop"><h2 class="ve-h4">Statisch en dynamisch naast elkaar</h2></div>
+          <dl>
+            <dt>Statisch load balancing</dt><dd>Een vast vermogensbudget wordt over de actieve laadsessies verdeeld. Het budget wordt bij inbedrijfstelling ingesteld en beweegt niet mee met het gebouw.</dd>
+            <dt>Dynamisch load balancing</dt><dd>Een meting op de aansluiting geeft door hoeveel er op dit moment wordt afgenomen. Het laadbudget is het verschil tussen de ingestelde grens en die actuele afname, en verandert dus continu.</dd>
+            <dt>Wat het budget begrenst</dt><dd>Statisch: de ruimte die het gebouw op zijn drukste moment overlaat. Dynamisch: de ruimte die er nú is, inclusief de ruimte die eigen opwek maakt.</dd>
+            <dt>Wat u ervoor nodig heeft</dt><dd>Statisch: een instelling in de laadcontroller, verder niets. Dynamisch: een stroommeting per fase op het punt dat u wilt beschermen, een verbinding naar de controller en een regellus die snel genoeg reageert.</dd>
+            <dt>Waar het misgaat</dt><dd>Statisch budget te laag: laadpunten staan stil terwijl de aansluiting leeg is. Statisch budget te hoog: de grens wordt overschreden op het moment dat het gebouw óók piekt. Dynamisch zonder terugvalwaarde: valt de meting weg, dan weet de controller niet meer waar de ruimte ophoudt.</dd>
+          </dl>
+          <p class="ve-small" style="margin-top:var(--ve-s-md)">De keuze is geen kwestie van beter of slechter, maar van wat u wilt beschermen en hoeveel laadpunten u op dezelfde aansluiting wilt zetten. Statisch is een instelling; dynamisch is een regelkring en vraagt dus onderhoud, uitlezing en een faalgedrag dat vooraf is bepaald.</p>
+        </div>
+      </div>
+      <div class="ve-sp-5">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/home/s7-opslag-2400.webp" srcset="/assets/home/s7-opslag-640.webp 640w, /assets/home/s7-opslag-1200.webp 1200w, /assets/home/s7-opslag-2400.webp 2400w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2400" height="1802" alt="Batterijkasten van Vibe Energy in een houten omkasting naast een bedrijfspand" loading="lazy" decoding="async">
+        </div>
+      </div>
       </div>
     </div>
   </section>
@@ -180,7 +184,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div>
   </section>
 
-  <section class="ve-sec ve-sec--lg">
+  <section class="ve-sec ve-sec--lg ve-sec--dark">
     <div class="ve-wrap ve-wrap--wide">
       <div class="ve-canvas">
         <div class="ve-canvas__binnen">
@@ -237,27 +241,31 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Waar dit in de praktijk langskomt</h2>
         <p class="ve-lead">De plekken waar de verdeling van vermogen de uitkomst bepaalt.</p>
       </div>
-      <div class="ve-kaarten">
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/laden-met-beperkte-aansluiting">
-          <h3 class="ve-h4">Laden met een beperkte aansluiting</h3>
-          <p class="ve-body" style="margin-top:.4rem">De bedrijfswagens moeten elektrisch, maar de aansluiting kan de laadpunten niet gelijktijdig op vol vermogen dragen.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Laden met een beperkte aansluiting</span>
+      <div class="ve-grid12" style="margin-top:var(--ve-s-xl);align-items:start">
+        <div class="ve-sp-7">
+          <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/laden-met-beperkte-aansluiting" style="height:100%;text-decoration:none">
+          <h3 class="ve-h3">Laden met een beperkte aansluiting</h3>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">De bedrijfswagens moeten elektrisch, maar de aansluiting kan de laadpunten niet gelijktijdig op vol vermogen dragen.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Laden met een beperkte aansluiting<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/laadplein">
+        </div>
+        <div class="ve-sp-5 ve-stack ve-stack--lg">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/laadplein" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Een laadplein op één aansluiting</h3>
-          <p class="ve-body" style="margin-top:.4rem">Meerdere laadpunten, één grens en een verdeling die moet werken terwijl het pand ook draait.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Laadplein</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Meerdere laadpunten, één grens en een verdeling die moet werken terwijl het pand ook draait.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Laadplein<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/systeem-laadpalen">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/systeem-laadpalen" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">De laadinfrastructuur zelf</h3>
-          <p class="ve-body" style="margin-top:.4rem">Aantal punten, vermogen per punt, fasekeuze en de regelaar die ze samenbrengt.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Laadinfrastructuur</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Aantal punten, vermogen per punt, fasekeuze en de regelaar die ze samenbrengt.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Laadinfrastructuur<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/project-ratio-16">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/project-ratio-16" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Een gerealiseerd voorbeeld</h3>
-          <p class="ve-body" style="margin-top:.4rem">Op Ratio 16 in Duiven draaien zon, opslag en een laadplein samen achter de bestaande aansluiting; de sturing houdt het geheel binnen die grens.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Ratio 16, Duiven</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Op Ratio 16 in Duiven draaien zon, opslag en een laadplein samen achter de bestaande aansluiting; de sturing houdt het geheel binnen die grens.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Ratio 16, Duiven<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
+        </div>
       </div>
     </div>
   </section>

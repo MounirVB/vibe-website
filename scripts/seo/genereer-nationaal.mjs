@@ -14,7 +14,8 @@ import { fileURLToPath } from 'node:url';
 
 import { url, href } from './lib/paden.mjs';
 import { pagina, opening, directAntwoord, tekstsectie, kaarten, specs, faqSectie, verwant, conversie, esc, bronregel, ic,
-         mediaBlok, projectband, statement, beeldband, canvasband } from './lib/sjabloon.mjs';
+         mediaBlok, projectband, statement, beeldband, canvasband,
+         railsectie, kaartrij12, specblok, feitenstrook, artikelrij, uitspraakband, noot, artikelkop } from './lib/sjabloon.mjs';
 import { beeldTag, beeldVoor, beeldenVoor, projectFiltersVoor } from './lib/beeld.mjs';
 import { artikel, dienst, faq as faqLd } from './lib/schema.mjs';
 import { naamVan } from './lib/links.mjs';
@@ -113,9 +114,71 @@ function alineas(lijst, bronnen, motor) {
   return bronnen && bronnen.length ? `${h}\n        ${bronregel(bronnen)}` : h;
 }
 
-export function sectieHtml(s, motor) {
+/* ---------------------------------------------------- vorm uit inhoud
+   DRIE VORMEN DIE ER AL IN ZATEN MAAR NOOIT UIT KWAMEN.
+
+   De inhoudsbestanden kennen drie sectiesoorten: tekst, kaarten en specs. De
+   generator gaf elke soort precies een vorm, en dat is wat de gegenereerde
+   pagina's op een sjabloon deed lijken. Gemeten over de 46 inhoudsbestanden:
+
+     258 tekstsecties, waarvan 173 boven de 1.500 tekens
+      56 tekstsecties met twee of meer <h3>-tussenkoppen
+      55 kaartsecties, waarvan 50 met drie of meer kaarten
+      48 specsecties
+
+   Die tussenkoppen stonden al in de alinea's; ze werden alleen als lopende
+   tekst uitgeserveerd. Ze worden nu de ruggengraat van een .ve-rails-lijst —
+   dezelfde vorm die contact.html er al voor gebruikt.
+
+   Een rij van drie of meer gelijke kaarten is wat KP-07 in
+   docs/qa/composition-gate.mjs juist afkeurt. Die wordt nu een asymmetrisch
+   raster: de eerste kaart dragend over zeven kolommen, de rest gestapeld over
+   vijf. Dat is de verdeling die index.html er zelf voor gebruikt.
+
+   ER WORDT GEEN TEKST TOEGEVOEGD, VERPLAATST OF HERSCHREVEN. Dezelfde koppen,
+   dezelfde alinea's, dezelfde volgorde, dezelfde links. Alleen de vorm
+   verandert. Dat is ook waarom poort 11 niet beweegt: die meet tekst. */
+
+/** Splitst alinea's op hun <h3>-tussenkoppen in [{kop, tekst}]. Wat vóór de
+    eerste tussenkop staat, komt terug als aanloop. */
+function railsUitAlineas(lijst, motor) {
+  const aanloop = [];
+  const items = [];
+  let huidig = null;
+  for (const rauw of lijst || []) {
+    const a = String(rauw);
+    const m = /^\s*<h3[^>]*>([\s\S]*?)<\/h3>\s*([\s\S]*)$/i.exec(a);
+    if (m) {
+      if (huidig) items.push(huidig);
+      huidig = { kop: m[1].replace(/<[^>]+>/g, '').trim(), stukken: [] };
+      if (m[2].trim()) huidig.stukken.push(m[2]);
+      continue;
+    }
+    if (huidig) huidig.stukken.push(a);
+    else aanloop.push(a);
+  }
+  if (huidig) items.push(huidig);
+  return {
+    aanloop,
+    items: items.map((i) => ({ kop: i.kop, tekst: alineas(i.stukken, null, motor) })),
+  };
+}
+
+export function sectieHtml(s, motor, ctx = {}) {
   switch (s.soort) {
-    case 'tekst':
+    case 'tekst': {
+      const h3 = (s.alineas || []).filter((a) => /^\s*<h3/i.test(String(a))).length;
+      if (h3 >= 2) {
+        const { aanloop, items } = railsUitAlineas(s.alineas, motor);
+        return railsectie({
+          id: s.id,
+          kop: s.kop,
+          lead: s.lead,
+          prose: aanloop.length ? alineas(aanloop, null, motor) : '',
+          items,
+          variant: s.variant || '',
+        });
+      }
       return tekstsectie({
         id: s.id,
         kop: s.kop,
@@ -123,20 +186,40 @@ export function sectieHtml(s, motor) {
         prose: `        ${alineas(s.alineas, s.bronnen, motor)}`,
         variant: s.variant || '',
       });
-    case 'kaarten':
-      return kaarten({
+    }
+    case 'kaarten': {
+      const lijst = (s.kaarten || []).map((k) => ({
+        kop: normaliseerHrefs(k.kop, motor),
+        tekst: normaliseerHrefs(k.tekst, motor),
+        route: k.route,
+        label: k.label,
+      }));
+      if (lijst.length >= 3) {
+        return kaartrij12({
+          id: s.id,
+          kop: s.kop,
+          lead: s.lead,
+          dominant: lijst[0],
+          rest: lijst.slice(1),
+          img: ctx.kaartBeeld || null,
+          variant: s.variant || '',
+        });
+      }
+      return kaarten({ id: s.id, kop: s.kop, lead: s.lead, kaarten: lijst, variant: s.variant || '' });
+    }
+    case 'specs': {
+      const rijen = (s.rijen || []).map((r) => r.map((c) => normaliseerHrefs(c, motor)));
+      return specblok({
         id: s.id,
         kop: s.kop,
-        lead: s.lead,
-        kaarten: (s.kaarten || []).map((k) => ({ kop: normaliseerHrefs(k.kop, motor), tekst: normaliseerHrefs(k.tekst, motor), route: k.route, label: k.label })),
-        variant: s.variant || '',
+        icoon: ctx.icoon || null,
+        rijen,
+        img: ctx.specBeeld || null,
+        kant: ctx.specKant || 'rechts',
+        noot: s.noot ? normaliseerHrefs(s.noot, motor) : null,
+        variant: s.variant || 've-sec--sunken ve-sec--line-y',
       });
-    case 'specs':
-      return specs({
-        kop: s.kop,
-        rijen: (s.rijen || []).map((r) => r.map((c) => normaliseerHrefs(c, motor))),
-        noot: s.noot ? normaliseerHrefs(s.noot, motor) : s.noot,
-      });
+    }
     default:
       throw new Error(`onbekende sectiesoort: ${s.soort}`);
   }
@@ -169,7 +252,7 @@ export function sectieHtml(s, motor) {
        alleen in de <head>; op de pagina zelf waren ze onzichtbaar.
    Er wordt dus geen claim toegevoegd die niet al door de claimpoort is
    gekomen. */
-export function metRitme({ secties, motor, beelden, canvas }) {
+export function metRitme({ secties, motor, beelden, canvas, ctx = {} }) {
   const tekstIdx = secties.map((s, i) => (s.soort === 'tekst' ? i : -1)).filter((i) => i >= 0);
   /* Hoeveel beeldbanden een pagina verdraagt, hangt af van hoeveel tekst er
      staat. Twee banden op een pagina met veertien tekstsecties laat nog
@@ -209,7 +292,7 @@ export function metRitme({ secties, motor, beelden, canvas }) {
         })
       );
     } else {
-      uit.push(sectieHtml(s, motor));
+      uit.push(sectieHtml(s, motor, ctx));
     }
     if (i === canvasNa && canvas) uit.push(canvas);
   });
@@ -263,7 +346,7 @@ export function bouwNationaal({ register, motor, schrijf, reg }) {
        aanwijst en nooit een klantproject suggereert.
        fetchpriority high en loading eager: dit is het LCP-element, en lazy
        laden van je eigen LCP is een gemeten vertraging. */
-    const beelden = beeldenVoor(j.route, j.type);
+    const beelden = beeldenVoor(j.route, j.type, 4);
     const beeld = beelden[0];
     const heroBeeld = mediaBlok({
       verhouding: '21x9',
@@ -327,6 +410,19 @@ export function bouwNationaal({ register, motor, schrijf, reg }) {
         secties,
         motor,
         beelden,
+        /* Het vierde beeld gaat naar het specificatieblok. Niet naar de
+           kaartrij: die heeft zijn dragende kaart al, en twee beelden uit
+           dezelfde set op een pagina zou precies de herhaling zijn die het
+           register nu juist voorkomt. */
+        ctx: {
+          specBeeld: beelden[3]
+            ? beeldTag({
+                basis: beelden[3].basis,
+                alt: beelden[3].alt,
+                sizes: '(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw',
+              })
+            : null,
+        },
         canvas: canvasband({
           img: beeldTag({
             basis: beelden[2].basis,

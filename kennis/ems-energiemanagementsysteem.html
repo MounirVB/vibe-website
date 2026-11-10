@@ -96,33 +96,44 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Wat een EMS meet, en waar het meet</h2>
         <p class="ve-lead">Een regelaar kan nooit meer weten dan zijn meetpunten hem vertellen. Daarom begint de beschrijving van een EMS bij de meting, niet bij de software.</p>
       </div>
-      <div class="ve-prose">
-        <h3>De hoofdmeting</h3>
-        <p>De belangrijkste meting zit op het overdrachtspunt: daar waar de installatie van het pand aan de netaansluiting hangt. Die meting geeft het netto vermogen dat op dit moment wordt afgenomen of ingevoed, met een teken erbij — afname en teruglevering zijn immers hetzelfde getal in twee richtingen. Dit is de waarde waarop een grens wordt bewaakt. De meting van de netbeheerder is hiervoor doorgaans te langzaam: die legt kwartierwaarden vast voor de afrekening, en een piek die binnen enkele seconden ontstaat is dan al voorbij voordat hij zichtbaar wordt. Een EMS heeft daarom een eigen meting op dezelfde plek, met een korte meetcyclus.</p>
-        <p>Belangrijk is dat de hoofdmeting <strong>per fase</strong> wordt uitgelezen en niet alleen als som. Een driefasige aansluiting wordt begrensd door de zwaarst belaste fase. Een systeem dat alleen het totaalvermogen kent, ziet een overschrijding op één fase niet en grijpt dus te laat in.</p>
-        <h3>Submetering</h3>
-        <p>Daaronder zit submetering: aparte meetpunten per groep of per installatie. De zonomvormer, de batterijomvormer, de laadgroep, de koelinstallatie, een productielijn. Zonder submetering weet het systeem alleen het totaal. Het kan dan nog wel een grens bewaken, maar het kan niet <em>toewijzen</em>: het weet niet wie de ruimte gebruikt die er is, en kan dus ook niet onderbouwen wie hem moet afstaan. Submetering is ook de voorwaarde voor elke latere uitspraak over rendement, want zonder eigen meetreeks per asset valt niet te zeggen wat welk onderdeel heeft bijgedragen.</p>
-        <h3>Wat de snelheid bepaalt</h3>
-        <p>De reactietijd van het geheel is die van de langzaamste schakel in de keten meting → beslissing → setpoint → actuator. Een meting per seconde heeft geen zin als het laadpuntbeheer het nieuwe setpoint pas na een halve minuut doorzet. Bij het ontwerp hoort dus niet alleen de vraag welke apparaten gekoppeld worden, maar ook hoe snel ieder van die koppelingen werkelijk is.</p>
+      <div class="ve-rails" style="margin-top:var(--ve-s-xl)">
+        <div class="ve-rail">
+          <h3 class="ve-h4">De hoofdmeting</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>De belangrijkste meting zit op het overdrachtspunt: daar waar de installatie van het pand aan de netaansluiting hangt. Die meting geeft het netto vermogen dat op dit moment wordt afgenomen of ingevoed, met een teken erbij — afname en teruglevering zijn immers hetzelfde getal in twee richtingen. Dit is de waarde waarop een grens wordt bewaakt. De meting van de netbeheerder is hiervoor doorgaans te langzaam: die legt kwartierwaarden vast voor de afrekening, en een piek die binnen enkele seconden ontstaat is dan al voorbij voordat hij zichtbaar wordt. Een EMS heeft daarom een eigen meting op dezelfde plek, met een korte meetcyclus.</p>
+        <p>Belangrijk is dat de hoofdmeting <strong>per fase</strong> wordt uitgelezen en niet alleen als som. Een driefasige aansluiting wordt begrensd door de zwaarst belaste fase. Een systeem dat alleen het totaalvermogen kent, ziet een overschrijding op één fase niet en grijpt dus te laat in.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Submetering</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Daaronder zit submetering: aparte meetpunten per groep of per installatie. De zonomvormer, de batterijomvormer, de laadgroep, de koelinstallatie, een productielijn. Zonder submetering weet het systeem alleen het totaal. Het kan dan nog wel een grens bewaken, maar het kan niet <em>toewijzen</em>: het weet niet wie de ruimte gebruikt die er is, en kan dus ook niet onderbouwen wie hem moet afstaan. Submetering is ook de voorwaarde voor elke latere uitspraak over rendement, want zonder eigen meetreeks per asset valt niet te zeggen wat welk onderdeel heeft bijgedragen.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Wat de snelheid bepaalt</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>De reactietijd van het geheel is die van de langzaamste schakel in de keten meting → beslissing → setpoint → actuator. Een meting per seconde heeft geen zin als het laadpuntbeheer het nieuwe setpoint pas na een halve minuut doorzet. Bij het ontwerp hoort dus niet alleen de vraag welke apparaten gekoppeld worden, maar ook hoe snel ieder van die koppelingen werkelijk is.</p></p>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="ve-sec ve-sec--lg ve-sec--sunken ve-sec--line-y">
     <div class="ve-wrap">
-      <div class="ve-spec ve-measure-wide">
-        <div class="ve-spec__kop"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-meter"/></svg><h2 class="ve-h4">Monitoren, regelen en optimaliseren zijn drie verschillende dingen</h2></div>
-        <dl>
-          <dt class="ve-small">Monitoren</dt>
-          <dd class="ve-body">Meten, vastleggen, tonen en alarmeren. Verandert niets aan de installatie. Een monitoringfout kost inzicht, geen vermogen.</dd>
-          <dt class="ve-small">Regelen</dt>
-          <dd class="ve-body">Setpoints sturen om een harde grens niet te overschrijden. Werkt in de actuele tijd en moet voorspelbaar zijn: dezelfde situatie levert dezelfde opdracht. Een regelfout kost een overschrijding of een stilstand.</dd>
-          <dt class="ve-small">Optimaliseren</dt>
-          <dd class="ve-body">Kiezen binnen de ruimte die regelen overlaat, op basis van een verwachting: verwachte opwek, verwacht verbruik, het tariefverloop van de dag. Een verwachting mag ernaast zitten, en mag dus nooit een harde grens kunnen schenden.</dd>
-          <dt class="ve-small">De verhouding</dt>
-          <dd class="ve-body">Optimaliseren zonder regelen is een advies. Regelen zonder monitoren is een systeem dat u niet kunt narekenen. Monitoren zonder regelen is een rapport.</dd>
-        </dl>
-        <p class="ve-small" style="margin-top:var(--ve-s-md)">In verkoopteksten lopen deze drie door elkaar. De vraag die ze scheidt is eenvoudig: grijpt het systeem zelf in op het moment zelf, en zo ja, binnen welke grens?</p>
+      <div class="ve-grid12" style="align-items:start">
+      <div class="ve-sp-7">
+        <div class="ve-spec">
+          <div class="ve-spec__kop"><h2 class="ve-h4">Monitoren, regelen en optimaliseren zijn drie verschillende dingen</h2></div>
+          <dl>
+            <dt>Monitoren</dt><dd>Meten, vastleggen, tonen en alarmeren. Verandert niets aan de installatie. Een monitoringfout kost inzicht, geen vermogen.</dd>
+            <dt>Regelen</dt><dd>Setpoints sturen om een harde grens niet te overschrijden. Werkt in de actuele tijd en moet voorspelbaar zijn: dezelfde situatie levert dezelfde opdracht. Een regelfout kost een overschrijding of een stilstand.</dd>
+            <dt>Optimaliseren</dt><dd>Kiezen binnen de ruimte die regelen overlaat, op basis van een verwachting: verwachte opwek, verwacht verbruik, het tariefverloop van de dag. Een verwachting mag ernaast zitten, en mag dus nooit een harde grens kunnen schenden.</dd>
+            <dt>De verhouding</dt><dd>Optimaliseren zonder regelen is een advies. Regelen zonder monitoren is een systeem dat u niet kunt narekenen. Monitoren zonder regelen is een rapport.</dd>
+          </dl>
+          <p class="ve-small" style="margin-top:var(--ve-s-md)">In verkoopteksten lopen deze drie door elkaar. De vraag die ze scheidt is eenvoudig: grijpt het systeem zelf in op het moment zelf, en zo ja, binnen welke grens?</p>
+        </div>
+      </div>
+      <div class="ve-sp-5">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/over-ons-hero-2400.webp" srcset="/assets/over-ons-hero-960.webp 960w, /assets/over-ons-hero-1600.webp 1600w, /assets/over-ons-hero-2400.webp 2400w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2400" height="1801" alt="Twee medewerkers van Vibe Energy bij een tekening op de werkplek" loading="lazy" decoding="async">
+        </div>
+      </div>
       </div>
     </div>
   </section>
@@ -167,19 +178,25 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Wat er gebeurt bij een storing of een verbroken verbinding</h2>
         <p class="ve-lead">Het gedrag bij uitval zegt meer over een EMS dan de functielijst. Drie dingen kunnen wegvallen, en elk vraagt een eigen antwoord.</p>
       </div>
-      <div class="ve-prose">
-        <ul><li><strong>De verbinding naar buiten valt weg.</strong> De regeling moet lokaal doorlopen. Dat betekent dat de grenswaarde, de prioriteitenlijst en de meting op locatie aanwezig zijn en niet uit de cloud hoeven te komen. Wat wegvalt is de optimalisatie op basis van prognoses en tarieven; wat blijft is de grensbewaking.</li><li><strong>De verbinding naar een installatie valt weg.</strong> Dan moet die installatie zelf terugvallen op een veilige waarde. Daarvoor krijgt elk setpoint een geldigheidsduur mee: blijft het volgende setpoint uit, dan vervalt het oude. Een apparaat dat blijft doen wat de laatste opdracht zei, is de gevaarlijke variant.</li><li><strong>De meting valt weg.</strong> Dan weet het systeem niet meer hoe vol de aansluiting zit, en is er maar één veilige aanname: de aansluiting is vol. Alle beïnvloedbare vraag terug naar de ondergrens, tot de meting terug is.</li></ul>
-        <h3>Wat een veilige waarde is, verschilt per installatie</h3>
-        <p>Voor een laadgroep is de veilige terugvalwaarde een lage basisstroom of nul. Voor een batterij is het stoppen met laden én ontladen, niet doorgaan op het laatste setpoint. Voor een omvormer is het de begrenzing die ook zonder regelaar aan de netvoorwaarden voldoet. Die waarden worden bij het ontwerp vastgelegd, per asset, en ze horen in de overdrachtsdocumentatie te staan.</p>
-        <h3>Software is geen beveiliging</h3>
-        <p>Een failsafe in een EMS is bedoeld om te voorkomen dat de elektrische beveiliging moet aanspreken. Een garantie is dat niet, en een vervanging van die beveiliging al helemaal niet. De hoofdbeveiliging, de kortsluitbeveiliging en de netbeveiliging van de omvormers moeten de situatie ook aankunnen als het EMS volledig uit staat. Een regelstrategie die alleen veilig is zolang de software werkt, is geen regelstrategie.</p>
-        <h3>Uitlokken bij inbedrijfstelling</h3>
-        <p>De enige manier om te weten of dit werkt, is het veroorzaken: de netwerkverbinding loskoppelen, de meting afkoppelen, een asset uitzetten en opschrijven wat er dan gebeurt. Vraag bij oplevering om dat testverslag, met per storingsvorm de gemeten terugvaltijd en het waargenomen gedrag. Zonder die test is de failsafe een aanname.</p>
+      <div class="ve-prose" style="margin-top:var(--ve-s-lg)"><ul><li><strong>De verbinding naar buiten valt weg.</strong> De regeling moet lokaal doorlopen. Dat betekent dat de grenswaarde, de prioriteitenlijst en de meting op locatie aanwezig zijn en niet uit de cloud hoeven te komen. Wat wegvalt is de optimalisatie op basis van prognoses en tarieven; wat blijft is de grensbewaking.</li><li><strong>De verbinding naar een installatie valt weg.</strong> Dan moet die installatie zelf terugvallen op een veilige waarde. Daarvoor krijgt elk setpoint een geldigheidsduur mee: blijft het volgende setpoint uit, dan vervalt het oude. Een apparaat dat blijft doen wat de laatste opdracht zei, is de gevaarlijke variant.</li><li><strong>De meting valt weg.</strong> Dan weet het systeem niet meer hoe vol de aansluiting zit, en is er maar één veilige aanname: de aansluiting is vol. Alle beïnvloedbare vraag terug naar de ondergrens, tot de meting terug is.</li></ul></div>
+      <div class="ve-rails" style="margin-top:var(--ve-s-xl)">
+        <div class="ve-rail">
+          <h3 class="ve-h4">Wat een veilige waarde is, verschilt per installatie</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Voor een laadgroep is de veilige terugvalwaarde een lage basisstroom of nul. Voor een batterij is het stoppen met laden én ontladen, niet doorgaan op het laatste setpoint. Voor een omvormer is het de begrenzing die ook zonder regelaar aan de netvoorwaarden voldoet. Die waarden worden bij het ontwerp vastgelegd, per asset, en ze horen in de overdrachtsdocumentatie te staan.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Software is geen beveiliging</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Een failsafe in een EMS is bedoeld om te voorkomen dat de elektrische beveiliging moet aanspreken. Een garantie is dat niet, en een vervanging van die beveiliging al helemaal niet. De hoofdbeveiliging, de kortsluitbeveiliging en de netbeveiliging van de omvormers moeten de situatie ook aankunnen als het EMS volledig uit staat. Een regelstrategie die alleen veilig is zolang de software werkt, is geen regelstrategie.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Uitlokken bij inbedrijfstelling</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>De enige manier om te weten of dit werkt, is het veroorzaken: de netwerkverbinding loskoppelen, de meting afkoppelen, een asset uitzetten en opschrijven wat er dan gebeurt. Vraag bij oplevering om dat testverslag, met per storingsvorm de gemeten terugvaltijd en het waargenomen gedrag. Zonder die test is de failsafe een aanname.</p></p>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="ve-sec ve-sec--lg">
+  <section class="ve-sec ve-sec--lg ve-sec--dark">
     <div class="ve-wrap ve-wrap--wide">
       <div class="ve-canvas">
         <div class="ve-canvas__binnen">
@@ -197,21 +214,25 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <section class="ve-sec ve-sec--lg ve-sec--sunken ve-sec--line-y">
     <div class="ve-wrap">
-      <div class="ve-spec ve-measure-wide">
-        <div class="ve-spec__kop"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-meter"/></svg><h2 class="ve-h4">Waar u bij de selectie van een EMS naar kijkt</h2></div>
-        <dl>
-          <dt class="ve-small">Open koppelingen</dt>
-          <dd class="ve-body">Welke protocollen worden ondersteund, en voor elk daarvan: alleen lezen of ook schrijven? Is de registerlijst openbaar of moet u erom vragen? Kan er later een asset van een andere fabrikant bij, of is de keuze voor dit EMS tegelijk een keuze voor één merk batterijen en laadpunten?</dd>
-          <dt class="ve-small">Eigendom van de data</dt>
-          <dd class="ve-body">Wie is eigenaar van de meetreeksen, in welke resolutie kunt u ze exporteren, hoe lang worden ze bewaard en krijgt u ze bij beëindiging mee? Een exportknop voor kwartierwaarden is iets anders dan toegang tot de ruwe reeks per asset. Zonder dat laatste kunt u een energieprestatie niet narekenen.</dd>
-          <dt class="ve-small">Wat blijft werken zonder de leverancier</dt>
-          <dd class="ve-body">Scheid de regelaar op locatie van de dienst in de cloud. Draait de grensbewaking lokaal door als er niets meer van buiten komt? Is de configuratie uit te lezen en over te dragen? Is de hardware uw eigendom, en zijn de licenties overdraagbaar? Een systeem waarin de harde grens alleen in de cloud leeft, valt stil met zijn leverancier.</dd>
-          <dt class="ve-small">Rechten en logging</dt>
-          <dd class="ve-body">Wie mag een grenswaarde of de prioriteitenlijst wijzigen, en wordt zo'n wijziging vastgelegd met tijdstip en persoon? Dit is de eerste vraag na een onverwachte piek of een stilstand.</dd>
-          <dt class="ve-small">Onderhoud en updates</dt>
-          <dd class="ve-body">Wie voert updates uit, met welke aankondiging, en wat is het gedrag van de assets tijdens een update? Een regelaar die bij elke update kort niets stuurt, moet in die minuten op de veilige terugvalwaarde staan.</dd>
-        </dl>
-        <p class="ve-small" style="margin-top:var(--ve-s-md)">Deze vragen gaan geen van alle over functies. Ze gaan over wat u overhoudt als de omstandigheden veranderen: een nieuwe asset, een andere leverancier, een storing of een discussie over een rekening.</p>
+      <div class="ve-grid12" style="align-items:start">
+      <div class="ve-sp-7">
+        <div class="ve-spec">
+          <div class="ve-spec__kop"><h2 class="ve-h4">Waar u bij de selectie van een EMS naar kijkt</h2></div>
+          <dl>
+            <dt>Open koppelingen</dt><dd>Welke protocollen worden ondersteund, en voor elk daarvan: alleen lezen of ook schrijven? Is de registerlijst openbaar of moet u erom vragen? Kan er later een asset van een andere fabrikant bij, of is de keuze voor dit EMS tegelijk een keuze voor één merk batterijen en laadpunten?</dd>
+            <dt>Eigendom van de data</dt><dd>Wie is eigenaar van de meetreeksen, in welke resolutie kunt u ze exporteren, hoe lang worden ze bewaard en krijgt u ze bij beëindiging mee? Een exportknop voor kwartierwaarden is iets anders dan toegang tot de ruwe reeks per asset. Zonder dat laatste kunt u een energieprestatie niet narekenen.</dd>
+            <dt>Wat blijft werken zonder de leverancier</dt><dd>Scheid de regelaar op locatie van de dienst in de cloud. Draait de grensbewaking lokaal door als er niets meer van buiten komt? Is de configuratie uit te lezen en over te dragen? Is de hardware uw eigendom, en zijn de licenties overdraagbaar? Een systeem waarin de harde grens alleen in de cloud leeft, valt stil met zijn leverancier.</dd>
+            <dt>Rechten en logging</dt><dd>Wie mag een grenswaarde of de prioriteitenlijst wijzigen, en wordt zo'n wijziging vastgelegd met tijdstip en persoon? Dit is de eerste vraag na een onverwachte piek of een stilstand.</dd>
+            <dt>Onderhoud en updates</dt><dd>Wie voert updates uit, met welke aankondiging, en wat is het gedrag van de assets tijdens een update? Een regelaar die bij elke update kort niets stuurt, moet in die minuten op de veilige terugvalwaarde staan.</dd>
+          </dl>
+          <p class="ve-small" style="margin-top:var(--ve-s-md)">Deze vragen gaan geen van alle over functies. Ze gaan over wat u overhoudt als de omstandigheden veranderen: een nieuwe asset, een andere leverancier, een storing of een discussie over een rekening.</p>
+        </div>
+      </div>
+      <div class="ve-sp-5">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/over-ons-hero-2400.webp" srcset="/assets/over-ons-hero-960.webp 960w, /assets/over-ons-hero-1600.webp 1600w, /assets/over-ons-hero-2400.webp 2400w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2400" height="1801" alt="Twee medewerkers van Vibe Energy bij een tekening op de werkplek" loading="lazy" decoding="async">
+        </div>
+      </div>
       </div>
     </div>
   </section>
@@ -240,27 +261,31 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Waar dit verder gaat</h2>
         <p class="ve-lead">De aangrenzende onderwerpen, elk met hun eigen pagina.</p>
       </div>
-      <div class="ve-kaarten">
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/load-balancing">
-          <h3 class="ve-h4">Vermogen verdelen over laadpunten</h3>
-          <p class="ve-body" style="margin-top:.4rem">Statisch verdeelt een vast budget; dynamisch meet de actuele belasting van de aansluiting en geeft weg wat er over is. Daar zit de ruimte voor extra laadpunten.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Load balancing</span>
+      <div class="ve-grid12" style="margin-top:var(--ve-s-xl);align-items:start">
+        <div class="ve-sp-7">
+          <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/load-balancing" style="height:100%;text-decoration:none">
+          <h3 class="ve-h3">Vermogen verdelen over laadpunten</h3>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Statisch verdeelt een vast budget; dynamisch meet de actuele belasting van de aansluiting en geeft weg wat er over is. Daar zit de ruimte voor extra laadpunten.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Load balancing<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/energieprestatie-meten">
+        </div>
+        <div class="ve-sp-5 ve-stack ve-stack--lg">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/kennis/energieprestatie-meten" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Meten of het werkt</h3>
-          <p class="ve-body" style="margin-top:.4rem">Welke meetpunten, welke resolutie en welke basislijn er nodig zijn om een uitspraak over energieprestatie te kunnen onderbouwen.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Energieprestatie meten</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Welke meetpunten, welke resolutie en welke basislijn er nodig zijn om een uitspraak over energieprestatie te kunnen onderbouwen.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Energieprestatie meten<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/processen-sturen-met-ems">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/toepassingen/processen-sturen-met-ems" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Processen sturen op beschikbaar vermogen</h3>
-          <p class="ve-body" style="margin-top:.4rem">Wat het betekent om een proces of installatie te laten starten op het moment dat er ruimte is, en welke processen zich daarvoor lenen.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Processen sturen met een EMS</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Wat het betekent om een proces of installatie te laten starten op het moment dat er ruimte is, en welke processen zich daarvoor lenen.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Processen sturen met een EMS<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/vibe-control">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/vibe-control" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">De implementatie van Vibe</h3>
-          <p class="ve-body" style="margin-top:.4rem">Hoe Vibe Energy deze regellaag uitvoert op een locatie, en welke grenzen en rangorde daarbij worden vastgelegd.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">VIBE.CONTROL</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Hoe Vibe Energy deze regellaag uitvoert op een locatie, en welke grenzen en rangorde daarbij worden vastgelegd.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">VIBE.CONTROL<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
+        </div>
       </div>
     </div>
   </section>

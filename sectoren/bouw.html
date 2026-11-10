@@ -109,23 +109,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <section class="ve-sec ve-sec--lg ve-sec--sunken ve-sec--line-y">
     <div class="ve-wrap">
-      <div class="ve-spec ve-measure-wide">
-        <div class="ve-spec__kop"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-meter"/></svg><h2 class="ve-h4">De getallen die een bouwvoorziening bepalen</h2></div>
-        <dl>
-          <dt class="ve-small">Piekvermogen van het materieel (kW)</dt>
-          <dd class="ve-body">Het hoogste vermogen dat gelijktijdig wordt gevraagd: hijsen, pompen, zagen en laden door elkaar. Dit bepaalt of de voorziening het houdt, en dus de aansluitwaarde of het omvormervermogen. Niet het dagverbruik.</dd>
-          <dt class="ve-small">Energie per werkdag (kWh)</dt>
-          <dd class="ve-body">Het vermogen van elk werktuig maal de uren dat het werkelijk draait. Dit bepaalt hoeveel kWh er per dag beschikbaar moet zijn, hoeveel brandstof er wordt verstookt, of hoe vaak een mobiele unit moet worden bijgeladen.</dd>
-          <dt class="ve-small">Gelijktijdigheid</dt>
-          <dd class="ve-body">De som van alle naamplaatjes op de bouwplaats is nooit het piekvermogen. Hijsen, drogen, zagen en laden vallen zelden op dezelfde seconde samen. Hier zit meestal de grootste rekenfout, in beide richtingen.</dd>
-          <dt class="ve-small">De fase waarin het project zit</dt>
-          <dd class="ve-body">Grondwerk, ruwbouw en afbouw hebben elk een ander profiel. De hoogste piek valt vaak in de ruwbouw, de hoogste basislast in de afbouw. Een voorziening die op één fase is gedimensioneerd, knelt in de andere.</dd>
-          <dt class="ve-small">Aansluitwaarde van de bouwkast (A per fase)</dt>
-          <dd class="ve-body">De fysieke grens van de tijdelijke voorziening, bijvoorbeeld 3 × 63 A of 3 × 80 A. Dit is wat er door de kast mag, niet wat er wordt verbruikt.</dd>
-          <dt class="ve-small">De definitieve aansluiting van het gebouw</dt>
-          <dd class="ve-body">Een eigen aanvraag, een eigen aansluitwaarde, een eigen doorlooptijd. Hoort in het ontwerp thuis, niet in de opleveringsweek.</dd>
-        </dl>
-        <p class="ve-small" style="margin-top:var(--ve-s-md)">kW bepaalt of de voorziening het houdt; kWh bepaalt hoe lang. Een bouwplaats die op één van die twee is gedimensioneerd, staat stil op de ander.</p>
+      <div class="ve-grid12" style="align-items:start">
+      <div class="ve-sp-7">
+        <div class="ve-spec">
+          <div class="ve-spec__kop"><h2 class="ve-h4">De getallen die een bouwvoorziening bepalen</h2></div>
+          <dl>
+            <dt>Piekvermogen van het materieel (kW)</dt><dd>Het hoogste vermogen dat gelijktijdig wordt gevraagd: hijsen, pompen, zagen en laden door elkaar. Dit bepaalt of de voorziening het houdt, en dus de aansluitwaarde of het omvormervermogen. Niet het dagverbruik.</dd>
+            <dt>Energie per werkdag (kWh)</dt><dd>Het vermogen van elk werktuig maal de uren dat het werkelijk draait. Dit bepaalt hoeveel kWh er per dag beschikbaar moet zijn, hoeveel brandstof er wordt verstookt, of hoe vaak een mobiele unit moet worden bijgeladen.</dd>
+            <dt>Gelijktijdigheid</dt><dd>De som van alle naamplaatjes op de bouwplaats is nooit het piekvermogen. Hijsen, drogen, zagen en laden vallen zelden op dezelfde seconde samen. Hier zit meestal de grootste rekenfout, in beide richtingen.</dd>
+            <dt>De fase waarin het project zit</dt><dd>Grondwerk, ruwbouw en afbouw hebben elk een ander profiel. De hoogste piek valt vaak in de ruwbouw, de hoogste basislast in de afbouw. Een voorziening die op één fase is gedimensioneerd, knelt in de andere.</dd>
+            <dt>Aansluitwaarde van de bouwkast (A per fase)</dt><dd>De fysieke grens van de tijdelijke voorziening, bijvoorbeeld 3 × 63 A of 3 × 80 A. Dit is wat er door de kast mag, niet wat er wordt verbruikt.</dd>
+            <dt>De definitieve aansluiting van het gebouw</dt><dd>Een eigen aanvraag, een eigen aansluitwaarde, een eigen doorlooptijd. Hoort in het ontwerp thuis, niet in de opleveringsweek.</dd>
+          </dl>
+          <p class="ve-small" style="margin-top:var(--ve-s-md)">kW bepaalt of de voorziening het houdt; kWh bepaalt hoe lang. Een bouwplaats die op één van die twee is gedimensioneerd, staat stil op de ander.</p>
+        </div>
+      </div>
+      <div class="ve-sp-5">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/energielabel-hero.jpg" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2400" height="1350" alt="Luchtfoto van een gebouwencomplex met zonnepanelen op de daken" loading="lazy" decoding="async">
+        </div>
+      </div>
       </div>
     </div>
   </section>
@@ -136,17 +139,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Aggregaat, net of opslag — wat de keuze bepaalt</h2>
         <p class="ve-lead">Drie routes met een verschillende grens, en in de praktijk vaak een combinatie.</p>
       </div>
-      <div class="ve-prose">
-        <h3>Wat een aggregaat wel en niet doet</h3>
-        <p>Een aggregaat levert continu vermogen zolang er brandstof is, en is onafhankelijk van het net. Dat is precies waarom het op de bouwplaats de standaard werd. De keerzijde is het bedrijfspunt: een aggregaat wordt gekozen op de hoogste piek en draait daardoor het grootste deel van de dag op een fractie van zijn nominale vermogen, met het rendement en de uitstoot die daarbij horen.</p>
-        <p>Dat laatste is geen smaakvraag meer. Opdrachtgevers die het Convenant Schoon en Emissieloos Bouwen hebben ondertekend, passen bij de aanbesteding van bouw-, onderhouds- en sloopprojecten minimaal de emissie-eisen van het basisniveau toe. Voor het materieel op de bouwplaats betekent dat dat de keuze tussen diesel en elektrisch in het bestek staat, niet in de uitvoering.</p>
-        <h3>Wat opslag toevoegt</h3>
-        <p>Batterijopslag maakt een lichte aansluiting toereikend voor zwaar materieel, doordat de piek uit de batterij komt en de aansluiting alleen het gemiddelde hoeft te leveren. De batterij laadt bij tijdens de stilstand tussen twee hijsbewegingen, in de pauze en 's nachts. Hetzelfde principe werkt achter een aggregaat: de generator draait dan op zijn eigen optimum in plaats van de piek te volgen, en kan uit tijdens de uren dat de batterij de last alleen aankan.</p>
-        <h3>Rekenvoorbeeld, geen meting</h3>
-        <p>Een bouwkast van 3 × 63 A komt bij 400 V neer op ongeveer 44 kVA. kVA is schijnbaar vermogen; bij arbeidsfactor 1 is dat ongeveer 44 kW en in de praktijk iets minder. Vraagt het materieel op de piek 90 kW gedurende twintig minuten, dan is het tekort ruim 46 kW en vraagt dat ongeveer 15 kWh uit opslag (46 kW × een derde uur). Herhaalt zo'n piek zich tien keer per werkdag, dan gaat er circa 150 kWh door de batterij heen — bij een gemiddelde belasting die de kast ruim aankan. Dit is rekenkunde ter illustratie, geen uitkomst van een locatie.</p>
+      <div class="ve-rails" style="margin-top:var(--ve-s-xl)">
+        <div class="ve-rail">
+          <h3 class="ve-h4">Wat een aggregaat wel en niet doet</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Een aggregaat levert continu vermogen zolang er brandstof is, en is onafhankelijk van het net. Dat is precies waarom het op de bouwplaats de standaard werd. De keerzijde is het bedrijfspunt: een aggregaat wordt gekozen op de hoogste piek en draait daardoor het grootste deel van de dag op een fractie van zijn nominale vermogen, met het rendement en de uitstoot die daarbij horen.</p>
+        <p>Dat laatste is geen smaakvraag meer. Opdrachtgevers die het Convenant Schoon en Emissieloos Bouwen hebben ondertekend, passen bij de aanbesteding van bouw-, onderhouds- en sloopprojecten minimaal de emissie-eisen van het basisniveau toe. Voor het materieel op de bouwplaats betekent dat dat de keuze tussen diesel en elektrisch in het bestek staat, niet in de uitvoering.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Wat opslag toevoegt</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Batterijopslag maakt een lichte aansluiting toereikend voor zwaar materieel, doordat de piek uit de batterij komt en de aansluiting alleen het gemiddelde hoeft te leveren. De batterij laadt bij tijdens de stilstand tussen twee hijsbewegingen, in de pauze en 's nachts. Hetzelfde principe werkt achter een aggregaat: de generator draait dan op zijn eigen optimum in plaats van de piek te volgen, en kan uit tijdens de uren dat de batterij de last alleen aankan.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Rekenvoorbeeld, geen meting</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Een bouwkast van 3 × 63 A komt bij 400 V neer op ongeveer 44 kVA. kVA is schijnbaar vermogen; bij arbeidsfactor 1 is dat ongeveer 44 kW en in de praktijk iets minder. Vraagt het materieel op de piek 90 kW gedurende twintig minuten, dan is het tekort ruim 46 kW en vraagt dat ongeveer 15 kWh uit opslag (46 kW × een derde uur). Herhaalt zo'n piek zich tien keer per werkdag, dan gaat er circa 150 kWh door de batterij heen — bij een gemiddelde belasting die de kast ruim aankan. Dit is rekenkunde ter illustratie, geen uitkomst van een locatie.</p>
         <p>Omgekeerd werkt het net zo goed als controle: komt uit die berekening dat het gemiddelde boven de aansluitwaarde uitkomt, dan is opslag niet de ingreep en is een zwaardere voorziening dat wel.</p>
-        <p>Welke uitvoering bij een project past — een opstelling naast de keet, een verplaatsbare unit, een zwaardere tijdelijke aansluiting of een combinatie met een aggregaat — hangt af van de fasering, de opstelruimte en wat er in het voedingsgebied beschikbaar is. Dat is een gesprek over uw materieellijst en uw planning, geen keuze uit een catalogus.</p>
-        <p class="ve-small" data-bron>Bron: <a class="ve-link" href="https://zoek.officielebekendmakingen.nl/stcrt-2023-31167.html" rel="nofollow noopener" target="_blank">Convenant Schoon en Emissieloos Bouwen (SEB), Staatscourant 2023, 31167</a> (2023-11-23)</p>
+        <p>Welke uitvoering bij een project past — een opstelling naast de keet, een verplaatsbare unit, een zwaardere tijdelijke aansluiting of een combinatie met een aggregaat — hangt af van de fasering, de opstelruimte en wat er in het voedingsgebied beschikbaar is. Dat is een gesprek over uw materieellijst en uw planning, geen keuze uit een catalogus.</p></p>
+        </div>
       </div>
     </div>
   </section>
@@ -170,7 +178,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div>
   </section>
 
-  <section class="ve-sec ve-sec--lg">
+  <section class="ve-sec ve-sec--lg ve-sec--dark">
     <div class="ve-wrap ve-wrap--wide">
       <div class="ve-canvas">
         <div class="ve-canvas__binnen">
@@ -226,27 +234,31 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Waar dit op een bouwplaats concreet wordt</h2>
         <p class="ve-lead">De vier situaties die een planning het vaakst raken.</p>
       </div>
-      <div class="ve-kaarten">
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/geen-extra-transportvermogen">
-          <h3 class="ve-h4">Geen transportvermogen voor de bouwkast</h3>
-          <p class="ve-body" style="margin-top:.4rem">De netbeheerder kan de gevraagde tijdelijke aansluiting niet op tijd of niet op die waarde toezeggen.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Geen extra transportvermogen</span>
+      <div class="ve-grid12" style="margin-top:var(--ve-s-xl);align-items:start">
+        <div class="ve-sp-7">
+          <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/geen-extra-transportvermogen" style="height:100%;text-decoration:none">
+          <h3 class="ve-h3">Geen transportvermogen voor de bouwkast</h3>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">De netbeheerder kan de gevraagde tijdelijke aansluiting niet op tijd of niet op die waarde toezeggen.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Geen extra transportvermogen<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/laden-met-beperkte-aansluiting">
+        </div>
+        <div class="ve-sp-5 ve-stack ve-stack--lg">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/toepassingen/laden-met-beperkte-aansluiting" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Het materieel moet laden</h3>
-          <p class="ve-body" style="margin-top:.4rem">Elektrische machines en bedrijfswagens vragen een laadvenster dat niet binnen de aansluitwaarde past.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Laden met een beperkte aansluiting</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Elektrische machines en bedrijfswagens vragen een laadvenster dat niet binnen de aansluitwaarde past.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Laden met een beperkte aansluiting<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/pieken-in-verbruik">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/toepassingen/pieken-in-verbruik" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Korte, hoge pieken</h3>
-          <p class="ve-body" style="margin-top:.4rem">Hijsen, pompen en zagen bepalen de piek, terwijl het gemiddelde verbruik laag blijft.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Pieken in verbruik</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Hijsen, pompen en zagen bepalen de piek, terwijl het gemiddelde verbruik laag blijft.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Pieken in verbruik<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/meerdere-locaties">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/toepassingen/meerdere-locaties" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Meerdere bouwplaatsen tegelijk</h3>
-          <p class="ve-body" style="margin-top:.4rem">Materieel en voorzieningen rouleren over projecten, elk in een ander voedingsgebied en een andere fase.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Meerdere locaties</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Materieel en voorzieningen rouleren over projecten, elk in een ander voedingsgebied en een andere fase.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Meerdere locaties<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
+        </div>
       </div>
     </div>
   </section>

@@ -92,23 +92,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <section class="ve-sec ve-sec--lg ve-sec--sunken ve-sec--line-y">
     <div class="ve-wrap">
-      <div class="ve-spec ve-measure-wide">
-        <div class="ve-spec__kop"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-meter"/></svg><h2 class="ve-h4">De waardestromen, en wat elk ervan van het systeem vraagt</h2></div>
-        <dl>
-          <dt class="ve-small">Lagere netkosten</dt>
-          <dd class="ve-body">Een afgevlakte piek maakt het mogelijk om een lager gecontracteerd transportvermogen af te spreken. Vraagt vermogen (kW) op precies de momenten dat de piek dreigt, en een batterij die dan niet leeg is.</dd>
-          <dt class="ve-small">Meer eigen verbruik</dt>
-          <dd class="ve-body">Zonne-overschot dat u zelf gebruikt in plaats van teruglevert. Vraagt capaciteit (kWh) midden op de dag, en dus een batterij die op dat moment nog ruimte heeft om te laden.</dd>
-          <dt class="ve-small">Vermeden curtailment</dt>
-          <dd class="ve-body">Opbrengst die anders wegvalt doordat een terugleverbeperking de invoeding begrenst. Vraagt laadruimte op het moment dat die begrenzing ingrijpt — hetzelfde moment als de vorige stroom.</dd>
-          <dt class="ve-small">Marktinzet</dt>
-          <dd class="ve-body">Laden en ontladen op prijsverschil of op een flexibiliteitsafspraak. Vraagt vrij beschikbaar vermogen en vrije capaciteit, en dus juist géén reservering voor iets anders.</dd>
-          <dt class="ve-small">Uitgestelde of vermeden netverzwaring</dt>
-          <dd class="ve-body">De kosten en de wachttijd van een zwaardere aansluiting die later of niet nodig is. Vraagt dat de piek structureel onder de bestaande grens blijft, ook na de groei die u van plan bent.</dd>
-          <dt class="ve-small">Noodstroomwaarde</dt>
-          <dd class="ve-body">Bij een netstoring kunnen doorlopen met de installaties die u aanwijst. Vraagt een permanent gereserveerde laadtoestand, die daardoor voor geen van de andere stromen beschikbaar is.</dd>
-        </dl>
-        <p class="ve-small" style="margin-top:var(--ve-s-md)">Elke stroom stelt een eis aan hetzelfde systeem: aan het vermogen, aan de capaciteit, of aan de laadtoestand op een bepaald moment. Daarom is de som van de stromen geen businesscase.</p>
+      <div class="ve-grid12" style="align-items:start">
+      <div class="ve-sp-7">
+        <div class="ve-spec">
+          <div class="ve-spec__kop"><h2 class="ve-h4">De waardestromen, en wat elk ervan van het systeem vraagt</h2></div>
+          <dl>
+            <dt>Lagere netkosten</dt><dd>Een afgevlakte piek maakt het mogelijk om een lager gecontracteerd transportvermogen af te spreken. Vraagt vermogen (kW) op precies de momenten dat de piek dreigt, en een batterij die dan niet leeg is.</dd>
+            <dt>Meer eigen verbruik</dt><dd>Zonne-overschot dat u zelf gebruikt in plaats van teruglevert. Vraagt capaciteit (kWh) midden op de dag, en dus een batterij die op dat moment nog ruimte heeft om te laden.</dd>
+            <dt>Vermeden curtailment</dt><dd>Opbrengst die anders wegvalt doordat een terugleverbeperking de invoeding begrenst. Vraagt laadruimte op het moment dat die begrenzing ingrijpt — hetzelfde moment als de vorige stroom.</dd>
+            <dt>Marktinzet</dt><dd>Laden en ontladen op prijsverschil of op een flexibiliteitsafspraak. Vraagt vrij beschikbaar vermogen en vrije capaciteit, en dus juist géén reservering voor iets anders.</dd>
+            <dt>Uitgestelde of vermeden netverzwaring</dt><dd>De kosten en de wachttijd van een zwaardere aansluiting die later of niet nodig is. Vraagt dat de piek structureel onder de bestaande grens blijft, ook na de groei die u van plan bent.</dd>
+            <dt>Noodstroomwaarde</dt><dd>Bij een netstoring kunnen doorlopen met de installaties die u aanwijst. Vraagt een permanent gereserveerde laadtoestand, die daardoor voor geen van de andere stromen beschikbaar is.</dd>
+          </dl>
+          <p class="ve-small" style="margin-top:var(--ve-s-md)">Elke stroom stelt een eis aan hetzelfde systeem: aan het vermogen, aan de capaciteit, of aan de laadtoestand op een bepaald moment. Daarom is de som van de stromen geen businesscase.</p>
+        </div>
+      </div>
+      <div class="ve-sp-5">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/laadpalen-hero-2400.webp" srcset="/assets/laadpalen-hero-960.webp 960w, /assets/laadpalen-hero-1600.webp 1600w, /assets/laadpalen-hero-2400.webp 2400w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="2400" height="1801" alt="Een auto aan een laadpunt, met de laadkabel aangesloten" loading="lazy" decoding="async">
+        </div>
+      </div>
       </div>
     </div>
   </section>
@@ -178,7 +181,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div>
   </section>
 
-  <section class="ve-sec ve-sec--lg">
+  <section class="ve-sec ve-sec--lg ve-sec--dark">
     <div class="ve-wrap ve-wrap--wide">
       <div class="ve-canvas">
         <div class="ve-canvas__binnen">
@@ -246,27 +249,31 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Verder rekenen</h2>
         <p class="ve-lead">De stappen die onder een businesscase liggen.</p>
       </div>
-      <div class="ve-kaarten">
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/batterij-dimensioneren">
-          <h3 class="ve-h4">Op maat van de pieken</h3>
-          <p class="ve-body" style="margin-top:.4rem">Hoe het vermogen en de capaciteit volgen uit de hoogte en de duur van uw pieken, en wat er van de nominale capaciteit bruikbaar is.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Batterij dimensioneren</span>
+      <div class="ve-grid12" style="margin-top:var(--ve-s-xl);align-items:start">
+        <div class="ve-sp-7">
+          <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/batterij-dimensioneren" style="height:100%;text-decoration:none">
+          <h3 class="ve-h3">Op maat van de pieken</h3>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Hoe het vermogen en de capaciteit volgen uit de hoogte en de duur van uw pieken, en wat er van de nominale capaciteit bruikbaar is.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Batterij dimensioneren<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/batterijdegradatie">
+        </div>
+        <div class="ve-sp-5 ve-stack ve-stack--lg">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/kennis/batterijdegradatie" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Wat de tijd met de capaciteit doet</h3>
-          <p class="ve-body" style="margin-top:.4rem">Waardoor de bruikbare capaciteit afneemt, en waarom de gekozen strategie de snelheid daarvan beïnvloedt.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Batterijdegradatie</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Waardoor de bruikbare capaciteit afneemt, en waarom de gekozen strategie de snelheid daarvan beïnvloedt.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Batterijdegradatie<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/energieadvies">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/energieadvies" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Van profiel naar plan</h3>
-          <p class="ve-body" style="margin-top:.4rem">Wat er in een energieadvies wordt gemeten en berekend voordat er een systeem op papier staat.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Energieadvies</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Wat er in een energieadvies wordt gemeten en berekend voordat er een systeem op papier staat.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Energieadvies<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/systeem-energieopslag">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/systeem-energieopslag" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Het systeem zelf</h3>
-          <p class="ve-body" style="margin-top:.4rem">Waaruit een gestuurde batterijinstallatie bestaat en wat de sturing per kwartier afweegt.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Energieopslag</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Waaruit een gestuurde batterijinstallatie bestaat en wat de sturing per kwartier afweegt.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Energieopslag<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
+        </div>
       </div>
     </div>
   </section>

@@ -107,23 +107,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <section class="ve-sec ve-sec--lg ve-sec--sunken ve-sec--line-y">
     <div class="ve-wrap">
-      <div class="ve-spec ve-measure-wide">
-        <div class="ve-spec__kop"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-meter"/></svg><h2 class="ve-h4">Wat het ontwerp werkelijk nodig heeft</h2></div>
-        <dl>
-          <dt class="ve-small">Standtijd per voertuig</dt>
-          <dd class="ve-body">Hoe lang het voertuig aan de kabel staat. Dit is de deler: dezelfde bij te laden energie vraagt bij een langere standtijd minder vermogen.</dd>
-          <dt class="ve-small">Bij te laden energie (kWh)</dt>
-          <dd class="ve-body">Wat er per voertuig per sessie in moet, afgeleid uit de dagelijkse rit. Niet de accucapaciteit — een voertuig komt zelden leeg terug.</dd>
-          <dt class="ve-small">Vermogen per punt (kW)</dt>
-          <dd class="ve-body">Volgt uit de twee regels hierboven, plus het maximum van de boordlader. Een zwaarder punt dan het voertuig kan opnemen levert niets.</dd>
-          <dt class="ve-small">Gelijktijdigheid</dt>
-          <dd class="ve-body">Welk deel van de punten op hetzelfde moment werkelijk vermogen vraagt. Bepaald door het aankomst- en vertrekrooster, niet door het aantal punten.</dd>
-          <dt class="ve-small">Ruimte onder de grens</dt>
-          <dd class="ve-body">Wat er op dat moment vrij is binnen uw aansluitcapaciteit en uw gecontracteerd transportvermogen, nadat de gebouwlast eraf is.</dd>
-          <dt class="ve-small">Verdeling over de fasen</dt>
-          <dd class="ve-body">Een zekering begrenst per fase. Eenfasige punten die ongelijk over de drie fasen staan, laten de aansluiting struikelen op de zwaarst belaste fase terwijl de andere twee ruimte over hebben.</dd>
-        </dl>
-        <p class="ve-small" style="margin-top:var(--ve-s-md)">Alleen de eerste twee regels komen uit uw bedrijfsvoering; de rest volgt daaruit. Wie met het vermogen per punt begint, rekent de verkeerde kant op.</p>
+      <div class="ve-grid12" style="align-items:start">
+      <div class="ve-sp-7">
+        <div class="ve-spec">
+          <div class="ve-spec__kop"><h2 class="ve-h4">Wat het ontwerp werkelijk nodig heeft</h2></div>
+          <dl>
+            <dt>Standtijd per voertuig</dt><dd>Hoe lang het voertuig aan de kabel staat. Dit is de deler: dezelfde bij te laden energie vraagt bij een langere standtijd minder vermogen.</dd>
+            <dt>Bij te laden energie (kWh)</dt><dd>Wat er per voertuig per sessie in moet, afgeleid uit de dagelijkse rit. Niet de accucapaciteit — een voertuig komt zelden leeg terug.</dd>
+            <dt>Vermogen per punt (kW)</dt><dd>Volgt uit de twee regels hierboven, plus het maximum van de boordlader. Een zwaarder punt dan het voertuig kan opnemen levert niets.</dd>
+            <dt>Gelijktijdigheid</dt><dd>Welk deel van de punten op hetzelfde moment werkelijk vermogen vraagt. Bepaald door het aankomst- en vertrekrooster, niet door het aantal punten.</dd>
+            <dt>Ruimte onder de grens</dt><dd>Wat er op dat moment vrij is binnen uw aansluitcapaciteit en uw gecontracteerd transportvermogen, nadat de gebouwlast eraf is.</dd>
+            <dt>Verdeling over de fasen</dt><dd>Een zekering begrenst per fase. Eenfasige punten die ongelijk over de drie fasen staan, laten de aansluiting struikelen op de zwaarst belaste fase terwijl de andere twee ruimte over hebben.</dd>
+          </dl>
+          <p class="ve-small" style="margin-top:var(--ve-s-md)">Alleen de eerste twee regels komen uit uw bedrijfsvoering; de rest volgt daaruit. Wie met het vermogen per punt begint, rekent de verkeerde kant op.</p>
+        </div>
+      </div>
+      <div class="ve-sp-5">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/img/batterij-binnenwerk-1800.webp" srcset="/img/batterij-binnenwerk-880.webp 880w, /img/batterij-binnenwerk-1400.webp 1400w, /img/batterij-binnenwerk-1800.webp 1800w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="1800" height="1351" alt="Het open binnenwerk van een batterijsysteem, met de modules en de oranje verbindingskabels" loading="lazy" decoding="async">
+        </div>
+      </div>
       </div>
     </div>
   </section>
@@ -134,13 +137,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Wat dynamische load balancing meet en verdeelt</h2>
         <p class="ve-lead">Statisch verdelen is een budget. Dynamisch verdelen is een meting.</p>
       </div>
-      <div class="ve-prose">
-        <h3>Statisch: een vast budget per punt</h3>
-        <p>Bij statische verdeling krijgt elk laadpunt een vaste bovengrens, zo gekozen dat de som van die grenzen onder de aansluiting blijft. Dat is eenvoudig en vraagt geen meting. Het kost ook vermogen: het budget staat vast, dus een punt dat leegstaat geeft zijn deel niet vrij en de ruimte die de gebouwlast overlaat blijft onbenut. Op een locatie met weinig punten en een ruime aansluiting is dat te verdedigen. Op een locatie waar juist de aansluiting de beperking is, niet.</p>
-        <h3>Dynamisch: meten waar het knelt</h3>
-        <p>Dynamische load balancing meet de werkelijke belasting op het punt waar de grens zit — doorgaans de hoofdverdeler direct achter de aansluiting — en meet daarmee de gebouwlast mee. Tussen die meting en de ingestelde grenswaarde blijft een hoeveelheid vermogen over. Dat restant wordt over de actieve sessies verdeeld, per fase, en opnieuw berekend zodra de meting verandert. Verspringt de gebouwlast omhoog, dan knijpen de laadpunten binnen enkele seconden af; valt hij weg, dan krijgen ze de ruimte terug.</p>
+      <div class="ve-rails" style="margin-top:var(--ve-s-xl)">
+        <div class="ve-rail">
+          <h3 class="ve-h4">Statisch: een vast budget per punt</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Bij statische verdeling krijgt elk laadpunt een vaste bovengrens, zo gekozen dat de som van die grenzen onder de aansluiting blijft. Dat is eenvoudig en vraagt geen meting. Het kost ook vermogen: het budget staat vast, dus een punt dat leegstaat geeft zijn deel niet vrij en de ruimte die de gebouwlast overlaat blijft onbenut. Op een locatie met weinig punten en een ruime aansluiting is dat te verdedigen. Op een locatie waar juist de aansluiting de beperking is, niet.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Dynamisch: meten waar het knelt</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Dynamische load balancing meet de werkelijke belasting op het punt waar de grens zit — doorgaans de hoofdverdeler direct achter de aansluiting — en meet daarmee de gebouwlast mee. Tussen die meting en de ingestelde grenswaarde blijft een hoeveelheid vermogen over. Dat restant wordt over de actieve sessies verdeeld, per fase, en opnieuw berekend zodra de meting verandert. Verspringt de gebouwlast omhoog, dan knijpen de laadpunten binnen enkele seconden af; valt hij weg, dan krijgen ze de ruimte terug.</p>
         <p>Daar horen twee randvoorwaarden bij die in een verkoopverhaal vaak ontbreken. De verdeling moet <strong>per fase</strong> rekenen, want de aansluiting begrenst per fase en niet op het totaal; een regeling die alleen het totaal bewaakt, kan een fase overbelasten terwijl de som netjes onder de grens blijft. En er is een <strong>ondergrens</strong>: onder een bepaalde laadstroom stopt een voertuig met laden en moet de sessie opnieuw worden opgestart. Een regelaar die een klein restant over steeds meer sessies blijft uitsmeren, zet uiteindelijk alles stil. Daarom werkt een bruikbare verdeling met prioriteit en met wachtrijen: liever een deel van de voertuigen op werkbaar vermogen en de rest in de rij, dan alles onder de ondergrens.</p>
-        <p>Wat dynamische verdeling niet doet: uw aansluitwaarde verhogen of uw gecontracteerd transportvermogen vergroten. Zij houdt de afname onder een grens die u zelf kiest, en gebruikt de ruimte onder die grens beter dan een vast budget dat kan.</p>
+        <p>Wat dynamische verdeling niet doet: uw aansluitwaarde verhogen of uw gecontracteerd transportvermogen vergroten. Zij houdt de afname onder een grens die u zelf kiest, en gebruikt de ruimte onder die grens beter dan een vast budget dat kan.</p></p>
+        </div>
       </div>
     </div>
   </section>
@@ -178,7 +185,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div>
   </section>
 
-  <section class="ve-sec ve-sec--lg">
+  <section class="ve-sec ve-sec--lg ve-sec--dark">
     <div class="ve-wrap ve-wrap--wide">
       <div class="ve-canvas">
         <div class="ve-canvas__binnen">
@@ -236,32 +243,36 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Waar u verder leest</h2>
         <p class="ve-lead">Deze pagina gaat over het probleem. De techniek en het aanbod staan elders.</p>
       </div>
-      <div class="ve-kaarten">
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/systeem-laadpalen">
-          <h3 class="ve-h4">Het laadsysteem</h3>
-          <p class="ve-body" style="margin-top:.4rem">Laadpunten, verdeelinrichting en sturing als één installatie: wat er geplaatst wordt en hoe het aan de aansluiting hangt.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Laadinfrastructuur</span>
+      <div class="ve-grid12" style="margin-top:var(--ve-s-xl);align-items:start">
+        <div class="ve-sp-7">
+          <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/systeem-laadpalen" style="height:100%;text-decoration:none">
+          <h3 class="ve-h3">Het laadsysteem</h3>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Laadpunten, verdeelinrichting en sturing als één installatie: wat er geplaatst wordt en hoe het aan de aansluiting hangt.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Laadinfrastructuur<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/laadplein">
+        </div>
+        <div class="ve-sp-5 ve-stack ve-stack--lg">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/laadplein" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Een laadplein aanleggen</h3>
-          <p class="ve-body" style="margin-top:.4rem">Meerdere plekken op één locatie, van terreininrichting en kabeltracé tot exploitatie en afrekening.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Laadplein</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Meerdere plekken op één locatie, van terreininrichting en kabeltracé tot exploitatie en afrekening.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Laadplein<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/load-balancing">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/kennis/load-balancing" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Load balancing uitgelegd</h3>
-          <p class="ve-body" style="margin-top:.4rem">Statisch versus dynamisch, meten per fase, prioriteit en de minimumstroom waaronder een voertuig stopt met laden.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Load balancing</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Statisch versus dynamisch, meten per fase, prioriteit en de minimumstroom waaronder een voertuig stopt met laden.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Load balancing<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/kennis/laadinfrastructuur-dimensioneren">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/kennis/laadinfrastructuur-dimensioneren" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Laadinfrastructuur dimensioneren</h3>
-          <p class="ve-body" style="margin-top:.4rem">De rekenwijze van rooster naar vermogen per punt, en hoe u ruimte houdt voor uitbreiding van de vloot.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Dimensioneren</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">De rekenwijze van rooster naar vermogen per punt, en hoe u ruimte houdt voor uitbreiding van de vloot.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Dimensioneren<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/netcongestie">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/netcongestie" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Het net zit vol</h3>
-          <p class="ve-body" style="margin-top:.4rem">Waarom er in uw voedingsgebied geen extra transportvermogen te krijgen is, en wat er achter de meter nog wel kan.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Netcongestie</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Waarom er in uw voedingsgebied geen extra transportvermogen te krijgen is, en wat er achter de meter nog wel kan.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Netcongestie<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
+        </div>
       </div>
     </div>
   </section>

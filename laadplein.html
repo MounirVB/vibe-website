@@ -108,25 +108,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <section class="ve-sec ve-sec--lg ve-sec--sunken ve-sec--line-y">
     <div class="ve-wrap">
-      <div class="ve-spec ve-measure-wide">
-        <div class="ve-spec__kop"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-meter"/></svg><h2 class="ve-h4">Laadplek, laadpunt, laadpaal: wat telt waarvoor</h2></div>
-        <dl>
-          <dt class="ve-small">Laadplek</dt>
-          <dd class="ve-body">Het parkeervak. Bepaalt de terreininrichting en of een kabel er fysiek bij kan. Zegt niets over vermogen.</dd>
-          <dt class="ve-small">Laadpunt</dt>
-          <dd class="ve-body">De stekker. Eén voertuig per punt. Dit is het getal waarop verkeerd wordt gedimensioneerd.</dd>
-          <dt class="ve-small">Laadpaal</dt>
-          <dd class="ve-body">De behuizing. Een paal met twee punten heeft meestal één maximum: twee voertuigen op een paal van 22 kW laden samen 22 kW, dus elk 11 kW.</dd>
-          <dt class="ve-small">Gelijktijdig vermogen (kW)</dt>
-          <dd class="ve-body">Wat er op dít moment over alle bezette punten samen wordt getrokken. Dit is wat de aansluiting moet dragen.</dd>
-          <dt class="ve-small">Laadvenster</dt>
-          <dd class="ve-body">De tijd dat een voertuig aan de paal staat. Hoe langer het venster, hoe minder vermogen er nodig is voor dezelfde energie.</dd>
-          <dt class="ve-small">Energie per sessie (kWh)</dt>
-          <dd class="ve-body">Wat er per voertuig moet worden bijgeladen. Samen met het laadvenster bepaalt dit het benodigde vermogen, en dus de batterij.</dd>
-          <dt class="ve-small">Grenswaarde</dt>
-          <dd class="ve-body">De bovengrens die de regelaar bewaakt op de hoofdaansluiting. Niet de aansluitwaarde zelf, maar de waarde die u kiest om eronder te blijven.</dd>
-        </dl>
-        <p class="ve-small" style="margin-top:var(--ve-s-md)">Acht laadpunten is niet acht maal het paalvermogen. Wie op aantal punten maal vermogen rekent, vraagt een aansluiting aan die nooit volledig wordt gebruikt — en wacht daar in een congestiegebied voor niets op.</p>
+      <div class="ve-grid12" style="align-items:start">
+      <div class="ve-sp-7">
+        <div class="ve-spec">
+          <div class="ve-spec__kop"><h2 class="ve-h4">Laadplek, laadpunt, laadpaal: wat telt waarvoor</h2></div>
+          <dl>
+            <dt>Laadplek</dt><dd>Het parkeervak. Bepaalt de terreininrichting en of een kabel er fysiek bij kan. Zegt niets over vermogen.</dd>
+            <dt>Laadpunt</dt><dd>De stekker. Eén voertuig per punt. Dit is het getal waarop verkeerd wordt gedimensioneerd.</dd>
+            <dt>Laadpaal</dt><dd>De behuizing. Een paal met twee punten heeft meestal één maximum: twee voertuigen op een paal van 22 kW laden samen 22 kW, dus elk 11 kW.</dd>
+            <dt>Gelijktijdig vermogen (kW)</dt><dd>Wat er op dít moment over alle bezette punten samen wordt getrokken. Dit is wat de aansluiting moet dragen.</dd>
+            <dt>Laadvenster</dt><dd>De tijd dat een voertuig aan de paal staat. Hoe langer het venster, hoe minder vermogen er nodig is voor dezelfde energie.</dd>
+            <dt>Energie per sessie (kWh)</dt><dd>Wat er per voertuig moet worden bijgeladen. Samen met het laadvenster bepaalt dit het benodigde vermogen, en dus de batterij.</dd>
+            <dt>Grenswaarde</dt><dd>De bovengrens die de regelaar bewaakt op de hoofdaansluiting. Niet de aansluitwaarde zelf, maar de waarde die u kiest om eronder te blijven.</dd>
+          </dl>
+          <p class="ve-small" style="margin-top:var(--ve-s-md)">Acht laadpunten is niet acht maal het paalvermogen. Wie op aantal punten maal vermogen rekent, vraagt een aansluiting aan die nooit volledig wordt gebruikt — en wacht daar in een congestiegebied voor niets op.</p>
+        </div>
+      </div>
+      <div class="ve-sp-5">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/home/s2-zon-1360.webp" srcset="/assets/home/s2-zon-400.webp 400w, /assets/home/s2-zon-680.webp 680w, /assets/home/s2-zon-800.webp 800w, /assets/home/s2-zon-1360.webp 1360w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="1360" height="1020" alt="Zonnepanelen in rijen op het platte dak van een bedrijfspand" loading="lazy" decoding="async">
+        </div>
+      </div>
       </div>
     </div>
   </section>
@@ -137,15 +139,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Dimensioneren op gelijktijdigheid, niet op punten maal vermogen</h2>
         <p class="ve-lead">Het aantal punten maal het paalvermogen is een bovengrens die in de praktijk niet voorkomt.</p>
       </div>
-      <div class="ve-prose">
-        <p>De vraag bij een laadplein is niet hoeveel vermogen alle punten samen zouden kunnen trekken, maar hoeveel energie er in het beschikbare venster door de aansluiting moet. Daarvoor zijn vier gegevens nodig: het kwartiersprofiel van het pand, het laadvenster per voertuigtype, de energie die per voertuig per dag moet worden bijgeladen, en de hardheid van de vertrektijd.</p>
-        <p>Uit het kwartiersprofiel volgt wat er per kwartier nog over is onder de gekozen grenswaarde. Dat is zelden een vlakke lijn. Een pand met een ochtendpiek laat 's nachts veel meer ruimte dan om elf uur 's ochtends. Laden dat binnen de stilstand valt kost daarom weinig extra capaciteit; laden dat in de bedrijfspiek valt kost bijna alles. Een gelijktijdigheidsfactor is dus een uitkomst van die meting, geen aanname die u vooraf invult.</p>
-        <h3>Rekenvoorbeeld — alleen rekenkunde, geen meting</h3>
-        <p>Stel: acht laadpunten van 22 kW. Op papier is dat 8 × 22 = 176 kW. Stel verder dat er 's nachts vier bussen staan die elk 60 kWh moeten bijladen, samen 240 kWh, met twaalf uur stilstand. Dat is gemiddeld 240 / 12 = 20 kW. Het verschil tussen die 176 kW en die 20 kW is de ruimte waar sturing op werkt. De getallen hierboven zijn aannames om de rekenwijze te laten zien; wat uw laadplein vraagt volgt uit uw eigen profiel en laadritme.</p>
-        <h3>Statisch of dynamisch verdelen</h3>
-        <p>Statische load balancing verdeelt een vast budget over de punten. Dat is veilig, maar het laat de ruimte liggen die er buiten de bedrijfstijden wel is. Dynamische load balancing meet de actuele belasting van de aansluiting en verdeelt wat er op dat moment over is. Dat levert meer laadvermogen op dezelfde aansluiting, en vraagt in ruil een meting op de hoofdaansluiting en palen die zich laten regelen.</p>
+      <div class="ve-prose" style="margin-top:var(--ve-s-lg)"><p>De vraag bij een laadplein is niet hoeveel vermogen alle punten samen zouden kunnen trekken, maar hoeveel energie er in het beschikbare venster door de aansluiting moet. Daarvoor zijn vier gegevens nodig: het kwartiersprofiel van het pand, het laadvenster per voertuigtype, de energie die per voertuig per dag moet worden bijgeladen, en de hardheid van de vertrektijd.</p>
+        <p>Uit het kwartiersprofiel volgt wat er per kwartier nog over is onder de gekozen grenswaarde. Dat is zelden een vlakke lijn. Een pand met een ochtendpiek laat 's nachts veel meer ruimte dan om elf uur 's ochtends. Laden dat binnen de stilstand valt kost daarom weinig extra capaciteit; laden dat in de bedrijfspiek valt kost bijna alles. Een gelijktijdigheidsfactor is dus een uitkomst van die meting, geen aanname die u vooraf invult.</p></div>
+      <div class="ve-rails" style="margin-top:var(--ve-s-xl)">
+        <div class="ve-rail">
+          <h3 class="ve-h4">Rekenvoorbeeld — alleen rekenkunde, geen meting</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Stel: acht laadpunten van 22 kW. Op papier is dat 8 × 22 = 176 kW. Stel verder dat er 's nachts vier bussen staan die elk 60 kWh moeten bijladen, samen 240 kWh, met twaalf uur stilstand. Dat is gemiddeld 240 / 12 = 20 kW. Het verschil tussen die 176 kW en die 20 kW is de ruimte waar sturing op werkt. De getallen hierboven zijn aannames om de rekenwijze te laten zien; wat uw laadplein vraagt volgt uit uw eigen profiel en laadritme.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Statisch of dynamisch verdelen</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Statische load balancing verdeelt een vast budget over de punten. Dat is veilig, maar het laat de ruimte liggen die er buiten de bedrijfstijden wel is. Dynamische load balancing meet de actuele belasting van de aansluiting en verdeelt wat er op dat moment over is. Dat levert meer laadvermogen op dezelfde aansluiting, en vraagt in ruil een meting op de hoofdaansluiting en palen die zich laten regelen.</p>
         <p>Blijft er na het verdelen een piek over die boven de grenswaarde uitkomt, dan komt opslag in beeld. De batterij wordt dan gedimensioneerd op die piek: de hoogte boven de grens geeft het vermogen in kW, de hoogte maal de duur geeft de bruikbare capaciteit in kWh. Bij een laadplein is die piek vaak kort en hoog — een aankomstmoment aan het eind van de middag — en dat vraagt een andere verhouding tussen kW en kWh dan een proceslast die urenlang doorloopt.</p>
-        <p>Verder lezen: <a class="ve-link" href="/kennis/laadinfrastructuur-dimensioneren">laadinfrastructuur dimensioneren</a> en <a class="ve-link" href="/kennis/load-balancing">load balancing</a>.</p>
+        <p>Verder lezen: <a class="ve-link" href="/kennis/laadinfrastructuur-dimensioneren">laadinfrastructuur dimensioneren</a> en <a class="ve-link" href="/kennis/load-balancing">load balancing</a>.</p></p>
+        </div>
       </div>
     </div>
   </section>
@@ -204,7 +210,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div>
   </section>
 
-  <section class="ve-sec ve-sec--lg">
+  <section class="ve-sec ve-sec--lg ve-sec--dark">
     <div class="ve-wrap ve-wrap--wide">
       <div class="ve-canvas">
         <div class="ve-canvas__binnen">
@@ -222,25 +228,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <section class="ve-sec ve-sec--lg ve-sec--sunken ve-sec--line-y">
     <div class="ve-wrap">
-      <div class="ve-spec ve-measure-wide">
-        <div class="ve-spec__kop"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-meter"/></svg><h2 class="ve-h4">Wat in beide vormen op papier moet staan</h2></div>
-        <dl>
-          <dt class="ve-small">Eigendom</dt>
-          <dd class="ve-body">Zelf realiseren: de installatie is van u en staat op uw balans. Exploitatie: de installatie blijft van de exploitant, met een vastgelegd recht om op uw grond te staan.</dd>
-          <dt class="ve-small">Onderhoud en storingen</dt>
-          <dd class="ve-body">Zelf realiseren: u sluit een onderhoudscontract met een afgesproken reactietijd. Exploitatie: het hoort bij de exploitatie, maar die reactietijd hoort er net zo hard in te staan.</dd>
-          <dt class="ve-small">Opbrengst</dt>
-          <dd class="ve-body">Zelf realiseren: de laadopbrengst is van u, minus inkoop, backoffice en onderhoud. Exploitatie: u ontvangt een vergoeding of een tariefkorting; de laadopbrengst is van de exploitant.</dd>
-          <dt class="ve-small">Capaciteit en voorrang</dt>
-          <dd class="ve-body">In beide vormen: welke grenswaarde het laadplein mag gebruiken, en wie wijkt als uw eigen verbruik groeit.</dd>
-          <dt class="ve-small">Tarief en toegang</dt>
-          <dd class="ve-body">Wie het laadtarief vaststelt, wie er mag laden, en of uw eigen voertuigen voorrang krijgen op drukke momenten.</dd>
-          <dt class="ve-small">Uitbreiding</dt>
-          <dd class="ve-body">Of tracé, laadverdeler en sturing ruimte houden voor extra punten, en wie die uitbreiding dan betaalt.</dd>
-          <dt class="ve-small">Einde van de looptijd</dt>
-          <dd class="ve-body">Wie de installatie verwijdert of overneemt, tegen welke waarde, en in welke staat het terrein wordt opgeleverd.</dd>
-        </dl>
-        <p class="ve-small" style="margin-top:var(--ve-s-md)">Deze zeven punten bepalen in de praktijk meer over de uitkomst dan de keuze tussen kopen en laten exploiteren.</p>
+      <div class="ve-grid12" style="align-items:start">
+      <div class="ve-sp-7">
+        <div class="ve-spec">
+          <div class="ve-spec__kop"><h2 class="ve-h4">Wat in beide vormen op papier moet staan</h2></div>
+          <dl>
+            <dt>Eigendom</dt><dd>Zelf realiseren: de installatie is van u en staat op uw balans. Exploitatie: de installatie blijft van de exploitant, met een vastgelegd recht om op uw grond te staan.</dd>
+            <dt>Onderhoud en storingen</dt><dd>Zelf realiseren: u sluit een onderhoudscontract met een afgesproken reactietijd. Exploitatie: het hoort bij de exploitatie, maar die reactietijd hoort er net zo hard in te staan.</dd>
+            <dt>Opbrengst</dt><dd>Zelf realiseren: de laadopbrengst is van u, minus inkoop, backoffice en onderhoud. Exploitatie: u ontvangt een vergoeding of een tariefkorting; de laadopbrengst is van de exploitant.</dd>
+            <dt>Capaciteit en voorrang</dt><dd>In beide vormen: welke grenswaarde het laadplein mag gebruiken, en wie wijkt als uw eigen verbruik groeit.</dd>
+            <dt>Tarief en toegang</dt><dd>Wie het laadtarief vaststelt, wie er mag laden, en of uw eigen voertuigen voorrang krijgen op drukke momenten.</dd>
+            <dt>Uitbreiding</dt><dd>Of tracé, laadverdeler en sturing ruimte houden voor extra punten, en wie die uitbreiding dan betaalt.</dd>
+            <dt>Einde van de looptijd</dt><dd>Wie de installatie verwijdert of overneemt, tegen welke waarde, en in welke staat het terrein wordt opgeleverd.</dd>
+          </dl>
+          <p class="ve-small" style="margin-top:var(--ve-s-md)">Deze zeven punten bepalen in de praktijk meer over de uitkomst dan de keuze tussen kopen en laten exploiteren.</p>
+        </div>
+      </div>
+      <div class="ve-sp-5">
+        <div class="ve-media ve-media--4x3 ve-media--lijn">
+          <img src="/assets/home/s2-zon-1360.webp" srcset="/assets/home/s2-zon-400.webp 400w, /assets/home/s2-zon-680.webp 680w, /assets/home/s2-zon-800.webp 800w, /assets/home/s2-zon-1360.webp 1360w" sizes="(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw" width="1360" height="1020" alt="Zonnepanelen in rijen op het platte dak van een bedrijfspand" loading="lazy" decoding="async">
+        </div>
+      </div>
       </div>
     </div>
   </section>
@@ -251,14 +259,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Vergunning, terrein en veiligheid</h2>
         <p class="ve-lead">Wat buiten de elektrotechniek valt, maar de planning wel bepaalt.</p>
       </div>
-      <div class="ve-prose">
-        <h3>Vergunning en melding</h3>
-        <p>De laadpunten zelf zijn zelden het probleem. Wat een vergunningstraject in gang zet, zijn de bouwwerken eromheen: een overkapping, een fundering, een omkasting voor de batterij of een wijziging in de parkeerindeling. Of daar een omgevingsvergunning voor nodig is, hangt af van het terrein en van de gemeente. Dat wordt per locatie uitgezocht voordat het ontwerp vastligt. Wijzigt de aansluiting, dan loopt daarnaast een eigen aanvraag bij de netbeheerder, met een doorlooptijd die niet van ons afhangt — en die bepaalt dan de planning, niet de bouwtijd.</p>
-        <h3>Terreininrichting</h3>
-        <p>Een laadplein moet in de logistiek van het terrein passen, niet ernaast. Dat betekent laadpunten op een plek waar een bestelbus of een trekker met oplegger kan draaien zonder de kabel te raken, kabels die niet over een looppad of een rijlijn lopen, aanrijbeveiliging rond elke paal en rond de batterijopstelling, en vakken die bereikbaar blijven als het terrein vol staat. De kabellengte van een paal bepaalt of hij één of twee vakken kan bedienen. Dat is een ontwerpkeuze, niet iets om op de dag van plaatsing te ontdekken.</p>
-        <p>Het tracé van de hoofdverdeler naar de laadverdeler loopt meestal ondergronds. Waar dat tracé loopt, wat erboven ligt en of er geboord of opgebroken moet worden, bepaalt een flink deel van de kosten. Ook dat hoort in het ontwerp te worden vastgesteld en niet tijdens de uitvoering.</p>
-        <h3>Veiligheid</h3>
-        <p>Bij de laadinstallatie horen een eigen beveiliging per afgaande groep, aardlekbeveiliging per laadpunt, een duidelijke manier om spanningsvrij te schakelen en een inspectie bij inbedrijfstelling. Staat er opslag bij, dan komen daar de afstand tot het gebouw en tot de perceelgrens, de compartimentering, de detectie en de bereikbaarheid voor hulpdiensten bij. Die inrichting hoort bij het ontwerp en bij de vergunningsaanvraag, niet bij de plaatsing. Wie het beheer na oplevering ook doet, de installatie hoort zo ontworpen te zijn dat er bij te komen is: een paal of een beveiliging moet te wisselen zijn zonder het hele plein uit bedrijf te nemen.</p>
+      <div class="ve-rails" style="margin-top:var(--ve-s-xl)">
+        <div class="ve-rail">
+          <h3 class="ve-h4">Vergunning en melding</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>De laadpunten zelf zijn zelden het probleem. Wat een vergunningstraject in gang zet, zijn de bouwwerken eromheen: een overkapping, een fundering, een omkasting voor de batterij of een wijziging in de parkeerindeling. Of daar een omgevingsvergunning voor nodig is, hangt af van het terrein en van de gemeente. Dat wordt per locatie uitgezocht voordat het ontwerp vastligt. Wijzigt de aansluiting, dan loopt daarnaast een eigen aanvraag bij de netbeheerder, met een doorlooptijd die niet van ons afhangt — en die bepaalt dan de planning, niet de bouwtijd.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Terreininrichting</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Een laadplein moet in de logistiek van het terrein passen, niet ernaast. Dat betekent laadpunten op een plek waar een bestelbus of een trekker met oplegger kan draaien zonder de kabel te raken, kabels die niet over een looppad of een rijlijn lopen, aanrijbeveiliging rond elke paal en rond de batterijopstelling, en vakken die bereikbaar blijven als het terrein vol staat. De kabellengte van een paal bepaalt of hij één of twee vakken kan bedienen. Dat is een ontwerpkeuze, niet iets om op de dag van plaatsing te ontdekken.</p>
+        <p>Het tracé van de hoofdverdeler naar de laadverdeler loopt meestal ondergronds. Waar dat tracé loopt, wat erboven ligt en of er geboord of opgebroken moet worden, bepaalt een flink deel van de kosten. Ook dat hoort in het ontwerp te worden vastgesteld en niet tijdens de uitvoering.</p></p>
+        </div>
+        <div class="ve-rail">
+          <h3 class="ve-h4">Veiligheid</h3>
+          <p class="ve-body" style="margin-top:.3rem"><p>Bij de laadinstallatie horen een eigen beveiliging per afgaande groep, aardlekbeveiliging per laadpunt, een duidelijke manier om spanningsvrij te schakelen en een inspectie bij inbedrijfstelling. Staat er opslag bij, dan komen daar de afstand tot het gebouw en tot de perceelgrens, de compartimentering, de detectie en de bereikbaarheid voor hulpdiensten bij. Die inrichting hoort bij het ontwerp en bij de vergunningsaanvraag, niet bij de plaatsing. Wie het beheer na oplevering ook doet, de installatie hoort zo ontworpen te zijn dat er bij te komen is: een paal of een beveiliging moet te wisselen zijn zonder het hele plein uit bedrijf te nemen.</p></p>
+        </div>
       </div>
     </div>
   </section>
@@ -287,32 +301,36 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h2 class="ve-h2">Waar dit in de praktijk op neerkomt</h2>
         <p class="ve-lead">De situaties waarin een laadplein op capaciteit vastloopt.</p>
       </div>
-      <div class="ve-kaarten">
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/laden-met-beperkte-aansluiting">
-          <h3 class="ve-h4">De aansluiting draagt de punten niet</h3>
-          <p class="ve-body" style="margin-top:.4rem">Het aantal laadpunten dat u nodig heeft past niet binnen het vermogen dat u mag afnemen.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Laden met een beperkte aansluiting</span>
+      <div class="ve-grid12" style="margin-top:var(--ve-s-xl);align-items:start">
+        <div class="ve-sp-7">
+          <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/laden-met-beperkte-aansluiting" style="height:100%;text-decoration:none">
+          <h3 class="ve-h3">De aansluiting draagt de punten niet</h3>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Het aantal laadpunten dat u nodig heeft past niet binnen het vermogen dat u mag afnemen.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Laden met een beperkte aansluiting<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/elektrificatie-bedrijfswagens">
+        </div>
+        <div class="ve-sp-5 ve-stack ve-stack--lg">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/toepassingen/elektrificatie-bedrijfswagens" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">De bedrijfswagens gaan elektrisch</h3>
-          <p class="ve-body" style="margin-top:.4rem">Een vloot die van diesel naar stroom gaat, verplaatst de energievraag naar uw eigen terrein en naar de nacht.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Elektrificatie bedrijfswagens</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Een vloot die van diesel naar stroom gaat, verplaatst de energievraag naar uw eigen terrein en naar de nacht.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Elektrificatie bedrijfswagens<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/geen-extra-transportvermogen">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/toepassingen/geen-extra-transportvermogen" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Extra transportvermogen is er niet</h3>
-          <p class="ve-body" style="margin-top:.4rem">De netbeheerder kan geen verzwaring toezeggen, en het laadplein moet binnen de huidige grens passen.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Geen extra transportvermogen</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">De netbeheerder kan geen verzwaring toezeggen, en het laadplein moet binnen de huidige grens passen.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Geen extra transportvermogen<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/toepassingen/meerdere-locaties">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/toepassingen/meerdere-locaties" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Meerdere locaties tegelijk</h3>
-          <p class="ve-body" style="margin-top:.4rem">Verschillende panden met verschillende aansluitingen en profielen, en één laadbeleid erover.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Meerdere locaties</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Verschillende panden met verschillende aansluitingen en profielen, en één laadbeleid erover.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Meerdere locaties<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
-        <a class="ve-kaart ve-kaart--ruim ve-kaart--hover" href="/project-ratio-16">
+          <a class="ve-kaart ve-kaart--sunken ve-kaart--hover" href="/project-ratio-16" style="height:100%;text-decoration:none">
           <h3 class="ve-h4">Gerealiseerd: Ratio 16, Duiven</h3>
-          <p class="ve-body" style="margin-top:.4rem">Zonnedak, batterijopslag en laadplein onder één sturing, binnen het transportvermogen dat er al lag.</p>
-          <span class="ve-link" style="display:inline-block;margin-top:var(--ve-s-md)">Bekijk het project</span>
+          <p class="ve-body" style="margin-top:.5rem;max-width:52ch">Zonnedak, batterijopslag en laadplein onder één sturing, binnen het transportvermogen dat er al lag.</p>
+          <span class="ve-link" style="margin-top:var(--ve-s-md)">Bekijk het project<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ve-i-pijl"/></svg></span>
         </a>
+        </div>
       </div>
     </div>
   </section>
