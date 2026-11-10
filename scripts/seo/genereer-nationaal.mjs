@@ -195,13 +195,20 @@ export function sectieHtml(s, motor, ctx = {}) {
         label: k.label,
       }));
       if (lijst.length >= 3) {
+        /* De dragende kaart krijgt het OPENINGSBEELD VAN DE PAGINA WAAR HIJ
+           HEEN WIJST — dezelfde foto die de bezoeker na de klik ziet. Niet een
+           sfeerbeeld dat bij de kop lijkt te passen.
+           ctx.beeldVoorKaart ontdubbelt over de hele pagina: is de visuele
+           groep al gebruikt, dan komt er geen beeld en blijft het de
+           tekstkaart die er stond. Dat is de fallbacklayout, en die is beter
+           dan een foto die al twee secties hoger staat. */
         return kaartrij12({
           id: s.id,
           kop: s.kop,
           lead: s.lead,
           dominant: lijst[0],
           rest: lijst.slice(1),
-          img: ctx.kaartBeeld || null,
+          img: ctx.uitgifte ? ctx.uitgifte.kaart(lijst[0].route) : null,
           variant: s.variant || '',
         });
       }
@@ -214,7 +221,7 @@ export function sectieHtml(s, motor, ctx = {}) {
         kop: s.kop,
         icoon: ctx.icoon || null,
         rijen,
-        img: ctx.specBeeld || null,
+        img: ctx.uitgifte ? ctx.uitgifte.spec() : null,
         kant: ctx.specKant || 'rechts',
         noot: s.noot ? normaliseerHrefs(s.noot, motor) : null,
         variant: s.variant || 've-sec--sunken ve-sec--line-y',
@@ -252,7 +259,7 @@ export function sectieHtml(s, motor, ctx = {}) {
        alleen in de <head>; op de pagina zelf waren ze onzichtbaar.
    Er wordt dus geen claim toegevoegd die niet al door de claimpoort is
    gekomen. */
-export function metRitme({ secties, motor, beelden, canvas, ctx = {} }) {
+export function metRitme({ secties, motor, banden, canvas, ctx = {} }) {
   const tekstIdx = secties.map((s, i) => (s.soort === 'tekst' ? i : -1)).filter((i) => i >= 0);
   /* Hoeveel beeldbanden een pagina verdraagt, hangt af van hoeveel tekst er
      staat. Twee banden op een pagina met veertien tekstsecties laat nog
@@ -274,7 +281,11 @@ export function metRitme({ secties, motor, beelden, canvas, ctx = {} }) {
   let gebruikt = 0;
   secties.forEach((s, i) => {
     if (bandOp.has(i)) {
-      const b = beelden[1 + (gebruikt % 2)];
+      /* Elk bandslot krijgt zijn EIGEN beeld. Ze wisselden eerst over slot 1
+         en 2, maar slot 2 is ook de canvasband: gemeten stond daardoor op 42
+         pagina's hetzelfde bestand twee keer. */
+      const b = banden[gebruikt % banden.length];
+      if (!b) { uit.push(sectieHtml(s, motor, ctx)); return; }
       const kant = gebruikt % 2 === 0 ? 'rechts' : 'links';
       gebruikt++;
       uit.push(
@@ -298,6 +309,56 @@ export function metRitme({ secties, motor, beelden, canvas, ctx = {} }) {
   });
   if (canvasNa < 0 && canvas) uit.push(canvas);
   return uit;
+}
+
+/* Geeft een beeldtag voor de bestemming van een kaart, of null.
+   Houdt per pagina bij welke visuele groepen al gebruikt zijn — inclusief de
+   groepen van het openingsbeeld, de beeldbanden en de canvasband — zodat een
+   hub met zes kaartsecties nooit twee keer dezelfde scene toont. Is er geen
+   ongebruikte groep meer, dan komt er geen beeld: de kaart blijft de
+   tekstkaart die hij was. */
+function beeldUitgifte(route, gebruiktDoorPagina) {
+  const gebruikt = new Set((gebruiktDoorPagina || []).map((t) => t.groep));
+  const basisRoute = String(route || '').replace(/^\/+/, '');
+
+  const pak = (voorkeurRoute) => {
+    const r = String(voorkeurRoute || basisRoute).replace(/^\/+/, '');
+    /* eerst de set van de bestemming zelf, dan die van de pagina, dan de rest */
+    const kandidaten = [...beeldenVoor(r, typeVanRoute(r), 6), ...beeldenVoor(basisRoute, typeVanRoute(basisRoute), 8)];
+    for (const t of kandidaten) {
+      if (gebruikt.has(t.groep)) continue;
+      gebruikt.add(t.groep);
+      return t;
+    }
+    return null;
+  };
+
+  const tag = (t, sizes) => {
+    if (!t) return null;
+    try {
+      return beeldTag({ basis: t.basis, alt: t.alt, sizes });
+    } catch (e) {
+      return null;
+    }
+  };
+
+  return {
+    /* De dragende kaart krijgt het beeld van de pagina waar hij heen wijst. */
+    kaart: (voorkeurRoute) => tag(pak(voorkeurRoute), '(min-width:1100px) 680px, (min-width:900px) 58vw, 100vw'),
+    /* Elk specificatieblok krijgt een eigen beeld. laadplein.html heeft er
+       twee; die kregen eerst allebei hetzelfde bestand. */
+    spec: () => tag(pak(null), '(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw'),
+  };
+}
+
+/* Het type van een route, voor de beeldset. Afgeleid uit het eerste segment;
+   dat is hoe de routes in deze repo zijn ingedeeld. */
+function typeVanRoute(r) {
+  if (r.startsWith('kennis/')) return 'kennis';
+  if (r.startsWith('sectoren/')) return 'sector';
+  if (r.startsWith('toepassingen/')) return 'toepassing';
+  if (r.startsWith('regios/')) return 'regio';
+  return 'oplossing';
 }
 
 export function bouwNationaal({ register, motor, schrijf, reg }) {
@@ -346,7 +407,14 @@ export function bouwNationaal({ register, motor, schrijf, reg }) {
        aanwijst en nooit een klantproject suggereert.
        fetchpriority high en loading eager: dit is het LCP-element, en lazy
        laden van je eigen LCP is een gemeten vertraging. */
-    const beelden = beeldenVoor(j.route, j.type, 4);
+    /* Zes slots, zes verschillende onderwerpen:
+         0 opening (breed)   1 band A   2 canvasband (breed)
+         3 band B            4 band C
+       De specificatieblokken en de dragende kaarten halen hun beeld bij de
+       paginabrede uitgifte, die bijhoudt welke visuele groepen al op deze
+       pagina staan en null teruggeeft zodra ze op zijn. Geen beeld is dan de
+       fallbacklayout: de kaart blijft de tekstkaart die hij was. */
+    const beelden = beeldenVoor(j.route, j.type, 5);
     const beeld = beelden[0];
     const heroBeeld = mediaBlok({
       verhouding: '21x9',
@@ -409,20 +477,12 @@ export function bouwNationaal({ register, motor, schrijf, reg }) {
       ...metRitme({
         secties,
         motor,
-        beelden,
+        banden: [beelden[1], beelden[3], beelden[4]].filter(Boolean),
         /* Het vierde beeld gaat naar het specificatieblok. Niet naar de
            kaartrij: die heeft zijn dragende kaart al, en twee beelden uit
            dezelfde set op een pagina zou precies de herhaling zijn die het
            register nu juist voorkomt. */
-        ctx: {
-          specBeeld: beelden[3]
-            ? beeldTag({
-                basis: beelden[3].basis,
-                alt: beelden[3].alt,
-                sizes: '(min-width:1100px) 440px, (min-width:900px) 40vw, 100vw',
-              })
-            : null,
-        },
+        ctx: { uitgifte: beeldUitgifte(j.route, beelden.slice(0, 5)) },
         canvas: canvasband({
           img: beeldTag({
             basis: beelden[2].basis,

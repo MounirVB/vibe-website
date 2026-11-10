@@ -318,7 +318,7 @@ function bouwArtikel({ j, route, motor, schrijf, geo }) {
      Draagt het bericht zelf een beeld mee (kaartbeeld of og_beeld), dan wint
      dat: de redactie weet beter wat erbij hoort dan het register. */
   const eigenBeeld = artikelBeeld(j, ARTIKEL_SIZES, { eager: true });
-  const beelden = beeldenVoor(eigenaar || 'nieuws', 'nieuws', 3);
+  const beelden = beeldenVoor(eigenaar || 'nieuws', 'nieuws', 5);
   const heroBeeld = mediaBlok({
     verhouding: '21x9',
     diepte: 'diep',
@@ -359,7 +359,7 @@ function bouwArtikel({ j, route, motor, schrijf, geo }) {
     ...metRitme({
       secties: j.secties || [],
       motor,
-      beelden,
+      banden: [beelden[1], beelden[3], beelden[4]].filter(Boolean),
       canvas: canvasband({
         img: beeldTag({
           basis: beelden[2].basis,
