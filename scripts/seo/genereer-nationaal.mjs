@@ -317,6 +317,15 @@ export function metRitme({ secties, motor, banden, canvas, ctx = {} }) {
    hub met zes kaartsecties nooit twee keer dezelfde scene toont. Is er geen
    ongebruikte groep meer, dan komt er geen beeld: de kaart blijft de
    tekstkaart die hij was. */
+/* Een ISO-datum als Nederlandse datum. Zelfde vorm als het nieuwskanaal die
+   al gebruikt; hier opnieuw omdat genereer-nieuws.mjs hem niet exporteert. */
+const MAANDEN = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+function datumNl(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+  if (!m) return String(iso || '');
+  return `${Number(m[3])} ${MAANDEN[Number(m[2]) - 1]} ${m[1]}`;
+}
+
 function beeldUitgifte(route, gebruiktDoorPagina) {
   const gebruikt = new Set((gebruiktDoorPagina || []).map((t) => t.groep));
   const basisRoute = String(route || '').replace(/^\/+/, '');
@@ -449,8 +458,37 @@ export function bouwNationaal({ register, motor, schrijf, reg }) {
         }))
       : [];
 
+    /* KENNISARTIKELEN KRIJGEN EEN ARTIKELKOP.
+       Alle zeventien dragen een gepubliceerd- en gewijzigd-datum in hun
+       inhoudsbestand, maar die stonden nergens op de pagina — ze gingen
+       alleen de structured data in. Een artikel zonder zichtbare datum laat
+       de lezer niet zien of hij iets van vorige week of van vorig jaar leest.
+       De datums worden niet berekend of geschat; ze komen uit het bestand. */
     const delen = [
-      opening({
+      j.type === 'kennis'
+        ? artikelkop({
+            kruimels,
+            kruimelLabel: j.kruimel_label || j.og_titel || j.h1,
+            h1: j.h1,
+            lead: normaliseerHrefs(j.lead, motor),
+            feiten: [
+              j.gepubliceerd ? { label: 'Gepubliceerd', waarde: datumNl(j.gepubliceerd) } : null,
+              j.gewijzigd && j.gewijzigd !== j.gepubliceerd ? { label: 'Bijgewerkt', waarde: datumNl(j.gewijzigd) } : null,
+              /* De bovenliggende rubriek, niet de paginatitel zelf: kruimel_label
+                 is hier "Peak shaving" en dat stond dan twee keer onder elkaar. */
+              kruimels.length ? { label: 'Rubriek', waarde: esc(kruimels[kruimels.length - 1].naam), accent: true } : null,
+            ].filter(Boolean),
+            img: beeldTag({
+              basis: beeld.basis,
+              alt: beeld.alt,
+              sizes: '(min-width:1200px) 1216px, 100vw',
+              lazy: false,
+              fetchpriority: 'high',
+            }),
+            bijschrift: beeld.alt,
+            breedte: '56rem',
+          })
+        : opening({
         kruimels,
         kruimelLabel: j.kruimel_label || j.og_titel || j.h1,
         h1: j.h1,

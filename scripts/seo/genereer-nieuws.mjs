@@ -64,6 +64,7 @@ import {
   ic,
   mediaBlok,
   canvasband,
+  artikelkop,
 } from './lib/sjabloon.mjs';
 import { beeldTag, beeldenVoor, themaVoorBasis } from './lib/beeld.mjs';
 import { nieuwsartikel, faq as faqLd } from './lib/schema.mjs';
@@ -319,28 +320,36 @@ function bouwArtikel({ j, route, motor, schrijf, geo }) {
      dat: de redactie weet beter wat erbij hoort dan het register. */
   const eigenBeeld = artikelBeeld(j, ARTIKEL_SIZES, { eager: true });
   const beelden = beeldenVoor(eigenaar || 'nieuws', 'nieuws', 5);
-  const heroBeeld = mediaBlok({
-    verhouding: '21x9',
-    diepte: 'diep',
-    img:
-      eigenBeeld ||
-      beeldTag({
-        basis: beelden[0].basis,
-        alt: beelden[0].alt,
-        sizes: ARTIKEL_SIZES,
-        lazy: false,
-        fetchpriority: 'high',
-      }),
-    stijl: 'margin-top:var(--ve-s-2xl)',
+  const heroImg = beeldTag({
+    basis: beelden[0].basis,
+    alt: beelden[0].alt,
+    sizes: ARTIKEL_SIZES,
+    lazy: false,
+    fetchpriority: 'high',
   });
+  const heroAlt = eigenBeeld ? '' : beelden[0].alt;
 
+  /* De artikelkop in plaats van de gewone opening: kruimelpad, H1, lead, een
+     ZICHTBARE feitenregel en daaronder het openingsbeeld met bijschrift.
+     De publicatiedatum stond eerst als een grijze regel van 13px onder de
+     lead. Alle drie de feiten staan al op de pagina — de datum in de
+     <time>-regel, het onderwerp in 'Verder lezen', het bronaantal in de
+     bronnensectie — dus er komt geen bewering bij. */
   const delen = [
-    opening({
+    artikelkop({
       kruimels,
       kruimelLabel: j.kruimel_label || j.og_titel || j.h1,
       h1: j.h1,
       lead: normaliseerHrefs(j.lead, motor),
-      naLead: `${datumregel(j)}\n      ${heroBeeld}`,
+      feiten: [
+        { label: 'Gepubliceerd', waarde: datumNl(j.gepubliceerd) },
+        j.gewijzigd && j.gewijzigd !== j.gepubliceerd ? { label: 'Bijgewerkt', waarde: datumNl(j.gewijzigd) } : null,
+        eigenaar ? { label: 'Onderwerp', waarde: esc(eigenaarNaam), accent: true } : null,
+        bronnen.length ? { label: bronnen.length === 1 ? 'Bron' : 'Bronnen', waarde: String(bronnen.length) } : null,
+      ].filter(Boolean),
+      img: eigenBeeld || heroImg,
+      bijschrift: heroAlt,
+      breedte: '56rem',
     }),
     j.direct_antwoord
       ? directAntwoord({
