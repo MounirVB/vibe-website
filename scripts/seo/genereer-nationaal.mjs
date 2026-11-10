@@ -169,7 +169,7 @@ export function sectieHtml(s, motor) {
        alleen in de <head>; op de pagina zelf waren ze onzichtbaar.
    Er wordt dus geen claim toegevoegd die niet al door de claimpoort is
    gekomen. */
-function metRitme({ secties, motor, beelden, canvas }) {
+export function metRitme({ secties, motor, beelden, canvas }) {
   const tekstIdx = secties.map((s, i) => (s.soort === 'tekst' ? i : -1)).filter((i) => i >= 0);
   /* Hoeveel beeldbanden een pagina verdraagt, hangt af van hoeveel tekst er
      staat. Twee banden op een pagina met veertien tekstsecties laat nog

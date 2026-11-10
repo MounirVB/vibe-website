@@ -244,6 +244,19 @@ export function thema(sleutel) {
   return t;
 }
 
+/** Het thema dat bij een basispad hoort, of null.
+    Nodig omdat genereer-nieuws.mjs zijn beelden bij bestandsnaam kende en
+    niet bij sleutel. Zo kan die motor op DIT register aansluiten in plaats
+    van een tweede register met eigen alt-teksten te onderhouden — en die
+    liepen uiteen: netcongestie-hero stond daar als "drie witte
+    batterijcontainers", hier als "twee batterijkasten achter een hekwerk",
+    en geen van beide klopte volledig. */
+export function themaVoorBasis(basis) {
+  const b = String(basis).replace(/^\/+/, '');
+  for (const [sleutel, t] of Object.entries(THEMA)) if (t.basis === b) return { sleutel, ...t };
+  return null;
+}
+
 export function themaSleutels() {
   return Object.keys(THEMA);
 }
@@ -354,7 +367,7 @@ const BEELDSET = {
   'sectoren/automotive': ['laadpaal', 'wandlader', 'autobedrijf'],
   'sectoren/bedrijventerreinen': ['luchtvastgoed', 'platdak', 'kast'],
   'sectoren/bouw': ['montage', 'werktekening', 'luchtcomplex'],
-  'sectoren/gebiedsontwikkeling': ['luchtcomplex', 'platdak', 'montage'],
+  'sectoren/gebiedsontwikkeling': ['luchtcomplex', 'platdak', 'kast'],
   'sectoren/horeca': ['luchtkantoor', 'omkasting', 'panelen'],
   'sectoren/opslag-en-distributie': ['autobedrijf', 'luchtvastgoed', 'platdak'],
   'sectoren/parkeren': ['carport', 'laadpaal', 'wandlader'],
@@ -377,7 +390,7 @@ const BEELDSET = {
   'kennis/netcongestie-uitgelegd': ['kastenDrie', 'meters', 'omkasting'],
   'kennis/normen-en-keuringen': ['montage', 'werktekening', 'binnenwerk'],
   'kennis/peak-shaving': ['omkasting', 'meters', 'meting'],
-  'kennis/subsidiemechanismen': ['werktekening', 'luchtcomplex', 'montage'],
+  'kennis/subsidiemechanismen': ['werktekening', 'luchtcomplex', 'omkasting'],
   'kennis/terugleverbeperking': ['panelen', 'meters', 'luchtvastgoed'],
   'kennis/transportvermogen-versus-aansluitwaarde': ['meters', 'meting', 'kast'],
 };
@@ -434,6 +447,47 @@ export function beeldenVoor(route, type, aantal = 3) {
     gezien.add(t.groep);
     uit.push(t);
   }
+
+  /* BREEDE SLOTS KRIJGEN EEN BEELD MET VARIANTEN.
+     Acht van de dertig beelden bestaan alleen als een grote jpg, zonder
+     webp-breedtes: logistiek-hero, ev-charging, comm-retail, comm-rooftop,
+     vve-hero, energielabel-hero, waarom-vibe-hero en ems-hero. In een kaart
+     of een halve kolom is dat prima. In het openingsbeeld of de canvasband —
+     die over de volle breedte staan — betekent het dat een telefoon het
+     volledige bestand van enkele honderden kB binnenhaalt, omdat er geen
+     kleinere variant is om uit te kiezen.
+     De slots zijn niet gelijk: 0 is het openingsbeeld (volbreed), 1 is de
+     beeldband (een halve kolom), 2 is de canvasband (volbreed). Een beeld
+     zonder varianten hoort dus in het MIDDEN, niet achteraan. De set toont
+     dezelfde beelden; alleen de slotvolgorde verandert. */
+  const met = uit.filter((t) => varianten(t.basis).length);
+  const zonder = uit.filter((t) => !varianten(t.basis).length);
+  const geordend = [];
+  if (met.length) geordend.push(met.shift());
+  if (zonder.length) geordend.push(zonder.shift());
+  else if (met.length) geordend.push(met.shift());
+  geordend.push(...met, ...zonder);
+
+  /* Draagt de set er TWEE zonder varianten, dan blijft er een in een breed
+     slot staan. Dan haalt de selectie zelf een vervanger uit een groep die
+     deze pagina nog niet gebruikt — deterministisch op de route, zodat de
+     bouw reproduceerbaar blijft. De oorspronkelijke keuze blijft bestaan in
+     het smalle slot; er verdwijnt dus geen onderwerp, er komt er een bij. */
+  const breed = [0, 2];
+  for (const i of breed) {
+    const t = geordend[i];
+    if (!t || varianten(t.basis).length) continue;
+    const kandidaten = Object.keys(THEMA).filter(
+      (k) => varianten(THEMA[k].basis).length && !geordend.some((x) => x && x.groep === THEMA[k].groep)
+    );
+    if (!kandidaten.length) continue;
+    const k = kandidaten[hash(r + '|breed' + i) % kandidaten.length];
+    geordend[i] = thema(k);
+    geordend.push(t);
+  }
+
+  uit.length = 0;
+  uit.push(...geordend);
   /* aanvullen tot `aantal`, deterministisch: op een hash van de route zodat
      twee pagina's niet dezelfde aanvulling krijgen, maar dezelfde pagina wel
      altijd dezelfde. */

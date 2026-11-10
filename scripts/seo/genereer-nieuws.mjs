@@ -62,10 +62,13 @@ import {
   conversie,
   esc,
   ic,
+  mediaBlok,
+  canvasband,
 } from './lib/sjabloon.mjs';
+import { beeldTag, beeldenVoor, themaVoorBasis } from './lib/beeld.mjs';
 import { nieuwsartikel, faq as faqLd } from './lib/schema.mjs';
 import { naamVan } from './lib/links.mjs';
-import { normaliseerHrefs, sectieHtml } from './genereer-nationaal.mjs';
+import { normaliseerHrefs, sectieHtml, metRitme } from './genereer-nationaal.mjs';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 const wortel = resolve(hier, '..', '..');
@@ -99,38 +102,13 @@ const BRONSOORT_LABEL = {
    De beeldverhouding staat NIET op het bestand maar op het vlak eromheen
    (.ve-proj__vlak = 16/10, .ve-media--16x9), zodat de kaarten in een raster
    dezelfde hoogte houden en er geen layout shift is terwijl het beeld laadt. */
-const BEELDEN = {
-  'netcongestie-hero': {
-    breedtes: [960, 1600, 2400],
-    alt: 'Drie witte batterijcontainers van Vibe Energy op een bedrijfsterrein',
-  },
-  'energieopslag-hero': {
-    breedtes: [960, 1600, 2400],
-    alt: 'Twee batterijkasten in een houten omkasting naast een bedrijfspand',
-  },
-  'laadpalen-hero': {
-    breedtes: [960, 1600, 2400],
-    alt: 'Elektrische auto met laadkabel aan een laadpaal op een bedrijfsterrein',
-  },
-  'zonnepanelen-hero': {
-    breedtes: [960, 1600, 2400],
-    alt: 'Rijen zonnepanelen op het platte dak van een bedrijfspand',
-  },
-  'kantoor-hero': {
-    breedtes: [960, 1600, 2400],
-    alt: 'Luchtfoto van een bedrijfspand met zonnepanelen op het dak',
-  },
-  /* Subsidies draagt een batterij, geen dak. De pagina erachter gaat letterlijk
-     over "wat een batterij wel en niet subsidiabel maakt"; een derde dakfoto
-     was verwant maar niet het onderwerp. Dit beeld staat ook op /over-ons —
-     hergebruik tussen pagina's is in deze bibliotheek gebruikelijk (zie
-     netcongestie-hero op /index en /microgrids), twee keer op DEZELFDE pagina
-     niet. */
-  'bedrijf-hero': {
-    breedtes: [960, 1600, 2400],
-    alt: 'Batterijcontainer van Vibe Energy met het merklogo, op een bedrijfsterrein',
-  },
-};
+/* Dit bestand hield een EIGEN beeldregister bij, met eigen alt-teksten. Die
+   liepen uiteen met scripts/seo/lib/beeld.mjs: netcongestie-hero stond hier
+   als "drie witte batterijcontainers" en daar als "twee batterijkasten achter
+   een hekwerk", en geen van beide beschreef het beeld volledig juist. Twee
+   registers voor dezelfde dertig bestanden is per definitie een bron van zulke
+   verschillen. Het register staat nu op een plek; hier alleen de opzoeking. */
+const BEELDSLEUTEL = (naam) => `assets/${naam}`;
 
 const BEELDMAP = resolve(wortel, 'assets');
 
@@ -138,21 +116,19 @@ const BEELDMAP = resolve(wortel, 'assets');
    1280px; 400px is daar de echte weergavebreedte. Daaronder twee kolommen en
    op mobiel vol. */
 const KAART_SIZES = '(min-width:1200px) 400px, (min-width:768px) 33vw, (min-width:640px) 50vw, 100vw';
+const ARTIKEL_SIZES = '(min-width:1200px) 1216px, 100vw';
 const UITGELICHT_SIZES = '(min-width:1200px) 720px, (min-width:640px) 60vw, 100vw';
 
 function beeldHtml(sleutel, sizes, { eager = false } = {}) {
-  const b = BEELDEN[sleutel];
-  if (!b) return '';
-  const aanwezig = b.breedtes.filter((w) => existsSync(join(BEELDMAP, `${sleutel}-${w}.webp`)));
-  if (!aanwezig.length) return '';
-  const pad = (w) => `/assets/${sleutel}-${w}.webp`;
-  const grootste = aanwezig[aanwezig.length - 1];
-  return (
-    `<img src="${pad(grootste)}" srcset="${aanwezig.map((w) => `${pad(w)} ${w}w`).join(', ')}"` +
-    ` sizes="${sizes}" alt="${esc(b.alt)}"` +
-    (eager ? ' fetchpriority="high" decoding="async"' : ' loading="lazy" decoding="async"') +
-    '>'
-  );
+  const basis = BEELDSLEUTEL(sleutel);
+  const t = themaVoorBasis(basis);
+  if (!t) return '';
+  try {
+    return beeldTag({ basis: t.basis, alt: t.alt, sizes, lazy: !eager, fetchpriority: eager ? 'high' : null });
+  } catch (e) {
+    /* geen bestand op schijf — dan geen beeldvlak, geen gebroken <img> */
+    return '';
+  }
 }
 
 /* ================================================== DE PAGINABOUWSTENEN ===
@@ -332,13 +308,39 @@ function bouwArtikel({ j, route, motor, schrijf, geo }) {
 
   for (const g of groepen) motor.tel(route, g.items);
 
+  /* HET ARTIKELBEELD.
+     Een nieuwsbericht droeg GEEN beeld: gemeten op de QA-fixture waren het
+     nul <img> in <main>, op een pagina van 4.533px. Het beeld volgt het
+     ONDERWERP van het bericht (onderwerp_eigenaar is een echte route, zoals
+     netcongestie), niet de kop. Zo toont een bericht over netcongestie de
+     batterijkasten die bij dat onderwerp horen, en nooit een foto die alleen
+     bij de titel lijkt te passen.
+     Draagt het bericht zelf een beeld mee (kaartbeeld of og_beeld), dan wint
+     dat: de redactie weet beter wat erbij hoort dan het register. */
+  const eigenBeeld = artikelBeeld(j, ARTIKEL_SIZES, { eager: true });
+  const beelden = beeldenVoor(eigenaar || 'nieuws', 'nieuws', 3);
+  const heroBeeld = mediaBlok({
+    verhouding: '21x9',
+    diepte: 'diep',
+    img:
+      eigenBeeld ||
+      beeldTag({
+        basis: beelden[0].basis,
+        alt: beelden[0].alt,
+        sizes: ARTIKEL_SIZES,
+        lazy: false,
+        fetchpriority: 'high',
+      }),
+    stijl: 'margin-top:var(--ve-s-2xl)',
+  });
+
   const delen = [
     opening({
       kruimels,
       kruimelLabel: j.kruimel_label || j.og_titel || j.h1,
       h1: j.h1,
       lead: normaliseerHrefs(j.lead, motor),
-      naLead: datumregel(j),
+      naLead: `${datumregel(j)}\n      ${heroBeeld}`,
     }),
     j.direct_antwoord
       ? directAntwoord({
@@ -350,7 +352,24 @@ function bouwArtikel({ j, route, motor, schrijf, geo }) {
           bronnen: bronnen.slice(0, 2),
         })
       : '',
-    ...(j.secties || []).map((s) => sectieHtml(s, motor)),
+    /* Dezelfde ritme-pass als de nationale pagina's, niet een tweede versie
+       ervan: elke derde tekstsectie wordt een beeldband en er komt een
+       canvasband na de middelste sectie. De canvasband draagt og_titel en
+       beschrijving uit het artikelbestand — die stonden alleen in de <head>. */
+    ...metRitme({
+      secties: j.secties || [],
+      motor,
+      beelden,
+      canvas: canvasband({
+        img: beeldTag({
+          basis: beelden[2].basis,
+          alt: beelden[2].alt,
+          sizes: ARTIKEL_SIZES,
+        }),
+        kop: j.og_titel || j.h1,
+        tekst: esc(j.beschrijving || ''),
+      }),
+    }),
     bronnenSectie(bronnen),
     j.faq && j.faq.length
       ? faqSectie({
@@ -429,7 +448,7 @@ const ONDERWERPEN = [
     label: 'Batterijopslag',
     kop: 'Batterijopslag',
     tekst: 'Capaciteit vrijspelen op de aansluiting die u al heeft, in plaats van wachten op verzwaring.',
-    beeld: 'energieopslag-hero',
+    beeld: 'capaciteit-hero',
   },
   {
     route: 'systeem-laadpalen',
