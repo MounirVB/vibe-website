@@ -518,7 +518,7 @@ ${projecten
     oude sjabloon stond de datum als een grijze regel van 13px onder de lead.
     .ve-feiten is de vorm die de projectpagina's daar al voor gebruiken.
     feiten: [{label, waarde, accent?}] */
-export function artikelkop({ kruimels, kruimelLabel, h1, lead, feiten, img, bijschrift, breedte = '52rem' }) {
+export function artikelkop({ kruimels, kruimelLabel, h1, lead, meta, feiten, img, bijschrift, breedte = '52rem' }) {
   const feitenHtml =
     feiten && feiten.length
       ? `
@@ -547,7 +547,9 @@ ${feiten
     <div class="ve-wrap">
     ${kruimelsHtml(kruimels || [], kruimelLabel)}
       <h1 class="ve-display" style="max-width:${breedte};margin-top:var(--ve-s-lg)">${esc(h1)}</h1>
-      <p class="ve-lead ve-measure-wide" style="margin-top:var(--ve-s-lg)">${lead}</p>${feitenHtml}${beeld}
+      <p class="ve-lead ve-measure-wide" style="margin-top:var(--ve-s-lg)">${lead}</p>${
+    meta ? `\n      ${meta}` : ''
+  }${feitenHtml}${beeld}
     </div>
   </section>`;
 }

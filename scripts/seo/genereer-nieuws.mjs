@@ -341,9 +341,13 @@ function bouwArtikel({ j, route, motor, schrijf, geo }) {
       kruimelLabel: j.kruimel_label || j.og_titel || j.h1,
       h1: j.h1,
       lead: normaliseerHrefs(j.lead, motor),
+      /* De datumregel blijft datumregel(): poort 16 pint zowel het attribuut
+         data-nieuws-datum als de letterlijke tekst "Gepubliceerd op <ISO>".
+         Dat is een contract over wat een bezoeker van een nieuwsbericht te
+         zien krijgt, en dat herschrijf ik niet voor de vorm. De feitenregel
+         draagt daarom de andere twee feiten. */
+      meta: datumregel(j),
       feiten: [
-        { label: 'Gepubliceerd', waarde: datumNl(j.gepubliceerd) },
-        j.gewijzigd && j.gewijzigd !== j.gepubliceerd ? { label: 'Bijgewerkt', waarde: datumNl(j.gewijzigd) } : null,
         eigenaar ? { label: 'Onderwerp', waarde: esc(eigenaarNaam), accent: true } : null,
         bronnen.length ? { label: bronnen.length === 1 ? 'Bron' : 'Bronnen', waarde: String(bronnen.length) } : null,
       ].filter(Boolean),
