@@ -24,7 +24,7 @@
       "gewijzigd": "2026-10-28"
     },
     "energieadvies": {
-      "hash": "f90fb92db3f76523",
+      "hash": "cdaf86f4330e7cb1",
       "gewijzigd": "2026-11-10"
     },
     "energy-hubs": {
@@ -52,79 +52,79 @@
       "gewijzigd": "2026-10-28"
     },
     "kennis": {
-      "hash": "86cc956b266895f1",
+      "hash": "01051e3a59e968a2",
       "gewijzigd": "2026-11-10"
     },
     "kennis/batterij-dimensioneren": {
-      "hash": "ba02be9bc38330e1",
+      "hash": "91b937bc40e76c7b",
       "gewijzigd": "2026-11-10"
     },
     "kennis/batterijdegradatie": {
-      "hash": "14838cf7786e787a",
+      "hash": "382ff4193234c469",
       "gewijzigd": "2026-11-10"
     },
     "kennis/batterijveiligheid": {
-      "hash": "e9d26f838c612e53",
+      "hash": "88b4f908a30aa75e",
       "gewijzigd": "2026-11-10"
     },
     "kennis/businesscase-batterij": {
-      "hash": "b2a7156d3b8e81d6",
+      "hash": "499373cd30c6c875",
       "gewijzigd": "2026-11-10"
     },
     "kennis/ems-energiemanagementsysteem": {
-      "hash": "6d3b69b7067b4b1e",
+      "hash": "8326f23329eaf8de",
       "gewijzigd": "2026-11-10"
     },
     "kennis/energiehandel-en-flexibiliteit": {
-      "hash": "08bc69a6e26784d9",
+      "hash": "7986312e464d60b3",
       "gewijzigd": "2026-11-10"
     },
     "kennis/energieprestatie-meten": {
-      "hash": "a11c7c6738e32823",
+      "hash": "00132ceb047a117a",
       "gewijzigd": "2026-11-10"
     },
     "kennis/kw-versus-kwh": {
-      "hash": "62c6bc140d04ab8f",
+      "hash": "6c7931bf59002c23",
       "gewijzigd": "2026-11-10"
     },
     "kennis/laadinfrastructuur-dimensioneren": {
-      "hash": "4954a422d3bb4a7f",
+      "hash": "335fcac07e8173d6",
       "gewijzigd": "2026-11-10"
     },
     "kennis/load-balancing": {
-      "hash": "401d81476cc13ae5",
+      "hash": "5f151e2a6d92cc3d",
       "gewijzigd": "2026-11-10"
     },
     "kennis/netaansluiting-aanvragen": {
-      "hash": "8814e0b29bc3b646",
+      "hash": "fc7a70ba98c8d6fc",
       "gewijzigd": "2026-11-10"
     },
     "kennis/netcongestie-uitgelegd": {
-      "hash": "5218e7ab11c3d73e",
+      "hash": "ef188ff82e249a76",
       "gewijzigd": "2026-11-10"
     },
     "kennis/normen-en-keuringen": {
-      "hash": "db514423d308963b",
+      "hash": "f1a5ee7a7f804222",
       "gewijzigd": "2026-11-10"
     },
     "kennis/peak-shaving": {
-      "hash": "ce67bcfe3e673203",
+      "hash": "e7c6cbadeebfa929",
       "gewijzigd": "2026-11-10"
     },
     "kennis/subsidiemechanismen": {
-      "hash": "b00348b4bd193505",
+      "hash": "d59c0e9715651d46",
       "gewijzigd": "2026-11-10"
     },
     "kennis/terugleverbeperking": {
-      "hash": "50cbc9a42ac74899",
+      "hash": "530babae5850cbc9",
       "gewijzigd": "2026-11-10"
     },
     "kennis/transportvermogen-versus-aansluitwaarde": {
-      "hash": "8481d624af6053b1",
+      "hash": "22cbe26d38c73458",
       "gewijzigd": "2026-11-10"
     },
     "laadplein": {
-      "hash": "b68a438711a6776b",
+      "hash": "0badf94d94e341da",
       "gewijzigd": "2026-11-10"
     },
     "microgrids": {
@@ -132,7 +132,7 @@
       "gewijzigd": "2026-10-28"
     },
     "netcongestie": {
-      "hash": "522702bce487e6b6",
+      "hash": "c0c270ef51b6b73f",
       "gewijzigd": "2026-11-10"
     },
     "nieuws": {
@@ -140,7 +140,7 @@
       "gewijzigd": "2026-11-10"
     },
     "nieuws/qa-fixture-testbericht": {
-      "hash": "8c6307cbe88b7a86",
+      "hash": "e0628b9f4d3e9bbf",
       "gewijzigd": "2026-11-10"
     },
     "over-ons": {
@@ -1620,55 +1620,55 @@
       "gewijzigd": "2026-11-10"
     },
     "sectoren": {
-      "hash": "7704681c9ae5f65b",
+      "hash": "df7e1a5b8652fa2e",
       "gewijzigd": "2026-11-10"
     },
     "sectoren/automotive": {
-      "hash": "f1110bb19cbd7d07",
+      "hash": "aa7e999cefeb8d10",
       "gewijzigd": "2026-11-10"
     },
     "sectoren/bedrijventerreinen": {
-      "hash": "3d41324a173c9289",
+      "hash": "e50a4574ec952a05",
       "gewijzigd": "2026-11-10"
     },
     "sectoren/bouw": {
-      "hash": "0658596fc000c8f2",
+      "hash": "88d6669acb85a771",
       "gewijzigd": "2026-11-10"
     },
     "sectoren/gebiedsontwikkeling": {
-      "hash": "9b2cdf66b21c10d1",
+      "hash": "c98dc6156156feeb",
       "gewijzigd": "2026-11-10"
     },
     "sectoren/horeca": {
-      "hash": "3e563626dbb47a09",
+      "hash": "11441b6bc775934b",
       "gewijzigd": "2026-11-10"
     },
     "sectoren/opslag-en-distributie": {
-      "hash": "837cff8aea37ae8e",
+      "hash": "522cd7880bd972ce",
       "gewijzigd": "2026-11-10"
     },
     "sectoren/parkeren": {
-      "hash": "197cfc8eab77b4d1",
+      "hash": "11fcaf49f70816a9",
       "gewijzigd": "2026-11-10"
     },
     "sectoren/productie-en-industrie": {
-      "hash": "936b7c2ecd0ea241",
+      "hash": "3751a79f9cd6b578",
       "gewijzigd": "2026-11-10"
     },
     "sectoren/retail": {
-      "hash": "2f374806418e8d1c",
+      "hash": "5948e12167befc4c",
       "gewijzigd": "2026-11-10"
     },
     "sectoren/transport-en-wagenparken": {
-      "hash": "9f67c09123e0a6f1",
+      "hash": "5d16f5c933caba08",
       "gewijzigd": "2026-11-10"
     },
     "sectoren/zorgvastgoed": {
-      "hash": "1750bdac74320a93",
+      "hash": "75d794fe28586f1a",
       "gewijzigd": "2026-11-10"
     },
     "subsidies": {
-      "hash": "0abebb25de648e72",
+      "hash": "6982e0132191aa28",
       "gewijzigd": "2026-11-10"
     },
     "systeem-energieopslag": {
@@ -1684,51 +1684,51 @@
       "gewijzigd": "2026-10-28"
     },
     "toepassingen": {
-      "hash": "e364852e50a3f129",
+      "hash": "811b132f52b13177",
       "gewijzigd": "2026-11-10"
     },
     "toepassingen/batterij-slim-inzetten": {
-      "hash": "5bbc516a7d5338fc",
+      "hash": "07af5aa6107b9538",
       "gewijzigd": "2026-11-10"
     },
     "toepassingen/bestaande-aansluiting-optimaliseren": {
-      "hash": "09c3522a9470c433",
+      "hash": "3b277cac18e44051",
       "gewijzigd": "2026-11-10"
     },
     "toepassingen/elektrificatie-bedrijfswagens": {
-      "hash": "e4e1ab933c086843",
+      "hash": "ec9b30bb97ef5dbc",
       "gewijzigd": "2026-11-10"
     },
     "toepassingen/geen-extra-transportvermogen": {
-      "hash": "5b8dae336e02db1c",
+      "hash": "1352a637a11fa00f",
       "gewijzigd": "2026-11-10"
     },
     "toepassingen/laden-met-beperkte-aansluiting": {
-      "hash": "fce7441fa351dd36",
+      "hash": "664a211bbe9d628a",
       "gewijzigd": "2026-11-10"
     },
     "toepassingen/meerdere-locaties": {
-      "hash": "5f9f1b28b0f7f961",
+      "hash": "22646fb6c04c14c9",
       "gewijzigd": "2026-11-10"
     },
     "toepassingen/netcongestie-bij-uitbreiding": {
-      "hash": "54bc35c7f324068e",
+      "hash": "d52b5bd4df7d951c",
       "gewijzigd": "2026-11-10"
     },
     "toepassingen/pieken-in-verbruik": {
-      "hash": "25532122af0ba355",
+      "hash": "3bbf9e5331511cbf",
       "gewijzigd": "2026-11-10"
     },
     "toepassingen/processen-sturen-met-ems": {
-      "hash": "e2231ddff890f8b4",
+      "hash": "2f67d13e72f9ee29",
       "gewijzigd": "2026-11-10"
     },
     "toepassingen/terugleverbeperking": {
-      "hash": "445bc33c3b6acd43",
+      "hash": "44f2589597b13494",
       "gewijzigd": "2026-11-10"
     },
     "verduurzaming-bedrijfspanden": {
-      "hash": "adab7904dbaf263f",
+      "hash": "c40cf9c5fd44f0aa",
       "gewijzigd": "2026-11-10"
     },
     "vibe-control": {

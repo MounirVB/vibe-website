@@ -615,7 +615,7 @@ ${items
     rijen: [[term, waarde], ...] */
 export function specblok({ id, kop, icoon, lead, rijen, img, kant = 'rechts', noot, variant = 've-sec--sunken ve-sec--line-y' }) {
   if (!rijen || !rijen.length) return '';
-  const blok = `      <div class="ve-sp-${img ? 7 : 12}">
+  const blok = `      <div class="ve-sp-${img ? 7 : 12}" style="min-width:0">
         <div class="ve-spec">
           <div class="ve-spec__kop">${icoon ? ic(icoon) : ''}<h2 class="ve-h4">${esc(kop)}</h2></div>${
     lead ? `\n          <p class="ve-body">${lead}</p>` : ''
@@ -626,7 +626,7 @@ ${rijen.map(([t, w]) => `            <dt>${t}</dt><dd>${w}</dd>`).join('\n')}
         </div>
       </div>`;
   const beeld = img
-    ? `      <div class="ve-sp-5">
+    ? `      <div class="ve-sp-5" style="min-width:0">
         <div class="ve-media ve-media--4x3 ve-media--lijn">
           ${img}
         </div>
@@ -653,7 +653,7 @@ export function kaartrij12({ id, kop, lead, dominant, rest, img, variant = '' })
       : '';
   const kaart = (k, groot) =>
     k.route
-      ? `<a class="ve-kaart ve-kaart--${groot ? 'ruim' : 'sunken'} ve-kaart--hover" href="${href(k.route)}" style="height:100%;text-decoration:none">
+      ? `<a class="ve-kaart ve-kaart--${groot ? 'ruim' : 'sunken'} ve-kaart--hover" href="${href(k.route)}" style="display:block;height:100%;text-decoration:none">
           <h3 class="ve-h${groot ? 3 : 4}">${esc(k.kop)}</h3>
           <p class="ve-body" style="margin-top:.5rem;max-width:52ch">${k.tekst}</p>${link(k)}
         </a>`
@@ -667,7 +667,7 @@ export function kaartrij12({ id, kop, lead, dominant, rest, img, variant = '' })
         <h2 class="ve-h2">${esc(kop)}</h2>${lead ? `\n        <p class="ve-lead">${lead}</p>` : ''}
       </div>
       <div class="ve-grid12" style="margin-top:var(--ve-s-xl);align-items:start">
-        <div class="ve-sp-7">
+        <div class="ve-sp-7" style="min-width:0">
           ${kaart(dominant, true)}${
     img
       ? `
@@ -677,7 +677,7 @@ export function kaartrij12({ id, kop, lead, dominant, rest, img, variant = '' })
       : ''
   }
         </div>
-        <div class="ve-sp-5 ve-stack ve-stack--lg">
+        <div class="ve-sp-5 ve-stack ve-stack--lg" style="min-width:0">
 ${(rest || []).map((k) => `          ${kaart(k, false)}`).join('\n')}
         </div>
       </div>
