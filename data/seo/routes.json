@@ -1,6 +1,6 @@
 {
   "_toelichting": "Gegenereerd door scripts/seo/bouw-routes.mjs. Niet met de hand bijwerken. PENDING betekent: geen bestand, geen sitemapregel, geen canonical, geen interne link.",
-  "_gegenereerd": "2026-11-09",
+  "_gegenereerd": "2026-11-10",
   "_routeset": "fe7b3f6b71e4a994",
   "_datum_regel": "Release 3.1: _gegenereerd is NIET de wandklok. Hij schuift alleen op als _routeset verandert, en dat is een hash over elke route met zijn staat. Dezelfde routeset geeft dus altijd hetzelfde bestand, ook over maanden heen. Zie de toelichting onderaan bouw-routes.mjs.",
   "samenvatting": {

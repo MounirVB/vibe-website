@@ -156,60 +156,85 @@ export function beeldTag({ basis, alt, sizes, klasse = '', lazy = true, fetchpri
    een andere gemeente. Een foto van Arnhem op de pagina van Assen suggereert
    een project dat daar niet staat, en dat is precies de klasse fout die het
    claimregister van dit project verbiedt. */
+/* ============================================================================
+   HET ASSETREGISTER
+
+   Elk beeld is BEKEKEN voordat het hier is opgeschreven. Dat is geen
+   formaliteit. De vorige versie van dit bestand leidde alt-teksten af uit de
+   bestandsnaam, en vijf daarvan bleken onjuist:
+
+     netcongestie-hero   stond als 'twee batterijkasten achter een hekwerk'.
+                         Het zijn er DRIE, op betonnen voeten.
+     img/ev-charging     stond als 'een elektrische auto aan een laadpunt'.
+                         Het is een LUCHTFOTO van een autobedrijf met
+                         zonnecarports. Niets van de beschrijving klopte.
+     img/control-meting  stond als 'meetapparatuur in een schakelkast'. Er
+                         staat een monteur op die de installatie bedient.
+     img/ems-tech        stond als 'technische installatie'. Ook hier staat
+                         een persoon op.
+     assets/home/s2-ems  stond als 'het energiemanagementsysteem'. Idem.
+
+   EN EEN TWEEDE, GROTER PROBLEEM. Dertig bestanden tonen samen ongeveer
+   veertien onderwerpen: dezelfde drie kasten staan in netcongestie-hero,
+   home/s2-accu en systeem/s4-systeem; dezelfde houten omkasting in
+   capaciteit-hero, home/s7-opslag en systeem/s1-hero; dezelfde twee mensen
+   bij dezelfde tekening in over-ons-hero en img/monteurs-werktekening.
+
+   Een register dat die dertig als dertig onderwerpen behandelt, zet vroeg of
+   laat twee keer dezelfde foto op een pagina. Daarom draagt elk beeld een
+   `groep`, en levert beeldenVoor() nooit twee beelden uit dezelfde groep.
+   De zelftest onderaan dit bestand bewaakt dat.
+   ========================================================================== */
 const THEMA = {
-  accu: { basis: 'assets/home/s2-accu', alt: 'Batterijsysteem van Vibe Energy naast een bedrijfspand' },
-  opslag: { basis: 'assets/home/s7-opslag', alt: 'Batterijkasten van Vibe Energy in een houten omkasting naast een bedrijfspand' },
-  laden: { basis: 'assets/home/s2-laad', alt: 'Laadinfrastructuur op een bedrijfsterrein' },
-  zon: { basis: 'assets/home/s2-zon', alt: 'Zonnepanelen op een bedrijfsdak' },
-  ems: { basis: 'assets/home/s2-ems', alt: 'Het energiemanagementsysteem van Vibe Energy' },
-  systeem: { basis: 'assets/systeem/s4-systeem', alt: 'Opstelling van een energieopslagsysteem' },
-  binnenwerk: { basis: 'img/batterij-binnenwerk', alt: 'Het binnenwerk van een batterijsysteem' },
-  meting: { basis: 'img/control-meting', alt: 'Meetapparatuur in een schakelkast' },
-  emstech: { basis: 'img/ems-tech', alt: 'Technische installatie van het energiemanagementsysteem' },
-  dak: { basis: 'img/comm-rooftop', alt: 'Zonnepanelen op het dak van een commercieel pand' },
-  laadpunt: { basis: 'img/ev-charging', alt: 'Een elektrische auto aan een laadpunt' },
-  werktekening: { basis: 'img/monteurs-werktekening', alt: 'Monteurs bij een werktekening op locatie' },
+  /* ---- opslag buiten: drie kasten op betonnen voeten ---- */
+  kastenDrie: { groep: 'opslag-buiten', basis: 'assets/netcongestie-hero', alt: 'Drie witte batterijkasten van Vibe Energy op betonnen voeten naast een bedrijfspand' },
+  accu: { groep: 'opslag-buiten', basis: 'assets/home/s2-accu', alt: 'Drie batterijkasten van Vibe Energy in de buitenopstelling op een bedrijfsterrein' },
+  systeem: { groep: 'opslag-buiten', basis: 'assets/systeem/s4-systeem', alt: 'Opstelling van drie batterijkasten op een bedrijfsterrein, achter een hekwerk' },
 
-  /* ------------------------------------------------------------------
-     DE EIGEN FOTOGRAFIE DIE AL OP SCHIJF STOND.
+  /* ---- opslag buiten: twee kasten in een houten omkasting ---- */
+  omkasting: { groep: 'opslag-omkasting', basis: 'assets/capaciteit-hero', alt: 'Twee batterijkasten in een houten omkasting naast een bedrijfspand' },
+  opslag: { groep: 'opslag-omkasting', basis: 'assets/home/s7-opslag', alt: 'Batterijkasten van Vibe Energy in een houten omkasting naast een bedrijfspand' },
 
-     assets/ draagt 23 *-hero-families. De generator gebruikte er nul; hij
-     koos altijd uit de twaalf algemene onderwerpen hierboven, waardoor 349
-     regiopagina's dezelfde img/control-meting kregen. Deze beelden zijn van
-     Vibe zelf — de kasten dragen het logo, de mensen dragen de bedrijfsjas.
+  /* ---- opslag: detail en binnenwerk ---- */
+  kast: { groep: 'opslag-detail', basis: 'assets/bedrijf-hero', alt: 'Batterijcontainer van Vibe Energy met het merklogo op de zijwand' },
+  binnenwerk: { groep: 'opslag-binnen', basis: 'img/batterij-binnenwerk', alt: 'Het open binnenwerk van een batterijsysteem, met de modules en de oranje verbindingskabels' },
 
-     De alt-teksten hieronder zijn geschreven NA het bekijken van de beelden,
-     niet afgeleid uit de bestandsnaam. Dat is geen formaliteit: drie namen
-     dekten de lading niet.
+  /* ---- laden ---- */
+  laadpaal: { groep: 'laden-auto', basis: 'assets/laadpalen-hero', alt: 'Een auto aan een laadpunt, met de laadkabel aangesloten' },
+  laden: { groep: 'laden-auto', basis: 'assets/home/s2-laad', alt: 'Een elektrische auto die laadt aan een laadpunt op een bedrijfsterrein' },
+  wandlader: { groep: 'laden-wand', basis: 'assets/exploitatie-hero', alt: "Wandlaadpunten met kabels naast geparkeerde auto's" },
+  carport: { groep: 'laden-carport', basis: 'assets/laadplein-hero', alt: 'Luchtfoto van een parkeerterrein met een lange overkapping van zonnepanelen en de skyline op de achtergrond' },
+  autobedrijf: { groep: 'laden-autobedrijf', basis: 'assets/logistiek-hero', alt: 'Luchtfoto van een autobedrijf met zonnecarports op het terrein en windturbines op de achtergrond' },
+  autobedrijfTwee: { groep: 'laden-autobedrijf', basis: 'img/ev-charging', alt: 'Luchtfoto van een autobedrijf met zonnepanelen op het dak en zonnecarports langs de showroom' },
 
-     NIET OPGENOMEN, met reden:
-       subsidies-hero     een plein met een kerktoren. Geen enkele relatie met
-                          subsidies of met energie. Dit is precies de losse
-                          stockfoto die hier niet hoort.
-       energiehandel-hero bit-voor-bit hetzelfde beeld als ems-hero.
-       microgrids-hero    vrijwel gelijk aan netcongestie-hero (zelfde kasten,
-                          zelfde hek, andere uitsnede).
-       energieopslag-hero vrijwel gelijk aan capaciteit-hero.
-     Twee bijna-gelijke foto's op een pagina lezen als een fout, niet als
-     ritme, dus een pagina krijgt er nooit twee uit hetzelfde paar. */
-  kast: { basis: 'assets/bedrijf-hero', alt: 'Batterijkast van Vibe Energy tegen de gevel van een bedrijfspand' },
-  omkasting: { basis: 'assets/capaciteit-hero', alt: 'Twee batterijkasten in een houten omkasting naast een bedrijfspand' },
-  hekwerk: { basis: 'assets/netcongestie-hero', alt: 'Twee batterijkasten van Vibe Energy achter een hekwerk op het terrein' },
-  platdak: { basis: 'assets/dakvlak-hero', alt: 'Zonnepanelen op een plat bedrijfsdak, met de kabelgoot langs de rij' },
-  panelen: { basis: 'assets/zonnepanelen-hero', alt: 'Zonnepanelen op een dak tegen een bewolkte lucht' },
-  luchtkantoor: { basis: 'assets/kantoor-hero', alt: 'Luchtfoto van een kantoorpand met zonnepanelen op het dak en een parkeerterrein ernaast' },
-  luchtvastgoed: { basis: 'assets/vastgoed-hero', alt: 'Luchtfoto van een bedrijfspand met parkeerterrein' },
-  luchtwonen: { basis: 'assets/residentieel-hero', alt: 'Luchtfoto van een woonblok met een volledig belegd zonnedak' },
-  luchtvve: { basis: 'assets/vve-hero', alt: 'Luchtfoto van een rij woningen met zonnepanelen en achtertuinen' },
-  luchtcomplex: { basis: 'assets/energielabel-hero', alt: 'Luchtfoto van een gebouwencomplex met zonnepanelen op de daken' },
-  carport: { basis: 'assets/laadplein-hero', alt: 'Luchtfoto van een parkeerterrein met een overkapping van zonnepanelen' },
-  laadpaal: { basis: 'assets/laadpalen-hero', alt: 'Een auto aan een laadpunt, met de laadkabel aangesloten' },
-  wandlader: { basis: 'assets/exploitatie-hero', alt: "Wandlaadpunt met kabel naast geparkeerde auto's" },
-  logistiek: { basis: 'assets/logistiek-hero', alt: 'Luchtfoto van een bedrijventerrein met zonnecarports en een windturbine' },
-  meters: { basis: 'assets/ems-hero', alt: 'Een rij kilowattuurmeters in een meterkast' },
-  werkplaats: { basis: 'assets/over-ons-hero', alt: 'Twee medewerkers van Vibe Energy bij een tekening op de werkplek' },
-  montage: { basis: 'assets/waarom-vibe-hero', alt: 'Monteur op een ladder bij een staalconstructie' },
+  /* ---- zon op het dak, vanaf het dak gezien ---- */
+  platdak: { groep: 'zon-dak', basis: 'assets/dakvlak-hero', alt: 'Zonnepanelen op een plat bedrijfsdak, met het looppad en de kabelgoot ertussen' },
+  panelen: { groep: 'zon-dak', basis: 'assets/zonnepanelen-hero', alt: 'Rijen zonnepanelen op een plat dak tegen een bewolkte lucht' },
+  zon: { groep: 'zon-dak', basis: 'assets/home/s2-zon', alt: 'Zonnepanelen in rijen op het platte dak van een bedrijfspand' },
+
+  /* ---- zon op het dak, van bovenaf: bedrijfspanden ---- */
+  luchtvastgoed: { groep: 'zon-pand-lucht', basis: 'assets/vastgoed-hero', alt: 'Luchtfoto van een bedrijfspand met zonnepanelen op het dak en een parkeerterrein ernaast' },
+  luchtkantoor: { groep: 'zon-pand-lucht', basis: 'assets/kantoor-hero', alt: 'Luchtfoto van een bedrijfspand met een donker dak dat deels met zonnepanelen is belegd' },
+  luchtretail: { groep: 'zon-pand-lucht', basis: 'img/comm-retail', alt: 'Luchtfoto van een winkelpand met zonnepanelen op het dak' },
+  dak: { groep: 'zon-pand-lucht', basis: 'img/comm-rooftop', alt: 'Luchtfoto van een gebouwdak dat vrijwel volledig met zonnepanelen is belegd' },
+
+  /* ---- zon op het dak, van bovenaf: woningen ---- */
+  luchtwonen: { groep: 'zon-wonen-lucht', basis: 'assets/residentieel-hero', alt: 'Luchtfoto van een wooncomplex waarvan de daken met zonnepanelen zijn belegd' },
+  luchtvve: { groep: 'zon-wonen-lucht', basis: 'assets/vve-hero', alt: 'Luchtfoto van een rij woningen met zonnepanelen op de daken en achtertuinen ertussen' },
+  luchtcomplex: { groep: 'zon-wonen-lucht', basis: 'assets/energielabel-hero', alt: 'Luchtfoto van een gebouwencomplex met zonnepanelen op de daken' },
+
+  /* ---- mensen: techniek, overleg, montage ---- */
+  meting: { groep: 'mens-techniek', basis: 'img/control-meting', alt: 'Monteur van Vibe Energy bedient een installatie in een technische ruimte' },
+  emstech: { groep: 'mens-techniek', basis: 'img/ems-tech', alt: 'Monteur van Vibe Energy bij een geopende schakelkast' },
+  ems: { groep: 'mens-techniek', basis: 'assets/home/s2-ems', alt: 'Monteur van Vibe Energy bij de regelkast van het energiemanagementsysteem' },
+  werkplaats: { groep: 'mens-overleg', basis: 'assets/over-ons-hero', alt: 'Twee medewerkers van Vibe Energy bij een tekening op de werkplek' },
+  werktekening: { groep: 'mens-overleg', basis: 'img/monteurs-werktekening', alt: 'Twee medewerkers van Vibe Energy buigen zich over een werktekening' },
+  montage: { groep: 'mens-montage', basis: 'assets/waarom-vibe-hero', alt: 'Monteur op een ladder bij een staalconstructie' },
+
+  /* ---- meten ---- */
+  meters: { groep: 'meting-meters', basis: 'assets/ems-hero', alt: 'Een rij kilowattuurmeters met digitale displays' },
 };
+
 
 /** Het thematische beeld voor een sleutel; werpt als de sleutel niet bestaat. */
 export function thema(sleutel) {
@@ -305,10 +330,10 @@ export function beeldVoor(route, type) {
         daar. =================================================== */
 const BEELDSET = {
   /* oplossingen */
-  netcongestie: ['hekwerk', 'meters', 'omkasting'],
+  netcongestie: ['kastenDrie', 'meters', 'omkasting'],
   laadplein: ['carport', 'laadpaal', 'wandlader'],
-  energieadvies: ['werkplaats', 'meting', 'werktekening'],
-  'verduurzaming-bedrijfspanden': ['platdak', 'panelen', 'luchtkantoor'],
+  energieadvies: ['werkplaats', 'meting', 'meters'],
+  'verduurzaming-bedrijfspanden': ['platdak', 'luchtkantoor', 'montage'],
   /* hubs */
   sectoren: ['luchtvastgoed', 'platdak', 'kast'],
   toepassingen: ['omkasting', 'meters', 'emstech'],
@@ -318,42 +343,42 @@ const BEELDSET = {
   'toepassingen/batterij-slim-inzetten': ['omkasting', 'binnenwerk', 'meters'],
   'toepassingen/bestaande-aansluiting-optimaliseren': ['meters', 'meting', 'kast'],
   'toepassingen/elektrificatie-bedrijfswagens': ['laadpaal', 'wandlader', 'carport'],
-  'toepassingen/geen-extra-transportvermogen': ['hekwerk', 'meters', 'meting'],
+  'toepassingen/geen-extra-transportvermogen': ['kastenDrie', 'meters', 'meting'],
   'toepassingen/laden-met-beperkte-aansluiting': ['wandlader', 'carport', 'laadpaal'],
   'toepassingen/meerdere-locaties': ['emstech', 'meters', 'luchtcomplex'],
-  'toepassingen/netcongestie-bij-uitbreiding': ['kast', 'hekwerk', 'meting'],
+  'toepassingen/netcongestie-bij-uitbreiding': ['kast', 'kastenDrie', 'meting'],
   'toepassingen/pieken-in-verbruik': ['meters', 'omkasting', 'meting'],
-  'toepassingen/processen-sturen-met-ems': ['emstech', 'meters', 'ems'],
-  'toepassingen/terugleverbeperking': ['panelen', 'platdak', 'meters'],
+  'toepassingen/processen-sturen-met-ems': ['emstech', 'meters', 'kast'],
+  'toepassingen/terugleverbeperking': ['panelen', 'meters', 'luchtvastgoed'],
   /* sectoren */
-  'sectoren/automotive': ['laadpaal', 'wandlader', 'logistiek'],
+  'sectoren/automotive': ['laadpaal', 'wandlader', 'autobedrijf'],
   'sectoren/bedrijventerreinen': ['luchtvastgoed', 'platdak', 'kast'],
   'sectoren/bouw': ['montage', 'werktekening', 'luchtcomplex'],
-  'sectoren/gebiedsontwikkeling': ['luchtcomplex', 'luchtwonen', 'platdak'],
+  'sectoren/gebiedsontwikkeling': ['luchtcomplex', 'platdak', 'montage'],
   'sectoren/horeca': ['luchtkantoor', 'omkasting', 'panelen'],
-  'sectoren/opslag-en-distributie': ['logistiek', 'luchtvastgoed', 'platdak'],
-  'sectoren/parkeren': ['carport', 'laadpaal', 'laadpunt'],
+  'sectoren/opslag-en-distributie': ['autobedrijf', 'luchtvastgoed', 'platdak'],
+  'sectoren/parkeren': ['carport', 'laadpaal', 'wandlader'],
   'sectoren/productie-en-industrie': ['kast', 'omkasting', 'meters'],
-  'sectoren/retail': ['luchtkantoor', 'platdak', 'dak'],
-  'sectoren/transport-en-wagenparken': ['logistiek', 'laadpaal', 'wandlader'],
-  'sectoren/zorgvastgoed': ['luchtwonen', 'luchtcomplex', 'panelen'],
+  'sectoren/retail': ['luchtretail', 'platdak', 'kast'],
+  'sectoren/transport-en-wagenparken': ['autobedrijf', 'laadpaal', 'wandlader'],
+  'sectoren/zorgvastgoed': ['luchtwonen', 'panelen', 'omkasting'],
   /* kennis */
   'kennis/batterij-dimensioneren': ['binnenwerk', 'omkasting', 'meters'],
   'kennis/batterijdegradatie': ['binnenwerk', 'meters', 'kast'],
-  'kennis/batterijveiligheid': ['hekwerk', 'binnenwerk', 'montage'],
+  'kennis/batterijveiligheid': ['kastenDrie', 'binnenwerk', 'montage'],
   'kennis/businesscase-batterij': ['meters', 'omkasting', 'werkplaats'],
-  'kennis/ems-energiemanagementsysteem': ['emstech', 'meters', 'ems'],
+  'kennis/ems-energiemanagementsysteem': ['emstech', 'meters', 'binnenwerk'],
   'kennis/energiehandel-en-flexibiliteit': ['meters', 'emstech', 'kast'],
-  'kennis/energieprestatie-meten': ['meting', 'meters', 'emstech'],
+  'kennis/energieprestatie-meten': ['meting', 'meters', 'platdak'],
   'kennis/kw-versus-kwh': ['meters', 'meting', 'binnenwerk'],
   'kennis/laadinfrastructuur-dimensioneren': ['laadpaal', 'carport', 'wandlader'],
   'kennis/load-balancing': ['wandlader', 'laadpaal', 'emstech'],
   'kennis/netaansluiting-aanvragen': ['meters', 'werktekening', 'montage'],
-  'kennis/netcongestie-uitgelegd': ['hekwerk', 'meters', 'omkasting'],
+  'kennis/netcongestie-uitgelegd': ['kastenDrie', 'meters', 'omkasting'],
   'kennis/normen-en-keuringen': ['montage', 'werktekening', 'binnenwerk'],
   'kennis/peak-shaving': ['omkasting', 'meters', 'meting'],
-  'kennis/subsidiemechanismen': ['werktekening', 'werkplaats', 'luchtcomplex'],
-  'kennis/terugleverbeperking': ['panelen', 'platdak', 'meters'],
+  'kennis/subsidiemechanismen': ['werktekening', 'luchtcomplex', 'montage'],
+  'kennis/terugleverbeperking': ['panelen', 'meters', 'luchtvastgoed'],
   'kennis/transportvermogen-versus-aansluitwaarde': ['meters', 'meting', 'kast'],
 };
 
@@ -374,7 +399,7 @@ const SET_PER_TYPE = {
    Alle vier zijn onderwerpsbeelden: geen van vieren suggereert een project
    op die plek. */
 const REGIO_ROTATIE = [
-  ['hekwerk', 'meters', 'platdak'],
+  ['kastenDrie', 'meters', 'platdak'],
   ['platdak', 'meters', 'kast'],
   ['kast', 'meting', 'panelen'],
   ['luchtvastgoed', 'meters', 'omkasting'],
@@ -386,14 +411,65 @@ function hash(s) {
   return h;
 }
 
-/** Drie onderscheidende beelden voor een pagina: [opening, band, canvas].
-    Werpt nooit; valt terug op het type en daarna op de oplossingenset. */
-export function beeldenVoor(route, type) {
+/** Beelden voor een pagina: [opening, band, canvas, ...].
+    GARANDEERT dat er nooit twee beelden uit dezelfde visuele groep uit komen.
+    Dertig bestanden tonen samen ongeveer veertien onderwerpen; zonder deze
+    regel zet een pagina vroeg of laat twee uitsnedes van dezelfde foto naast
+    elkaar. Gemeten vóór deze regel: elf van de tweeënvijftig sets deden dat.
+
+    Een set die te kort is na het filteren, wordt aangevuld uit de overige
+    groepen in een vaste volgorde — niet willekeurig, want de bouw moet
+    reproduceerbaar blijven. */
+export function beeldenVoor(route, type, aantal = 3) {
   const r = String(route).replace(/^\/+/, '');
   let set = BEELDSET[r];
   if (!set && type === 'regio') set = REGIO_ROTATIE[hash(r) % REGIO_ROTATIE.length];
   if (!set) set = SET_PER_TYPE[type] || SET_PER_TYPE.oplossing;
-  return set.map((s) => thema(s));
+
+  const uit = [];
+  const gezien = new Set();
+  for (const sleutel of set) {
+    const t = thema(sleutel);
+    if (gezien.has(t.groep)) continue;
+    gezien.add(t.groep);
+    uit.push(t);
+  }
+  /* aanvullen tot `aantal`, deterministisch: op een hash van de route zodat
+     twee pagina's niet dezelfde aanvulling krijgen, maar dezelfde pagina wel
+     altijd dezelfde. */
+  if (uit.length < aantal) {
+    const rest = Object.keys(THEMA).filter((k) => !gezien.has(THEMA[k].groep));
+    const start = hash(r + '|aanvulling');
+    for (let i = 0; i < rest.length && uit.length < aantal; i++) {
+      const k = rest[(start + i) % rest.length];
+      const t = THEMA[k];
+      if (gezien.has(t.groep)) continue;
+      gezien.add(t.groep);
+      uit.push(thema(k));
+    }
+  }
+  return uit.slice(0, Math.max(aantal, 1));
+}
+
+/** Zelftest voor de poort: geen set mag twee beelden uit dezelfde groep
+    dragen, en elke sleutel moet bestaan. Geeft de fouten terug, leeg = goed. */
+export function controleerSets() {
+  const fouten = [];
+  const sets = [
+    ...Object.entries(BEELDSET),
+    ...Object.entries(SET_PER_TYPE).map(([k, v]) => [`type:${k}`, v]),
+    ...REGIO_ROTATIE.map((v, i) => [`regio-rotatie:${i}`, v]),
+  ];
+  for (const [naam, lijst] of sets) {
+    const groepen = [];
+    for (const k of lijst) {
+      if (!THEMA[k]) { fouten.push(`${naam}: onbekende sleutel ${k}`); continue; }
+      groepen.push(THEMA[k].groep);
+    }
+    const dubbel = [...new Set(groepen.filter((g, i) => groepen.indexOf(g) !== i))];
+    if (dubbel.length) fouten.push(`${naam}: twee beelden uit groep ${dubbel.join(', ')}`);
+  }
+  return fouten;
 }
 
 /* -------------------------------------------- projecten bij een sector
